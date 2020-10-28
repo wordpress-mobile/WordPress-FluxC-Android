@@ -1203,6 +1203,12 @@ class ProductRestClient(
         if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
             body["grouped_products"] = updatedProductModel.getGroupedProductIdList()
         }
+        if (storedWCProductModel.crossSellIds != updatedProductModel.crossSellIds) {
+            body["cross_sell_ids"] = updatedProductModel.getCrossSellProductIdList()
+        }
+        if (storedWCProductModel.upsellIds != updatedProductModel.upsellIds) {
+            body["upsell_ids"] = updatedProductModel.getUpsellProductIdList()
+        }
         if (storedWCProductModel.downloadable != updatedProductModel.downloadable) {
             body["downloadable"] = updatedProductModel.downloadable
         }

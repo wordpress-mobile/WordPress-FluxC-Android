@@ -647,6 +647,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             virtual = true
             images = generateTestImageListJsonString()
             groupedProductIds = "[10, 11]"
+            crossSellIds = "[1, 2, 3]"
+            upsellIds = "[1, 2, 3, 4]"
             type = "simple"
             downloadable = true
             downloads = generateTestFileListAsJsonString()
@@ -669,6 +671,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.virtual, product.virtual)
             assertEquals(updatedProduct.getImageList().size, 2)
             assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
+            assertEquals(updatedProduct.getCrossSellProductIdList().size, 3)
+            assertEquals(updatedProduct.getUpsellProductIdList().size, 4)
             assertEquals(updatedProduct.type, product.type)
             assertEquals(updatedProduct.getDownloadableFiles().size, 1)
             assertEquals(updatedProduct.downloadExpiry, 10)
