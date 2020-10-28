@@ -201,6 +201,22 @@ class WooShippingLabelFragment : Fragment() {
                 }
             }
         }
+
+        get_shipping_plugin_info.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("Installed: ${it.isPluginInstalled}, Active: ${it.isPluginActive}")
+                    }
+                }
+            }
+        }
     }
 
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
