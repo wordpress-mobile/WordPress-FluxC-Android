@@ -11,9 +11,14 @@
       <entry name="!?*.kt" />
       <entry name="!?*.clj" />
     </wildcardResourcePatterns>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.7">
       <module name="fluxc-annotations" target="1.7" />
       <module name="fluxc-processor" target="1.7" />
+      <module name="WordPress-FluxC-Android.example" target="1.8" />
+      <module name="WordPress-FluxC-Android.fluxc" target="1.8" />
+      <module name="WordPress-FluxC-Android.instaflux" target="1.8" />
+      <module name="WordPress-FluxC-Android.plugins.woocommerce" target="1.8" />
+      <module name="WordPress-FluxC-Android.tests.api" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

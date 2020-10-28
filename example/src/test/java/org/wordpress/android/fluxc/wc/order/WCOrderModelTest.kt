@@ -74,7 +74,7 @@ class WCOrderModelTest {
             lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
         }
         val renderedLineItems = model.getLineItemList()
-        assertEquals(2, renderedLineItems.size)
+        assertEquals(3, renderedLineItems.size)
 
         with(renderedLineItems[0]) {
             val attributes = getAttributeList()
