@@ -109,7 +109,12 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
          * @return a comma-separated list of attribute values for display
          */
         fun getAttributesAsString(): String {
-            return getAttributeList().joinToString { it.value ?: "" }
+            return getAttributeList()
+                    .takeWhile {
+                        // Don't include null, empty, or the "_reduced_stock" key
+                        // skipping "_reduced_stock" is a temporary workaround until "type" is added to the response.
+                        it.value != null && it.value.isNotEmpty() && it.key != "_reduced_stock"
+                    }.joinToString { it.value ?: "" }
         }
     }
 
