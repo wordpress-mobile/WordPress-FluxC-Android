@@ -60,7 +60,10 @@ class PlanOffersSqlUtils @Inject constructor() {
                 shortName = this.shortName,
                 tagline = this.tagline,
                 description = this.description,
-                icon = this.iconUrl
+                icon = this.iconUrl,
+                supportPriority = this.supportPriority,
+                supportName = this.supportName,
+                nonLocalizedShortName = this.nonLocalizedShortName
         )
     }
 

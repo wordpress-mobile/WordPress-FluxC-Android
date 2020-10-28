@@ -16,7 +16,11 @@ val PLAN_OFFER_MODELS = listOf(
                 "Free",
                 "Best for Getting Started",
                 "Free description",
-                "https://s0.wordpress.com/i/store/mobile/plan-free.png"
+                "https://s0.wordpress.com/i/store/mobile/plan-free.png",
+                1,
+                "free",
+                "Free"
+
         ), PlanOffersModel(
         listOf(1003, 1023), listOf(
         PlanOffersModel.Feature("custom-domain", "Custom Domain Name", "CDN Description"),
@@ -26,7 +30,10 @@ val PLAN_OFFER_MODELS = listOf(
         "Premium",
         "Best for Entrepreneurs and Freelancers",
         "Premium description",
-        "https://s0.wordpress.com/i/store/mobile/plan-premium.png"
+        "https://s0.wordpress.com/i/store/mobile/plan-premium.png",
+        4,
+        "premium",
+        "Premium"
 )
 )
 
@@ -43,7 +50,10 @@ val PLAN_OFFERS_RESPONSE = PlanOffersResponse(
                 "Free",
                 "Best for Getting Started",
                 "Free description",
-                "https://s0.wordpress.com/i/store/mobile/plan-free.png"
+                "https://s0.wordpress.com/i/store/mobile/plan-free.png",
+                1,
+                "free",
+                "Free"
         ), Plan(
         listOf("business"),
         listOf(PlanId(1003), PlanId(1023)),
@@ -52,7 +62,10 @@ val PLAN_OFFERS_RESPONSE = PlanOffersResponse(
         "Premium",
         "Best for Entrepreneurs and Freelancers",
         "Premium description",
-        "https://s0.wordpress.com/i/store/mobile/plan-premium.png"
+        "https://s0.wordpress.com/i/store/mobile/plan-premium.png",
+        4,
+        "premium",
+        "Premium"
 )
 ), listOf(
         Feature("subdomain", "WordPress.com Subdomain", "Subdomain Description"),
