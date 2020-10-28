@@ -1328,7 +1328,7 @@ open class WellSqlConfig : DefaultWellConfig {
                 121 -> migrate(version) {
                     db.execSQL("ALTER TABLE PlanOffers ADD SUPPORT_PRIORITY INTEGER")
                     db.execSQL("ALTER TABLE PlanOffers ADD SUPPORT_NAME TEXT")
-                    db.execSQL("ALTER TABLE PlanOffers ADD NONLOCALISED_SHORT_NAME TEXT")
+                    db.execSQL("ALTER TABLE PlanOffers ADD NON_LOCALISED_SHORT_NAME TEXT")
                 }
             }
         }
