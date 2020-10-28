@@ -76,6 +76,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     class LineItem {
         val id: Long? = null
         val name: String? = null
+        @SerializedName("parent_name")
+        val parentName: String? = null
         @SerializedName("product_id")
         val productId: Long? = null
         @SerializedName("variation_id")
