@@ -9,12 +9,15 @@ import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
 
 object WCPluginSqlUtils {
-    fun insertOrUpdate(site: SiteModel, data: List<WCPluginModel>) {
-        WellSql.delete(WCPluginModel::class.java)
-            .where()
-            .equals(WCPluginsTable.LOCAL_SITE_ID, site.id)
-            .endWhere()
-            .execute()
+    fun insertOrUpdate(data: List<WCPluginModel>) {
+        data.forEach {
+            WellSql.delete(WCPluginModel::class.java)
+                    .where()
+                    .equals(WCPluginsTable.LOCAL_SITE_ID, it.localSiteId)
+                    .equals(WCPluginsTable.SLUG, it.slug)
+                    .endWhere()
+                    .execute()
+        }
 
         WellSql.insert(data).execute()
     }

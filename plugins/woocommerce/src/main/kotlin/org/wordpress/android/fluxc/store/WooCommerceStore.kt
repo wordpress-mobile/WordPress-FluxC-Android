@@ -174,7 +174,7 @@ open class WooCommerceStore @Inject constructor(
                                 version = it.version
                         )
                     }
-                    WCPluginSqlUtils.insertOrUpdate(site, plugins)
+                    WCPluginSqlUtils.insertOrUpdate(plugins)
                     
                     val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
                     WooResult(plugin)
