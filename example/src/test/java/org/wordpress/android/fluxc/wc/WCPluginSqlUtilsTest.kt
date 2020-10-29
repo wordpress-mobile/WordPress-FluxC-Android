@@ -63,7 +63,7 @@ class WCPluginSqlUtilsTest {
         val testPlugin = testPlugins.first()
         WCPluginSqlUtils.insertOrUpdate(listOf(testPlugin))
         val plugin = WCPluginSqlUtils.selectSingle(site, testPlugin.slug)!!
-        assertEquals(plugin, testPlugin)
+        assertEquals(testPlugin, plugin)
 
         val newTitle = "New title"
         WCPluginSqlUtils.insertOrUpdate(listOf(plugin.copy(displayName = newTitle)))
@@ -75,8 +75,8 @@ class WCPluginSqlUtilsTest {
     fun `test select`() {
         WCPluginSqlUtils.insertOrUpdate(testPlugins)
 
-        val gateway = WCPluginSqlUtils.selectSingle(site, "plugin2")
-        assertEquals(testPlugins[1], gateway)
+        val plugin = WCPluginSqlUtils.selectSingle(site, testPlugins[1].slug)
+        assertEquals(testPlugins[1], plugin)
     }
 
     @Test
