@@ -165,15 +165,7 @@ open class WooCommerceStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    val plugins = response.result.plugins.map {
-                        WCPluginModel(
-                                localSiteId = site.id,
-                                active = it.isActive,
-                                displayName = it.displayName,
-                                slug = it.slug,
-                                version = it.version
-                        )
-                    }
+                    val plugins = response.result.plugins.map { WCPluginModel(site, it) }
                     WCPluginSqlUtils.insertOrUpdate(plugins)
                     
                     val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
