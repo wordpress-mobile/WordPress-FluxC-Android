@@ -14,7 +14,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Re
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import javax.inject.Singleton
 
+@Singleton
 class WooPluginRestClient
 constructor(
     dispatcher: Dispatcher,
