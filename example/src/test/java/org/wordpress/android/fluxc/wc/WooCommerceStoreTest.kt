@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 @RunWith(RobolectricTestRunner::class)
 class WooCommerceStoreTest {
     private val appContext = RuntimeEnvironment.application.applicationContext
-    private val wooCommerceStore = WooCommerceStore(appContext, Dispatcher(), mock())
+    private val wooCommerceStore = WooCommerceStore(appContext, Dispatcher(), mock(), mock(), mock())
 
     @Before
     fun setUp() {
