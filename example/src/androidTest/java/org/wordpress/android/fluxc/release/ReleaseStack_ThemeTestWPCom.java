@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
+import org.wordpress.android.fluxc.store.ThemeStore.OnStarterDesignsFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
 import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.SiteThemePayload;
@@ -32,7 +33,8 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         NONE,
         FETCHED_WPCOM_THEMES,
         FETCHED_CURRENT_THEME,
-        ACTIVATED_THEME
+        ACTIVATED_THEME,
+        FETCHED_STARTER_DESIGNS
     }
 
     @Inject ThemeStore mThemeStore;
@@ -94,6 +96,15 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
     }
 
+    @Test
+    public void testFetchStarterDesigns() throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_STARTER_DESIGNS;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchStarterDesignsAction(
+                new ThemeStore.FetchStarterDesignsPayload(400f, 2f)));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onThemeActivated(OnThemeActivated event) {
@@ -149,6 +160,16 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onStarterDesignsFetched(OnStarterDesignsFetched event) {
+        assertEquals(mNextEvent, TestEvents.FETCHED_STARTER_DESIGNS);
+        assertFalse(event.isError());
+        assertNotNull(event.designs);
+        assertFalse(event.designs.isEmpty());
         mCountDownLatch.countDown();
     }
 
