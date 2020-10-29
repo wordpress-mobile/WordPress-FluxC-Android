@@ -213,8 +213,7 @@ class WooShippingLabelFragment : Fragment() {
                     }
                     if (result.model != null) {
                         prependToLog("${result.model}")
-                    }
-                    else {
+                    } else {
                         prependToLog("The WooCommerce services plugin is not installed")
                     }
                 }
