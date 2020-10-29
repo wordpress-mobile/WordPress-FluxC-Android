@@ -46,6 +46,8 @@ public enum SiteAction implements IAction {
     @Action(payloadType = SiteModel.class)
     FETCH_SITE,
     @Action
+    FETCH_PLAN_DESCRIPTIONS_OF_LOCALE_FOR_SITES,
+    @Action
     FETCH_SITES,
     @Action(payloadType = RefreshSitesXMLRPCPayload.class)
     FETCH_SITES_XML_RPC,
@@ -99,6 +101,8 @@ public enum SiteAction implements IAction {
     // Remote responses
     @Action(payloadType = SiteModel.class)
     FETCHED_PROFILE_XML_RPC,
+    @Action(payloadType = SitesModel.class)
+    FETCHED_PLAN_DESCRIPTIONS_OF_LOCALE_FOR_SITES,
     @Action(payloadType = SitesModel.class)
     FETCHED_SITES,
     @Action(payloadType = SitesModel.class)

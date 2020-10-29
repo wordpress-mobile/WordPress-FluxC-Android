@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2;
 import org.wordpress.android.fluxc.model.PlanModel;
 import org.wordpress.android.fluxc.model.PostFormatModel;
+import org.wordpress.android.fluxc.model.SitePlanSimpleDescriptionModel;
 import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.SitesModel;
@@ -108,6 +109,8 @@ public class SiteRestClient extends BaseWPComRestClient {
     public static final int NEW_SITE_TIMEOUT_MS = 90000;
     private static final String SITE_FIELDS = "ID,URL,name,description,jetpack,visible,is_private,options,plan,"
         + "capabilities,quota,icon,meta";
+
+    private static final String PLAN_FIELDS = "ID,plan";
 
     private final AppSecrets mAppSecrets;
 
@@ -214,6 +217,41 @@ public class SiteRestClient extends BaseWPComRestClient {
                     }
                 }
         );
+        add(request);
+    }
+
+    public void fetchPlanDescriptionsForAllSitesForLocale(String locale) {
+        Map<String, String> params = new HashMap<>();
+        params.put("fields", PLAN_FIELDS);
+        String url = WPCOMREST.me.sites.getUrlV1_1();
+        final WPComGsonRequest<SitesResponse> request = WPComGsonRequest.buildGetRequest(url, params,
+                SitePlansWPComRestResponse.class,
+                new Listener<SitesResponse>() {
+                    @Override
+                    public void onResponse(SitesResponse response) {
+                        if (response != null) {
+                            List<SitePlanSimpleDescriptionModel> siteArray = new ArrayList<>();
+
+                            for (SiteWPComRestResponse siteResponse : response.sites) {
+                                siteArray.add(siteResponseToSitePlanSimpleDescriptionModel(siteResponse));
+                            }
+//                            mDispatcher.dispatch(SiteActionBuilder.new(siteArray);
+                        } else {
+//                            AppLog.e(T.API, "Received empty response to /me/sites/");
+//                            SitePlanSimpleDescriptionModel payload = new SitePlanSimpleDescriptionModel();
+//                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(payload));
+                        }
+                    }
+                },
+                new WPComErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
+//                        SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
+//                        payload.error = error;
+//                        mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(payload));
+                    }
+                }
+                                                                                        );
         add(request);
     }
 
@@ -1042,6 +1080,9 @@ public class SiteRestClient extends BaseWPComRestClient {
     }
 
     // Utils
+
+    private SitePlanSimpleDescriptionModel siteResponseToSitePlanSimpleDescriptionModel(SiteWPComRestResponse from) {
+    }
 
     private SiteModel siteResponseToSiteModel(SiteWPComRestResponse from) {
         SiteModel site = new SiteModel();
