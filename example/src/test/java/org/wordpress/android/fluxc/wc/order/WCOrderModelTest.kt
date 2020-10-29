@@ -40,7 +40,7 @@ class WCOrderModelTest {
             lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
         }
         val renderedLineItems = model.getLineItemList()
-        assertEquals(2, renderedLineItems.size)
+        assertEquals(3, renderedLineItems.size)
 
         with(renderedLineItems[0]) {
             assertEquals("A test", name)
@@ -48,6 +48,7 @@ class WCOrderModelTest {
             assertNull(variationId)
             assertEquals("10.00", total)
             assertNull(sku)
+            assertNull(parentName)
         }
 
         with(renderedLineItems[1]) {
@@ -56,6 +57,14 @@ class WCOrderModelTest {
             assertEquals(3, variationId)
             assertEquals("20.00", total)
             assertEquals("blabla", sku)
+            assertNull(parentName)
+        }
+
+        with(renderedLineItems[2]) {
+            assertEquals("V-Neck T-Shirt - Blue, Medium", name)
+            assertEquals("V-Neck T-Shirt", parentName)
+            assertEquals(12, productId)
+            assertEquals(8947, variationId)
         }
     }
 
@@ -65,7 +74,7 @@ class WCOrderModelTest {
             lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
         }
         val renderedLineItems = model.getLineItemList()
-        assertEquals(2, renderedLineItems.size)
+        assertEquals(3, renderedLineItems.size)
 
         with(renderedLineItems[0]) {
             val attributes = getAttributeList()
@@ -87,6 +96,11 @@ class WCOrderModelTest {
 
             assertEquals("size", attributes[0].key)
             assertEquals("Medium", attributes[0].value)
+        }
+
+        with(renderedLineItems[2]) {
+            val attributes = getAttributesAsString()
+            assertEquals("Blue, Medium", attributes)
         }
     }
 
