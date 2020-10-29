@@ -212,7 +212,7 @@ class WooShippingLabelFragment : Fragment() {
                         prependToLog("${it.type}: ${it.message}")
                     }
                     result.model?.let {
-                        prependToLog("Installed: ${it.isPluginInstalled}, Active: ${it.isPluginActive}")
+                        prependToLog("$it")
                     }
                 }
             }

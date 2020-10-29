@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
-import org.wordpress.android.fluxc.model.shippinglabels.WCPluginResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -23,6 +22,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ER
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils
+import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -156,7 +157,7 @@ open class WooCommerceStore @Inject constructor(
 
     suspend fun fetchWooCommerceServicesPluginInfo(
         site: SiteModel
-    ): WooResult<WCPluginResult> {
+    ): WooResult<WCPluginModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchWooCommerceServicesPluginInfo") {
             val response = pluginRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {
@@ -164,14 +165,19 @@ open class WooCommerceStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    val plugin = response.result.plugins.firstOrNull { it.slug == WOO_SERVICES_PLUGIN_NAME }
-                    WooResult(WCPluginResult(
-                            plugin != null,
-                            plugin?.isActive ?: false,
-                            plugin?.slug,
-                            plugin?.displayName,
-                            plugin?.version
-                    ))
+                    val plugins = response.result.plugins.map {
+                        WCPluginModel(
+                                localSiteId = site.id,
+                                active = it.isActive,
+                                displayName = it.displayName,
+                                slug = it.slug,
+                                version = it.version
+                        )
+                    }
+                    WCPluginSqlUtils.insertOrUpdate(site, plugins)
+                    
+                    val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
+                    WooResult(plugin)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
