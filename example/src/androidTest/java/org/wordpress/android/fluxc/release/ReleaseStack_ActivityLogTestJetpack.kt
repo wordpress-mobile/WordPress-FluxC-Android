@@ -73,7 +73,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     fun testFetchActivities() {
         val site = authenticate()
 
-        val payload = ActivityLogStore.FetchActivityLogPayload(site)
+        val payload = ActivityLogStore.FetchActivityLogPayload(site, groups = listOf("user", "rewind", "attachment"))
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
         val activityLogForSite = activityLogStore.getActivityLogForSite(site)
