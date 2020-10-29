@@ -56,18 +56,7 @@
       "grouped_products": [
       ],
       "id": 202,
-      "images": [
-        {
-          "alt": "",
-          "date_created": "2019-04-09T11:35:26",
-          "date_created_gmt": "2019-04-09T20:35:26",
-          "date_modified": "2019-04-09T11:35:26",
-          "date_modified_gmt": "2019-04-09T20:35:26",
-          "id": 203,
-          "name": "1350747580204",
-          "src": "https://i2.wp.com/example.com/wp-content/uploads/2019/04/1350747580204.jpg?fit=385%2C266&ssl=1"
-        }
-      ],
+      "images": [],
       "jetpack_likes_enabled": true,
       "jetpack_sharing_enabled": true,
       "manage_stock": false,
