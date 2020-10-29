@@ -155,6 +155,10 @@ open class WooCommerceStore @Inject constructor(
         return siteSettings?.countryCode
     }
 
+    fun getWooCommerceServicesPluginInfo(site: SiteModel): WCPluginModel? {
+        return WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
+    }
+
     suspend fun fetchWooCommerceServicesPluginInfo(
         site: SiteModel
     ): WooResult<WCPluginModel> {
