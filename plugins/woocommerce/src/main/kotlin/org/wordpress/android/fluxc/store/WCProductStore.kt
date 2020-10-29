@@ -166,7 +166,8 @@ class WCProductStore @Inject constructor(
     class FetchProductTagsPayload(
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_TAGS_PAGE_SIZE,
-        var offset: Int = 0
+        var offset: Int = 0,
+        var searchQuery: String? = null
     ) : Payload<BaseNetworkError>()
 
     class AddProductTagsPayload(
@@ -453,7 +454,8 @@ class WCProductStore @Inject constructor(
         val tags: List<WCProductTagModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
-        var canLoadMore: Boolean = false
+        var canLoadMore: Boolean = false,
+        var searchQuery: String? = null
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -888,7 +890,7 @@ class WCProductStore @Inject constructor(
     }
 
     private fun fetchProductTags(payload: FetchProductTagsPayload) {
-        with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset) }
+        with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset, searchQuery) }
     }
 
     private fun addProductTags(payload: AddProductTagsPayload) {
@@ -1219,7 +1221,7 @@ class WCProductStore @Inject constructor(
         } else {
             // delete product tags for site if this is the first page of results, otherwise
             // tags deleted outside of the app will persist
-            if (payload.offset == 0) {
+            if (payload.offset == 0 && payload.searchQuery.isNullOrEmpty()) {
                 ProductSqlUtils.deleteProductTagsForSite(payload.site)
             }
 
