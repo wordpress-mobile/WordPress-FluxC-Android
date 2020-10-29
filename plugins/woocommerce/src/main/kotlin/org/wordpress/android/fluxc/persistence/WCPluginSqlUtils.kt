@@ -11,11 +11,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestCl
 
 object WCPluginSqlUtils {
     fun insertOrUpdate(data: List<WCPluginModel>) {
-        data.forEach {
+        data.map { it.localSiteId }.distinct().forEach {
             WellSql.delete(WCPluginModel::class.java)
                     .where()
-                    .equals(WCPluginsTable.LOCAL_SITE_ID, it.localSiteId)
-                    .equals(WCPluginsTable.SLUG, it.slug)
+                    .equals(WCPluginsTable.LOCAL_SITE_ID, it)
                     .endWhere()
                     .execute()
         }
