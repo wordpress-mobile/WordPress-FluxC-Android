@@ -27,7 +27,7 @@ constructor(
     suspend fun fetchInstalledPlugins(
         site: SiteModel
     ): WooPayload<FetchPluginsResponse> {
-        val url = WPCOMREST.sites.site(site.siteId).plugins.urlV1_2;
+        val url = WPCOMREST.sites.site(site.siteId).plugins.urlV1_2
 
         val response = wpComGsonRequestBuilder.syncGetRequest(
                 this,

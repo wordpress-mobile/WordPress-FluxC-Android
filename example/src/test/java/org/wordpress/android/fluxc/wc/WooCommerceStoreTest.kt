@@ -14,10 +14,6 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
-import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
@@ -26,7 +22,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient.FetchPluginsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient.FetchPluginsResponse.PluginModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WooCommerceStore
