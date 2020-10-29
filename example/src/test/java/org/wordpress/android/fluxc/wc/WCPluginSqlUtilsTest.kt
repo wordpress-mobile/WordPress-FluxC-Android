@@ -88,4 +88,17 @@ class WCPluginSqlUtilsTest {
         val plugin = WCPluginSqlUtils.selectSingle(site, testPlugins.first().slug)
         assertNull(plugin)
     }
+
+    @Test
+    fun `test select after item deleted`() {
+        WCPluginSqlUtils.insertOrUpdate(testPlugins)
+        val plugins = WCPluginSqlUtils.selectAll(site)
+        assertEquals(testPlugins.size, plugins.count())
+
+        WCPluginSqlUtils.insertOrUpdate(listOf(testPlugins.first()))
+        val listOfOne = WCPluginSqlUtils.selectAll(site)
+        assertEquals(1, listOfOne.count())
+        val missing = WCPluginSqlUtils.selectSingle(site, testPlugins[1].slug)
+        assertNull(missing)
+    }
 }
