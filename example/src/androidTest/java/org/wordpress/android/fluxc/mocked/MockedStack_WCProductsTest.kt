@@ -195,6 +195,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertNull(error)
             assertNotNull(products)
             assertEquals(products.size, 3)
+            assertNull(products[0].getFirstImageUrl())
         }
 
         // delete all products then insert these into the store

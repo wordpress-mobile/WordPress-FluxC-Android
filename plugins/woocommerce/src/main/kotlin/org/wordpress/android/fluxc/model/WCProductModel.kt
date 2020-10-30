@@ -161,8 +161,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getFirstImageUrl(): String? {
         try {
-            Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
-                return (jsonElement.asJsonObject).getString("src")
+            if (images.isNotEmpty()) {
+                Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
+                    return (jsonElement.asJsonObject).getString("src")
+                }
             }
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
