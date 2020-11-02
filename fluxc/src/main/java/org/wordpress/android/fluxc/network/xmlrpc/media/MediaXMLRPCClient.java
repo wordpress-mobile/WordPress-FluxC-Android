@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.xmlrpc.media;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -74,13 +75,15 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
             "attachment_id", "parent", "title", "caption", "description", "thumbnail", "date_created_gmt", "link"};
 
     private OkHttpClient mOkHttpClient;
+    private Context mAppContext;
     // this will hold which media is being uploaded by which call, in order to be able
     // to monitor multiple uploads
     private ConcurrentHashMap<Integer, Call> mCurrentUploadCalls = new ConcurrentHashMap<>();
 
-    public MediaXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, OkHttpClient okHttpClient,
+    public MediaXMLRPCClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue, OkHttpClient okHttpClient,
                              UserAgent userAgent, HTTPAuthManager httpAuthManager) {
         super(dispatcher, requestQueue, userAgent, httpAuthManager);
+        mAppContext = appContext;
         mOkHttpClient = okHttpClient;
     }
 
@@ -145,13 +148,13 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
             return;
         }
 
-        if (!MediaUtils.canReadFile(media.getFilePath())) {
+        if (!MediaUtils.canReadFile(mAppContext, media.getFilePath())) {
             MediaError error = new MediaError(MediaErrorType.FS_READ_PERMISSION_DENIED);
             notifyMediaUploaded(media, error);
             return;
         }
 
-        XmlrpcUploadRequestBody requestBody = new XmlrpcUploadRequestBody(media, this, site);
+        XmlrpcUploadRequestBody requestBody = new XmlrpcUploadRequestBody(mAppContext, media, this, site);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
                 .scheme(xmlrpcUrl.getProtocol())
                 .host(xmlrpcUrl.getHost())

@@ -1,5 +1,10 @@
 package org.wordpress.android.fluxc.utils;
 
+import android.content.Context;
+import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -10,7 +15,7 @@ import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class MediaUtils {
@@ -64,17 +69,33 @@ public class MediaUtils {
     // File operations
     //
 
-    public static String getMediaValidationError(@NonNull MediaModel media) {
-        return BaseUploadRequestBody.hasRequiredData(media);
+    public static String getMediaValidationError(Context appContext, @NonNull MediaModel media) {
+        return BaseUploadRequestBody.hasRequiredData(appContext, media);
     }
 
     /**
      * Queries filesystem to determine if a given file can be read.
      */
-    public static boolean canReadFile(String filePath) {
-        if (filePath == null || TextUtils.isEmpty(filePath)) return false;
-        File file = new File(filePath);
-        return file.canRead();
+    public static boolean canReadFile(Context appContext, String filePath) {
+        if (filePath == null || TextUtils.isEmpty(filePath)) {
+            return false;
+        }
+        try {
+            ParcelFileDescriptor descriptor = appContext.getContentResolver().openFileDescriptor(Uri.parse(filePath),
+                    "r");
+            if (descriptor != null) {
+                if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+                    descriptor.checkError();
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /**

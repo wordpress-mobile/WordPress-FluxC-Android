@@ -1,13 +1,17 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.media;
 
+import android.content.Context;
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
 import org.wordpress.android.util.AppLog;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -31,10 +35,13 @@ public class RestUploadRequestBody extends BaseUploadRequestBody {
     private static final String MEDIA_PARAM_FORMAT = MEDIA_ATTRIBUTES_KEY + "[%s]";
 
     private final MultipartBody mMultipartBody;
+    private Context mAppContext;
 
-    public RestUploadRequestBody(MediaModel media, Map<String, Object> params, ProgressListener listener) {
-        super(media, listener);
+    public RestUploadRequestBody(MediaModel media, Map<String, Object> params, ProgressListener listener,
+                                 Context appContext) {
+        super(appContext, media, listener);
         mMultipartBody = buildMultipartBody(params);
+        mAppContext = appContext;
     }
 
     @Override
@@ -75,15 +82,27 @@ public class RestUploadRequestBody extends BaseUploadRequestBody {
         }
 
         // add media file data
-        File mediaFile = new File(media.getFilePath());
-        RequestBody body = RequestBody.create(MediaType.parse(media.getMimeType()), mediaFile);
+        RequestBody body = null;
+        try {
+            InputStream inputStream = mAppContext.getContentResolver().openInputStream(
+                    Uri.parse(media.getFilePath()));
+            if (inputStream != null) {
+                body = MediaRequestUtils.create(MediaType.parse(media.getMimeType()), inputStream);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
+        }
         String fileName = media.getFileName();
         try {
             fileName = URLEncoder.encode(media.getFileName(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        builder.addFormDataPart(MEDIA_DATA_KEY, fileName, body);
+        if (body != null) {
+            builder.addFormDataPart(MEDIA_DATA_KEY, fileName, body);
+        }
 
         return builder.build();
     }

@@ -62,6 +62,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
+
 /**
  * MediaRestClient provides an interface for manipulating a WP.com site's media. It provides
  * methods to:
@@ -147,14 +149,14 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
             return;
         }
 
-        if (!MediaUtils.canReadFile(media.getFilePath())) {
+        if (!MediaUtils.canReadFile(mAppContext, media.getFilePath())) {
             MediaError error = new MediaError(MediaErrorType.FS_READ_PERMISSION_DENIED);
             notifyMediaUploaded(media, error);
             return;
         }
 
         String url = WPCOMREST.sites.site(site.getSiteId()).media.new_.getUrlV1_1();
-        RestUploadRequestBody body = new RestUploadRequestBody(media, getEditRequestParams(media), this);
+        RestUploadRequestBody body = new RestUploadRequestBody(media, getEditRequestParams(media), this, mAppContext);
 
         // Abort upload if it exceeds the site upload limit
         if (site.hasMaxUploadSize() && body.contentLength() > site.getMaxUploadSize()) {

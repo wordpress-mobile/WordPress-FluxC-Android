@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.xmlrpc.media;
 
+import android.content.Context;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
@@ -43,8 +44,8 @@ public class XmlrpcUploadRequestBody extends BaseUploadRequestBody {
     private long mContentSize = -1;
     private long mMediaBytesWritten = 0;
 
-    public XmlrpcUploadRequestBody(MediaModel media, ProgressListener listener, SiteModel site) {
-        super(media, listener);
+    public XmlrpcUploadRequestBody(Context appContext, MediaModel media, ProgressListener listener, SiteModel site) {
+        super(appContext, media, listener);
 
         // TODO: we should use the XMLRPCSerializer instead of doing this
         mPrependString = String.format(Locale.ENGLISH, PREPEND_XML_FORMAT,

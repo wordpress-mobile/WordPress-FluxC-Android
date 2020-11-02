@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.store;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -80,9 +82,12 @@ public class UploadStore extends Store {
         }
     }
 
+    private Context mAppContext;
+
     @Inject
-    public UploadStore(Dispatcher dispatcher) {
+    public UploadStore(Context appContext, Dispatcher dispatcher) {
         super(dispatcher);
+        mAppContext = appContext;
     }
 
     @Override
@@ -268,7 +273,7 @@ public class UploadStore extends Store {
 
     private void handleUploadMedia(MediaPayload payload) {
         MediaUploadModel mediaUploadModel = new MediaUploadModel(payload.media.getId());
-        String errorMessage = MediaUtils.getMediaValidationError(payload.media);
+        String errorMessage = MediaUtils.getMediaValidationError(mAppContext, payload.media);
         if (errorMessage != null) {
             mediaUploadModel.setUploadState(MediaUploadModel.FAILED);
             mediaUploadModel.setMediaError(new MediaError(MediaErrorType.MALFORMED_MEDIA_ARG, errorMessage));

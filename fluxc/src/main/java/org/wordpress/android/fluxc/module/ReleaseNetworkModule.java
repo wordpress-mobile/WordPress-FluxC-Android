@@ -137,11 +137,11 @@ public class ReleaseNetworkModule {
 
     @Singleton
     @Provides
-    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher,
+    public MediaXMLRPCClient provideMediaXMLRPCClient(Context context, Dispatcher dispatcher,
                                                       @Named("custom-ssl") RequestQueue requestQueue,
                                                       @Named("custom-ssl") OkHttpClient okHttpClient,
                                                       UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, userAgent, httpAuthManager);
+        return new MediaXMLRPCClient(context, dispatcher, requestQueue, okHttpClient, userAgent, httpAuthManager);
     }
 
     @Singleton

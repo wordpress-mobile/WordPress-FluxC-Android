@@ -1,5 +1,10 @@
 package org.wordpress.android.fluxc.network;
 
+import android.content.Context;
+import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -7,7 +12,7 @@ import androidx.annotation.NonNull;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import okhttp3.RequestBody;
@@ -17,9 +22,9 @@ import okio.Sink;
 
 /**
  * Wrapper for {@link okhttp3.MultipartBody} that reports upload progress as body data is written.
- *
+ * <p>
  * A {@link ProgressListener} is required, use {@link okhttp3.MultipartBody} if progress is not needed.
- *
+ * <p>
  * ref http://stackoverflow.com/questions/35528751/okhttp-3-tracking-multipart-upload-progress
  */
 public abstract class BaseUploadRequestBody extends RequestBody {
@@ -40,8 +45,10 @@ public abstract class BaseUploadRequestBody extends RequestBody {
      *
      * @return null if {@code media} is valid, otherwise a string describing why it's invalid
      */
-    public static String hasRequiredData(MediaModel media) {
-        if (media == null) return "media cannot be null";
+    public static String hasRequiredData(Context context, MediaModel media) {
+        if (media == null) {
+            return "media cannot be null";
+        }
 
         // validate MIME type is recognized
         String mimeType = media.getMimeType();
@@ -56,25 +63,28 @@ public abstract class BaseUploadRequestBody extends RequestBody {
         }
 
         // verify file exists and is not a directory
-        File file = new File(filePath);
-        if (!file.exists()) {
+        try {
+            ParcelFileDescriptor descriptor = context.getContentResolver().openFileDescriptor(Uri.parse(filePath), "r");
+            if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+                descriptor.checkError();
+            }
+        } catch (FileNotFoundException e) {
             return "local file path for media does not exist";
-        } else if (file.isDirectory()) {
-            return "supplied file path is a directory, a file is required";
+        } catch (IOException e) {
+            return "local file not accessible";
         }
-
         return null;
     }
 
     private final MediaModel mMedia;
     private final ProgressListener mListener;
 
-    public BaseUploadRequestBody(MediaModel media, ProgressListener listener) {
+    public BaseUploadRequestBody(Context mAppContext, MediaModel media, ProgressListener listener) {
         // validate arguments
         if (listener == null) {
             throw new IllegalArgumentException("progress listener cannot be null");
         }
-        String mediaError = hasRequiredData(media);
+        String mediaError = hasRequiredData(mAppContext, media);
         if (mediaError != null) {
             throw new IllegalArgumentException(mediaError);
         }

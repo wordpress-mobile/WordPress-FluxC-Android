@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -454,14 +455,16 @@ public class MediaStore extends Store {
 
     private final MediaRestClient mMediaRestClient;
     private final MediaXMLRPCClient mMediaXmlrpcClient;
+    private final Context mAppContext;
     // Ensures that the UploadStore is initialized whenever the MediaStore is,
     // to ensure actions are shadowed and repeated by the UploadStore
     @SuppressWarnings("unused")
     @Inject UploadStore mUploadStore;
 
     @Inject
-    public MediaStore(Dispatcher dispatcher, MediaRestClient restClient, MediaXMLRPCClient xmlrpcClient) {
+    public MediaStore(Context appContext, Dispatcher dispatcher, MediaRestClient restClient, MediaXMLRPCClient xmlrpcClient) {
         super(dispatcher);
+        this.mAppContext = appContext;
         mMediaRestClient = restClient;
         mMediaXmlrpcClient = xmlrpcClient;
     }
@@ -748,7 +751,7 @@ public class MediaStore extends Store {
     }
 
     private void performUploadMedia(UploadMediaPayload payload) {
-        String errorMessage = MediaUtils.getMediaValidationError(payload.media);
+        String errorMessage = MediaUtils.getMediaValidationError(mAppContext, payload.media);
         if (errorMessage != null) {
             AppLog.e(AppLog.T.MEDIA, "Media doesn't have required data: " + errorMessage);
             payload.media.setUploadState(MediaUploadState.FAILED);
