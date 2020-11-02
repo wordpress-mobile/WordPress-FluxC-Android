@@ -62,8 +62,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-
 /**
  * MediaRestClient provides an interface for manipulating a WP.com site's media. It provides
  * methods to:
@@ -161,7 +159,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         // Abort upload if it exceeds the site upload limit
         if (site.hasMaxUploadSize() && body.contentLength() > site.getMaxUploadSize()) {
             AppLog.d(T.MEDIA, "Media size of " + body.contentLength() + " exceeds site limit of "
-                    + site.getMaxUploadSize());
+                              + site.getMaxUploadSize());
             MediaError error = new MediaError(MediaErrorType.EXCEEDS_FILESIZE_LIMIT);
             notifyMediaUploaded(media, error);
             return;
@@ -171,7 +169,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         double maxFilesizeForMemoryLimit = MediaUtils.getMaxFilesizeForMemoryLimit(site.getMemoryLimit());
         if (site.hasMemoryLimit() && body.contentLength() > maxFilesizeForMemoryLimit) {
             AppLog.d(T.MEDIA, "Media size of " + body.contentLength() + " exceeds safe memory limit of "
-                    + maxFilesizeForMemoryLimit + " for this site");
+                              + maxFilesizeForMemoryLimit + " for this site");
             MediaError error = new MediaError(MediaErrorType.EXCEEDS_MEMORY_LIMIT);
             notifyMediaUploaded(media, error);
             return;
@@ -413,7 +411,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
     private void removeCallFromCurrentUploadsMap(int id) {
         mCurrentUploadCalls.remove(id);
         AppLog.d(T.MEDIA, "mediaRestClient: removed id: " + id + " from current uploads, remaining: "
-                + mCurrentUploadCalls.size());
+                          + mCurrentUploadCalls.size());
     }
 
     public void uploadStockMedia(@NonNull final SiteModel site,
@@ -446,7 +444,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                 }, new WPComErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
-                        AppLog.e(AppLog.T.MEDIA, "VolleyError uploading stock media: " + error);
+                        AppLog.e(T.MEDIA, "VolleyError uploading stock media: " + error);
                         UploadStockMediaError mediaError = new UploadStockMediaError(
                                 UploadStockMediaErrorType.fromNetworkError(error), error.message);
                         UploadedStockMediaPayload payload = new UploadedStockMediaPayload(site, mediaError);
