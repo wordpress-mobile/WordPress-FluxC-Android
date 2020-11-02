@@ -185,6 +185,40 @@ class WooShippingLabelFragment : Fragment() {
                 replaceFragment(WooVerifyAddressFragment.newInstance(site))
             }
         }
+
+        get_packages.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.getPackageTypes(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("$it")
+                    }
+                }
+            }
+        }
+
+        get_shipping_plugin_info.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    if (result.model != null) {
+                        prependToLog("${result.model}")
+                    } else {
+                        prependToLog("The WooCommerce services plugin is not installed")
+                    }
+                }
+            }
+        }
     }
 
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {

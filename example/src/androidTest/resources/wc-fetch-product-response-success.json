@@ -57,6 +57,7 @@
       }
     ],
     "cross_sell_ids": [
+      1, 2, 3, 4
     ],
     "date_created": "2018-11-02T14:02:28",
     "date_created_gmt": "2018-11-02T18:02:28",
@@ -219,6 +220,7 @@
     "total_sales": 11,
     "type": "simple",
     "upsell_ids": [
+      1, 2, 3
     ],
     "variations": [192, 193],
     "virtual": true,

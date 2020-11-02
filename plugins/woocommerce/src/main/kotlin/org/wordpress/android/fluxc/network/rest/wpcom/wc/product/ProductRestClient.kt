@@ -173,13 +173,15 @@ class ProductRestClient(
     fun fetchProductTags(
         site: SiteModel,
         pageSize: Int = DEFAULT_PRODUCT_TAGS_PAGE_SIZE,
-        offset: Int = 0
+        offset: Int = 0,
+        searchQuery: String? = null
     ) {
         val url = WOOCOMMERCE.products.tags.pathV3
         val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
-                "offset" to offset.toString()
+                "offset" to offset.toString(),
+                "search" to (searchQuery ?: "")
         )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -190,7 +192,7 @@ class ProductRestClient(
 
                     val loadedMore = offset > 0
                     val canLoadMore = tags.size == pageSize
-                    val payload = RemoteProductTagsPayload(site, tags, offset, loadedMore, canLoadMore)
+                    val payload = RemoteProductTagsPayload(site, tags, offset, loadedMore, canLoadMore, searchQuery)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
                 },
                 WPComErrorListener { networkError ->
@@ -1202,6 +1204,12 @@ class ProductRestClient(
         }
         if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
             body["grouped_products"] = updatedProductModel.getGroupedProductIdList()
+        }
+        if (storedWCProductModel.crossSellIds != updatedProductModel.crossSellIds) {
+            body["cross_sell_ids"] = updatedProductModel.getCrossSellProductIdList()
+        }
+        if (storedWCProductModel.upsellIds != updatedProductModel.upsellIds) {
+            body["upsell_ids"] = updatedProductModel.getUpsellProductIdList()
         }
         return body
     }

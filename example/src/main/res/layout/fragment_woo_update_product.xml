@@ -541,5 +541,57 @@
             app:layout_constraintStart_toEndOf="@+id/grouped_product_ids"
             app:layout_constraintTop_toBottomOf="@+id/product_password" />
 
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/cross_sell_product_ids"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:inputType="text"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:layout_constraintEnd_toStartOf="@+id/select_cross_sell_product_ids"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/grouped_product_ids"
+            app:textHint="Cross-sell Product IDs" />
+
+        <Button
+            android:id="@+id/select_cross_sell_product_ids"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Add product IDs"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/cross_sell_product_ids"
+            app:layout_constraintTop_toBottomOf="@+id/grouped_product_ids" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/upsell_product_ids"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:inputType="text"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:layout_constraintEnd_toStartOf="@+id/select_upsell_product_ids"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cross_sell_product_ids"
+            app:textHint="Upsell Product IDs" />
+
+        <Button
+            android:id="@+id/select_upsell_product_ids"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Add product IDs"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/upsell_product_ids"
+            app:layout_constraintTop_toBottomOf="@+id/cross_sell_product_ids" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
