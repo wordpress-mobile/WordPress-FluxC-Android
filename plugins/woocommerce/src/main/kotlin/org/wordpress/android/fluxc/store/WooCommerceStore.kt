@@ -15,10 +15,18 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils
+import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -32,12 +40,16 @@ import kotlin.math.absoluteValue
 open class WooCommerceStore @Inject constructor(
     private val appContext: Context,
     dispatcher: Dispatcher,
+    private val coroutineEngine: CoroutineEngine,
+    private val pluginRestClient: WooPluginRestClient,
     private val wcCoreRestClient: WooCommerceRestClient
 ) : Store(dispatcher) {
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
         const val WOO_API_NAMESPACE_V2 = "wc/v2"
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
+
+        private const val WOO_SERVICES_PLUGIN_NAME = "woocommerce-services"
     }
 
     class FetchApiVersionResponsePayload(
@@ -141,6 +153,30 @@ open class WooCommerceStore @Inject constructor(
     fun getStoreCountryCode(site: SiteModel): String? {
         val siteSettings = WCSettingsSqlUtils.getSettingsForSite(site)
         return siteSettings?.countryCode
+    }
+
+    fun getWooCommerceServicesPluginInfo(site: SiteModel): WCPluginModel? {
+        return WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
+    }
+
+    suspend fun fetchWooCommerceServicesPluginInfo(
+        site: SiteModel
+    ): WooResult<WCPluginModel> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchWooCommerceServicesPluginInfo") {
+            val response = pluginRestClient.fetchInstalledPlugins(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val plugins = response.result.plugins.map { WCPluginModel(site, it) }
+                    WCPluginSqlUtils.insertOrUpdate(plugins)
+                    val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
+                    WooResult(plugin)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
     }
 
     /**

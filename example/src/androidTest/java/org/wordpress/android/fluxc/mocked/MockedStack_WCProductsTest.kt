@@ -188,6 +188,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertNull(error)
             assertNotNull(products)
             assertEquals(products.size, 3)
+            assertNull(products[0].getFirstImageUrl())
         }
 
         // delete all products then insert these into the store
@@ -627,6 +628,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             virtual = true
             images = generateTestImageListJsonString()
             groupedProductIds = "[10, 11]"
+            crossSellIds = "[1, 2, 3]"
+            upsellIds = "[1, 2, 3, 4]"
             type = "simple"
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
@@ -645,6 +648,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.virtual, product.virtual)
             assertEquals(updatedProduct.getImageList().size, 2)
             assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
+            assertEquals(updatedProduct.getCrossSellProductIdList().size, 3)
+            assertEquals(updatedProduct.getUpsellProductIdList().size, 4)
             assertEquals(updatedProduct.type, product.type)
         }
     }

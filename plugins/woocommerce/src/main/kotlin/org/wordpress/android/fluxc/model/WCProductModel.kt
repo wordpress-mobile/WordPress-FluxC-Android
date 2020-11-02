@@ -161,8 +161,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getFirstImageUrl(): String? {
         try {
-            Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
-                return (jsonElement.asJsonObject).getString("src")
+            if (images.isNotEmpty()) {
+                Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
+                    return (jsonElement.asJsonObject).getString("src")
+                }
             }
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
@@ -239,19 +241,28 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
     }
 
-    fun getGroupedProductIdList(): List<Long> {
-        val groupedIds = ArrayList<Long>()
+    /**
+     * Returns a list of product IDs from the passed string, assumed to be a JSON array of IDs
+     */
+    private fun parseProductIds(jsonString: String): List<Long> {
+        val productIds = ArrayList<Long>()
         try {
-            if (groupedProductIds.isNotEmpty()) {
-                Gson().fromJson(groupedProductIds, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    jsonElement.asLong.let { groupedIds.add(it) }
+            if (jsonString.isNotEmpty()) {
+                Gson().fromJson(jsonString, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    jsonElement.asLong.let { productIds.add(it) }
                 }
             }
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
         }
-        return groupedIds
+        return productIds
     }
+
+    fun getGroupedProductIdList() = parseProductIds(groupedProductIds)
+
+    fun getUpsellProductIdList() = parseProductIds(upsellIds)
+
+    fun getCrossSellProductIdList() = parseProductIds(crossSellIds)
 
     fun getCategoryList() = getTriplets(categories)
 

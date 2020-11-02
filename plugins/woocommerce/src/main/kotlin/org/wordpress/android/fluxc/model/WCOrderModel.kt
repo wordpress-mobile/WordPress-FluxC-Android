@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
@@ -75,6 +76,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     class LineItem {
         val id: Long? = null
         val name: String? = null
+        @SerializedName("parent_name")
+        val parentName: String? = null
         @SerializedName("product_id")
         val productId: Long? = null
         @SerializedName("variation_id")
@@ -86,6 +89,33 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         val totalTax: String? = null
         val sku: String? = null
         val price: String? = null // The per-item price
+
+        @SerializedName("meta_data")
+        private val attributes: JsonArray? = null
+
+        class Attribute {
+            @SerializedName("display_key")
+            val key: String? = null
+            @SerializedName("display_value")
+            val value: String? = null
+        }
+
+        fun getAttributeList(): List<Attribute> {
+            val responseType = object : TypeToken<List<Attribute>>() {}.type
+            return gson.fromJson(attributes, responseType) as? List<Attribute> ?: emptyList()
+        }
+
+        /**
+         * @return a comma-separated list of attribute values for display
+         */
+        fun getAttributesAsString(): String {
+            return getAttributeList()
+                    .takeWhile {
+                        // Don't include null, empty, or the "_reduced_stock" key
+                        // skipping "_reduced_stock" is a temporary workaround until "type" is added to the response.
+                        it.value != null && it.value.isNotEmpty() && it.key != "_reduced_stock"
+                    }.joinToString { it.value ?: "" }
+        }
     }
 
     override fun getId() = id
@@ -141,5 +171,5 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         return gson.fromJson(shippingLines, responseType) as? List<ShippingLine> ?: emptyList()
     }
 
-    fun isMultiShippingLinesAvailable() = getShippingLineList()?.size > 1
+    fun isMultiShippingLinesAvailable() = getShippingLineList().size > 1
 }

@@ -2,7 +2,10 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -134,6 +137,28 @@ constructor(
         }
     }
 
+    suspend fun getPackageTypes(
+        site: SiteModel
+    ): WooPayload<GetPackageTypesResponse> {
+        val url = WOOCOMMERCE.connect.packages.pathV1
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                GetPackageTypesResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
@@ -150,5 +175,81 @@ constructor(
             @SerializedName("general") val message: String?,
             @SerializedName("address") val address: String?
         )
+    }
+
+    data class GetPackageTypesResponse(
+        @SerializedName("success") val isSuccess: Boolean,
+        val storeOptions: StoreOptions,
+        val formSchema: FormSchema,
+        val formData: FormData
+    ) {
+        companion object {
+            private val gson by lazy { Gson() }
+        }
+
+        data class StoreOptions(
+            @SerializedName("currency_symbol") val currency: String,
+            @SerializedName("dimension_unit") val dimensionUnit: String,
+            @SerializedName("weight_unit") val weightUnit: String,
+            @SerializedName("origin_country") val originCountry: String
+        )
+
+        data class FormData(
+            @SerializedName("custom") val customData: List<CustomData>,
+            @SerializedName("predefined") val predefinedJson: JsonElement
+        ) {
+            data class CustomData(
+                val name: String,
+                @SerializedName("inner_dimensions") val innerDimensions: String?,
+                @SerializedName("outer_dimensions") val outerDimensions: String?,
+                @SerializedName("box_weight") val boxWeight: Float?,
+                @SerializedName("max_weight") val maxWeight: Float?,
+                @SerializedName("is_user_defined") val isUserDefined: Boolean?,
+                @SerializedName("is_letter") val isLetter: Boolean
+            )
+
+            val predefinedData: Map<String, List<String?>>
+                get() {
+                    val responseType = object : TypeToken<Map<String, List<String?>>>() {}.type
+                    return gson.fromJson(predefinedJson, responseType) as? Map<String, List<String?>> ?: emptyMap()
+                }
+        }
+
+        data class FormSchema(
+            @SerializedName("custom") val customSchema: CustomSchema?,
+            @SerializedName("predefined") val predefinedJson: JsonElement?
+        ) {
+            data class CustomSchema(
+                val title: String,
+                val description: String
+            )
+
+            data class PackageOption(
+                val title: String,
+                val definitions: List<PackageDefinition>
+            ) {
+                data class PackageDefinition(
+                    val id: String,
+                    val name: String,
+                    val dimensions: Any?,
+                    @SerializedName("outer_dimensions") val outerDimensions: String,
+                    @SerializedName("inner_dimensions") val innerDimensions: String,
+                    @SerializedName("box_weight") val boxWeight: Float?,
+                    @SerializedName("max_weight") val maxWeight: Float?,
+                    @SerializedName("is_letter") val isLetter: Boolean,
+                    @SerializedName("is_flat_rate") val isFlatRate: Boolean?,
+                    @SerializedName("can_ship_international") val canShipInternational: Boolean?,
+                    @SerializedName("group_id") val groupId: String?,
+                    @SerializedName("service_group_ids") val serviceGroupIds: List<String>?
+                )
+            }
+
+            val predefinedSchema: Map<String, Map<String, PackageOption>>
+                get() {
+                    val responseType = object : TypeToken<Map<String, Map<String, PackageOption>>>() {}.type
+                    return gson.fromJson(predefinedJson, responseType) as?
+                            Map<String, Map<String, PackageOption>> ?: emptyMap()
+                }
+        }
     }
 }
