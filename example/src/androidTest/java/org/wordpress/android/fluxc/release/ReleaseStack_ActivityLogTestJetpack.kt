@@ -73,13 +73,29 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     fun testFetchActivities() {
         val site = authenticate()
 
-        val payload = ActivityLogStore.FetchActivityLogPayload(site, groups = listOf("user", "rewind", "attachment"))
+        val payload = ActivityLogStore.FetchActivityLogPayload(site)
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
         val activityLogForSite = activityLogStore.getActivityLogForSite(site)
 
         assertNotNull(fetchActivities)
         assertEquals(fetchActivities.rowsAffected, activityLogForSite.size)
+    }
+
+    @Test
+    fun testFetchActivitiesActivityTypeFilter() {
+        val site = authenticate()
+
+        val rewindPayload = ActivityLogStore.FetchActivityLogPayload(site, groups = listOf("rewind"))
+        val userPayload = ActivityLogStore.FetchActivityLogPayload(site, groups = listOf("user"))
+
+        runBlocking { activityLogStore.fetchActivities(rewindPayload) }
+        val rewindActivities = activityLogStore.getActivityLogForSite(site)
+
+        runBlocking { activityLogStore.fetchActivities(userPayload) }
+        val userActivities = activityLogStore.getActivityLogForSite(site)
+
+        assertTrue(userActivities != rewindActivities)
     }
 
     @Test
