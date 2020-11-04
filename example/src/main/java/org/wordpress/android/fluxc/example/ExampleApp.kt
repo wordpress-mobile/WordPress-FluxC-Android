@@ -5,14 +5,14 @@ import android.app.Application
 import com.yarolegovich.wellsql.WellSql
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
+import dagger.android.HasAndroidInjector
 import org.wordpress.android.fluxc.example.di.AppComponent
 import org.wordpress.android.fluxc.example.di.DaggerAppComponent
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import javax.inject.Inject
 
-open class ExampleApp : Application(), HasActivityInjector {
-    @Inject lateinit var activityInjector: DispatchingAndroidInjector<Activity>
+open class ExampleApp : Application(), HasAndroidInjector {
+    @Inject lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
     protected open val component: AppComponent by lazy {
         DaggerAppComponent.builder()
@@ -27,5 +27,5 @@ open class ExampleApp : Application(), HasActivityInjector {
         WellSql.init(wellSqlConfig)
     }
 
-    override fun activityInjector(): AndroidInjector<Activity> = activityInjector
+    override fun androidInjector(): AndroidInjector<Any> = androidInjector
 }

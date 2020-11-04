@@ -7,12 +7,13 @@ import androidx.fragment.app.FragmentActivity
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
 import kotlinx.android.synthetic.main.activity_example.*
 import javax.inject.Inject
 
-class MainExampleActivity : FragmentActivity(), HasSupportFragmentInjector {
-    @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<Fragment>
+class MainExampleActivity : FragmentActivity(), HasAndroidInjector {
+    @Inject lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -33,5 +34,5 @@ class MainExampleActivity : FragmentActivity(), HasSupportFragmentInjector {
         log.text = output
     }
 
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> = fragmentInjector
+    override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
 }
