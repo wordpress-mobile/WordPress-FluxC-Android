@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.example
 
-import android.app.Activity
 import android.app.Application
 import com.yarolegovich.wellsql.WellSql
 import dagger.android.AndroidInjector

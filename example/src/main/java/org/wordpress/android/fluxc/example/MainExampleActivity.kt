@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.example
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -13,7 +12,6 @@ import javax.inject.Inject
 
 class MainExampleActivity : FragmentActivity(), HasAndroidInjector {
     @Inject lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
