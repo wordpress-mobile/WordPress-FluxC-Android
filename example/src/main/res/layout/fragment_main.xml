@@ -137,6 +137,13 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
                 android:text="Editor Theme" />
+
+            <Button
+                android:id="@+id/experiments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="Experiments" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
