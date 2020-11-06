@@ -258,7 +258,7 @@ public class SiteStore extends Store {
             this.includeVendorDot = includeVendorDot;
         }
 
-        public SuggestDomainsPayload(@NonNull String query, long segmentId, int quantity, boolean includeVendorDot) {
+        public SuggestDomainsPayload(@NonNull String query, @Nullable Long segmentId, int quantity, boolean includeVendorDot) {
             this.query = query;
             this.segmentId = segmentId;
             this.quantity = quantity;
