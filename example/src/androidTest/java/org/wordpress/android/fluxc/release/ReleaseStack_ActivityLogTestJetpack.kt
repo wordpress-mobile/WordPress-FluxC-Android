@@ -22,6 +22,8 @@ import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind.Statu
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State.ACTIVE
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State.UNAVAILABLE
 import org.wordpress.android.fluxc.persistence.ActivityLogSqlUtils
+import org.wordpress.android.fluxc.release.ReleaseStack_ActivityLogTestJetpack.Sites.CompleteJetpackSite
+import org.wordpress.android.fluxc.release.ReleaseStack_ActivityLogTestJetpack.Sites.FreeJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -71,7 +73,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun testFetchActivities() {
-        val site = authenticate()
+        val site = authenticate(FreeJetpackSite)
 
         val payload = ActivityLogStore.FetchActivityLogPayload(site)
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
@@ -84,7 +86,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun testFetchActivitiesActivityTypeFilter() {
-        val site = authenticate()
+        val site = authenticate(CompleteJetpackSite)
 
         val rewindPayload = ActivityLogStore.FetchActivityLogPayload(site, groups = listOf("rewind"))
         val userPayload = ActivityLogStore.FetchActivityLogPayload(site, groups = listOf("user"))
@@ -100,7 +102,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun testFetchRewindState() {
-        val site = authenticate()
+        val site = authenticate(FreeJetpackSite)
 
         this.mCountDownLatch = CountDownLatch(1)
         val payload = ActivityLogStore.FetchRewindStatePayload(site)
@@ -119,7 +121,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun storeAndRetrieveActivityLogInOrderByDateFromDb() {
-        val site = authenticate()
+        val site = authenticate(FreeJetpackSite)
 
         this.mCountDownLatch = CountDownLatch(1)
 
@@ -140,7 +142,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun updatesActivityWithTheSameActivityId() {
-        val site = authenticate()
+        val site = authenticate(FreeJetpackSite)
 
         this.mCountDownLatch = CountDownLatch(1)
 
@@ -166,7 +168,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun rewindOperationFailsOnNonexistentId() {
-        val site = authenticate()
+        val site = authenticate(FreeJetpackSite)
 
         val payload = ActivityLogStore.RewindPayload(site, "123")
 
@@ -179,7 +181,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun insertAndRetrieveRewindStatus() {
-        val site = authenticate()
+        val site = authenticate(FreeJetpackSite)
         this.mCountDownLatch = CountDownLatch(1)
 
         val rewindId = "rewindId"
@@ -203,11 +205,10 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         }
     }
 
-    private fun authenticate(): SiteModel {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
+    private fun authenticate(site: Sites): SiteModel {
+        authenticateWPComAndFetchSites(site.wpUserName, site.wpPassword)
 
-        return siteStore.sites[0]
+        return siteStore.sites.find { it.unmappedUrl == site.siteUrl }!!
     }
 
     private fun activityLogModel(index: Long): ActivityLogModel {
@@ -287,5 +288,19 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(siteStore.sitesCount > 0)
+    }
+
+    private sealed class Sites(val wpUserName: String, val wpPassword: String, val siteUrl: String) {
+        object FreeJetpackSite : Sites(
+                wpUserName = BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY,
+                siteUrl = BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY
+        )
+
+        object CompleteJetpackSite : Sites(
+                wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
+                wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
+                siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
+        )
     }
 }
