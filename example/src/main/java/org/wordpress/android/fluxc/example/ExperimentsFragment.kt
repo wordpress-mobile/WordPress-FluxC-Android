@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.ExperimentActionBuilder
+import org.wordpress.android.fluxc.model.experiments.Assignments
 import org.wordpress.android.fluxc.model.experiments.Variation
 import org.wordpress.android.fluxc.model.experiments.Variation.Control
 import org.wordpress.android.fluxc.model.experiments.Variation.Other
@@ -65,6 +66,19 @@ class ExperimentsFragment : Fragment() {
             prependToLog("Dispatching ${action.javaClass.simpleName} with payload: ${action.payload}")
             dispatcher.dispatch(action)
         }
+        get_cached_assignments.setOnClickListener {
+            val assignments = experimentStore.getCachedAssignments()
+            if (assignments == null) {
+                prependToLog("No cached assignments")
+            } else {
+                prependToLog("Got ${assignments.variations.size} cached assignments")
+                handleAssignments(assignments)
+            }
+        }
+        clear_cached_assignments.setOnClickListener {
+            experimentStore.clearCachedAssignments()
+            prependToLog("Cleared cached assignments")
+        }
     }
 
     override fun onStart() {
@@ -84,10 +98,14 @@ class ExperimentsFragment : Fragment() {
         if (event.isError) {
             prependToLog("Error: ${event.error}")
         } else {
-            prependToLog("Success: fetched ${event.assignments.variations.size} variations")
-            event.assignments.variations.forEach { entry ->
-                prependToLog("${entry.key}: ${getVariationString(entry.value)}")
-            }
+            prependToLog("Success: fetched ${event.assignments.variations.size} assignments")
+            handleAssignments(event.assignments)
+        }
+    }
+
+    private fun handleAssignments(assignments: Assignments) {
+        assignments.variations.forEach { entry ->
+            prependToLog("${entry.key}: ${getVariationString(entry.value)}")
         }
     }
 
