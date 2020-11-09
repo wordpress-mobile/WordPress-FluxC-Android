@@ -12,5 +12,6 @@ data class StarterDesignModel(
     @SerializedName("site_url") val siteUrl: String?,
     @SerializedName("demo_url") val demoUrl: String?,
     val theme: String?,
+    @SerializedName("segment_id") val segmentId: Int?,
     val screenshot: String?
 ) : Parcelable
