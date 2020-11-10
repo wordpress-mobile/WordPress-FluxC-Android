@@ -10,7 +10,8 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 import okio.Buffer
 import okio.BufferedSource
-import okio.Okio
+import okio.buffer
+import okio.source
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.ONE_TIME
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.STICKY
@@ -19,7 +20,6 @@ import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStreamReader
-import java.io.UnsupportedEncodingException
 import javax.inject.Singleton
 
 @Singleton
@@ -53,7 +53,7 @@ class ResponseMockingInterceptor : Interceptor {
     val lastRequestBody: HashMap<String, Any>
         get() {
             val buffer = Buffer().apply {
-                lastRequest?.body()?.writeTo(this)
+                lastRequest?.body?.writeTo(this)
             }
 
             return gson.fromJson<HashMap<String, Any>>(buffer.readUtf8(), HashMap::class.java) ?: hashMapOf()
@@ -100,7 +100,7 @@ class ResponseMockingInterceptor : Interceptor {
         TestUtils.waitFor(NETWORK_DELAY_MS)
 
         lastRequest = request
-        lastRequestUrl = request.url().toString()
+        lastRequestUrl = request.url.toString()
 
         nextResponseJson?.let {
             // Will be a successful response if nextResponseCode is 200, otherwise an error response
@@ -135,13 +135,9 @@ class ResponseMockingInterceptor : Interceptor {
                         return -1
                     }
 
-                    override fun source(): BufferedSource? {
-                        return try {
-                            val stream = ByteArrayInputStream(responseJson.toByteArray(charset("UTF-8")))
-                            Okio.buffer(Okio.source(stream))
-                        } catch (e: UnsupportedEncodingException) {
-                            null
-                        }
+                    override fun source(): BufferedSource {
+                        val stream = ByteArrayInputStream(responseJson.toByteArray(charset("UTF-8")))
+                        return stream.source().buffer()
                     }
                 })
                 .code(responseCode)
