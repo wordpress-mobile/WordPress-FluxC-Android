@@ -1211,6 +1211,23 @@ class ProductRestClient(
         if (storedWCProductModel.upsellIds != updatedProductModel.upsellIds) {
             body["upsell_ids"] = updatedProductModel.getUpsellProductIdList()
         }
+        if (storedWCProductModel.downloadable != updatedProductModel.downloadable) {
+            body["downloadable"] = updatedProductModel.downloadable
+        }
+        if (storedWCProductModel.downloadLimit != updatedProductModel.downloadLimit) {
+            body["download_limit"] = updatedProductModel.downloadLimit
+        }
+        if (storedWCProductModel.downloadExpiry != updatedProductModel.downloadExpiry) {
+            body["download_expiry"] = updatedProductModel.downloadExpiry
+        }
+        if (!storedWCProductModel.hasSameDownloadableFiles(updatedProductModel)) {
+            val updatedFiles = updatedProductModel.getDownloadableFiles()
+            body["downloads"] = JsonArray().apply {
+                updatedFiles.forEach { file ->
+                    add(file.toJson())
+                }
+            }
+        }
         return body
     }
 
