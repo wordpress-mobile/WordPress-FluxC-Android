@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.example.ui.products
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.content.Context
@@ -28,6 +30,9 @@ import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_L
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment.Companion.ARG_SELECTED_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment.Companion.PRODUCT_CATEGORIES_REQUEST_CODE
+import org.wordpress.android.fluxc.example.ui.products.WooProductDownloadsFragment.Companion.ARG_PRODUCT_DOWNLOADS
+import org.wordpress.android.fluxc.example.ui.products.WooProductDownloadsFragment.Companion.PRODUCT_DOWNLOADS_REQUEST_CODE
+import org.wordpress.android.fluxc.example.ui.products.WooProductDownloadsFragment.ProductFile
 import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment.Companion.ARG_SELECTED_PRODUCT_TAGS
 import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment.Companion.PRODUCT_TAGS_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
@@ -66,12 +71,14 @@ class WooUpdateProductFragment : Fragment() {
     private var selectedCategories: List<ProductCategory>? = null
     private var selectedTags: List<ProductTag>? = null
     private var isAddNewProduct: Boolean = false
+    private var selectedProductDownloads: List<ProductFile>? = null
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
         const val ARG_SELECTED_CATEGORIES = "ARG_SELECTED_CATEGORIES"
         const val ARG_SELECTED_TAGS = "ARG_SELECTED_TAGS"
+        const val ARG_SELECTED_DOWNLOADS = "ARG_SELECTED_DOWNLOADS"
         const val LIST_RESULT_CODE_TAX_STATUS = 101
         const val LIST_RESULT_CODE_STOCK_STATUS = 102
         const val LIST_RESULT_CODE_BACK_ORDERS = 103
@@ -125,6 +132,7 @@ class WooUpdateProductFragment : Fragment() {
         selectedRemoteProductId?.let { outState.putLong(ARG_SELECTED_PRODUCT_ID, it) }
         selectedCategories?.let { outState.putParcelableArrayList(ARG_SELECTED_CATEGORIES, it as? ArrayList) }
         selectedTags?.let { outState.putParcelableArrayList(ARG_SELECTED_TAGS, it as? ArrayList) }
+        selectedProductDownloads.let { outState.putParcelableArrayList(ARG_SELECTED_DOWNLOADS, it as ArrayList) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -222,10 +230,8 @@ class WooUpdateProductFragment : Fragment() {
         product_height.onTextChanged { selectedProductModel?.height = it }
         product_length.onTextChanged { selectedProductModel?.length = it }
         product_weight.onTextChanged { selectedProductModel?.weight = it }
-        product_stock_quantity.onTextChanged {
-            if (it.isNotEmpty()) {
-                selectedProductModel?.stockQuantity = it.toInt()
-            }
+        product_stock_quantity.onTextChanged { text ->
+            text.toIntOrNull()?.let { selectedProductModel?.stockQuantity = it }
         }
 
         product_sold_individually.setOnCheckedChangeListener { _, isChecked ->
@@ -297,6 +303,11 @@ class WooUpdateProductFragment : Fragment() {
                 selectedTags?.let {
                     selectedProductModel?.tags =
                             it.map { it.toProductTriplet().toJson() }.toString()
+                }
+
+                selectedProductDownloads?.let {
+                    selectedProductModel?.downloads =
+                            it.map { it.toWCProductFileModel().toJson() }.toString()
                 }
 
                 if (isAddNewProduct) {
@@ -394,11 +405,41 @@ class WooUpdateProductFragment : Fragment() {
 
         product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
 
+        product_downloadable_checkbox.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.downloadable = isChecked
+            product_update_downloads_button.isEnabled = isChecked
+            product_download_expiry.isEnabled = isChecked
+            product_download_limit.isEnabled = isChecked
+        }
+
+        product_downloads.isEnabled = false
+        product_update_downloads_button.setOnClickListener {
+            replaceFragment(
+                    WooProductDownloadsFragment.newInstance(
+                            fragment = this,
+                            productDownloads = selectedProductDownloads
+                                    ?: selectedProductModel?.getDownloadableFiles()?.map {
+                                        ProductFile(it.id, it.name, it.url)
+                                    }
+                                    ?: emptyList()
+                    )
+            )
+        }
+
+        product_download_expiry.onTextChanged { text ->
+            text.toIntOrNull()?.let { selectedProductModel?.downloadExpiry = it }
+        }
+
+        product_download_limit.onTextChanged { text ->
+            text.toIntOrNull()?.let { selectedProductModel?.downloadLimit = it }
+        }
+
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
             selectedCategories = bundle.getParcelableArrayList(ARG_SELECTED_CATEGORIES)
             selectedTags = bundle.getParcelableArrayList(ARG_SELECTED_TAGS)
+            selectedProductDownloads = bundle.getParcelableArrayList(ARG_SELECTED_DOWNLOADS) ?: emptyList()
         }
         selectedRemoteProductId?.let { updateSelectedProductId(it) }
     }
@@ -449,6 +490,8 @@ class WooUpdateProductFragment : Fragment() {
             this.selectedCategories = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_CATEGORIES)
         } else if (requestCode == PRODUCT_TAGS_REQUEST_CODE) {
             this.selectedTags = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_TAGS)
+        } else if (requestCode == PRODUCT_DOWNLOADS_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            this.selectedProductDownloads = data!!.getParcelableArrayListExtra(ARG_PRODUCT_DOWNLOADS)
         }
     }
 
@@ -464,6 +507,7 @@ class WooUpdateProductFragment : Fragment() {
         upsell_product_ids.setText(storedUpsellProductIds)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
@@ -522,6 +566,15 @@ class WooUpdateProductFragment : Fragment() {
                 selectedTags?.joinToString(", ") { it.name }
                         ?: it.getCommaSeparatedTagNames()
         )
+        product_downloadable_checkbox.isChecked = it.downloadable
+        product_downloads.setText(
+                "Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}"
+        )
+        product_update_downloads_button.isEnabled = it.downloadable
+        product_download_limit.setText(it.downloadLimit.toString())
+        product_download_limit.isEnabled = it.downloadable
+        product_download_expiry.setText(it.downloadExpiry.toString())
+        product_download_expiry.isEnabled = it.downloadable
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
@@ -564,6 +617,13 @@ class WooUpdateProductFragment : Fragment() {
             return
         }
         prependToLog("Product updated ${event.rowsAffected}")
+
+        selectedRemoteProductId?.let {
+            selectedCategories = null
+            selectedTags = null
+            selectedProductDownloads = null
+            updateSelectedProductId(it)
+        }
     }
 
     @Suppress("unused")
