@@ -88,7 +88,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         AUTOMATED_TRANSFER_NOT_FOUND,
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
         FETCHED_DOMAIN_SUPPORTED_STATES,
-        FETCHED_DOMAIN_SUPPORTED_COUNTRIES
+        FETCHED_DOMAIN_SUPPORTED_COUNTRIES,
+        FETCHED_P2_SITE
     }
 
     private TestEvents mNextEvent;
@@ -416,6 +417,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.ERROR_INVALID_SITE_TYPE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testP2SiteFetch() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_P2,
+                BuildConfig.TEST_WPCOM_PASSWORD_P2);
+
+        // Get the first site
+        SiteModel p2Site = mSiteStore.getSites().get(0);
+
+        assertTrue(p2Site.isWpForTeamsSite());
     }
 
     @SuppressWarnings("unused")
