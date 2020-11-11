@@ -21,17 +21,17 @@ import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.FetchPrivateAtomicCookiePayload;
-import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
-import org.wordpress.android.fluxc.store.SiteStore.OnPrivateAtomicCookieFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainAvailabilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedCountriesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnPrivateAtomicCookieFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteEditorsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -89,7 +89,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
         FETCHED_DOMAIN_SUPPORTED_STATES,
         FETCHED_DOMAIN_SUPPORTED_COUNTRIES,
-        FETCHED_P2_SITE
     }
 
     private TestEvents mNextEvent;
