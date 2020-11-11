@@ -88,7 +88,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         AUTOMATED_TRANSFER_NOT_FOUND,
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
         FETCHED_DOMAIN_SUPPORTED_STATES,
-        FETCHED_DOMAIN_SUPPORTED_COUNTRIES,
+        FETCHED_DOMAIN_SUPPORTED_COUNTRIES
     }
 
     private TestEvents mNextEvent;
