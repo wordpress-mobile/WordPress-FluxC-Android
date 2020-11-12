@@ -11,6 +11,7 @@ import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.AddressType
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.order.OrderProductAttributeListDeserializer
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import java.util.Locale
 
@@ -94,16 +95,13 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         @SerializedName("meta_data")
         private val attributes: JsonArray? = null
 
-        class Attribute {
-            @SerializedName("display_key")
-            val key: String? = null
-            @SerializedName("display_value")
-            val value: String? = null
-        }
+        class Attribute(val key: String?, val value: String?)
 
         fun getAttributeList(): List<Attribute> {
             val responseType = object : TypeToken<List<Attribute>>() {}.type
-            return gson.fromJson(attributes, responseType) as? List<Attribute> ?: emptyList()
+            val newGson = gson.newBuilder()
+                    .registerTypeAdapter(responseType, OrderProductAttributeListDeserializer()).create()
+            return newGson.fromJson(attributes, responseType)
         }
 
         /**
