@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.AddressType
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import java.util.Locale
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
@@ -114,7 +115,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
                         // Don't include null, empty, or the "_reduced_stock" key
                         // skipping "_reduced_stock" is a temporary workaround until "type" is added to the response.
                         it.value != null && it.value.isNotEmpty() && it.key != null && it.key.first().toString() != "_"
-                    }.joinToString { it.value ?: "" }
+                    }.joinToString { it.value?.capitalize(Locale.getDefault()) ?: "" }
         }
     }
 
