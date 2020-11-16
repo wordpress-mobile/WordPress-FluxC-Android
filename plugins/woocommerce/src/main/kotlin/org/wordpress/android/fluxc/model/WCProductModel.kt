@@ -52,8 +52,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var virtual = false
     @Column var downloadable = false
-    @Column var downloadLimit = 0
-    @Column var downloadExpiry = 0
+    @Column var downloadLimit = -1
+    @Column var downloadExpiry = -1
     @Column var soldIndividually = false
 
     @Column var externalUrl = ""
@@ -218,12 +218,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return attrList
     }
 
-    fun getDownloadableFiles(): List<String> {
-        val fileList = ArrayList<String>()
+    fun getDownloadableFiles(): List<WCProductFileModel> {
+        if (downloads.isEmpty()) return emptyList()
+        val fileList = ArrayList<WCProductFileModel>()
         try {
             Gson().fromJson(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                jsonElement.asJsonObject.getString("file")?.let {
-                    fileList.add(it)
+                with(jsonElement.asJsonObject) {
+                    fileList.add(
+                            WCProductFileModel(
+                                    id = this.getString("id"),
+                                    name = this.getString("name") ?: "",
+                                    url = this.getString("file") ?: ""
+                            )
+                    )
                 }
             }
         } catch (e: JsonParseException) {
@@ -359,5 +366,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             }
         }
         return true
+    }
+
+    /**
+     * Compares this product's downloadable files with the passed product's files, returns true only if both
+     * lists contain the same set of files in the same order
+     */
+    fun hasSameDownloadableFiles(updatedProduct: WCProductModel): Boolean {
+        val updatedFiles = updatedProduct.getDownloadableFiles()
+        val storedFiles = getDownloadableFiles()
+        return storedFiles == updatedFiles
     }
 }

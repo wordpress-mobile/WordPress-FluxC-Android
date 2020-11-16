@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
+import org.wordpress.android.fluxc.model.WCProductFileModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
@@ -97,6 +98,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getDownloadableFiles().size, 1)
+            assertEquals(product.downloadExpiry, 10)
+            assertEquals(product.downloadLimit, 2)
         }
 
         // save the product to the db
@@ -115,6 +119,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getDownloadableFiles().size, 1)
+            assertEquals(product.downloadExpiry, 10)
+            assertEquals(product.downloadLimit, 2)
         }
     }
 
@@ -444,7 +451,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(25, ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews))
         assertEquals(
                 5,
-                ProductSqlUtils.getProductReviewsForProductAndSiteId(siteModel.id, 22).size)
+                ProductSqlUtils.getProductReviewsForProductAndSiteId(siteModel.id, 22).size
+        )
     }
 
     @Test
@@ -585,6 +593,18 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         }
     }
 
+    private fun generateTestFileListAsJsonString(): String {
+        val json = WCProductFileModel(
+                name = "Woo Single",
+                url = "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/cd_4_angle.jpg"
+        )
+                .toJson()
+
+        return JsonArray()
+                .apply { add(json) }
+                .toString()
+    }
+
     @Test
     fun testUpdateProductImagesSuccess() {
         interceptor.respondWith("wc-fetch-product-response-success.json")
@@ -631,6 +651,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             crossSellIds = "[1, 2, 3]"
             upsellIds = "[1, 2, 3, 4]"
             type = "simple"
+            downloadable = true
+            downloads = generateTestFileListAsJsonString()
+            downloadExpiry = 10
+            downloadLimit = 2
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
@@ -651,6 +675,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.getCrossSellProductIdList().size, 3)
             assertEquals(updatedProduct.getUpsellProductIdList().size, 4)
             assertEquals(updatedProduct.type, product.type)
+            assertEquals(updatedProduct.getDownloadableFiles().size, 1)
+            assertEquals(updatedProduct.downloadExpiry, 10)
+            assertEquals(updatedProduct.downloadLimit, 2)
         }
     }
 
@@ -781,7 +808,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(7, ProductSqlUtils.insertOrUpdateProductCategories(payload.categories))
         assertEquals(
                 7,
-                ProductSqlUtils.getProductCategoriesForSite(siteModel).size)
+                ProductSqlUtils.getProductCategoriesForSite(siteModel).size
+        )
     }
 
     @Test

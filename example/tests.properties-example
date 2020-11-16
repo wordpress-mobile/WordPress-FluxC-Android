@@ -15,6 +15,7 @@ TEST_WPCOM_PASSWORD_2FA = FIXME
 TEST_WPCOM_EMAIL_PASSWORDLESS = FIXME
 
 ## Self-hosted
+# Almost all self-hosted endpoint URL paths need the extra '/xmlrpc.php' suffix to work properly.
 
 # Simple Self hosted (no Jetpack)
 TEST_WPORG_USERNAME_SH_SIMPLE = FIXME
@@ -194,6 +195,16 @@ TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE = FIXME
 # WP.com - Account with a WordPress.com site using a theme that supports post formats
 TEST_WPCOM_USERNAME_HAS_POST_FORMATS = FIXME
 TEST_WPCOM_PASSWORD_HAS_POST_FORMATS = FIXME
+
+# WP.com - Account connected to the following Jetpack sites
+TEST_WPCOM_USERNAME_JETPACK = FIXME
+TEST_WPCOM_PASSWORD_JETPACK = FIXME
+
+# Self Hosted - Jetpack site with Complete Jetpack plan
+TEST_WPORG_USERNAME_JETPACK_COMPLETE = FIXME
+TEST_WPORG_PASSWORD_JETPACK_COMPLETE = FIXME
+TEST_WPORG_URL_JETPACK_COMPLETE = FIXME
+TEST_WPORG_URL_JETPACK_COMPLETE_ENDPOINT = FIXME
 
 ## Woo
 

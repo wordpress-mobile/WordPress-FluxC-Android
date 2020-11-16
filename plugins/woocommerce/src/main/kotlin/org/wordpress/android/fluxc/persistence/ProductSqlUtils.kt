@@ -117,7 +117,9 @@ object ProductSqlUtils {
         }
 
         excludedProductIds?.let {
-            queryBuilder.isNotIn(WCProductModelTable.REMOTE_PRODUCT_ID, excludedProductIds)
+            if (it.isNotEmpty()) {
+                queryBuilder.isNotIn(WCProductModelTable.REMOTE_PRODUCT_ID, it)
+            }
         }
 
         val sortOrder = when (sortType) {
