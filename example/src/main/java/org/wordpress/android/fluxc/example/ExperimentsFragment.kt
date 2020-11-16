@@ -11,10 +11,10 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_experiments.*
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.generated.ExperimentActionBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.experiments.Assignments
 import org.wordpress.android.fluxc.model.experiments.Variation
 import org.wordpress.android.fluxc.model.experiments.Variation.Control
@@ -33,7 +33,6 @@ import javax.inject.Inject
 
 class ExperimentsFragment : Fragment() {
     @Inject internal lateinit var experimentStore: ExperimentStore
-    @Inject internal lateinit var dispatcher: Dispatcher
 
     private var selectedPlatform: Platform? = WORDPRESS_COM
 
@@ -62,9 +61,13 @@ class ExperimentsFragment : Fragment() {
             val platform = selectedPlatform ?: WORDPRESS_COM
             val anonymousId = anon_id_edit_text.text.toString()
             val payload = FetchAssignmentsPayload(platform, anonymousId)
-            val action = ExperimentActionBuilder.newFetchAssignmentsAction(payload)
-            prependToLog("Dispatching ${action.javaClass.simpleName} with payload: ${action.payload}")
-            dispatcher.dispatch(action)
+            prependToLog("Fetching assignments with payload: $payload")
+            GlobalScope.launch(Dispatchers.Default) {
+                val result = experimentStore.fetchAssignments(payload)
+                withContext(Dispatchers.Main) {
+                    onAssignmentsFetched(result)
+                }
+            }
         }
         get_cached_assignments.setOnClickListener {
             val assignments = experimentStore.getCachedAssignments()
@@ -81,19 +84,7 @@ class ExperimentsFragment : Fragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        dispatcher.register(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        dispatcher.unregister(this)
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onAssignmentsFetched(event: OnAssignmentsFetched) {
+    private fun onAssignmentsFetched(event: OnAssignmentsFetched) {
         AppLog.i(API, "OnAssignmentsFetched: $event")
         if (event.isError) {
             prependToLog("Error: ${event.error}")
