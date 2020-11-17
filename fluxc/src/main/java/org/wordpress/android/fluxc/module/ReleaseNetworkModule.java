@@ -104,9 +104,9 @@ public class ReleaseNetworkModule {
     }
 
     @Singleton
-    @Named("noRedirects")
+    @Named("no-redirects")
     @Provides
-    public RequestQueue provideNoRedirectsRequestQueue(@Named("noRedirects") OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideNoRedirectsRequestQueue(@Named("no-redirects") OkHttpClient.Builder okHttpClientBuilder,
                                                        Context appContext) {
         return newRetryOnRedirectRequestQueue(okHttpClientBuilder, appContext);
     }

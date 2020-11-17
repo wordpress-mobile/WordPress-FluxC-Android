@@ -37,7 +37,7 @@ public class ReleaseOkHttpClientModule {
     }
 
     @Provides
-    @Named("noRedirects")
+    @Named("no-redirects")
     public OkHttpClient.Builder provideNoRedirectsOkHttpClientBuilder() {
         OkHttpClient.Builder builder = provideOkHttpClientBuilder();
         builder.followRedirects(false);

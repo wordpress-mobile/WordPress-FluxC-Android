@@ -73,7 +73,7 @@ public class MockedNetworkModule {
     }
 
     @Singleton
-    @Named("noRedirects")
+    @Named("no-redirects")
     @Provides
     public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
                                                        Context appContext) {

@@ -52,7 +52,7 @@ public abstract class DebugOkHttpClientModule {
     }
 
     @Provides
-    @Named("noRedirects")
+    @Named("no-redirects")
     public static OkHttpClient.Builder provideNoRedirectsOkHttpClientBuilder(
             @Named("interceptors") Set<Interceptor> interceptors,
             @Named("network-interceptors") Set<Interceptor> networkInterceptors) {
