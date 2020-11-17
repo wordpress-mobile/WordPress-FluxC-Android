@@ -95,7 +95,7 @@ class WCOrderModelTest {
             assertEquals(1, attributes.size)
 
             assertEquals("size", attributes[0].key)
-            assertEquals("Medium", attributes[0].value)
+            assertEquals("medium", attributes[0].value)
         }
 
         with(renderedLineItems[2]) {
