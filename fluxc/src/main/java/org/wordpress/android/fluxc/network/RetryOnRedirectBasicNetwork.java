@@ -12,6 +12,8 @@ import com.android.volley.toolbox.BasicNetwork;
  * Enhances [BasicNetwork] by adding retries on temporary redirect (307) according to the applied retry policy
  */
 public class RetryOnRedirectBasicNetwork extends BasicNetwork {
+    public static final int HTTP_TEMPORARY_REDIRECT = 307;
+
     public RetryOnRedirectBasicNetwork(BaseHttpStack httpStack) {
         super(httpStack);
     }
@@ -20,7 +22,7 @@ public class RetryOnRedirectBasicNetwork extends BasicNetwork {
         try {
             return super.performRequest(request);
         } catch (ServerError error) {
-            if (request != null && error.networkResponse.statusCode == 307) {
+            if (request != null && error.networkResponse.statusCode == HTTP_TEMPORARY_REDIRECT) {
                 RetryPolicy policy = request.getRetryPolicy();
                 policy.retry(error); // If no attempts are left an error is thrown
                 try {
