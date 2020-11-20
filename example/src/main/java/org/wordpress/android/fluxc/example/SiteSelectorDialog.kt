@@ -89,7 +89,7 @@ class SiteSelectorDialog : DialogFragment() {
             AppLog.e(T.TESTS, "SiteChanged error: " + event.error.type)
             prependToLog("SiteChanged error: " + event.error.type)
         } else {
-            prependToLog("SiteChanged: rowsAffected = " + event.rowsAffected)
+            prependToLog("SiteChanged: rowsAffected = " + event.changedSites.size)
             siteStore.sites?.let {
                 val adapter = (dialog as AlertDialog).listView.adapter as SiteAdapter
                 adapter.refreshSites(it)

@@ -192,7 +192,7 @@ public class SitesFragment extends Fragment {
             prependToLog("SiteChanged error: " + event.error.type);
             AppLog.e(T.TESTS, "SiteChanged error: " + event.error.type);
         } else {
-            prependToLog("SiteChanged: rowsAffected = " + event.rowsAffected);
+            prependToLog("SiteChanged: rowsAffected = " + event.changedSites.size());
         }
     }
 
