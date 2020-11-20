@@ -6,7 +6,6 @@ import com.wellsql.generated.WCOrderShipmentProviderModelTable
 import com.wellsql.generated.WCOrderShipmentTrackingModelTable
 import com.wellsql.generated.WCOrderStatusModelTable
 import com.wellsql.generated.WCOrderSummaryModelTable
-import com.wellsql.generated.WCProductModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
