@@ -599,10 +599,14 @@ public class SiteStore extends Store {
     }
 
     public static class OnSiteChanged extends OnChanged<SiteError> {
-        public int rowsAffected;
+        public List<Integer> changedSites;
 
-        public OnSiteChanged(int rowsAffected) {
-            this.rowsAffected = rowsAffected;
+        public OnSiteChanged(List<Integer> changedSites) {
+            this.changedSites = changedSites;
+        }
+
+        public OnSiteChanged(SiteError siteError) {
+            this.error = siteError;
         }
     }
 
@@ -943,7 +947,7 @@ public class SiteStore extends Store {
     }
 
     public static class UpdateSitesResult {
-        public int rowsAffected = 0;
+        public List<Integer> changedSites;
         public boolean duplicateSiteFound = false;
     }
 
@@ -1667,10 +1671,10 @@ public class SiteStore extends Store {
     }
 
     private void updateSite(SiteModel siteModel) {
-        OnSiteChanged event = new OnSiteChanged(0);
+        OnSiteChanged event;
         if (siteModel.isError()) {
             // TODO: what kind of error could we get here?
-            event.error = SiteErrorUtils.genericToSiteError(siteModel.error);
+            event = new OnSiteChanged(SiteErrorUtils.genericToSiteError(siteModel.error));
         } else {
             try {
                 // The REST API doesn't return info about the editor(s). Make sure to copy current values
@@ -1681,22 +1685,25 @@ public class SiteStore extends Store {
                     siteModel.setMobileEditor(freshSiteFromDB.getMobileEditor());
                     siteModel.setWebEditor(freshSiteFromDB.getWebEditor());
                 }
-                event.rowsAffected = SiteSqlUtils.insertOrUpdateSite(siteModel);
+                SiteSqlUtils.insertOrUpdateSite(siteModel);
+                ArrayList<Integer> changedSites = new ArrayList<>();
+                changedSites.add(siteModel.getId());
+                event = new OnSiteChanged(changedSites);
             } catch (DuplicateSiteException e) {
-                event.error = new SiteError(SiteErrorType.DUPLICATE_SITE);
+                event = new OnSiteChanged(new SiteError(SiteErrorType.DUPLICATE_SITE));
             }
         }
         emitChange(event);
     }
 
     private void updateSites(SitesModel sitesModel) {
-        OnSiteChanged event = new OnSiteChanged(0);
+        OnSiteChanged event;
         if (sitesModel.isError()) {
             // TODO: what kind of error could we get here?
-            event.error = SiteErrorUtils.genericToSiteError(sitesModel.error);
+            event = new OnSiteChanged(SiteErrorUtils.genericToSiteError(sitesModel.error));
         } else {
             UpdateSitesResult res = createOrUpdateSites(sitesModel);
-            event.rowsAffected = res.rowsAffected;
+            event = new OnSiteChanged(res.changedSites);
             if (res.duplicateSiteFound) {
                 event.error = new SiteError(SiteErrorType.DUPLICATE_SITE);
             }
@@ -1705,13 +1712,13 @@ public class SiteStore extends Store {
     }
 
     private void handleFetchedSitesWPComRest(SitesModel fetchedSites) {
-        OnSiteChanged event = new OnSiteChanged(0);
+        OnSiteChanged event;
         if (fetchedSites.isError()) {
             // TODO: what kind of error could we get here?
-            event.error = SiteErrorUtils.genericToSiteError(fetchedSites.error);
+            event = new OnSiteChanged(SiteErrorUtils.genericToSiteError(fetchedSites.error));
         } else {
             UpdateSitesResult res = createOrUpdateSites(fetchedSites);
-            event.rowsAffected = res.rowsAffected;
+            event = new OnSiteChanged(res.changedSites);
             if (res.duplicateSiteFound) {
                 event.error = new SiteError(SiteErrorType.DUPLICATE_SITE);
             }
@@ -1722,6 +1729,7 @@ public class SiteStore extends Store {
 
     private UpdateSitesResult createOrUpdateSites(SitesModel sites) {
         UpdateSitesResult result = new UpdateSitesResult();
+        ArrayList<Integer> changedSites = new ArrayList<>();
         for (SiteModel site : sites.getSites()) {
             try {
                 // The REST API doesn't return info about the editor(s). Make sure to copy current values
@@ -1732,11 +1740,15 @@ public class SiteStore extends Store {
                     site.setMobileEditor(siteFromDB.getMobileEditor());
                     site.setWebEditor(siteFromDB.getWebEditor());
                 }
-                result.rowsAffected += SiteSqlUtils.insertOrUpdateSite(site);
+                int rowsAffected = SiteSqlUtils.insertOrUpdateSite(site);
+                if (rowsAffected > 0) {
+                    changedSites.add(site.getId());
+                }
             } catch (DuplicateSiteException caughtException) {
                 result.duplicateSiteFound = true;
             }
         }
+        result.changedSites = changedSites;
         return result;
     }
 

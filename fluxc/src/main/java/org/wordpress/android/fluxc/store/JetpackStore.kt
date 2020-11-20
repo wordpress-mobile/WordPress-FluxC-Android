@@ -125,7 +125,7 @@ class JetpackStore
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onSiteChanged(event: OnSiteChanged) {
-        if (event.rowsAffected > 0) {
+        if (event.changedSites.size > 0) {
             siteContinuation?.resume(Unit)
             siteContinuation = null
         }
