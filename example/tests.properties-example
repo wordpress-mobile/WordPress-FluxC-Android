@@ -148,6 +148,9 @@ TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT = FIXME
 # Self Hosted - Deleted xmlrpc.php file
 TEST_WPORG_URL_DELETED_XMLRPC_PHP = FIXME
 
+# Self Hosted - Temporary Redirect (307) Test
+TEST_TEMPORARY_REDIRECT_307 = FIXME
+
 ## Jetpack
 
 # WP.com - Account with only one site, which is Jetpack
