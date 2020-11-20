@@ -133,7 +133,7 @@ object OrderSqlUtils {
     }
 
     fun getOrderCountForSite(site: SiteModel): Long {
-        return WellSql.select(SiteModel::class.java)
+        return WellSql.select(WCOrderModel::class.java)
                 .where()
                 .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
