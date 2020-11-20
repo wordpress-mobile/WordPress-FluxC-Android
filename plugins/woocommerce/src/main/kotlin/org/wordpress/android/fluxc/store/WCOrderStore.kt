@@ -449,7 +449,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrders(payload: FetchOrdersPayload) {
         val offset = if (payload.loadMore) {
-            OrderSqlUtils.getOrdersForSite(payload.site).size
+            OrderSqlUtils.getOrderCountForSite(payload.site)
         } else {
             0
         }
