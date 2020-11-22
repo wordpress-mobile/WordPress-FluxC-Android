@@ -109,10 +109,11 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
          */
         fun getAttributesAsString(): String {
             return getAttributeList()
-                    .takeWhile {
+                    .filter {
                         // Don't include null, empty, or the "_reduced_stock" key
                         // skipping "_reduced_stock" is a temporary workaround until "type" is added to the response.
-                        it.value != null && it.value.isNotEmpty() && it.key != null && it.key.first().toString() != "_"
+                        it.value != null && it.value.isNotEmpty()
+                                && it.key != null && it.key.isNotEmpty() && it.key.first().toString() != "_"
                     }.joinToString { it.value?.capitalize(Locale.getDefault()) ?: "" }
         }
     }
