@@ -132,6 +132,14 @@ object OrderSqlUtils {
                 .execute()
     }
 
+    fun getOrderCountForSite(site: SiteModel): Int {
+        return WellSql.select(WCOrderModel::class.java)
+                .where()
+                .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .count().toInt()
+    }
+
     fun insertOrIgnoreOrderNotes(notes: List<WCOrderNoteModel>): Int {
         var totalChanged = 0
         notes.forEach { totalChanged += insertOrIgnoreOrderNote(it) }

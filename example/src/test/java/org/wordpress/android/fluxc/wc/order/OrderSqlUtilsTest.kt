@@ -98,6 +98,21 @@ class OrderSqlUtilsTest {
     }
 
     @Test
+    fun testGetOrderCountForSite() {
+        val order1 = OrderTestUtils.generateSampleOrder(1)
+        val site = SiteModel().apply { id = order1.localSiteId }
+        OrderSqlUtils.insertOrUpdateOrder(order1)
+        assertEquals(1, OrderSqlUtils.getOrderCountForSite(site))
+
+        val order2 = OrderTestUtils.generateSampleOrder(2)
+        OrderSqlUtils.insertOrUpdateOrder(order2)
+        assertEquals(2, OrderSqlUtils.getOrderCountForSite(site))
+
+        OrderSqlUtils.deleteOrdersForSite(site)
+        assertEquals(0, OrderSqlUtils.getOrderCountForSite(site))
+    }
+
+    @Test
     fun testDeleteOrdersForSite() {
         val order1 = OrderTestUtils.generateSampleOrder(1)
         val order2 = OrderTestUtils.generateSampleOrder(2)
