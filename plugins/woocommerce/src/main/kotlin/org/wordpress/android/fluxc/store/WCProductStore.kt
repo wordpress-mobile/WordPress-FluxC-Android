@@ -833,10 +833,13 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>) =
-            coroutineEngine?.withDefaultContext(T.API, this, "fetchProductList") {
-                wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
-            }
+    suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>): List<WCProductModel>? {
+        return coroutineEngine?.withDefaultContext(T.API, this, "fetchProductList") {
+            wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
+        }?.also {
+            ProductSqlUtils.insertOrUpdateProducts(it)
+        }
+    }
 
     private fun searchProducts(payload: SearchProductsPayload) {
         with(payload) { wcProductRestClient.searchProducts(

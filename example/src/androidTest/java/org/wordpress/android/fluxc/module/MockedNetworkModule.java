@@ -73,6 +73,14 @@ public class MockedNetworkModule {
     }
 
     @Singleton
+    @Named("no-redirects")
+    @Provides
+    public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+                                                       Context appContext) {
+        return provideRegularRequestQueue(okHttpClientBuilder, appContext);
+    }
+
+    @Singleton
     @Named("custom-ssl")
     @Provides
     public RequestQueue provideCustomRequestQueue(OkHttpClient.Builder okHttpClientBuilder,

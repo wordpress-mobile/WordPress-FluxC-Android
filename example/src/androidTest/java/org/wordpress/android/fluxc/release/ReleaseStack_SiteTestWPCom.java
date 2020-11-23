@@ -21,17 +21,17 @@ import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.FetchPrivateAtomicCookiePayload;
-import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
-import org.wordpress.android.fluxc.store.SiteStore.OnPrivateAtomicCookieFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainAvailabilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedCountriesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnPrivateAtomicCookieFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteEditorsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -416,6 +416,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.ERROR_INVALID_SITE_TYPE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testP2SiteFetch() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_P2,
+                BuildConfig.TEST_WPCOM_PASSWORD_P2);
+
+        // Get the first site
+        SiteModel p2Site = mSiteStore.getSites().get(0);
+
+        assertTrue(p2Site.isWpForTeamsSite());
     }
 
     @SuppressWarnings("unused")
