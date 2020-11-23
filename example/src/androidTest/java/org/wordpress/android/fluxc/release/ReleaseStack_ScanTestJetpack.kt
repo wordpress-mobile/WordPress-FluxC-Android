@@ -13,6 +13,10 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.scan.ScanStateModel
+import org.wordpress.android.fluxc.model.scan.ScanStateModel.ScanProgressStatus
+import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
+import org.wordpress.android.fluxc.persistence.ScanSqlUtils
 import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.CompleteJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -24,6 +28,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
@@ -33,6 +38,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
     @Inject internal lateinit var scanStore: ScanStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
+    @Inject internal lateinit var scanSqlUtils: ScanSqlUtils
 
     private var nextEvent: TestEvents? = null
 
@@ -61,9 +67,51 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         mCountDownLatch = CountDownLatch(1)
         val fetchedScanStatePayload = runBlocking { scanStore.fetchScanState(payload) }
-        // TODO: ashiagr get scan state record from db
+        val scanStateForSite = scanStore.getScanStateForSite(site)
 
         assertNotNull(fetchedScanStatePayload)
+        assertNotNull(scanStateForSite)
+        scanStateForSite?.apply {
+            assertNotNull(state)
+            assertEquals(state, IDLE)
+        }
+
+        assertNotNull(fetchedScanStatePayload)
+    }
+
+    @Test
+    fun insertAndRetrieveScanState() {
+        val site = authenticate(CompleteJetpackSite)
+        this.mCountDownLatch = CountDownLatch(1)
+
+        val mostRecentStatus = ScanProgressStatus(
+            startDate = Date(),
+            duration = 40,
+            progress = 30,
+            error = false,
+            isInitial = false
+        )
+        val model = ScanStateModel(
+            state = IDLE,
+            hasCloud = false,
+            mostRecentStatus = mostRecentStatus
+        )
+
+        scanSqlUtils.replaceScanState(site, model)
+
+        val scanState = scanStore.getScanStateForSite(site)
+
+        assertNotNull(scanState)
+        assertEquals(model.state, scanState?.state)
+        assertEquals(model.hasCloud, scanState?.hasCloud)
+
+        scanState?.mostRecentStatus?.apply {
+            assertEquals(mostRecentStatus.startDate, startDate)
+            assertEquals(mostRecentStatus.duration, duration)
+            assertEquals(mostRecentStatus.progress, progress)
+            assertEquals(mostRecentStatus.error, error)
+            assertEquals(mostRecentStatus.isInitial, isInitial)
+        }
     }
 
     @Subscribe
