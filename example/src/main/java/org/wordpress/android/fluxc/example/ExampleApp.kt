@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.example
 
-import android.app.Application
+import androidx.multidex.MultiDexApplication
 import com.yarolegovich.wellsql.WellSql
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.example.di.DaggerAppComponent
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import javax.inject.Inject
 
-open class ExampleApp : Application(), HasAndroidInjector {
+open class ExampleApp : MultiDexApplication(), HasAndroidInjector {
     @Inject lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
     protected open val component: AppComponent by lazy {

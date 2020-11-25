@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.AccountFragment
 import org.wordpress.android.fluxc.example.CommentsFragment
 import org.wordpress.android.fluxc.example.EditorThemeFragment
+import org.wordpress.android.fluxc.example.ExperimentsFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
@@ -128,4 +129,7 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideEditorThemeFragmentInjector(): EditorThemeFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideExperimentsFragmentInjector(): ExperimentsFragment
 }

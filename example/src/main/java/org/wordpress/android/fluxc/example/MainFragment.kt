@@ -93,6 +93,7 @@ class MainFragment : Fragment() {
         notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
         reactnative.setOnClickListener(getOnClickListener(ReactNativeFragment()))
         editortheme.setOnClickListener(getOnClickListener(EditorThemeFragment()))
+        experiments.setOnClickListener(getOnClickListener(ExperimentsFragment()))
     }
 
     // Private methods
