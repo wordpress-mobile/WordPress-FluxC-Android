@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.scan.ScanStateModel
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.ScanProgressStatus
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
+import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.SCANNING
 import org.wordpress.android.fluxc.persistence.ScanSqlUtils
 import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.CompleteJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
@@ -80,7 +81,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun insertAndRetrieveScanState() {
+    fun insertAndRetrieveScanIdleState() {
         val site = authenticate(CompleteJetpackSite)
         this.mCountDownLatch = CountDownLatch(1)
 
@@ -111,6 +112,39 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             assertEquals(mostRecentStatus.progress, progress)
             assertEquals(mostRecentStatus.error, error)
             assertEquals(mostRecentStatus.isInitial, isInitial)
+        }
+    }
+
+    @Test
+    fun insertAndRetrieveScanScanningState() {
+        val site = authenticate(CompleteJetpackSite)
+        this.mCountDownLatch = CountDownLatch(1)
+
+        val currentStatus = ScanProgressStatus(
+            startDate = Date(),
+            progress = 30,
+            isInitial = false
+        )
+        val model = ScanStateModel(
+            state = SCANNING,
+            hasCloud = false,
+            currentStatus = currentStatus
+        )
+
+        scanSqlUtils.replaceScanState(site, model)
+
+        val scanState = scanStore.getScanStateForSite(site)
+
+        assertNotNull(scanState)
+        assertEquals(model.state, scanState?.state)
+        assertEquals(model.hasCloud, scanState?.hasCloud)
+
+        scanState?.currentStatus?.apply {
+            assertEquals(currentStatus.startDate, startDate)
+            assertEquals(currentStatus.duration, 0)
+            assertEquals(currentStatus.progress, progress)
+            assertEquals(currentStatus.error, false)
+            assertEquals(currentStatus.isInitial, isInitial)
         }
     }
 
@@ -180,9 +214,9 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
     private sealed class Sites(val wpUserName: String, val wpPassword: String, val siteUrl: String) {
         object CompleteJetpackSite : Sites(
-                wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
-                wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
-                siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
+            wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
+            wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
+            siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
         )
     }
 }
