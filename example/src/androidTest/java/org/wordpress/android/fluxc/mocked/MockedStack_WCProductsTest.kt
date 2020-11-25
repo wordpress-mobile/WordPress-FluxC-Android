@@ -100,7 +100,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getNumVariations(), 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
-            assertEquals(product.downloadLimit, 2)
+            assertEquals(product.downloadLimit, 123123124124)
         }
 
         // save the product to the db
@@ -121,7 +121,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getNumVariations(), 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
-            assertEquals(product.downloadLimit, 2)
+            assertEquals(product.downloadLimit, 123123124124)
         }
     }
 
@@ -654,7 +654,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             downloadable = true
             downloads = generateTestFileListAsJsonString()
             downloadExpiry = 10
-            downloadLimit = 2
+            downloadLimit = 123123124124
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
@@ -677,7 +677,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.type, product.type)
             assertEquals(updatedProduct.getDownloadableFiles().size, 1)
             assertEquals(updatedProduct.downloadExpiry, 10)
-            assertEquals(updatedProduct.downloadLimit, 2)
+            assertEquals(updatedProduct.downloadLimit, 123123124124)
         }
     }
 

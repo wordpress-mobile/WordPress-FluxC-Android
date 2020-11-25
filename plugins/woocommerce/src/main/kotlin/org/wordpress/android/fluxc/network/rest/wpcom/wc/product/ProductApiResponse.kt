@@ -32,7 +32,7 @@ class ProductApiResponse : Response {
 
     var virtual = false
     var downloadable = false
-    var download_limit = 0
+    var download_limit = 0L
     var download_expiry = 0
 
     var external_url: String? = null
