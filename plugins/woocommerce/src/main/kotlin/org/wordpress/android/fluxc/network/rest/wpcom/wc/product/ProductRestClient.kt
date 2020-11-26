@@ -596,7 +596,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
-                "order" to "asc"
+                "order" to "asc",
+                "orderby" to "date"
         )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
