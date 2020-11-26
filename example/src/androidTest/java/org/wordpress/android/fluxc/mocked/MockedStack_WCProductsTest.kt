@@ -318,8 +318,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(this.remoteProductId, remoteProductId)
             assertEquals(this.localSiteId, siteModel.id)
 
-            // verify that the variant with the first menu order is fetched first
-            assertEquals(this.menuOrder, 1)
+            // verify that the variant with the first date created is fetched first
+            assertEquals(this.dateCreated, "2019-03-16T05:14:57")
         }
     }
 
