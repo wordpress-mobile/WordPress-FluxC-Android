@@ -66,6 +66,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
 
     @Column var shippingLines = ""
 
+    @Column var feeLines = ""
+
     companion object {
         private val gson by lazy { Gson() }
     }
@@ -73,6 +75,18 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     class ShippingLine {
         @SerializedName("method_title")
         val methodTitle: String? = null
+    }
+
+    /**
+     * Represents a fee line
+     * We are reading only the name and the total, as the tax is already included in the order totalTax
+     */
+    class FeeLine {
+        @SerializedName("name")
+        val name: String? = null
+
+        @SerializedName("total")
+        val total: String? = null
     }
 
     class LineItem {
@@ -168,6 +182,14 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     fun getShippingLineList(): List<ShippingLine> {
         val responseType = object : TypeToken<List<ShippingLine>>() {}.type
         return gson.fromJson(shippingLines, responseType) as? List<ShippingLine> ?: emptyList()
+    }
+
+    /**
+     * Deserializes the JSON contained in [feeLines] into a list of [FeeLine] objects.
+     */
+    fun getFeeLineList(): List<FeeLine> {
+        val responseType = object : TypeToken<List<FeeLine>>() {}.type
+        return gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
     }
 
     fun isMultiShippingLinesAvailable() = getShippingLineList().size > 1
