@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -74,7 +75,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         assertNotNull(scanStateForSite)
         scanStateForSite?.apply {
             assertNotNull(state)
-            assertEquals(state, IDLE)
+            Assert.assertTrue(listOf(IDLE, SCANNING).contains(state))
         }
 
         assertNotNull(fetchedScanStatePayload)
@@ -146,6 +147,18 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             assertEquals(currentStatus.error, false)
             assertEquals(currentStatus.isInitial, isInitial)
         }
+    }
+
+    @Test
+    fun testStartScan() {
+        val site = authenticate(CompleteJetpackSite)
+        val payload = ScanStore.ScanStartPayload(site)
+
+        mCountDownLatch = CountDownLatch(1)
+        val scanStartResultPayload = runBlocking { scanStore.startScan(payload) }
+
+        assertNotNull(scanStartResultPayload)
+        assertNull(scanStartResultPayload.error)
     }
 
     @Subscribe
