@@ -38,7 +38,7 @@ class ProductVariationApiResponse : Response {
     var shipping_class: String? = null
     var shipping_class_id = 0
 
-    var download_limit = 0
+    var download_limit = 0L
     var download_expiry = 0
 
     var manage_stock = false
