@@ -71,6 +71,6 @@ class OrderApiResponse : Response {
     // See WCOrderModel.ShippingLines
     val shipping_lines: JsonElement? = null
 
-    //Same as shipping_lines, it's a list of objects
+    // Same as shipping_lines, it's a list of objects
     val fee_lines: JsonElement? = null
 }
