@@ -58,7 +58,7 @@ class OrderRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
             "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines"
+            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines,fee_lines"
     private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
 
     /**
@@ -727,6 +727,7 @@ class OrderRestClient(
 
             lineItems = response.line_items.toString()
             shippingLines = response.shipping_lines.toString()
+            feeLines = response.fee_lines.toString()
         }
     }
 
