@@ -7,6 +7,7 @@ import org.junit.Test
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
+import org.wordpress.android.fluxc.store.XPostsResult
 import org.wordpress.android.fluxc.store.XPostsSource
 import org.wordpress.android.fluxc.store.XPostsStore
 import javax.inject.Inject
@@ -31,7 +32,8 @@ class ReleaseStack_XPostsTest : ReleaseStack_WPComBase() {
             xPostsStore.fetchXPosts(site)
         }
 
-        assertEquals(XPostsSource.REST_API, response.source)
+        assertTrue(response is XPostsResult.Result)
+        assertEquals(XPostsSource.REST_API, (response as XPostsResult.Result).source)
         assertTrue(response.xPosts.isNotEmpty())
     }
 }
