@@ -388,15 +388,29 @@ public class PostStore extends Store {
     }
 
     public PostModel instantiatePostModel(SiteModel site, boolean isPage) {
-        return instantiatePostModel(site, isPage, null, null);
+        return instantiatePostModel(site, isPage, null, null, null, null, null);
     }
 
     public PostModel instantiatePostModel(SiteModel site, boolean isPage, List<Long> categoryIds, String postFormat) {
+        return instantiatePostModel(site, isPage, null, null, null, categoryIds, postFormat);
+    }
+
+    public PostModel instantiatePostModel(SiteModel site, boolean isPage, String title, String content, String status,
+                                          List<Long> categoryIds, String postFormat) {
         PostModel post = new PostModel();
         post.setLocalSiteId(site.getId());
         post.setIsLocalDraft(true);
         post.setIsPage(isPage);
         post.setDateLocallyChanged((DateTimeUtils.iso8601UTCFromDate(new Date())));
+        if (title != null) {
+            post.setTitle(title);
+        }
+        if (content != null) {
+            post.setContent(content);
+        }
+        if (status != null) {
+            post.setStatus(status);
+        }
         if (categoryIds != null && !categoryIds.isEmpty()) {
             post.setCategoryIdList(categoryIds);
         }
