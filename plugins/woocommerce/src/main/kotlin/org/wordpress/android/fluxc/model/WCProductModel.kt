@@ -52,7 +52,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var virtual = false
     @Column var downloadable = false
-    @Column var downloadLimit = -1
+    @Column var downloadLimit = -1L
     @Column var downloadExpiry = -1
     @Column var soldIndividually = false
 

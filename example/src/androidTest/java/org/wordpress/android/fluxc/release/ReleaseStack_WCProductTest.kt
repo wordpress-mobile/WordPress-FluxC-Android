@@ -660,7 +660,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             add(downloadableFile.toJson())
         }.toString()
 
-        val updatedProductDownloadLimit = 10
+        val updatedProductDownloadLimit = 10L
         productModel.downloadLimit = updatedProductDownloadLimit
 
         val updatedProductDownloadExpiry = 365

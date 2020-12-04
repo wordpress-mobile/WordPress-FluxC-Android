@@ -431,7 +431,7 @@ class WooUpdateProductFragment : Fragment() {
         }
 
         product_download_limit.onTextChanged { text ->
-            text.toIntOrNull()?.let { selectedProductModel?.downloadLimit = it }
+            text.toLongOrNull()?.let { selectedProductModel?.downloadLimit = it }
         }
 
         savedInstanceState?.let { bundle ->

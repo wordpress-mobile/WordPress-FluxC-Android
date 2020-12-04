@@ -389,7 +389,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     /**
      * @return Returns true if orders for the provided site exist in the DB, else false.
      */
-    fun hasCachedOrdersForSite(site: SiteModel) = OrderSqlUtils.getOrdersForSite(site).isNotEmpty()
+    fun hasCachedOrdersForSite(site: SiteModel) = OrderSqlUtils.getOrderCountForSite(site) > 0
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
@@ -449,7 +449,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrders(payload: FetchOrdersPayload) {
         val offset = if (payload.loadMore) {
-            OrderSqlUtils.getOrdersForSite(payload.site).size
+            OrderSqlUtils.getOrderCountForSite(payload.site)
         } else {
             0
         }
