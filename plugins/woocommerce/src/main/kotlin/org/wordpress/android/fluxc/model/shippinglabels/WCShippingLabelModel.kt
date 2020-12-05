@@ -26,6 +26,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var currency = ""
     @Column var paperSize = ""
     @Column var productNames = "" // list of product names the shipping label was purchased for
+    @Column var productIds = "" // list of product ids the shipping label was purchased for
 
     @Column var formData = "" // map containing package and product details related to that shipping label
     @Column var storeOptions = "" // map containing store settings such as currency and dimensions
@@ -86,6 +87,21 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
                 .removePrefix("[") // remove the String prefix
                 .removeSuffix("]") // remove the String suffix
                 .split(",") // split the string into list using comma spearators
+    }
+
+    /**
+     * Returns the list of products the shipping labels were purchased for
+     *
+     * For instance: "[60, 61, 62]" would be split into a list
+     * [60, 61, 62]
+     */
+    fun getProductIdsList(): List<Long> {
+        return productIds
+                .trim() // remove extra spaces between commas
+                .removePrefix("[") // remove the String prefix
+                .removeSuffix("]") // remove the String suffix
+                .split(",") // split the string into list using comma separators
+                .map { it.toLong() }
     }
 
     /**
