@@ -101,7 +101,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
                 .removePrefix("[") // remove the String prefix
                 .removeSuffix("]") // remove the String suffix
                 .split(",") // split the string into list using comma separators
-                .map { it.toLong() }
+                .map { it.trim().toLong() }
     }
 
     /**

@@ -98,6 +98,7 @@ class WCShippingLabelSqlUtilsTest {
         val savedShippingLabelListExists = WCShippingLabelSqlUtils.getShippingClassesForOrder(site.id, orderId)
         assertEquals(shippingLabels.size, savedShippingLabelListExists.size)
         assertEquals(shippingLabels[0].getProductNameList(), savedShippingLabelListExists[0].getProductNameList())
+        assertEquals(shippingLabels[0].getProductIdsList(), savedShippingLabelListExists[0].getProductIdsList())
 
         // Get shipping label list for a site that does not exist
         val nonExistingSite = SiteModel().apply { id = 400 }
