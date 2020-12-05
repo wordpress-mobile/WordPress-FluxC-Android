@@ -107,6 +107,7 @@ class WCShippingLabelStoreTest {
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
         assertThat(result.model?.first()?.getProductIdsList()?.size)
                 .isEqualTo(shippingLabelModels.first().getProductIdsList().size)
+        assertThat(result.model?.get(1)?.getProductIdsList()?.size).isEqualTo(0)
         assertNotNull(result.model?.first()?.refund)
 
         val invalidRequestResult = store.fetchShippingLabelsForOrder(errorSite, orderId)
@@ -137,6 +138,7 @@ class WCShippingLabelStoreTest {
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
         assertThat(storedShippingLabelsList.first().getProductIdsList().size)
                 .isEqualTo(shippingLabelModels.first().getProductIdsList().size)
+        assertThat(storedShippingLabelsList[1].getProductIdsList().size).isEqualTo(0)
 
         val invalidRequestResult = store.getShippingLabelsForOrder(errorSite, orderId)
         assertThat(invalidRequestResult.size).isEqualTo(0)
