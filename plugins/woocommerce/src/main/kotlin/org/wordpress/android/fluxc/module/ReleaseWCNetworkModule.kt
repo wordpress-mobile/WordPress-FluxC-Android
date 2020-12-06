@@ -11,7 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -109,7 +109,7 @@ class ReleaseWCNetworkModule {
         @Named("regular") requestQueue: RequestQueue,
         token: AccessToken,
         userAgent: UserAgent
-    ) = WCDataClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
+    ) = WCDataRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
 
     @Singleton
     @Provides

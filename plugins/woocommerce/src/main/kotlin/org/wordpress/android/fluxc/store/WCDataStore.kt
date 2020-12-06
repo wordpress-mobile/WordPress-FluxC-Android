@@ -3,15 +3,12 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.data.WCCountryMapper
 import org.wordpress.android.fluxc.model.data.WCLocationModel
-import org.wordpress.android.fluxc.model.taxes.WCTaxClassMapper
-import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataRestClient
 import org.wordpress.android.fluxc.persistence.WCCountriesSqlUtils
-import org.wordpress.android.fluxc.persistence.WCTaxSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -19,7 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WCDataStore @Inject constructor(
-    private val restClient: WCDataClient,
+    private val restClient: WCDataRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val mapper: WCCountryMapper
 ) {

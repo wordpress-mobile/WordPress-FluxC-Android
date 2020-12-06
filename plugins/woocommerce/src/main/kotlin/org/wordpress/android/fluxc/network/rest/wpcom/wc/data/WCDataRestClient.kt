@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Singleton
 
 @Singleton
-class WCDataClient
+class WCDataRestClient
 constructor(
     dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
