@@ -8,7 +8,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(name = "WCLocations", addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCLocationModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    @Column var parentCode: String? = null
+    @Column var parentCode: String = ""
     @Column var code = ""
     @Column var name = ""
 

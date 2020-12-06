@@ -8,7 +8,7 @@ object WCCountriesSqlUtils {
     fun getCountries(): List<WCLocationModel> {
         return WellSql.select(WCLocationModel::class.java)
                 .where()
-                .equals(WCLocationsTable.PARENT_CODE, null)
+                .equals(WCLocationsTable.PARENT_CODE, "")
                 .endWhere()
                 .asModel
     }

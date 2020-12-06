@@ -8,7 +8,7 @@ class WCCountryMapper
     fun map(country: CountryApiResponse): List<WCLocationModel> {
         return country.states.map { state ->
             WCLocationModel().apply {
-                parentCode = country.code
+                parentCode = country.code ?: ""
                 name = state.name ?: ""
                 code = state.code ?: ""
             }
