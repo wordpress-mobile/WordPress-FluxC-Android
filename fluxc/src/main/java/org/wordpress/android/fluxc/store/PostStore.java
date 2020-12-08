@@ -388,15 +388,15 @@ public class PostStore extends Store {
     }
 
     public PostModel instantiatePostModel(SiteModel site, boolean isPage) {
-        return instantiatePostModel(site, isPage, null, null, null, null, null);
+        return instantiatePostModel(site, isPage, null, null, null, null, null, false);
     }
 
     public PostModel instantiatePostModel(SiteModel site, boolean isPage, List<Long> categoryIds, String postFormat) {
-        return instantiatePostModel(site, isPage, null, null, null, categoryIds, postFormat);
+        return instantiatePostModel(site, isPage, null, null, null, categoryIds, postFormat, false);
     }
 
     public PostModel instantiatePostModel(SiteModel site, boolean isPage, String title, String content, String status,
-                                          List<Long> categoryIds, String postFormat) {
+                                          List<Long> categoryIds, String postFormat, boolean refreshListOnFinish) {
         PostModel post = new PostModel();
         post.setLocalSiteId(site.getId());
         post.setIsLocalDraft(true);
@@ -422,6 +422,10 @@ public class PostStore extends Store {
         // id is set to -1 if insertion fails
         if (post.getId() == -1) {
             return null;
+        }
+        if (refreshListOnFinish) {
+            mDispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(
+                    PostListDescriptor.calculateTypeIdentifier(post.getLocalSiteId())));
         }
         return post;
     }
