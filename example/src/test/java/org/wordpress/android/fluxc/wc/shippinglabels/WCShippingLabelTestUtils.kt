@@ -22,7 +22,8 @@ object WCShippingLabelTestUtils {
         currency: String = "USD",
         paperSize: String = "label",
         refund: String? = null,
-        productNames: String = "[Woo T-shirt, Herman Chair]"
+        productNames: String = "[Woo T-shirt, Herman Chair]",
+        productIds: String = "[60, 61, 62]"
     ): WCShippingLabelModel {
         return WCShippingLabelModel().apply {
             localSiteId = siteId
@@ -37,6 +38,7 @@ object WCShippingLabelTestUtils {
             this.currency = currency
             this.paperSize = paperSize
             this.productNames = productNames
+            this.productIds = productIds
             refund?.let { this.refund = it }
         }
     }

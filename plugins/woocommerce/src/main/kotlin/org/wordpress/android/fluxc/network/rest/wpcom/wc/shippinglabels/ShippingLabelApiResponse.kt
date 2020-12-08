@@ -23,6 +23,7 @@ class ShippingLabelApiResponse : Response {
         @SerializedName("created_date") val dateCreated: Long? = null
         @SerializedName("package_name") val packageName: String? = null
         @SerializedName("product_names") val productNames: List<String>? = emptyList()
+        @SerializedName("product_ids") val productIds: List<Long>? = emptyList()
         @SerializedName("refundable_amount") val refundableAmount: BigDecimal? = null
         val status: String? = null
         val rate: BigDecimal? = null
