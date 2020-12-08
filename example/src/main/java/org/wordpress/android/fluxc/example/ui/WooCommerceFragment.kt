@@ -8,6 +8,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woocommerce.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -25,6 +28,7 @@ import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
+import org.wordpress.android.fluxc.store.WCDataStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
@@ -37,6 +41,9 @@ import javax.inject.Inject
 class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject lateinit var wooCommerceStore: WooCommerceStore
+    @Inject lateinit var wooDataStore: WCDataStore
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -126,6 +133,29 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let {
                 replaceFragment(WooLeaderboardsFragment())
             } ?: showNoWCSitesToast()
+        }
+
+        countries.setOnClickListener {
+            launchCountriesRequest()
+        }
+    }
+
+    private fun launchCountriesRequest() {
+        coroutineScope.launch {
+            try {
+                getFirstWCSite()?.let {
+                    wooDataStore.fetchCountriesAndStates(it).model?.let {
+                        it.forEach { location ->
+                            if (location.parentCode == null) {
+                                prependToLog(location.name)
+                            }
+                        }
+                    }
+                    ?: prependToLog("Couldn't fetch countries.")
+                } ?: showNoWCSitesToast()
+            } catch (ex: Exception) {
+                prependToLog("Couldn't fetch countries. Error: ${ex.message}")
+            }
         }
     }
 

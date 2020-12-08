@@ -90,6 +90,14 @@ To add a new endpoint, first add it to the appropriate `fluxc-processor/src/main
 
 Note that, for WordPress.com REST API endpoints, the final endpoint will be normalized to include a trailing slash.
 
+
+#### Response Models
+
+Create a class implementing `Response` interface in a corresponding package in `org.wordpress.android.fluxc.network.rest` tree.
+
+Prefer using nullable types in response models to prevent crashes when the API changes. Map nullable types to non-nullable types (if applicable) when mapping response models to domain models.
+
+
 ### On Changed Events
 
 All On Changed Events extend the OnChanged class. They encapsulate an `error`
