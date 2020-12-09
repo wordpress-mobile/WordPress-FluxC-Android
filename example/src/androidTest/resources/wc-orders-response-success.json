@@ -74,6 +74,42 @@
           "price": 30
         }
       ],
+      "fee_lines": [
+        {
+          "id": 28,
+          "name": "$10.00 fee",
+          "tax_class": "",
+          "tax_status": "taxable",
+          "amount": "10",
+          "total": "10.00",
+          "total_tax": "2.00",
+          "taxes": [
+            {
+              "id": 1,
+              "total": "2",
+              "subtotal": ""
+            }
+          ],
+          "meta_data": []
+        },
+        {
+          "id": 30,
+          "name": "12.00 fee",
+          "tax_class": "",
+          "tax_status": "taxable",
+          "amount": "12",
+          "total": "12.00",
+          "total_tax": "2.40",
+          "taxes": [
+            {
+              "id": 1,
+              "total": "2.4",
+              "subtotal": ""
+            }
+          ],
+          "meta_data": []
+        }
+      ],
       "coupon_lines": [],
       "refunds": []
     },
