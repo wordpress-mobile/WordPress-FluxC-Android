@@ -77,8 +77,6 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             assertNotNull(state)
             Assert.assertTrue(listOf(IDLE, SCANNING).contains(state))
         }
-
-        assertNotNull(fetchedScanStatePayload)
     }
 
     @Test
