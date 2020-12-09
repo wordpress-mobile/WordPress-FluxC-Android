@@ -13,7 +13,6 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.scan.threat.ThreatMapper
 import org.wordpress.android.fluxc.release.ReleaseStack_ThreatTestJetpack.Sites.ScanDailyJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -34,7 +33,6 @@ class ReleaseStack_ThreatTestJetpack : ReleaseStack_Base() {
     @Inject internal lateinit var threatStore: ThreatStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
-    @Inject internal lateinit var threatMapper: ThreatMapper
 
     private var nextEvent: TestEvents? = null
 
