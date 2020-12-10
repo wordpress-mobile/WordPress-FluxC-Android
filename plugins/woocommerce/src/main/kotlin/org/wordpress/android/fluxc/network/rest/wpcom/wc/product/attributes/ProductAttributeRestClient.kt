@@ -10,7 +10,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.utils.handleResult
+import javax.inject.Singleton
 
+@Singleton
 class ProductAttributeRestClient
 constructor(
     appContext: Context?,
