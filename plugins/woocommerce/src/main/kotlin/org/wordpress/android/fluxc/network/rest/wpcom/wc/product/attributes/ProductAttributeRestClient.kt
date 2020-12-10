@@ -26,6 +26,13 @@ constructor(
             .requestTo(site)
             .handleResult()
 
+    suspend fun createProductSingleAttribute(
+        site: SiteModel,
+        args: Map<String, String>
+    ) = WOOCOMMERCE.products.attributes.pathV3
+            .postTo(site, args)
+            .handleResult()
+
     private suspend fun String.requestTo(
         site: SiteModel
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -34,5 +41,16 @@ constructor(
             this,
             emptyMap(),
             Array<AttributeApiResponse>::class.java
+    )
+
+    private suspend fun String.postTo(
+        site: SiteModel,
+        args: Map<String, String>
+    ) = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this@ProductAttributeRestClient,
+            site,
+            this,
+            args,
+            AttributeApiResponse::class.java
     )
 }
