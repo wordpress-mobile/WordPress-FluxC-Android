@@ -1447,6 +1447,7 @@ class ProductRestClient(
             "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
             "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
             "term_exists" -> ProductErrorType.TERM_EXISTS
+            "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)
