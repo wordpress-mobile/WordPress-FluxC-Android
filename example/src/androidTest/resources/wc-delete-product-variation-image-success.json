@@ -1,0 +1,84 @@
+{
+  "data": {
+    "id": 181,
+    "date_created": "2019-12-18T23:15:16",
+    "date_created_gmt": "2019-12-19T06:15:16",
+    "date_modified": "2020-12-10T09:23:47",
+    "date_modified_gmt": "2020-12-10T16:23:47",
+    "description": "<p>This a great product</p>\n",
+    "permalink": "https://testwooshop.mystagingwebsite.com/product/v-neck-t-shirt/?attribute_pa_color=red&attribute_pa_size=large",
+    "sku": "ufuducuvkcifufp",
+    "price": "10.99",
+    "regular_price": "35.99",
+    "sale_price": "10.99",
+    "date_on_sale_from": null,
+    "date_on_sale_from_gmt": null,
+    "date_on_sale_to": null,
+    "date_on_sale_to_gmt": null,
+    "on_sale": true,
+    "status": "publish",
+    "purchasable": true,
+    "virtual": false,
+    "downloadable": false,
+    "downloads": [],
+    "download_limit": -1,
+    "download_expiry": -1,
+    "tax_status": "taxable",
+    "tax_class": "",
+    "manage_stock": true,
+    "stock_quantity": 400,
+    "stock_status": "instock",
+    "backorders": "no",
+    "backorders_allowed": false,
+    "backordered": false,
+    "weight": "0.5",
+    "dimensions": {
+      "length": "24",
+      "width": "1",
+      "height": "2"
+    },
+    "shipping_class": "",
+    "shipping_class_id": 0,
+    "image": {
+      "id": 2183,
+      "date_created": "2018-10-23T19:36:26",
+      "date_created_gmt": "2018-10-24T01:36:26",
+      "date_modified": "2020-12-09T11:54:31",
+      "date_modified_gmt": "2020-12-10T01:54:31",
+      "src": "https://testwooshop.mystagingwebsite.com/wp-content/uploads/2018/10/vnech-tee-blue-1.jpg",
+      "name": "vnech-tee-blue-1",
+      "alt": ""
+    },
+    "attributes": [
+      {
+        "id": 1,
+        "name": "color",
+        "option": "Red"
+      },
+      {
+        "id": 2,
+        "name": "size",
+        "option": "large"
+      }
+    ],
+    "menu_order": 6,
+    "meta_data": [],
+    "_links": {
+      "self": [
+        {
+          "href": "https://testwooshop.mystagingwebsite.com/wp-json/wc/v3/products/12/variations/7566"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://testwooshop.mystagingwebsite.com/wp-json/wc/v3/products/12/variations"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://testwooshop.mystagingwebsite.com/wp-json/wc/v3/products/12"
+        }
+      ]
+    }
+  }
+}
