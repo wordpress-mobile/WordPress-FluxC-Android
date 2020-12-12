@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.scan.ScanStateModel
 import org.wordpress.android.fluxc.network.rest.wpcom.scan.ScanRestClient
 import org.wordpress.android.fluxc.persistence.ScanSqlUtils
+import org.wordpress.android.fluxc.persistence.ThreatSqlUtils
 import org.wordpress.android.fluxc.store.ScanStore.FetchScanStatePayload
 import org.wordpress.android.fluxc.store.ScanStore.FetchedScanStatePayload
 import org.wordpress.android.fluxc.store.ScanStore.ScanStartError
@@ -32,6 +33,7 @@ import org.wordpress.android.fluxc.tools.initCoroutineEngine
 class ScanStoreTest {
     @Mock private lateinit var scanRestClient: ScanRestClient
     @Mock private lateinit var scanSqlUtils: ScanSqlUtils
+    @Mock private lateinit var threatSqlUtils: ThreatSqlUtils
     @Mock private lateinit var dispatcher: Dispatcher
     @Mock private lateinit var siteModel: SiteModel
     private lateinit var scanStore: ScanStore
@@ -41,6 +43,7 @@ class ScanStoreTest {
         scanStore = ScanStore(
             scanRestClient,
             scanSqlUtils,
+            threatSqlUtils,
             initCoroutineEngine(),
             dispatcher
         )
