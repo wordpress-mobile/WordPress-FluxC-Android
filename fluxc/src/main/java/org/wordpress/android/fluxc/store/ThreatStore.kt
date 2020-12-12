@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.scan.threat.ThreatModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.scan.threat.ThreatRestClient
+import org.wordpress.android.fluxc.persistence.ThreatSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -19,6 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class ThreatStore @Inject constructor(
     private val threatRestClient: ThreatRestClient,
+    private val threatSqlUtils: ThreatSqlUtils,
     private val coroutineEngine: CoroutineEngine,
     dispatcher: Dispatcher
 ) : Store(dispatcher) {
@@ -36,6 +38,10 @@ class ThreatStore @Inject constructor(
 
     override fun onRegister() {
         AppLog.d(AppLog.T.API, this.javaClass.name + ": onRegister")
+    }
+
+    fun getThreatsForSite(site: SiteModel): List<ThreatModel> {
+        return threatSqlUtils.getThreatsForSite(site)
     }
 
     suspend fun fetchThreat(fetchThreatPayload: FetchThreatPayload): OnThreatFetched {
