@@ -93,6 +93,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertFalse(pricesIncludeTax)
             assertEquals(2, getLineItemList().size)
             assertEquals(40.0, getOrderSubtotal(), 0.01)
+            assertEquals(2, getFeeLineList().size)
+            assertEquals("10.00", getFeeLineList()[0].total)
         }
 
         // Customer note

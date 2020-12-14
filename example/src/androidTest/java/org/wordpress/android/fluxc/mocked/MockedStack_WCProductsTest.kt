@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductFileModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -39,9 +40,11 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
@@ -593,6 +596,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         }
     }
 
+    fun generateSampleVariation(): WCProductVariationModel {
+        return WCProductVariationModel().apply {
+            remoteProductId = 1
+            remoteVariationId = 181
+            localSiteId = siteModel.id
+        }
+    }
+
     private fun generateTestFileListAsJsonString(): String {
         val json = WCProductFileModel(
                 name = "Woo Single",
@@ -634,6 +645,52 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
         assertTrue(payload.isError)
+    }
+
+    @Test
+    fun testDeleteProductVariationImageSuccess() {
+        interceptor.respondWith("wc-delete-product-variation-image-success.json")
+
+        val testVariation = generateSampleVariation()
+        val updateVariation = testVariation.copy().apply {
+            image = "{id:0}"
+        }
+        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
+        with(payload) {
+            assertNull(error)
+            assertNotNull(variation.image)
+            assertEquals(variation.getImageModel()?.id, 2183L) // image will be the parent product image.
+        }
+    }
+
+    @Test
+    fun testDeleteProductVariationImageError() {
+        interceptor.respondWithError("wc-delete-product-variation-image-failure.json", 400)
+
+        val testVariation = generateSampleVariation()
+        val updateVariation = testVariation.copy().apply {
+            image = "{id:0}"
+        }
+        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
+        with(payload) {
+            assertNotNull("Error should not be null", error)
+            assertEquals(
+                    "Error code should be woocommerce_variation_invalid_image_id",
+                    ProductErrorType.INVALID_VARIATION_IMAGE_ID,
+                    error.type)
+        }
     }
 
     @Test
