@@ -63,9 +63,7 @@ class ScanStore @Inject constructor(
         } else {
             if (payload.scanStateModel != null) {
                 scanSqlUtils.replaceScanState(payload.site, payload.scanStateModel)
-                if (payload.scanStateModel.threats != null) {
-                    threatSqlUtils.replaceThreatsForSite(payload.site, payload.scanStateModel.threats)
-                }
+                threatSqlUtils.replaceThreatsForSite(payload.site, payload.scanStateModel.threats ?: emptyList())
             }
             OnScanStateFetched(FETCH_SCAN_STATE)
         }
