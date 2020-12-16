@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
@@ -20,18 +21,63 @@ class WCProductAttributesStore @Inject constructor(
 ) {
     suspend fun fetchStoreAttributes(
         site: SiteModel
-    ): WooResult<List<AttributeApiResponse>> =
+    ): WooResult<Array<AttributeApiResponse>> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
-                acquireCurrentData(site)
+                restClient.fetchProductFullAttributesList(site)
+                        .toWooResult()
             }
 
-    suspend fun acquireCurrentData(
-        site: SiteModel
-    ) = with(restClient.fetchProductFullAttributesList(site)) {
-        when {
-            isError -> WooResult(error)
-            result != null -> WooResult(result.toList())
-            else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-        }
+    suspend fun createAttribute(
+        site: SiteModel,
+        name: String,
+        type: String = "select",
+        orderBy: String = "menu_order",
+        hasArchives: Boolean = false
+    ): WooResult<AttributeApiResponse> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
+                restClient.postNewAttribute(
+                        site, mapOf(
+                        "name" to name,
+                        "slug" to name,
+                        "type" to type,
+                        "order_by" to orderBy,
+                        "has_archives" to hasArchives.toString()
+                )).toWooResult()
+            }
+
+    suspend fun updateAttribute(
+        site: SiteModel,
+        attributeID: Int,
+        name: String,
+        type: String = "select",
+        orderBy: String = "menu_order",
+        hasArchives: Boolean = false
+    ): WooResult<AttributeApiResponse> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
+                restClient.postNewAttribute(
+                        site, mapOf(
+                        "id" to attributeID.toString(),
+                        "name" to name,
+                        "slug" to name,
+                        "type" to type,
+                        "order_by" to orderBy,
+                        "has_archives" to hasArchives.toString()
+                )).toWooResult()
+            }
+
+    suspend fun deleteAttribute(
+        site: SiteModel,
+        attributeID: Long
+    ): WooResult<AttributeApiResponse> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
+                restClient.deleteExistingAttribute(site, attributeID)
+                        .toWooResult()
+            }
+
+    private fun <T> WooPayload<T>.toWooResult(
+    ) = when {
+        isError -> WooResult(error)
+        result != null -> WooResult<T>(result)
+        else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
     }
 }
