@@ -63,6 +63,8 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
     private fun launchFullAttributeListRequest(view: View) = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite { wcAttributesStore.fetchStoreAttributes(it) }
+                    ?.model
+                    ?.let { logAttributeListResponse(it) }
         } catch (ex: Exception) {
             prependToLog("Couldn't fetch Products Attributes. Error: ${ex.message}")
         }
@@ -70,10 +72,10 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
 
     private fun logAttributeListResponse(model: List<AttributeApiResponse>) {
         model.forEach {
-            prependToLog("  Top Performer currency: ${it.slug ?: "Slug not available"}")
-            prependToLog("  Top Performer quantity: ${it.type ?: "Type not available"}")
-            prependToLog("  Top Performer Product name: ${it.name ?: "Attribute name not available"}")
-            prependToLog("  Top Performer Product id: ${it.id ?: "Attribute id not available"}")
+            prependToLog("  Attribute slug: ${it.slug ?: "Slug not available"}")
+            prependToLog("  Attribute type: ${it.type ?: "Type not available"}")
+            prependToLog("  Attribute name: ${it.name ?: "Attribute name not available"}")
+            prependToLog("  Attribute id: ${it.id ?: "Attribute id not available"}")
             prependToLog("  --------- Attribute ---------")
         }
         prependToLog("========== Full Site Attribute list =========")
