@@ -68,3 +68,10 @@ WordPress/src/main/res/values/com_crashlytics_export_strings.xml
 
 # libs
 libs/utils
+
+# Ignore non-encrypted files in .configure-files
+.configure-files/*
+!.configure-files/*.enc
+
+# Non-vendored dependencies
+/vendor
