@@ -8,7 +8,6 @@ import junit.framework.Assert.assertTrue
 import junit.framework.Assert.fail
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.TransactionAction
@@ -93,7 +92,6 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
-    @Ignore("Temporarily disabled due to an API issue")
     @Test
     fun testRedeemingCardWithWrongCountryCode() {
         nextEvent = ERROR_REDEEMING_SHOPPING_CART_WRONG_COUNTRY_CODE
