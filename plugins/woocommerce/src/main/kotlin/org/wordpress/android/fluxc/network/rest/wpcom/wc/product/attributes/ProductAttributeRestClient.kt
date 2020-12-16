@@ -10,6 +10,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.utils.handleResult
+import org.wordpress.android.fluxc.utils.syncDeleteRequest
+import org.wordpress.android.fluxc.utils.syncPutRequest
 import javax.inject.Singleton
 
 @Singleton
@@ -28,11 +30,26 @@ constructor(
             .requestTo(site)
             .handleResult()
 
-    suspend fun createProductSingleAttribute(
+    suspend fun postNewAttribute(
         site: SiteModel,
         args: Map<String, String>
     ) = WOOCOMMERCE.products.attributes.pathV3
             .postTo(site, args)
+            .handleResult()
+
+    suspend fun updateExistingAttribute(
+        site: SiteModel,
+        attributeID: Long,
+        args: Map<String, String>
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).pathV3
+            .putTo(site, args)
+            .handleResult()
+
+    suspend fun deleteExistingAttribute(
+        site: SiteModel,
+        attributeID: Long
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).pathV3
+            .deleteFrom(site)
             .handleResult()
 
     private suspend fun String.requestTo(
@@ -53,6 +70,26 @@ constructor(
             site,
             this,
             args,
+            AttributeApiResponse::class.java
+    )
+
+    private suspend fun String.putTo(
+        site: SiteModel,
+        args: Map<String, String>
+    ) = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            this@ProductAttributeRestClient,
+            site,
+            this,
+            args,
+            AttributeApiResponse::class.java
+    )
+
+    private suspend fun String.deleteFrom(
+        site: SiteModel
+    ) = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+            this@ProductAttributeRestClient,
+            site,
+            this,
             AttributeApiResponse::class.java
     )
 }
