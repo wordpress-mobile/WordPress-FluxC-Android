@@ -47,22 +47,23 @@ class WCProductAttributesStore @Inject constructor(
 
     suspend fun updateAttribute(
         site: SiteModel,
-        attributeID: Int,
+        attributeID: Long,
         name: String,
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
     ): WooResult<AttributeApiResponse> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
-                restClient.postNewAttribute(
-                        site, mapOf(
+                restClient.updateExistingAttribute(
+                        site, attributeID, mapOf(
                         "id" to attributeID.toString(),
                         "name" to name,
                         "slug" to name,
                         "type" to type,
                         "order_by" to orderBy,
                         "has_archives" to hasArchives.toString()
-                )).toWooResult()
+                )
+                ).toWooResult()
             }
 
     suspend fun deleteAttribute(
