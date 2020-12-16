@@ -7,4 +7,6 @@ class AttributeApiResponse : Response {
     val name: String? = null
     val slug: String? = null
     val type: String? = null
+    val orderBy: String? = null
+    val hasArchives: Boolean? = null
 }
