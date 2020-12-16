@@ -36,6 +36,13 @@
                 android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
                 android:textColor="@android:color/holo_blue_bright" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/fetch_product_attributes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Full Attributes List"/>
     </LinearLayout>
 
 </ScrollView>
