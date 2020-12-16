@@ -192,7 +192,15 @@ class WCProductStore @Inject constructor(
         INVALID_REVIEW_ID,
         INVALID_IMAGE_ID,
         DUPLICATE_SKU,
-        TERM_EXISTS, // indicates duplicate term name. Currently only used when adding product categories
+
+        // indicates duplicate term name. Currently only used when adding product categories
+        TERM_EXISTS,
+
+        // Happens if a store is running Woo 4.6 and below and tries to delete the product image
+        // from a variation. See this PR for more detail:
+        // https://github.com/woocommerce/woocommerce/pull/27299
+        INVALID_VARIATION_IMAGE_ID,
+
         GENERIC_ERROR;
 
         companion object {
