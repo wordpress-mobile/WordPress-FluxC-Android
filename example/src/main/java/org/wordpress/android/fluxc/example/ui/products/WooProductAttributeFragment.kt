@@ -40,7 +40,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         selectedSite = site
         selectedPos = pos
         buttonContainer.toggleSiteDependentButtons()
-        leaderboards_selected_site.text = site.name ?: site.displayName
+        attributes_selected_site.text = site.name ?: site.displayName
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
