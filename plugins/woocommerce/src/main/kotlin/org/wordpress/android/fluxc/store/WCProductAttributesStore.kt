@@ -34,7 +34,7 @@ class WCProductAttributesStore @Inject constructor(
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
     ): WooResult<AttributeApiResponse> =
-            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
                 restClient.postNewAttribute(
                         site, mapOf(
                         "name" to name,
@@ -53,7 +53,7 @@ class WCProductAttributesStore @Inject constructor(
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
     ): WooResult<AttributeApiResponse> =
-            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "updateStoreAttributes") {
                 restClient.updateExistingAttribute(
                         site, attributeID, mapOf(
                         "id" to attributeID.toString(),
@@ -70,7 +70,7 @@ class WCProductAttributesStore @Inject constructor(
         site: SiteModel,
         attributeID: Long
     ): WooResult<AttributeApiResponse> =
-            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteStoreAttributes") {
                 restClient.deleteExistingAttribute(site, attributeID)
                         .toWooResult()
             }
