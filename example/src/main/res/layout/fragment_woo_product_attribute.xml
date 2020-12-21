@@ -43,6 +43,28 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch Full Attributes List"/>
+
+        <Button
+            android:id="@+id/create_product_attributes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Create Attribute"/>
+
+        <Button
+            android:id="@+id/delete_product_attributes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Delete Attribute"/>
+
+        <Button
+            android:id="@+id/update_product_attributes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Attribute"/>
+
     </LinearLayout>
 
 </ScrollView>
