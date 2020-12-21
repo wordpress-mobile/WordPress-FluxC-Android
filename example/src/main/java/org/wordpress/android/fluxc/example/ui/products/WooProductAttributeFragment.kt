@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*
 import kotlinx.android.synthetic.main.fragment_woo_leaderboards.buttonContainer
 import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +16,7 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
@@ -50,7 +50,10 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         super.onViewCreated(view, savedInstanceState)
 
         attributes_select_site.setOnClickListener(::onProductAttributesSelectSiteButtonClicked)
-        fetch_product_attributes.setOnClickListener(::launchFullAttributeListRequest)
+        fetch_product_attributes.setOnClickListener(::onFetchAttributesListClicked)
+        create_product_attributes.setOnClickListener(::onCreateAttributeButtonClicked)
+        delete_product_attributes.setOnClickListener(::onDeleteAttributeButtonClicked)
+        update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
     }
 
     private fun onProductAttributesSelectSiteButtonClicked(view: View) {
@@ -60,7 +63,73 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun launchFullAttributeListRequest(view: View) = coroutineScope.launch {
+    private fun onCreateAttributeButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute name you want to create:"
+            ) { editText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite {
+                        wcAttributesStore.createAttribute(it, editText.text.toString())
+                    }?.model?.let { logSingleAttributeResponse(it) }
+                    prependToLog("========== Attribute Created =========")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onDeleteAttributeButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to remove:"
+            ) { editText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite {
+                        wcAttributesStore.deleteAttribute(
+                                it,
+                                editText.text.toString().toLongOrNull() ?: 0
+                        )
+                    }?.model?.let { logSingleAttributeResponse(it) }
+                    prependToLog("========== Attribute Deleted =========")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onUpdateAttributeButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to update:"
+            ) { attributeIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the attribute new name:"
+                ) { attributeNameEditText ->
+                    coroutineScope.launch {
+                        takeAsyncRequestWithValidSite {
+                            wcAttributesStore.updateAttribute(
+                                    it,
+                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0,
+                                    attributeNameEditText.text.toString()
+                            )
+                        }?.model?.let { logSingleAttributeResponse(it) }
+                        prependToLog("========== Attribute Updated =========")
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onFetchAttributesListClicked(view: View) = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite { wcAttributesStore.fetchStoreAttributes(it) }
                     ?.model
@@ -70,14 +139,18 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun logAttributeListResponse(model: List<AttributeApiResponse>) {
-        model.forEach {
+    private fun logSingleAttributeResponse(response: AttributeApiResponse) {
+        response.let {
             prependToLog("  Attribute slug: ${it.slug ?: "Slug not available"}")
             prependToLog("  Attribute type: ${it.type ?: "Type not available"}")
             prependToLog("  Attribute name: ${it.name ?: "Attribute name not available"}")
             prependToLog("  Attribute id: ${it.id ?: "Attribute id not available"}")
             prependToLog("  --------- Attribute ---------")
         }
+    }
+
+    private fun logAttributeListResponse(model: Array<AttributeApiResponse>) {
+        model.forEach(::logSingleAttributeResponse)
         prependToLog("========== Full Site Attribute list =========")
     }
 
