@@ -75,8 +75,7 @@ class WCProductAttributesStore @Inject constructor(
                         .toWooResult()
             }
 
-    private fun <T> WooPayload<T>.toWooResult(
-    ) = when {
+    private fun <T> WooPayload<T>.toWooResult() = when {
         isError -> WooResult(error)
         result != null -> WooResult<T>(result)
         else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
