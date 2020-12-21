@@ -4,6 +4,7 @@ import com.yarolegovich.wellsql.SelectQuery
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -29,6 +30,8 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ActivityLogStore
+import org.wordpress.android.fluxc.store.ActivityLogStore.FetchActivityTypesPayload
+import org.wordpress.android.fluxc.store.ActivityLogStore.OnActivityTypesFetched
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindErrorType
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
@@ -203,6 +206,19 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
             assertEquals(status, this.status)
             assertEquals(progress, this.progress)
         }
+    }
+
+    @Test
+    fun testFetchActivityTypes() {
+        val site = authenticate(FreeJetpackSite)
+        val payload = FetchActivityTypesPayload(site.siteId, null, null)
+
+        val resultPayload: OnActivityTypesFetched = runBlocking { activityLogStore.fetchActivityTypes(payload) }
+
+        assertNotNull(resultPayload)
+        assertFalse(resultPayload.isError)
+        assertEquals(site.siteId, resultPayload.remoteSiteId)
+        assertNotNull(resultPayload.activityTypeModels)
     }
 
     private fun authenticate(site: Sites): SiteModel {
