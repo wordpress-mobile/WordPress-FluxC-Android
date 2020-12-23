@@ -10,8 +10,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.utils.handleResult
-import org.wordpress.android.fluxc.utils.syncDeleteRequest
-import org.wordpress.android.fluxc.utils.syncPutRequest
 import javax.inject.Singleton
 
 @Singleton
