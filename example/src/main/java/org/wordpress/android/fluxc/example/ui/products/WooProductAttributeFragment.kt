@@ -73,7 +73,8 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                     takeAsyncRequestWithValidSite {
                         wcAttributesStore.createAttribute(it, editText.text.toString())
                     }?.model?.let { logSingleAttributeResponse(it) }
-                    prependToLog("========== Attribute Created =========")
+                            ?.let { prependToLog("========== Attribute Created =========") }
+                            ?: prependToLog("Failed to create Attribute")
                 }
             }
         } catch (ex: Exception) {
@@ -94,7 +95,8 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                                 editText.text.toString().toLongOrNull() ?: 0
                         )
                     }?.model?.let { logSingleAttributeResponse(it) }
-                    prependToLog("========== Attribute Deleted =========")
+                            ?.let { prependToLog("========== Attribute Deleted =========") }
+                            ?: prependToLog("Failed to delete Attribute")
                 }
             }
         } catch (ex: Exception) {
@@ -120,7 +122,8 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                                     attributeNameEditText.text.toString()
                             )
                         }?.model?.let { logSingleAttributeResponse(it) }
-                        prependToLog("========== Attribute Updated =========")
+                                ?.let { prependToLog("========== Attribute Updated =========") }
+                                ?: prependToLog("Failed to update Attribute")
                     }
                 }
             }
