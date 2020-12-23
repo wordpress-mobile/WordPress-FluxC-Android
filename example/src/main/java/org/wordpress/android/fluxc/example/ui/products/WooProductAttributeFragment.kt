@@ -72,9 +72,11 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                 coroutineScope.launch {
                     takeAsyncRequestWithValidSite {
                         wcAttributesStore.createAttribute(it, editText.text.toString())
-                    }?.model?.let { logSingleAttributeResponse(it) }
-                            ?.let { prependToLog("========== Attribute Created =========") }
-                            ?: prependToLog("Failed to create Attribute")
+                    }?.apply {
+                        model?.let { logSingleAttributeResponse(it) }
+                                ?.let { prependToLog("========== Attribute Created =========") }
+                                ?: takeIf { isError }?.let { prependToLog("Failed to create Attribute. Error: ${error.message}") }
+                    } ?: prependToLog("Failed to create Attribute. Error: Unknown")
                 }
             }
         } catch (ex: Exception) {
@@ -94,9 +96,11 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                                 it,
                                 editText.text.toString().toLongOrNull() ?: 0
                         )
-                    }?.model?.let { logSingleAttributeResponse(it) }
-                            ?.let { prependToLog("========== Attribute Deleted =========") }
-                            ?: prependToLog("Failed to delete Attribute")
+                    }?.apply {
+                        model?.let { logSingleAttributeResponse(it) }
+                                ?.let { prependToLog("========== Attribute Deleted =========") }
+                                ?: takeIf { isError }?.let { prependToLog("Failed to delete Attribute. Error: ${error.message}") }
+                    } ?: prependToLog("Failed to delete Attribute. Error: Unknown")
                 }
             }
         } catch (ex: Exception) {
@@ -121,9 +125,11 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                                     attributeIdEditText.text.toString().toLongOrNull() ?: 0,
                                     attributeNameEditText.text.toString()
                             )
-                        }?.model?.let { logSingleAttributeResponse(it) }
-                                ?.let { prependToLog("========== Attribute Updated =========") }
-                                ?: prependToLog("Failed to update Attribute")
+                        }?.apply {
+                            model?.let { logSingleAttributeResponse(it) }
+                                    ?.let { prependToLog("========== Attribute Updated =========") }
+                                    ?: takeIf { isError }?.let { prependToLog("Failed to update Attribute. Error: ${error.message}") }
+                        } ?: prependToLog("Failed to update Attribute. Error: Unknown")
                     }
                 }
             }
