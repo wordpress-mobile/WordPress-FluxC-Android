@@ -26,7 +26,7 @@ class ReleaseStack_XPostsTest : ReleaseStack_WPComBase() {
     }
 
     @Test
-    fun makes_successful_call_returning_xpost() {
+    fun makesSuccessfulCallReturningXpost() {
         val response = runBlocking {
             val site = SiteModel().apply { siteId = siteFromDb.siteId }
             xPostsStore.fetchXPosts(site)
