@@ -49,8 +49,12 @@ import org.wordpress.android.fluxc.store.ActivityLogStore.RewindRequestTypes
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindStatusErrorType
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.FormattableContent
-import org.wordpress.android.util.DateTimeUtils
+import org.wordpress.android.fluxc.utils.TimeZoneProvider
 import java.util.Date
+import java.util.TimeZone
+
+private const val DATE_1_IN_MILLIS = 1578614400000L // 2020-01-10T00:00:00+00:00
+private const val DATE_2_IN_MILLIS = 1578787200000L // 2020-01-12T00:00:00+00:00
 
 @RunWith(MockitoJUnitRunner::class)
 class ActivityLogRestClientTest {
@@ -61,6 +65,7 @@ class ActivityLogRestClientTest {
     @Mock private lateinit var requestQueue: RequestQueue
     @Mock private lateinit var accessToken: AccessToken
     @Mock private lateinit var userAgent: UserAgent
+    @Mock private lateinit var timeZoneProvider: TimeZoneProvider
     private lateinit var urlCaptor: KArgumentCaptor<String>
     private lateinit var paramsCaptor: KArgumentCaptor<Map<String, String>>
     private lateinit var activityRestClient: ActivityLogRestClient
@@ -74,24 +79,24 @@ class ActivityLogRestClientTest {
         paramsCaptor = argumentCaptor()
         activityRestClient = ActivityLogRestClient(
                 wpComGsonRequestBuilder,
+                timeZoneProvider,
                 dispatcher,
                 null,
                 requestQueue,
                 accessToken,
                 userAgent)
         whenever(requestPayload.site).thenReturn(site)
+        whenever(timeZoneProvider.getDefaultTimeZone()).thenReturn(TimeZone.getTimeZone("GMT"))
     }
 
     @Test
     fun fetchActivity_passesCorrectParamToBuildRequest() = test {
         initFetchActivity()
-        val afterMillis = 1603860428000
-        val beforeMillis = 1603961628000
         val payload = FetchActivityLogPayload(
                 site,
                 false,
-                Date(afterMillis),
-                Date(beforeMillis),
+                Date(DATE_1_IN_MILLIS),
+                Date(DATE_2_IN_MILLIS),
                 listOf("post", "attachment")
         )
 
@@ -101,8 +106,8 @@ class ActivityLogRestClientTest {
         with(paramsCaptor.firstValue) {
             assertEquals("1", this["page"])
             assertEquals("$number", this["number"])
-            assertEquals(DateTimeUtils.iso8601FromDate(Date(afterMillis)), this["after"])
-            assertEquals(DateTimeUtils.iso8601FromDate(Date(beforeMillis)), this["before"])
+            assertNotNull(this["after"])
+            assertNotNull(this["before"])
             assertEquals("post", this["group[0]"])
             assertEquals("attachment", this["group[1]"])
         }
@@ -125,6 +130,50 @@ class ActivityLogRestClientTest {
             assertEquals("1", this["page"])
             assertEquals("$number", this["number"])
             assertEquals(2, this.size)
+        }
+    }
+
+    @Test
+    fun fetchActivity_adjustsDateRangeBasedOnTimezoneGMT3() = test {
+        val timezoneOffset = 3
+        whenever(timeZoneProvider.getDefaultTimeZone()).thenReturn(TimeZone.getTimeZone("GMT+$timezoneOffset"))
+        initFetchActivity()
+        val payload = FetchActivityLogPayload(
+                site,
+                false,
+                // 2020-01-10T00:00:00+00:00
+                Date(DATE_1_IN_MILLIS),
+                // 2020-01-12T00:00:00+00:00
+                Date(DATE_2_IN_MILLIS)
+        )
+
+        activityRestClient.fetchActivity(payload, number, offset)
+
+        with(paramsCaptor.firstValue) {
+            assertEquals("2020-01-09T21:00:00+00:00", this["after"])
+            assertEquals("2020-01-11T21:00:00+00:00", this["before"])
+        }
+    }
+
+    @Test
+    fun fetchActivity_adjustsDateRangeBasedOnTimezoneGMTMinus7() = test {
+        val timezoneOffset = -7
+        whenever(timeZoneProvider.getDefaultTimeZone()).thenReturn(TimeZone.getTimeZone("GMT$timezoneOffset"))
+        initFetchActivity()
+        val payload = FetchActivityLogPayload(
+                site,
+                false,
+                // 2020-01-10T00:00:00+00:00
+                Date(DATE_1_IN_MILLIS),
+                // 2020-01-12T00:00:00+00:00
+                Date(DATE_2_IN_MILLIS)
+        )
+
+        activityRestClient.fetchActivity(payload, number, offset)
+
+        with(paramsCaptor.firstValue) {
+            assertEquals("2020-01-10T07:00:00+00:00", this["after"])
+            assertEquals("2020-01-12T07:00:00+00:00", this["before"])
         }
     }
 
@@ -479,8 +528,8 @@ class ActivityLogRestClientTest {
         activityRestClient.fetchActivityTypes(siteId, after, before)
 
         with(paramsCaptor.firstValue) {
-                assertEquals(DateTimeUtils.iso8601FromDate(Date(afterMillis)), this["after"])
-                assertEquals(DateTimeUtils.iso8601FromDate(Date(beforeMillis)), this["before"])
+            assertNotNull(this["after"])
+            assertNotNull(this["before"])
         }
     }
 
