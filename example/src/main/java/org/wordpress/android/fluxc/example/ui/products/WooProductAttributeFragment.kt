@@ -75,7 +75,9 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                     }?.apply {
                         model?.let { logSingleAttributeResponse(it) }
                                 ?.let { prependToLog("========== Attribute Created =========") }
-                                ?: takeIf { isError }?.let { prependToLog("Failed to create Attribute. Error: ${error.message}") }
+                                ?: takeIf { isError }?.let {
+                                    prependToLog("Failed to create Attribute. Error: ${error.message}")
+                                }
                     } ?: prependToLog("Failed to create Attribute. Error: Unknown")
                 }
             }
@@ -99,7 +101,9 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                     }?.apply {
                         model?.let { logSingleAttributeResponse(it) }
                                 ?.let { prependToLog("========== Attribute Deleted =========") }
-                                ?: takeIf { isError }?.let { prependToLog("Failed to delete Attribute. Error: ${error.message}") }
+                                ?: takeIf { isError }?.let {
+                                    prependToLog("Failed to delete Attribute. Error: ${error.message}")
+                                }
                     } ?: prependToLog("Failed to delete Attribute. Error: Unknown")
                 }
             }
@@ -128,7 +132,9 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
                         }?.apply {
                             model?.let { logSingleAttributeResponse(it) }
                                     ?.let { prependToLog("========== Attribute Updated =========") }
-                                    ?: takeIf { isError }?.let { prependToLog("Failed to update Attribute. Error: ${error.message}") }
+                                    ?: takeIf { isError }?.let {
+                                        prependToLog("Failed to update Attribute. Error: ${error.message}")
+                                    }
                         } ?: prependToLog("Failed to update Attribute. Error: Unknown")
                     }
                 }
