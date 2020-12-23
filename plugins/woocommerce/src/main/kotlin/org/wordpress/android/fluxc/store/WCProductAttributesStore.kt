@@ -30,6 +30,7 @@ class WCProductAttributesStore @Inject constructor(
     suspend fun createAttribute(
         site: SiteModel,
         name: String,
+        slug: String = name,
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
@@ -38,7 +39,7 @@ class WCProductAttributesStore @Inject constructor(
                 restClient.postNewAttribute(
                         site, mapOf(
                         "name" to name,
-                        "slug" to name,
+                        "slug" to slug,
                         "type" to type,
                         "order_by" to orderBy,
                         "has_archives" to hasArchives.toString()
@@ -49,6 +50,7 @@ class WCProductAttributesStore @Inject constructor(
         site: SiteModel,
         attributeID: Long,
         name: String,
+        slug: String = name,
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
@@ -58,7 +60,7 @@ class WCProductAttributesStore @Inject constructor(
                         site, attributeID, mapOf(
                         "id" to attributeID.toString(),
                         "name" to name,
-                        "slug" to name,
+                        "slug" to slug,
                         "type" to type,
                         "order_by" to orderBy,
                         "has_archives" to hasArchives.toString()
