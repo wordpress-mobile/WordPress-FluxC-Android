@@ -16,7 +16,6 @@ import javax.inject.Singleton
 @Singleton
 class WCProductAttributesStore @Inject constructor(
     private val restClient: ProductAttributeRestClient,
-    private val productStore: WCProductStore,
     private val coroutineEngine: CoroutineEngine
 ) {
     suspend fun fetchStoreAttributes(
