@@ -9,6 +9,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ER
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.deleteSingleStoredAttribute
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.getCurrentAttributes
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertFromScratchCompleteAttributesList
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertSingleAttribute
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.updateSingleStoredAttribute
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -28,7 +33,14 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.let { mapper.mapToAttributeModelList(it) }
+                        ?.let {
+                            insertFromScratchCompleteAttributesList(it, site.id)
+                            getCurrentAttributes(site.id)
+                        }
                         ?.let { WooResult(it) }
+                        ?: getCurrentAttributes(site.id)
+                                .takeIf { it.isNotEmpty() }
+                                ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
@@ -52,6 +64,7 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.let { mapper.mapToAttributeModel(it) }
+                        ?.let { insertSingleAttribute(it) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
@@ -78,6 +91,7 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.let { mapper.mapToAttributeModel(it) }
+                        ?.let { updateSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
@@ -91,6 +105,7 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.let { mapper.mapToAttributeModel(it) }
+                        ?.let { deleteSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
