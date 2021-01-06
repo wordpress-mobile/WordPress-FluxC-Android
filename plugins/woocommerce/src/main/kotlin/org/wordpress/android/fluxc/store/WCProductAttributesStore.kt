@@ -32,6 +32,7 @@ class WCProductAttributesStore @Inject constructor(
                 restClient.fetchProductFullAttributesList(site)
                         .asWooResult()
                         .model
+                        ?.takeIf { it.isNotEmpty() }
                         ?.let { mapper.mapToAttributeModelList(it) }
                         ?.let {
                             insertFromScratchCompleteAttributesList(it, site.id)
