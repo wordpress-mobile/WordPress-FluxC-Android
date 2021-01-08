@@ -8,21 +8,25 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.Attr
 object WCProductAttributesTestFixtures {
     val stubSite = SiteModel().apply { id = 321 }
 
-    val attributeDeleteResponse
-        get() = "wc/product-attribute-delete.json"
+    val attributeDeleteResponse by lazy {
+        "wc/product-attribute-delete.json"
                 .jsonFileAs(AttributeApiResponse::class.java)
+    }
 
-    val attributeCreateResponse
-        get() = "wc/product-attribute-create.json"
+    val attributeCreateResponse by lazy {
+        "wc/product-attribute-create.json"
                 .jsonFileAs(AttributeApiResponse::class.java)
+    }
 
-    val attributeUpdateResponse
-        get() = "wc/product-attribute-update.json"
+    val attributeUpdateResponse by lazy {
+        "wc/product-attribute-update.json"
                 .jsonFileAs(AttributeApiResponse::class.java)
+    }
 
-    val attributesFullList
-        get() = "wc/product-attributes-all.json"
+    val attributesFullListResponse by lazy {
+        "wc/product-attributes-all.json"
                 .jsonFileAs(Array<AttributeApiResponse>::class.java)
+    }
 
     private fun <T> String.jsonFileAs(clazz: Class<T>) =
             UnitTestUtils.getStringFromResourceFile(
