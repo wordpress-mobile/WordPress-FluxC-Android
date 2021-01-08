@@ -74,7 +74,6 @@ jobs:
             ls .configure-files
             ./tools/merge_properties.sh .configure-files/tests.properties-extra .configure-files/tests.properties > example/tests.properties
             cp .configure-files/gradle.properties example/gradle.properties
-            cp .configure-files/tests.properties-extra example/tests.properties-extra
       - run:
           name: Build
           command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
