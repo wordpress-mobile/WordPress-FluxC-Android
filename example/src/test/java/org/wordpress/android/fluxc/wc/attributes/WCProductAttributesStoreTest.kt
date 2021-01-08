@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.wc.attributes
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import org.assertj.core.api.Assertions.assertThat
@@ -20,6 +22,8 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductAttributesStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedAttributesList
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
@@ -53,15 +57,29 @@ class WCProductAttributesStoreTest {
     }
 
     @Test
-    fun `fetch attributes should call mapper once`() {
+    fun `fetch attributes should call mapper once`() = test {
+        mapper = spy()
+        createStoreUnderTest()
+        whenever(restClient.fetchProductFullAttributesList(stubSite))
+                .thenReturn(WooPayload(attributesFullListResponse))
+
+        storeUnderTest.fetchStoreAttributes(stubSite)
+        verify(mapper).mapToAttributeModelList(attributesFullListResponse!!)
     }
 
     @Test
-    fun `fetch attributes should return WooResult correctly`() {
-    }
+    fun `fetch attributes should return WooResult correctly`() = test {
+        whenever(restClient.fetchProductFullAttributesList(stubSite))
+                .thenReturn(WooPayload(attributesFullListResponse))
 
-    @Test
-    fun `fetch attributes from a invalid site ID should return WooResult with error`() {
+        whenever(mapper.mapToAttributeModelList(attributesFullListResponse!!))
+                .thenReturn(parsedAttributesList)
+
+        storeUnderTest.fetchStoreAttributes(stubSite).let { result ->
+            assertThat(result.model).isNotNull
+            assertThat(result.model).isEqualTo(parsedAttributesList)
+            assertThat(result.error).isNull()
+        }
     }
 
     private fun initMocks() {

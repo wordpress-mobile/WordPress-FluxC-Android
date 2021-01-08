@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.wc.attributes
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
 
 object WCProductAttributesTestFixtures {
@@ -26,6 +27,29 @@ object WCProductAttributesTestFixtures {
     val attributesFullListResponse by lazy {
         "wc/product-attributes-all.json"
                 .jsonFileAs(Array<AttributeApiResponse>::class.java)
+    }
+
+    val parsedAttributesList by lazy {
+        listOf(
+                WCProductAttributeModel(
+                        1,
+                        0,
+                        "Color",
+                        "pa_color",
+                        "select",
+                        "menu_order",
+                        true
+                ),
+                WCProductAttributeModel(
+                        2,
+                        0,
+                        "Size",
+                        "pa_size",
+                        "select",
+                        "menu_order",
+                        false
+                )
+        )
     }
 
     private fun <T> String.jsonFileAs(clazz: Class<T>) =
