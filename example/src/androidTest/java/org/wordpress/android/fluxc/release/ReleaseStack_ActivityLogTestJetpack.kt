@@ -81,7 +81,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val payload = ActivityLogStore.FetchActivityLogPayload(site)
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
-        val activityLogForSite = activityLogStore.getActivityLogForSite(site)
+        val activityLogForSite = activityLogStore.getActivityLogForSite(site, false)
 
         assertNotNull(fetchActivities)
         assertEquals(fetchActivities.rowsAffected, activityLogForSite.size)
