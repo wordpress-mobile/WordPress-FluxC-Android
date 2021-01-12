@@ -128,9 +128,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val firstActivity = activityLogModel(1)
-        val secondActivity = activityLogModel(2)
-        val thirdActivity = activityLogModel(3)
+        val firstActivity = activityLogModel(1, true)
+        val secondActivity = activityLogModel(2, true)
+        val thirdActivity = activityLogModel(3, true)
         val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, activityModels)
@@ -149,7 +149,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val activity = activityLogModel(1)
+        val activity = activityLogModel(1, true)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, listOf(activity))
 
@@ -227,8 +227,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         return siteStore.sites.find { it.unmappedUrl == site.siteUrl }!!
     }
 
-    private fun activityLogModel(index: Long): ActivityLogModel {
-        return ActivityLogModel(activityID = "$index",
+    private fun activityLogModel(index: Long, rewindable: Boolean): ActivityLogModel {
+        return ActivityLogModel(
+                activityID = "$index",
                 summary = "summary$index",
                 content = FormattableContent(text = "text$index"),
                 name = "name$index",
@@ -236,8 +237,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
                 published = Date(index * 100),
                 rewindID = null,
                 gridicon = null,
-                rewindable = true,
-                status = "status")
+                rewindable = rewindable,
+                status = "status"
+        )
     }
 
     @Subscribe
