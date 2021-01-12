@@ -88,6 +88,20 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
+    fun testFetchRewindableActivities() {
+        val site = authenticate(FreeJetpackSite)
+
+        val payload = ActivityLogStore.FetchActivityLogPayload(site)
+        val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
+
+        val activityLogForSite = activityLogStore.getActivityLogForSite(site, true)
+
+        assertNotNull(fetchActivities)
+        assertEquals(fetchActivities.rowsAffected, PAGE_SIZE) // All activities are persisted.
+        assertEquals(activityLogForSite.size, 0) // Non retrieved, all activities are non-rewindable.
+    }
+
+    @Test
     fun testFetchActivitiesActivityTypeFilter() {
         val site = authenticate(CompleteJetpackSite)
 
@@ -340,5 +354,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
                 wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
                 siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
         )
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 20
     }
 }
