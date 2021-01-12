@@ -52,6 +52,18 @@ object WCProductAttributesTestFixtures {
         )
     }
 
+    val parsedCreateAttributeResponse by lazy {
+        WCProductAttributeModel(
+                1,
+                0,
+                "Color",
+                "pa_color",
+                "select",
+                "menu_order",
+                true
+        )
+    }
+
     private fun <T> String.jsonFileAs(clazz: Class<T>) =
             UnitTestUtils.getStringFromResourceFile(
                     this@WCProductAttributesTestFixtures.javaClass,
