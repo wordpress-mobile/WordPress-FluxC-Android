@@ -64,6 +64,18 @@ object WCProductAttributesTestFixtures {
         )
     }
 
+    val parsedDeleteAttributeResponse by lazy {
+        WCProductAttributeModel(
+                17,
+                0,
+                "Size",
+                "pa_size",
+                "select",
+                "name",
+                true
+        )
+    }
+
     private fun <T> String.jsonFileAs(clazz: Class<T>) =
             UnitTestUtils.getStringFromResourceFile(
                     this@WCProductAttributesTestFixtures.javaClass,

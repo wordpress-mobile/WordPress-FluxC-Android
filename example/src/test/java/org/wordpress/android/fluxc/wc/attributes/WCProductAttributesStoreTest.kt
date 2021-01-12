@@ -23,9 +23,11 @@ import org.wordpress.android.fluxc.store.WCProductAttributesStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeDeleteResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedAttributesList
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedCreateAttributeResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedDeleteAttributeResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
@@ -116,6 +118,34 @@ class WCProductAttributesStoreTest {
                 type = expectedResult.type,
                 orderBy = expectedResult.orderBy,
                 hasArchives = expectedResult.hasArchives
+        ).let { result ->
+            assertThat(result.model).isNotNull
+            assertThat(result.model).isEqualTo(expectedResult)
+            assertThat(result.error).isNull()
+        }
+    }
+
+    @Test
+    fun `delete Attribute should return WooResult with parsed entity`() = test {
+        val expectedResult = WCProductAttributeModel(
+                17,
+                0,
+                "Size",
+                "pa_size",
+                "select",
+                "name",
+                true
+        )
+
+        whenever(restClient.deleteExistingAttribute(stubSite, 17))
+                .thenReturn(WooPayload(attributeDeleteResponse))
+
+        whenever(mapper.mapToAttributeModel(attributeDeleteResponse!!))
+                .thenReturn(parsedDeleteAttributeResponse)
+
+        storeUnderTest.deleteAttribute(
+                site = stubSite,
+                attributeID = 17
         ).let { result ->
             assertThat(result.model).isNotNull
             assertThat(result.model).isEqualTo(expectedResult)
