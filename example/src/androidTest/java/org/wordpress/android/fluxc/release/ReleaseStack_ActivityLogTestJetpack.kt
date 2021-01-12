@@ -81,7 +81,11 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val payload = ActivityLogStore.FetchActivityLogPayload(site)
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
-        val activityLogForSite = activityLogStore.getActivityLogForSite(site, false)
+        val activityLogForSite = activityLogStore.getActivityLogForSite(
+                site = site,
+                ascending = true,
+                rewindableOnly = false
+        )
 
         assertNotNull(fetchActivities)
         assertEquals(fetchActivities.rowsAffected, activityLogForSite.size)
@@ -94,7 +98,11 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val payload = ActivityLogStore.FetchActivityLogPayload(site)
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
-        val activityLogForSite = activityLogStore.getActivityLogForSite(site, true)
+        val activityLogForSite = activityLogStore.getActivityLogForSite(
+                site = site,
+                ascending = true,
+                rewindableOnly = true
+        )
 
         assertNotNull(fetchActivities)
         assertEquals(fetchActivities.rowsAffected, PAGE_SIZE) // All activities are persisted.
