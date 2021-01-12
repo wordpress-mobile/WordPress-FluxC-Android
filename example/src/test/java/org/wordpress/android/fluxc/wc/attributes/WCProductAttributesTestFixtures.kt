@@ -33,7 +33,7 @@ object WCProductAttributesTestFixtures {
         listOf(
                 WCProductAttributeModel(
                         1,
-                        0,
+                        321,
                         "Color",
                         "pa_color",
                         "select",
@@ -42,7 +42,7 @@ object WCProductAttributesTestFixtures {
                 ),
                 WCProductAttributeModel(
                         2,
-                        0,
+                        321,
                         "Size",
                         "pa_size",
                         "select",
@@ -55,7 +55,7 @@ object WCProductAttributesTestFixtures {
     val parsedCreateAttributeResponse by lazy {
         WCProductAttributeModel(
                 1,
-                0,
+                321,
                 "Color",
                 "pa_color",
                 "select",
@@ -67,12 +67,24 @@ object WCProductAttributesTestFixtures {
     val parsedDeleteAttributeResponse by lazy {
         WCProductAttributeModel(
                 17,
-                0,
+                321,
                 "Size",
                 "pa_size",
                 "select",
                 "name",
                 true
+        )
+    }
+
+    val parsedUpdateAttributeResponse by lazy {
+        WCProductAttributeModel(
+                99,
+                321,
+                "test_name",
+                "pa_test",
+                "test_type",
+                "test",
+                false
         )
     }
 

@@ -24,10 +24,12 @@ import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeDeleteResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeUpdateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedAttributesList
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedCreateAttributeResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedDeleteAttributeResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedUpdateAttributeResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
@@ -90,7 +92,7 @@ class WCProductAttributesStoreTest {
     fun `create Attribute should return WooResult with parsed entity`() = test {
         val expectedResult = WCProductAttributeModel(
                 1,
-                0,
+                321,
                 "Color",
                 "pa_color",
                 "select",
@@ -129,7 +131,7 @@ class WCProductAttributesStoreTest {
     fun `delete Attribute should return WooResult with parsed entity`() = test {
         val expectedResult = WCProductAttributeModel(
                 17,
-                0,
+                321,
                 "Size",
                 "pa_size",
                 "select",
@@ -146,6 +148,49 @@ class WCProductAttributesStoreTest {
         storeUnderTest.deleteAttribute(
                 site = stubSite,
                 attributeID = 17
+        ).let { result ->
+            assertThat(result.model).isNotNull
+            assertThat(result.model).isEqualTo(expectedResult)
+            assertThat(result.error).isNull()
+        }
+    }
+
+    @Test
+    fun `update Attribute should return WooResult with parsed entity`() = test {
+        val expectedResult = WCProductAttributeModel(
+                99,
+                321,
+                "test_name",
+                "pa_test",
+                "test_type",
+                "test",
+                false
+        )
+
+        whenever(
+                restClient.updateExistingAttribute(stubSite, 99,
+                        with(expectedResult) {
+                            mapOf(
+                                    "name" to name,
+                                    "slug" to slug,
+                                    "type" to type,
+                                    "order_by" to orderBy,
+                                    "has_archives" to hasArchives.toString()
+                            )
+                        })
+        ).thenReturn(WooPayload(attributeUpdateResponse))
+
+        whenever(mapper.mapToAttributeModel(attributeUpdateResponse!!))
+                .thenReturn(parsedUpdateAttributeResponse)
+
+        storeUnderTest.updateAttribute(
+                site = stubSite,
+                attributeID = 99,
+                name = expectedResult.name,
+                slug = expectedResult.slug,
+                type = expectedResult.type,
+                orderBy = expectedResult.orderBy,
+                hasArchives = expectedResult.hasArchives
         ).let { result ->
             assertThat(result.model).isNotNull
             assertThat(result.model).isEqualTo(expectedResult)
