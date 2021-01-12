@@ -144,6 +144,26 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
+    fun storeAndRetrieveRewindableActivityLogInOrderByDateFromDb() {
+        val site = authenticate(FreeJetpackSite)
+
+        this.mCountDownLatch = CountDownLatch(1)
+
+        val firstActivity = activityLogModel(1, true)
+        val secondActivity = activityLogModel(2, false)
+        val thirdActivity = activityLogModel(3, true)
+        val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
+
+        activityLogSqlUtils.insertOrUpdateActivities(site, activityModels)
+
+        val activityLogForSite = activityLogSqlUtils.getRewindableActivitiesForSite(site, SelectQuery.ORDER_DESCENDING)
+
+        assertEquals(activityLogForSite.size, 2)
+        assertEquals(activityLogForSite[0], thirdActivity)
+        assertEquals(activityLogForSite[1], firstActivity)
+    }
+
+    @Test
     fun updatesActivityWithTheSameActivityId() {
         val site = authenticate(FreeJetpackSite)
 
