@@ -11,36 +11,6 @@ commands:
       - run:
           name: Setup gradle.properties
           command: cp example/gradle.properties-example example/gradle.properties && cp gradle.properties-example gradle.properties
-  decrypt-file:
-    parameters:
-      input:
-        type: string
-      output:
-        type: string
-      secret:
-        type: string
-    steps:
-      - run:
-          name: Decrypt << parameters.input >>
-          command: openssl aes-256-cbc -md sha256 -d -in "<< parameters.input >>" -out "<< parameters.output >>" -k "${<< parameters.secret >>}"
-  decrypt-properties-files:
-    steps:
-      - decrypt-file:
-          input: .circleci/gradle.properties.enc
-          output: example/gradle.properties
-          secret: CIRCLECI_FLUXC_ENCRYPTION_KEY
-      - decrypt-file:
-          input: .circleci/tests.properties.enc
-          output: .circleci/tests.properties
-          secret: CIRCLECI_FLUXC_ENCRYPTION_KEY
-      - decrypt-file:
-          input: .circleci/tests.properties-extra.enc
-          output: .circleci/tests.properties-extra
-          secret: CIRCLECI_FLUXC_ENCRYPTION_KEY
-      - run:
-          name: Merge properties files
-          command: ./tools/merge_properties.sh .circleci/tests.properties-extra .circleci/tests.properties > example/tests.properties
-
 jobs:
   Lint:
     executor:
@@ -95,16 +65,20 @@ jobs:
       - android/restore-gradle-cache:
           cache-prefix: connected-tests
       - copy-gradle-properties
-      - decrypt-properties-files
+      - run:
+          name: Decrypt Secrets
+          command: ./gradlew applyConfiguration
+      - run:
+          name: Merge properties files
+          command: |
+            ls .configure-files
+            ./tools/merge_properties.sh .configure-files/tests.properties-extra .configure-files/tests.properties > example/tests.properties
+            cp .configure-files/gradle.properties example/gradle.properties
       - run:
           name: Build
           command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
-      - decrypt-file:
-          input: .circleci/.firebase.secrets.json.enc
-          output: .firebase.secrets.json
-          secret: FIREBASE_SECRETS_ENCRYPTION_KEY
       - android/firebase-test:
-          key-file: .firebase.secrets.json
+          key-file: .configure-files/firebase.secrets.json
           results-history-name: << parameters.results-history-name >>
           type: instrumentation
           apk-path: example/build/outputs/apk/debug/example-debug.apk

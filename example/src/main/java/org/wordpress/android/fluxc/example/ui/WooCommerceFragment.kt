@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
 import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
+import org.wordpress.android.fluxc.example.ui.products.WooProductAttributeFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
 import org.wordpress.android.fluxc.example.ui.refunds.WooRefundsFragment
 import org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment
@@ -137,6 +138,12 @@ class WooCommerceFragment : Fragment() {
 
         countries.setOnClickListener {
             launchCountriesRequest()
+        }
+
+        attributes.setOnClickListener {
+            getFirstWCSite()?.let {
+                replaceFragment(WooProductAttributeFragment())
+            } ?: showNoWCSitesToast()
         }
     }
 
