@@ -81,10 +81,32 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val payload = ActivityLogStore.FetchActivityLogPayload(site)
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
-        val activityLogForSite = activityLogStore.getActivityLogForSite(site)
+        val activityLogForSite = activityLogStore.getActivityLogForSite(
+                site = site,
+                ascending = true,
+                rewindableOnly = false
+        )
 
         assertNotNull(fetchActivities)
         assertEquals(fetchActivities.rowsAffected, activityLogForSite.size)
+    }
+
+    @Test
+    fun testFetchRewindableActivities() {
+        val site = authenticate(FreeJetpackSite)
+
+        val payload = ActivityLogStore.FetchActivityLogPayload(site)
+        val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
+
+        val activityLogForSite = activityLogStore.getActivityLogForSite(
+                site = site,
+                ascending = true,
+                rewindableOnly = true
+        )
+
+        assertNotNull(fetchActivities)
+        assertEquals(fetchActivities.rowsAffected, PAGE_SIZE) // All activities are persisted.
+        assertEquals(activityLogForSite.size, 0) // Non retrieved, all activities are non-rewindable.
     }
 
     @Test
@@ -128,9 +150,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val firstActivity = activityLogModel(1)
-        val secondActivity = activityLogModel(2)
-        val thirdActivity = activityLogModel(3)
+        val firstActivity = activityLogModel(index = 1, rewindable = true)
+        val secondActivity = activityLogModel(index = 2, rewindable = true)
+        val thirdActivity = activityLogModel(index = 3, rewindable = true)
         val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, activityModels)
@@ -144,12 +166,32 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
+    fun storeAndRetrieveRewindableActivityLogInOrderByDateFromDb() {
+        val site = authenticate(FreeJetpackSite)
+
+        this.mCountDownLatch = CountDownLatch(1)
+
+        val firstActivity = activityLogModel(index = 1, rewindable = true)
+        val secondActivity = activityLogModel(index = 2, rewindable = false)
+        val thirdActivity = activityLogModel(index = 3, rewindable = true)
+        val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
+
+        activityLogSqlUtils.insertOrUpdateActivities(site, activityModels)
+
+        val activityLogForSite = activityLogSqlUtils.getRewindableActivitiesForSite(site, SelectQuery.ORDER_DESCENDING)
+
+        assertEquals(activityLogForSite.size, 2)
+        assertEquals(activityLogForSite[0], thirdActivity)
+        assertEquals(activityLogForSite[1], firstActivity)
+    }
+
+    @Test
     fun updatesActivityWithTheSameActivityId() {
         val site = authenticate(FreeJetpackSite)
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val activity = activityLogModel(1)
+        val activity = activityLogModel(index = 1, rewindable = true)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, listOf(activity))
 
@@ -227,8 +269,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         return siteStore.sites.find { it.unmappedUrl == site.siteUrl }!!
     }
 
-    private fun activityLogModel(index: Long): ActivityLogModel {
-        return ActivityLogModel(activityID = "$index",
+    private fun activityLogModel(index: Long, rewindable: Boolean): ActivityLogModel {
+        return ActivityLogModel(
+                activityID = "$index",
                 summary = "summary$index",
                 content = FormattableContent(text = "text$index"),
                 name = "name$index",
@@ -236,8 +279,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
                 published = Date(index * 100),
                 rewindID = null,
                 gridicon = null,
-                rewindable = true,
-                status = "status")
+                rewindable = rewindable,
+                status = "status"
+        )
     }
 
     @Subscribe
@@ -318,5 +362,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
                 wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
                 siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
         )
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 20
     }
 }
