@@ -150,9 +150,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val firstActivity = activityLogModel(1, true)
-        val secondActivity = activityLogModel(2, true)
-        val thirdActivity = activityLogModel(3, true)
+        val firstActivity = activityLogModel(index = 1, rewindable = true)
+        val secondActivity = activityLogModel(index = 2, rewindable = true)
+        val thirdActivity = activityLogModel(index = 3, rewindable = true)
         val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, activityModels)
@@ -171,9 +171,9 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val firstActivity = activityLogModel(1, true)
-        val secondActivity = activityLogModel(2, false)
-        val thirdActivity = activityLogModel(3, true)
+        val firstActivity = activityLogModel(index = 1, rewindable = true)
+        val secondActivity = activityLogModel(index = 2, rewindable = false)
+        val thirdActivity = activityLogModel(index = 3, rewindable = true)
         val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, activityModels)
@@ -191,7 +191,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         this.mCountDownLatch = CountDownLatch(1)
 
-        val activity = activityLogModel(1, true)
+        val activity = activityLogModel(index = 1, rewindable = true)
 
         activityLogSqlUtils.insertOrUpdateActivities(site, listOf(activity))
 
