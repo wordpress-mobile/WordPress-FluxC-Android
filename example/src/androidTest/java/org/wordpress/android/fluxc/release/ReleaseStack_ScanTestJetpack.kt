@@ -159,6 +159,18 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         assertNull(scanStartResultPayload.error)
     }
 
+    @Test
+    fun fetchScanHistory() {
+        val site = authenticate(CompleteJetpackSite)
+        val payload = ScanStore.FetchScanHistoryPayload(site)
+
+        mCountDownLatch = CountDownLatch(1)
+        val scanHistoryPayload = runBlocking { scanStore.fetchScanHistory(payload) }
+
+        assertNotNull(scanHistoryPayload)
+        assertNull(scanHistoryPayload.error)
+    }
+
     @Subscribe
     fun onAuthenticationChanged(event: OnAuthenticationChanged) {
         if (event.isError) {
