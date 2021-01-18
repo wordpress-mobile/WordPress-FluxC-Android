@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.SiteStore.AccessCookieErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
+import org.wordpress.android.fluxc.store.SiteStore.FetchJetpackCapabilitiesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchPrivateAtomicCookiePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
@@ -29,6 +30,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainAvailabilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedCountriesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetched;
+import org.wordpress.android.fluxc.store.SiteStore.OnJetpackCapabilitiesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnPrivateAtomicCookieFetched;
@@ -88,7 +90,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         AUTOMATED_TRANSFER_NOT_FOUND,
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
         FETCHED_DOMAIN_SUPPORTED_STATES,
-        FETCHED_DOMAIN_SUPPORTED_COUNTRIES
+        FETCHED_DOMAIN_SUPPORTED_COUNTRIES,
+        FETCHED_JETPACK_CAPABILITIES
     }
 
     private TestEvents mNextEvent;
@@ -429,6 +432,20 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(p2Site.isWpForTeamsSite());
     }
 
+    @Test
+    public void testFetchJetpackCapabilities() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK, BuildConfig.TEST_WPCOM_PASSWORD_JETPACK);
+
+        // Get the first site
+        SiteModel site = mSiteStore.getSites().get(0);
+
+        mDispatcher.dispatch(SiteActionBuilder
+                .newFetchJetpackCapabilitiesAction(new FetchJetpackCapabilitiesPayload(site.getSiteId())));
+        mNextEvent = TestEvents.FETCHED_JETPACK_CAPABILITIES;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -456,9 +473,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (mSiteStore.getSitesCount() > 0) {
-            assertTrue(mSiteStore.hasWPComSite());
-        }
+        assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
         assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -671,6 +686,18 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(TestEvents.FETCHED_DOMAIN_SUPPORTED_COUNTRIES, mNextEvent);
         assertNotNull(event.supportedCountries);
         assertFalse(event.supportedCountries.isEmpty());
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onJetpackCapabilitiesFetched(OnJetpackCapabilitiesFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_JETPACK_CAPABILITIES, mNextEvent);
+        assertNotNull(event.capabilities);
+        assertFalse(event.capabilities.isEmpty());
         mCountDownLatch.countDown();
     }
 

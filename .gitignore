@@ -41,7 +41,6 @@ local.properties
 !/.idea/codeStyleSettings.xml
 !/.idea/encodings.xml
 !/.idea/copyright/
-!/.idea/compiler.xml
 # Enforce plugins
 !/.idea/externalDependencies.xml
 # Checkstyle configuration
@@ -68,3 +67,10 @@ WordPress/src/main/res/values/com_crashlytics_export_strings.xml
 
 # libs
 libs/utils
+
+# Ignore non-encrypted files in .configure-files
+.configure-files/*
+!.configure-files/*.enc
+
+# Non-vendored dependencies
+/vendor
