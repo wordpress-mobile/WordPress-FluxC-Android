@@ -145,6 +145,22 @@ workflows:
           timeout: 10m
           num-flaky-test-attempts: 0
           post-slack-status: false
+      - Optional Tests:
+          type: approval
+          filters:
+            branches:
+              ignore:
+                - develop
+                - /^release.*/
+      - Firebase Test:
+          requires: [Optional Tests]
+          name: Optional Connected Tests
+          results-history-name: CircleCI FluxC Optional Connected Tests
+          package: org.wordpress.android.fluxc
+          device: model=Nexus5X,version=26,locale=en,orientation=portrait
+          timeout: 30m
+          num-flaky-test-attempts: 1
+          post-slack-status: false
   nightly:
     triggers:
       - schedule:
