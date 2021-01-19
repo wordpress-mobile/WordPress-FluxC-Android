@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.SCANNING
 import org.wordpress.android.fluxc.persistence.ScanSqlUtils
 import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.CompleteJetpackSite
+import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.ScanDailyJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -240,6 +241,11 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
             wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
             siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
+        )
+        object ScanDailyJetpackSite : Sites(
+                wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
+                wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
+                siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_SCAN_DAILY
         )
     }
 }
