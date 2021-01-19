@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.model.experiments.Variation
 import org.wordpress.android.fluxc.model.experiments.Variation.Control
 import org.wordpress.android.fluxc.model.experiments.Variation.Other
 import org.wordpress.android.fluxc.model.experiments.Variation.Treatment
-import org.wordpress.android.fluxc.model.experiments.Variation.Unknown
 import org.wordpress.android.fluxc.store.ExperimentStore
 import org.wordpress.android.fluxc.store.ExperimentStore.FetchAssignmentsPayload
 import org.wordpress.android.fluxc.store.ExperimentStore.OnAssignmentsFetched
@@ -103,7 +102,6 @@ class ExperimentsFragment : Fragment() {
     private fun getVariationString(variation: Variation) = when (variation) {
         is Control -> "control"
         is Treatment -> "treatment"
-        is Unknown -> "unknown"
         is Other -> variation.name
     }
 
