@@ -18,7 +18,6 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.experiments.Assignments
 import org.wordpress.android.fluxc.model.experiments.Variation
 import org.wordpress.android.fluxc.model.experiments.Variation.Control
-import org.wordpress.android.fluxc.model.experiments.Variation.Other
 import org.wordpress.android.fluxc.model.experiments.Variation.Treatment
 import org.wordpress.android.fluxc.store.ExperimentStore
 import org.wordpress.android.fluxc.store.ExperimentStore.FetchAssignmentsPayload
@@ -101,8 +100,7 @@ class ExperimentsFragment : Fragment() {
 
     private fun getVariationString(variation: Variation) = when (variation) {
         is Control -> "control"
-        is Treatment -> "treatment"
-        is Other -> variation.name
+        is Treatment -> variation.name
     }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
