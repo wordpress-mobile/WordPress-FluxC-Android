@@ -41,10 +41,10 @@ class WCLeaderboardsStore @Inject constructor(
                             insertNewLeaderboards(it, site.id, unit)
                             getCurrentLeaderboards(site.id, unit)
                         }
-                        ?.let { WooResult(it) }
+                        ?.let { WooResult(it.distinct()) }
                         ?: getCurrentLeaderboards(site.id, unit)
                                 .takeIf { it.isNotEmpty() }
-                                ?.let { WooResult(it) }
+                                ?.let { WooResult(it.distinct()) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 

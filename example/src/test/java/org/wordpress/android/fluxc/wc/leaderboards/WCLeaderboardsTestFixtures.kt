@@ -55,4 +55,33 @@ object WCLeaderboardsTestFixtures {
                 )
         )
     }
+
+    val duplicatedTopPerformersList by lazy {
+        listOf(
+                WCTopPerformerProductModel(
+                        "info 0",
+                        "currency 0",
+                        0,
+                        0.0,
+                        321,
+                        "DAYS"
+                ),
+                WCTopPerformerProductModel(
+                        "info 0",
+                        "currency 0",
+                        0,
+                        0.0,
+                        321,
+                        "DAYS"
+                ),
+                WCTopPerformerProductModel(
+                        "info 0",
+                        "currency 0",
+                        0,
+                        0.0,
+                        321,
+                        "DAYS"
+                )
+        )
+    }
 }
