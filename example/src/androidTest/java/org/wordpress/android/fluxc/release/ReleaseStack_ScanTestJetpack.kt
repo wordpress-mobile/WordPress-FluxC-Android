@@ -6,6 +6,7 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -162,14 +163,16 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun fetchScanHistory() {
-        val site = authenticate(CompleteJetpackSite)
+        val site = authenticate(ScanDailyJetpackSite)
         val payload = ScanStore.FetchScanHistoryPayload(site)
 
         mCountDownLatch = CountDownLatch(1)
         val scanHistoryPayload = runBlocking { scanStore.fetchScanHistory(payload) }
+        val dbContent = scanStore.getScanHistoryForSite(site)
 
         assertNotNull(scanHistoryPayload)
         assertNull(scanHistoryPayload.error)
+        assertTrue(dbContent.isNotEmpty())
     }
 
     @Subscribe
