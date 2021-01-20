@@ -41,7 +41,8 @@ class WCLeaderboardsStore @Inject constructor(
                             insertNewLeaderboards(it, site.id, unit)
                             getCurrentLeaderboards(site.id, unit)
                         }
-                        ?.let { WooResult(it.distinct()) }
+                        ?.distinctBy { it.product }
+                        ?.let { WooResult(it) }
                         ?: getCurrentLeaderboards(site.id, unit)
                                 .takeIf { it.isNotEmpty() }
                                 ?.let { WooResult(it.distinct()) }
