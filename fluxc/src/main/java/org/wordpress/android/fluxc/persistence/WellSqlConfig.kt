@@ -28,7 +28,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 132
+        return 133
     }
 
     override fun getDbName(): String {
@@ -1450,6 +1450,9 @@ open class WellSqlConfig : DefaultWellConfig {
                                     "RESTORE_ID INTEGER,REWIND_STATUS TEXT,REWIND_PROGRESS INTEGER," +
                                     "REWIND_REASON TEXT,MESSAGE TEXT,CURRENT_ENTRY TEXT)"
                     )
+                }
+                132 -> migrate(version) {
+                    db.execSQL("ALTER TABLE StockMedia ADD CAPTION TEXT")
                 }
             }
         }

@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.store
 
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.ASYNC
+import org.json.JSONException
+import org.json.JSONObject
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.StockMediaAction
@@ -113,7 +115,15 @@ class StockMediaStore
                         loadedPage,
                         if (payload.canLoadMore) payload.nextPage else null,
                         payload.mediaList.map {
-                            StockMediaItem(it.id, it.name, it.title, it.url, it.date, it.thumbnail)
+                            var caption: String? = null;
+                            try {
+                                val jsonObject = JSONObject(it.guid);
+                                caption = jsonObject.getString("caption");
+                                
+                            } catch (e: JSONException) {
+                                AppLog.e(MEDIA, e);
+                            }
+                            StockMediaItem(it.id, it.name, it.title, it.url, it.date, it.thumbnail, caption)
                         })
                 OnStockMediaListFetched(payload.mediaList, filter, payload.nextPage, payload.canLoadMore)
             }

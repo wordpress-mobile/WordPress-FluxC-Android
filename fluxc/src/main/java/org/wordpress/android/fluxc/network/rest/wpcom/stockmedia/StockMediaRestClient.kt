@@ -94,6 +94,7 @@ class StockMediaRestClient
             json.addProperty("url", StringUtils.notNullStr(stockMedia.url))
             json.addProperty("name", StringUtils.notNullStr(stockMedia.name))
             json.addProperty("title", StringUtils.notNullStr(stockMedia.title))
+            json.addProperty("caption", StringUtils.notNullStr(stockMedia.caption))
             jsonBody.add(json.toString())
         }
         val body: MutableMap<String, Any> = HashMap()

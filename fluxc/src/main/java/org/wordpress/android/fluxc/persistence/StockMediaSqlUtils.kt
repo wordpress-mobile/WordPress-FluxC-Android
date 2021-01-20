@@ -31,7 +31,8 @@ class StockMediaSqlUtils
                                 title = it.title,
                                 url = it.url,
                                 date = it.date,
-                                thumbnail = it.thumbnail
+                                thumbnail = it.thumbnail,
+                                caption = it.caption
                         )
                     }
             ).execute()
@@ -49,7 +50,8 @@ class StockMediaSqlUtils
                     it.title,
                     it.url,
                     it.date,
-                    it.thumbnail
+                    it.thumbnail,
+                    it.caption
             )
         }
     }
@@ -94,9 +96,10 @@ class StockMediaSqlUtils
         @Column var title: String?,
         @Column var url: String?,
         @Column var date: String?,
-        @Column var thumbnail: String?
+        @Column var thumbnail: String?,
+        @Column var caption: String?
     ) : Identifiable {
-        constructor() : this(-1, null, null, null, null, null, null)
+        constructor() : this(-1, null, null, null, null, null, null, null)
 
         override fun setId(id: Int) {
             this.mId = id

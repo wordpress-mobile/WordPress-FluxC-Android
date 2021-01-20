@@ -6,5 +6,6 @@ data class StockMediaItem(
     val title: String? = null,
     val url: String? = null,
     val date: String? = null,
-    val thumbnail: String? = null
+    val thumbnail: String? = null,
+    val caption: String? = null
 )
