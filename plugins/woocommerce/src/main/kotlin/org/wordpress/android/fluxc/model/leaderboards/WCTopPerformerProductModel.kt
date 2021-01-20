@@ -25,9 +25,4 @@ data class WCTopPerformerProductModel(
     }
 
     override fun getId() = id
-
-    override fun equals(other: Any?) =
-            other?.run { this as? WCTopPerformerProductModel }
-                    ?.let { this.product == it.product }
-                    ?: false
 }
