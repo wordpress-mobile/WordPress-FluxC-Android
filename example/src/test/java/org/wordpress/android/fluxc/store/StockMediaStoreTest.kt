@@ -33,6 +33,7 @@ class StockMediaStoreTest {
     private val date = "date"
     private val url = "url"
     private val thumbnail = "thumbnail"
+    private val caption = "caption"
 
     @Before
     fun setUp() {
@@ -49,7 +50,8 @@ class StockMediaStoreTest {
         stockMediaModel.date = date
         stockMediaModel.url = url
         stockMediaModel.thumbnail = thumbnail
-        stockMediaItem = StockMediaItem(id, name, title, url, date, thumbnail)
+        stockMediaModel.caption = caption
+        stockMediaItem = StockMediaItem(id, name, title, url, date, thumbnail, caption)
     }
 
     @Test
