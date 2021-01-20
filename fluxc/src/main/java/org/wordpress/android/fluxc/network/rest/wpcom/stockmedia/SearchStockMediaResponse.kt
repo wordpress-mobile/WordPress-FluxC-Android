@@ -6,10 +6,14 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.google.gson.annotations.JsonAdapter
+import org.json.JSONException
+import org.json.JSONObject
 import org.wordpress.android.fluxc.model.StockMediaModel
 import org.wordpress.android.fluxc.network.utils.getInt
 import org.wordpress.android.fluxc.network.utils.getJsonObject
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T.MEDIA
 import java.lang.reflect.Type
 
 /**
@@ -64,6 +68,17 @@ private class SearchStockMediaDeserializer : JsonDeserializer<SearchStockMediaRe
             media.mediumThumbnail = jsonThumbnails.getString("medium")
             media.postThumbnail = jsonThumbnails.getString("post_thumbnail")
         }
+
+        /**
+         * Guid property needs to be manually parsed to object because comes in String format
+         */
+        try {
+            val jsonGuid = JSONObject(media.guid)
+            media.caption = jsonGuid.getString("caption")
+        } catch (e: JSONException) {
+            AppLog.e(MEDIA, e)
+        }
+
         return media
     }
 }

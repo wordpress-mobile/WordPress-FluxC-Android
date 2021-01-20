@@ -14,6 +14,7 @@ public class StockMediaModel extends Payload<BaseNetworkError> {
     private String mType;
     private String mUrl;
     private String mDate;
+    private String mCaption;
 
     private String mLargeThumbnail;
     private String mMediumThumbnail;
@@ -93,6 +94,14 @@ public class StockMediaModel extends Payload<BaseNetworkError> {
 
     public void setDate(String date) {
         this.mDate = date;
+    }
+
+    public String getCaption() {
+        return mCaption;
+    }
+
+    public void setCaption(String caption) {
+        this.mCaption = caption;
     }
 
     public String getLargeThumbnail() {
