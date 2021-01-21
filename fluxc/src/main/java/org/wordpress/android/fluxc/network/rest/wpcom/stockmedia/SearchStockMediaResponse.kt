@@ -70,7 +70,7 @@ private class SearchStockMediaDeserializer : JsonDeserializer<SearchStockMediaRe
         }
 
         /**
-         * Guid property needs to be manually parsed to object because comes in String format
+         * The GUID property needs to be manually parsed to a JSON object because it was originally deserialized as a string property.
          */
         try {
             val jsonGuid = JSONObject(media.guid)
