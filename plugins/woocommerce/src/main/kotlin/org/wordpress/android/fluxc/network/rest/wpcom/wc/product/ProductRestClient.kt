@@ -346,9 +346,11 @@ class ProductRestClient(
                 "per_page" to pageSize.toString(),
                 "orderby" to orderBy,
                 "order" to sortOrder,
-                "offset" to offset.toString(),
-                "search" to (searchQuery ?: "")
-        )
+                "offset" to offset.toString())
+
+        searchQuery?.takeIf { it.isNotEmpty() }?.let {
+            params.put("search", it)
+        }
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
