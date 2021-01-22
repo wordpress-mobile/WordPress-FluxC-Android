@@ -239,24 +239,32 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return fileList
     }
 
-    fun getNumVariations(): Int {
-        return try {
-            Gson().fromJson(variations, JsonElement::class.java).asJsonArray.size()
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-            0
-        }
-    }
-
     /**
      * Returns a list of product IDs from the passed string, assumed to be a JSON array of IDs
      */
-    private fun parseProductIds(jsonString: String): List<Long> {
+    /**
+     * Deserializes the [jsonString] passed to the method. This can include:
+     * variations, groupedProductIds, upsellIds, crossSellIds
+     *
+     * There are some instances where the [jsonString] param can be a JsonArray or a JsonElement.
+     * https://github.com/woocommerce/woocommerce-android/issues/2374
+     *
+     * To address this issue, we check if the [jsonString] param is a JsonArray or a JsonElement
+     * and return a appropriate response, if that's the case.
+     */
+    private fun parseJson(jsonString: String): List<Long> {
         val productIds = ArrayList<Long>()
         try {
             if (jsonString.isNotEmpty()) {
-                Gson().fromJson(jsonString, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    jsonElement.asLong.let { productIds.add(it) }
+                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
+                if (jsonElement.isJsonArray) {
+                    jsonElement.asJsonArray.forEach { jsonArray ->
+                        jsonArray.asLong.let { productIds.add(it) }
+                    }
+                } else if (jsonElement.isJsonObject) {
+                    jsonElement.asJsonObject.entrySet().forEach {
+                        productIds.add(it.value.asLong)
+                    }
                 }
             }
         } catch (e: JsonParseException) {
@@ -265,11 +273,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return productIds
     }
 
-    fun getGroupedProductIdList() = parseProductIds(groupedProductIds)
+    fun getNumVariations() = parseJson(variations).size
 
-    fun getUpsellProductIdList() = parseProductIds(upsellIds)
+    fun getGroupedProductIdList() = parseJson(groupedProductIds)
 
-    fun getCrossSellProductIdList() = parseProductIds(crossSellIds)
+    fun getUpsellProductIdList() = parseJson(upsellIds)
+
+    fun getCrossSellProductIdList() = parseJson(crossSellIds)
 
     fun getCategoryList() = getTriplets(categories)
 
