@@ -155,7 +155,7 @@ class ProductSqlUtilsTest {
         assertEquals(remoteProductIds.size, storedProductCountForSite1)
 
         // verify that only 2 of the products are virtual
-        assertEquals(2, ProductSqlUtils.getVirtualProductCountForOrder(site1, remoteProductIds))
+        assertEquals(2, ProductSqlUtils.getVirtualProductCountByRemoteIds(site1, remoteProductIds))
 
         // insert products for another site
         val site2 = SiteModel().apply { id = 10 }
@@ -172,7 +172,7 @@ class ProductSqlUtilsTest {
         assertEquals(remoteProductIds2.size, storedProductCountForSite2)
 
         // verify that all of the products are virtual
-        assertEquals(3, ProductSqlUtils.getVirtualProductCountForOrder(site2, remoteProductIds2))
+        assertEquals(3, ProductSqlUtils.getVirtualProductCountByRemoteIds(site2, remoteProductIds2))
 
         // insert products for another site
         val site3 = SiteModel().apply { id = 11 }
@@ -189,7 +189,7 @@ class ProductSqlUtilsTest {
         assertEquals(remoteProductIds3.size, storedProductCountForSite3)
 
         // verify that none of the products are virtual
-        assertEquals(0, ProductSqlUtils.getVirtualProductCountForOrder(site3, remoteProductIds3))
+        assertEquals(0, ProductSqlUtils.getVirtualProductCountByRemoteIds(site3, remoteProductIds3))
     }
 
     @Test

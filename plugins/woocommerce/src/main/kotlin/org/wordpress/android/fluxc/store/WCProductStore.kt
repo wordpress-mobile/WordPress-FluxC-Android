@@ -692,8 +692,8 @@ class WCProductStore @Inject constructor(
      * returns the count of virtual products for the given [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
-    fun hasVirtualProductsOnly(site: SiteModel, remoteProductIds: List<Long>): Int =
-            ProductSqlUtils.getVirtualProductCountForOrder(site, remoteProductIds)
+    fun getVirtualProductCountByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): Int =
+            ProductSqlUtils.getVirtualProductCountByRemoteIds(site, remoteProductIds)
 
     /**
      * returns a list of tags for a specific site in the database
