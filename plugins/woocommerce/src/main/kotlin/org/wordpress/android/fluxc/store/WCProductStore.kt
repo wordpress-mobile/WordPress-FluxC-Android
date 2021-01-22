@@ -682,6 +682,20 @@ class WCProductStore @Inject constructor(
             ProductSqlUtils.getProductReviewsForProductAndSiteId(localSiteId, remoteProductId)
 
     /**
+     * returns the count of products for the given [SiteModel] and [remoteProductIds]
+     * if it exists in the database
+     */
+    fun getProductCountByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): Int =
+            ProductSqlUtils.getProductCountByRemoteIds(site, remoteProductIds)
+
+    /**
+     * returns the count of virtual products for the given [SiteModel] and [remoteProductIds]
+     * if it exists in the database
+     */
+    fun hasVirtualProductsOnly(site: SiteModel, remoteProductIds: List<Long>): Int =
+            ProductSqlUtils.getVirtualProductCountForOrder(site, remoteProductIds)
+
+    /**
      * returns a list of tags for a specific site in the database
      */
     fun getTagsForSite(site: SiteModel): List<WCProductTagModel> =
