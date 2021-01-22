@@ -257,13 +257,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         try {
             if (jsonString.isNotEmpty()) {
                 val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
-                if (jsonElement.isJsonArray) {
-                    jsonElement.asJsonArray.forEach { jsonArray ->
-                        jsonArray.asLong.let { productIds.add(it) }
+                when {
+                    jsonElement.isJsonNull -> {
+                        return emptyList()
                     }
-                } else if (jsonElement.isJsonObject) {
-                    jsonElement.asJsonObject.entrySet().forEach {
-                        productIds.add(it.value.asLong)
+                    jsonElement.isJsonArray -> {
+                        jsonElement.asJsonArray.forEach { jsonArray ->
+                            jsonArray.asLong.let { productIds.add(it) }
+                        }
+                    }
+                    jsonElement.isJsonObject -> {
+                        jsonElement.asJsonObject.entrySet().forEach {
+                            productIds.add(it.value.asLong)
+                        }
                     }
                 }
             }
@@ -306,15 +312,18 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val triplets = ArrayList<ProductTriplet>()
         try {
             if (jsonStr.isNotEmpty()) {
-                Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    with(jsonElement.asJsonObject) {
-                        triplets.add(
-                                ProductTriplet(
-                                        id = this.getLong("id"),
-                                        name = this.getString("name") ?: "",
-                                        slug = this.getString("slug") ?: ""
-                                )
-                        )
+                val jsonElement = Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java)
+                if (jsonElement.isJsonArray) {
+                    jsonElement.asJsonArray.forEach { jsonArray ->
+                        with(jsonArray.asJsonObject) {
+                            triplets.add(
+                                    ProductTriplet(
+                                            id = this.getLong("id"),
+                                            name = this.getString("name") ?: "",
+                                            slug = this.getString("slug") ?: ""
+                                    )
+                            )
+                        }
                     }
                 }
             }

@@ -210,6 +210,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals("10,11,12", products[1].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getCrossSellProductIdList().joinToString(","))
             assertEquals(3, products[1].getNumVariations())
+
+            // verify that response as null in product response is handled correctly
+            assertEquals(0, products[2].getGroupedProductIdList().size)
+            assertEquals(0, products[2].getUpsellProductIdList().size)
+            assertEquals(0, products[2].getCrossSellProductIdList().size)
+            assertEquals(0, products[2].getNumVariations())
+            assertEquals(0, products[2].getCategoryList().size)
         }
 
         // delete all products then insert these into the store

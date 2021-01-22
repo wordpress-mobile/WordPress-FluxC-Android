@@ -337,10 +337,8 @@
       "backorders_allowed": true,
       "button_text": "",
       "catalog_visibility": "visible",
-      "categories": [
-      ],
-      "cross_sell_ids": [
-      ],
+      "categories": null,
+      "cross_sell_ids": null,
       "date_created": "2019-02-21T06:40:58",
       "date_created_gmt": "2019-02-21T11:40:58",
       "date_modified": "2019-04-26T21:50:47",
@@ -364,8 +362,7 @@
       ],
       "external_url": "",
       "featured": true,
-      "grouped_products": [
-      ],
+      "grouped_products": null,
       "id": 37,
       "images": [
         {
@@ -420,8 +417,7 @@
       "purchase_note": "",
       "rating_count": 0,
       "regular_price": "19.99",
-      "related_ids": [
-      ],
+      "related_ids": null,
       "reviews_allowed": true,
       "sale_price": "",
       "shipping_class": "booklet",
@@ -441,10 +437,8 @@
       "tax_status": "taxable",
       "total_sales": 7,
       "type": "simple",
-      "upsell_ids": [
-      ],
-      "variations": [
-      ],
+      "upsell_ids": null,
+      "variations": null,
       "virtual": false,
       "weight": "12.30"
     }
