@@ -71,6 +71,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
 import javax.inject.Singleton
 
@@ -180,9 +181,8 @@ class ProductRestClient(
         val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
-                "offset" to offset.toString(),
-                "search" to (searchQuery ?: "")
-        )
+                "offset" to offset.toString()
+        ).putIfNotEmpty("search" to searchQuery)
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductTagApiResponse>? ->
@@ -347,8 +347,8 @@ class ProductRestClient(
                 "orderby" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
-                "search" to (searchQuery ?: "")
-        )
+        ).putIfNotEmpty("search" to searchQuery)
+
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -475,9 +475,8 @@ class ProductRestClient(
                 "orderby" to sortType.asOrderByParameter(),
                 "order" to sortType.asSortOrderParameter(),
                 "offset" to offset.toString(),
-                "search" to (searchQuery ?: ""),
                 "include" to productIds.map { it }.joinToString()
-        )
+        ).putIfNotEmpty("search" to searchQuery)
     }
 
     private fun ProductSorting.asOrderByParameter() = when (this) {
