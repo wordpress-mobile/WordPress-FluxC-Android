@@ -44,7 +44,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPay
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
@@ -199,6 +198,25 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertNotNull(products)
             assertEquals(products.size, 3)
             assertNull(products[0].getFirstImageUrl())
+
+            // verify that response as json array in product response is handled correctly
+            assertEquals("10,11,12", products[0].getGroupedProductIdList().joinToString(","))
+            assertEquals("10,11,12", products[0].getUpsellProductIdList().joinToString(","))
+            assertEquals("10,11,12", products[0].getCrossSellProductIdList().joinToString(","))
+            assertEquals(3, products[0].getNumVariations())
+
+            // verify that response as json object in product response is handled correctly
+            assertEquals("10,11,12", products[1].getGroupedProductIdList().joinToString(","))
+            assertEquals("10,11,12", products[1].getUpsellProductIdList().joinToString(","))
+            assertEquals("10,11,12", products[1].getCrossSellProductIdList().joinToString(","))
+            assertEquals(3, products[1].getNumVariations())
+
+            // verify that response as null in product response is handled correctly
+            assertEquals(0, products[2].getGroupedProductIdList().size)
+            assertEquals(0, products[2].getUpsellProductIdList().size)
+            assertEquals(0, products[2].getCrossSellProductIdList().size)
+            assertEquals(0, products[2].getNumVariations())
+            assertEquals(0, products[2].getCategoryList().size)
         }
 
         // delete all products then insert these into the store
@@ -658,7 +676,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         productRestClient.updateVariation(siteModel, testVariation, updateVariation)
 
         countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteUpdateVariationPayload
@@ -680,7 +698,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         productRestClient.updateVariation(siteModel, testVariation, updateVariation)
 
         countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteUpdateVariationPayload

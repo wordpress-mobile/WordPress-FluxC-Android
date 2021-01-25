@@ -43,6 +43,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
@@ -130,10 +131,9 @@ class OrderRestClient(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id,date_created_gmt,date_modified_gmt")
-        listDescriptor.searchQuery.takeUnless { it.isNullOrEmpty() }?.let {
-            params.put("search", it)
-        }
+                "_fields" to "id,date_created_gmt,date_modified_gmt"
+        ).putIfNotEmpty("search" to listDescriptor.searchQuery)
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderSummaryApiResponse>? ->
                     val orderSummaries = response?.map {
@@ -238,12 +238,13 @@ class OrderRestClient(
     fun searchOrders(site: SiteModel, searchQuery: String, offset: Int) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
-        val params = mapOf(
+        val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
-                "search" to searchQuery,
-                "_fields" to ORDER_FIELDS)
+                "_fields" to ORDER_FIELDS
+        ).putIfNotEmpty("search" to searchQuery)
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
