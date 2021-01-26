@@ -48,6 +48,7 @@ object WCProductAttributeSqlUtils {
                 .equals(WCProductAttributeModelTable.ID, attribute.id)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
+                .put(attribute)
                 .execute()
     }
 }
