@@ -233,7 +233,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val restoreId: Long = 123
         val status = RUNNING
         val progress = 30
-        val rewind = Rewind(rewindId, restoreId, status, progress, null)
+        val rewind = Rewind(rewindId, restoreId, status, progress, null, null, null)
         val model = RewindStatusModel(ACTIVE, null, Date(), null, null, rewind)
 
         activityLogSqlUtils.replaceRewindStatus(site, model)

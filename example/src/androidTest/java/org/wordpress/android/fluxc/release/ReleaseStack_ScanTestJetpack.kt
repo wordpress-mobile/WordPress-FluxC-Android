@@ -6,6 +6,7 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -20,6 +21,7 @@ import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.SCANNING
 import org.wordpress.android.fluxc.persistence.ScanSqlUtils
 import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.CompleteJetpackSite
+import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.ScanDailyJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -159,6 +161,20 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         assertNull(scanStartResultPayload.error)
     }
 
+    @Test
+    fun fetchScanHistory() {
+        val site = authenticate(ScanDailyJetpackSite)
+        val payload = ScanStore.FetchScanHistoryPayload(site)
+
+        mCountDownLatch = CountDownLatch(1)
+        val scanHistoryPayload = runBlocking { scanStore.fetchScanHistory(payload) }
+        val dbContent = scanStore.getScanHistoryForSite(site)
+
+        assertNotNull(scanHistoryPayload)
+        assertNull(scanHistoryPayload.error)
+        assertTrue(dbContent.isNotEmpty())
+    }
+
     @Subscribe
     fun onAuthenticationChanged(event: OnAuthenticationChanged) {
         if (event.isError) {
@@ -228,6 +244,11 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
             wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
             siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
+        )
+        object ScanDailyJetpackSite : Sites(
+                wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
+                wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
+                siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_SCAN_DAILY
         )
     }
 }
