@@ -171,6 +171,7 @@ class WCProductAttributesStoreTest {
                 restClient.updateExistingAttribute(stubSite, 99,
                         with(expectedResult) {
                             mapOf(
+                                    "id" to "99",
                                     "name" to name,
                                     "slug" to slug,
                                     "type" to type,
