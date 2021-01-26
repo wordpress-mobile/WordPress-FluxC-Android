@@ -33,16 +33,15 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         site: SiteModel,
         productStore: WCProductStore
     ): List<WCProductModel> {
+        val locallyFetchedProducts = this
+                .filter { geProductExistsByRemoteId(site, it) }
+                .mapNotNull { ProductSqlUtils.getProductByRemoteId(site, it) }
+
         val remotelyFetchedProducts = this
                 .filter { geProductExistsByRemoteId(site, it).not() }
                 .takeIf { it.isNotEmpty() }
                 ?.let { productStore.fetchProductListSynced(site, it) }
                 .orEmpty()
-
-        val locallyFetchedProducts = this
-                .filter { geProductExistsByRemoteId(site, it) }
-                .mapNotNull { ProductSqlUtils.getProductByRemoteId(site, it) }
-                .filter { remotelyFetchedProducts.contains(it).not() }
 
         return mutableListOf<WCProductModel>().apply {
             addAll(remotelyFetchedProducts)
