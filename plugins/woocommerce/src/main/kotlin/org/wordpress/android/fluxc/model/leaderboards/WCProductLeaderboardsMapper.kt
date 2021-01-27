@@ -29,6 +29,17 @@ class WCProductLeaderboardsMapper @Inject constructor() {
                         ?.let { product.toWCTopPerformerProductModel(it, site, unit) }
             }.orEmpty()
 
+    /**
+     * This method fetch and request all Products from the IDs described by the
+     * List<Long>, but it only requests to the site products who doesn't exist
+     * inside the database to avoid unnecessary data traffic.
+     *
+     * Please note that we must request first the local products and second the
+     * remote products, if we invert this order the remotely fetched products will
+     * be inserted inside the database by the [WCProductStore] natural behavior, and
+     * when we fetch the local products after that we will end up unnecessarily duplicating
+     * data, since they will be both fetched remotely and locally.
+     */
     private suspend fun List<Long>.asProductList(
         site: SiteModel,
         productStore: WCProductStore
