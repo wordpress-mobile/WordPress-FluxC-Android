@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.terms.AttributeTermApiResponse
 import org.wordpress.android.fluxc.utils.handleResult
 import javax.inject.Singleton
 
@@ -25,42 +26,67 @@ constructor(
     suspend fun fetchProductFullAttributesList(
         site: SiteModel
     ) = WOOCOMMERCE.products.attributes.pathV3
-            .requestTo(site)
-            .handleResult()
+            .request<Array<AttributeApiResponse>>(site)
 
     suspend fun postNewAttribute(
         site: SiteModel,
         args: Map<String, String>
     ) = WOOCOMMERCE.products.attributes.pathV3
-            .postTo(site, args)
-            .handleResult()
+            .post<AttributeApiResponse>(site, args)
 
     suspend fun updateExistingAttribute(
         site: SiteModel,
         attributeID: Long,
         args: Map<String, String>
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).pathV3
-            .putTo(site, args)
-            .handleResult()
+            .put<AttributeApiResponse>(site, args)
 
     suspend fun deleteExistingAttribute(
         site: SiteModel,
         attributeID: Long
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).pathV3
-            .deleteFrom(site)
-            .handleResult()
+            .delete<AttributeApiResponse>(site)
 
-    private suspend fun String.requestTo(
+    suspend fun fetchAllAttributeTermsList(
+        site: SiteModel,
+        attributeID: Long
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.pathV3
+            .request<Array<AttributeTermApiResponse>>(site)
+
+    suspend fun postNewTerm(
+        site: SiteModel,
+        args: Map<String, String>,
+        attributeID: Long
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.pathV3
+            .post<AttributeTermApiResponse>(site, args)
+
+    suspend fun updateExistingTerm(
+        site: SiteModel,
+        args: Map<String, String>,
+        attributeID: Long,
+        termID: Long
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.term(termID).pathV3
+            .put<AttributeTermApiResponse>(site, args)
+
+    suspend fun deleteExistingTerm(
+        site: SiteModel,
+        args: Map<String, String>,
+        attributeID: Long,
+        termID: Long
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.term(termID).pathV3
+            .delete<AttributeTermApiResponse>(site)
+
+    private suspend inline fun <reified T : Any> String.request(
         site: SiteModel
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this@ProductAttributeRestClient,
             site,
             this,
             emptyMap(),
-            Array<AttributeApiResponse>::class.java
-    )
+            T::class.java
+    ).handleResult()
 
-    private suspend fun String.postTo(
+    private suspend inline fun <reified T : Any> String.post(
         site: SiteModel,
         args: Map<String, String>
     ) = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -68,10 +94,10 @@ constructor(
             site,
             this,
             args,
-            AttributeApiResponse::class.java
-    )
+            T::class.java
+    ).handleResult()
 
-    private suspend fun String.putTo(
+    private suspend inline fun <reified T : Any> String.put(
         site: SiteModel,
         args: Map<String, String>
     ) = jetpackTunnelGsonRequestBuilder.syncPutRequest(
@@ -79,15 +105,15 @@ constructor(
             site,
             this,
             args,
-            AttributeApiResponse::class.java
-    )
+            T::class.java
+    ).handleResult()
 
-    private suspend fun String.deleteFrom(
+    private suspend inline fun <reified T : Any> String.delete(
         site: SiteModel
     ) = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
             this@ProductAttributeRestClient,
             site,
             this,
-            AttributeApiResponse::class.java
-    )
+            T::class.java
+    ).handleResult()
 }
