@@ -236,6 +236,15 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @Test
     public void testFetchBlockLayouts() throws InterruptedException {
+        testFetchBlockLayouts(false);
+    }
+
+    @Test
+    public void testFetchBlockLayoutsBeta() throws InterruptedException {
+        testFetchBlockLayouts(true);
+    }
+
+    private void testFetchBlockLayouts(boolean isBeta) throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
@@ -251,7 +260,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(
                 new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks,
-                        828.0f, 2.0f)));
+                        828.0f, 2.0f, isBeta)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

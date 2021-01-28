@@ -215,6 +215,15 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Test
     public void testFetchBlockLayouts() throws InterruptedException {
+        testFetchBlockLayouts(false);
+    }
+
+    @Test
+    public void testFetchBlockLayoutsBeta() throws InterruptedException {
+        testFetchBlockLayouts(true);
+    }
+
+    private void testFetchBlockLayouts(boolean isBeta) throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         SiteModel firstSite = mSiteStore.getSites().get(0);
@@ -229,7 +238,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(
                 new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks,
-                        828.0f, 2.0f)));
+                        828.0f, 2.0f, isBeta)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
