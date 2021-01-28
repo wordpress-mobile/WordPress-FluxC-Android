@@ -8,7 +8,7 @@ class AttributeTermApiResponse : Response {
     val name: String? = null
     val slug: String? = null
     val description: String? = null
-    val count: Int? = null
+    val count: String? = null
     @SerializedName("menu_order")
-    val menuOrder: Int? = null
+    val menuOrder: String? = null
 }
