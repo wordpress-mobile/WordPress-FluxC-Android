@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeMa
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -25,7 +26,7 @@ class WCProductAttributeMapperTest {
     fun `mapToAttributeModel should never allow null values`() {
         AttributeApiResponse()
                 .let {
-                    mapperUnderTest.mapToAttributeModel(it)
+                    mapperUnderTest.mapToAttributeModel(it, stubSite)
                 }.let { result ->
                     assertThat(result).isNotNull
                     assertThat(result.id).isNotNull
@@ -39,7 +40,7 @@ class WCProductAttributeMapperTest {
 
     @Test
     fun `mapToAttributeModelList should parse list correctly`() {
-        mapperUnderTest.mapToAttributeModelList(attributesFullListResponse!!)
+        mapperUnderTest.mapToAttributeModelList(attributesFullListResponse!!, stubSite)
                 .let { result ->
                     assertThat(result).isNotNull
                     assertThat(result.size).isEqualTo(2)
@@ -48,7 +49,7 @@ class WCProductAttributeMapperTest {
 
     @Test
     fun `mapToAttributeModel should parse correctly`() {
-        mapperUnderTest.mapToAttributeModel(attributeCreateResponse!!)
+        mapperUnderTest.mapToAttributeModel(attributeCreateResponse!!, stubSite)
                 .let { result ->
                     assertThat(result).isNotNull
                     assertThat(result.id).isEqualTo(1)
