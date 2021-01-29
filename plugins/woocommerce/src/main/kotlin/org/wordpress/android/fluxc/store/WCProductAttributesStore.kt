@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.Prod
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.deleteSingleStoredAttribute
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.getCurrentAttributes
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertFromScratchCompleteAttributesList
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertOrUpdateSingleAttribute
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertSingleAttribute
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.updateSingleStoredAttribute
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -54,7 +55,7 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.let { mapper.responseToAttributeModel(it, site) }
-                        ?.let { insertSingleAttribute(it) }
+                        ?.let { insertOrUpdateSingleAttribute(it, site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
