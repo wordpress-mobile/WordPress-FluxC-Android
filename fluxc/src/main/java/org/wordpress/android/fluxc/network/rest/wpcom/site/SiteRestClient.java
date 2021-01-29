@@ -643,7 +643,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     }
                 }
                                                                                                );
-        add(request);
+        add(request, false);
     }
 
     //
