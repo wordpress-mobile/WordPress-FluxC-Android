@@ -45,6 +45,20 @@ class WCProductAttributesStore @Inject constructor(
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
+    suspend fun fetchAttribute(
+        site: SiteModel,
+        attributeID: Long
+    ): WooResult<WCProductAttributeModel> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
+                restClient.fetchSingleAttribute(site, attributeID)
+                        .asWooResult()
+                        .model
+                        ?.let { mapper.responseToAttributeModel(it, site) }
+                        ?.let { insertSingleAttribute(it) }
+                        ?.let { WooResult(it) }
+                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+
     suspend fun createAttribute(
         site: SiteModel,
         name: String,
@@ -60,7 +74,8 @@ class WCProductAttributesStore @Inject constructor(
                         "slug" to slug,
                         "type" to type,
                         "order_by" to orderBy,
-                        "has_archives" to hasArchives.toString())
+                        "has_archives" to hasArchives.toString()
+                )
                 )
                         .asWooResult()
                         .model
@@ -87,7 +102,8 @@ class WCProductAttributesStore @Inject constructor(
                         "slug" to slug,
                         "type" to type,
                         "order_by" to orderBy,
-                        "has_archives" to hasArchives.toString())
+                        "has_archives" to hasArchives.toString()
+                )
                 )
                         .asWooResult()
                         .model
@@ -108,6 +124,23 @@ class WCProductAttributesStore @Inject constructor(
                         ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { deleteSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
+                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+
+
+    suspend fun createOptionValueForAttribute(
+        site: SiteModel,
+        attributeID: Long,
+        term: String
+    ): WooResult<WCProductAttributeModel> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAttributeTerm") {
+                restClient.postNewTerm(
+                        site, attributeID,
+                        mapOf("name" to term)
+                )
+                        .asWooResult()
+                        .model
+                        ?.let { fetchAttribute(site, attributeID) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
