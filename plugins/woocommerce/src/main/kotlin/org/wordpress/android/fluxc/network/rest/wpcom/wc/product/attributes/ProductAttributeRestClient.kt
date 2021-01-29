@@ -28,6 +28,12 @@ constructor(
     ) = WOOCOMMERCE.products.attributes.pathV3
             .request<Array<AttributeApiResponse>>(site)
 
+    suspend fun fetchSingleAttribute(
+        site: SiteModel,
+        attributeID: Long
+    ) = WOOCOMMERCE.products.attributes.attribute(attributeID).pathV3
+            .request<AttributeApiResponse>(site)
+
     suspend fun postNewAttribute(
         site: SiteModel,
         args: Map<String, String>
@@ -55,8 +61,8 @@ constructor(
 
     suspend fun postNewTerm(
         site: SiteModel,
-        args: Map<String, String>,
-        attributeID: Long
+        attributeID: Long,
+        args: Map<String, String>
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.pathV3
             .post<AttributeTermApiResponse>(site, args)
 
