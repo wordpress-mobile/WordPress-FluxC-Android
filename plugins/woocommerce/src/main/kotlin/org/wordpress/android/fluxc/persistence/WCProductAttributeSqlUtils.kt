@@ -28,6 +28,16 @@ object WCProductAttributeSqlUtils {
                 .execute()
     }
 
+    fun fetchSingleStoredAttribute(attributeId: Int, siteID: Int) =
+        WellSql.select(WCProductAttributeModel::class.java)
+                .where()
+                .equals(WCProductAttributeModelTable.ID, attributeId)
+                .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
+                .endWhere()
+                .asModel
+                .takeIf { it.isNotEmpty() }
+                ?.first()
+
     fun deleteSingleStoredAttribute(attribute: WCProductAttributeModel, siteID: Int) = attribute.apply {
         WellSql.delete(WCProductAttributeModel::class.java)
                 .where()
@@ -46,6 +56,11 @@ object WCProductAttributeSqlUtils {
                 .put(attribute)
                 .execute()
     }
+
+    fun insertOrUpdateSingleAttribute(attribute: WCProductAttributeModel, siteID: Int) =
+            fetchSingleStoredAttribute(attribute.id, siteID)
+                    ?.let { updateSingleStoredAttribute(attribute, siteID) }
+                    ?: insertSingleAttribute(attribute)
 
     fun getTerm(siteID: Int, termID: Int) =
             WellSql.select(WCAttributeTermModel::class.java)
