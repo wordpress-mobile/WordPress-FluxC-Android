@@ -14,26 +14,9 @@ class WCProductAttributeMapper @Inject constructor(
     suspend fun responseToAttributeModel(
         response: AttributeApiResponse,
         site: SiteModel
-    ) = response.id?.toIntOrNull()?.let { attributeID ->
-        restClient.fetchAllAttributeTerms(site, attributeID.toLong())
-                .result?.map { responseToAttributeTermModel(it, attributeID, site) }
-                ?.apply { insertAttributeTermsFromScratch(attributeID, site.id, this) }
-                ?.map { it.id.toString() }
-                ?.reduce { total, new -> "${total};${new}" }
-                ?.let { terms ->
-                    with(response) {
-                        WCProductAttributeModel(
-                                id = id?.toIntOrNull() ?: 0,
-                                localSiteId = site.id,
-                                name = name.orEmpty(),
-                                slug = slug.orEmpty(),
-                                type = type.orEmpty(),
-                                orderBy = orderBy.orEmpty(),
-                                hasArchives = hasArchives ?: false,
-                                termsId = terms
-                        )
-                    }
-                }
+    ) = response.run {
+        id?.toIntOrNull()?.let { fetchTerms(site, it) }
+                ?.let { this.asProductAttributeModel(id, site, it) }
     }
 
     suspend fun responseToAttributeModelList(
@@ -41,6 +24,31 @@ class WCProductAttributeMapper @Inject constructor(
         site: SiteModel
     ) = response.mapNotNull { responseToAttributeModel(it, site) }
             .toList()
+
+
+    private fun AttributeApiResponse.asProductAttributeModel(
+        id: String,
+        site: SiteModel,
+        terms: String
+    ) = WCProductAttributeModel(
+            id = id.toIntOrNull() ?: 0,
+            localSiteId = site.id,
+            name = name.orEmpty(),
+            slug = slug.orEmpty(),
+            type = type.orEmpty(),
+            orderBy = orderBy.orEmpty(),
+            hasArchives = hasArchives ?: false,
+            termsId = terms
+    )
+
+    private suspend fun fetchTerms(
+        site: SiteModel,
+        attributeID: Int
+    ) = restClient.fetchAllAttributeTerms(site, attributeID.toLong())
+            .result?.map { responseToAttributeTermModel(it, attributeID, site) }
+            ?.apply { insertAttributeTermsFromScratch(attributeID, site.id, this) }
+            ?.map { it.id.toString() }
+            ?.reduce { total, new -> "${total};${new}" }
 
     private fun responseToAttributeTermModel(
         response: AttributeTermApiResponse,
