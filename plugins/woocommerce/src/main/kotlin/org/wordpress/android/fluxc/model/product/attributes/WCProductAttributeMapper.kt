@@ -16,7 +16,7 @@ class WCProductAttributeMapper @Inject constructor(
         site: SiteModel
     ) = response.id?.toIntOrNull()?.let { attributeID ->
         restClient.fetchAllAttributeTerms(site, attributeID.toLong())
-                .result?.map { responseToAttributeTermModel(it, site) }
+                .result?.map { responseToAttributeTermModel(it, attributeID, site) }
                 ?.apply { insertAttributeTermsFromScratch(attributeID, site.id, this) }
                 ?.map { it.id.toString() }
                 ?.reduce { total, new -> "${total};${new}" }
@@ -44,11 +44,13 @@ class WCProductAttributeMapper @Inject constructor(
 
     private fun responseToAttributeTermModel(
         response: AttributeTermApiResponse,
+        attributeID: Int,
         site: SiteModel
     ) = with(response) {
         WCAttributeTermModel(
                 id = id?.toIntOrNull() ?: 0,
                 localSiteId = site.id,
+                attributeId = attributeID,
                 name = name.orEmpty(),
                 slug = slug.orEmpty(),
                 description = description.orEmpty(),
