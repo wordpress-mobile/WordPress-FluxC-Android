@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
+import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
 import org.wordpress.android.fluxc.store.WCProductAttributesStore
 import javax.inject.Inject
 
@@ -154,17 +154,17 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun logSingleAttributeResponse(response: AttributeApiResponse) {
+    private fun logSingleAttributeResponse(response: WCProductAttributeModel) {
         response.let {
-            prependToLog("  Attribute slug: ${it.slug ?: "Slug not available"}")
-            prependToLog("  Attribute type: ${it.type ?: "Type not available"}")
-            prependToLog("  Attribute name: ${it.name ?: "Attribute name not available"}")
-            prependToLog("  Attribute id: ${it.id ?: "Attribute id not available"}")
+            prependToLog("  Attribute slug: ${it.slug.ifEmpty { "Slug not available" }}")
+            prependToLog("  Attribute type: ${it.type.ifEmpty { "Type not available" }}")
+            prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
+            prependToLog("  Attribute id: ${it.id}")
             prependToLog("  --------- Attribute ---------")
         }
     }
 
-    private fun logAttributeListResponse(model: Array<AttributeApiResponse>) {
+    private fun logAttributeListResponse(model: List<WCProductAttributeModel>) {
         model.forEach(::logSingleAttributeResponse)
         prependToLog("========== Full Site Attribute list =========")
     }
