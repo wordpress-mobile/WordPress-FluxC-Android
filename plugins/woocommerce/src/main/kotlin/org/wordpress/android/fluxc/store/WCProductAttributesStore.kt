@@ -128,7 +128,6 @@ class WCProductAttributesStore @Inject constructor(
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
-
     suspend fun createOptionValueForAttribute(
         site: SiteModel,
         attributeID: Long,
@@ -139,6 +138,19 @@ class WCProductAttributesStore @Inject constructor(
                         site, attributeID,
                         mapOf("name" to term)
                 )
+                        .asWooResult()
+                        .model
+                        ?.let { fetchAttribute(site, attributeID) }
+                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+
+    suspend fun deleteOptionValueFromAttribute(
+        site: SiteModel,
+        attributeID: Long,
+        termID: Long
+    ): WooResult<WCProductAttributeModel> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteAttributeTerm") {
+                restClient.deleteExistingTerm(site, attributeID, termID)
                         .asWooResult()
                         .model
                         ?.let { fetchAttribute(site, attributeID) }

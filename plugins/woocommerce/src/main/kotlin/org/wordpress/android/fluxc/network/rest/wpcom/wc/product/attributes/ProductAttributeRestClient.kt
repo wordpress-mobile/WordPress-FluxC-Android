@@ -76,7 +76,6 @@ constructor(
 
     suspend fun deleteExistingTerm(
         site: SiteModel,
-        args: Map<String, String>,
         attributeID: Long,
         termID: Long
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.term(termID).pathV3
