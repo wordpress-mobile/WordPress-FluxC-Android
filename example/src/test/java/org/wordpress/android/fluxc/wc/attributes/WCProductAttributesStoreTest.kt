@@ -70,7 +70,7 @@ class WCProductAttributesStoreTest {
                 .thenReturn(WooPayload(attributesFullListResponse))
 
         storeUnderTest.fetchStoreAttributes(stubSite)
-        verify(mapper).mapToAttributeModelList(attributesFullListResponse!!, stubSite)
+        verify(mapper).responseToAttributeModelList(attributesFullListResponse!!, stubSite)
     }
 
     @Test
@@ -78,7 +78,7 @@ class WCProductAttributesStoreTest {
         whenever(restClient.fetchProductFullAttributesList(stubSite))
                 .thenReturn(WooPayload(attributesFullListResponse))
 
-        whenever(mapper.mapToAttributeModelList(attributesFullListResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModelList(attributesFullListResponse!!, stubSite))
                 .thenReturn(parsedAttributesList)
 
         storeUnderTest.fetchStoreAttributes(stubSite).let { result ->
@@ -110,7 +110,7 @@ class WCProductAttributesStoreTest {
             )
         })).thenReturn(WooPayload(attributeCreateResponse))
 
-        whenever(mapper.mapToAttributeModel(attributeCreateResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModel(attributeCreateResponse!!, stubSite))
                 .thenReturn(parsedCreateAttributeResponse)
 
         storeUnderTest.createAttribute(
@@ -142,7 +142,7 @@ class WCProductAttributesStoreTest {
         whenever(restClient.deleteExistingAttribute(stubSite, 17))
                 .thenReturn(WooPayload(attributeDeleteResponse))
 
-        whenever(mapper.mapToAttributeModel(attributeDeleteResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModel(attributeDeleteResponse!!, stubSite))
                 .thenReturn(parsedDeleteAttributeResponse)
 
         storeUnderTest.deleteAttribute(
@@ -181,7 +181,7 @@ class WCProductAttributesStoreTest {
                         })
         ).thenReturn(WooPayload(attributeUpdateResponse))
 
-        whenever(mapper.mapToAttributeModel(attributeUpdateResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModel(attributeUpdateResponse!!, stubSite))
                 .thenReturn(parsedUpdateAttributeResponse)
 
         storeUnderTest.updateAttribute(

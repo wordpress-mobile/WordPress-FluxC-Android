@@ -47,7 +47,7 @@ constructor(
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).pathV3
             .delete<AttributeApiResponse>(site)
 
-    suspend fun fetchAllAttributeTermsList(
+    suspend fun fetchAllAttributeTerms(
         site: SiteModel,
         attributeID: Long
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.pathV3

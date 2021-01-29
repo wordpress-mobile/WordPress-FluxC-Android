@@ -33,7 +33,7 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.takeIf { it.isNotEmpty() }
-                        ?.let { mapper.mapToAttributeModelList(it, site) }
+                        ?.let { mapper.responseToAttributeModelList(it, site) }
                         ?.let {
                             insertFromScratchCompleteAttributesList(it, site.id)
                             getCurrentAttributes(site.id)
@@ -64,7 +64,7 @@ class WCProductAttributesStore @Inject constructor(
                 )
                         .asWooResult()
                         .model
-                        ?.let { mapper.mapToAttributeModel(it, site) }
+                        ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { insertSingleAttribute(it) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -91,7 +91,7 @@ class WCProductAttributesStore @Inject constructor(
                 )
                         .asWooResult()
                         .model
-                        ?.let { mapper.mapToAttributeModel(it, site) }
+                        ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { updateSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -105,7 +105,7 @@ class WCProductAttributesStore @Inject constructor(
                 restClient.deleteExistingAttribute(site, attributeID)
                         .asWooResult()
                         .model
-                        ?.let { mapper.mapToAttributeModel(it, site) }
+                        ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { deleteSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
