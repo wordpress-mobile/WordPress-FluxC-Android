@@ -54,6 +54,9 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         create_product_attributes.setOnClickListener(::onCreateAttributeButtonClicked)
         delete_product_attributes.setOnClickListener(::onDeleteAttributeButtonClicked)
         update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
+        fetch_product_single_attribute.setOnClickListener(::onFetchAttributeButtonClicked)
+        create_term_for_attribute.setOnClickListener(::onCreateAttributeTermButtonClicked)
+        delete_term_for_attribute.setOnClickListener(::onDeleteAttributeTermButtonClicked)
     }
 
     private fun onProductAttributesSelectSiteButtonClicked(view: View) {
@@ -141,6 +144,96 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
             }
         } catch (ex: Exception) {
             prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onFetchAttributeButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to remove:"
+            ) { editText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite {
+                        wcAttributesStore.fetchAttribute(
+                                it,
+                                editText.text.toString().toLongOrNull() ?: 0
+                        )
+                    }?.apply {
+                        model?.let { logSingleAttributeResponse(it) }
+                                ?.let { prependToLog("========== Attribute Fetched =========") }
+                                ?: takeIf { isError }?.let {
+                                    prependToLog("Failed to delete Attribute. Error: ${error.message}")
+                                }
+                    } ?: prependToLog("Failed to delete Attribute. Error: Unknown")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onCreateAttributeTermButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to add terms:"
+            ) { attributeIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the term name you want to create:"
+                ) { termEditText ->
+                    coroutineScope.launch {
+                        takeAsyncRequestWithValidSite {
+                            wcAttributesStore.createOptionValueForAttribute(
+                                    it,
+                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0,
+                                    termEditText.text.toString()
+                            )
+                        }?.apply {
+                            model?.let { logSingleAttributeResponse(it) }
+                                    ?.let { prependToLog("========== Attribute Term Created =========") }
+                                    ?: takeIf { isError }?.let {
+                                        prependToLog("Failed to delete Attribute. Error: ${error.message}")
+                                    }
+                        } ?: prependToLog("Failed to create Attribute Term. Error: Unknown")
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+        }
+    }
+
+    private fun onDeleteAttributeTermButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to remove terms:"
+            ) { attributeIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the term ID you want to delete:"
+                ) { termIdEditText ->
+                    coroutineScope.launch {
+                        takeAsyncRequestWithValidSite {
+                            wcAttributesStore.deleteOptionValueFromAttribute(
+                                    it,
+                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0,
+                                    termIdEditText.text.toString().toLongOrNull() ?: 0
+                            )
+                        }?.apply {
+                            model?.let { logSingleAttributeResponse(it) }
+                                    ?.let { prependToLog("========== Attribute Term Created =========") }
+                                    ?: takeIf { isError }?.let {
+                                        prependToLog("Failed to delete Attribute. Error: ${error.message}")
+                                    }
+                        } ?: prependToLog("Failed to create Attribute Term. Error: Unknown")
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
         }
     }
 
