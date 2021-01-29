@@ -24,10 +24,10 @@ data class WCProductAttributeModel(
 
     override fun getId() = id
 
-    val terms
-        get() = termsId
-                .split(";")
+    val terms by lazy {
+        termsId.split(";")
                 .mapNotNull { it.toIntOrNull() }
                 .takeIf { it.isNotEmpty() }
                 ?.map { getTerm(localSiteId, it) }
+    }
 }
