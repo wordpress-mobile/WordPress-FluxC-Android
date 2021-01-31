@@ -31,7 +31,7 @@ object WCProductAttributeSqlUtils {
     fun fetchSingleStoredAttribute(attributeId: Int, siteID: Int) =
         WellSql.select(WCProductAttributeModel::class.java)
                 .where()
-                .equals(WCProductAttributeModelTable.ID, attributeId)
+                .equals(WCProductAttributeModelTable.REMOTE_ID, attributeId)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .asModel
@@ -41,7 +41,7 @@ object WCProductAttributeSqlUtils {
     fun deleteSingleStoredAttribute(attribute: WCProductAttributeModel, siteID: Int) = attribute.apply {
         WellSql.delete(WCProductAttributeModel::class.java)
                 .where()
-                .equals(WCProductAttributeModelTable.ID, attribute.id)
+                .equals(WCProductAttributeModelTable.REMOTE_ID, attribute.id)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .execute()
@@ -50,7 +50,7 @@ object WCProductAttributeSqlUtils {
     fun updateSingleStoredAttribute(attribute: WCProductAttributeModel, siteID: Int) = attribute.apply {
         WellSql.update(WCProductAttributeModel::class.java)
                 .where()
-                .equals(WCProductAttributeModelTable.ID, attribute.id)
+                .equals(WCProductAttributeModelTable.REMOTE_ID, attribute.id)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .put(attribute)
@@ -65,7 +65,7 @@ object WCProductAttributeSqlUtils {
     fun getTerm(siteID: Int, termID: Int) =
             WellSql.select(WCAttributeTermModel::class.java)
                     .where()
-                    .equals(WCAttributeTermModelTable.ID, termID)
+                    .equals(WCAttributeTermModelTable.REMOTE_ID, termID)
                     .equals(WCAttributeTermModelTable.LOCAL_SITE_ID, siteID)
                     .endWhere()
                     .asModel

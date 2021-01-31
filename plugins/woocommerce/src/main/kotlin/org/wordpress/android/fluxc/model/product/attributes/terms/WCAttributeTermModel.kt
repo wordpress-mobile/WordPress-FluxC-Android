@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCAttributeTermModel(
     @PrimaryKey @Column private var id: Int = 0,
+    @Column var remoteId: Int = 0,
     @Column var localSiteId: Int = 0,
     @Column var attributeId: Int = 0,
     @Column var name: String = "",

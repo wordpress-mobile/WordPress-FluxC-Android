@@ -31,7 +31,7 @@ class WCProductAttributeMapper @Inject constructor(
         site: SiteModel,
         terms: String
     ) = WCProductAttributeModel(
-            id = id.toIntOrNull() ?: 0,
+            remoteId = id.toIntOrNull() ?: 0,
             localSiteId = site.id,
             name = name.orEmpty(),
             slug = slug.orEmpty(),
@@ -47,7 +47,7 @@ class WCProductAttributeMapper @Inject constructor(
     ) = restClient.fetchAllAttributeTerms(site, attributeID.toLong())
             .result?.map { responseToAttributeTermModel(it, attributeID, site) }
             ?.apply { insertAttributeTermsFromScratch(attributeID, site.id, this) }
-            ?.map { it.id.toString() }
+            ?.map { it.remoteId.toString() }
             ?.reduce { total, new -> "${total};${new}" }
 
     private fun responseToAttributeTermModel(
@@ -56,7 +56,7 @@ class WCProductAttributeMapper @Inject constructor(
         site: SiteModel
     ) = with(response) {
         WCAttributeTermModel(
-                id = id?.toIntOrNull() ?: 0,
+                remoteId = id?.toIntOrNull() ?: 0,
                 localSiteId = site.id,
                 attributeId = attributeID,
                 name = name.orEmpty(),

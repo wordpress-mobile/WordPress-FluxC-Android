@@ -258,7 +258,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
             prependToLog("  Attribute slug: ${it.slug.ifEmpty { "Slug not available" }}")
             prependToLog("  Attribute type: ${it.type.ifEmpty { "Type not available" }}")
             prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
-            prependToLog("  Attribute id: ${it.id}")
+            prependToLog("  Attribute remote id: ${it.remoteId}")
             prependToLog("  --------- Attribute ---------")
         }
     }
@@ -266,7 +266,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
     private fun logSingleAttributeTermResponse(termIndex: Int, response: WCAttributeTermModel) {
         response.let {
             prependToLog("Term name: ${it.name}")
-            prependToLog("Term id: ${it.id}")
+            prependToLog("Term id: ${it.remoteId}")
             prependToLog("  --------- Attribute Term #${termIndex} ---------")
         }
     }
