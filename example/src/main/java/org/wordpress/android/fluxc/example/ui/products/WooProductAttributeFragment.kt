@@ -267,7 +267,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         response.let {
             prependToLog("Term name: ${it.name}")
             prependToLog("Term id: ${it.remoteId}")
-            prependToLog("  --------- Attribute Term #${termIndex} ---------")
+            prependToLog("  --------- Attribute Term #$termIndex ---------")
         }
     }
 
