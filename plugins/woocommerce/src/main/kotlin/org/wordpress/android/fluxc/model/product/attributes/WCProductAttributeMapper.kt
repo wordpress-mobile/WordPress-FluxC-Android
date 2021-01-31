@@ -25,7 +25,6 @@ class WCProductAttributeMapper @Inject constructor(
     ) = response.mapNotNull { responseToAttributeModel(it, site) }
             .toList()
 
-
     private fun AttributeApiResponse.asProductAttributeModel(
         id: String,
         site: SiteModel,
@@ -48,7 +47,7 @@ class WCProductAttributeMapper @Inject constructor(
             .result?.map { responseToAttributeTermModel(it, attributeID, site) }
             ?.apply { insertAttributeTermsFromScratch(attributeID, site.id, this) }
             ?.map { it.remoteId.toString() }
-            ?.reduce { total, new -> "${total};${new}" }
+            ?.reduce { total, new -> "$total;$new" }
 
     private fun responseToAttributeTermModel(
         response: AttributeTermApiResponse,
