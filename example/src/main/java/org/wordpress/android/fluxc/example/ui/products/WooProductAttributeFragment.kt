@@ -57,7 +57,6 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
         fetch_product_single_attribute.setOnClickListener(::onFetchAttributeButtonClicked)
         create_term_for_attribute.setOnClickListener(::onCreateAttributeTermButtonClicked)
-        delete_term_for_attribute.setOnClickListener(::onDeleteAttributeTermButtonClicked)
     }
 
     private fun onProductAttributesSelectSiteButtonClicked(view: View) {
@@ -206,38 +205,6 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun onDeleteAttributeTermButtonClicked(view: View) {
-        try {
-            showSingleLineDialog(
-                    activity,
-                    "Enter the attribute ID you want to remove terms:"
-            ) { attributeIdEditText ->
-                showSingleLineDialog(
-                        activity,
-                        "Enter the term ID you want to delete:"
-                ) { termIdEditText ->
-                    coroutineScope.launch {
-                        takeAsyncRequestWithValidSite {
-                            wcAttributesStore.deleteOptionValueFromAttribute(
-                                    it,
-                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0,
-                                    termIdEditText.text.toString().toLongOrNull() ?: 0
-                            )
-                        }?.apply {
-                            model?.let { logSingleAttributeResponse(it) }
-                                    ?.let { prependToLog("========== Attribute Term Created =========") }
-                                    ?: takeIf { isError }?.let {
-                                        prependToLog("Failed to delete Attribute. Error: ${error.message}")
-                                    }
-                        } ?: prependToLog("Failed to create Attribute Term. Error: Unknown")
-                    }
-                }
-            }
-        } catch (ex: Exception) {
-            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
-        }
-    }
-
     private fun onFetchAttributesListClicked(view: View) = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite { wcAttributesStore.fetchStoreAttributes(it) }
@@ -265,9 +232,9 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
 
     private fun logSingleAttributeTermResponse(termIndex: Int, response: WCAttributeTermModel) {
         response.let {
-            prependToLog("Term name: ${it.name}")
-            prependToLog("Term id: ${it.remoteId}")
-            prependToLog("  --------- Attribute Term #$termIndex ---------")
+            prependToLog("    Term name: ${it.name}")
+            prependToLog("    Term id: ${it.remoteId}")
+            prependToLog("    --------- Attribute Term #$termIndex ---------")
         }
     }
 

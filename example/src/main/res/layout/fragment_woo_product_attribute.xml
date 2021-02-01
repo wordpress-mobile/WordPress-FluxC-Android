@@ -79,13 +79,6 @@
             android:enabled="false"
             android:text="Create Attribute Term"/>
 
-        <Button
-            android:id="@+id/delete_term_for_attribute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="Delete Attribute Term"/>
-
     </LinearLayout>
 
 </ScrollView>
