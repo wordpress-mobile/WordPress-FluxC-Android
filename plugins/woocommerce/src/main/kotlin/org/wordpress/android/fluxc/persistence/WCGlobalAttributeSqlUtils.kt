@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCAttributeTermModelTable
-import com.wellsql.generated.WCProductAttributeModelTable
+import com.wellsql.generated.WCGlobalAttributeModelTable
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
@@ -10,7 +10,7 @@ object WCGlobalAttributeSqlUtils {
     fun getCurrentAttributes(siteID: Int) =
             WellSql.select(WCGlobalAttributeModel::class.java)
                     .where()
-                    .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
+                    .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                     .endWhere()
                     .asModel
                     ?.toList()
@@ -31,8 +31,8 @@ object WCGlobalAttributeSqlUtils {
     fun fetchSingleStoredAttribute(attributeId: Int, siteID: Int) =
         WellSql.select(WCGlobalAttributeModel::class.java)
                 .where()
-                .equals(WCProductAttributeModelTable.REMOTE_ID, attributeId)
-                .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
+                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attributeId)
+                .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .asModel
                 .takeIf { it.isNotEmpty() }
@@ -41,8 +41,8 @@ object WCGlobalAttributeSqlUtils {
     fun deleteSingleStoredAttribute(attribute: WCGlobalAttributeModel, siteID: Int) = attribute.apply {
         WellSql.delete(WCGlobalAttributeModel::class.java)
                 .where()
-                .equals(WCProductAttributeModelTable.REMOTE_ID, attribute.id)
-                .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
+                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attribute.id)
+                .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .execute()
     }
@@ -50,8 +50,8 @@ object WCGlobalAttributeSqlUtils {
     fun updateSingleStoredAttribute(attribute: WCGlobalAttributeModel, siteID: Int) = attribute.apply {
         WellSql.update(WCGlobalAttributeModel::class.java)
                 .where()
-                .equals(WCProductAttributeModelTable.REMOTE_ID, attribute.id)
-                .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
+                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attribute.id)
+                .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .put(attribute)
                 .execute()
@@ -86,7 +86,7 @@ object WCGlobalAttributeSqlUtils {
     private fun deleteCompleteAttributesList(siteID: Int) =
             WellSql.delete(WCGlobalAttributeModel::class.java)
                     .where()
-                    .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
+                    .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                     .endWhere()
                     .execute()
 
