@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
@@ -17,6 +18,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -71,6 +73,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
 import javax.inject.Singleton
@@ -714,6 +717,21 @@ class ProductRestClient(
                 })
         add(request)
     }
+
+    suspend fun updateAttributes(
+        site: SiteModel,
+        product: WCProductModel,
+        attributes: List<WCProductAttributeModel>
+    ) = WOOCOMMERCE.products.id(product.remoteProductId).pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                        this,
+                        site,
+                        url,
+                        mapOf("attributes" to Gson().toJson(attributes)),
+                        ProductApiResponse::class.java
+                )?.handleResult()
+            }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
