@@ -6,7 +6,6 @@ import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.deleteSingleStoredAttribute
@@ -156,10 +155,4 @@ class WCGlobalAttributeStore @Inject constructor(
                         ?.let { fetchAttribute(site, attributeID) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
-
-    private fun <T> WooPayload<T>.asWooResult() = when {
-        isError -> WooResult(error)
-        result != null -> WooResult<T>(result)
-        else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-    }
 }
