@@ -117,7 +117,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
     @Test
     public void testCancelImageUpload() throws InterruptedException {
-        mInterceptor.respondWithSticky("media-upload-response-success.json", null);
+        mInterceptor.respondWithSticky("media-upload-response-success.json", 1000L, null);
 
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
