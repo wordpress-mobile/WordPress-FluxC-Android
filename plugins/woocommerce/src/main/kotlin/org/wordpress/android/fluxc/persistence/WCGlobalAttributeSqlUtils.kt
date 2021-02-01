@@ -3,8 +3,8 @@ package org.wordpress.android.fluxc.persistence
 import com.wellsql.generated.WCAttributeTermModelTable
 import com.wellsql.generated.WCProductAttributeModelTable
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
-import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
 
 object WCGlobalAttributeSqlUtils {
     fun getCurrentAttributes(siteID: Int) =

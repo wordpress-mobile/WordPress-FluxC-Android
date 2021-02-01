@@ -3,11 +3,11 @@ package org.wordpress.android.fluxc.wc.attributes
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.terms.AttributeTermApiResponse
 
-object WCGlobalAttributesTestFixtures {
+object WCProductAttributesTestFixtures {
     val stubSite = SiteModel().apply { id = 321 }
 
     val attributeDeleteResponse by lazy {
@@ -96,7 +96,7 @@ object WCGlobalAttributesTestFixtures {
 
     private fun <T> String.jsonFileAs(clazz: Class<T>) =
             UnitTestUtils.getStringFromResourceFile(
-                    this@WCGlobalAttributesTestFixtures.javaClass,
+                    this@WCProductAttributesTestFixtures.javaClass,
                     this
             )?.let { Gson().fromJson(it, clazz) }
 }

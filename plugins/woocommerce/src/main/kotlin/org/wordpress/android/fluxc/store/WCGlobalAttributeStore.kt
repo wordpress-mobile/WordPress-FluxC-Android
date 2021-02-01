@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeMapper
-import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeMapper
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR

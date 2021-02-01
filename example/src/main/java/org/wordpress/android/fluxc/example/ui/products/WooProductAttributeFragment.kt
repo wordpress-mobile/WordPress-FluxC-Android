@@ -19,8 +19,8 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
-import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import javax.inject.Inject
 
