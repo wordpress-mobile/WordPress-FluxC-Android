@@ -25,12 +25,26 @@ object WCLeaderboardsTestFixtures {
                     .getStringFromResourceFile(this.javaClass, "wc/leaderboards-response-example.json")
                     ?.run { Gson().fromJson(this, Array<LeaderboardsApiResponse>::class.java) }
 
+    private fun String.asProductModelJsonString() = Gson().let { gson ->
+        UnitTestUtils.getStringFromResourceFile(this@WCLeaderboardsTestFixtures.javaClass, this)
+                ?.let { gson.fromJson(it, ProductApiResponse::class.java) }
+                ?.asProductModel()
+                ?.let { gson.toJson(it) }
+                .orEmpty()
+    }
+
     val generateStubbedProductIdList = listOf(14L, 22L, 15L)
+
+    private val stubbedProductJsonString by lazy {
+        Gson().let { gson ->
+            "wc/top-performer-product-1.json".asProductModelJsonString()
+        }
+    }
 
     val stubbedTopPerformersList by lazy {
         listOf(
                 WCTopPerformerProductModel(
-                        "info 0",
+                        "wc/top-performer-product-1.json".asProductModelJsonString(),
                         "currency 0",
                         0,
                         0.0,
@@ -38,7 +52,7 @@ object WCLeaderboardsTestFixtures {
                         "DAYS"
                 ),
                 WCTopPerformerProductModel(
-                        "info 1",
+                        "wc/top-performer-product-2.json".asProductModelJsonString(),
                         "currency 1",
                         1,
                         1.0,
@@ -46,10 +60,39 @@ object WCLeaderboardsTestFixtures {
                         "DAYS"
                 ),
                 WCTopPerformerProductModel(
-                        "info 2",
+                        "wc/top-performer-product-3.json".asProductModelJsonString(),
                         "currency 2",
                         2,
                         2.0,
+                        321,
+                        "DAYS"
+                )
+        )
+    }
+
+    val duplicatedTopPerformersList by lazy {
+        listOf(
+                WCTopPerformerProductModel(
+                        stubbedProductJsonString,
+                        "currency 0",
+                        0,
+                        0.0,
+                        321,
+                        "DAYS"
+                ),
+                WCTopPerformerProductModel(
+                        stubbedProductJsonString,
+                        "currency 0",
+                        0,
+                        0.0,
+                        321,
+                        "DAYS"
+                ),
+                WCTopPerformerProductModel(
+                        stubbedProductJsonString,
+                        "currency 0",
+                        0,
+                        0.0,
                         321,
                         "DAYS"
                 )
