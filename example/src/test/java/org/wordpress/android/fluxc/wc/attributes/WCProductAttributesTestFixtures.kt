@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.terms.AttributeTermApiResponse
 
 object WCProductAttributesTestFixtures {
     val stubSite = SiteModel().apply { id = 321 }
@@ -27,6 +28,11 @@ object WCProductAttributesTestFixtures {
     val attributesFullListResponse by lazy {
         "wc/product-attributes-all.json"
                 .jsonFileAs(Array<AttributeApiResponse>::class.java)
+    }
+
+    val attributeTermsFullListResponse by lazy {
+        "wc/attribute-terms-full-list.json"
+                .jsonFileAs(Array<AttributeTermApiResponse>::class.java)
     }
 
     val parsedAttributesList by lazy {

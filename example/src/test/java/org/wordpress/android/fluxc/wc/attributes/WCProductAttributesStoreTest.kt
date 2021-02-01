@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeMapper
 import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
+import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -24,6 +25,7 @@ import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeDeleteResponse
+import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeTermsFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeUpdateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedAttributesList
@@ -44,7 +46,11 @@ class WCProductAttributesStoreTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(SiteModel::class.java, WCProductAttributeModel::class.java),
+                listOf(
+                        SiteModel::class.java,
+                        WCProductAttributeModel::class.java,
+                        WCAttributeTermModel::class.java
+                ),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -64,13 +70,21 @@ class WCProductAttributesStoreTest {
 
     @Test
     fun `fetch attributes should call mapper once`() = test {
-        mapper = spy()
+        mapper = spy(WCProductAttributeMapper(
+                mock<ProductAttributeRestClient>().apply {
+                    val response = WooPayload(attributeTermsFullListResponse)
+                    whenever(this.fetchAllAttributeTerms(stubSite, 1))
+                            .thenReturn(response)
+                    whenever(this.fetchAllAttributeTerms(stubSite, 2))
+                            .thenReturn(response)
+                }
+        ))
         createStoreUnderTest()
         whenever(restClient.fetchProductFullAttributesList(stubSite))
                 .thenReturn(WooPayload(attributesFullListResponse))
 
         storeUnderTest.fetchStoreAttributes(stubSite)
-        verify(mapper).mapToAttributeModelList(attributesFullListResponse!!, stubSite)
+        verify(mapper).responseToAttributeModelList(attributesFullListResponse!!, stubSite)
     }
 
     @Test
@@ -78,7 +92,7 @@ class WCProductAttributesStoreTest {
         whenever(restClient.fetchProductFullAttributesList(stubSite))
                 .thenReturn(WooPayload(attributesFullListResponse))
 
-        whenever(mapper.mapToAttributeModelList(attributesFullListResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModelList(attributesFullListResponse!!, stubSite))
                 .thenReturn(parsedAttributesList)
 
         storeUnderTest.fetchStoreAttributes(stubSite).let { result ->
@@ -110,7 +124,7 @@ class WCProductAttributesStoreTest {
             )
         })).thenReturn(WooPayload(attributeCreateResponse))
 
-        whenever(mapper.mapToAttributeModel(attributeCreateResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModel(attributeCreateResponse!!, stubSite))
                 .thenReturn(parsedCreateAttributeResponse)
 
         storeUnderTest.createAttribute(
@@ -142,7 +156,7 @@ class WCProductAttributesStoreTest {
         whenever(restClient.deleteExistingAttribute(stubSite, 17))
                 .thenReturn(WooPayload(attributeDeleteResponse))
 
-        whenever(mapper.mapToAttributeModel(attributeDeleteResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModel(attributeDeleteResponse!!, stubSite))
                 .thenReturn(parsedDeleteAttributeResponse)
 
         storeUnderTest.deleteAttribute(
@@ -181,7 +195,7 @@ class WCProductAttributesStoreTest {
                         })
         ).thenReturn(WooPayload(attributeUpdateResponse))
 
-        whenever(mapper.mapToAttributeModel(attributeUpdateResponse!!, stubSite))
+        whenever(mapper.responseToAttributeModel(attributeUpdateResponse!!, stubSite))
                 .thenReturn(parsedUpdateAttributeResponse)
 
         storeUnderTest.updateAttribute(

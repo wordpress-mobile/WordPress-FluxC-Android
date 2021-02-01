@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.Prod
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.deleteSingleStoredAttribute
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.getCurrentAttributes
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertFromScratchCompleteAttributesList
+import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertOrUpdateSingleAttribute
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertSingleAttribute
 import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.updateSingleStoredAttribute
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -33,7 +34,7 @@ class WCProductAttributesStore @Inject constructor(
                         .asWooResult()
                         .model
                         ?.takeIf { it.isNotEmpty() }
-                        ?.let { mapper.mapToAttributeModelList(it, site) }
+                        ?.let { mapper.responseToAttributeModelList(it, site) }
                         ?.let {
                             insertFromScratchCompleteAttributesList(it, site.id)
                             getCurrentAttributes(site.id)
@@ -42,6 +43,20 @@ class WCProductAttributesStore @Inject constructor(
                         ?: getCurrentAttributes(site.id)
                                 .takeIf { it.isNotEmpty() }
                                 ?.let { WooResult(it) }
+                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+
+    suspend fun fetchAttribute(
+        site: SiteModel,
+        attributeID: Long
+    ): WooResult<WCProductAttributeModel> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
+                restClient.fetchSingleAttribute(site, attributeID)
+                        .asWooResult()
+                        .model
+                        ?.let { mapper.responseToAttributeModel(it, site) }
+                        ?.let { insertOrUpdateSingleAttribute(it, site.id) }
+                        ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
@@ -60,11 +75,12 @@ class WCProductAttributesStore @Inject constructor(
                         "slug" to slug,
                         "type" to type,
                         "order_by" to orderBy,
-                        "has_archives" to hasArchives.toString())
+                        "has_archives" to hasArchives.toString()
+                )
                 )
                         .asWooResult()
                         .model
-                        ?.let { mapper.mapToAttributeModel(it, site) }
+                        ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { insertSingleAttribute(it) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -87,11 +103,12 @@ class WCProductAttributesStore @Inject constructor(
                         "slug" to slug,
                         "type" to type,
                         "order_by" to orderBy,
-                        "has_archives" to hasArchives.toString())
+                        "has_archives" to hasArchives.toString()
+                )
                 )
                         .asWooResult()
                         .model
-                        ?.let { mapper.mapToAttributeModel(it, site) }
+                        ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { updateSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -105,9 +122,38 @@ class WCProductAttributesStore @Inject constructor(
                 restClient.deleteExistingAttribute(site, attributeID)
                         .asWooResult()
                         .model
-                        ?.let { mapper.mapToAttributeModel(it, site) }
+                        ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { deleteSingleStoredAttribute(it, site.id) }
                         ?.let { WooResult(it) }
+                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+
+    suspend fun createOptionValueForAttribute(
+        site: SiteModel,
+        attributeID: Long,
+        term: String
+    ): WooResult<WCProductAttributeModel> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAttributeTerm") {
+                restClient.postNewTerm(
+                        site, attributeID,
+                        mapOf("name" to term)
+                )
+                        .asWooResult()
+                        .model
+                        ?.let { fetchAttribute(site, attributeID) }
+                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+
+    suspend fun deleteOptionValueFromAttribute(
+        site: SiteModel,
+        attributeID: Long,
+        termID: Long
+    ): WooResult<WCProductAttributeModel> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteAttributeTerm") {
+                restClient.deleteExistingTerm(site, attributeID, termID)
+                        .asWooResult()
+                        .model
+                        ?.let { fetchAttribute(site, attributeID) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
