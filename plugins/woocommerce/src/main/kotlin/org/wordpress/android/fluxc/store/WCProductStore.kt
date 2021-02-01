@@ -14,7 +14,12 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -829,6 +834,18 @@ class WCProductStore @Inject constructor(
                 handleDeleteProduct(action.payload as RemoteDeleteProductPayload)
         }
     }
+
+    suspend fun submitAttributesToProduct(
+        site: SiteModel,
+        product: WCProductModel,
+        attributes: List<WCProductAttributeModel>
+    ): WooResult<WCProductModel> =
+            coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
+                    wcProductRestClient.updateAttributes(site, product, attributes)
+                            ?.asWooResult()
+                            ?.model?.asProductModel()
+                            ?.let { WooResult(it) }
+                } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     override fun onRegister() = AppLog.d(T.API, "WCProductStore onRegister")
 
