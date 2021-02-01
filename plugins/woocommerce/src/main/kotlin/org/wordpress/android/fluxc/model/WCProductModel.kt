@@ -9,6 +9,7 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
@@ -99,6 +100,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
+    private val gson by lazy { Gson() }
+
+    val attributeList by lazy {
+        gson.fromJson(attributes, Array<WCProductAttributeModel>::class.java)
+    }
+
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
             return JsonObject().also { json ->
@@ -130,6 +137,23 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         this.id = id
     }
 
+    fun addAttribute(newAttribute: WCProductAttributeModel) =
+            mutableListOf<WCProductAttributeModel>()
+                    .apply {
+                        attributeList
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.let { addAll(it) }
+                        add(newAttribute)
+                    }.also { attributes = gson.toJson(it) }
+
+    fun removeAttribute(removableAttribute: WCProductAttributeModel) =
+            mutableListOf<WCProductAttributeModel>().apply {
+                attributeList
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.filter { removableAttribute.globalAttributeId != it.globalAttributeId }
+                        ?.let { addAll(it) }
+            }.also { attributes = gson.toJson(it) }
+
     /**
      * Parses the images json array into a list of product images
      */
@@ -137,7 +161,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val imageList = ArrayList<WCProductImageModel>()
         if (images.isNotEmpty()) {
             try {
-                Gson().fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                gson.fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                     with(jsonElement.asJsonObject) {
                         WCProductImageModel(this.getLong("id")).also {
                             it.name = this.getString("name") ?: ""
@@ -162,7 +186,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     fun getFirstImageUrl(): String? {
         try {
             if (images.isNotEmpty()) {
-                Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
+                gson.fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
                     return (jsonElement.asJsonObject).getString("src")
                 }
             }
@@ -200,7 +224,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
         val attrList = ArrayList<ProductAttribute>()
         try {
-            Gson().fromJson(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+            gson.fromJson(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
                     attrList.add(
                             ProductAttribute(
@@ -222,7 +246,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         if (downloads.isEmpty()) return emptyList()
         val fileList = ArrayList<WCProductFileModel>()
         try {
-            Gson().fromJson(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+            gson.fromJson(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
                     fileList.add(
                             WCProductFileModel(
@@ -256,7 +280,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val productIds = ArrayList<Long>()
         try {
             if (jsonString.isNotEmpty()) {
-                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
+                val jsonElement = gson.fromJson(jsonString, JsonElement::class.java)
                 when {
                     jsonElement.isJsonNull -> {
                         return emptyList()
@@ -312,7 +336,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val triplets = ArrayList<ProductTriplet>()
         try {
             if (jsonStr.isNotEmpty()) {
-                val jsonElement = Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java)
+                val jsonElement = gson.fromJson<JsonElement>(jsonStr, JsonElement::class.java)
                 if (jsonElement.isJsonArray) {
                     jsonElement.asJsonArray.forEach { jsonArray ->
                         with(jsonArray.asJsonObject) {
