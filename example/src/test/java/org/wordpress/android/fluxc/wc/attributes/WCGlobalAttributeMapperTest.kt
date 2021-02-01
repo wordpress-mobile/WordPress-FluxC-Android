@@ -13,21 +13,21 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeMapper
+import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeMapper
 import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.test
-import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
-import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeTermsFullListResponse
-import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
-import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.stubSite
+import org.wordpress.android.fluxc.wc.attributes.WCGlobalAttributesTestFixtures.attributeCreateResponse
+import org.wordpress.android.fluxc.wc.attributes.WCGlobalAttributesTestFixtures.attributeTermsFullListResponse
+import org.wordpress.android.fluxc.wc.attributes.WCGlobalAttributesTestFixtures.attributesFullListResponse
+import org.wordpress.android.fluxc.wc.attributes.WCGlobalAttributesTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
-class WCProductAttributeMapperTest {
-    private lateinit var mapperUnderTest: WCProductAttributeMapper
+class WCGlobalAttributeMapperTest {
+    private lateinit var mapperUnderTest: WCGlobalAttributeMapper
     private lateinit var attributesRestClient: ProductAttributeRestClient
 
     @Before
@@ -42,7 +42,7 @@ class WCProductAttributeMapperTest {
         }
 
         attributesRestClient = mock()
-        mapperUnderTest = WCProductAttributeMapper(attributesRestClient)
+        mapperUnderTest = WCGlobalAttributeMapper(attributesRestClient)
     }
 
     @Test

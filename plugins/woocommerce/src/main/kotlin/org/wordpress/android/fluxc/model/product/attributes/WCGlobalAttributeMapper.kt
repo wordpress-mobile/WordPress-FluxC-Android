@@ -5,10 +5,10 @@ import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTer
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.terms.AttributeTermApiResponse
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertAttributeTermsFromScratch
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertAttributeTermsFromScratch
 import javax.inject.Inject
 
-class WCProductAttributeMapper @Inject constructor(
+class WCGlobalAttributeMapper @Inject constructor(
     private val restClient: ProductAttributeRestClient
 ) {
     suspend fun responseToAttributeModel(
@@ -29,7 +29,7 @@ class WCProductAttributeMapper @Inject constructor(
         id: String,
         site: SiteModel,
         terms: String
-    ) = WCProductAttributeModel(
+    ) = WCGlobalAttributeModel(
             remoteId = id.toIntOrNull() ?: 0,
             localSiteId = site.id,
             name = name.orEmpty(),

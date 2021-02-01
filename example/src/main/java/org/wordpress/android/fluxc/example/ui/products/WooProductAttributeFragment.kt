@@ -19,13 +19,13 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
+import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
-import org.wordpress.android.fluxc.store.WCProductAttributesStore
+import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import javax.inject.Inject
 
 class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
-    @Inject internal lateinit var wcAttributesStore: WCProductAttributesStore
+    @Inject internal lateinit var wcAttributesStore: WCGlobalAttributeStore
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
@@ -215,7 +215,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun logSingleAttributeResponse(response: WCProductAttributeModel) {
+    private fun logSingleAttributeResponse(response: WCGlobalAttributeModel) {
         response.let {
             response.terms
                     ?.filterNotNull()
@@ -238,7 +238,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun logAttributeListResponse(model: List<WCProductAttributeModel>) {
+    private fun logAttributeListResponse(model: List<WCGlobalAttributeModel>) {
         model.forEach(::logSingleAttributeResponse)
         prependToLog("========== Full Site Attribute list =========")
     }

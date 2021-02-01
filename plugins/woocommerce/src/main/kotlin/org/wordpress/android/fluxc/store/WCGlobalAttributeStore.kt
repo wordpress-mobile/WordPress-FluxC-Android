@@ -1,34 +1,34 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeMapper
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
+import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeMapper
+import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.deleteSingleStoredAttribute
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.getCurrentAttributes
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertFromScratchCompleteAttributesList
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertOrUpdateSingleAttribute
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.insertSingleAttribute
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.updateSingleStoredAttribute
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.deleteSingleStoredAttribute
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.getCurrentAttributes
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertFromScratchCompleteAttributesList
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertOrUpdateSingleAttribute
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertSingleAttribute
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.updateSingleStoredAttribute
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCProductAttributesStore @Inject constructor(
+class WCGlobalAttributeStore @Inject constructor(
     private val restClient: ProductAttributeRestClient,
-    private val mapper: WCProductAttributeMapper,
+    private val mapper: WCGlobalAttributeMapper,
     private val coroutineEngine: CoroutineEngine
 ) {
     suspend fun fetchStoreAttributes(
         site: SiteModel
-    ): WooResult<List<WCProductAttributeModel>> =
+    ): WooResult<List<WCGlobalAttributeModel>> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
                 restClient.fetchProductFullAttributesList(site)
                         .asWooResult()
@@ -49,7 +49,7 @@ class WCProductAttributesStore @Inject constructor(
     suspend fun fetchAttribute(
         site: SiteModel,
         attributeID: Long
-    ): WooResult<WCProductAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
                 restClient.fetchSingleAttribute(site, attributeID)
                         .asWooResult()
@@ -67,7 +67,7 @@ class WCProductAttributesStore @Inject constructor(
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
-    ): WooResult<WCProductAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
                 restClient.postNewAttribute(
                         site, mapOf(
@@ -94,7 +94,7 @@ class WCProductAttributesStore @Inject constructor(
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
-    ): WooResult<WCProductAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "updateStoreAttributes") {
                 restClient.updateExistingAttribute(
                         site, attributeID, mapOf(
@@ -117,7 +117,7 @@ class WCProductAttributesStore @Inject constructor(
     suspend fun deleteAttribute(
         site: SiteModel,
         attributeID: Long
-    ): WooResult<WCProductAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteStoreAttributes") {
                 restClient.deleteExistingAttribute(site, attributeID)
                         .asWooResult()
@@ -132,7 +132,7 @@ class WCProductAttributesStore @Inject constructor(
         site: SiteModel,
         attributeID: Long,
         term: String
-    ): WooResult<WCProductAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAttributeTerm") {
                 restClient.postNewTerm(
                         site, attributeID,
@@ -148,7 +148,7 @@ class WCProductAttributesStore @Inject constructor(
         site: SiteModel,
         attributeID: Long,
         termID: Long
-    ): WooResult<WCProductAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteAttributeTerm") {
                 restClient.deleteExistingTerm(site, attributeID, termID)
                         .asWooResult()

@@ -3,12 +3,12 @@ package org.wordpress.android.fluxc.persistence
 import com.wellsql.generated.WCAttributeTermModelTable
 import com.wellsql.generated.WCProductAttributeModelTable
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
+import org.wordpress.android.fluxc.model.product.attributes.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
 
-object WCProductAttributeSqlUtils {
+object WCGlobalAttributeSqlUtils {
     fun getCurrentAttributes(siteID: Int) =
-            WellSql.select(WCProductAttributeModel::class.java)
+            WellSql.select(WCGlobalAttributeModel::class.java)
                     .where()
                     .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
                     .endWhere()
@@ -16,20 +16,20 @@ object WCProductAttributeSqlUtils {
                     ?.toList()
                     .orEmpty()
 
-    fun insertFromScratchCompleteAttributesList(attributes: List<WCProductAttributeModel>, siteID: Int) {
+    fun insertFromScratchCompleteAttributesList(attributes: List<WCGlobalAttributeModel>, siteID: Int) {
         deleteCompleteAttributesList(siteID)
         WellSql.insert(attributes)
                 .asSingleTransaction(true).execute()
     }
 
-    fun insertSingleAttribute(attribute: WCProductAttributeModel) = attribute.apply {
+    fun insertSingleAttribute(attribute: WCGlobalAttributeModel) = attribute.apply {
         WellSql.insert(attribute)
                 .asSingleTransaction(true)
                 .execute()
     }
 
     fun fetchSingleStoredAttribute(attributeId: Int, siteID: Int) =
-        WellSql.select(WCProductAttributeModel::class.java)
+        WellSql.select(WCGlobalAttributeModel::class.java)
                 .where()
                 .equals(WCProductAttributeModelTable.REMOTE_ID, attributeId)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
@@ -38,8 +38,8 @@ object WCProductAttributeSqlUtils {
                 .takeIf { it.isNotEmpty() }
                 ?.first()
 
-    fun deleteSingleStoredAttribute(attribute: WCProductAttributeModel, siteID: Int) = attribute.apply {
-        WellSql.delete(WCProductAttributeModel::class.java)
+    fun deleteSingleStoredAttribute(attribute: WCGlobalAttributeModel, siteID: Int) = attribute.apply {
+        WellSql.delete(WCGlobalAttributeModel::class.java)
                 .where()
                 .equals(WCProductAttributeModelTable.REMOTE_ID, attribute.id)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
@@ -47,8 +47,8 @@ object WCProductAttributeSqlUtils {
                 .execute()
     }
 
-    fun updateSingleStoredAttribute(attribute: WCProductAttributeModel, siteID: Int) = attribute.apply {
-        WellSql.update(WCProductAttributeModel::class.java)
+    fun updateSingleStoredAttribute(attribute: WCGlobalAttributeModel, siteID: Int) = attribute.apply {
+        WellSql.update(WCGlobalAttributeModel::class.java)
                 .where()
                 .equals(WCProductAttributeModelTable.REMOTE_ID, attribute.id)
                 .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
@@ -57,7 +57,7 @@ object WCProductAttributeSqlUtils {
                 .execute()
     }
 
-    fun insertOrUpdateSingleAttribute(attribute: WCProductAttributeModel, siteID: Int) =
+    fun insertOrUpdateSingleAttribute(attribute: WCGlobalAttributeModel, siteID: Int) =
             fetchSingleStoredAttribute(attribute.id, siteID)
                     ?.let { updateSingleStoredAttribute(attribute, siteID) }
                     ?: insertSingleAttribute(attribute)
@@ -84,7 +84,7 @@ object WCProductAttributeSqlUtils {
     }
 
     private fun deleteCompleteAttributesList(siteID: Int) =
-            WellSql.delete(WCProductAttributeModel::class.java)
+            WellSql.delete(WCGlobalAttributeModel::class.java)
                     .where()
                     .equals(WCProductAttributeModelTable.LOCAL_SITE_ID, siteID)
                     .endWhere()
