@@ -4,11 +4,11 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
-import org.wordpress.android.fluxc.persistence.WCProductAttributeSqlUtils.getTerm
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.getTerm
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCProductAttributeModel(
+data class WCGlobalAttributeModel(
     @PrimaryKey @Column private var id: Int = 0,
     @Column var localSiteId: Int = 0,
     @Column var name: String = "",
