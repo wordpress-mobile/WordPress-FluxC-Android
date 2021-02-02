@@ -41,7 +41,7 @@ object WCGlobalAttributeSqlUtils {
     fun deleteSingleStoredAttribute(attribute: WCGlobalAttributeModel, siteID: Int) = attribute.apply {
         WellSql.delete(WCGlobalAttributeModel::class.java)
                 .where()
-                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attribute.id)
+                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attribute.remoteId)
                 .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .execute()
@@ -50,7 +50,7 @@ object WCGlobalAttributeSqlUtils {
     fun updateSingleStoredAttribute(attribute: WCGlobalAttributeModel, siteID: Int) = attribute.apply {
         WellSql.update(WCGlobalAttributeModel::class.java)
                 .where()
-                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attribute.id)
+                .equals(WCGlobalAttributeModelTable.REMOTE_ID, attribute.remoteId)
                 .equals(WCGlobalAttributeModelTable.LOCAL_SITE_ID, siteID)
                 .endWhere()
                 .put(attribute)
