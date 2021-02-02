@@ -9,7 +9,8 @@ data class WCProductAttributeModel(
     val name: String = "",
     val position: Int = 0,
     val visible: Boolean = false,
-    val options: List<String> = emptyList()
+    val variation: Boolean = false,
+    var options: MutableList<String> = mutableListOf()
 ) {
     fun asGlobalAttribute(siteID: Int) =
             fetchSingleStoredAttribute(globalAttributeId, siteID)
