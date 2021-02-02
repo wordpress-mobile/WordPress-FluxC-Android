@@ -16,28 +16,28 @@ class WCGlobalAttributeMapper @Inject constructor(
         site: SiteModel
     ) = response.run {
         id?.toIntOrNull()?.let { fetchTerms(site, it) }
-                ?.let { this.asProductAttributeModel(id, site, it) }
+                .let { this.asProductAttributeModel(id, site, it) }
     }
 
     suspend fun responseToAttributeModelList(
         response: Array<AttributeApiResponse>,
         site: SiteModel
-    ) = response.mapNotNull { responseToAttributeModel(it, site) }
+    ) = response.map { responseToAttributeModel(it, site) }
             .toList()
 
     private fun AttributeApiResponse.asProductAttributeModel(
-        id: String,
+        id: String?,
         site: SiteModel,
-        terms: String
+        terms: String?
     ) = WCGlobalAttributeModel(
-            remoteId = id.toIntOrNull() ?: 0,
+            remoteId = id?.toIntOrNull() ?: 0,
             localSiteId = site.id,
             name = name.orEmpty(),
             slug = slug.orEmpty(),
             type = type.orEmpty(),
             orderBy = orderBy.orEmpty(),
             hasArchives = hasArchives ?: false,
-            termsId = terms
+            termsId = terms.orEmpty()
     )
 
     private suspend fun fetchTerms(
@@ -47,6 +47,7 @@ class WCGlobalAttributeMapper @Inject constructor(
             .result?.map { responseToAttributeTermModel(it, attributeID, site) }
             ?.apply { insertAttributeTermsFromScratch(attributeID, site.id, this) }
             ?.map { it.remoteId.toString() }
+            ?.takeIf { it.isNotEmpty() }
             ?.reduce { total, new -> "$total;$new" }
 
     private fun responseToAttributeTermModel(
