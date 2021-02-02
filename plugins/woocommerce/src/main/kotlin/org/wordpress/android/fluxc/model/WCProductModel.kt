@@ -134,22 +134,37 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         this.id = id
     }
 
-    fun addAttribute(newAttribute: WCProductAttributeModel) =
-            mutableListOf<WCProductAttributeModel>()
-                    .apply {
-                        attributeList
-                                ?.takeIf { it.isNotEmpty() }
-                                ?.let { addAll(it) }
-                        add(newAttribute)
-                    }.also { attributes = Gson().toJson(it) }
+    fun addAttribute(newAttribute: WCProductAttributeModel) {
+        mutableListOf<WCProductAttributeModel>()
+                .apply {
+                    attributeList
+                            .takeIf { it.isNotEmpty() }
+                            ?.takeIf {
+                                it.find { currentAttribute ->
+                                    currentAttribute.globalAttributeId == newAttribute.globalAttributeId
+                                } == null
+                            }?.let {
+                                add(newAttribute)
+                                addAll(it)
+                            }
+                }.also { attributes = Gson().toJson(it) }
+    }
 
-    fun removeAttribute(removableAttribute: WCProductAttributeModel) =
+    fun removeAttribute(attributeID: Int) =
             mutableListOf<WCProductAttributeModel>().apply {
                 attributeList
-                        ?.takeIf { it.isNotEmpty() }
-                        ?.filter { removableAttribute.globalAttributeId != it.globalAttributeId }
+                        .takeIf { it.isNotEmpty() }
+                        ?.filter { attributeID != it.globalAttributeId }
                         ?.let { addAll(it) }
             }.also { attributes = Gson().toJson(it) }
+
+    fun getAttribute(attributeID: Int) =
+        attributeList.find { it.globalAttributeId == attributeID }
+
+    fun updateAttribute(updatedAttribute: WCProductAttributeModel) =
+        getAttribute(updatedAttribute.globalAttributeId)?.let {
+            removeAttribute(it.globalAttributeId)
+        }.also { addAttribute(updatedAttribute) }
 
     /**
      * Parses the images json array into a list of product images
