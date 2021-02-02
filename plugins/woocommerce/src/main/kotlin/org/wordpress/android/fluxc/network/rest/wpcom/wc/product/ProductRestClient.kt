@@ -31,7 +31,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -291,7 +290,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: ProductVariationApiResponse? ->
                     response?.let {
-                        val newModel = productVariationResponseToProductVariationModel(it).apply {
+                        val newModel = it.asProductVariationModel().apply {
                             this.remoteProductId = remoteProductId
                             localSiteId = site.id
                         }
@@ -603,7 +602,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
                     val variationModels = response?.map {
-                        productVariationResponseToProductVariationModel(it).apply {
+                        it.asProductVariationModel().apply {
                             localSiteId = site.id
                             remoteProductId = productId
                         }
@@ -693,7 +692,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductVariationApiResponse? ->
                     response?.let {
-                        val newModel = productVariationResponseToProductVariationModel(it).apply {
+                        val newModel = it.asProductVariationModel().apply {
                             this.remoteProductId = remoteProductId
                             localSiteId = site.id
                         }
@@ -716,7 +715,23 @@ class ProductRestClient(
         add(request)
     }
 
-    suspend fun updateAttributes(
+    suspend fun updateVariationAttributes(
+        site: SiteModel,
+        variation: WCProductVariationModel
+    ) = with(variation) {
+        WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
+                .let { url ->
+                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                            this@ProductRestClient,
+                            site,
+                            url,
+                            mapOf("attributes" to variation.attributes),
+                            ProductVariationApiResponse::class.java
+                    )?.handleResult()
+                }
+    }
+
+    suspend fun updateProductAttributes(
         site: SiteModel,
         product: WCProductModel
     ) = WOOCOMMERCE.products.id(product.remoteProductId).pathV3
@@ -1361,69 +1376,6 @@ class ProductRestClient(
             name = response.name ?: ""
             slug = response.slug ?: ""
             description = response.description ?: ""
-        }
-    }
-
-    private fun productVariationResponseToProductVariationModel(
-        response: ProductVariationApiResponse
-    ): WCProductVariationModel {
-        return WCProductVariationModel().apply {
-            remoteVariationId = response.id
-            permalink = response.permalink ?: ""
-
-            dateCreated = response.date_created ?: ""
-            dateModified = response.date_modified ?: ""
-
-            status = response.status ?: ""
-            description = response.description ?: ""
-            sku = response.sku ?: ""
-
-            price = response.price ?: ""
-            regularPrice = response.regular_price ?: ""
-            salePrice = response.sale_price ?: ""
-            onSale = response.on_sale
-
-            dateOnSaleFrom = response.date_on_sale_from ?: ""
-            dateOnSaleTo = response.date_on_sale_to ?: ""
-            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
-            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
-
-            taxStatus = response.tax_status ?: ""
-            taxClass = response.tax_class ?: ""
-
-            backorders = response.backorders ?: ""
-            backordersAllowed = response.backorders_allowed
-            backordered = response.backordered
-
-            shippingClass = response.shipping_class ?: ""
-            shippingClassId = response.shipping_class_id
-
-            downloadLimit = response.download_limit
-            downloadExpiry = response.download_expiry
-
-            virtual = response.virtual
-            downloadable = response.downloadable
-            purchasable = response.purchasable
-
-            manageStock = response.manage_stock
-            stockQuantity = response.stock_quantity
-            stockStatus = response.stock_status ?: ""
-
-            attributes = response.attributes?.toString() ?: ""
-
-            weight = response.weight ?: ""
-            menuOrder = response.menu_order
-
-            attributes = response.attributes?.toString() ?: ""
-            downloads = response.downloads?.toString() ?: ""
-
-            response.dimensions?.asJsonObject?.let { json ->
-                length = json.getString("length") ?: ""
-                width = json.getString("width") ?: ""
-                height = json.getString("height") ?: ""
-            }
-
-            image = response.image?.toString() ?: ""
         }
     }
 

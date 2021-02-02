@@ -839,11 +839,22 @@ class WCProductStore @Inject constructor(
         product: WCProductModel
     ): WooResult<WCProductModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
-                    wcProductRestClient.updateAttributes(site, product)
+                    wcProductRestClient.updateProductAttributes(site, product)
                             ?.asWooResult()
                             ?.model?.asProductModel()
                             ?.let { WooResult(it) }
                 } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+
+    suspend fun submitVariationAttributeChanges(
+        site: SiteModel,
+        variation: WCProductVariationModel
+    ): WooResult<WCProductVariationModel> =
+            coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
+                wcProductRestClient.updateVariationAttributes(site, variation)
+                        ?.asWooResult()
+                        ?.model?.asProductVariationModel()
+                        ?.let { WooResult(it) }
+            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     override fun onRegister() = AppLog.d(T.API, "WCProductStore onRegister")
 
