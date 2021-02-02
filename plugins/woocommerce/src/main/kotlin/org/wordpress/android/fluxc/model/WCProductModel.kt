@@ -161,10 +161,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     fun getAttribute(attributeID: Int) =
         attributeList.find { it.globalAttributeId == attributeID }
 
-    fun updateAttribute(updatedAttribute: WCProductAttributeModel) =
-        getAttribute(updatedAttribute.globalAttributeId)?.let {
-            removeAttribute(it.globalAttributeId)
-        }.also { addAttribute(updatedAttribute) }
+    fun updateAttribute(updatedAttribute: WCProductAttributeModel) = apply {
+        getAttribute(updatedAttribute.globalAttributeId)
+                ?.let { removeAttribute(it.globalAttributeId) }
+        addAttribute(updatedAttribute)
+    }
 
     /**
      * Parses the images json array into a list of product images
