@@ -83,7 +83,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
         this.id = id
     }
 
-    data class ProductVariantOption (
+    data class ProductVariantOption(
         val id: Long? = null,
         val name: String? = null,
         val option: String? = null
