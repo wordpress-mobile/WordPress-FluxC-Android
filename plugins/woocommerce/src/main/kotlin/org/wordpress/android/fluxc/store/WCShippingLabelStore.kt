@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
@@ -183,6 +184,28 @@ class WCShippingLabelStore @Inject constructor(
     private fun getCustomPackages(result: GetPackageTypesResponse): List<CustomPackage> {
         return result.formData.customData.map {
             CustomPackage(it.name, it.isLetter, it.outerDimensions ?: it.innerDimensions ?: "")
+        }
+    }
+
+    suspend fun getAccountSettings(
+        site: SiteModel
+    ) : WooResult<WCAccountSettings> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAccountSettings") {
+            val response = restClient.getAccountSettings(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.success == true -> {
+                    WooResult(WCAccountSettings(
+                            canManagePayments = response.result.formMeta.canManagePayments,
+                            selectedPaymentMethodId = response.result.formData.selectedPaymentId,
+                            paymentMethods = response.result.formMeta.paymentMethods,
+                            lastUsedBoxId = response.result.userMeta.lastBoxId
+                    ))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
         }
     }
 }
