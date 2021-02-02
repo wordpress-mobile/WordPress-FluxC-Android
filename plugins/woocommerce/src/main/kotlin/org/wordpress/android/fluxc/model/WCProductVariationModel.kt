@@ -83,11 +83,33 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
         this.id = id
     }
 
-    class ProductVariantOption {
-        val id: Long? = null
-        val name: String? = null
+    data class ProductVariantOption (
+        val id: Long? = null,
+        val name: String? = null,
         val option: String? = null
+    )
+
+    private val gson by lazy { Gson() }
+
+    val attributeList by lazy {
+        gson.fromJson(attributes, Array<ProductVariantOption>::class.java)
     }
+    fun addVariant(newAttribute: ProductVariantOption) =
+            mutableListOf<ProductVariantOption>()
+                    .apply {
+                        attributeList
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.let { addAll(it) }
+                        add(newAttribute)
+                    }.also { attributes = gson.toJson(it) }
+
+    fun removeVariant(removableAttribute: ProductVariantOption) =
+            mutableListOf<ProductVariantOption>().apply {
+                attributeList
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.filter { removableAttribute.id != it.id }
+                        ?.let { addAll(it) }
+            }.also { attributes = gson.toJson(it) }
 
     /**
      * Parses the images json array into a list of product images
@@ -95,7 +117,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     fun getImageModel(): WCProductImageModel? {
         if (image.isNotBlank()) {
             try {
-                with(Gson().fromJson(image, JsonElement::class.java).asJsonObject) {
+                with(gson.fromJson(image, JsonElement::class.java).asJsonObject) {
                     WCProductImageModel(this.getLong("id")).also {
                         it.name = this.getString("name") ?: ""
                         it.src = this.getString("src") ?: ""
@@ -119,6 +141,6 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
      */
     fun getProductVariantOptions(): List<ProductVariantOption> {
         val responseType = object : TypeToken<List<ProductVariantOption>>() {}.type
-        return Gson().fromJson(attributes, responseType) as? List<ProductVariantOption> ?: emptyList()
+        return gson.fromJson(attributes, responseType) as? List<ProductVariantOption> ?: emptyList()
     }
 }
