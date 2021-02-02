@@ -835,13 +835,12 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    suspend fun submitAttributesToProduct(
+    suspend fun submitProductAttributeChanges(
         site: SiteModel,
-        product: WCProductModel,
-        attributes: List<WCProductAttributeModel>
+        product: WCProductModel
     ): WooResult<WCProductModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
-                    wcProductRestClient.updateAttributes(site, product, attributes)
+                    wcProductRestClient.updateAttributes(site, product)
                             ?.asWooResult()
                             ?.model?.asProductModel()
                             ?.let { WooResult(it) }

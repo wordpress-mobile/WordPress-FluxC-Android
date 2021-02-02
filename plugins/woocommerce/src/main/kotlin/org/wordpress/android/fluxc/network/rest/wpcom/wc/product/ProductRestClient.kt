@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
@@ -18,7 +17,6 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
-import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -720,15 +718,14 @@ class ProductRestClient(
 
     suspend fun updateAttributes(
         site: SiteModel,
-        product: WCProductModel,
-        attributes: List<WCProductAttributeModel>
+        product: WCProductModel
     ) = WOOCOMMERCE.products.id(product.remoteProductId).pathV3
             .let { url ->
                 jetpackTunnelGsonRequestBuilder?.syncPutRequest(
                         this,
                         site,
                         url,
-                        mapOf("attributes" to Gson().toJson(attributes)),
+                        mapOf("attributes" to product.attributes),
                         ProductApiResponse::class.java
                 )?.handleResult()
             }
