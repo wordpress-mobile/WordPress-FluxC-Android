@@ -8,6 +8,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_products.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -34,7 +38,10 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.store.MediaStore
+import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
@@ -66,6 +73,7 @@ import javax.inject.Inject
 class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
+    @Inject internal lateinit var wcAttributesStore: WCGlobalAttributeStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
 
@@ -84,6 +92,8 @@ class WooProductsFragment : Fragment() {
 
     private var enteredCategoryName: String? = null
     private val enteredTagNames: MutableList<String> = mutableListOf()
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -413,6 +423,9 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
+
+        attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
+        detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
     }
 
     /**
@@ -660,10 +673,122 @@ class WooProductsFragment : Fragment() {
         }
     }
 
+    private fun onAttachAttributeToProductButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the product ID you want to attach attributes:"
+            ) { productIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the attribute ID you want to attach:"
+                ) { attributeIdEditText ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter the term ID you want to attach:"
+                    ) { termEditText ->
+                        coroutineScope.launch {
+                            takeAsyncRequestWithValidSite { site ->
+                                wcProductStore.fetchProductListSynced(
+                                        site,
+                                        listOf(productIdEditText.text.toString().toLongOrNull() ?: 0L)
+                                )
+                                        ?.takeIf { it.isNotEmpty() }
+                                        ?.first()
+                                        ?.let { product ->
+                                            wcAttributesStore.fetchAttribute(
+                                                    site,
+                                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0L
+                                            )
+                                                    .model
+                                                    ?.asProductAttributeModel(
+                                                            termEditText.text.toString().toIntOrNull() ?: 0
+                                                    )?.let {
+                                                        product.updateAttribute(it)
+                                                    }?.let {
+                                                        wcProductStore.submitProductAttributeChanges(
+                                                                site,
+                                                                product
+                                                        )
+                                                    }
+                                        }
+                            }?.apply {
+                                model?.let { }
+                            } ?: prependToLog("Something went wrong with attach operation")
+                        }
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+        }
+    }
+
+    private fun onDetachAttributeFromProductButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the product ID you want to detach attributes:"
+            ) { productIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the attribute ID you want to detach:"
+                ) { attributeIdEditText ->
+                    coroutineScope.launch {
+                        takeAsyncRequestWithValidSite { site ->
+                            wcProductStore.fetchProductListSynced(
+                                    site,
+                                    listOf(productIdEditText.text.toString().toLongOrNull() ?: 0L)
+                            )
+                                    ?.takeIf { it.isNotEmpty() }
+                                    ?.first()
+                                    ?.apply {
+                                        removeAttribute(
+                                                attributeIdEditText.text.toString().toIntOrNull() ?: 0
+                                        )
+                                    }?.let { wcProductStore.submitProductAttributeChanges(site, it) }
+                                    ?.apply {} ?: prependToLog("Something went wrong with detach operation")
+                        }
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+        }
+    }
+
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
         fragmentManager?.let { fm ->
             val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
             dialog.show(fm, "StoreSelectorDialog")
         }
     }
+
+    private fun logProduct(product: WCProductModel) = product.let {
+        it.attributeList.forEach { logAttribute(it) }
+        prependToLog("  Product slug: ${it.slug.ifEmpty { "Slug not available" }}")
+        prependToLog("  Product type: ${it.type.ifEmpty { "Type not available" }}")
+        prependToLog("  Product name: ${it.name.ifEmpty { "Product name not available" }}")
+        prependToLog("  Product remote id: ${it.remoteProductId}")
+        prependToLog("  --------- Product ---------")
+    }
+
+    private fun logAttribute(attribute: WCProductAttributeModel) = attribute.let {
+        logAttributeOptions(attribute.options)
+        prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
+        prependToLog("  Attribute remote id: ${it.globalAttributeId}")
+        prependToLog("  --------- Product Attribute ---------")
+    }
+
+    private fun logAttributeOptions(options: List<String>) {
+        options.forEach { prependToLog(it) }
+        prependToLog("  --------- Attribute Options ---------")
+    }
+
+    private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
+            selectedSite?.let {
+                withContext(Dispatchers.Default) {
+                    action(it)
+                }
+            }
 }
