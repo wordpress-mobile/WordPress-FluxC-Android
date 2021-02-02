@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.duplicatedTopPerformersList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubbedTopPerformersList
@@ -125,6 +126,23 @@ class WCLeaderboardsStoreTest {
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
+    }
+
+    @Test
+    fun `fetch product leaderboards should distinct duplicate items`() = test {
+        val response = generateSampleLeaderboardsApiResponse()
+        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
+                .thenReturn(WooPayload(response))
+
+        whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(duplicatedTopPerformersList)
+
+        val result = storeUnderTest.fetchProductLeaderboards(stubSite)
+        assertThat(result.model).isNotNull
+        assertThat(result.model!!.size).isEqualTo(1)
+        assertThat(result.model).isNotEqualTo(stubbedTopPerformersList)
+        assertThat(result.error).isNull()
     }
 
     private fun initMocks() {

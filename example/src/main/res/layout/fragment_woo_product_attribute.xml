@@ -65,6 +65,20 @@
             android:enabled="false"
             android:text="Update Attribute"/>
 
+        <Button
+            android:id="@+id/fetch_product_single_attribute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Single Attribute"/>
+
+        <Button
+            android:id="@+id/create_term_for_attribute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Create Attribute Term"/>
+
     </LinearLayout>
 
 </ScrollView>
