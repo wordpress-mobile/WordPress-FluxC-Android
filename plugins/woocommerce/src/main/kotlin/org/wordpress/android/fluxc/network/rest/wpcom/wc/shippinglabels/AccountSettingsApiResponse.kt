@@ -15,7 +15,7 @@ data class AccountSettingsApiResponse(
 
     data class FormMeta(
         @SerializedName("can_manage_payments") val canManagePayments: Boolean,
-        @SerializedName("payment_methods") val paymentMethods: List<WCPaymentMethod>
+        @SerializedName("payment_methods") val paymentMethods: List<WCPaymentMethod>?
     )
 
     data class UserMeta(

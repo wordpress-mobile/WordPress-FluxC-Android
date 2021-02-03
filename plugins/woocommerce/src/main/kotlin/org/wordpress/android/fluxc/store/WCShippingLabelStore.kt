@@ -205,7 +205,7 @@ class WCShippingLabelStore @Inject constructor(
                     WooResult(WCShippingAccountSettings(
                             canManagePayments = response.result.formMeta.canManagePayments,
                             selectedPaymentMethodId = response.result.formData.selectedPaymentId,
-                            paymentMethods = response.result.formMeta.paymentMethods,
+                            paymentMethods = response.result.formMeta.paymentMethods.orEmpty(),
                             lastUsedBoxId = response.result.userMeta.lastBoxId
                     ))
                 }
