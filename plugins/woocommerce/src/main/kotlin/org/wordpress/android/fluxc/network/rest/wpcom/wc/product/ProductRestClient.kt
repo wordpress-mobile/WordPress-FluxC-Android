@@ -725,7 +725,7 @@ class ProductRestClient(
                             this@ProductRestClient,
                             site,
                             url,
-                            variantModelToProductJsonBody(variation),
+                            mapOf("attributes" to variation.attributes),
                             ProductVariationApiResponse::class.java
                     )?.handleResult()
                 }
@@ -740,7 +740,7 @@ class ProductRestClient(
                         this,
                         site,
                         url,
-                        productModelToProductJsonBody(product),
+                        mapOf("attributes" to product.attributes),
                         ProductApiResponse::class.java
                 )?.handleResult()
             }
