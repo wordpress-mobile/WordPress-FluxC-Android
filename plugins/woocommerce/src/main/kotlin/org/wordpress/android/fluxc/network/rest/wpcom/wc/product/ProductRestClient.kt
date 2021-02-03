@@ -645,7 +645,7 @@ class ProductRestClient(
         val remoteProductId = updatedProductModel.remoteProductId
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
+        val body = productModelToProductJsonBody(updatedProductModel, storedWCProductModel)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
@@ -687,7 +687,7 @@ class ProductRestClient(
         val remoteVariationId = updatedProductVariationModel.remoteVariationId
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
         val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
-        val body = variantModelToProductJsonBody(storedWCProductVariationModel, updatedProductVariationModel)
+        val body = variantModelToProductJsonBody(updatedProductVariationModel, storedWCProductVariationModel)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductVariationApiResponse? ->
@@ -725,7 +725,7 @@ class ProductRestClient(
                             this@ProductRestClient,
                             site,
                             url,
-                            mapOf("attributes" to variation.attributes),
+                            variantModelToProductJsonBody(variation),
                             ProductVariationApiResponse::class.java
                     )?.handleResult()
                 }
@@ -740,7 +740,7 @@ class ProductRestClient(
                         this,
                         site,
                         url,
-                        mapOf("attributes" to product.attributes),
+                        productModelToProductJsonBody(product),
                         ProductApiResponse::class.java
                 )?.handleResult()
             }
@@ -1020,7 +1020,7 @@ class ProductRestClient(
     ) {
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params = productModelToProductJsonBody(null, productModel)
+        val params = productModelToProductJsonBody(productModel)
 
         val request = JetpackTunnelGsonRequest.buildPostRequest(
                 wpApiEndpoint = url,
@@ -1098,8 +1098,8 @@ class ProductRestClient(
      * fields of [productModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
     private fun productModelToProductJsonBody(
-        productModel: WCProductModel?,
-        updatedProductModel: WCProductModel
+        updatedProductModel: WCProductModel,
+        productModel: WCProductModel? = null
     ): HashMap<String, Any> {
         val body = HashMap<String, Any>()
 
@@ -1270,8 +1270,8 @@ class ProductRestClient(
      * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
     private fun variantModelToProductJsonBody(
-        variationModel: WCProductVariationModel?,
-        updatedVariationModel: WCProductVariationModel
+        updatedVariationModel: WCProductVariationModel,
+        variationModel: WCProductVariationModel? = null
     ): HashMap<String, Any> {
         val body = HashMap<String, Any>()
 
