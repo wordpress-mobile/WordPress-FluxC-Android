@@ -706,10 +706,7 @@ class WooProductsFragment : Fragment() {
                                                     )?.let {
                                                         product.updateAttribute(it)
                                                     }?.let {
-                                                        wcProductStore.submitProductAttributeChanges(
-                                                                site,
-                                                                product
-                                                        )
+                                                        wcProductStore.submitProductAttributeChanges(site, it)
                                                     }
                                         }
                             }?.apply {
