@@ -715,6 +715,17 @@ class ProductRestClient(
         add(request)
     }
 
+    /**
+     * Makes a PUT request to
+     * `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/[WCProductVariationModel.remoteVariationId]`
+     * to replace a variation's attributes with [WCProductVariationModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [variation] Locally updated product variation to be sent
+     */
+
     suspend fun updateVariationAttributes(
         site: SiteModel,
         variation: WCProductVariationModel
@@ -730,6 +741,16 @@ class ProductRestClient(
                     )?.handleResult()
                 }
     }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
+     * to replace a product's attributes with [WCProductModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [product] Locally updated product to be sent
+     */
 
     suspend fun updateProductAttributes(
         site: SiteModel,
