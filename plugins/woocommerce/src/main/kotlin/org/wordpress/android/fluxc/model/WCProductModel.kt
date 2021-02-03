@@ -138,14 +138,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         mutableListOf<WCProductAttributeModel>()
                 .apply {
                     attributeList
-                            .takeIf { it.isNotEmpty() }
-                            ?.takeIf {
+                            .takeIf {
                                 it.find { currentAttribute ->
                                     currentAttribute.globalAttributeId == newAttribute.globalAttributeId
                                 } == null
-                            }?.let {
+                            }?.let { currentAttributes ->
                                 add(newAttribute)
-                                addAll(it)
+                                currentAttributes
+                                        .takeIf { it.isNotEmpty() }
+                                        ?.let { addAll(it) }
                             }
                 }.also { attributes = Gson().toJson(it) }
     }
