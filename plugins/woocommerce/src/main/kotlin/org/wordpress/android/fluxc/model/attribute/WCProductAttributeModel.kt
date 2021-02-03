@@ -13,10 +13,6 @@ data class WCProductAttributeModel(
     val variation: Boolean = false,
     var options: MutableList<String> = mutableListOf()
 ) {
-    init {
-        options.add(anyOption)
-    }
-
     fun asGlobalAttribute(siteID: Int) =
             fetchSingleStoredAttribute(globalAttributeId, siteID)
 
@@ -28,8 +24,4 @@ data class WCProductAttributeModel(
                         option = selectedOption
                 )
             }
-
-    companion object {
-        const val anyOption = "Any"
-    }
 }
