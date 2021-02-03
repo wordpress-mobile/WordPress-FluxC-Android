@@ -13,12 +13,14 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPaymentMethod
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -66,6 +68,8 @@ class WCShippingLabelStoreTest {
     )
 
     private val samplePackagesApiResponse = WCShippingLabelTestUtils.generateSampleGetPackagesApiResponse()
+
+    private val sampleAccountSettingsApiResponse = WCShippingLabelTestUtils.generateSampleAccountSettingsApiResponse()
 
     @Before
     fun setUp() {
@@ -217,6 +221,27 @@ class WCShippingLabelStoreTest {
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
+    @Test
+    fun `get account settings`() = test {
+        val expectedPaymentMethodList = listOf(WCPaymentMethod(
+                paymentMethodId = 4144354,
+                name = "John Doe",
+                cardType = "visa",
+                cardDigits = "5454",
+                expiry = "2023-12-31"
+        ))
+        val result = getAccountSettings()
+        val model = result.model!!
+        assertThat(model.canManagePayments).isTrue()
+        assertThat(model.lastUsedBoxId).isEqualTo("small_flat_box")
+        assertThat(model.selectedPaymentMethodId).isEqualTo(4144354)
+        assertThat(model.paymentMethods).isEqualTo(expectedPaymentMethodList)
+
+        val invalidRequestResult = getAccountSettings(true)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
         val fetchShippingLabelsPayload = WooPayload(sampleShippingLabelApiResponse)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchShippingLabelsPayload)
@@ -275,5 +300,15 @@ class WCShippingLabelStoreTest {
             whenever(restClient.getPackageTypes(any())).thenReturn(getPackagesPayload)
         }
         return store.getPackageTypes(site)
+    }
+
+    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCAccountSettings> {
+        if (isError) {
+            whenever(restClient.getAccountSettings(any())).thenReturn(WooPayload(error))
+        } else {
+            val accountSettingsPayload = WooPayload(sampleAccountSettingsApiResponse)
+            whenever(restClient.getAccountSettings(any())).thenReturn(accountSettingsPayload)
+        }
+        return store.getAccountSettings(site)
     }
 }
