@@ -194,7 +194,7 @@ class WCShippingLabelStore @Inject constructor(
 
     suspend fun getAccountSettings(
         site: SiteModel
-    ) : WooResult<WCAccountSettings> {
+    ): WooResult<WCAccountSettings> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAccountSettings") {
             val response = restClient.getAccountSettings(site)
             return@withDefaultContext when {

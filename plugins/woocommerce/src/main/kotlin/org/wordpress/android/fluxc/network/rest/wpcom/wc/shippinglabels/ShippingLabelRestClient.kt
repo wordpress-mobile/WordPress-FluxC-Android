@@ -161,7 +161,7 @@ constructor(
 
     suspend fun getAccountSettings(
         site: SiteModel
-    ) : WooPayload<AccountSettingsApiResponse> {
+    ): WooPayload<AccountSettingsApiResponse> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
