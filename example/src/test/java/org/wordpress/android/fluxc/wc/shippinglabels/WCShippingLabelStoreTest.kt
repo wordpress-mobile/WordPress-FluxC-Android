@@ -13,7 +13,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
@@ -302,7 +302,7 @@ class WCShippingLabelStoreTest {
         return store.getPackageTypes(site)
     }
 
-    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCAccountSettings> {
+    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCShippingAccountSettings> {
         if (isError) {
             whenever(restClient.getAccountSettings(any())).thenReturn(WooPayload(error))
         } else {

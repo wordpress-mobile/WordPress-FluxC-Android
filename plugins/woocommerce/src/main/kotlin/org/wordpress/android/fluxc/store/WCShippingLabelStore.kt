@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
@@ -194,7 +194,7 @@ class WCShippingLabelStore @Inject constructor(
 
     suspend fun getAccountSettings(
         site: SiteModel
-    ): WooResult<WCAccountSettings> {
+    ): WooResult<WCShippingAccountSettings> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAccountSettings") {
             val response = restClient.getAccountSettings(site)
             return@withDefaultContext when {
@@ -202,7 +202,7 @@ class WCShippingLabelStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result?.success == true -> {
-                    WooResult(WCAccountSettings(
+                    WooResult(WCShippingAccountSettings(
                             canManagePayments = response.result.formMeta.canManagePayments,
                             selectedPaymentMethodId = response.result.formData.selectedPaymentId,
                             paymentMethods = response.result.formMeta.paymentMethods,
