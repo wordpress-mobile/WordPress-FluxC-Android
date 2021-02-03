@@ -854,7 +854,7 @@ class WCProductStore @Inject constructor(
         site: SiteModel,
         variation: WCProductVariationModel
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
+            coroutineEngine?.withDefaultContext(T.API, this, "submitVariationAttributes") {
                 wcProductRestClient.updateVariationAttributes(site, variation)
                         ?.asWooResult()
                         ?.model?.asProductVariationModel()
