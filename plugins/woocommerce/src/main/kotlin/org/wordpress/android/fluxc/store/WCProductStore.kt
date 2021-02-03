@@ -843,7 +843,10 @@ class WCProductStore @Inject constructor(
                     wcProductRestClient.updateProductAttributes(site, product)
                             ?.asWooResult()
                             ?.model?.asProductModel()
-                            ?.apply { ProductSqlUtils.insertOrUpdateProduct(this) }
+                            ?.apply {
+                                localSiteId = site.id
+                                ProductSqlUtils.insertOrUpdateProduct(this)
+                            }
                             ?.let { WooResult(it) }
                 } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
