@@ -174,7 +174,12 @@ class WCShippingLabelStore @Inject constructor(
         packageIds.forEach { packageId ->
             packageDefinitions.firstOrNull { it.id == packageId }?.let { definition ->
                 predefinedPackages.add(
-                    PredefinedPackage(definition.name, definition.isLetter, definition.outerDimensions)
+                        PredefinedPackage(
+                                id = definition.id,
+                                title = definition.name,
+                                isLetter = definition.isLetter,
+                                dimensions = definition.outerDimensions
+                        )
                 )
             }
         }

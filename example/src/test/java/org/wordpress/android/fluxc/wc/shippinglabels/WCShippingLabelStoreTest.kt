@@ -185,11 +185,13 @@ class WCShippingLabelStoreTest {
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
                                 listOf(
                                         PredefinedPackage(
+                                                "small_flat_box",
                                                 "Small Flat Rate Box",
                                                 false,
                                                 "21.91 x 13.65 x 4.13"
                                         ),
                                         PredefinedPackage(
+                                                "medium_flat_box_top",
                                                 "Medium Flat Rate Box 1, Top Loading",
                                                 false,
                                                 "28.57 x 22.22 x 15.24"
@@ -199,6 +201,7 @@ class WCShippingLabelStoreTest {
                         PredefinedOption(
                                 "DHL Express",
                                 listOf(PredefinedPackage(
+                                        "LargePaddedPouch",
                                         "Large Padded Pouch",
                                         true,
                                         "30.22 x 35.56 x 2.54"
