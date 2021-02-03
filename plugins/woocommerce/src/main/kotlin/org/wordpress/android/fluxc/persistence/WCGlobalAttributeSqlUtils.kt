@@ -58,7 +58,7 @@ object WCGlobalAttributeSqlUtils {
     }
 
     fun insertOrUpdateSingleAttribute(attribute: WCGlobalAttributeModel, siteID: Int) =
-            fetchSingleStoredAttribute(attribute.id, siteID)
+            fetchSingleStoredAttribute(attribute.remoteId, siteID)
                     ?.let { updateSingleStoredAttribute(attribute, siteID) }
                     ?: insertSingleAttribute(attribute)
 
