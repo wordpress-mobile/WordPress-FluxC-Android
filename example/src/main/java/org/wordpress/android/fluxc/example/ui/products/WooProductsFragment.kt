@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_products.*
@@ -689,28 +690,15 @@ class WooProductsFragment : Fragment() {
                     ) { termEditText ->
                         coroutineScope.launch {
                             takeAsyncRequestWithValidSite { site ->
-                                wcProductStore.fetchProductListSynced(
+                                requestSelectedProductData(
                                         site,
-                                        listOf(productIdEditText.text.toString().toLongOrNull() ?: 0L)
+                                        productIdEditText,
+                                        attributeIdEditText,
+                                        termEditText
                                 )
-                                        ?.takeIf { it.isNotEmpty() }
-                                        ?.first()
-                                        ?.let { product ->
-                                            wcAttributesStore.fetchAttribute(
-                                                    site,
-                                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0L
-                                            )
-                                                    .model
-                                                    ?.asProductAttributeModel(
-                                                            termEditText.text.toString().toIntOrNull() ?: 0
-                                                    )?.let {
-                                                        product.updateAttribute(it)
-                                                    }?.let {
-                                                        wcProductStore.submitProductAttributeChanges(site, it)
-                                                    }
-                                        }
                             }?.apply {
-                                model?.let { }
+                                model?.let { logProduct(it) }
+                                        ?: prependToLog("Couldn't fetch product data")
                             } ?: prependToLog("Something went wrong with attach operation")
                         }
                     }
@@ -744,7 +732,10 @@ class WooProductsFragment : Fragment() {
                                                 attributeIdEditText.text.toString().toIntOrNull() ?: 0
                                         )
                                     }?.let { wcProductStore.submitProductAttributeChanges(site, it) }
-                                    ?.apply {} ?: prependToLog("Something went wrong with detach operation")
+                                    ?.apply {
+                                        model?.let { logProduct(it) }
+                                                ?: prependToLog("Couldn't fetch product data")
+                                    } ?: prependToLog("Something went wrong with detach operation")
                         }
                     }
                 }
@@ -753,6 +744,44 @@ class WooProductsFragment : Fragment() {
             prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
         }
     }
+
+    private suspend fun requestSelectedProductData(
+        site: SiteModel,
+        productIdEditText: EditText,
+        attributeIdEditText: EditText,
+        termEditText: EditText
+    ) = wcProductStore.fetchProductListSynced(
+            site,
+            listOf(productIdEditText.text.toString().toLongOrNull() ?: 0L)
+    )
+            ?.takeIf { it.isNotEmpty() }
+            ?.first()
+            ?.let {
+                handleProductAttributesSync(
+                        site,
+                        attributeIdEditText.text.toString().toLongOrNull() ?: 0L,
+                        termEditText.text.toString().toIntOrNull() ?: 0,
+                        it
+                )
+            }
+
+    private suspend fun handleProductAttributesSync(
+        site: SiteModel,
+        attributeId: Long,
+        termId: Int,
+        product: WCProductModel
+    ) = wcAttributesStore.fetchAttribute(site, attributeId)
+            .model
+            ?.let {
+                wcAttributesStore.fetchAttributeTerms(
+                        site,
+                        it.remoteId.toLong()
+                )
+                it.asProductAttributeModel(termId)
+                        .run { product.updateAttribute(this) }
+            }?.let {
+                wcProductStore.submitProductAttributeChanges(site, it)
+            }
 
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
         fragmentManager?.let { fm ->

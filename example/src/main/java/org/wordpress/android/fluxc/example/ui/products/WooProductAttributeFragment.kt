@@ -56,6 +56,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         delete_product_attributes.setOnClickListener(::onDeleteAttributeButtonClicked)
         update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
         fetch_product_single_attribute.setOnClickListener(::onFetchAttributeButtonClicked)
+        fetch_term_for_attribute.setOnClickListener(::onFetchAttributeTermsButtonClicked)
         create_term_for_attribute.setOnClickListener(::onCreateAttributeTermButtonClicked)
     }
 
@@ -173,6 +174,33 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
+    private fun onFetchAttributeTermsButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to fetch terms:"
+            ) { editText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite {
+                        wcAttributesStore.fetchAttributeTerms(
+                                it,
+                                editText.text.toString().toLongOrNull() ?: 0
+                        )
+                    }?.apply {
+                        model?.forEach {
+                            logSingleAttributeTermResponse(it) }
+                                ?.let { prependToLog("========== Attribute Terms Fetched =========") }
+                                ?: takeIf { isError }?.let {
+                                    prependToLog("Failed to fetch Terms. Error: ${error.message}")
+                                }
+                    } ?: prependToLog("Failed to fetch Terms. Error: Unknown")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
     private fun onCreateAttributeTermButtonClicked(view: View) {
         try {
             showSingleLineDialog(
@@ -220,7 +248,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
             response.terms
                     ?.filterNotNull()
                     ?.forEachIndexed { index, wcAttributeTermModel ->
-                logSingleAttributeTermResponse(index, wcAttributeTermModel)
+                logSingleAttributeTermResponse(wcAttributeTermModel, index)
             }
             prependToLog("  Attribute slug: ${it.slug.ifEmpty { "Slug not available" }}")
             prependToLog("  Attribute type: ${it.type.ifEmpty { "Type not available" }}")
@@ -230,11 +258,11 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun logSingleAttributeTermResponse(termIndex: Int, response: WCAttributeTermModel) {
+    private fun logSingleAttributeTermResponse(response: WCAttributeTermModel, termIndex: Int? = null) {
         response.let {
             prependToLog("    Term name: ${it.name}")
             prependToLog("    Term id: ${it.remoteId}")
-            prependToLog("    --------- Attribute Term #$termIndex ---------")
+            prependToLog("    --------- Attribute Term ${termIndex ?: ""} ---------")
         }
     }
 
