@@ -695,10 +695,12 @@ class WooProductsFragment : Fragment() {
                                         productIdEditText,
                                         attributeIdEditText,
                                         termEditText
-                                )?.apply {
-                                    model?.let { logProduct(it) }
-                                            ?: prependToLog("Couldn't fetch product data")
-                                } ?: prependToLog("Something went wrong with attach operation")
+                                )?.model.let { product ->
+                                    withContext(Dispatchers.Main) {
+                                        product?.let { logProduct(it) }
+                                                ?: prependToLog("Couldn't fetch product data")
+                                    }
+                                }
                             }
                         }
                     }
@@ -732,10 +734,12 @@ class WooProductsFragment : Fragment() {
                                                 attributeIdEditText.text.toString().toIntOrNull() ?: 0
                                         )
                                     }?.let { wcProductStore.submitProductAttributeChanges(site, it) }
-                                    ?.apply {
-                                        model?.let { logProduct(it) }
-                                                ?: prependToLog("Couldn't fetch product data")
-                                    } ?: prependToLog("Something went wrong with detach operation")
+                                    ?.model.let { product ->
+                                        withContext(Dispatchers.Main) {
+                                            product?.let { logProduct(it) }
+                                                    ?: prependToLog("Couldn't fetch product data")
+                                        }
+                                    }
                         }
                     }
                 }
@@ -806,7 +810,7 @@ class WooProductsFragment : Fragment() {
     }
 
     private fun logAttributeOptions(options: List<String>) {
-        options.forEach { prependToLog(it) }
+        options.forEach { prependToLog("  $it") }
         prependToLog("  --------- Attribute Options ---------")
     }
 
