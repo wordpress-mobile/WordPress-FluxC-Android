@@ -240,7 +240,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
             contentStruct.put("comment_status", site.getDefaultCommentStatus());
         }
 
-        final List<Object> params = new ArrayList<>(5);
+        List<Object> params = new ArrayList<>(5);
         params.add(site.getSelfHostedSiteId());
         params.add(site.getUsername());
         params.add(site.getPassword());
