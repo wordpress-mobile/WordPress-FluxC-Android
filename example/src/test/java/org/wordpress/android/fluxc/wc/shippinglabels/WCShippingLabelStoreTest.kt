@@ -13,12 +13,14 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPaymentMethod
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -66,6 +68,8 @@ class WCShippingLabelStoreTest {
     )
 
     private val samplePackagesApiResponse = WCShippingLabelTestUtils.generateSampleGetPackagesApiResponse()
+
+    private val sampleAccountSettingsApiResponse = WCShippingLabelTestUtils.generateSampleAccountSettingsApiResponse()
 
     @Before
     fun setUp() {
@@ -185,11 +189,13 @@ class WCShippingLabelStoreTest {
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
                                 listOf(
                                         PredefinedPackage(
+                                                "small_flat_box",
                                                 "Small Flat Rate Box",
                                                 false,
                                                 "21.91 x 13.65 x 4.13"
                                         ),
                                         PredefinedPackage(
+                                                "medium_flat_box_top",
                                                 "Medium Flat Rate Box 1, Top Loading",
                                                 false,
                                                 "28.57 x 22.22 x 15.24"
@@ -199,6 +205,7 @@ class WCShippingLabelStoreTest {
                         PredefinedOption(
                                 "DHL Express",
                                 listOf(PredefinedPackage(
+                                        "LargePaddedPouch",
                                         "Large Padded Pouch",
                                         true,
                                         "30.22 x 35.56 x 2.54"
@@ -210,6 +217,27 @@ class WCShippingLabelStoreTest {
         assertThat(result.model).isEqualTo(expectedResult)
 
         val invalidRequestResult = getPackages(true)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `get account settings`() = test {
+        val expectedPaymentMethodList = listOf(WCPaymentMethod(
+                paymentMethodId = 4144354,
+                name = "John Doe",
+                cardType = "visa",
+                cardDigits = "5454",
+                expiry = "2023-12-31"
+        ))
+        val result = getAccountSettings()
+        val model = result.model!!
+        assertThat(model.canManagePayments).isTrue()
+        assertThat(model.lastUsedBoxId).isEqualTo("small_flat_box")
+        assertThat(model.selectedPaymentMethodId).isEqualTo(4144354)
+        assertThat(model.paymentMethods).isEqualTo(expectedPaymentMethodList)
+
+        val invalidRequestResult = getAccountSettings(true)
         assertThat(invalidRequestResult.model).isNull()
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
@@ -272,5 +300,15 @@ class WCShippingLabelStoreTest {
             whenever(restClient.getPackageTypes(any())).thenReturn(getPackagesPayload)
         }
         return store.getPackageTypes(site)
+    }
+
+    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCShippingAccountSettings> {
+        if (isError) {
+            whenever(restClient.getAccountSettings(any())).thenReturn(WooPayload(error))
+        } else {
+            val accountSettingsPayload = WooPayload(sampleAccountSettingsApiResponse)
+            whenever(restClient.getAccountSettings(any())).thenReturn(accountSettingsPayload)
+        }
+        return store.getAccountSettings(site)
     }
 }

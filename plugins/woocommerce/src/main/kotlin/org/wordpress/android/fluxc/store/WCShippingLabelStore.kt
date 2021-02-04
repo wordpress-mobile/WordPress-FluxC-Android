@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
@@ -173,7 +174,12 @@ class WCShippingLabelStore @Inject constructor(
         packageIds.forEach { packageId ->
             packageDefinitions.firstOrNull { it.id == packageId }?.let { definition ->
                 predefinedPackages.add(
-                    PredefinedPackage(definition.name, definition.isLetter, definition.outerDimensions)
+                        PredefinedPackage(
+                                id = definition.id,
+                                title = definition.name,
+                                isLetter = definition.isLetter,
+                                dimensions = definition.outerDimensions
+                        )
                 )
             }
         }
@@ -183,6 +189,28 @@ class WCShippingLabelStore @Inject constructor(
     private fun getCustomPackages(result: GetPackageTypesResponse): List<CustomPackage> {
         return result.formData.customData.map {
             CustomPackage(it.name, it.isLetter, it.outerDimensions ?: it.innerDimensions ?: "")
+        }
+    }
+
+    suspend fun getAccountSettings(
+        site: SiteModel
+    ): WooResult<WCShippingAccountSettings> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAccountSettings") {
+            val response = restClient.getAccountSettings(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.success == true -> {
+                    WooResult(WCShippingAccountSettings(
+                            canManagePayments = response.result.formMeta.canManagePayments,
+                            selectedPaymentMethodId = response.result.formData.selectedPaymentId,
+                            paymentMethods = response.result.formMeta.paymentMethods.orEmpty(),
+                            lastUsedBoxId = response.result.userMeta.lastBoxId
+                    ))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
         }
     }
 }
