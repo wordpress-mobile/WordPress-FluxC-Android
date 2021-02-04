@@ -65,6 +65,13 @@ object WCGlobalAttributeSqlUtils {
                     }
                     ?: insertSingleAttribute(attribute)
 
+    fun updateSingleAttributeTermsMapping(attributeID: Int, termsMapping: String, siteID: Int) =
+        fetchSingleStoredAttribute(attributeID, siteID)
+                ?.let {
+                    it.termsId = termsMapping
+                    updateSingleStoredAttribute(it, siteID)
+                }
+
     fun getTerm(siteID: Int, termID: Int) =
             WellSql.select(WCAttributeTermModel::class.java)
                     .where().beginGroup()

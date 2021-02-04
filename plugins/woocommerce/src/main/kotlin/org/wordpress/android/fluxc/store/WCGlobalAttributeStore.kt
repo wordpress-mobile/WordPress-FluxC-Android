@@ -10,9 +10,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.deleteSingleStoredAttribute
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.getCurrentAttributes
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertAttributeTermsFromScratch
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertFromScratchCompleteAttributesList
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertOrUpdateSingleAttribute
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertSingleAttribute
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.updateSingleAttributeTermsMapping
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.updateSingleStoredAttribute
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -44,6 +46,20 @@ class WCGlobalAttributeStore @Inject constructor(
                                 ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
+
+    suspend fun fetchAttributeTerms(
+        site: SiteModel,
+        attributeID: Long
+    ) = restClient.fetchAllAttributeTerms(site, attributeID)
+            .result?.map { mapper.responseToAttributeTermModel(it, attributeID.toInt(), site) }
+            ?.apply {
+                insertAttributeTermsFromScratch(attributeID.toInt(), site.id, this)
+                map { it.remoteId.toString() }
+                        .takeIf { it.isNotEmpty() }
+                        ?.reduce { total, new -> "$total;$new" }
+                        ?.let { updateSingleAttributeTermsMapping(attributeID.toInt(), it, site.id) }
+            }
+            ?.let { WooResult(it) }
 
     suspend fun fetchAttribute(
         site: SiteModel,
