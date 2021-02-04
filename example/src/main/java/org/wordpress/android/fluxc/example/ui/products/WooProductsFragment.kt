@@ -695,11 +695,11 @@ class WooProductsFragment : Fragment() {
                                         productIdEditText,
                                         attributeIdEditText,
                                         termEditText
-                                )
-                            }?.apply {
-                                model?.let { logProduct(it) }
-                                        ?: prependToLog("Couldn't fetch product data")
-                            } ?: prependToLog("Something went wrong with attach operation")
+                                )?.apply {
+                                    model?.let { logProduct(it) }
+                                            ?: prependToLog("Couldn't fetch product data")
+                                } ?: prependToLog("Something went wrong with attach operation")
+                            }
                         }
                     }
                 }
@@ -770,16 +770,15 @@ class WooProductsFragment : Fragment() {
         attributeId: Long,
         termId: Int,
         product: WCProductModel
-    ) = wcAttributesStore.fetchAttribute(site, attributeId)
+    ) = wcAttributesStore.fetchAttribute(
+            site = site,
+            attributeID = attributeId,
+            withTerms = true
+    )
             .model
+            ?.asProductAttributeModel(termId)
+            ?.run { product.updateAttribute(this) }
             ?.let {
-                wcAttributesStore.fetchAttributeTerms(
-                        site,
-                        it.remoteId.toLong()
-                )
-                it.asProductAttributeModel(termId)
-                        .run { product.updateAttribute(this) }
-            }?.let {
                 wcProductStore.submitProductAttributeChanges(site, it)
             }
 
@@ -790,12 +789,12 @@ class WooProductsFragment : Fragment() {
         }
     }
 
-    private fun logProduct(product: WCProductModel) = product.let {
-        it.attributeList.forEach { logAttribute(it) }
-        prependToLog("  Product slug: ${it.slug.ifEmpty { "Slug not available" }}")
-        prependToLog("  Product type: ${it.type.ifEmpty { "Type not available" }}")
-        prependToLog("  Product name: ${it.name.ifEmpty { "Product name not available" }}")
-        prependToLog("  Product remote id: ${it.remoteProductId}")
+    private fun logProduct(product: WCProductModel) = product.apply {
+        attributeList.forEach { logAttribute(it) }
+        prependToLog("  Product slug: ${slug.ifEmpty { "Slug not available" }}")
+        prependToLog("  Product type: ${type.ifEmpty { "Type not available" }}")
+        prependToLog("  Product name: ${name.ifEmpty { "Product name not available" }}")
+        prependToLog("  Product remote id: $remoteProductId")
         prependToLog("  --------- Product ---------")
     }
 
