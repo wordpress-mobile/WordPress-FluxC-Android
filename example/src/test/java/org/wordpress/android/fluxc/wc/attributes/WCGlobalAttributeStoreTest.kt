@@ -25,7 +25,6 @@ import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeDeleteResponse
-import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeTermsFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeUpdateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedAttributesList
