@@ -70,15 +70,7 @@ class WCGlobalAttributeStoreTest {
 
     @Test
     fun `fetch attributes should call mapper once`() = test {
-        mapper = spy(WCGlobalAttributeMapper(
-                mock<ProductAttributeRestClient>().apply {
-                    val response = WooPayload(attributeTermsFullListResponse)
-                    whenever(this.fetchAllAttributeTerms(stubSite, 1))
-                            .thenReturn(response)
-                    whenever(this.fetchAllAttributeTerms(stubSite, 2))
-                            .thenReturn(response)
-                }
-        ))
+        mapper = spy()
         createStoreUnderTest()
         whenever(restClient.fetchProductFullAttributesList(stubSite))
                 .thenReturn(WooPayload(attributesFullListResponse))
