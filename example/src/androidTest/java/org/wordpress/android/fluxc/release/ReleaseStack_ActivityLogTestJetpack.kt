@@ -105,7 +105,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         )
 
         assertNotNull(fetchActivities)
-        assertEquals(fetchActivities.rowsAffected, PAGE_SIZE) // All activities are persisted.
+        assertEquals(fetchActivities.rowsAffected, ALL_SITE_ACTIVITIES) // All activities are persisted.
         assertEquals(activityLogForSite.size, 0) // Non retrieved, all activities are non-rewindable.
     }
 
@@ -365,6 +365,6 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     companion object {
-        private const val PAGE_SIZE = 20
+        private const val ALL_SITE_ACTIVITIES = 20
     }
 }
