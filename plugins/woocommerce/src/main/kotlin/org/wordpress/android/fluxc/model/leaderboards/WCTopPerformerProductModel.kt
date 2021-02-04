@@ -18,7 +18,8 @@ data class WCTopPerformerProductModel(
     @Column var unit: String = "",
     @PrimaryKey @Column private var id: Int = 0
 ) : Identifiable {
-    val product by lazy { Gson().fromJson(productInfo, WCProductModel::class.java) }
+    val product
+        get() = Gson().fromJson(productInfo, WCProductModel::class.java)
 
     override fun setId(id: Int) {
         this.id = id

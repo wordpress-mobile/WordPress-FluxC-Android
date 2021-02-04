@@ -73,6 +73,13 @@
             android:text="Fetch Single Attribute"/>
 
         <Button
+            android:id="@+id/fetch_term_for_attribute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Attribute Terms"/>
+
+        <Button
             android:id="@+id/create_term_for_attribute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

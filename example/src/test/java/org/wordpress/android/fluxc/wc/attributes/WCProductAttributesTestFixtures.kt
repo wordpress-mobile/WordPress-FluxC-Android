@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.wc.attributes
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.terms.AttributeTermApiResponse
 
@@ -37,7 +37,7 @@ object WCProductAttributesTestFixtures {
 
     val parsedAttributesList by lazy {
         listOf(
-                WCProductAttributeModel(
+                WCGlobalAttributeModel(
                         1,
                         321,
                         "Color",
@@ -46,7 +46,7 @@ object WCProductAttributesTestFixtures {
                         "menu_order",
                         true
                 ),
-                WCProductAttributeModel(
+                WCGlobalAttributeModel(
                         2,
                         321,
                         "Size",
@@ -59,7 +59,7 @@ object WCProductAttributesTestFixtures {
     }
 
     val parsedCreateAttributeResponse by lazy {
-        WCProductAttributeModel(
+        WCGlobalAttributeModel(
                 1,
                 321,
                 "Color",
@@ -71,7 +71,7 @@ object WCProductAttributesTestFixtures {
     }
 
     val parsedDeleteAttributeResponse by lazy {
-        WCProductAttributeModel(
+        WCGlobalAttributeModel(
                 17,
                 321,
                 "Size",
@@ -83,7 +83,7 @@ object WCProductAttributesTestFixtures {
     }
 
     val parsedUpdateAttributeResponse by lazy {
-        WCProductAttributeModel(
+        WCGlobalAttributeModel(
                 99,
                 321,
                 "test_name",

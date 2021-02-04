@@ -14,18 +14,17 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeMapper
-import org.wordpress.android.fluxc.model.product.attributes.WCProductAttributeModel
-import org.wordpress.android.fluxc.model.product.attributes.terms.WCAttributeTermModel
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeMapper
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.fluxc.store.WCProductAttributesStore
+import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeCreateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeDeleteResponse
-import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeTermsFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributeUpdateResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.attributesFullListResponse
 import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures.parsedAttributesList
@@ -36,10 +35,10 @@ import org.wordpress.android.fluxc.wc.attributes.WCProductAttributesTestFixtures
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
-class WCProductAttributesStoreTest {
-    private lateinit var storeUnderTest: WCProductAttributesStore
+class WCGlobalAttributeStoreTest {
+    private lateinit var storeUnderTest: WCGlobalAttributeStore
     private lateinit var restClient: ProductAttributeRestClient
-    private lateinit var mapper: WCProductAttributeMapper
+    private lateinit var mapper: WCGlobalAttributeMapper
 
     @Before
     fun setUp() {
@@ -48,7 +47,7 @@ class WCProductAttributesStoreTest {
                 appContext,
                 listOf(
                         SiteModel::class.java,
-                        WCProductAttributeModel::class.java,
+                        WCGlobalAttributeModel::class.java,
                         WCAttributeTermModel::class.java
                 ),
                 WellSqlConfig.ADDON_WOOCOMMERCE
@@ -70,15 +69,7 @@ class WCProductAttributesStoreTest {
 
     @Test
     fun `fetch attributes should call mapper once`() = test {
-        mapper = spy(WCProductAttributeMapper(
-                mock<ProductAttributeRestClient>().apply {
-                    val response = WooPayload(attributeTermsFullListResponse)
-                    whenever(this.fetchAllAttributeTerms(stubSite, 1))
-                            .thenReturn(response)
-                    whenever(this.fetchAllAttributeTerms(stubSite, 2))
-                            .thenReturn(response)
-                }
-        ))
+        mapper = spy()
         createStoreUnderTest()
         whenever(restClient.fetchProductFullAttributesList(stubSite))
                 .thenReturn(WooPayload(attributesFullListResponse))
@@ -104,7 +95,7 @@ class WCProductAttributesStoreTest {
 
     @Test
     fun `create Attribute should return WooResult with parsed entity`() = test {
-        val expectedResult = WCProductAttributeModel(
+        val expectedResult = WCGlobalAttributeModel(
                 1,
                 321,
                 "Color",
@@ -143,7 +134,7 @@ class WCProductAttributesStoreTest {
 
     @Test
     fun `delete Attribute should return WooResult with parsed entity`() = test {
-        val expectedResult = WCProductAttributeModel(
+        val expectedResult = WCGlobalAttributeModel(
                 17,
                 321,
                 "Size",
@@ -171,7 +162,7 @@ class WCProductAttributesStoreTest {
 
     @Test
     fun `update Attribute should return WooResult with parsed entity`() = test {
-        val expectedResult = WCProductAttributeModel(
+        val expectedResult = WCGlobalAttributeModel(
                 99,
                 321,
                 "test_name",
@@ -219,7 +210,7 @@ class WCProductAttributesStoreTest {
     }
 
     private fun createStoreUnderTest() =
-            WCProductAttributesStore(
+            WCGlobalAttributeStore(
                     restClient,
                     mapper,
                     initCoroutineEngine()

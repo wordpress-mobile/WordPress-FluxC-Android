@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
+import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
@@ -31,7 +32,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -71,6 +71,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
 import javax.inject.Singleton
@@ -290,7 +291,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: ProductVariationApiResponse? ->
                     response?.let {
-                        val newModel = productVariationResponseToProductVariationModel(it).apply {
+                        val newModel = it.asProductVariationModel().apply {
                             this.remoteProductId = remoteProductId
                             localSiteId = site.id
                         }
@@ -602,7 +603,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
                     val variationModels = response?.map {
-                        productVariationResponseToProductVariationModel(it).apply {
+                        it.asProductVariationModel().apply {
                             localSiteId = site.id
                             remoteProductId = productId
                         }
@@ -692,7 +693,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductVariationApiResponse? ->
                     response?.let {
-                        val newModel = productVariationResponseToProductVariationModel(it).apply {
+                        val newModel = it.asProductVariationModel().apply {
                             this.remoteProductId = remoteProductId
                             localSiteId = site.id
                         }
@@ -714,6 +715,57 @@ class ProductRestClient(
                 })
         add(request)
     }
+
+    /**
+     * Makes a PUT request to
+     * `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/[WCProductVariationModel.remoteVariationId]`
+     * to replace a variation's attributes with [WCProductVariationModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [variation] Locally updated product variation to be sent
+     */
+
+    suspend fun updateVariationAttributes(
+        site: SiteModel,
+        variation: WCProductVariationModel
+    ) = with(variation) {
+        WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
+                .let { url ->
+                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                            this@ProductRestClient,
+                            site,
+                            url,
+                            mapOf("attributes" to JsonParser().parse(variation.attributes).asJsonArray),
+                            ProductVariationApiResponse::class.java
+                    )?.handleResult()
+                }
+    }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
+     * to replace a product's attributes with [WCProductModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [product] Locally updated product to be sent
+     */
+
+    suspend fun updateProductAttributes(
+        site: SiteModel,
+        product: WCProductModel
+    ) = WOOCOMMERCE.products.id(product.remoteProductId).pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                        this,
+                        site,
+                        url,
+                        mapOf("attributes" to JsonParser().parse(product.attributes).asJsonArray),
+                        ProductApiResponse::class.java
+                )?.handleResult()
+            }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
@@ -1346,69 +1398,6 @@ class ProductRestClient(
             name = response.name ?: ""
             slug = response.slug ?: ""
             description = response.description ?: ""
-        }
-    }
-
-    private fun productVariationResponseToProductVariationModel(
-        response: ProductVariationApiResponse
-    ): WCProductVariationModel {
-        return WCProductVariationModel().apply {
-            remoteVariationId = response.id
-            permalink = response.permalink ?: ""
-
-            dateCreated = response.date_created ?: ""
-            dateModified = response.date_modified ?: ""
-
-            status = response.status ?: ""
-            description = response.description ?: ""
-            sku = response.sku ?: ""
-
-            price = response.price ?: ""
-            regularPrice = response.regular_price ?: ""
-            salePrice = response.sale_price ?: ""
-            onSale = response.on_sale
-
-            dateOnSaleFrom = response.date_on_sale_from ?: ""
-            dateOnSaleTo = response.date_on_sale_to ?: ""
-            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
-            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
-
-            taxStatus = response.tax_status ?: ""
-            taxClass = response.tax_class ?: ""
-
-            backorders = response.backorders ?: ""
-            backordersAllowed = response.backorders_allowed
-            backordered = response.backordered
-
-            shippingClass = response.shipping_class ?: ""
-            shippingClassId = response.shipping_class_id
-
-            downloadLimit = response.download_limit
-            downloadExpiry = response.download_expiry
-
-            virtual = response.virtual
-            downloadable = response.downloadable
-            purchasable = response.purchasable
-
-            manageStock = response.manage_stock
-            stockQuantity = response.stock_quantity
-            stockStatus = response.stock_status ?: ""
-
-            attributes = response.attributes?.toString() ?: ""
-
-            weight = response.weight ?: ""
-            menuOrder = response.menu_order
-
-            attributes = response.attributes?.toString() ?: ""
-            downloads = response.downloads?.toString() ?: ""
-
-            response.dimensions?.asJsonObject?.let { json ->
-                length = json.getString("length") ?: ""
-                width = json.getString("width") ?: ""
-                height = json.getString("height") ?: ""
-            }
-
-            image = response.image?.toString() ?: ""
         }
     }
 
