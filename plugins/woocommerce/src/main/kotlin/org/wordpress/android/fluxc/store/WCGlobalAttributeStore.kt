@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ER
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.deleteSingleStoredAttribute
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.getCurrentAttributes
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertAttributeTermsFromScratch
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.insertFromScratchCompleteAttributesList
@@ -57,13 +58,17 @@ class WCGlobalAttributeStore @Inject constructor(
                 map { it.remoteId.toString() }
                         .takeIf { it.isNotEmpty() }
                         ?.reduce { total, new -> "$total;$new" }
-                        ?.let { updateSingleAttributeTermsMapping(attributeID.toInt(), it, site.id) }
+                        ?.let { termsId ->
+                            updateSingleAttributeTermsMapping(attributeID.toInt(), termsId, site.id)
+                                    ?: handleMissingAttribute(site, attributeID, termsId)
+                        }
             }
             ?.let { WooResult(it) }
 
     suspend fun fetchAttribute(
         site: SiteModel,
-        attributeID: Long
+        attributeID: Long,
+        withTerms: Boolean = false
     ): WooResult<WCGlobalAttributeModel> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
                 restClient.fetchSingleAttribute(site, attributeID)
@@ -71,6 +76,8 @@ class WCGlobalAttributeStore @Inject constructor(
                         .model
                         ?.let { mapper.responseToAttributeModel(it, site) }
                         ?.let { insertOrUpdateSingleAttribute(it, site.id) }
+                        ?.apply { takeIf { withTerms }?.let { fetchAttributeTerms(site, attributeID) } }
+                        ?.let { fetchSingleStoredAttribute(attributeID.toInt(), site.id) }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
@@ -171,4 +178,14 @@ class WCGlobalAttributeStore @Inject constructor(
                         ?.let { fetchAttribute(site, attributeID) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
+
+    private suspend fun handleMissingAttribute(
+        site: SiteModel,
+        attributeID: Long,
+        termsId: String
+    ) {
+        fetchAttribute(site, attributeID)
+                .model
+                ?.let { updateSingleAttributeTermsMapping(attributeID.toInt(), termsId, site.id) }
+    }
 }
