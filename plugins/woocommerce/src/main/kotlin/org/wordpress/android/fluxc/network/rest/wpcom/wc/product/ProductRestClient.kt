@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
+import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
@@ -736,7 +737,7 @@ class ProductRestClient(
                             this@ProductRestClient,
                             site,
                             url,
-                            mapOf("attributes" to variation.attributes),
+                            mapOf("attributes" to JsonParser().parse(variation.attributes).asJsonArray),
                             ProductVariationApiResponse::class.java
                     )?.handleResult()
                 }
@@ -761,7 +762,7 @@ class ProductRestClient(
                         this,
                         site,
                         url,
-                        mapOf("attributes" to product.attributes),
+                        mapOf("attributes" to JsonParser().parse(product.attributes).asJsonArray),
                         ProductApiResponse::class.java
                 )?.handleResult()
             }
