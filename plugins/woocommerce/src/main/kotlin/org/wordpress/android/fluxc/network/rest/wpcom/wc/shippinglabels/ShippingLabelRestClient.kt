@@ -159,6 +159,28 @@ constructor(
         }
     }
 
+    suspend fun getAccountSettings(
+        site: SiteModel
+    ): WooPayload<AccountSettingsApiResponse> {
+        val url = WOOCOMMERCE.connect.account.settings.pathV1
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                AccountSettingsApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,

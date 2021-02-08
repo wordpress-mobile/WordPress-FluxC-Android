@@ -19,12 +19,13 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
-import org.wordpress.android.fluxc.store.WCProductAttributesStore
+import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
+import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import javax.inject.Inject
 
 class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
-    @Inject internal lateinit var wcAttributesStore: WCProductAttributesStore
+    @Inject internal lateinit var wcAttributesStore: WCGlobalAttributeStore
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
@@ -54,6 +55,9 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         create_product_attributes.setOnClickListener(::onCreateAttributeButtonClicked)
         delete_product_attributes.setOnClickListener(::onDeleteAttributeButtonClicked)
         update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
+        fetch_product_single_attribute.setOnClickListener(::onFetchAttributeButtonClicked)
+        fetch_term_for_attribute.setOnClickListener(::onFetchAttributeTermsButtonClicked)
+        create_term_for_attribute.setOnClickListener(::onCreateAttributeTermButtonClicked)
     }
 
     private fun onProductAttributesSelectSiteButtonClicked(view: View) {
@@ -144,6 +148,91 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
+    private fun onFetchAttributeButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to remove:"
+            ) { editText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite {
+                        wcAttributesStore.fetchAttribute(
+                                it,
+                                editText.text.toString().toLongOrNull() ?: 0
+                        )
+                    }?.apply {
+                        model?.let { logSingleAttributeResponse(it) }
+                                ?.let { prependToLog("========== Attribute Fetched =========") }
+                                ?: takeIf { isError }?.let {
+                                    prependToLog("Failed to delete Attribute. Error: ${error.message}")
+                                }
+                    } ?: prependToLog("Failed to delete Attribute. Error: Unknown")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onFetchAttributeTermsButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to fetch terms:"
+            ) { editText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite {
+                        wcAttributesStore.fetchAttributeTerms(
+                                it,
+                                editText.text.toString().toLongOrNull() ?: 0
+                        )
+                    }?.apply {
+                        model?.forEach {
+                            logSingleAttributeTermResponse(it) }
+                                ?.let { prependToLog("========== Attribute Terms Fetched =========") }
+                                ?: takeIf { isError }?.let {
+                                    prependToLog("Failed to fetch Terms. Error: ${error.message}")
+                                }
+                    } ?: prependToLog("Failed to fetch Terms. Error: Unknown")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onCreateAttributeTermButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to add terms:"
+            ) { attributeIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the term name you want to create:"
+                ) { termEditText ->
+                    coroutineScope.launch {
+                        takeAsyncRequestWithValidSite {
+                            wcAttributesStore.createOptionValueForAttribute(
+                                    it,
+                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0,
+                                    termEditText.text.toString()
+                            )
+                        }?.apply {
+                            model?.let { logSingleAttributeResponse(it) }
+                                    ?.let { prependToLog("========== Attribute Term Created =========") }
+                                    ?: takeIf { isError }?.let {
+                                        prependToLog("Failed to delete Attribute. Error: ${error.message}")
+                                    }
+                        } ?: prependToLog("Failed to create Attribute Term. Error: Unknown")
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+        }
+    }
+
     private fun onFetchAttributesListClicked(view: View) = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite { wcAttributesStore.fetchStoreAttributes(it) }
@@ -154,17 +243,30 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun logSingleAttributeResponse(response: AttributeApiResponse) {
+    private fun logSingleAttributeResponse(response: WCGlobalAttributeModel) {
         response.let {
-            prependToLog("  Attribute slug: ${it.slug ?: "Slug not available"}")
-            prependToLog("  Attribute type: ${it.type ?: "Type not available"}")
-            prependToLog("  Attribute name: ${it.name ?: "Attribute name not available"}")
-            prependToLog("  Attribute id: ${it.id ?: "Attribute id not available"}")
+            response.terms
+                    ?.filterNotNull()
+                    ?.forEachIndexed { index, wcAttributeTermModel ->
+                logSingleAttributeTermResponse(wcAttributeTermModel, index)
+            }
+            prependToLog("  Attribute slug: ${it.slug.ifEmpty { "Slug not available" }}")
+            prependToLog("  Attribute type: ${it.type.ifEmpty { "Type not available" }}")
+            prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
+            prependToLog("  Attribute remote id: ${it.remoteId}")
             prependToLog("  --------- Attribute ---------")
         }
     }
 
-    private fun logAttributeListResponse(model: Array<AttributeApiResponse>) {
+    private fun logSingleAttributeTermResponse(response: WCAttributeTermModel, termIndex: Int? = null) {
+        response.let {
+            prependToLog("    Term name: ${it.name}")
+            prependToLog("    Term id: ${it.remoteId}")
+            prependToLog("    --------- Attribute Term ${termIndex ?: ""} ---------")
+        }
+    }
+
+    private fun logAttributeListResponse(model: List<WCGlobalAttributeModel>) {
         model.forEach(::logSingleAttributeResponse)
         prependToLog("========== Full Site Attribute list =========")
     }

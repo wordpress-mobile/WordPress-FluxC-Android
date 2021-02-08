@@ -15,8 +15,13 @@ import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
@@ -830,6 +835,33 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    suspend fun submitProductAttributeChanges(
+        site: SiteModel,
+        product: WCProductModel
+    ): WooResult<WCProductModel> =
+            coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
+                    wcProductRestClient.updateProductAttributes(site, product)
+                            ?.asWooResult()
+                            ?.model?.asProductModel()
+                            ?.apply {
+                                localSiteId = site.id
+                                ProductSqlUtils.insertOrUpdateProduct(this)
+                            }
+                            ?.let { WooResult(it) }
+                } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+
+    suspend fun submitVariationAttributeChanges(
+        site: SiteModel,
+        variation: WCProductVariationModel
+    ): WooResult<WCProductVariationModel> =
+            coroutineEngine?.withDefaultContext(T.API, this, "submitVariationAttributes") {
+                wcProductRestClient.updateVariationAttributes(site, variation)
+                        ?.asWooResult()
+                        ?.model?.asProductVariationModel()
+                        ?.apply { insertOrUpdateProductVariation(this) }
+                        ?.let { WooResult(it) }
+            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+
     override fun onRegister() = AppLog.d(T.API, "WCProductStore onRegister")
 
     private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
@@ -977,7 +1009,7 @@ class WCProductStore @Inject constructor(
                 it.remoteVariationId = payload.variation.remoteVariationId
             }
         } else {
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariation(payload.variation)
+            val rowsAffected = insertOrUpdateProductVariation(payload.variation)
             onVariationChanged = OnVariationChanged(rowsAffected).also {
                 it.remoteProductId = payload.variation.remoteProductId
                 it.remoteVariationId = payload.variation.remoteVariationId
@@ -1194,7 +1226,7 @@ class WCProductStore @Inject constructor(
             )
                     .also { it.error = payload.error }
         } else {
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariation(payload.variation)
+            val rowsAffected = insertOrUpdateProductVariation(payload.variation)
             onVariationUpdated = OnVariationUpdated(
                     rowsAffected,
                     payload.variation.remoteProductId,

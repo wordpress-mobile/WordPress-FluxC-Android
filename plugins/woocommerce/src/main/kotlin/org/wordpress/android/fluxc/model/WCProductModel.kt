@@ -9,6 +9,7 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
@@ -99,6 +100,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
+    val attributeList: Array<WCProductAttributeModel>
+        get() = Gson().fromJson(attributes, Array<WCProductAttributeModel>::class.java)
+
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
             return JsonObject().also { json ->
@@ -128,6 +132,40 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     override fun setId(id: Int) {
         this.id = id
+    }
+
+    fun addAttribute(newAttribute: WCProductAttributeModel) {
+        mutableListOf<WCProductAttributeModel>()
+                .apply {
+                    attributeList
+                            .takeIf {
+                                it.find { currentAttribute ->
+                                    currentAttribute.globalAttributeId == newAttribute.globalAttributeId
+                                } == null
+                            }?.let { currentAttributes ->
+                                add(newAttribute)
+                                currentAttributes
+                                        .takeIf { it.isNotEmpty() }
+                                        ?.let { addAll(it) }
+                            }
+                }.also { attributes = Gson().toJson(it) }
+    }
+
+    fun removeAttribute(attributeID: Int) =
+            mutableListOf<WCProductAttributeModel>().apply {
+                attributeList
+                        .takeIf { it.isNotEmpty() }
+                        ?.filter { attributeID != it.globalAttributeId }
+                        ?.let { addAll(it) }
+            }.also { attributes = Gson().toJson(it) }
+
+    fun getAttribute(attributeID: Int) =
+        attributeList.find { it.globalAttributeId == attributeID }
+
+    fun updateAttribute(updatedAttribute: WCProductAttributeModel) = apply {
+        getAttribute(updatedAttribute.globalAttributeId)
+                ?.let { removeAttribute(it.globalAttributeId) }
+        addAttribute(updatedAttribute)
     }
 
     /**

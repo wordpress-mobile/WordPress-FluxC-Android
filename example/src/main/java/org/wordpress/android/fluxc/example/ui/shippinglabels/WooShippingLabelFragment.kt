@@ -211,6 +211,20 @@ class WooShippingLabelFragment : Fragment() {
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
+                    result.model?.let {
+                        prependToLog("$it")
+                    }
+                }
+            }
+        }
+
+        get_account_settings.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = wcShippingLabelStore.getAccountSettings(site)
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
                     if (result.model != null) {
                         prependToLog("${result.model}")
                     } else {

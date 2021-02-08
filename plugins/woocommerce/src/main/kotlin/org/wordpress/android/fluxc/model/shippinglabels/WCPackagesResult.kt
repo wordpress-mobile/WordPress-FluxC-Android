@@ -15,6 +15,7 @@ data class WCPackagesResult(
         val predefinedPackages: List<PredefinedPackage>
     ) {
         data class PredefinedPackage(
+            val id: String,
             val title: String,
             val isLetter: Boolean,
             val dimensions: String
