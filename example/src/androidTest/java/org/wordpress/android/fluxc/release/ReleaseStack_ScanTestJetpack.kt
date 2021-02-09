@@ -71,7 +71,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         mCountDownLatch = CountDownLatch(1)
         val fetchedScanStatePayload = runBlocking { scanStore.fetchScanState(payload) }
-        val scanStateForSite = scanStore.getScanStateForSite(site)
+        val scanStateForSite = runBlocking { scanStore.getScanStateForSite(site) }
 
         assertNotNull(fetchedScanStatePayload)
         assertNotNull(scanStateForSite)
@@ -101,7 +101,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         scanSqlUtils.replaceScanState(site, model)
 
-        val scanState = scanStore.getScanStateForSite(site)
+        val scanState = runBlocking { scanStore.getScanStateForSite(site) }
 
         assertNotNull(scanState)
         assertEquals(model.state, scanState?.state)
@@ -134,7 +134,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         scanSqlUtils.replaceScanState(site, model)
 
-        val scanState = scanStore.getScanStateForSite(site)
+        val scanState = runBlocking { scanStore.getScanStateForSite(site) }
 
         assertNotNull(scanState)
         assertEquals(model.state, scanState?.state)
@@ -168,7 +168,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         mCountDownLatch = CountDownLatch(1)
         val scanHistoryPayload = runBlocking { scanStore.fetchScanHistory(payload) }
-        val dbContent = scanStore.getScanHistoryForSite(site)
+        val dbContent = runBlocking { scanStore.getScanHistoryForSite(site) }
 
         assertNotNull(scanHistoryPayload)
         assertNull(scanHistoryPayload.error)
