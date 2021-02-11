@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse.FormSchema.PackageOption.PackageDefinition
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse.Box
 import org.wordpress.android.fluxc.persistence.WCShippingLabelSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -173,8 +172,8 @@ class WCShippingLabelStore @Inject constructor(
                     val packageRates: List<ShippingPackage> = response.result.boxes.map { box ->
                         ShippingPackage(
                             box.key,
-                            box.value.shippingOptions.entries.map { option ->
-                                ShippingOption(option.key, option.value.shipmentId, option.value.rates)
+                            box.value.entries.map { option ->
+                                ShippingOption(option.key, option.value.rates)
                             }
                         )
                     }
