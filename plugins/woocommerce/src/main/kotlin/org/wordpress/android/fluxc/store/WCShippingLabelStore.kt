@@ -203,7 +203,14 @@ class WCShippingLabelStore @Inject constructor(
                 }
                 response.result?.success == true -> {
                     WooResult(WCShippingAccountSettings(
+                            isCreatingLabelsEnabled = response.result.formData.isCreatingLabelsEnabled,
+                            isEmailReceiptEnabled = response.result.formData.isPaymentReceiptEnabled,
+                            paperSize = response.result.formData.paperSize,
                             canManagePayments = response.result.formMeta.canManagePayments,
+                            storeOwnerName = response.result.formMeta.storeOwnerName,
+                            storeOwnerUserName = response.result.formMeta.storeOwnerUserName,
+                            storeOwnerWpcomUserName = response.result.formMeta.storeOwnerWpcomUserName,
+                            storeOwnerWpcomEmail = response.result.formMeta.storeOwnerWpcomEmail,
                             selectedPaymentMethodId = response.result.formData.selectedPaymentId,
                             paymentMethods = response.result.formMeta.paymentMethods.orEmpty(),
                             lastUsedBoxId = response.result.userMeta.lastBoxId

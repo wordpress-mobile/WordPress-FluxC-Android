@@ -3,10 +3,17 @@ package org.wordpress.android.fluxc.model.shippinglabels
 import com.google.gson.annotations.SerializedName
 
 data class WCShippingAccountSettings(
+    val isCreatingLabelsEnabled: Boolean,
+    val isEmailReceiptEnabled: Boolean,
+    val paperSize: String,
     val canManagePayments: Boolean,
+    val storeOwnerName: String,
+    val storeOwnerUserName: String,
+    val storeOwnerWpcomUserName: String,
+    val storeOwnerWpcomEmail: String,
     val selectedPaymentMethodId: Int?,
     val paymentMethods: List<WCPaymentMethod>,
-    val lastUsedBoxId: String?
+    val lastUsedBoxId: String?,
 )
 
 data class WCPaymentMethod(

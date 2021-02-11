@@ -10,11 +10,18 @@ data class AccountSettingsApiResponse(
     @SerializedName("userMeta") val userMeta: UserMeta
 ) {
     data class FormData(
-        @SerializedName("selected_payment_method_id") val selectedPaymentId: Int?
+        @SerializedName("enabled") val isCreatingLabelsEnabled: Boolean,
+        @SerializedName("selected_payment_method_id") val selectedPaymentId: Int?,
+        @SerializedName("paper_size") val paperSize: String,
+        @SerializedName("email_receipts") val isPaymentReceiptEnabled: Boolean
     )
 
     data class FormMeta(
         @SerializedName("can_manage_payments") val canManagePayments: Boolean,
+        @SerializedName("master_user_name") val storeOwnerName: String,
+        @SerializedName("master_user_login") val storeOwnerUserName: String,
+        @SerializedName("master_user_wpcom_login") val storeOwnerWpcomUserName: String,
+        @SerializedName("master_user_email") val storeOwnerWpcomEmail: String,
         @SerializedName("payment_methods") val paymentMethods: List<WCPaymentMethod>?
     )
 
