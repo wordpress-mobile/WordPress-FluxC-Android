@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -17,8 +18,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse.Companion
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
+import java.math.BigDecimal
+import java.util.Date
 import java.util.Locale
 import javax.inject.Singleton
 
@@ -181,11 +185,86 @@ constructor(
         }
     }
 
+    suspend fun getShippingRates(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packages: List<ShippingLabelPackage>
+    ): WooPayload<ShippingRatesApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
+
+        val params = mapOf(
+            "origin" to origin.toMap(),
+            "destination" to destination.toMap(),
+            "packages" to packages.map { it.toMap() }
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                ShippingRatesApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
         val success: Boolean
     )
+
+    data class ShippingRatesApiResponse(
+        @SerializedName("success") val isSuccess: Boolean,
+        @SerializedName("rates") private val boxesJson: JsonElement
+    ) {
+        companion object {
+            private val gson by lazy { Gson() }
+        }
+
+        data class Box(
+            private val shippingOptionsJson: JsonElement
+        ) {
+            data class ShippingOption(
+                @SerializedName("shipment_id") val shipmentId: String,
+                val rates: List<Rate>
+            ) {
+                data class Rate(
+                    @SerializedName("rate_id") val rateId: String,
+                    @SerializedName("service_id") val serviceId: String,
+                    @SerializedName("carrier_id") val carrierId: String,
+                    val title: String,
+                    val rate: BigDecimal,
+                    @SerializedName("retail_rate") val retailRate: BigDecimal,
+                    @SerializedName("is_selected") val isSelected: Boolean,
+                    @SerializedName("delivery_days") val deliveryDays: Int,
+                    @SerializedName("delivery_date_guaranteed") val deliveryDateGuaranteed: Boolean,
+                    @SerializedName("delivery_date") val deliveryDate: Date?
+                )
+            }
+
+            val shippingOptions: Map<String, ShippingOption>
+                get() {
+                    val responseType = object : TypeToken<Map<String, ShippingOption>>() {}.type
+                    return gson.fromJson(shippingOptionsJson, responseType) as? Map<String, ShippingOption> ?: emptyMap()
+                }
+        }
+
+        val boxes: Map<String, Box>
+            get() {
+                val responseType = object : TypeToken<Map<String, Box>>() {}.type
+                return gson.fromJson(boxesJson, responseType) as? Map<String, Box> ?: emptyMap()
+            }
+    }
 
     data class VerifyAddressResponse(
         @SerializedName("success") val isSuccess: Boolean,
