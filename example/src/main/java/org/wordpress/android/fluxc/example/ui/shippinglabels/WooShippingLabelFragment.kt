@@ -27,6 +27,8 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
@@ -191,6 +193,33 @@ class WooShippingLabelFragment : Fragment() {
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
                         wcShippingLabelStore.getPackageTypes(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("$it")
+                    }
+                }
+            }
+        }
+
+        get_shipping_rates.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.getShippingRates(site, 5332L,
+                            ShippingLabelAddress(
+                                    "Company", "Ondrej Ruttkay", "", "US", "NY", "42 Jewel St.", "", "Brooklyn", "11222"
+                            ),
+                            ShippingLabelAddress(
+                                    "Company", "Ondrej Ruttkay", "", "US", "NY", "82 Jewel St.", "", "Brooklyn", "11222"
+                            ),
+                            listOf(
+                                    ShippingLabelPackage("Krabka 1", "medium_flat_box_top", 10f, 10f, 10f, 10f, false),
+                                    ShippingLabelPackage("Krabka 2", "medium_flat_box_side", 5f, 5f, 5f, 5f, false),
+                            )
+                        )
                     }
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
