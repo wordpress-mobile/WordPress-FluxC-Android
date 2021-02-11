@@ -13,6 +13,10 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.Predefi
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -20,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse.FormSchema.PackageOption.PackageDefinition
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse.Box
 import org.wordpress.android.fluxc.persistence.WCShippingLabelSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -145,6 +150,35 @@ class WCShippingLabelStore @Inject constructor(
                     val customPackages = getCustomPackages(response.result)
                     val predefinedOptions = getPredefinedOptions(response.result)
                     WooResult(WCPackagesResult(customPackages, predefinedOptions))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun getShippingRates(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packages: List<ShippingLabelPackage>
+    ): WooResult<WCShippingRatesResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getShippingRates") {
+            val response = restClient.getShippingRates(site, orderId, origin, destination, packages)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.isSuccess == true -> {
+                    val packageRates: List<ShippingPackage> = response.result.boxes.map { box ->
+                        ShippingPackage(
+                            box.key,
+                            box.value.shippingOptions.entries.map { option ->
+                                ShippingOption(option.key, option.value.shipmentId, option.value.rates)
+                            }
+                        )
+                    }
+                    WooResult(WCShippingRatesResult(packageRates))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
