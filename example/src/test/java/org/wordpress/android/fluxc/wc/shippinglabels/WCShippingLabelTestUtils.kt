@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.AccountS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.PrintShippingLabelApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse
 
 object WCShippingLabelTestUtils {
     private fun generateSampleShippingLabel(
@@ -83,6 +84,15 @@ object WCShippingLabelTestUtils {
         )
         val responseType = object : TypeToken<GetPackageTypesResponse>() {}.type
         return Gson().fromJson(json, responseType) as? GetPackageTypesResponse
+    }
+
+    fun generateSampleGetShippingRatesApiResponse(): ShippingRatesApiResponse? {
+        val json = UnitTestUtils.getStringFromResourceFile(
+                this.javaClass,
+                "wc/shipping-labels-carriers.json"
+        )
+        val responseType = object : TypeToken<ShippingRatesApiResponse>() {}.type
+        return Gson().fromJson(json, responseType) as? ShippingRatesApiResponse
     }
 
     fun generateSampleAccountSettingsApiResponse(): AccountSettingsApiResponse {
