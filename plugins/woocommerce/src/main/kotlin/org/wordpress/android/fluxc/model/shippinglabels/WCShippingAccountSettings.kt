@@ -13,7 +13,7 @@ data class WCShippingAccountSettings(
     val storeOwnerWpcomEmail: String,
     val selectedPaymentMethodId: Int?,
     val paymentMethods: List<WCPaymentMethod>,
-    val lastUsedBoxId: String?,
+    val lastUsedBoxId: String?
 )
 
 data class WCPaymentMethod(
