@@ -17,6 +17,7 @@ import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
@@ -26,9 +27,13 @@ import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
+import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
@@ -43,6 +48,7 @@ class WooShippingLabelFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcShippingLabelStore: WCShippingLabelStore
+    @Inject internal lateinit var wcOrderStore: WCOrderStore
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
@@ -207,25 +213,96 @@ class WooShippingLabelFragment : Fragment() {
         get_shipping_rates.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
-                    val result = withContext(Dispatchers.Default) {
-                        wcShippingLabelStore.getShippingRates(site, 5332L,
-                            ShippingLabelAddress(
-                                    "Company", "Ondrej Ruttkay", "", "US", "NY", "42 Jewel St.", "", "Brooklyn", "11222"
-                            ),
-                            ShippingLabelAddress(
-                                    "Company", "Ondrej Ruttkay", "", "US", "NY", "82 Jewel St.", "", "Brooklyn", "11222"
-                            ),
-                            listOf(
-                                    ShippingLabelPackage("Krabka 1", "medium_flat_box_top", 10f, 10f, 10f, 10f, false),
-                                    ShippingLabelPackage("Krabka 2", "medium_flat_box_side", 5f, 5f, 5f, 5f, false),
-                            )
+                    prependToLog("Loading shipping data...")
+
+                    dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
+
+                    val payload = FetchOrdersPayload(site, loadMore = false)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
+
+                    delay(5000)
+
+                    val origin = wooCommerceStore.getSiteSettings(site)?.let {
+                        ShippingLabelAddress(
+                            address = it.address,
+                            city = it.city,
+                            postcode = it.postalCode,
+                            state = it.stateCode,
+                            country = it.countryCode
                         )
                     }
-                    result.error?.let {
-                        prependToLog("${it.type}: ${it.message}")
+
+                    val order = wcOrderStore.getOrdersForSite(site).firstOrNull()
+                    val destination = order?.getShippingAddress()?.let {
+                        ShippingLabelAddress(
+                            address = it.address1,
+                            city = it.city,
+                            postcode = it.postcode,
+                            state = it.state,
+                            country = it.country
+                        )
                     }
-                    result.model?.let {
-                        prependToLog("$it")
+
+                    if (origin == null || destination == null) {
+                        prependToLog("Invalid origin or destination address:\n" +
+                                "Origin:\n$origin\nDestination:\n$destination")
+                    } else {
+                        var name: String
+                        showSingleLineDialog(activity, "Enter package name:") { text ->
+                            name = text.text.toString()
+
+                            var height: Float?
+                            showSingleLineDialog(activity, "Enter height:", isNumeric = true) { h ->
+                                height = h.text.toString().toFloatOrNull()
+
+                                var width: Float?
+                                showSingleLineDialog(activity, "Enter width:", isNumeric = true) { w ->
+                                    width = w.text.toString().toFloatOrNull()
+
+                                    var length: Float?
+                                    showSingleLineDialog(activity, "Enter length:", isNumeric = true) { l ->
+                                        length = l.text.toString().toFloatOrNull()
+
+                                        var weight: Float?
+                                        showSingleLineDialog(activity, "Enter weight:", isNumeric = true) { t ->
+                                            weight = t.text.toString().toFloatOrNull()
+
+                                            val box: ShippingLabelPackage?
+                                            if (height == null || width == null || length == null || weight == null) {
+                                                prependToLog("Invalid package parameters:\n" +
+                                                    "Height: $height\nWidth: $width\nLength: $length\nWeight: $weight")
+                                            } else {
+                                                box = ShippingLabelPackage(
+                                                    name,
+                                                    "medium_flat_box_top",
+                                                    height!!,
+                                                    length!!,
+                                                    width!!,
+                                                    weight!!
+                                                )
+
+                                                coroutineScope.launch {
+                                                    val result = wcShippingLabelStore.getShippingRates(
+                                                        site,
+                                                        order.remoteOrderId,
+                                                        origin,
+                                                        destination,
+                                                        listOf(box)
+                                                    )
+
+                                                    result.error?.let {
+                                                        prependToLog("${it.type}: ${it.message}")
+                                                    }
+                                                    result.model?.let {
+                                                        prependToLog("$it")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
