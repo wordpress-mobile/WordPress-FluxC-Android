@@ -237,7 +237,7 @@ constructor(
             }
 
         data class ShippingOption(
-            val rates: List<Rate>,
+            val rates: List<Rate>
         ) {
             data class Rate(
                 val title: String,
