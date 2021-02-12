@@ -87,5 +87,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Get account settings"/>
+
+        <Button
+            android:id="@+id/update_account_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update account settings"/>
     </LinearLayout>
 </ScrollView>
