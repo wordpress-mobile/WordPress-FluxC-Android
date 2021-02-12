@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class WCShippingAccountSettings(
     val isCreatingLabelsEnabled: Boolean,
     val isEmailReceiptEnabled: Boolean,
-    val paperSize: String,
+    val paperSize: WCShippingLabelPaperSize,
     val canManagePayments: Boolean,
     val storeOwnerName: String,
     val storeOwnerUserName: String,

@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
@@ -10,9 +9,11 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -20,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse.FormSchema.PackageOption.PackageDefinition
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.UpdateSettingsApiRequest
 import org.wordpress.android.fluxc.persistence.WCShippingLabelSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -202,20 +204,45 @@ class WCShippingLabelStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result?.success == true -> {
-                    WooResult(WCShippingAccountSettings(
-                            isCreatingLabelsEnabled = response.result.formData.isCreatingLabelsEnabled,
-                            isEmailReceiptEnabled = response.result.formData.isPaymentReceiptEnabled,
-                            paperSize = response.result.formData.paperSize,
-                            canManagePayments = response.result.formMeta.canManagePayments,
-                            storeOwnerName = response.result.formMeta.storeOwnerName,
-                            storeOwnerUserName = response.result.formMeta.storeOwnerUserName,
-                            storeOwnerWpcomUserName = response.result.formMeta.storeOwnerWpcomUserName,
-                            storeOwnerWpcomEmail = response.result.formMeta.storeOwnerWpcomEmail,
-                            selectedPaymentMethodId = response.result.formData.selectedPaymentId,
-                            paymentMethods = response.result.formMeta.paymentMethods.orEmpty(),
-                            lastUsedBoxId = response.result.userMeta.lastBoxId
-                    ))
+                    WooResult(
+                            WCShippingAccountSettings(
+                                    isCreatingLabelsEnabled = response.result.formData.isCreatingLabelsEnabled,
+                                    isEmailReceiptEnabled = response.result.formData.isPaymentReceiptEnabled,
+                                    paperSize = WCShippingLabelPaperSize.fromString(response.result.formData.paperSize),
+                                    canManagePayments = response.result.formMeta.canManagePayments,
+                                    storeOwnerName = response.result.formMeta.storeOwnerName,
+                                    storeOwnerUserName = response.result.formMeta.storeOwnerUserName,
+                                    storeOwnerWpcomUserName = response.result.formMeta.storeOwnerWpcomUserName,
+                                    storeOwnerWpcomEmail = response.result.formMeta.storeOwnerWpcomEmail,
+                                    selectedPaymentMethodId = response.result.formData.selectedPaymentId,
+                                    paymentMethods = response.result.formMeta.paymentMethods.orEmpty(),
+                                    lastUsedBoxId = response.result.userMeta.lastBoxId
+                            )
+                    )
                 }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun updateAccountSettings(
+        site: SiteModel,
+        isCreatingLabelsEnabled: Boolean? = null,
+        selectedPaymentMethodId: Int? = null,
+        isEmailReceiptEnabled: Boolean? = null,
+        paperSize: WCShippingLabelPaperSize? = null
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "updateSettings") {
+            val request = UpdateSettingsApiRequest(
+                    isCreatingLabelsEnabled = isCreatingLabelsEnabled,
+                    selectedPaymentMethodId = selectedPaymentMethodId,
+                    isEmailReceiptEnabled = isEmailReceiptEnabled,
+                    paperSize = paperSize?.stringValue
+            )
+            val response = restClient.updateAccountSettings(site, request)
+            return@withDefaultContext when {
+                response.isError -> WooResult(response.error)
+                response.result == true -> WooResult(true)
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
