@@ -10,7 +10,13 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.Spinner
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
@@ -34,6 +40,8 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.Shi
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
@@ -336,6 +344,62 @@ class WooShippingLabelFragment : Fragment() {
                     } else {
                         prependToLog("The WooCommerce services plugin is not installed")
                     }
+                }
+            }
+        }
+        update_account_settings.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = wcShippingLabelStore.getAccountSettings(site)
+                    result.error?.let {
+                        prependToLog("Can't fetch account settings\n${it.type}: ${it.message}")
+                    }
+                    if (result.model != null) {
+                        showAccountSettingsDialog(site, result.model!!)
+                    } else {
+                        prependToLog("The WooCommerce services plugin is not installed")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showAccountSettingsDialog(selectedSite: SiteModel, accountSettings: WCShippingAccountSettings) {
+        val dialog = AlertDialog.Builder(requireContext()).let {
+            it.setView(R.layout.dialog_wc_shipping_label_settings)
+            it.show()
+        }
+        dialog.findViewById<CheckBox>(R.id.enabled_checkbox)?.isChecked = accountSettings.isCreatingLabelsEnabled
+        dialog.findViewById<EditText>(R.id.payment_method_id)?.setText(
+                accountSettings.selectedPaymentMethodId?.toString() ?: ""
+        )
+        dialog.findViewById<CheckBox>(R.id.email_receipts_checkbox)?.isChecked = accountSettings.isEmailReceiptEnabled
+        dialog.findViewById<Spinner>(R.id.paper_size_spinner)?.let {
+            val items = listOf("label", "legal", "letter")
+            it.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, items)
+            it.setSelection(items.indexOf(accountSettings.paperSize.stringValue))
+        }
+        dialog.findViewById<Button>(R.id.save_button)?.setOnClickListener {
+            dialog.hide()
+            coroutineScope.launch {
+                val result = wcShippingLabelStore.updateAccountSettings(
+                        selectedSite,
+                        isCreatingLabelsEnabled = dialog.findViewById<CheckBox>(R.id.enabled_checkbox)?.isChecked,
+                        selectedPaymentMethodId = dialog.findViewById<EditText>(R.id.payment_method_id)?.text
+                                ?.toString()?.ifEmpty { null }?.toInt(),
+                        isEmailReceiptEnabled = dialog.findViewById<CheckBox>(R.id.email_receipts_checkbox)?.isChecked,
+                        paperSize = dialog.findViewById<Spinner>(R.id.paper_size_spinner)?.selectedItem?.let {
+                            WCShippingLabelPaperSize.fromString(it as String)
+                        }
+                )
+                dialog.dismiss()
+                result.error?.let {
+                    prependToLog("${it.type}: ${it.message}")
+                }
+                if (result.model == true) {
+                    prependToLog("Settings updated")
+                } else {
+                    prependToLog("The WooCommerce services plugin is not installed")
                 }
             }
         }

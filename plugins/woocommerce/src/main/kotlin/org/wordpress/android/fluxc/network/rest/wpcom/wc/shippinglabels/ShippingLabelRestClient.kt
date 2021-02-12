@@ -4,6 +4,7 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
@@ -177,6 +178,26 @@ constructor(
         return when (response) {
             is JetpackSuccess -> {
                 WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun updateAccountSettings(site: SiteModel, request: UpdateSettingsApiRequest): WooPayload<Boolean> {
+        val url = WOOCOMMERCE.connect.account.settings.pathV1
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                request.toMap(),
+                JsonObject::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data!!["success"].asBoolean)
             }
             is JetpackError -> {
                 WooPayload(response.error.toWooError())
