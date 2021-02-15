@@ -317,7 +317,25 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return productIds
     }
 
-    fun getNumVariations() = parseJson(variations).size
+    fun getNumVariations(): Int {
+        return try {
+            if (variations.isNotEmpty()) {
+                val jsonElement = Gson().fromJson(variations, JsonElement::class.java)
+                when {
+                    jsonElement.isJsonArray -> {
+                        jsonElement.asJsonArray.size()
+                    }
+                    jsonElement.isJsonObject -> {
+                        jsonElement.asJsonObject.entrySet().size
+                    }
+                    else -> 0
+                }
+            } else 0
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+            0
+        }
+    }
 
     fun getGroupedProductIdList() = parseJson(groupedProductIds)
 
