@@ -150,6 +150,16 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         }
     }
 
+    data class ShippingLabelPackage(
+        val id: String,
+        @SerializedName("box_id") val boxId: String,
+        val height: Float,
+        val length: Float,
+        val width: Float,
+        val weight: Float,
+        @SerializedName("is_letter") val isLetter: Boolean = false
+    )
+
     class SelectedPackage {
         @SerializedName("default_box") val defaultBox: DefaultBox? = null
     }

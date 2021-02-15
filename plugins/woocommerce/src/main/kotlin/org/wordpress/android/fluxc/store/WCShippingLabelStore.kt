@@ -13,6 +13,10 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSetting
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -147,6 +151,35 @@ class WCShippingLabelStore @Inject constructor(
                     val customPackages = getCustomPackages(response.result)
                     val predefinedOptions = getPredefinedOptions(response.result)
                     WooResult(WCPackagesResult(customPackages, predefinedOptions))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun getShippingRates(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packages: List<ShippingLabelPackage>
+    ): WooResult<WCShippingRatesResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getShippingRates") {
+            val response = restClient.getShippingRates(site, orderId, origin, destination, packages)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.isSuccess == true -> {
+                    val packageRates: List<ShippingPackage> = response.result.boxes.map { box ->
+                        ShippingPackage(
+                            box.key,
+                            box.value.entries.map { option ->
+                                ShippingOption(option.key, option.value.rates)
+                            }
+                        )
+                    }
+                    WooResult(WCShippingRatesResult(packageRates))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }

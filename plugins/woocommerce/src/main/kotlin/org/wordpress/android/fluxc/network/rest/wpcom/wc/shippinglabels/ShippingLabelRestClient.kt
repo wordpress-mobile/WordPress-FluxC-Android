@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -20,6 +21,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
+import java.math.BigDecimal
+import java.util.Date
 import java.util.Locale
 import javax.inject.Singleton
 
@@ -202,11 +205,79 @@ constructor(
         }
     }
 
+    suspend fun getShippingRates(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packages: List<ShippingLabelPackage>
+    ): WooPayload<ShippingRatesApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
+
+        val params = mapOf(
+            "origin" to origin.toMap(),
+            "destination" to destination.toMap(),
+            "packages" to packages.map { it.toMap() }
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                ShippingRatesApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
         val success: Boolean
     )
+
+    data class ShippingRatesApiResponse(
+        @SerializedName("success") val isSuccess: Boolean,
+        @SerializedName("rates") private val boxesJson: JsonElement
+    ) {
+        companion object {
+            private val gson by lazy { Gson() }
+        }
+
+        val boxes: Map<String, Map<String, ShippingOption>>
+            get() {
+                val responseType = object : TypeToken<Map<String, Map<String, ShippingOption>>>() {}.type
+                return gson.fromJson(boxesJson, responseType) as? Map<String, Map<String, ShippingOption>> ?: emptyMap()
+            }
+
+        data class ShippingOption(
+            val rates: List<Rate>
+        ) {
+            data class Rate(
+                val title: String,
+                val insurance: BigDecimal,
+                val rate: BigDecimal,
+                @SerializedName("rate_id") val rateId: String,
+                @SerializedName("service_id") val serviceId: String,
+                @SerializedName("carrier_id") val carrierId: String,
+                @SerializedName("shipment_id") val shipmentId: String,
+                @SerializedName("tracking") val hasTracking: Boolean,
+                @SerializedName("retail_rate") val retailRate: BigDecimal,
+                @SerializedName("is_selected") val isSelected: Boolean,
+                @SerializedName("free_pickup") val isPickupFree: Boolean,
+                @SerializedName("delivery_days") val deliveryDays: Int,
+                @SerializedName("delivery_date_guaranteed") val deliveryDateGuaranteed: Boolean,
+                @SerializedName("delivery_date") val deliveryDate: Date?
+            )
+        }
+    }
 
     data class VerifyAddressResponse(
         @SerializedName("success") val isSuccess: Boolean,
