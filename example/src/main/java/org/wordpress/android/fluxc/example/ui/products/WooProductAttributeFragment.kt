@@ -52,6 +52,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
 
         attributes_select_site.setOnClickListener(::onProductAttributesSelectSiteButtonClicked)
         fetch_product_attributes.setOnClickListener(::onFetchAttributesListClicked)
+        fetch_product_attributes_from_db.setOnClickListener(::onFetchCachedAttributesListClicked)
         create_product_attributes.setOnClickListener(::onCreateAttributeButtonClicked)
         delete_product_attributes.setOnClickListener(::onDeleteAttributeButtonClicked)
         update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
@@ -235,7 +236,21 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
 
     private fun onFetchAttributesListClicked(view: View) = coroutineScope.launch {
         try {
-            takeAsyncRequestWithValidSite { wcAttributesStore.fetchStoreAttributes(it) }
+            takeAsyncRequestWithValidSite {
+                    wcAttributesStore.fetchStoreAttributes(it)
+            }
+                    ?.model
+                    ?.let { logAttributeListResponse(it) }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't fetch Products Attributes. Error: ${ex.message}")
+        }
+    }
+
+    private fun onFetchCachedAttributesListClicked(view: View) = coroutineScope.launch {
+        try {
+            takeAsyncRequestWithValidSite {
+                wcAttributesStore.fetchCachedStoreAttributes(it)
+            }
                     ?.model
                     ?.let { logAttributeListResponse(it) }
         } catch (ex: Exception) {
