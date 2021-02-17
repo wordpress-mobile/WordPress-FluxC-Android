@@ -10,13 +10,20 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.Spinner
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
@@ -26,7 +33,15 @@ import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
+import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
@@ -41,6 +56,7 @@ class WooShippingLabelFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcShippingLabelStore: WCShippingLabelStore
+    @Inject internal lateinit var wcOrderStore: WCOrderStore
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
@@ -202,6 +218,104 @@ class WooShippingLabelFragment : Fragment() {
             }
         }
 
+        get_shipping_rates.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    prependToLog("Loading shipping data...")
+
+                    dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
+
+                    val payload = FetchOrdersPayload(site, loadMore = false)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
+
+                    delay(5000)
+
+                    val origin = wooCommerceStore.getSiteSettings(site)?.let {
+                        ShippingLabelAddress(
+                            address = it.address,
+                            city = it.city,
+                            postcode = it.postalCode,
+                            state = it.stateCode,
+                            country = it.countryCode
+                        )
+                    }
+
+                    val order = wcOrderStore.getOrdersForSite(site).firstOrNull()
+                    val destination = order?.getShippingAddress()?.let {
+                        ShippingLabelAddress(
+                            address = it.address1,
+                            city = it.city,
+                            postcode = it.postcode,
+                            state = it.state,
+                            country = it.country
+                        )
+                    }
+
+                    if (origin == null || destination == null) {
+                        prependToLog("Invalid origin or destination address:\n" +
+                                "Origin:\n$origin\nDestination:\n$destination")
+                    } else {
+                        var name: String
+                        showSingleLineDialog(activity, "Enter package name:") { text ->
+                            name = text.text.toString()
+
+                            var height: Float?
+                            showSingleLineDialog(activity, "Enter height:", isNumeric = true) { h ->
+                                height = h.text.toString().toFloatOrNull()
+
+                                var width: Float?
+                                showSingleLineDialog(activity, "Enter width:", isNumeric = true) { w ->
+                                    width = w.text.toString().toFloatOrNull()
+
+                                    var length: Float?
+                                    showSingleLineDialog(activity, "Enter length:", isNumeric = true) { l ->
+                                        length = l.text.toString().toFloatOrNull()
+
+                                        var weight: Float?
+                                        showSingleLineDialog(activity, "Enter weight:", isNumeric = true) { t ->
+                                            weight = t.text.toString().toFloatOrNull()
+
+                                            val box: ShippingLabelPackage?
+                                            if (height == null || width == null || length == null || weight == null) {
+                                                prependToLog("Invalid package parameters:\n" +
+                                                    "Height: $height\nWidth: $width\nLength: $length\nWeight: $weight")
+                                            } else {
+                                                box = ShippingLabelPackage(
+                                                    name,
+                                                    "medium_flat_box_top",
+                                                    height!!,
+                                                    length!!,
+                                                    width!!,
+                                                    weight!!
+                                                )
+
+                                                coroutineScope.launch {
+                                                    val result = wcShippingLabelStore.getShippingRates(
+                                                        site,
+                                                        order.remoteOrderId,
+                                                        origin,
+                                                        destination,
+                                                        listOf(box)
+                                                    )
+
+                                                    result.error?.let {
+                                                        prependToLog("${it.type}: ${it.message}")
+                                                    }
+                                                    result.model?.let {
+                                                        prependToLog("$it")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         get_shipping_plugin_info.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
@@ -230,6 +344,62 @@ class WooShippingLabelFragment : Fragment() {
                     } else {
                         prependToLog("The WooCommerce services plugin is not installed")
                     }
+                }
+            }
+        }
+        update_account_settings.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = wcShippingLabelStore.getAccountSettings(site)
+                    result.error?.let {
+                        prependToLog("Can't fetch account settings\n${it.type}: ${it.message}")
+                    }
+                    if (result.model != null) {
+                        showAccountSettingsDialog(site, result.model!!)
+                    } else {
+                        prependToLog("The WooCommerce services plugin is not installed")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showAccountSettingsDialog(selectedSite: SiteModel, accountSettings: WCShippingAccountSettings) {
+        val dialog = AlertDialog.Builder(requireContext()).let {
+            it.setView(R.layout.dialog_wc_shipping_label_settings)
+            it.show()
+        }
+        dialog.findViewById<CheckBox>(R.id.enabled_checkbox)?.isChecked = accountSettings.isCreatingLabelsEnabled
+        dialog.findViewById<EditText>(R.id.payment_method_id)?.setText(
+                accountSettings.selectedPaymentMethodId?.toString() ?: ""
+        )
+        dialog.findViewById<CheckBox>(R.id.email_receipts_checkbox)?.isChecked = accountSettings.isEmailReceiptEnabled
+        dialog.findViewById<Spinner>(R.id.paper_size_spinner)?.let {
+            val items = listOf("label", "legal", "letter")
+            it.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, items)
+            it.setSelection(items.indexOf(accountSettings.paperSize.stringValue))
+        }
+        dialog.findViewById<Button>(R.id.save_button)?.setOnClickListener {
+            dialog.hide()
+            coroutineScope.launch {
+                val result = wcShippingLabelStore.updateAccountSettings(
+                        selectedSite,
+                        isCreatingLabelsEnabled = dialog.findViewById<CheckBox>(R.id.enabled_checkbox)?.isChecked,
+                        selectedPaymentMethodId = dialog.findViewById<EditText>(R.id.payment_method_id)?.text
+                                ?.toString()?.ifEmpty { null }?.toInt(),
+                        isEmailReceiptEnabled = dialog.findViewById<CheckBox>(R.id.email_receipts_checkbox)?.isChecked,
+                        paperSize = dialog.findViewById<Spinner>(R.id.paper_size_spinner)?.selectedItem?.let {
+                            WCShippingLabelPaperSize.fromString(it as String)
+                        }
+                )
+                dialog.dismiss()
+                result.error?.let {
+                    prependToLog("${it.type}: ${it.message}")
+                }
+                if (result.model == true) {
+                    prependToLog("Settings updated")
+                } else {
+                    prependToLog("The WooCommerce services plugin is not installed")
                 }
             }
         }
