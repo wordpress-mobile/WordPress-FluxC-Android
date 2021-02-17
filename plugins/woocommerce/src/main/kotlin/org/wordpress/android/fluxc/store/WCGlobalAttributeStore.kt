@@ -48,6 +48,10 @@ class WCGlobalAttributeStore @Inject constructor(
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
+    fun fetchCachedStoreAttributes(
+        site: SiteModel
+    ) = WooResult(getCurrentAttributes(site.id))
+
     suspend fun fetchAttributeTerms(
         site: SiteModel,
         attributeID: Long
