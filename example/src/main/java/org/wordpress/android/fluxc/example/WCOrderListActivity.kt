@@ -37,6 +37,8 @@ import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
 import javax.inject.Inject
@@ -139,6 +141,11 @@ class WCOrderListActivity : AppCompatActivity() {
             wrapper.data.observe(this, Observer {
                 it?.let { orderListData ->
                     orderListAdapter.submitList(orderListData)
+                }
+            })
+            wrapper.listChanged.observe(this, {
+                it?.let { event ->
+                    AppLog.d(T.TESTS, "Received list changed event. Cause = ${event.cause}. Total duration = ${event.totalDuration}.")
                 }
             })
         }
