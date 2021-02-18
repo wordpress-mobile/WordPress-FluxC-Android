@@ -145,7 +145,8 @@ class WCOrderListActivity : AppCompatActivity() {
             })
             wrapper.listChanged.observe(this, {
                 it?.let { event ->
-                    AppLog.d(T.TESTS, "Received list changed event. Cause = ${event.cause}. Total duration = ${event.totalDuration}.")
+                    AppLog.d(T.TESTS, "Received list changed event. Cause = ${event.cause}. " +
+                            "Total duration = ${event.totalDuration}.")
                 }
             })
         }
