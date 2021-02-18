@@ -718,6 +718,7 @@ class WooUpdateProductFragment : Fragment() {
         takeIf { attributesChanged }?.getWCSite()?.let { site ->
             wcProductStore.getProductByRemoteId(site, event.remoteProductId)?.let {
                 logProduct(it)
+                attributesChanged = false
             }
         }
     }
