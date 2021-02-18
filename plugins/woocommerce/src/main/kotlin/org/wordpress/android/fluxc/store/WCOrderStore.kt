@@ -75,9 +75,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val listDescriptor: WCOrderListDescriptor,
         var orderSummaries: List<WCOrderSummaryModel> = emptyList(),
         var loadedMore: Boolean = false,
-        var canLoadMore: Boolean = false
+        var canLoadMore: Boolean = false,
+        val requestStartTime: Calendar
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, listDescriptor: WCOrderListDescriptor) : this(listDescriptor) {
+        constructor(error: OrderError, listDescriptor: WCOrderListDescriptor, requestStartTime: Calendar) : this(listDescriptor, requestStartTime = requestStartTime) {
             this.error = error
         }
     }
@@ -462,7 +463,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
-        wcOrderRestClient.fetchOrderListSummaries(payload.listDescriptor, payload.offset)
+        wcOrderRestClient.fetchOrderListSummaries(
+                listDescriptor = payload.listDescriptor,
+                offset = payload.offset,
+                requestStartTime = payload.requestStartTime
+        )
     }
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
@@ -569,6 +574,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
                 loadedMore = payload.loadedMore,
                 canLoadMore = payload.canLoadMore,
+                requestStartTime = payload.requestStartTime,
                 error = payload.error?.let { fetchError ->
                     // TODO: Use the actual error type
                     ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
