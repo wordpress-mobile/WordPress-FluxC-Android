@@ -17,6 +17,10 @@ import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_woo_update_product.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -37,14 +41,17 @@ import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment.Co
 import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment.Companion.PRODUCT_TAGS_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductBackOrders
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductTaxStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
+import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
@@ -62,6 +69,7 @@ import javax.inject.Inject
 class WooUpdateProductFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
+    @Inject internal lateinit var wcAttributesStore: WCGlobalAttributeStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private var selectedSitePosition: Int = -1
@@ -72,6 +80,9 @@ class WooUpdateProductFragment : Fragment() {
     private var selectedTags: List<ProductTag>? = null
     private var isAddNewProduct: Boolean = false
     private var selectedProductDownloads: List<ProductFile>? = null
+    private var attributesChanged: Boolean = false
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
@@ -395,6 +406,9 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.virtual = isChecked
         }
 
+        attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
+        detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
+
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
 
         product_slug.onTextChanged { selectedProductModel?.slug = it }
@@ -524,6 +538,80 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
+    private fun onAttachAttributeToProductButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to attach:"
+            ) { attributeIdEditText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the term ID you want to attach:"
+                ) { termEditText ->
+                    coroutineScope.launch {
+                        takeAsyncRequestWithValidSite { site ->
+                            attributesChanged = true
+                            handleProductAttributesSync(
+                                    site,
+                                    attributeIdEditText.text.toString().toLongOrNull() ?: 0,
+                                    termEditText.text.toString().toIntOrNull() ?: 0,
+                                    selectedProductModel
+                            )
+                        }
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+        }
+    }
+
+    private fun onDetachAttributeFromProductButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the attribute ID you want to detach:"
+            ) { attributeIdEditText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite { site ->
+                        selectedProductModel
+                                ?.apply {
+                                    removeAttribute(attributeIdEditText.text.toString().toIntOrNull() ?: 0)
+                                }?.let { product ->
+                                    attributesChanged = true
+                                    WCProductActionBuilder.newUpdateProductAction(
+                                            UpdateProductPayload(site, product)
+                                    )
+                                            .let { dispatcher.dispatch(it) }
+                                }
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+        }
+    }
+
+    private suspend fun handleProductAttributesSync(
+        site: SiteModel,
+        attributeId: Long,
+        termId: Int,
+        product: WCProductModel?
+    ) = wcAttributesStore.fetchAttribute(
+            site = site,
+            attributeID = attributeId,
+            withTerms = true
+    )
+            .model
+            ?.asProductAttributeModel(termId)
+            ?.run { product?.updateAttribute(this) }
+            ?.let { updatedProduct ->
+                WCProductActionBuilder
+                        .newUpdateProductAction(
+                                UpdateProductPayload(site, updatedProduct)
+                        ).let { dispatcher.dispatch(it) }
+            }
+
     private fun updateProductProperties(it: WCProductModel) {
         product_name.setText(it.name)
         product_description.setText(it.description)
@@ -575,6 +663,8 @@ class WooUpdateProductFragment : Fragment() {
         product_download_limit.isEnabled = it.downloadable
         product_download_expiry.setText(it.downloadExpiry.toString())
         product_download_expiry.isEnabled = it.downloadable
+        attach_attribute.isEnabled = true
+        detach_attribute.isEnabled = true
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
@@ -624,6 +714,12 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductDownloads = null
             updateSelectedProductId(it)
         }
+
+        takeIf { attributesChanged }?.getWCSite()?.let { site ->
+            wcProductStore.getProductByRemoteId(site, event.remoteProductId)?.let {
+                logProduct(it)
+            }
+        }
     }
 
     @Suppress("unused")
@@ -657,6 +753,34 @@ class WooUpdateProductFragment : Fragment() {
         }
         prependToLog("Product created! ${event.rowsAffected} - new product id is: ${event.remoteProductId}")
     }
+
+    private fun logProduct(product: WCProductModel) = product.apply {
+        attributeList.forEach { logAttribute(it) }
+        prependToLog("  Product slug: ${slug.ifEmpty { "Slug not available" }}")
+        prependToLog("  Product type: ${type.ifEmpty { "Type not available" }}")
+        prependToLog("  Product name: ${name.ifEmpty { "Product name not available" }}")
+        prependToLog("  Product remote id: $remoteProductId")
+        prependToLog("  --------- Product ---------")
+    }
+
+    private fun logAttribute(attribute: WCProductAttributeModel) = attribute.let {
+        logAttributeOptions(attribute.options)
+        prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
+        prependToLog("  Attribute remote id: ${it.globalAttributeId}")
+        prependToLog("  --------- Product Attribute ---------")
+    }
+
+    private fun logAttributeOptions(options: List<String>) {
+        options.forEach { prependToLog("  $it") }
+        prependToLog("  --------- Attribute Options ---------")
+    }
+
+    private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
+            getWCSite()?.let {
+                withContext(Dispatchers.Default) {
+                    action(it)
+                }
+            }
 
     @Parcelize
     data class ProductCategory(
