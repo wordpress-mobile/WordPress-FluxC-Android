@@ -78,7 +78,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var canLoadMore: Boolean = false,
         val requestStartTime: Calendar
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, listDescriptor: WCOrderListDescriptor, requestStartTime: Calendar) : this(listDescriptor, requestStartTime = requestStartTime) {
+        constructor(
+            error: OrderError,
+            listDescriptor: WCOrderListDescriptor,
+            requestStartTime: Calendar
+        ) : this(listDescriptor, requestStartTime = requestStartTime) {
             this.error = error
         }
     }
