@@ -1228,7 +1228,7 @@ class ProductRestClient(
                 }
             }
         }
-        if(storedWCProductModel.attributes != updatedProductModel.attributes) {
+        if (storedWCProductModel.attributes != updatedProductModel.attributes) {
             body["attributes"] = JsonParser().parse(updatedProductModel.attributes).asJsonArray
         }
 
