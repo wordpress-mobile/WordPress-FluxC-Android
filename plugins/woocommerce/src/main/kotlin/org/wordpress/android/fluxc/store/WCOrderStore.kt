@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,7 +49,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrderListPayload(
         val listDescriptor: WCOrderListDescriptor,
-        val offset: Long
+        val offset: Long,
+        /**
+         * The time this payload was created.
+         */
+        val requestStartTime: Calendar = Calendar.getInstance()
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersByIdsPayload(
