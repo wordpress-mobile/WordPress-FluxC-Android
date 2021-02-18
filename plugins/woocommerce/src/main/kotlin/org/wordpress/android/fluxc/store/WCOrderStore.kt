@@ -50,9 +50,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     class FetchOrderListPayload(
         val listDescriptor: WCOrderListDescriptor,
         val offset: Long,
-        /**
-         * The time this payload was created.
-         */
         val requestStartTime: Calendar = Calendar.getInstance()
     ) : Payload<BaseNetworkError>()
 
