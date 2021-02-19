@@ -71,7 +71,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
-import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
 import javax.inject.Singleton
@@ -717,57 +716,6 @@ class ProductRestClient(
     }
 
     /**
-     * Makes a PUT request to
-     * `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/[WCProductVariationModel.remoteVariationId]`
-     * to replace a variation's attributes with [WCProductVariationModel.attributes]
-     *
-     * Returns a WooPayload with the Api response as result
-     *
-     * @param [site] The site to fetch product reviews for
-     * @param [variation] Locally updated product variation to be sent
-     */
-
-    suspend fun updateVariationAttributes(
-        site: SiteModel,
-        variation: WCProductVariationModel
-    ) = with(variation) {
-        WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
-                .let { url ->
-                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
-                            this@ProductRestClient,
-                            site,
-                            url,
-                            mapOf("attributes" to JsonParser().parse(variation.attributes).asJsonArray),
-                            ProductVariationApiResponse::class.java
-                    )?.handleResult()
-                }
-    }
-
-    /**
-     * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
-     * to replace a product's attributes with [WCProductModel.attributes]
-     *
-     * Returns a WooPayload with the Api response as result
-     *
-     * @param [site] The site to fetch product reviews for
-     * @param [product] Locally updated product to be sent
-     */
-
-    suspend fun updateProductAttributes(
-        site: SiteModel,
-        product: WCProductModel
-    ) = WOOCOMMERCE.products.id(product.remoteProductId).pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
-                        this,
-                        site,
-                        url,
-                        mapOf("attributes" to JsonParser().parse(product.attributes).asJsonArray),
-                        ProductApiResponse::class.java
-                )?.handleResult()
-            }
-
-    /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
      * with the passed media list
      *
@@ -1280,6 +1228,10 @@ class ProductRestClient(
                 }
             }
         }
+        if (storedWCProductModel.attributes != updatedProductModel.attributes) {
+            body["attributes"] = JsonParser().parse(updatedProductModel.attributes).asJsonArray
+        }
+
         return body
     }
 
@@ -1370,6 +1322,9 @@ class ProductRestClient(
         }
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
+        }
+        if (storedVariationModel.attributes != updatedVariationModel.attributes) {
+            body["attributes"] = JsonParser().parse(updatedVariationModel.attributes).asJsonArray
         }
         return body
     }
