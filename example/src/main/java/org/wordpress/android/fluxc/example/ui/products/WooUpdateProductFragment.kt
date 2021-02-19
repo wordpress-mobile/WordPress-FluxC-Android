@@ -622,7 +622,7 @@ class WooUpdateProductFragment : Fragment() {
                         .newUpdateProductAction(
                                 UpdateProductPayload(site, updatedProduct)
                         ).let { dispatcher.dispatch(it) }
-            } ?: prependToLog("Looks like this isn't a valid Term name")
+            } ?: withContext(Dispatchers.Main) { prependToLog("Looks like this isn't a valid Term name") }
 
     private fun updateProductProperties(it: WCProductModel) {
         product_name.setText(it.name)
