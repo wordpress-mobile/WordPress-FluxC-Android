@@ -546,7 +546,7 @@ class WooUpdateProductFragment : Fragment() {
             ) { attributeIdEditText ->
                 showSingleLineDialog(
                         activity,
-                        "Enter the term ID you want to attach:"
+                        "Enter the term name you want to attach:"
                 ) { termEditText ->
                     coroutineScope.launch {
                         takeAsyncRequestWithValidSite { site ->
@@ -554,7 +554,7 @@ class WooUpdateProductFragment : Fragment() {
                             handleProductAttributesSync(
                                     site,
                                     attributeIdEditText.text.toString().toLongOrNull() ?: 0,
-                                    termEditText.text.toString().toIntOrNull() ?: 0,
+                                    termEditText.text.toString(),
                                     selectedProductModel
                             )
                         }
@@ -562,7 +562,7 @@ class WooUpdateProductFragment : Fragment() {
                 }
             }
         } catch (ex: Exception) {
-            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+            prependToLog("Couldn't attach Attribute Term. Error: ${ex.message}")
         }
     }
 
@@ -583,19 +583,19 @@ class WooUpdateProductFragment : Fragment() {
                                             UpdateProductPayload(site, product)
                                     )
                                             .let { dispatcher.dispatch(it) }
-                                }
+                                } ?: prependToLog("Couldn't detach Attribute.")
                     }
                 }
             }
         } catch (ex: Exception) {
-            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
+            prependToLog("Couldn't detach Attribute Term. Error: ${ex.message}")
         }
     }
 
     private suspend fun handleProductAttributesSync(
         site: SiteModel,
         attributeId: Long,
-        termId: Int,
+        termName: String,
         product: WCProductModel?
     ) = wcAttributesStore.fetchAttribute(
             site = site,
@@ -603,14 +603,15 @@ class WooUpdateProductFragment : Fragment() {
             withTerms = true
     )
             .model
-            ?.asProductAttributeModel(termId)
+            ?.asProductAttributeModel(listOf(termName))
+            ?.takeIf { it.options.isNotEmpty() }
             ?.run { product?.updateAttribute(this) }
             ?.let { updatedProduct ->
                 WCProductActionBuilder
                         .newUpdateProductAction(
                                 UpdateProductPayload(site, updatedProduct)
                         ).let { dispatcher.dispatch(it) }
-            }
+            } ?: prependToLog("Looks like this isn't a valid Term name")
 
     private fun updateProductProperties(it: WCProductModel) {
         product_name.setText(it.name)
