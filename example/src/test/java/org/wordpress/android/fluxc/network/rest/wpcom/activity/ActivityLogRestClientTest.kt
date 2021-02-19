@@ -34,6 +34,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestCl
 import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestClient.ActivityTypesResponse.Groups
 import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestClient.BackupDownloadResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestClient.BackupDownloadStatusResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestClient.DismissBackupDownloadResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestClient.RewindResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.activity.ActivityLogRestClient.RewindStatusResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -552,6 +553,29 @@ class ActivityLogRestClientTest {
         }
     }
 
+    @Test
+    fun postDismissBackupDownloadOperation() = test {
+        val downloadId = 10L
+        val response = DismissBackupDownloadResponse(downloadId, true)
+
+        initPostDismissBackupDownload(downloadId = downloadId, data = response)
+
+        val payload = activityRestClient.dismissBackupDownload(site, downloadId)
+
+        assertEquals(downloadId, payload.downloadId)
+    }
+
+    @Test
+    fun postDismissBackupDownloadOperationError() = test {
+        val downloadId = 10L
+        initPostDismissBackupDownload(downloadId = downloadId, error =
+            WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR)))
+
+        val payload = activityRestClient.dismissBackupDownload(site, downloadId)
+
+        assertTrue(payload.isError)
+    }
+
     private suspend fun initFetchActivity(
         data: ActivitiesResponse = mock(),
         error: WPComGsonNetworkError? = null
@@ -680,6 +704,24 @@ class ActivityLogRestClientTest {
                 any(),
                 eq(false))
         ).thenReturn(response)
+        return response
+    }
+
+    private suspend fun initPostDismissBackupDownload(
+        data: DismissBackupDownloadResponse = mock(),
+        error: WPComGsonNetworkError? = null,
+        downloadId: Long
+    ): Response<DismissBackupDownloadResponse> {
+        val response = if (error != null) Response.Error(error) else Success(data)
+
+        whenever(wpComGsonRequestBuilder.syncPostRequest(
+                eq(activityRestClient),
+                urlCaptor.capture(),
+                eq(mapOf("downloadId" to downloadId.toString())),
+                eq(null),
+                eq(DismissBackupDownloadResponse::class.java)
+        )).thenReturn(response)
+        whenever(site.siteId).thenReturn(siteId)
         return response
     }
 
