@@ -249,7 +249,7 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
     private fun onFetchCachedAttributesListClicked(view: View) = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite {
-                wcAttributesStore.fetchCachedStoreAttributes(it)
+                wcAttributesStore.loadCachedStoreAttributes(it)
             }
                     ?.model
                     ?.let { logAttributeListResponse(it) }
