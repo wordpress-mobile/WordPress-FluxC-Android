@@ -13,7 +13,6 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
@@ -21,23 +20,30 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomP
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCPaymentMethod
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse.ShippingOption.Rate
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.VerifyAddressResponse
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import java.math.BigDecimal
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -70,6 +76,53 @@ class WCShippingLabelStoreTest {
     private val samplePackagesApiResponse = WCShippingLabelTestUtils.generateSampleGetPackagesApiResponse()
 
     private val sampleAccountSettingsApiResponse = WCShippingLabelTestUtils.generateSampleAccountSettingsApiResponse()
+
+    private val sampleShippingRatesApiResponse = WCShippingLabelTestUtils.generateSampleGetShippingRatesApiResponse()
+
+    private val originAddress = ShippingLabelAddress(
+            "Company",
+            "Ondrej Ruttkay",
+            "",
+            "US",
+            "NY",
+            "42 Jewel St.",
+            "",
+            "Brooklyn",
+            "11222"
+    )
+
+    private val destAddress = ShippingLabelAddress(
+            "Company",
+            "Ondrej Ruttkay",
+            "",
+            "US",
+            "NY",
+            "82 Jewel St.",
+            "",
+            "Brooklyn",
+            "11222"
+    )
+
+    val packages = listOf(
+            ShippingLabelPackage(
+                    "Krabka 1",
+                    "medium_flat_box_top",
+                    10f,
+                    10f,
+                    10f,
+                    10f,
+                    false
+            ),
+            ShippingLabelPackage(
+                    "Krabka 2",
+                    "medium_flat_box_side",
+                    5f,
+                    5f,
+                    5f,
+                    5f,
+                    false
+            )
+    )
 
     @Before
     fun setUp() {
@@ -176,6 +229,95 @@ class WCShippingLabelStoreTest {
         val invalidRequestResult = verifyAddress(DESTINATION)
         assertThat(invalidRequestResult.model).isNull()
         assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `get shipping rates`() = test {
+        val expectedRatesResult = WCShippingRatesResult(
+            listOf(
+                ShippingPackage(
+                    "default_box",
+                    listOf(
+                        ShippingOption(
+                            "default",
+                            listOf(
+                                Rate(
+                                    title = "USPS - Media Mail",
+                                    insurance = BigDecimal(100),
+                                    rate = BigDecimal(3.5),
+                                    rateId = "rate_cb976896a09c4171a93ace57ed66ce5b",
+                                    serviceId = "MediaMail",
+                                    carrierId = "usps",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = false,
+                                    retailRate = BigDecimal(3.5),
+                                    isSelected = false,
+                                    isPickupFree = false,
+                                    deliveryDays = 2,
+                                    deliveryDateGuaranteed = false,
+                                    deliveryDate = null
+                                ),
+                                Rate(
+                                    title = "FedEx - Ground",
+                                    insurance = BigDecimal(100),
+                                    rate = BigDecimal(21.5),
+                                    rateId = "rate_1b202bd43a8c4c929c73bb46989ef745",
+                                    serviceId = "FEDEX_GROUND",
+                                    carrierId = "fedex",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = false,
+                                    retailRate = BigDecimal(21.5),
+                                    isSelected = false,
+                                    isPickupFree = false,
+                                    deliveryDays = 1,
+                                    deliveryDateGuaranteed = true,
+                                    deliveryDate = null
+                                )
+                        )
+                ),
+                ShippingOption(
+                        "with_signature",
+                        listOf(
+                                Rate(
+                                    title = "USPS - Media Mail",
+                                    insurance = BigDecimal(100),
+                                    rate = BigDecimal(13.5),
+                                    rateId = "rate_cb976896a09c4171a93ace57ed66ce5b",
+                                    serviceId = "MediaMail",
+                                    carrierId = "usps",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = true,
+                                    retailRate = BigDecimal(13.5),
+                                    isSelected = false,
+                                    isPickupFree = true,
+                                    deliveryDays = 2,
+                                    deliveryDateGuaranteed = false,
+                                    deliveryDate = null
+                                ),
+                                Rate(
+                                    title = "FedEx - Ground",
+                                    insurance = BigDecimal(100),
+                                    rate = BigDecimal(121.5),
+                                    rateId = "rate_1b202bd43a8c4c929c73bb46989ef745",
+                                    serviceId = "FEDEX_GROUND",
+                                    carrierId = "fedex",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = true,
+                                    retailRate = BigDecimal(121.5),
+                                    isSelected = false,
+                                    isPickupFree = true,
+                                    deliveryDays = 1,
+                                    deliveryDateGuaranteed = true,
+                                    deliveryDate = null
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val result = getShippingRates()
+        assertThat(result.model).isEqualTo(expectedRatesResult)
     }
 
     @Test
@@ -290,6 +432,15 @@ class WCShippingLabelStoreTest {
         )).thenReturn(WooPayload(error))
 
         return store.verifyAddress(site, address, type)
+    }
+
+    private suspend fun getShippingRates(): WooResult<WCShippingRatesResult> {
+        val rates = WooPayload(sampleShippingRatesApiResponse)
+
+        whenever(restClient.getShippingRates(any(), any(), any(), any(), any()))
+                .thenReturn(rates)
+
+        return store.getShippingRates(site, orderId, originAddress, destAddress, packages)
     }
 
     private suspend fun getPackages(isError: Boolean = false): WooResult<WCPackagesResult> {
