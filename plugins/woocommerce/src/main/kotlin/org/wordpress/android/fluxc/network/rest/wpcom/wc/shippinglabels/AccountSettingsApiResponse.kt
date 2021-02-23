@@ -17,6 +17,7 @@ data class AccountSettingsApiResponse(
     )
 
     data class FormMeta(
+        @SerializedName("can_edit_settings") val canEditSettings: Boolean,
         @SerializedName("can_manage_payments") val canManagePayments: Boolean,
         @SerializedName("master_user_name") val storeOwnerName: String,
         @SerializedName("master_user_login") val storeOwnerUserName: String,
