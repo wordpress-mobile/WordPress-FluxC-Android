@@ -1233,7 +1233,7 @@ class ProductRestClient(
                 body["attributes"] = try {
                     parse(updatedProductModel.attributes).asJsonArray
                 } catch (ex: Exception) {
-                     JsonArray()
+                    JsonArray()
                 }
             }
         }
@@ -1334,7 +1334,7 @@ class ProductRestClient(
                 body["attributes"] = try {
                     parse(updatedVariationModel.attributes).asJsonArray
                 } catch (ex: Exception) {
-                     JsonArray()
+                    JsonArray()
                 }
             }
         }
