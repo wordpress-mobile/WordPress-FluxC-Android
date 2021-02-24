@@ -1230,12 +1230,10 @@ class ProductRestClient(
         }
         if (storedWCProductModel.attributes != updatedProductModel.attributes) {
             JsonParser().apply {
-                try {
-                    parse(updatedProductModel.attributes).asJsonArray.let {
-                        body["attributes"] = it
-                    }
+                body["attributes"] = try {
+                    parse(updatedProductModel.attributes).asJsonArray
                 } catch (ex: Exception) {
-                    body["attributes"] = JsonArray()
+                     JsonArray()
                 }
             }
         }
@@ -1333,12 +1331,10 @@ class ProductRestClient(
         }
         if (storedVariationModel.attributes != updatedVariationModel.attributes) {
             JsonParser().apply {
-                try {
-                    parse(updatedVariationModel.attributes).asJsonArray.let {
-                        body["attributes"] = it
-                    }
+                body["attributes"] = try {
+                    parse(updatedVariationModel.attributes).asJsonArray
                 } catch (ex: Exception) {
-                    body["attributes"] = JsonArray()
+                     JsonArray()
                 }
             }
         }
