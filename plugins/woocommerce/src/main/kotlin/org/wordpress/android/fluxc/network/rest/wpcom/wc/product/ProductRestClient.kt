@@ -1235,7 +1235,7 @@ class ProductRestClient(
                         body["attributes"] = it
                     }
                 } catch (ex: Exception) {
-                    body["attributes"] = storedWCProductModel.attributes
+                    body["attributes"] = JsonArray()
                 }
             }
         }
@@ -1338,7 +1338,7 @@ class ProductRestClient(
                         body["attributes"] = it
                     }
                 } catch (ex: Exception) {
-                    body["attributes"] = storedVariationModel.attributes
+                    body["attributes"] = JsonArray()
                 }
             }
         }
