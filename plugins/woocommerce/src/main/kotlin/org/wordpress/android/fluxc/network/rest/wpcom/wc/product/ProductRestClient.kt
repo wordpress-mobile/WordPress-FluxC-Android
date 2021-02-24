@@ -1332,7 +1332,15 @@ class ProductRestClient(
             body["menu_order"] = updatedVariationModel.menuOrder
         }
         if (storedVariationModel.attributes != updatedVariationModel.attributes) {
-            body["attributes"] = JsonParser().parse(updatedVariationModel.attributes).asJsonArray
+            JsonParser().apply {
+                try {
+                    parse(updatedVariationModel.attributes).asJsonArray.let {
+                        body["attributes"] = it
+                    }
+                } catch (ex: Exception) {
+                    body["attributes"] = storedVariationModel.attributes
+                }
+            }
         }
         return body
     }
