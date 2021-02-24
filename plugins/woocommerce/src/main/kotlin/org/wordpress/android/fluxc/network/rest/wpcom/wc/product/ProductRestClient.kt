@@ -1229,7 +1229,15 @@ class ProductRestClient(
             }
         }
         if (storedWCProductModel.attributes != updatedProductModel.attributes) {
-            body["attributes"] = JsonParser().parse(updatedProductModel.attributes).asJsonArray
+            JsonParser().apply {
+                try {
+                    parse(updatedProductModel.attributes).asJsonArray.let {
+                        body["attributes"] = it
+                    }
+                } catch (ex: Exception) {
+                    body["attributes"] = storedWCProductModel.attributes
+                }
+            }
         }
 
         return body
