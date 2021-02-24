@@ -213,19 +213,5 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Delete product"/>
-
-        <Button
-            android:id="@+id/attach_attribute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="Attach Attribute"/>
-
-        <Button
-            android:id="@+id/detach_attribute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="Detach Attribute"/>
     </LinearLayout>
 </ScrollView>

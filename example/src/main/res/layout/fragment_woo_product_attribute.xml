@@ -45,6 +45,13 @@
             android:text="Fetch Full Attributes List"/>
 
         <Button
+            android:id="@+id/fetch_product_attributes_from_db"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Full Attributes List From Database"/>
+
+        <Button
             android:id="@+id/create_product_attributes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -17,7 +17,7 @@ object WCProductSettingsSqlUtils {
             WellSql.insert(settings).asSingleTransaction(true).execute()
             1
         } else {
-            val oldId = settings.id
+            val oldId = result.id
             WellSql.update(WCProductSettingsModel::class.java).whereId(oldId)
                     .put(settings, UpdateAllExceptId(WCProductSettingsModel::class.java)).execute()
         }
