@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.activity
 import com.android.volley.RequestQueue
 import com.nhaarman.mockitokotlin2.KArgumentCaptor
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
@@ -558,7 +559,7 @@ class ActivityLogRestClientTest {
         val downloadId = 10L
         val response = DismissBackupDownloadResponse(downloadId, true)
 
-        initPostDismissBackupDownload(downloadId = downloadId, data = response)
+        initPostDismissBackupDownload(data = response)
 
         val payload = activityRestClient.dismissBackupDownload(site, downloadId)
 
@@ -568,8 +569,7 @@ class ActivityLogRestClientTest {
     @Test
     fun postDismissBackupDownloadOperationError() = test {
         val downloadId = 10L
-        initPostDismissBackupDownload(downloadId = downloadId, error =
-            WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR)))
+        initPostDismissBackupDownload(error = WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR)))
 
         val payload = activityRestClient.dismissBackupDownload(site, downloadId)
 
@@ -709,16 +709,15 @@ class ActivityLogRestClientTest {
 
     private suspend fun initPostDismissBackupDownload(
         data: DismissBackupDownloadResponse = mock(),
-        error: WPComGsonNetworkError? = null,
-        downloadId: Long
+        error: WPComGsonNetworkError? = null
     ): Response<DismissBackupDownloadResponse> {
         val response = if (error != null) Response.Error(error) else Success(data)
 
         whenever(wpComGsonRequestBuilder.syncPostRequest(
                 eq(activityRestClient),
                 urlCaptor.capture(),
-                eq(mapOf("downloadId" to downloadId.toString())),
-                eq(null),
+                anyOrNull(),
+                eq(mapOf("dismissed" to true.toString())),
                 eq(DismissBackupDownloadResponse::class.java)
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
