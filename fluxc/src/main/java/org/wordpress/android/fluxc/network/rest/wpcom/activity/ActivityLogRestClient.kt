@@ -226,13 +226,13 @@ class ActivityLogRestClient(
         site: SiteModel,
         downloadId: Long
     ): DismissBackupDownloadResultPayload {
-        val url = WPCOMV2.sites.site(site.siteId).rewind.downloads.url
-        val params = mapOf("downloadId" to downloadId.toString())
+        val url = WPCOMV2.sites.site(site.siteId).rewind.downloads.download(downloadId).url
+        val request = mapOf("dismissed" to true.toString())
         val response = wpComGsonRequestBuilder.syncPostRequest(
                 this,
                 url,
-                params,
                 null,
+                request,
                 DismissBackupDownloadResponse::class.java)
         return when (response) {
             is Success -> DismissBackupDownloadResultPayload(site.siteId, downloadId, response.data.isDimissed)
