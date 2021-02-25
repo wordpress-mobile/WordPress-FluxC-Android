@@ -1,12 +1,17 @@
 package org.wordpress.android.fluxc.wc.order
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.junit.Test
 import org.wordpress.android.fluxc.UnitTestUtils
+import org.wordpress.android.fluxc.model.WCOrderModel.ShippingLine
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WCOrderModelTest {
+    private val gson = Gson()
+
     @Test
     fun testGetShippingAddress() {
         val model = OrderTestUtils.generateSampleOrder(61).apply {
@@ -114,5 +119,38 @@ class WCOrderModelTest {
 
         model.lineItems = "[{\"total\": \"12.26\"},{\"total\": \"15.39\"}]"
         assertEquals(0.0, model.getOrderSubtotal())
+    }
+
+    @Test
+    fun testGetShippingLines() {
+        val model = OrderTestUtils.generateSampleOrder(61).apply {
+            shippingLines = UnitTestUtils.getStringFromResourceFile(
+                    this.javaClass, "wc/order-shipping-lines.json")
+        }
+
+        val listShippingLineType = object : TypeToken<List<ShippingLine>>() {}.type
+        val shippingLinesList: List<ShippingLine> = gson.fromJson(model.shippingLines, listShippingLineType)
+
+        assertEquals(2, shippingLinesList.count())
+    }
+
+    @Test
+    fun testGetShippingLinesAttributes() {
+        val model = OrderTestUtils.generateSampleOrder(61).apply {
+            shippingLines = UnitTestUtils.getStringFromResourceFile(
+                    this.javaClass, "wc/order-shipping-lines.json")
+        }
+
+        val listShippingLineType = object : TypeToken<List<ShippingLine>>() {}.type
+        val shippingLinesList: List<ShippingLine> = gson.fromJson(model.shippingLines, listShippingLineType)
+
+        assertEquals(2, shippingLinesList[0].id)
+        assertEquals(3, shippingLinesList[1].id)
+
+        assertEquals("10.00", shippingLinesList[0].total)
+        assertEquals("20.00", shippingLinesList[1].total)
+
+        assertEquals("Flat Rate Shipping", shippingLinesList[0].methodTitle)
+        assertEquals("Local Pickup Shipping", shippingLinesList[1].methodTitle)
     }
 }

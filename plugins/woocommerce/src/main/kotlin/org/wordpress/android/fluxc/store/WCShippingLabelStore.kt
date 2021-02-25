@@ -242,6 +242,7 @@ class WCShippingLabelStore @Inject constructor(
                                     isCreatingLabelsEnabled = response.result.formData.isCreatingLabelsEnabled,
                                     isEmailReceiptEnabled = response.result.formData.isPaymentReceiptEnabled,
                                     paperSize = WCShippingLabelPaperSize.fromString(response.result.formData.paperSize),
+                                    canEditSettings = response.result.formMeta.canEditSettings,
                                     canManagePayments = response.result.formMeta.canManagePayments,
                                     storeOwnerName = response.result.formMeta.storeOwnerName,
                                     storeOwnerUserName = response.result.formMeta.storeOwnerUserName,
