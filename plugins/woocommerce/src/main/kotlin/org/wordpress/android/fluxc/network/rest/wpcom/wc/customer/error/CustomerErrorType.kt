@@ -4,6 +4,7 @@ import java.util.Locale
 
 enum class CustomerErrorType {
     INVALID_CUSTOMER_ID,
+    PERMISSION_MISSING,
 
     GENERIC_ERROR;
 
