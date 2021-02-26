@@ -46,8 +46,26 @@ data class WCGlobalAttributeModel(
                             ?: mutableListOf()
             )
 
+    fun asProductAttributeModel(includedTerms: List<String>) =
+            WCProductAttributeModel(
+                    globalAttributeId = remoteId,
+                    name = name,
+                    visible = true,
+                    variation = true,
+                    options = includedTerms.takeIf { it.isNotEmpty() }
+                            ?.let { terms?.filterFromTermNameList(it) }
+                            ?.map { it.name }
+                            ?.toMutableList()
+                            ?: mutableListOf()
+            )
+
     private fun List<WCAttributeTermModel?>.filterFromIdList(ids: IntArray) =
                     filterNotNull().filter { term ->
-                        term.remoteId.let { ids.contains(it) }
+                        ids.contains(term.remoteId)
+                    }
+
+    private fun List<WCAttributeTermModel?>.filterFromTermNameList(termNames: List<String>) =
+                    filterNotNull().filter { term ->
+                        termNames.contains(term.name)
                     }
 }

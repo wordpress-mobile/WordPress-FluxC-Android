@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model.shippinglabels
 
 enum class WCShippingLabelPaperSize(val stringValue: String) {
+    A4("a4"),
     LABEL("label"),
     LEGAL("legal"),
     LETTER("letter");
