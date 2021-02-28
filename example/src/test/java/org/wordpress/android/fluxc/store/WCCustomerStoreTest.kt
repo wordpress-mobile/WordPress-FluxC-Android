@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
 import org.wordpress.android.fluxc.persistence.CustomerSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.test
@@ -63,11 +63,11 @@ class WCCustomerStoreTest {
         val remoteCustomerId = 2L
         val siteModel = SiteModel().apply { id = siteModelId }
 
-        val response: CustomerApiResponse = mock()
+        val response: CustomerDTO = mock()
         whenever(restClient.fetchSingleCustomer(siteModel, remoteCustomerId))
                 .thenReturn(WooPayload(response))
         val model: WCCustomerModel = mock()
-        whenever(mapper.map(siteModel, response)).thenReturn(model)
+        whenever(mapper.mapToModel(siteModel, response)).thenReturn(model)
 
         // when
         val result = store.fetchSingleCustomer(siteModel, remoteCustomerId)
@@ -100,8 +100,8 @@ class WCCustomerStoreTest {
         val siteModelId = 1
         val siteModel = SiteModel().apply { id = siteModelId }
 
-        val customerOne: CustomerApiResponse = mock()
-        val customerTwo: CustomerApiResponse = mock()
+        val customerOne: CustomerDTO = mock()
+        val customerTwo: CustomerDTO = mock()
         val response = arrayOf(customerOne, customerTwo)
         whenever(restClient.fetchCustomers(siteModel, 25))
                 .thenReturn(WooPayload(response))
@@ -113,8 +113,8 @@ class WCCustomerStoreTest {
             remoteCustomerId = 2L
             localSiteId = siteModelId
         }
-        whenever(mapper.map(siteModel, customerOne)).thenReturn(modelOne)
-        whenever(mapper.map(siteModel, customerTwo)).thenReturn(modelTwo)
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
 
         // when
         val result = store.fetchCustomers(siteModel, 25)
@@ -133,15 +133,15 @@ class WCCustomerStoreTest {
         val siteModel = SiteModel().apply { id = siteModelId }
         val searchQuery = "searchQuery"
 
-        val customerOne: CustomerApiResponse = mock()
-        val customerTwo: CustomerApiResponse = mock()
+        val customerOne: CustomerDTO = mock()
+        val customerTwo: CustomerDTO = mock()
         val response = arrayOf(customerOne, customerTwo)
         whenever(restClient.fetchCustomers(siteModel, 25, searchQuery = searchQuery))
                 .thenReturn(WooPayload(response))
         val modelOne: WCCustomerModel = mock()
         val modelTwo: WCCustomerModel = mock()
-        whenever(mapper.map(siteModel, customerOne)).thenReturn(modelOne)
-        whenever(mapper.map(siteModel, customerTwo)).thenReturn(modelTwo)
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
 
         // when
         val result = store.fetchCustomers(siteModel, 25, searchQuery = searchQuery)
@@ -159,15 +159,15 @@ class WCCustomerStoreTest {
         val siteModel = SiteModel().apply { id = siteModelId }
         val email = "email"
 
-        val customerOne: CustomerApiResponse = mock()
-        val customerTwo: CustomerApiResponse = mock()
+        val customerOne: CustomerDTO = mock()
+        val customerTwo: CustomerDTO = mock()
         val response = arrayOf(customerOne, customerTwo)
         whenever(restClient.fetchCustomers(siteModel, 25, email = email))
                 .thenReturn(WooPayload(response))
         val modelOne: WCCustomerModel = mock()
         val modelTwo: WCCustomerModel = mock()
-        whenever(mapper.map(siteModel, customerOne)).thenReturn(modelOne)
-        whenever(mapper.map(siteModel, customerTwo)).thenReturn(modelTwo)
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
 
         // when
         val result = store.fetchCustomers(siteModel, 25, email = email)
@@ -185,15 +185,15 @@ class WCCustomerStoreTest {
         val siteModel = SiteModel().apply { id = siteModelId }
         val role = "role"
 
-        val customerOne: CustomerApiResponse = mock()
-        val customerTwo: CustomerApiResponse = mock()
+        val customerOne: CustomerDTO = mock()
+        val customerTwo: CustomerDTO = mock()
         val response = arrayOf(customerOne, customerTwo)
         whenever(restClient.fetchCustomers(siteModel, 25, role = role))
                 .thenReturn(WooPayload(response))
         val modelOne: WCCustomerModel = mock()
         val modelTwo: WCCustomerModel = mock()
-        whenever(mapper.map(siteModel, customerOne)).thenReturn(modelOne)
-        whenever(mapper.map(siteModel, customerTwo)).thenReturn(modelTwo)
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
 
         // when
         val result = store.fetchCustomers(siteModel, 25, role = role)
@@ -211,15 +211,15 @@ class WCCustomerStoreTest {
         val siteModel = SiteModel().apply { id = siteModelId }
         val remoteCustomerIds = listOf(1L)
 
-        val customerOne: CustomerApiResponse = mock()
-        val customerTwo: CustomerApiResponse = mock()
+        val customerOne: CustomerDTO = mock()
+        val customerTwo: CustomerDTO = mock()
         val response = arrayOf(customerOne, customerTwo)
         whenever(restClient.fetchCustomers(siteModel, 25, remoteCustomerIds = remoteCustomerIds))
                 .thenReturn(WooPayload(response))
         val modelOne: WCCustomerModel = mock()
         val modelTwo: WCCustomerModel = mock()
-        whenever(mapper.map(siteModel, customerOne)).thenReturn(modelOne)
-        whenever(mapper.map(siteModel, customerTwo)).thenReturn(modelTwo)
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
 
         // when
         val result = store.fetchCustomers(siteModel, 25, remoteCustomerIds = remoteCustomerIds)
@@ -237,15 +237,15 @@ class WCCustomerStoreTest {
         val siteModel = SiteModel().apply { id = siteModelId }
         val excludedCustomerIds = listOf(1L)
 
-        val customerOne: CustomerApiResponse = mock()
-        val customerTwo: CustomerApiResponse = mock()
+        val customerOne: CustomerDTO = mock()
+        val customerTwo: CustomerDTO = mock()
         val response = arrayOf(customerOne, customerTwo)
         whenever(restClient.fetchCustomers(siteModel, 25, excludedCustomerIds = excludedCustomerIds))
                 .thenReturn(WooPayload(response))
         val modelOne: WCCustomerModel = mock()
         val modelTwo: WCCustomerModel = mock()
-        whenever(mapper.map(siteModel, customerOne)).thenReturn(modelOne)
-        whenever(mapper.map(siteModel, customerTwo)).thenReturn(modelTwo)
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
 
         // when
         val result = store.fetchCustomers(siteModel, 25, excludedCustomerIds = excludedCustomerIds)
@@ -270,5 +270,44 @@ class WCCustomerStoreTest {
         // then
         assertTrue(result.isError)
         assertTrue(CustomerSqlUtils.getCustomersForSite(siteModel).isEmpty())
+    }
+
+    @Test
+    fun `create customer with error returns error`() = test {
+        // given
+        val siteModelId = 1
+        val siteModel = SiteModel().apply { id = siteModelId }
+        val customerDto: CustomerDTO = mock()
+        val customerModel: WCCustomerModel = mock()
+
+        whenever(mapper.mapToDTO(customerModel)).thenReturn(customerDto)
+        whenever(restClient.createCustomer(siteModel, customerDto)).thenReturn(WooPayload(error))
+
+        // when
+        val result = store.createCustomer(siteModel, customerModel)
+
+        // then
+        assertTrue(result.isError)
+    }
+
+    @Test
+    fun `create customer with success returns dto`() = test {
+        // given
+        val siteModelId = 1
+        val siteModel = SiteModel().apply { id = siteModelId }
+        val customerDto: CustomerDTO = mock()
+        val customerDtoResponse: CustomerDTO = mock()
+        val customerModel: WCCustomerModel = mock()
+
+        whenever(mapper.mapToDTO(customerModel)).thenReturn(customerDto)
+        whenever(mapper.mapToModel(siteModel, customerDtoResponse)).thenReturn(customerModel)
+        whenever(restClient.createCustomer(siteModel, customerDto)).thenReturn(WooPayload(customerDtoResponse))
+
+        // when
+        val result = store.createCustomer(siteModel, customerModel)
+
+        // then
+        assertFalse(result.isError)
+        assertEquals(customerModel, result.model)
     }
 }
