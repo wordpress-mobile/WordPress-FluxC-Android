@@ -40,4 +40,16 @@ public class APITesting_WCCustomer {
                 .statusCode(200)
                 .body("data", hasSize(50));
     }
+
+    @Test
+    public void canGetCustomers() {
+        given()
+                .spec(this.mRequestSpec)
+                .queryParam("path", "/wc/v3/customers")
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .body("data", hasSize(50));
+    }
 }
