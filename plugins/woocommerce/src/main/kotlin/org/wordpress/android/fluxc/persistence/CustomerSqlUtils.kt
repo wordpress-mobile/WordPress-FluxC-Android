@@ -6,17 +6,28 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 
 object CustomerSqlUtils {
-    fun getCustomerByRemoteId(site: SiteModel, remoteProductId: Long): WCCustomerModel? {
+    // region get
+    fun getCustomerByRemoteId(site: SiteModel, remoteCustomerId: Long): WCCustomerModel? {
         return WellSql.select(WCCustomerModel::class.java)
                 .where()
                 .beginGroup()
-                .equals(WCCustomerModelTable.REMOTE_CUSTOMER_ID, remoteProductId)
+                .equals(WCCustomerModelTable.REMOTE_CUSTOMER_ID, remoteCustomerId)
                 .equals(WCCustomerModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup()
                 .endWhere()
                 .asModel.firstOrNull()
     }
 
+    fun getCustomersForSite(site: SiteModel): List<WCCustomerModel> {
+        return WellSql.select(WCCustomerModel::class.java)
+                .where()
+                .equals(WCCustomerModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .asModel
+    }
+    // endregion
+
+    // region insert-update
     fun insertOrUpdateCustomer(customer: WCCustomerModel): Int {
         val customerResult = WellSql.select(WCCustomerModel::class.java)
                 .where().beginGroup()
@@ -43,4 +54,20 @@ object CustomerSqlUtils {
                     .put(customer, UpdateAllExceptId(WCCustomerModel::class.java)).execute()
         }
     }
+
+    fun insertOrUpdateCustomers(customers: List<WCCustomerModel>): Int {
+        return customers.sumBy { insertOrUpdateCustomer(it) }
+    }
+    // endregion
+
+    // region delete
+    fun deleteCustomersForSite(site: SiteModel): Int {
+        return WellSql.delete(WCCustomerModel::class.java)
+                .where().beginGroup()
+                .equals(WCCustomerModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup()
+                .endWhere()
+                .execute()
+    }
+    // endregion
 }
