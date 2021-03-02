@@ -9,7 +9,7 @@ import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.oauth2;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.equalTo;
 
 public class APITesting_WCCustomer {
     private RequestSpecification mRequestSpec;
@@ -38,6 +38,11 @@ public class APITesting_WCCustomer {
                 .get()
                 .then()
                 .statusCode(200)
-                .body("data", hasSize(50));
+                .body("data.id", equalTo(1),
+                        "data.first_name", equalTo(""),
+                        "data.last_name", equalTo(""),
+                        "data.avatar_url",
+                        equalTo("https://secure.gravatar.com/avatar/fb409f96c4ccb689c8b1d42342dae3c7?s=96&d=mm&r=g")
+                     );
     }
 }
