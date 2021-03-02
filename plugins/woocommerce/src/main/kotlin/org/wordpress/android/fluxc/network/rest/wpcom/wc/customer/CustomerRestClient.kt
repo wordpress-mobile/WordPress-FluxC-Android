@@ -57,6 +57,7 @@ class CustomerRestClient(
 
     /**
      * Makes a GET call to `/wc/v3/customers/` to fetch customers
+     *
      */
     suspend fun fetchCustomers(
         site: SiteModel,
@@ -115,6 +116,7 @@ class CustomerRestClient(
             is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
+
 
     /**
      * Makes a POST call to `/wc/v3/customers/` to create a customer

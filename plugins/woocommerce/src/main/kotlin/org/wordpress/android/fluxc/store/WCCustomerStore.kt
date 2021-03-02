@@ -100,6 +100,7 @@ class WCCustomerStore @Inject constructor(
         }
     }
 
+
     /**
      * creates a customer on the backend
      */
