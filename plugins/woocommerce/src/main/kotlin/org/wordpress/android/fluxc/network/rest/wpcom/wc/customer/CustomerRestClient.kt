@@ -57,6 +57,7 @@ class CustomerRestClient(
 
     /**
      * Makes a GET call to `/wc/v3/customers/` to fetch customers
+     *
      */
     suspend fun fetchCustomers(
         site: SiteModel,
