@@ -117,7 +117,6 @@ class CustomerRestClient(
         }
     }
 
-
     /**
      * Makes a POST call to `/wc/v3/customers/` to create a customer
      */
