@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCTaxStore
@@ -43,7 +44,7 @@ class WooTaxFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         taxes_select_site.setOnClickListener {
-            showSiteSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
+            showStoreSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
                 override fun onSiteSelected(site: SiteModel, pos: Int) {
                     selectedSite = site
                     selectedPos = pos
@@ -74,13 +75,6 @@ class WooTaxFragment : Fragment() {
                     }
                 }
             }
-        }
-    }
-
-    private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
-        fragmentManager?.let { fm ->
-            val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
-            dialog.show(fm, "StoreSelectorDialog")
         }
     }
 }

@@ -55,4 +55,19 @@ data class WCCustomerModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     override fun setId(id: Int) {
         this.id = id
     }
+
+    override fun toString(): String {
+        return "WCCustomerModel(id=$id, avatarUrl='$avatarUrl', dateCreated='$dateCreated', " +
+                "dateCreatedGmt='$dateCreatedGmt', dateModified='$dateModified', dateModifiedGmt='$dateModifiedGmt'," +
+                " email='$email', firstName='$firstName', remoteCustomerId=$remoteCustomerId, " +
+                "isPayingCustomer=$isPayingCustomer, lastName='$lastName', role='$role', username='$username', " +
+                "localSiteId=$localSiteId, billingAddress1='$billingAddress1', billingAddress2='$billingAddress2'," +
+                " billingCity='$billingCity', billingCompany='$billingCompany', billingCountry='$billingCountry'," +
+                " billingEmail='$billingEmail', billingFirstName='$billingFirstName', billingLastName='$billingLastName'," +
+                " billingPhone='$billingPhone', billingPostcode='$billingPostcode', billingState='$billingState', " +
+                "shippingAddress1='$shippingAddress1', shippingAddress2='$shippingAddress2', " +
+                "shippingCity='$shippingCity', shippingCompany='$shippingCompany', shippingCountry='$shippingCountry', " +
+                "shippingFirstName='$shippingFirstName', shippingLastName='$shippingLastName', " +
+                "shippingPostcode='$shippingPostcode', shippingState='$shippingState')"
+    }
 }
