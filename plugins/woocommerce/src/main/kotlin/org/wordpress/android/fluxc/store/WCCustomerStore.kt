@@ -34,6 +34,12 @@ class WCCustomerStore @Inject constructor(
             CustomerSqlUtils.getCustomerByRemoteId(site, remoteCustomerId)
 
     /**
+     * returns a cached customers with provided remote ids or empty list if not in cache
+     */
+    fun getCustomerByRemoteIds(site: SiteModel, remoteCustomerId: List<Long>) =
+            CustomerSqlUtils.getCustomerByRemoteIds(site, remoteCustomerId)
+
+    /**
      * returns a customer with provided remote id
      */
     suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooResult<WCCustomerModel> {
@@ -57,7 +63,7 @@ class WCCustomerStore @Inject constructor(
     suspend fun fetchCustomers(
         site: SiteModel,
         pageSize: Int = DEFAULT_CUSTOMER_PAGE_SIZE,
-        offset: Int = 0,
+        offset: Long = 0,
         sortType: CustomerSorting = DEFAULT_CUSTOMER_SORTING,
         searchQuery: String? = null,
         email: String? = null,
@@ -90,7 +96,7 @@ class WCCustomerStore @Inject constructor(
                     val customers = response.result.map { mapper.mapToModel(site, it) }
                     if (isCachingNeeded) {
                         // clear cache if it's the first page for the site
-                        if (offset == 0) CustomerSqlUtils.deleteCustomersForSite(site)
+                        if (offset == 0L) CustomerSqlUtils.deleteCustomersForSite(site)
                         CustomerSqlUtils.insertOrUpdateCustomers(customers)
                     }
                     WooResult(customers)

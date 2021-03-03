@@ -63,7 +63,7 @@ class CustomerRestClient(
         site: SiteModel,
         pageSize: Int,
         sortType: CustomerSorting = NAME_ASC,
-        offset: Int = 0,
+        offset: Long = 0,
         searchQuery: String? = null,
         email: String? = null,
         role: String? = null,

@@ -7,29 +7,33 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_woo_customers_search.*
 import org.wordpress.android.fluxc.example.R.layout
-import org.wordpress.android.fluxc.model.customer.WCCustomerListDescriptor
 import org.wordpress.android.fluxc.store.ListStore
-import org.wordpress.android.fluxc.store.WCCustomerStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
 class WooCustomersSearchFragment : Fragment() {
-    @Inject internal lateinit var wcCustomerStore: WCCustomerStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var listStore: ListStore
     @Inject internal lateinit var listItemDataSource: WooCustomersListItemDataSource
     @Inject internal lateinit var customersAdapter: WooCustomersSearchAdapter
 
     private val siteId by lazy { requireArguments().getInt(KEY_SELECTED_SITE_ID) }
+    private val searchParams by lazy { requireArguments().getParcelable(KEY_SEARCH_PARAMS) as SearchParams }
     private val pagedListWrapper by lazy {
-        val descriptor = WCCustomerListDescriptor(getSelectedSite())
+        val descriptor = SearchCustomerListDescriptor(
+                customerSite = getSelectedSite(),
+                customerSearchQuery = searchParams.searchQuery,
+                customerEmail = searchParams.email,
+                customerRole = searchParams.role,
+                customerRemoteCustomerIds = searchParams.includeIds,
+                customerExcludedCustomerIds = searchParams.excludeIds
+        )
         listStore.getList(
                 listDescriptor = descriptor,
                 dataSource = listItemDataSource,
@@ -48,15 +52,13 @@ class WooCustomersSearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loadList()
-
-        srlCustomersSearch.setOnRefreshListener { pagedListWrapper.fetchFirstPage() }
         rvCustomersSearch.apply {
             adapter = customersAdapter
             layoutManager = LinearLayoutManager(context)
-            itemAnimator = DefaultItemAnimator()
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
+
+        loadList()
     }
 
     private fun loadList() {
@@ -68,16 +70,11 @@ class WooCustomersSearchFragment : Fragment() {
             listError.removeObservers(lifecycleOwner)
             isEmpty.removeObservers(lifecycleOwner)
 
-            fetchFirstPage()
-            isLoadingMore.observe(lifecycleOwner, {})
-            isFetchingFirstPage.observe(lifecycleOwner, {
-                srlCustomersSearch?.isRefreshing = it == true
-            })
             data.observe(lifecycleOwner, {
-                it?.let { orderListData ->
-                    customersAdapter.submitList(orderListData)
-                }
+                it?.let { customersAdapter.submitList(it) }
             })
+
+            fetchFirstPage()
         }
     }
 
@@ -95,8 +92,8 @@ class WooCustomersSearchFragment : Fragment() {
     @Parcelize
     data class SearchParams(
         val searchQuery: String?,
-        val includeIds: List<Int>,
-        val excludeIds: List<Int>,
+        val includeIds: List<Long>,
+        val excludeIds: List<Long>,
         val email: String?,
         val role: String?,
     ) : Parcelable

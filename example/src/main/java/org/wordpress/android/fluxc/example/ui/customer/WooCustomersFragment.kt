@@ -14,8 +14,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog.Listener
 import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.customer.search.WooCustomersSearchBuilderFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
@@ -44,6 +46,7 @@ class WooCustomersFragment : Fragment() {
         btnCustomerSelectSite.setOnClickListener { selectStore() }
         btnPrintCutomer.setOnClickListener { printCustomerById() }
         btnFetchCustomerList.setOnClickListener {
+            replaceFragment(WooCustomersSearchBuilderFragment.newInstance(selectedSite!!.id))
         }
     }
 

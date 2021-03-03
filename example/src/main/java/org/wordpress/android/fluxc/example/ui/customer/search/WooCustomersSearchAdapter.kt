@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.example.ui.customer.search
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kotlinx.android.synthetic.main.list_item_woo_customer.view.*
+import org.wordpress.android.fluxc.example.MainExampleActivity
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.ui.customer.search.CustomerListItemType.CustomerItem
 import org.wordpress.android.fluxc.example.ui.customer.search.CustomerListItemType.LoadingItem
@@ -19,7 +19,7 @@ import javax.inject.Inject
 private const val VIEW_TYPE_ITEM = 0
 private const val VIEW_TYPE_LOADING = 1
 
-class WooCustomersSearchAdapter @Inject constructor(context: Context) :
+class WooCustomersSearchAdapter @Inject constructor(context: MainExampleActivity) :
         PagedListAdapter<CustomerListItemType, ViewHolder>(customerListDiffItemCallback) {
     private val layoutInflater = LayoutInflater.from(context)
 
@@ -56,40 +56,41 @@ class WooCustomersSearchAdapter @Inject constructor(context: Context) :
     private class CustomerItemViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         @SuppressLint("SetTextI18n")
         fun onBind(item: CustomerItem) {
-            view.tvCustomerRemoteId.text = item.remoteCustomerId.toString()
-            view.tvCustomerName.text = "${item.firstName} ${item.lastName}"
-            view.tvCustomerEmail.text = item.email
-            view.tvCustomerRole.text = item.role
+            with(view) {
+                tvCustomerRemoteId.text = item.remoteCustomerId.toString()
+                tvCustomerName.text = "${item.firstName} ${item.lastName}"
+                tvCustomerEmail.text = item.email
+                tvCustomerRole.text = item.role
+            }
         }
     }
 }
 
 private val customerListDiffItemCallback = object : DiffUtil.ItemCallback<CustomerListItemType>() {
     override fun areItemsTheSame(oldItem: CustomerListItemType, newItem: CustomerListItemType): Boolean {
-        if (oldItem == newItem && oldItem is LoadingItem) return true
-
-        if (oldItem is CustomerItem && newItem is CustomerItem) {
-            return oldItem.remoteCustomerId == newItem.remoteCustomerId
+        if (oldItem is LoadingItem && newItem is LoadingItem) return oldItem.remoteCustomerId == newItem.remoteCustomerId
+        return if (oldItem is CustomerItem && newItem is CustomerItem) {
+            oldItem.remoteCustomerId == newItem.remoteCustomerId
+        } else {
+            false
         }
-
-        return false
     }
 
     override fun areContentsTheSame(oldItem: CustomerListItemType, newItem: CustomerListItemType): Boolean {
-        if (oldItem == newItem && oldItem is LoadingItem) return true
-
-        if (oldItem is CustomerItem && newItem is CustomerItem) {
-            return oldItem.firstName == newItem.firstName &&
+        if (oldItem is LoadingItem && newItem is LoadingItem) return true
+        return if (oldItem is CustomerItem && newItem is CustomerItem) {
+            oldItem.firstName == newItem.firstName &&
                     oldItem.lastName == newItem.lastName &&
                     oldItem.email == newItem.email &&
                     oldItem.role == newItem.role
+        } else {
+            false
         }
-        return false
     }
 }
 
 sealed class CustomerListItemType {
-    object LoadingItem : CustomerListItemType()
+    data class LoadingItem(val remoteCustomerId: Long) : CustomerListItemType()
     data class CustomerItem(
         val remoteCustomerId: Long,
         val firstName: String?,

@@ -6,7 +6,7 @@ import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.ListDescriptorTypeIdentifier
 import org.wordpress.android.fluxc.model.list.ListDescriptorUniqueIdentifier
 
-class WCCustomerListDescriptor(
+open class WCCustomerListDescriptor(
     val site: SiteModel,
     val searchQuery: String? = null,
     val email: String? = null,

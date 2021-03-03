@@ -25,6 +25,15 @@ object CustomerSqlUtils {
                 .endWhere()
                 .asModel
     }
+
+    fun getCustomerByRemoteIds(site: SiteModel, remoteCustomerId: List<Long>): List<WCCustomerModel> {
+        return WellSql.select(WCCustomerModel::class.java)
+                .where().beginGroup()
+                .isIn(WCCustomerModelTable.REMOTE_CUSTOMER_ID, remoteCustomerId)
+                .equals(WCCustomerModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .asModel
+    }
     // endregion
 
     // region insert-update
