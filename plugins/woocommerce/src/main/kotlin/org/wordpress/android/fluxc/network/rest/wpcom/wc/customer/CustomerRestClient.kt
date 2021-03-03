@@ -12,8 +12,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.DATE_ASC
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.DATE_DESC
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_ASC
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_DESC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.NAME_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.NAME_DESC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_ASC
@@ -74,12 +74,12 @@ class CustomerRestClient(
 
         val orderBy = when (sortType) {
             NAME_ASC, NAME_DESC -> "name"
-            DATE_ASC, DATE_DESC -> "name"
+            INCLUDE_ASC, INCLUDE_DESC -> "include"
             REGISTERED_DATE_ASC, REGISTERED_DATE_DESC -> "registered_date"
         }
         val sortOrder = when (sortType) {
-            NAME_ASC, DATE_ASC, REGISTERED_DATE_ASC -> "asc"
-            DATE_DESC, NAME_DESC, REGISTERED_DATE_DESC -> "desc"
+            NAME_ASC, INCLUDE_ASC, REGISTERED_DATE_ASC -> "asc"
+            INCLUDE_DESC, NAME_DESC, REGISTERED_DATE_DESC -> "desc"
         }
 
         val params = mutableMapOf(
