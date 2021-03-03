@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -20,7 +21,7 @@ class CustomerSqlUtilsTest {
     val site = SiteModel().apply {
         email = "test@example.org"
         name = "Test Site"
-        siteId = 24
+        id = 24
     }
 
     @Before
@@ -82,5 +83,68 @@ class CustomerSqlUtilsTest {
         // then
         val storedCustomer = CustomerSqlUtils.getCustomerByRemoteId(site, remoteCustomerId)
         assertNull(storedCustomer)
+    }
+
+    @Test
+    fun `get customers by site returns null when no customers stored`() {
+        // when & then
+        assertTrue(CustomerSqlUtils.getCustomersForSite(site).isEmpty())
+    }
+
+    @Test
+    fun `get customer by site returns customer with site id provided`() {
+        // given
+        val usernameOne = "userNameOne"
+        val usernameTwo = "userNameTwo"
+        val customerOne = WCCustomerModel().apply {
+            this.remoteCustomerId = 1L
+            this.localSiteId = 3
+            this.username = usernameOne
+        }
+        val customerTwo = WCCustomerModel().apply {
+            this.remoteCustomerId = 2L
+            this.localSiteId = site.id
+            this.username = usernameTwo
+        }
+
+        // when
+        CustomerSqlUtils.insertOrUpdateCustomer(customerOne)
+        CustomerSqlUtils.insertOrUpdateCustomer(customerTwo)
+
+        // then
+        val storedCustomers = CustomerSqlUtils.getCustomersForSite(site)
+        assertEquals(1, storedCustomers.size)
+        assertEquals(usernameTwo, storedCustomers[0].username)
+        assertEquals(24, storedCustomers[0].localSiteId)
+        assertEquals(2L, storedCustomers[0].remoteCustomerId)
+    }
+
+    @Test
+    fun `delete customers for site deletes all customers for the site`() {
+        // given
+        val usernameOne = "userNameOne"
+        val usernameTwo = "userNameTwo"
+        val customerOne = WCCustomerModel().apply {
+            this.remoteCustomerId = 1L
+            this.localSiteId = 3
+            this.username = usernameOne
+        }
+        val customerTwo = WCCustomerModel().apply {
+            this.remoteCustomerId = 2L
+            this.localSiteId = site.id
+            this.username = usernameTwo
+        }
+
+        // when
+        CustomerSqlUtils.insertOrUpdateCustomer(customerOne)
+        CustomerSqlUtils.insertOrUpdateCustomer(customerTwo)
+        CustomerSqlUtils.deleteCustomersForSite(site)
+
+        // then
+        val storedCustomers = CustomerSqlUtils.getCustomersForSite(SiteModel().apply { id = customerOne.localSiteId })
+        assertEquals(1, storedCustomers.size)
+        assertEquals(usernameOne, storedCustomers[0].username)
+        assertEquals(3, storedCustomers[0].localSiteId)
+        assertEquals(1L, storedCustomers[0].remoteCustomerId)
     }
 }

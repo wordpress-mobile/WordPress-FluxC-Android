@@ -45,4 +45,16 @@ public class APITesting_WCCustomer {
                         equalTo("https://secure.gravatar.com/avatar/fb409f96c4ccb689c8b1d42342dae3c7?s=96&d=mm&r=g")
                      );
     }
+
+    @Test
+    public void canGetCustomers() {
+        given()
+                .spec(this.mRequestSpec)
+                .queryParam("path", "/wc/v3/customers")
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .body("data", hasSize(50));
+    }
 }
