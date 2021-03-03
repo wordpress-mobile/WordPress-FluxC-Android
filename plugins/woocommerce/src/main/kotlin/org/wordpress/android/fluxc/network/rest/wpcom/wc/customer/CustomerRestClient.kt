@@ -18,8 +18,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSortin
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.NAME_DESC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_DESC
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import javax.inject.Singleton
 
@@ -37,7 +38,7 @@ class CustomerRestClient(
      *
      * @param [remoteCustomerId] Unique server id of the customer to fetch
      */
-    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooPayload<CustomerApiResponse> {
+    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooPayload<CustomerDTO> {
         val url = WOOCOMMERCE.customers.id(remoteCustomerId).pathV3
 
         val response = requestBuilder.syncGetRequest(
@@ -45,7 +46,7 @@ class CustomerRestClient(
                 site = site,
                 url = url,
                 params = emptyMap(),
-                clazz = CustomerApiResponse::class.java
+                clazz = CustomerDTO::class.java
         )
 
         return when (response) {
@@ -69,7 +70,7 @@ class CustomerRestClient(
         context: String? = null,
         remoteCustomerIds: List<Long>? = null,
         excludedCustomerIds: List<Long>? = null
-    ): WooPayload<Array<CustomerApiResponse>> {
+    ): WooPayload<Array<CustomerDTO>> {
         val url = WOOCOMMERCE.customers.pathV3
 
         val orderBy = when (sortType) {
@@ -107,7 +108,27 @@ class CustomerRestClient(
                 site = site,
                 url = url,
                 params = params,
-                Array<CustomerApiResponse>::class.java
+                Array<CustomerDTO>::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    /**
+     * Makes a POST call to `/wc/v3/customers/` to create a customer
+     */
+    suspend fun createCustomer(site: SiteModel, customer: CustomerDTO): WooPayload<CustomerDTO> {
+        val url = WOOCOMMERCE.customers.pathV3
+
+        val response = requestBuilder.syncPostRequest(
+                restClient = this,
+                site = site,
+                url = url,
+                body = customer.toMap(),
+                clazz = CustomerDTO::class.java
         )
 
         return when (response) {

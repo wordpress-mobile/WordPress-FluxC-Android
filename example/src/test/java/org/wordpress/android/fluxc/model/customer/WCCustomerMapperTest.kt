@@ -2,8 +2,11 @@ package org.wordpress.android.fluxc.model.customer
 
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class WCCustomerMapperTest {
     val mapper = WCCustomerMapper()
@@ -15,7 +18,7 @@ class WCCustomerMapperTest {
         val siteId = 23
         val site = SiteModel().apply { id = siteId }
 
-        val billing = CustomerApiResponse.Billing(
+        val billing = CustomerDTO.Billing(
                 address1 = "address1",
                 address2 = "address2",
                 city = "city",
@@ -28,7 +31,7 @@ class WCCustomerMapperTest {
                 postcode = "postcode",
                 state = "state"
         )
-        val shipping = CustomerApiResponse.Shipping(
+        val shipping = CustomerDTO.Shipping(
                 address1 = "address1",
                 address2 = "address2",
                 city = "city",
@@ -39,7 +42,7 @@ class WCCustomerMapperTest {
                 postcode = "postcode",
                 state = "state"
         )
-        val response = CustomerApiResponse(
+        val response = CustomerDTO(
                 avatarUrl = "avatarUrl",
                 billing = billing,
                 dateCreated = "dateCreated",
@@ -57,7 +60,7 @@ class WCCustomerMapperTest {
         )
 
         // when
-        val result = mapper.map(site, response)
+        val result = mapper.mapToModel(site, response)
 
         // then
         with(result) {
@@ -68,8 +71,8 @@ class WCCustomerMapperTest {
             assertEquals("dateModifiedGmt", dateModifiedGmt)
             assertEquals("email", email)
             assertEquals("firstName", firstName)
-            assertEquals(remoteCustomerId, remoteCustomerId)
-            assertEquals(true, isPayingCustomer)
+            assertEquals(remoteCustomerId, remoteId)
+            assertTrue(isPayingCustomer)
             assertEquals("lastName", lastName)
             assertEquals("role", role)
             assertEquals("username", username)
@@ -93,6 +96,88 @@ class WCCustomerMapperTest {
             assertEquals("lastName", billingLastName)
             assertEquals("postcode", billingPostcode)
             assertEquals("state", billingState)
+            assertEquals("email", billingEmail)
+            assertEquals("phone", billingPhone)
+        }
+    }
+
+    @Test
+    fun `mapper maps to correct customer dto`() {
+        // given
+        val model = WCCustomerModel().apply {
+            avatarUrl = "avatarUrl"
+            dateCreated = "dateCreated"
+            dateCreatedGmt = "dateCreatedGmt"
+            dateModified = "dateModified"
+            dateModifiedGmt = "dateModifiedGmt"
+            email = "email"
+            firstName = "firstName"
+            isPayingCustomer = true
+            lastName = "lastName"
+            role = "role"
+            username = "username"
+
+            billingAddress1 = "address1"
+            billingAddress2 = "address2"
+            billingCity = "city"
+            billingCompany = "company"
+            billingCountry = "country"
+            billingEmail = "email"
+            billingFirstName = "firstName"
+            billingLastName = "lastName"
+            billingPhone = "phone"
+            billingPostcode = "postcode"
+            billingState = "state"
+
+            shippingAddress1 = "address1"
+            shippingAddress2 = "address2"
+            shippingCity = "city"
+            shippingCompany = "company"
+            shippingCountry = "country"
+            shippingFirstName = "firstName"
+            shippingLastName = "lastName"
+            shippingPostcode = "postcode"
+            shippingState = "state"
+        }
+
+        // when
+        val result = mapper.mapToDTO(model)
+
+        // then
+        with(result) {
+            assertNull(avatarUrl)
+            assertNull(dateCreated)
+            assertNull(dateCreatedGmt)
+            assertNull(dateModified)
+            assertNull(dateModifiedGmt)
+            assertEquals("email", email)
+            assertEquals("firstName", firstName)
+            assertFalse(isPayingCustomer)
+            assertEquals("lastName", lastName)
+            assertNull(role)
+            assertEquals("username", username)
+
+            assertEquals("address1", shipping?.address1)
+            assertEquals("address2", shipping?.address2)
+            assertEquals("city", shipping?.city)
+            assertEquals("company", shipping?.company)
+            assertEquals("country", shipping?.country)
+            assertEquals("firstName", shipping?.firstName)
+            assertEquals("lastName", shipping?.lastName)
+            assertEquals("postcode", shipping?.postcode)
+            assertEquals("state", shipping?.state)
+
+            assertEquals("address1", billing?.address1)
+            assertEquals("address2", billing?.address2)
+            assertEquals("city", billing?.city)
+            assertEquals("company", billing?.company)
+            assertEquals("country", billing?.country)
+            assertEquals("firstName", billing?.firstName)
+            assertEquals("lastName", billing?.lastName)
+            assertEquals("postcode", billing?.postcode)
+            assertEquals("state", billing?.state)
+            assertEquals("email", billing?.email)
+            assertEquals("phone", billing?.phone)
         }
     }
 }

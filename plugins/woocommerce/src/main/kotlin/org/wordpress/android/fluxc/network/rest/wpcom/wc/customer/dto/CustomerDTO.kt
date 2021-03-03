@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.network.Response
 
-data class CustomerApiResponse(
+data class CustomerDTO(
     @SerializedName("avatar_url") val avatarUrl: String? = null,
     @SerializedName("billing") val billing: Billing? = null,
     @SerializedName("date_created") val dateCreated: String? = null,

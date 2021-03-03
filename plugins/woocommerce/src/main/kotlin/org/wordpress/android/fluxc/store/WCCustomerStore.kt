@@ -42,7 +42,7 @@ class WCCustomerStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    val customer = mapper.map(site, response.result)
+                    val customer = mapper.mapToModel(site, response.result)
                     CustomerSqlUtils.insertOrUpdateCustomer(customer)
                     WooResult(customer)
                 }
@@ -52,7 +52,7 @@ class WCCustomerStore @Inject constructor(
     }
 
     /**
-     * returns customers
+     * returns customers from the backend
      */
     suspend fun fetchCustomers(
         site: SiteModel,
@@ -87,7 +87,7 @@ class WCCustomerStore @Inject constructor(
                             role == null &&
                             remoteCustomerIds.isNullOrEmpty() &&
                             excludedCustomerIds.isNullOrEmpty()
-                    val customers = response.result.map { mapper.map(site, it) }
+                    val customers = response.result.map { mapper.mapToModel(site, it) }
                     if (isCachingNeeded) {
                         // clear cache if it's the first page for the site
                         if (offset == 0) CustomerSqlUtils.deleteCustomersForSite(site)
@@ -95,6 +95,20 @@ class WCCustomerStore @Inject constructor(
                     }
                     WooResult(customers)
                 }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    /**
+     * creates a customer on the backend
+     */
+    suspend fun createCustomer(site: SiteModel, customer: WCCustomerModel): WooResult<WCCustomerModel> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomer") {
+            val response = restClient.createCustomer(site, mapper.mapToDTO(customer))
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> WooResult(mapper.mapToModel(site, response.result))
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
