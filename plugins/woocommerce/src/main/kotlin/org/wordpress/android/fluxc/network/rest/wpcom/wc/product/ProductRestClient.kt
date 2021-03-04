@@ -1229,7 +1229,13 @@ class ProductRestClient(
             }
         }
         if (storedWCProductModel.attributes != updatedProductModel.attributes) {
-            body["attributes"] = JsonParser().parse(updatedProductModel.attributes).asJsonArray
+            JsonParser().apply {
+                body["attributes"] = try {
+                    parse(updatedProductModel.attributes).asJsonArray
+                } catch (ex: Exception) {
+                    JsonArray()
+                }
+            }
         }
 
         return body
@@ -1324,7 +1330,13 @@ class ProductRestClient(
             body["menu_order"] = updatedVariationModel.menuOrder
         }
         if (storedVariationModel.attributes != updatedVariationModel.attributes) {
-            body["attributes"] = JsonParser().parse(updatedVariationModel.attributes).asJsonArray
+            JsonParser().apply {
+                body["attributes"] = try {
+                    parse(updatedVariationModel.attributes).asJsonArray
+                } catch (ex: Exception) {
+                    JsonArray()
+                }
+            }
         }
         return body
     }
