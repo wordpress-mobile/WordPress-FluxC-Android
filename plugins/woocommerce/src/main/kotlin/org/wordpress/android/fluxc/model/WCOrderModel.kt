@@ -73,6 +73,12 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     }
 
     class ShippingLine {
+        val id: Long? = null
+        val total: String? = null
+        @SerializedName("total_tax")
+        val totalTax: String? = null
+        @SerializedName("method_id")
+        val methodId: String? = null
         @SerializedName("method_title")
         val methodTitle: String? = null
     }
