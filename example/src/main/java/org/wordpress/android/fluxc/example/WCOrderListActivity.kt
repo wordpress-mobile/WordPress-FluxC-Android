@@ -153,12 +153,6 @@ class WCOrderListActivity : AppCompatActivity() {
                     orderListAdapter.submitList(orderListData)
                 }
             })
-            wrapper.listChanged.observe(this, {
-                it?.let { event ->
-                    AppLog.d(T.TESTS, "Received list changed event. Cause = ${event.cause}. " +
-                            "Total duration = ${event.totalDuration}.")
-                }
-            })
         }
     }
 
