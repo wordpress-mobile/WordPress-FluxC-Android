@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog.Listener
 import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.customer.creation.WooCustomerCreationFragment
 import org.wordpress.android.fluxc.example.ui.customer.search.WooCustomersSearchBuilderFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
@@ -47,6 +48,9 @@ class WooCustomersFragment : Fragment() {
         btnPrintCutomer.setOnClickListener { printCustomerById() }
         btnFetchCustomerList.setOnClickListener {
             replaceFragment(WooCustomersSearchBuilderFragment.newInstance(selectedSite!!.id))
+        }
+        btnCreateCustomer.setOnClickListener {
+            replaceFragment(WooCustomerCreationFragment.newInstance(selectedSite!!.id))
         }
     }
 
