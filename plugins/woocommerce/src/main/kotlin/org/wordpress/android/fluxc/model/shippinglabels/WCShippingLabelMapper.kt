@@ -48,7 +48,7 @@ class WCShippingLabelMapper
                 serviceName = labelItem.serviceName ?: ""
                 status = labelItem.status ?: ""
                 packageName = labelItem.packageName ?: ""
-                rate = labelItem.rate?.toFloat() ?: 0F
+                rate = labelItem.rate?.toFloat() ?: labelItem.refundableAmount?.toFloat() ?: 0F
                 refundableAmount = labelItem.refundableAmount?.toFloat() ?: 0F
                 currency = labelItem.currency ?: ""
                 productNames = labelItem.productNames.toString()
