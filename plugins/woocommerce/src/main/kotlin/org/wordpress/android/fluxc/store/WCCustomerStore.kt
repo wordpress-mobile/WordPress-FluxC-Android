@@ -1,5 +1,8 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.customer.WCCustomerMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
@@ -103,6 +106,48 @@ class WCCustomerStore @Inject constructor(
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
+        }
+    }
+
+    /**
+     * returns customers from the backend by id and store them
+     */
+    suspend fun fetchCustomersByIdsAndCache(
+        site: SiteModel,
+        pageSize: Int = DEFAULT_CUSTOMER_PAGE_SIZE,
+        remoteCustomerIds: List<Long>
+    ): WooResult<Unit> {
+        suspend fun doFetch(
+            site: SiteModel,
+            pageSize: Int,
+            remoteCustomerIds: List<Long>
+        ): WooResult<Unit> {
+            val response = restClient.fetchCustomers(
+                    site = site,
+                    pageSize = pageSize,
+                    remoteCustomerIds = remoteCustomerIds
+            )
+            return when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val customers = response.result.map { mapper.mapToModel(site, it) }
+                    CustomerSqlUtils.insertOrUpdateCustomers(customers)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersByIdsAndCache") {
+            val jobs = mutableListOf<Deferred<WooResult<Unit>>>()
+            remoteCustomerIds.chunked(pageSize).forEach { idsToFetch ->
+                jobs.add(async { doFetch(site, pageSize, idsToFetch) })
+            }
+
+            val results = jobs.awaitAll()
+            val firstError = results.firstOrNull { it.error != null }
+            if (firstError == null) WooResult(Unit)
+            else WooResult(WooError(GENERIC_ERROR, UNKNOWN, firstError.error?.message))
         }
     }
 

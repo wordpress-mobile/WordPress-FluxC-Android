@@ -57,7 +57,7 @@ class WooCustomersSearchAdapter @Inject constructor(context: MainExampleActivity
         @SuppressLint("SetTextI18n")
         fun onBind(item: CustomerItem) {
             with(view) {
-                tvCustomerRemoteId.text = item.remoteCustomerId.toString()
+                tvCustomerRemoteId.text = "ID: ${item.remoteCustomerId}"
                 tvCustomerName.text = "${item.firstName} ${item.lastName}"
                 tvCustomerEmail.text = item.email
                 tvCustomerRole.text = item.role
@@ -68,7 +68,9 @@ class WooCustomersSearchAdapter @Inject constructor(context: MainExampleActivity
 
 private val customerListDiffItemCallback = object : DiffUtil.ItemCallback<CustomerListItemType>() {
     override fun areItemsTheSame(oldItem: CustomerListItemType, newItem: CustomerListItemType): Boolean {
-        if (oldItem is LoadingItem && newItem is LoadingItem) return oldItem.remoteCustomerId == newItem.remoteCustomerId
+        if (oldItem is LoadingItem && newItem is LoadingItem) {
+            return oldItem.remoteCustomerId == newItem.remoteCustomerId
+        }
         return if (oldItem is CustomerItem && newItem is CustomerItem) {
             oldItem.remoteCustomerId == newItem.remoteCustomerId
         } else {

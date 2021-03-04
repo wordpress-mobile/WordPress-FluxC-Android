@@ -273,6 +273,69 @@ class WCCustomerStoreTest {
     }
 
     @Test
+    fun `fetch customers by id with one error and one success returns error`() = test {
+        // given
+        val siteModelId = 1
+        val siteModel = SiteModel().apply { id = siteModelId }
+
+        whenever(restClient.fetchCustomers(siteModel, 2, remoteCustomerIds = listOf(1, 2)))
+                .thenReturn(WooPayload(error))
+
+        val model = WCCustomerModel().apply {
+            remoteCustomerId = 1L
+            localSiteId = siteModelId
+        }
+        val customer: CustomerDTO = mock()
+        whenever(mapper.mapToModel(siteModel, customer)).thenReturn(model)
+        whenever(restClient.fetchCustomers(siteModel, 2, remoteCustomerIds = listOf(3, 4)))
+                .thenReturn(WooPayload(arrayOf(customer)))
+
+        // when
+        val result = store.fetchCustomersByIdsAndCache(siteModel, 2, listOf(1, 2, 3, 4))
+
+        // then
+        assertTrue(result.isError)
+        assertEquals(CustomerSqlUtils.getCustomersForSite(siteModel).size, 1)
+    }
+
+    @Test
+    fun `fetch customers by id with two success returns success`() = test {
+        // given
+        val siteModelId = 1
+        val siteModel = SiteModel().apply { id = siteModelId }
+
+        val modelOne = WCCustomerModel().apply {
+            remoteCustomerId = 1L
+            localSiteId = siteModelId
+        }
+        val customerOne: CustomerDTO = mock()
+        whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
+
+        val modelTwo = WCCustomerModel().apply {
+            remoteCustomerId = 2L
+            localSiteId = siteModelId
+        }
+        val customerTwo: CustomerDTO = mock()
+        whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
+
+        whenever(restClient.fetchCustomers(siteModel, 2, remoteCustomerIds = listOf(1, 2)))
+                .thenReturn(WooPayload(arrayOf(customerOne)))
+
+        whenever(restClient.fetchCustomers(siteModel, 2, remoteCustomerIds = listOf(3, 4)))
+                .thenReturn(WooPayload(arrayOf(customerTwo)))
+
+        // when
+        val result = store.fetchCustomersByIdsAndCache(siteModel, 2, listOf(1, 2, 3, 4))
+
+        // then
+        assertFalse(result.isError)
+        val customersForSite = CustomerSqlUtils.getCustomersForSite(siteModel)
+        assertEquals(customersForSite.size, 2)
+        assertTrue(customersForSite.contains(modelOne))
+        assertTrue(customersForSite.contains(modelTwo))
+    }
+
+    @Test
     fun `create customer with error returns error`() = test {
         // given
         val siteModelId = 1

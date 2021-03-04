@@ -95,12 +95,12 @@ class CustomerRestClient(
             putIfNotEmpty("context" to context)
         }
 
-        remoteCustomerIds?.let { ids ->
-            params.put("include", ids.map { it }.joinToString())
+        if (!remoteCustomerIds.isNullOrEmpty()) {
+            params["include"] = remoteCustomerIds.map { it }.joinToString()
         }
 
-        excludedCustomerIds?.let { excludedIds ->
-            params.put("exclude", excludedIds.map { it }.joinToString())
+        if (!excludedCustomerIds.isNullOrEmpty()) {
+            params["exclude"] = excludedCustomerIds.map { it }.joinToString()
         }
 
         val response = requestBuilder.syncGetRequest(

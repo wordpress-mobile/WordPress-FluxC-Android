@@ -95,7 +95,7 @@ class WooCustomersSearchFragment : Fragment() {
         val includeIds: List<Long>,
         val excludeIds: List<Long>,
         val email: String?,
-        val role: String?,
+        val role: String?
     ) : Parcelable
 }
 

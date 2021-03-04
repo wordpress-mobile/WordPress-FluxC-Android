@@ -35,8 +35,16 @@ constructor(
         val storedCustomers = store.getCustomerByRemoteIds(listDescriptor.site, itemIdentifiers)
         coroutineScope.launch {
             val remoteIdToFetch = itemIdentifiers - storedCustomers.map { it.remoteCustomerId }
-            val payload = store.fetchCustomers(listDescriptor.site, remoteCustomerIds = remoteIdToFetch)
-            dispatchWhenFetched(listDescriptor, payload, 0)
+            if (remoteIdToFetch.isEmpty()) return@launch
+            val payload = store.fetchCustomersByIdsAndCache(
+                    site = listDescriptor.site,
+                    pageSize = PAGE_SIZE,
+                    remoteCustomerIds = remoteIdToFetch
+            )
+            if (payload.error == null) {
+                val listTypeIdentifier = WCCustomerListDescriptor.calculateTypeIdentifier(listDescriptor.site.id)
+                dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+            }
         }
         return itemIdentifiers.map { remoteId ->
             val customer = storedCustomers.firstOrNull { it.remoteCustomerId == remoteId }
@@ -62,6 +70,8 @@ constructor(
 
     override fun fetchList(listDescriptor: WCCustomerListDescriptor, offset: Long) {
         coroutineScope.launch {
+            activity.prependToLog("Fetching customers with offset $offset")
+
             val payload = store.fetchCustomers(
                     offset = offset,
                     pageSize = PAGE_SIZE,
@@ -85,11 +95,11 @@ constructor(
                 }
             }
 
-            dispatchWhenFetched(listDescriptor, payload, offset)
+            dispatchEventWhenFetched(listDescriptor, payload, offset)
         }
     }
 
-    private fun dispatchWhenFetched(
+    private fun dispatchEventWhenFetched(
         listDescriptor: WCCustomerListDescriptor,
         payload: WooResult<List<WCCustomerModel>>,
         offset: Long

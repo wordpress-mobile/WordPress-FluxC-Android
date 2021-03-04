@@ -120,6 +120,39 @@ class CustomerSqlUtilsTest {
     }
 
     @Test
+    fun `get customers by remote ids returns null when no customers stored`() {
+        // when & then
+        assertTrue(CustomerSqlUtils.getCustomerByRemoteIds(site, listOf(1)).isEmpty())
+    }
+
+    @Test
+    fun `get customers by remote ids returns customers with remote ids`() {
+        // given
+        val usernameOne = "userNameOne"
+        val usernameTwo = "userNameTwo"
+        val customerOne = WCCustomerModel().apply {
+            this.remoteCustomerId = 1L
+            this.localSiteId = site.id
+            this.username = usernameOne
+        }
+        val customerTwo = WCCustomerModel().apply {
+            this.remoteCustomerId = 2L
+            this.localSiteId = site.id
+            this.username = usernameTwo
+        }
+
+        // when
+        CustomerSqlUtils.insertOrUpdateCustomer(customerOne)
+        CustomerSqlUtils.insertOrUpdateCustomer(customerTwo)
+
+        // then
+        val customerByRemoteIds = CustomerSqlUtils.getCustomerByRemoteIds(site, listOf(1, 2, 3))
+        assertEquals(customerByRemoteIds.size, 2)
+        assertEquals(customerByRemoteIds[0], customerOne)
+        assertEquals(customerByRemoteIds[1], customerTwo)
+    }
+
+    @Test
     fun `delete customers for site deletes all customers for the site`() {
         // given
         val usernameOne = "userNameOne"
