@@ -13,5 +13,5 @@ data class WCShippingLabelPackageData(
     @SerializedName("rate_id") val rateId: String,
     @SerializedName("service_id") val serviceId: String,
     @SerializedName("carrier_id") val carrierId: String,
-    val products: List<Int>
+    val products: List<Long>
 )
