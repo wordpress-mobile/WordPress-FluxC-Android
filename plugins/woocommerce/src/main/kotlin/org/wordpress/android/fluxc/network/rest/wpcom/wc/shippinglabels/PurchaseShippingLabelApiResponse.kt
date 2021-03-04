@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
 import com.google.gson.annotations.SerializedName
-import java.math.BigDecimal
 
 data class PurchaseShippingLabelApiResponse(
     @SerializedName("success")

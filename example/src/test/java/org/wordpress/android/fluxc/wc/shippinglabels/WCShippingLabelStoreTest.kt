@@ -130,7 +130,7 @@ class WCShippingLabelStoreTest {
 
     private val purchaseLabelPackagesData = listOf(
             WCShippingLabelPackageData(
-                    id ="id1",
+                    id = "id1",
                     boxId = "medium_flat_box_top",
                     height = 10f,
                     width = 10f,

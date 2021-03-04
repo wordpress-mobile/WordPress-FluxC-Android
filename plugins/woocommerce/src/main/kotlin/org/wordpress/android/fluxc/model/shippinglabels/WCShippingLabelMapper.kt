@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.model.shippinglabels
 
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.FormData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.PurchaseShippingLabelApiResponse
@@ -38,7 +37,13 @@ class WCShippingLabelMapper
         } ?: emptyList()
     }
 
-    fun map(response: PurchaseShippingLabelApiResponse, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, site: SiteModel): List<WCShippingLabelModel> {
+    fun map(
+        response: PurchaseShippingLabelApiResponse,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        site: SiteModel
+    ): List<WCShippingLabelModel> {
         val gson = Gson()
         return response.labels?.map { labelItem ->
             WCShippingLabelModel().apply {

@@ -46,7 +46,6 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageDa
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
@@ -484,7 +483,8 @@ class WooShippingLabelFragment : Fragment() {
         }
     }
 
-    private suspend fun loadData(site: SiteModel, orderId: Long) : Triple<WCOrderModel?, ShippingLabelAddress?, ShippingLabelAddress?> {
+    private suspend fun loadData(site: SiteModel, orderId: Long):
+            Triple<WCOrderModel?, ShippingLabelAddress?, ShippingLabelAddress?> {
         prependToLog("Loading shipping data...")
 
         dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
