@@ -309,6 +309,13 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var causeOfChange: WCOrderAction? = null
     }
 
+    /**
+     * Emitted after fetching a list of Order summaries from the network.
+     */
+    class OnOrderSummariesFetched(
+        val duration: Long
+    ) : OnChanged<OrderError>()
+
     class OnOrdersFetchedByIds(
         val site: SiteModel,
         val orderIds: List<RemoteId>
@@ -569,6 +576,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // Fetch outdated orders
             fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         }
+
+        val duration = Calendar.getInstance().timeInMillis - payload.requestStartTime.timeInMillis
+        emitChange(OnOrderSummariesFetched(duration = duration))
 
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
