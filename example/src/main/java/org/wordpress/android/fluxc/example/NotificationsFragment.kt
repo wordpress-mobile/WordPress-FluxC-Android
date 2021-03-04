@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_
 import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_SEEN
 import org.wordpress.android.fluxc.action.NotificationAction.UPDATE_NOTIFICATION
 import org.wordpress.android.fluxc.example.NotificationTypeSubtypeDialog.Listener
+import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
 import org.wordpress.android.fluxc.generated.NotificationActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
@@ -230,13 +231,6 @@ class NotificationsFragment : Fragment() {
         fragmentManager?.let { fm ->
             val dialog = NotificationTypeSubtypeDialog.newInstance(listener)
             dialog.show(fm, "NotificationFragment")
-        }
-    }
-
-    private fun showSiteSelectorDialog(selectedPos: Int, listener: SiteSelectorDialog.Listener) {
-        fragmentManager?.let { fm ->
-            val dialog = SiteSelectorDialog.newInstance(listener, selectedPos)
-            dialog.show(fm, "SiteSelectorDialog")
         }
     }
 

@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
@@ -75,7 +76,7 @@ class WooShippingLabelFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         shipping_labels_select_site.setOnClickListener {
-            showSiteSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
+            showStoreSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
                 override fun onSiteSelected(site: SiteModel, pos: Int) {
                     selectedSite = site
                     selectedPos = pos
@@ -402,13 +403,6 @@ class WooShippingLabelFragment : Fragment() {
                     prependToLog("The WooCommerce services plugin is not installed")
                 }
             }
-        }
-    }
-
-    private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
-        fragmentManager?.let { fm ->
-            val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
-            dialog.show(fm, "StoreSelectorDialog")
         }
     }
 
