@@ -585,7 +585,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
                 loadedMore = payload.loadedMore,
                 canLoadMore = payload.canLoadMore,
-                requestStartTime = payload.requestStartTime,
                 error = payload.error?.let { fetchError ->
                     // TODO: Use the actual error type
                     ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
