@@ -34,6 +34,8 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
@@ -665,5 +667,26 @@ class WooProductsFragment : Fragment() {
             val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
             dialog.show(fm, "StoreSelectorDialog")
         }
+    }
+
+    private fun logProduct(product: WCProductModel) = product.apply {
+        attributeList.forEach { logAttribute(it) }
+        prependToLog("  Product slug: ${slug.ifEmpty { "Slug not available" }}")
+        prependToLog("  Product type: ${type.ifEmpty { "Type not available" }}")
+        prependToLog("  Product name: ${name.ifEmpty { "Product name not available" }}")
+        prependToLog("  Product remote id: $remoteProductId")
+        prependToLog("  --------- Product ---------")
+    }
+
+    private fun logAttribute(attribute: WCProductAttributeModel) = attribute.let {
+        logAttributeOptions(attribute.options)
+        prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
+        prependToLog("  Attribute remote id: ${it.globalAttributeId}")
+        prependToLog("  --------- Product Attribute ---------")
+    }
+
+    private fun logAttributeOptions(options: List<String>) {
+        options.forEach { prependToLog("  $it") }
+        prependToLog("  --------- Attribute Options ---------")
     }
 }
