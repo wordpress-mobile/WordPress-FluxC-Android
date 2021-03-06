@@ -424,6 +424,9 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
+
+        attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
+        detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
     }
 
     /**
