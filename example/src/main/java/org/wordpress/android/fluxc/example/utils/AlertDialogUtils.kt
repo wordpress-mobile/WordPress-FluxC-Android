@@ -29,11 +29,13 @@ fun showSingleLineDialog(
 suspend fun showSingleLineDialog(
     activity: FragmentActivity,
     message: String,
-    isNumeric: Boolean = false
+    isNumeric: Boolean = false,
+    defaultValue: String = ""
 ): String? = suspendCancellableCoroutine { continuation ->
     val alert = AlertDialog.Builder(activity)
     val editText = EditText(activity)
     editText.setSingleLine()
+    editText.setText(defaultValue)
     if (isNumeric) editText.inputType = InputType.TYPE_CLASS_NUMBER
     alert.setMessage(message)
     alert.setView(editText)

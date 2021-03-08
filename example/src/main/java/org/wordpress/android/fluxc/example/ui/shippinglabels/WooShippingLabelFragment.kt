@@ -235,8 +235,10 @@ class WooShippingLabelFragment : Fragment() {
                         return@launch
                     }
                     if (origin == null || destination == null) {
-                        prependToLog("Invalid origin or destination address:\n" +
-                                "Origin:\n$origin\nDestination:\n$destination")
+                        prependToLog(
+                                "Invalid origin or destination address:\n" +
+                                        "Origin:\n$origin\nDestination:\n$destination"
+                        )
                         return@launch
                     }
                     var name: String
@@ -261,25 +263,30 @@ class WooShippingLabelFragment : Fragment() {
 
                                         val box: ShippingLabelPackage?
                                         if (height == null || width == null || length == null || weight == null) {
-                                            prependToLog("Invalid package parameters:\n" +
-                                                "Height: $height\nWidth: $width\nLength: $length\nWeight: $weight")
+                                            prependToLog(
+                                                    "Invalid package parameters:\n" +
+                                                            "Height: $height\n" +
+                                                            "Width: $width\n" +
+                                                            "Length: $length\n" +
+                                                            "Weight: $weight"
+                                            )
                                         } else {
                                             box = ShippingLabelPackage(
-                                                name,
-                                                "medium_flat_box_top",
-                                                height!!,
-                                                length!!,
-                                                width!!,
-                                                weight!!
+                                                    name,
+                                                    "medium_flat_box_top",
+                                                    height!!,
+                                                    length!!,
+                                                    width!!,
+                                                    weight!!
                                             )
 
                                             coroutineScope.launch {
                                                 val result = wcShippingLabelStore.getShippingRates(
-                                                    site,
-                                                    order.remoteOrderId,
-                                                    origin,
-                                                    destination,
-                                                    listOf(box)
+                                                        site,
+                                                        order.remoteOrderId,
+                                                        origin,
+                                                        destination,
+                                                        listOf(box)
                                                 )
 
                                                 result.error?.let {
@@ -319,6 +326,9 @@ class WooShippingLabelFragment : Fragment() {
                         return@launch
                     }
 
+                    val boxId = showSingleLineDialog(
+                            requireActivity(), "Enter box Id", defaultValue = "medium_flat_box_top"
+                    )
                     val height = showSingleLineDialog(requireActivity(), "Enter height:", isNumeric = true)
                             ?.toFloat()
                     val width = showSingleLineDialog(requireActivity(), "Enter width:", isNumeric = true)
@@ -327,17 +337,21 @@ class WooShippingLabelFragment : Fragment() {
                             ?.toFloat()
                     val weight = showSingleLineDialog(requireActivity(), "Enter weight:", isNumeric = true)
                             ?.toFloat()
-                    if (height == null || width == null || length == null || weight == null) {
+                    if (boxId == null || height == null || width == null || length == null || weight == null) {
                         prependToLog(
                                 "Invalid package parameters:\n" +
-                                        "Height: $height\nWidth: $width\nLength: $length\nWeight: $weight"
+                                        "BoxId: $boxId\n" +
+                                        "Height: $height\n" +
+                                        "Width: $width\n" +
+                                        "Length: $length\n" +
+                                        "Weight: $weight"
                         )
                     }
                     prependToLog("Retrieving rates")
 
                     val box = ShippingLabelPackage(
                             "default",
-                            "medium_flat_box_top",
+                            boxId!!,
                             height!!,
                             length!!,
                             width!!,
@@ -355,6 +369,12 @@ class WooShippingLabelFragment : Fragment() {
                                 "Getting rates failed: " +
                                         "${ratesResult.error.type}: ${ratesResult.error.message}"
                         )
+                        return@launch
+                    }
+                    if (ratesResult.model!!.packageRates.isEmpty() ||
+                            ratesResult.model!!.packageRates.first().shippingOptions.isEmpty() ||
+                            ratesResult.model!!.packageRates.first().shippingOptions.first().rates.isEmpty()) {
+                        prependToLog("Couldn't find rates for the given input, please try with different parameters")
                         return@launch
                     }
                     val rate = ratesResult.model!!.packageRates.first().shippingOptions.first().rates.first()
@@ -384,11 +404,13 @@ class WooShippingLabelFragment : Fragment() {
                     }
                     result.model?.let {
                         val label = it.first()
-                        prependToLog("Purchased a shipping label with the following details:\n" +
-                                "Order Id: ${label.localOrderId}\n" +
-                                "Products: ${label.productNames}\n" +
-                                "Label Id: ${label.remoteShippingLabelId}\n" +
-                                "Price: ${label.rate}")
+                        prependToLog(
+                                "Purchased a shipping label with the following details:\n" +
+                                        "Order Id: ${label.localOrderId}\n" +
+                                        "Products: ${label.productNames}\n" +
+                                        "Label Id: ${label.remoteShippingLabelId}\n" +
+                                        "Price: ${label.rate}"
+                        )
                     }
                 }
             }
