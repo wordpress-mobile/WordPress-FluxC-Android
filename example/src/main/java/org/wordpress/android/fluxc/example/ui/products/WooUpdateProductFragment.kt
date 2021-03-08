@@ -616,6 +616,12 @@ class WooUpdateProductFragment : Fragment() {
             .model
             ?.asProductAttributeModel(listOf(termName))
             ?.takeIf { it.options.isNotEmpty() }
+            ?.apply {
+                product?.attributeList
+                        ?.firstOrNull { it.globalAttributeId == attributeId.toInt() }
+                        ?.options
+                        ?.let { this.options.addAll(it) }
+            }
             ?.run { product?.updateAttribute(this) }
             ?.let { updatedProduct ->
                 WCProductActionBuilder
