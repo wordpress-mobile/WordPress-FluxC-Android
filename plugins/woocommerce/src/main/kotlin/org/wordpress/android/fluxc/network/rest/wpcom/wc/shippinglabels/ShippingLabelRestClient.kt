@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -226,6 +227,38 @@ constructor(
                 url,
                 params,
                 ShippingRatesApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun purchaseShippingLabels(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packagesData: List<WCShippingLabelPackageData>
+    ): WooPayload<PurchaseShippingLabelApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
+
+        val params = mapOf(
+                "origin" to origin.toMap(),
+                "destination" to destination.toMap(),
+                "packages" to packagesData.map { it.toMap() }
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                PurchaseShippingLabelApiResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> {

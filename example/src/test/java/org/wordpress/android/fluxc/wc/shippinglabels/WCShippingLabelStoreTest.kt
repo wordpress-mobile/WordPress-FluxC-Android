@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.Shi
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
@@ -79,6 +80,9 @@ class WCShippingLabelStoreTest {
 
     private val sampleShippingRatesApiResponse = WCShippingLabelTestUtils.generateSampleGetShippingRatesApiResponse()
 
+    private val samplePurchaseShippingLabelsResponse =
+            WCShippingLabelTestUtils.generateSamplePurchaseShippingLabelsApiResponse()
+
     private val originAddress = ShippingLabelAddress(
             "Company",
             "Ondrej Ruttkay",
@@ -103,7 +107,7 @@ class WCShippingLabelStoreTest {
             "11222"
     )
 
-    val packages = listOf(
+    private val packages = listOf(
             ShippingLabelPackage(
                     "Krabka 1",
                     "medium_flat_box_top",
@@ -121,6 +125,22 @@ class WCShippingLabelStoreTest {
                     5f,
                     5f,
                     false
+            )
+    )
+
+    private val purchaseLabelPackagesData = listOf(
+            WCShippingLabelPackageData(
+                    id = "id1",
+                    boxId = "medium_flat_box_top",
+                    height = 10f,
+                    width = 10f,
+                    length = 10f,
+                    weight = 10f,
+                    shipmentId = "shp_id",
+                    rateId = "rate_id",
+                    serviceId = "service-1",
+                    carrierId = "usps",
+                    products = listOf(10)
             )
     )
 
@@ -384,6 +404,30 @@ class WCShippingLabelStoreTest {
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
+    @Test
+    fun `purchase shipping label`() = test {
+        val result = purchaseLabel()
+        val shippingLabelModels = mapper.map(
+                samplePurchaseShippingLabelsResponse,
+                orderId,
+                originAddress,
+                destAddress,
+                site
+        )
+        assertThat(result.model!!.size).isEqualTo(shippingLabelModels.size)
+        assertThat(result.model!!.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(result.model!!.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
+        assertThat(result.model!!.first().remoteShippingLabelId)
+                .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
+        assertThat(result.model!!.first().carrierId).isEqualTo(shippingLabelModels.first().carrierId)
+        assertThat(result.model!!.first().packageName).isEqualTo(shippingLabelModels.first().packageName)
+        assertThat(result.model!!.first().refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
+
+        val invalidRequestResult = purchaseLabel(isError = true)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
         val fetchShippingLabelsPayload = WooPayload(sampleShippingLabelApiResponse)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchShippingLabelsPayload)
@@ -461,5 +505,15 @@ class WCShippingLabelStoreTest {
             whenever(restClient.getAccountSettings(any())).thenReturn(accountSettingsPayload)
         }
         return store.getAccountSettings(site)
+    }
+
+    private suspend fun purchaseLabel(isError: Boolean = false): WooResult<List<WCShippingLabelModel>> {
+        if (isError) {
+            whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(WooPayload(error))
+        } else {
+            val response = WooPayload(samplePurchaseShippingLabelsResponse)
+            whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
+        }
+        return store.purchaseShippingLabels(site, orderId, originAddress, destAddress, purchaseLabelPackagesData)
     }
 }
