@@ -769,6 +769,18 @@ class WooProductsFragment : Fragment() {
                 )
             }
 
+
+    /***
+     * This method will acquire the requested Attribute
+     * with the respective Terms and assign to the Product the fetched
+     * data with the selected Terms, efectively updating the Product with
+     * a new Attribute + Terms set
+     *
+     * @param site in order to operate with the correct Woo Store
+     * @param attributeId to fetch the selected Attribute
+     * @param termId to update the product with the selected term
+     * @param product as the product to update with the selected Attribute
+     */
     private suspend fun handleProductAttributesSync(
         site: SiteModel,
         attributeId: Long,
