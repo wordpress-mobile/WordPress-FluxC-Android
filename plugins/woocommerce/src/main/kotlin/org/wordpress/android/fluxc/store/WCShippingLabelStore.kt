@@ -295,7 +295,10 @@ class WCShippingLabelStore @Inject constructor(
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result?.labels != null && response.result.labels.all { it.status == "PURCHASED" } -> {
-                    WooResult(mapper.map(response.result, orderId, origin, destination, site))
+                    val shippingLabels = mapper.map(response.result, orderId, origin, destination, site)
+                    WCShippingLabelSqlUtils.insertOrUpdateShippingLabels(shippingLabels)
+
+                    WooResult(shippingLabels)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
