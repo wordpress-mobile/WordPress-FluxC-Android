@@ -455,6 +455,40 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_is_featured" />
 
+        <TextView
+            android:id="@+id/product_attributes_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Product attributes"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_is_virtual" />
+
+        <LinearLayout
+            android:id="@+id/attributes_button_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/product_attributes_title">
+
+            <Button
+                android:id="@+id/attach_attribute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Attach Attribute"/>
+
+            <Button
+                android:id="@+id/detach_attribute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Detach Attribute"/>
+
+        </LinearLayout>
+
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_purchase_note"
             android:layout_width="0dp"
@@ -464,7 +498,7 @@
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_is_virtual"
+            app:layout_constraintTop_toBottomOf="@+id/attributes_button_container"
             app:textHint="Purchase note" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText

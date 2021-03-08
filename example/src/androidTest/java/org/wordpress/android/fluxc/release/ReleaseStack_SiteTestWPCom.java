@@ -238,7 +238,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(
                 new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks,
-                        828.0f, 2.0f, isBeta)));
+                        320.0f, 480.0f, 1.0f, isBeta)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

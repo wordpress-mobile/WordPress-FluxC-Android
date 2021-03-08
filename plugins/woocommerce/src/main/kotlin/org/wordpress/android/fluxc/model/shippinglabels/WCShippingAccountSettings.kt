@@ -6,6 +6,7 @@ data class WCShippingAccountSettings(
     val isCreatingLabelsEnabled: Boolean,
     val isEmailReceiptEnabled: Boolean,
     val paperSize: WCShippingLabelPaperSize,
+    val canEditSettings: Boolean,
     val canManagePayments: Boolean,
     val storeOwnerName: String,
     val storeOwnerUserName: String,
