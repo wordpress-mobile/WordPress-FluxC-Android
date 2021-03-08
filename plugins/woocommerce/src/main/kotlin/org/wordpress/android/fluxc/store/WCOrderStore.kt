@@ -313,6 +313,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
      * Emitted after fetching a list of Order summaries from the network.
      */
     class OnOrderSummariesFetched(
+        val listDescriptor: WCOrderListDescriptor,
         val duration: Long
     ) : OnChanged<OrderError>()
 
@@ -578,7 +579,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         }
 
         val duration = Calendar.getInstance().timeInMillis - payload.requestStartTime.timeInMillis
-        emitChange(OnOrderSummariesFetched(duration = duration))
+        emitChange(OnOrderSummariesFetched(listDescriptor = payload.listDescriptor, duration = duration))
 
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
