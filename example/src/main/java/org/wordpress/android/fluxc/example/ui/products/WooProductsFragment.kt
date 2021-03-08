@@ -769,7 +769,6 @@ class WooProductsFragment : Fragment() {
                 )
             }
 
-
     /***
      * This method will acquire the requested Attribute
      * with the respective Terms and assign to the Product the fetched
