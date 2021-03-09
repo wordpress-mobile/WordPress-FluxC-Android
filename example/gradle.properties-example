@@ -1,5 +1,7 @@
 # OAuth credentials for example app
 wp.OAUTH.APP.ID = wp
 wp.OAUTH.APP.SECRET = wp
+wp.EXAMPLE_LOG_FONT_SIZE_SP = 12
+
 android.useAndroidX=true
 android.enableJetifier=true
