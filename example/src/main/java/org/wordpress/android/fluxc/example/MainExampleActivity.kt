@@ -20,7 +20,7 @@ class MainExampleActivity : FragmentActivity(), HasAndroidInjector {
 
         setContentView(R.layout.activity_example)
 
-        // enable developers to set a custom font size
+        // enable developers to set a custom font size for the log (previously it was always 12sp)
         val logFontSz = BuildConfig.EXAMPLE_LOG_FONT_SIZE_SP.toFloat()
         log.setTextSize(TypedValue.COMPLEX_UNIT_SP, logFontSz)
 
