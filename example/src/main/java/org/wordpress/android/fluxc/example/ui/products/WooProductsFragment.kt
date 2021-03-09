@@ -686,7 +686,7 @@ class WooProductsFragment : Fragment() {
                 ) { attributeIdEditText ->
                     showSingleLineDialog(
                             activity,
-                            "Enter the term ID you want to attach:"
+                            "Enter the term name you want to attach:"
                     ) { termEditText ->
                         coroutineScope.launch {
                             takeAsyncRequestWithValidSite { site ->
@@ -764,7 +764,7 @@ class WooProductsFragment : Fragment() {
                 handleProductAttributesSync(
                         site,
                         attributeIdEditText.text.toString().toLongOrNull() ?: 0L,
-                        termEditText.text.toString().toIntOrNull() ?: 0,
+                        termEditText.text.toString(),
                         it
                 )
             }
@@ -783,23 +783,23 @@ class WooProductsFragment : Fragment() {
     private suspend fun handleProductAttributesSync(
         site: SiteModel,
         attributeId: Long,
-        termId: Int,
-        product: WCProductModel
+        termName: String,
+        product: WCProductModel?
     ) = wcAttributesStore.fetchAttribute(
             site = site,
             attributeID = attributeId,
             withTerms = true
     )
             .model
-            ?.asProductAttributeModel(termId)
+            ?.asProductAttributeModel(listOf(termName))
             ?.takeIf { it.options.isNotEmpty() }
             ?.apply {
-                product.attributeList
-                        .firstOrNull { it.globalAttributeId == attributeId.toInt() }
+                product?.attributeList
+                        ?.firstOrNull { it.globalAttributeId == attributeId.toInt() }
                         ?.options
                         ?.let { this.options.addAll(it) }
             }
-            ?.run { product.updateAttribute(this) }
+            ?.run { product?.updateAttribute(this) }
             ?.let {
                 wcProductStore.submitProductAttributeChanges(site, it)
             }
