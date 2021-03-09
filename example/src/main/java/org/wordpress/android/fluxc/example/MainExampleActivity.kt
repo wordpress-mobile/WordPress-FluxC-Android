@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.example
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.util.TypedValue
 import androidx.fragment.app.FragmentActivity
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -19,10 +18,6 @@ class MainExampleActivity : FragmentActivity(), HasAndroidInjector {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_example)
-
-        // enable developers to set a custom font size for the log (previously it was always 12sp)
-        val logFontSz = BuildConfig.EXAMPLE_LOG_FONT_SIZE_SP.toFloat()
-        log.setTextSize(TypedValue.COMPLEX_UNIT_SP, logFontSz)
 
         if (savedInstanceState == null) {
             val mf = MainFragment()
