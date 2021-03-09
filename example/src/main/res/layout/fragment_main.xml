@@ -1,9 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              tools:context="org.wordpress.android.fluxc.example.MainFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="org.wordpress.android.fluxc.example.MainFragment"
+    tools:ignore="HardcodedText">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -13,26 +14,26 @@
             android:id="@+id/sign_in_fetch_sites_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign In And Fetch Sites"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:text="Sign In And Fetch Sites" />
 
         <Button
             android:id="@+id/signout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign Out"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:text="Sign Out" />
 
         <Button
             android:id="@+id/signed_out_actions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Signed Out Actions"
             android:layout_below="@+id/sign_in_fetch_sites_button"
+            android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:text="Signed Out Actions" />
     </RelativeLayout>
 
     <ImageView
@@ -49,9 +50,9 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginEnd="8dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/account"
@@ -104,11 +105,11 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_marginStart="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/woo"
@@ -122,14 +123,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:text="Notifications"/>
+                android:text="Notifications" />
 
             <Button
                 android:id="@+id/reactnative"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:text="React Native"/>
+                android:text="React Native" />
 
             <Button
                 android:id="@+id/editortheme"
