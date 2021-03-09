@@ -47,8 +47,7 @@ class WooCustomersSearchAdapter @Inject constructor(context: MainExampleActivity
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is CustomerItem -> VIEW_TYPE_ITEM
-            is LoadingItem -> VIEW_TYPE_LOADING
-            else -> throw IllegalStateException("item at position $position is not supported")
+            else -> VIEW_TYPE_LOADING
         }
     }
 
