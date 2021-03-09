@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:ignore="HardcodedText"
     android:layout_margin="@dimen/activity_start_end_margin"
+    tools:ignore="HardcodedText"
     tools:context="org.wordpress.android.fluxc.example.MediaFragment">
 
     <Button
