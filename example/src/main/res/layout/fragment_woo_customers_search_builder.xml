@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:id="@+id/tvCustomerSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="8dp"
+        android:text="Search:"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/etCustomerSearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etCustomerSearch" />
+
+    <EditText
+        android:id="@+id/etCustomerSearch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:hint="Search by text"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvCustomerSearch"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvCustomerInclude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="Include IDs:"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/etCustomerInclude"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etCustomerInclude" />
+
+    <EditText
+        android:id="@+id/etCustomerInclude"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:hint="ids comma separated, e.g. 1, 3, 16"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvCustomerInclude"
+        app:layout_constraintTop_toBottomOf="@+id/etCustomerSearch" />
+
+    <TextView
+        android:id="@+id/tvCustomerExclude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="Exclude IDs:"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/etCustomerExclude"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etCustomerExclude" />
+
+    <EditText
+        android:id="@+id/etCustomerExclude"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:hint="ids comma separated, e.g. 1, 3, 16"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvCustomerExclude"
+        app:layout_constraintTop_toBottomOf="@+id/etCustomerInclude" />
+
+    <TextView
+        android:id="@+id/tvCustomerEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="Email:"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/etCustomerEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etCustomerEmail" />
+
+    <EditText
+        android:id="@+id/etCustomerEmail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:hint="email"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvCustomerEmail"
+        app:layout_constraintTop_toBottomOf="@+id/etCustomerExclude" />
+
+    <TextView
+        android:id="@+id/tvCustomerRole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="Role:"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/etCustomerRole"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etCustomerRole" />
+
+    <EditText
+        android:id="@+id/etCustomerRole"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:hint="role"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvCustomerRole"
+        app:layout_constraintTop_toBottomOf="@+id/etCustomerEmail" />
+
+    <Button
+        android:id="@+id/btnCustomerSearch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="SEARCH"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etCustomerRole" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

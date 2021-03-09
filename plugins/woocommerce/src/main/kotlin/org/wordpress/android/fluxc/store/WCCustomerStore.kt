@@ -1,5 +1,8 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.customer.WCCustomerMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
@@ -34,6 +37,12 @@ class WCCustomerStore @Inject constructor(
             CustomerSqlUtils.getCustomerByRemoteId(site, remoteCustomerId)
 
     /**
+     * returns a cached customers with provided remote ids or empty list if not in cache
+     */
+    fun getCustomerByRemoteIds(site: SiteModel, remoteCustomerId: List<Long>) =
+            CustomerSqlUtils.getCustomerByRemoteIds(site, remoteCustomerId)
+
+    /**
      * returns a customer with provided remote id
      */
     suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooResult<WCCustomerModel> {
@@ -57,7 +66,7 @@ class WCCustomerStore @Inject constructor(
     suspend fun fetchCustomers(
         site: SiteModel,
         pageSize: Int = DEFAULT_CUSTOMER_PAGE_SIZE,
-        offset: Int = 0,
+        offset: Long = 0,
         sortType: CustomerSorting = DEFAULT_CUSTOMER_SORTING,
         searchQuery: String? = null,
         email: String? = null,
@@ -90,13 +99,55 @@ class WCCustomerStore @Inject constructor(
                     val customers = response.result.map { mapper.mapToModel(site, it) }
                     if (isCachingNeeded) {
                         // clear cache if it's the first page for the site
-                        if (offset == 0) CustomerSqlUtils.deleteCustomersForSite(site)
+                        if (offset == 0L) CustomerSqlUtils.deleteCustomersForSite(site)
                         CustomerSqlUtils.insertOrUpdateCustomers(customers)
                     }
                     WooResult(customers)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
+        }
+    }
+
+    /**
+     * returns customers from the backend by id and store them
+     */
+    suspend fun fetchCustomersByIdsAndCache(
+        site: SiteModel,
+        pageSize: Int = DEFAULT_CUSTOMER_PAGE_SIZE,
+        remoteCustomerIds: List<Long>
+    ): WooResult<Unit> {
+        suspend fun doFetch(
+            site: SiteModel,
+            pageSize: Int,
+            remoteCustomerIds: List<Long>
+        ): WooResult<Unit> {
+            val response = restClient.fetchCustomers(
+                    site = site,
+                    pageSize = pageSize,
+                    remoteCustomerIds = remoteCustomerIds
+            )
+            return when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val customers = response.result.map { mapper.mapToModel(site, it) }
+                    CustomerSqlUtils.insertOrUpdateCustomers(customers)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersByIdsAndCache") {
+            val jobs = mutableListOf<Deferred<WooResult<Unit>>>()
+            remoteCustomerIds.chunked(pageSize).forEach { idsToFetch ->
+                jobs.add(async { doFetch(site, pageSize, idsToFetch) })
+            }
+
+            val results = jobs.awaitAll()
+            val firstError = results.firstOrNull { it.error != null }
+            if (firstError == null) WooResult(Unit)
+            else WooResult(WooError(GENERIC_ERROR, UNKNOWN, firstError.error?.message))
         }
     }
 
