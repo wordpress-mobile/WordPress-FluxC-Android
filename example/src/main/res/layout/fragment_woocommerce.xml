@@ -36,13 +36,9 @@
                     android:layout_height="wrap_content"
                     android:text="Fetch WC product settings"/>
 
-                <ImageView
+                <View
                     android:id="@+id/divider1"
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="2dp"
-                    android:background="@color/material_grey_600"/>
+                    style="@style/Divider" />
 
                 <Button
                     android:id="@+id/orders"
