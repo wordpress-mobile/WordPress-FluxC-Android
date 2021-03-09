@@ -690,7 +690,7 @@ class WooProductsFragment : Fragment() {
                     ) { termEditText ->
                         coroutineScope.launch {
                             takeAsyncRequestWithValidSite { site ->
-                                requestSelectedProductData(
+                                submitProductAttributeChanges(
                                         site,
                                         productIdEditText,
                                         attributeIdEditText,
@@ -749,7 +749,16 @@ class WooProductsFragment : Fragment() {
         }
     }
 
-    private suspend fun requestSelectedProductData(
+    /***
+     * This method will handle all product data changes entered
+     * by the user and direct it to the correct database and HTTP operation
+     *
+     * @param site in order to operate with the correct Woo Store
+     * @param productIdEditText EditText containing the Product ID entered by the user
+     * @param attributeIdEditText EditText containing the Attribute ID entered by the user
+     * @param termEditText EditText containing the Term Name entered by the user
+     */
+    private suspend fun submitProductAttributeChanges(
         site: SiteModel,
         productIdEditText: EditText,
         attributeIdEditText: EditText,
