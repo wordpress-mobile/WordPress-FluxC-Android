@@ -723,7 +723,7 @@ class ProductRestClient(
      *
      * Returns a WooPayload with the Api response as result
      *
-     * @param [site] The site to fetch product reviews for
+     * @param [site] The site to update the given variation attributes
      * @param [variation] Locally updated product variation to be sent
      */
 
@@ -749,7 +749,7 @@ class ProductRestClient(
      *
      * Returns a WooPayload with the Api response as result
      *
-     * @param [site] The site to fetch product reviews for
+     * @param [site] The site to update the given product attributes
      * @param [product] Locally updated product to be sent
      */
 

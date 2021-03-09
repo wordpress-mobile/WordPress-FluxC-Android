@@ -772,7 +772,7 @@ class WooProductsFragment : Fragment() {
     /***
      * This method will acquire the requested Attribute
      * with the respective Terms and assign to the Product the fetched
-     * data with the selected Terms, efectively updating the Product with
+     * data with the selected Terms, effectively updating the Product with
      * a new Attribute + Terms set
      *
      * @param site in order to operate with the correct Woo Store
