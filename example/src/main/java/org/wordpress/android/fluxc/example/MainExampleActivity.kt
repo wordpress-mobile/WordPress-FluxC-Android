@@ -39,7 +39,7 @@ class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener, Has
     override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.getItemId()) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 onBackPressed()
                 true
