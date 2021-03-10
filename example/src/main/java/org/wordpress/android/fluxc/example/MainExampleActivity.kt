@@ -20,6 +20,7 @@ class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener, Has
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_example)
+        setSupportActionBar(toolbar)
         supportFragmentManager.addOnBackStackChangedListener(this)
 
         if (savedInstanceState == null) {
@@ -29,6 +30,8 @@ class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener, Has
 
         log.movementMethod = ScrollingMovementMethod()
         prependToLog("I'll log stuff here.")
+
+        updateBackArrow()
     }
 
     fun prependToLog(s: String) {
@@ -49,6 +52,10 @@ class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener, Has
     }
 
     override fun onBackStackChanged() {
+        updateBackArrow()
+    }
+
+    private fun updateBackArrow() {
         val showBackArrow = supportFragmentManager.backStackEntryCount > 0
         supportActionBar?.setDisplayHomeAsUpEnabled(showBackArrow)
     }
