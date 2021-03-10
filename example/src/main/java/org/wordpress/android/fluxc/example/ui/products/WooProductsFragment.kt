@@ -786,7 +786,7 @@ class WooProductsFragment : Fragment() {
      *
      * @param site in order to operate with the correct Woo Store
      * @param attributeId to fetch the selected Attribute
-     * @param termId to update the product with the selected term
+     * @param termName to update the product with the selected term
      * @param product as the product to update with the selected Attribute
      */
     private suspend fun handleProductAttributesSync(
