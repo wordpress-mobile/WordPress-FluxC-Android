@@ -12,7 +12,7 @@ import dagger.android.HasAndroidInjector
 import kotlinx.android.synthetic.main.activity_example.*
 import javax.inject.Inject
 
-class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener,  HasAndroidInjector {
+class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener, HasAndroidInjector {
     @Inject lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
     override fun onCreate(savedInstanceState: Bundle?) {
