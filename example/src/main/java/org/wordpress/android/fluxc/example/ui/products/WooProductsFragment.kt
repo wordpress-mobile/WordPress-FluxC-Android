@@ -5,14 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_products.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -39,10 +34,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
-import org.wordpress.android.fluxc.model.WCProductModel
-import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.store.MediaStore
-import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
@@ -74,7 +66,6 @@ import javax.inject.Inject
 class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
-    @Inject internal lateinit var wcAttributesStore: WCGlobalAttributeStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
 
@@ -94,7 +85,6 @@ class WooProductsFragment : Fragment() {
     private var enteredCategoryName: String? = null
     private val enteredTagNames: MutableList<String> = mutableListOf()
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -424,9 +414,6 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
-
-        attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
-        detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
     }
 
     /**
@@ -674,177 +661,10 @@ class WooProductsFragment : Fragment() {
         }
     }
 
-    private fun onAttachAttributeToProductButtonClicked(view: View) {
-        try {
-            showSingleLineDialog(
-                    activity,
-                    "Enter the product ID you want to attach attributes:"
-            ) { productIdEditText ->
-                showSingleLineDialog(
-                        activity,
-                        "Enter the attribute ID you want to attach:"
-                ) { attributeIdEditText ->
-                    showSingleLineDialog(
-                            activity,
-                            "Enter the term name you want to attach:"
-                    ) { termEditText ->
-                        coroutineScope.launch {
-                            takeAsyncRequestWithValidSite { site ->
-                                submitProductAttributeChanges(
-                                        site,
-                                        productIdEditText,
-                                        attributeIdEditText,
-                                        termEditText
-                                )?.model.let { product ->
-                                    withContext(Dispatchers.Main) {
-                                        product?.let { logProduct(it) }
-                                                ?: prependToLog("Couldn't fetch product data")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (ex: Exception) {
-            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
-        }
-    }
-
-    private fun onDetachAttributeFromProductButtonClicked(view: View) {
-        try {
-            showSingleLineDialog(
-                    activity,
-                    "Enter the product ID you want to detach attributes:"
-            ) { productIdEditText ->
-                showSingleLineDialog(
-                        activity,
-                        "Enter the attribute ID you want to detach:"
-                ) { attributeIdEditText ->
-                    coroutineScope.launch {
-                        takeAsyncRequestWithValidSite { site ->
-                            wcProductStore.fetchProductListSynced(
-                                    site,
-                                    listOf(productIdEditText.text.toString().toLongOrNull() ?: 0L)
-                            )
-                                    ?.takeIf { it.isNotEmpty() }
-                                    ?.first()
-                                    ?.apply {
-                                        removeAttribute(
-                                                attributeIdEditText.text.toString().toIntOrNull() ?: 0
-                                        )
-                                    }?.let { wcProductStore.submitProductAttributeChanges(site, it) }
-                                    ?.model.let { product ->
-                                        withContext(Dispatchers.Main) {
-                                            product?.let { logProduct(it) }
-                                                    ?: prependToLog("Couldn't fetch product data")
-                                        }
-                                    }
-                        }
-                    }
-                }
-            }
-        } catch (ex: Exception) {
-            prependToLog("Couldn't create Attribute Term. Error: ${ex.message}")
-        }
-    }
-
-    /***
-     * This method will handle all product data changes entered
-     * by the user and direct it to the correct database and HTTP operation
-     *
-     * @param site in order to operate with the correct Woo Store
-     * @param productIdEditText EditText containing the Product ID entered by the user
-     * @param attributeIdEditText EditText containing the Attribute ID entered by the user
-     * @param termEditText EditText containing the Term Name entered by the user
-     */
-    private suspend fun submitProductAttributeChanges(
-        site: SiteModel,
-        productIdEditText: EditText,
-        attributeIdEditText: EditText,
-        termEditText: EditText
-    ) = wcProductStore.fetchProductListSynced(
-            site,
-            listOf(productIdEditText.text.toString().toLongOrNull() ?: 0L)
-    )
-            ?.takeIf { it.isNotEmpty() }
-            ?.first()
-            ?.let {
-                handleProductAttributesSync(
-                        site,
-                        attributeIdEditText.text.toString().toLongOrNull() ?: 0L,
-                        termEditText.text.toString(),
-                        it
-                )
-            }
-
-    /***
-     * This method will acquire the requested Attribute
-     * with the respective Terms and assign to the Product the fetched
-     * data with the selected Terms, effectively updating the Product with
-     * a new Attribute + Terms set
-     *
-     * @param site in order to operate with the correct Woo Store
-     * @param attributeId to fetch the selected Attribute
-     * @param termName to update the product with the selected term
-     * @param product as the product to update with the selected Attribute
-     */
-    private suspend fun handleProductAttributesSync(
-        site: SiteModel,
-        attributeId: Long,
-        termName: String,
-        product: WCProductModel?
-    ) = wcAttributesStore.fetchAttribute(
-            site = site,
-            attributeID = attributeId,
-            withTerms = true
-    )
-            .model
-            ?.asProductAttributeModel(listOf(termName))
-            ?.takeIf { it.options.isNotEmpty() }
-            ?.apply {
-                product?.attributeList
-                        ?.firstOrNull { it.globalAttributeId == attributeId.toInt() }
-                        ?.options
-                        ?.let { this.options.addAll(it) }
-            }
-            ?.run { product?.updateAttribute(this) }
-            ?.let {
-                wcProductStore.submitProductAttributeChanges(site, it)
-            }
-
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
         fragmentManager?.let { fm ->
             val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
             dialog.show(fm, "StoreSelectorDialog")
         }
     }
-
-    private fun logProduct(product: WCProductModel) = product.apply {
-        attributeList.forEach { logAttribute(it) }
-        prependToLog("  Product slug: ${slug.ifEmpty { "Slug not available" }}")
-        prependToLog("  Product type: ${type.ifEmpty { "Type not available" }}")
-        prependToLog("  Product name: ${name.ifEmpty { "Product name not available" }}")
-        prependToLog("  Product remote id: $remoteProductId")
-        prependToLog("  --------- Product ---------")
-    }
-
-    private fun logAttribute(attribute: WCProductAttributeModel) = attribute.let {
-        logAttributeOptions(attribute.options)
-        prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
-        prependToLog("  Attribute remote id: ${it.globalAttributeId}")
-        prependToLog("  --------- Product Attribute ---------")
-    }
-
-    private fun logAttributeOptions(options: List<String>) {
-        options.forEach { prependToLog("  $it") }
-        prependToLog("  --------- Attribute Options ---------")
-    }
-
-    private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
-            selectedSite?.let {
-                withContext(Dispatchers.Default) {
-                    action(it)
-                }
-            }
 }
