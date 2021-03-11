@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import com.google.gson.Gson
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -14,6 +15,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -54,6 +56,7 @@ class WCProductStore @Inject constructor(
      */
     enum class ProductFilterOption {
         STOCK_STATUS, STATUS, TYPE;
+
         override fun toString() = name.toLowerCase(Locale.US)
     }
 
@@ -433,7 +436,9 @@ class WCProductStore @Inject constructor(
         val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
-        constructor(error: ProductError, site: SiteModel) : this(site) { this.error = error }
+        constructor(error: ProductError, site: SiteModel) : this(site) {
+            this.error = error
+        }
     }
 
     class RemoteProductCategoriesPayload(
@@ -459,7 +464,9 @@ class WCProductStore @Inject constructor(
             error: ProductError,
             site: SiteModel,
             category: WCProductCategoryModel?
-        ) : this(site, category) { this.error = error }
+        ) : this(site, category) {
+            this.error = error
+        }
     }
 
     class RemoteProductTagsPayload(
@@ -486,7 +493,9 @@ class WCProductStore @Inject constructor(
             error: ProductError,
             site: SiteModel,
             addedTags: List<WCProductTagModel> = emptyList()
-        ) : this(site, addedTags) { this.error = error }
+        ) : this(site, addedTags) {
+            this.error = error
+        }
     }
 
     class RemoteAddProductPayload(
@@ -837,10 +846,11 @@ class WCProductStore @Inject constructor(
 
     suspend fun submitProductAttributeChanges(
         site: SiteModel,
-        product: WCProductModel
+        productId: Long,
+        attributes: List<WCProductAttributeModel>
     ): WooResult<WCProductModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
-                wcProductRestClient.updateProductAttributes(site, product)
+                wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
                         ?.asWooResult()
                         ?.model?.asProductModel()
                         ?.apply {
@@ -852,10 +862,12 @@ class WCProductStore @Inject constructor(
 
     suspend fun submitVariationAttributeChanges(
         site: SiteModel,
-        variation: WCProductVariationModel
+        productId: Long,
+        variationId: Long,
+        attributes: List<WCProductAttributeModel>
     ): WooResult<WCProductVariationModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "submitVariationAttributes") {
-                wcProductRestClient.updateVariationAttributes(site, variation)
+                wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
                         ?.asWooResult()
                         ?.model?.asProductVariationModel()
                         ?.apply { insertOrUpdateProductVariation(this) }
@@ -883,7 +895,7 @@ class WCProductStore @Inject constructor(
                     remoteProductIds = remoteProductIds,
                     filterOptions = filterOptions,
                     excludedProductIds = excludedProductIds
-                    )
+            )
         }
     }
 
@@ -896,9 +908,11 @@ class WCProductStore @Inject constructor(
     }
 
     private fun searchProducts(payload: SearchProductsPayload) {
-        with(payload) { wcProductRestClient.searchProducts(
-                site, searchQuery, pageSize, offset, sorting, excludedProductIds
-        ) }
+        with(payload) {
+            wcProductRestClient.searchProducts(
+                    site, searchQuery, pageSize, offset, sorting, excludedProductIds
+            )
+        }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
@@ -938,8 +952,11 @@ class WCProductStore @Inject constructor(
     }
 
     private fun fetchProductCategories(payloadProduct: FetchProductCategoriesPayload) {
-        with(payloadProduct) { wcProductRestClient.fetchProductCategories(
-                site, pageSize, offset, productCategorySorting) }
+        with(payloadProduct) {
+            wcProductRestClient.fetchProductCategories(
+                    site, pageSize, offset, productCategorySorting
+            )
+        }
     }
 
     private fun addProductCategory(payload: AddProductCategoryPayload) {

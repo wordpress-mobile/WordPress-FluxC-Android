@@ -729,19 +729,19 @@ class ProductRestClient(
 
     suspend fun updateVariationAttributes(
         site: SiteModel,
-        variation: WCProductVariationModel
-    ) = with(variation) {
-        WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
+        productId: Long,
+        variationId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
                 .let { url ->
                     jetpackTunnelGsonRequestBuilder?.syncPutRequest(
                             this@ProductRestClient,
                             site,
                             url,
-                            mapOf("attributes" to JsonParser().parse(variation.attributes).asJsonArray),
+                            mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
                             ProductVariationApiResponse::class.java
                     )?.handleResult()
                 }
-    }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
@@ -755,14 +755,15 @@ class ProductRestClient(
 
     suspend fun updateProductAttributes(
         site: SiteModel,
-        product: WCProductModel
-    ) = WOOCOMMERCE.products.id(product.remoteProductId).pathV3
+        productId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).pathV3
             .let { url ->
                 jetpackTunnelGsonRequestBuilder?.syncPutRequest(
                         this,
                         site,
                         url,
-                        mapOf("attributes" to JsonParser().parse(product.attributes).asJsonArray),
+                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
                         ProductApiResponse::class.java
                 )?.handleResult()
             }
