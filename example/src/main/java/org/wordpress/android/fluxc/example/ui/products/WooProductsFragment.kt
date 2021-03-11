@@ -85,7 +85,6 @@ class WooProductsFragment : Fragment() {
     private var enteredCategoryName: String? = null
     private val enteredTagNames: MutableList<String> = mutableListOf()
 
-
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
