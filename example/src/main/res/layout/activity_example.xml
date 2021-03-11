@@ -8,8 +8,10 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
+        style="@style/ToolbarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         app:title="@string/app_name" />
 
     <ScrollView
@@ -30,7 +32,7 @@
         android:padding="4dp"
         android:scrollbars="vertical"
         android:textColor="@android:color/holo_green_light"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:typeface="monospace" />
 
 </LinearLayout>
