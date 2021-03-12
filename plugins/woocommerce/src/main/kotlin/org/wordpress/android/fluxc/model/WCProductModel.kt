@@ -120,7 +120,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val variation: Boolean,
         val visible: Boolean,
         options: List<String>
-        ) {
+    ) {
         val options: MutableList<String> = options.toMutableList()
 
         fun getCommaSeparatedOptions(): String {
