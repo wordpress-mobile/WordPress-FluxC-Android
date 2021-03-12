@@ -127,11 +127,11 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
      * product details associated with the order.
      * (nested under [selectedPackage] -> [DefaultBox] -> List of [ProductItem]).
      */
-    class FormData {
-        val origin: ShippingLabelAddress? = null
-        val destination: ShippingLabelAddress? = null
+    class FormData(
+        val origin: ShippingLabelAddress? = null,
+        val destination: ShippingLabelAddress? = null,
         @SerializedName("selected_packages") val selectedPackage: SelectedPackage? = null
-    }
+    )
 
     data class ShippingLabelAddress(
         val company: String? = null,

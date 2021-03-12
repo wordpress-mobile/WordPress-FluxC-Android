@@ -14,10 +14,11 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -173,10 +174,10 @@ class WCShippingLabelStore @Inject constructor(
                 response.result?.isSuccess == true -> {
                     val packageRates: List<ShippingPackage> = response.result.boxes.map { box ->
                         ShippingPackage(
-                            box.key,
-                            box.value.entries.map { option ->
-                                ShippingOption(option.key, option.value.rates)
-                            }
+                                box.key,
+                                box.value.entries.map { option ->
+                                    ShippingOption(option.key, option.value.rates)
+                                }
                         )
                     }
                     WooResult(WCShippingRatesResult(packageRates))
@@ -277,6 +278,28 @@ class WCShippingLabelStore @Inject constructor(
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result == true -> WooResult(true)
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun purchaseShippingLabels(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packagesData: List<WCShippingLabelPackageData>
+    ): WooResult<List<WCShippingLabelModel>> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "purchaseShippingLabels") {
+            val response = restClient.purchaseShippingLabels(site, orderId, origin, destination, packagesData)
+            return@withDefaultContext when {
+                response.isError -> WooResult(response.error)
+                response.result?.labels != null && response.result.labels.all { it.status == "PURCHASED" } -> {
+                    val shippingLabels = mapper.map(response.result, orderId, origin, destination, site)
+                    WCShippingLabelSqlUtils.insertOrUpdateShippingLabels(shippingLabels)
+
+                    WooResult(shippingLabels)
+                }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
