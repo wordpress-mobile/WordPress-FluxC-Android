@@ -44,7 +44,6 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
-import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductBackOrders
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
@@ -616,6 +615,12 @@ class WooUpdateProductFragment : Fragment() {
             .model
             ?.asProductAttributeModel(listOf(termName))
             ?.takeIf { it.options.isNotEmpty() }
+            ?.apply {
+                product?.attributeList
+                        ?.firstOrNull { it.id == attributeId }
+                        ?.options
+                        ?.let { this.options.addAll(it) }
+            }
             ?.run { product?.updateAttribute(this) }
             ?.let { updatedProduct ->
                 WCProductActionBuilder
@@ -776,10 +781,10 @@ class WooUpdateProductFragment : Fragment() {
         prependToLog("  --------- Product ---------")
     }
 
-    private fun logAttribute(attribute: WCProductAttributeModel) = attribute.let {
+    private fun logAttribute(attribute: WCProductModel.ProductAttribute) = attribute.let {
         logAttributeOptions(attribute.options)
         prependToLog("  Attribute name: ${it.name.ifEmpty { "Attribute name not available" }}")
-        prependToLog("  Attribute remote id: ${it.globalAttributeId}")
+        prependToLog("  Attribute remote id: ${it.id}")
         prependToLog("  --------- Product Attribute ---------")
     }
 
