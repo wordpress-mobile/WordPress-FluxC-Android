@@ -748,7 +748,7 @@ class ProductRestClient(
      * to replace a product's attributes with [WCProductModel.attributes]
      *
      * Returns a WooPayload with the Api response as result
-     * 
+     *
      * @param [site] The site to update the given product attributes
      * @param [product] Locally updated product to be sent
      */
