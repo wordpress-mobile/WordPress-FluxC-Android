@@ -4,6 +4,7 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.getTerm
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -34,8 +35,8 @@ data class WCGlobalAttributeModel(
     }
 
     fun asProductAttributeModel(vararg includedTermId: Int) =
-            WCProductAttributeModel(
-                    globalAttributeId = remoteId,
+            WCProductModel.ProductAttribute(
+                    id = remoteId.toLong(),
                     name = name,
                     visible = true,
                     variation = true,
@@ -47,8 +48,8 @@ data class WCGlobalAttributeModel(
             )
 
     fun asProductAttributeModel(includedTerms: List<String>) =
-            WCProductAttributeModel(
-                    globalAttributeId = remoteId,
+            WCProductModel.ProductAttribute(
+                    id = remoteId.toLong(),
                     name = name,
                     visible = true,
                     variation = true,
