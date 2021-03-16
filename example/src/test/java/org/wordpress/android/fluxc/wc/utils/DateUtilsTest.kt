@@ -334,4 +334,16 @@ class DateUtilsTest {
             assertEquals(expectedDateString, dateString1)
         }
     }
+
+    @Test
+    fun testGetConstantForLastDayOfWeekUSLocale() {
+        val constant = DateUtils.getConstantForLastDayOfWeek(Calendar.getInstance(Locale.US))
+        assertEquals(Calendar.SATURDAY, constant)
+    }
+
+    @Test
+    fun testGetConstantForLastDayOfWeekFranceLocale() {
+        val constant = DateUtils.getConstantForLastDayOfWeek(Calendar.getInstance(Locale.FRANCE))
+        assertEquals(Calendar.SUNDAY, constant)
+    }
 }
