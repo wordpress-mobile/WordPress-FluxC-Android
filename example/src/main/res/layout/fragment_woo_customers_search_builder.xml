@@ -118,6 +118,7 @@
         android:layout_marginTop="8dp"
         android:hint="role"
         android:inputType="text"
+        android:text="all"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/tvCustomerRole"
         app:layout_constraintTop_toBottomOf="@+id/etCustomerEmail" />
