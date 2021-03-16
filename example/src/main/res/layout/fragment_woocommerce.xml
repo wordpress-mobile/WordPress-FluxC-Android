@@ -105,5 +105,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Attributes" />
+
+        <Button
+            android:id="@+id/customers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Customers" />
+
     </LinearLayout>
 </ScrollView>

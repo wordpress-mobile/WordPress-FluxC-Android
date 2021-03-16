@@ -11,8 +11,8 @@ fun Fragment.prependToLog(s: String) {
 }
 
 fun Fragment.replaceFragment(fragment: Fragment) {
-    fragmentManager?.beginTransaction()
-            ?.replace(R.id.fragment_container, fragment)
-            ?.addToBackStack(null)
-            ?.commit()
+    parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
 }
