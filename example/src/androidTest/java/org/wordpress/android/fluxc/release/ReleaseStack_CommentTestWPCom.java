@@ -413,7 +413,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @SuppressWarnings("unused")
     @Subscribe
     public void onCommentChanged(OnCommentChanged event) {
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
+        List<CommentModel> comments = mCommentStore.getCommentsForSite(sSite, true, 0, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
             if (mNextEvent == TestEvents.COMMENT_CHANGED_UNKNOWN_COMMENT) {
@@ -474,7 +474,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        mComments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
+        mComments = mCommentStore.getCommentsForSite(sSite, true, 0, CommentStatus.ALL);
     }
 
     private void fetchFirstPosts() throws InterruptedException {
