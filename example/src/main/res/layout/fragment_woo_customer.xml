@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="@dimen/activity_start_end_margin"
     tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment"
     tools:ignore="HardcodedText">
 
@@ -27,22 +28,24 @@
 
             <Button
                 android:id="@+id/btnCustomerSelectSite"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Select Site" />
 
             <TextView
                 android:id="@+id/tvCustomerSelectedSite"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
+                android:layout_weight="1"
                 android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
                 android:textColor="@android:color/holo_blue_bright" />
         </LinearLayout>
 
         <Button
             android:id="@+id/btnFetchCustomerList"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:enabled="false"
@@ -50,7 +53,7 @@
 
         <Button
             android:id="@+id/btnPrintCutomer"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:enabled="false"
@@ -58,7 +61,7 @@
 
         <Button
             android:id="@+id/btnCreateCustomer"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:enabled="false"
