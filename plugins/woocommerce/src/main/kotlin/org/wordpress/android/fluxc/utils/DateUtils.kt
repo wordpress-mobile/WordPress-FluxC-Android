@@ -275,9 +275,9 @@ object DateUtils {
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
-    fun getFirstDayOfCurrentWeek(): String {
-        val cal = Calendar.getInstance(Locale.ROOT)
-        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
+    fun getFirstDayOfCurrentWeek(locale: Locale = Locale.getDefault()): String {
+        val cal = Calendar.getInstance(locale)
+        cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
@@ -293,10 +293,10 @@ object DateUtils {
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
-    fun getFirstDayOfCurrentWeekBySite(site: SiteModel): String {
-        val cal = Calendar.getInstance(Locale.ROOT)
+    fun getFirstDayOfCurrentWeekBySite(site: SiteModel, locale: Locale = Locale.getDefault()): String {
+        val cal = Calendar.getInstance(locale)
         cal.time = getCurrentDateFromSite(site)
-        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
+        cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
@@ -314,10 +314,10 @@ object DateUtils {
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
-    fun getLastDayOfCurrentWeekForSite(site: SiteModel): String {
-        val cal = Calendar.getInstance(Locale.ROOT)
+    fun getLastDayOfCurrentWeekForSite(site: SiteModel, locale: Locale = Locale.getDefault()): String {
+        val cal = Calendar.getInstance(locale)
         cal.time = getCurrentDateFromSite(site)
-        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMaximum(Calendar.DAY_OF_WEEK))
+        cal.set(Calendar.DAY_OF_WEEK, getConstantForLastDayOfWeek(cal))
         return formatDate(DATE_TIME_FORMAT_END, cal.time)
     }
 
