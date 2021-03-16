@@ -6,9 +6,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.WeekFields
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
