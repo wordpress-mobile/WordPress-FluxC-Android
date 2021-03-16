@@ -262,39 +262,6 @@ class DateUtilsTest {
     }
 
     @Test
-    fun testGetStartDayOfCurrentWeekForSite() {
-        val site = SiteModel().apply { id = 1 }
-
-        // test get start date for current day
-        for (offset in -20..20) {
-            site.timezone = offset.toString()
-
-            val fieldISO = WeekFields.of(Locale.ROOT).dayOfWeek()
-
-            // Setting a zone id where the start of the week is always Sunday
-            val zoneId = ZoneId.of("America/New_York")
-
-            val expectedDate = LocalDateTime.now(ZoneId.of("UTC"))
-                    // Adds the offset that are being tested
-                    // This is a way to add the offset using LocalDateTime without changing the zone
-                    .plusHours(offset.toLong())
-                    .atZone(zoneId)
-                    .with(fieldISO, 1)
-                    .toLocalDate()
-                    .atStartOfDay()
-                    .atZone(zoneId)
-                    .toInstant()
-
-            val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
-            // format the current date to string
-            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
-            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
-            val dateString1 = DateUtils.getFirstDayOfCurrentWeekBySite(site)
-            assertEquals(expectedDateString, dateString1)
-        }
-    }
-
-    @Test
     fun testGetStartDayOfCurrentMonthForSite() {
         val site = SiteModel().apply { id = 1 }
 
