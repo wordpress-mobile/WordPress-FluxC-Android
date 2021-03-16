@@ -311,4 +311,100 @@ class DateUtilsTest {
         val constant = DateUtils.getConstantForLastDayOfWeek(Calendar.getInstance(Locale.FRANCE))
         assertEquals(Calendar.SUNDAY, constant)
     }
+
+    @Test
+    fun testGetFirstDayOfWeekForWednesdayUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-03-08 00:00:00 Monday
+        cal.time = Date(1615183200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-07", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSundayUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-03-07 00:00:00 Sunday
+        cal.time = Date(1615096800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-07", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSaturdayUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-03-13 00:00:00 Saturday
+        cal.time = Date(1615615200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-07", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekAcrossMonthsUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-04-01 00:00:00 Thursday April
+        cal.time = Date(1617256800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday March
+        assertEquals("2021-03-28", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForWednesdayFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-03-08 00:00:00 Monday
+        cal.time = Date(1615183200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-08", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSundayFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-03-07 00:00:00 Sunday
+        cal.time = Date(1615096800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-01", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSaturdayFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-03-13 00:00:00 Saturday
+        cal.time = Date(1615615200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-08", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekAcrossMonthsFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-04-01 00:00:00 Thursday April
+        cal.time = Date(1617256800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday March
+        assertEquals("2021-03-29", result)
+    }
 }
