@@ -1,9 +1,10 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment">
+    android:layout_margin="@dimen/activity_start_end_margin"
+    tools:context="org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment"
+    tools:ignore="HardcodedText">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,15 +13,15 @@
 
         <Button
             android:id="@+id/fetch_gateway"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch gateway"/>
+            android:text="Fetch gateway" />
 
         <Button
             android:id="@+id/fetch_all_gateways"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch all gateways"/>
+            android:text="Fetch all gateways" />
 
     </LinearLayout>
 </ScrollView>

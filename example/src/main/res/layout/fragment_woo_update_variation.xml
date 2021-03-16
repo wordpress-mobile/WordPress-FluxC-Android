@@ -46,21 +46,21 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:clickable="false"
+        android:contentDescription="TODO"
         android:focusable="false"
         android:src="@drawable/ic_check"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        android:contentDescription="TODO" />
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/productContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/product_entered_product_id"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/product_entered_product_id">
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_description"
@@ -214,8 +214,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:enabled="false"
-            android:text="Start Date"
             android:hint="Start Date"
+            android:text="Start Date"
             app:layout_constraintEnd_toStartOf="@+id/product_to_date"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -228,8 +228,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:enabled="false"
-            android:text="End Date"
             android:hint="End Date"
+            android:text="End Date"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/product_from_date"
