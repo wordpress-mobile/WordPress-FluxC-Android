@@ -158,11 +158,9 @@ class WooCommerceFragment : Fragment() {
         coroutineScope.launch {
             try {
                 getFirstWCSite()?.let {
-                    wooDataStore.fetchCountriesAndStates(it).model?.let {
-                        it.forEach { location ->
-                            if (location.parentCode == null) {
-                                prependToLog(location.name)
-                            }
+                    wooDataStore.fetchCountriesAndStates(it).model?.let { country ->
+                        country.forEach { location ->
+                            prependToLog(location.name)
                         }
                     }
                     ?: prependToLog("Couldn't fetch countries.")
