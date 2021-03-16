@@ -108,6 +108,13 @@ class DateUtilsTest {
         val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3, Locale.US)
         val quantity3 = DateUtils.getQuantityInWeeks(startDateCalendar3, endDateCalendar3)
         assertEquals(1, quantity3)
+
+        val startDate4 = DateUtils.getDateFromString("2019-01-14")
+        val endDate4 = DateUtils.getDateFromString("2019-01-20")
+        val startDateCalendar4 = DateUtils.getStartDateCalendar(startDate4, Locale.US)
+        val endDateCalendar4 = DateUtils.getEndDateCalendar(endDate4, Locale.US)
+        val quantity4 = DateUtils.getQuantityInWeeks(startDateCalendar4, endDateCalendar4)
+        assertEquals(2, quantity4)
     }
 
     @Test
@@ -132,6 +139,13 @@ class DateUtilsTest {
         val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3, Locale.FRANCE)
         val quantity3 = DateUtils.getQuantityInWeeks(startDateCalendar3, endDateCalendar3)
         assertEquals(1, quantity3)
+
+        val startDate4 = DateUtils.getDateFromString("2019-01-14")
+        val endDate4 = DateUtils.getDateFromString("2019-01-20")
+        val startDateCalendar4 = DateUtils.getStartDateCalendar(startDate4, Locale.FRANCE)
+        val endDateCalendar4 = DateUtils.getEndDateCalendar(endDate4, Locale.FRANCE)
+        val quantity4 = DateUtils.getQuantityInWeeks(startDateCalendar4, endDateCalendar4)
+        assertEquals(1, quantity4)
     }
 
     @Test
