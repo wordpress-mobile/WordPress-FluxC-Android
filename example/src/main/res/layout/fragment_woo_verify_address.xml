@@ -1,9 +1,11 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment">
+    android:layout_margin="@dimen/activity_start_end_margin"
+    tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment"
+    tools:ignore="HardcodedText">
 
     <LinearLayout
         android:id="@+id/buttonContainer"
@@ -15,6 +17,7 @@
             android:id="@+id/address_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="Name" />
 
 
@@ -22,6 +25,7 @@
             android:id="@+id/address_company"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="Company" />
 
 
@@ -29,12 +33,14 @@
             android:id="@+id/address_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="Phone" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/address_address1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="Address" />
 
 
@@ -42,35 +48,40 @@
             android:id="@+id/address_address2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="Address 2" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/address_city"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="City" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/address_state"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="State" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/address_zip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="ZIP Code" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/address_country"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:textHint="Country" />
 
         <RadioGroup
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent">
 
             <RadioButton
                 android:id="@+id/origin"
@@ -90,6 +101,7 @@
             android:id="@+id/verify_address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Verify address"/>
+            android:layout_marginBottom="16dp"
+            android:text="Verify address" />
     </LinearLayout>
 </ScrollView>
