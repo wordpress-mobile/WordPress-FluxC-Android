@@ -9,10 +9,11 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
-import org.wordpress.android.fluxc.model.attribute.WCProductAttributeModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -100,8 +101,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
-    val attributeList: Array<WCProductAttributeModel>
-        get() = Gson().fromJson(attributes, Array<WCProductAttributeModel>::class.java)
+    val attributeList: Array<ProductAttribute>
+        get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java)
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
@@ -113,7 +114,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
     }
 
-    class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
+    class ProductAttribute(
+        val id: Long,
+        val name: String,
+        val variation: Boolean,
+        val visible: Boolean,
+        options: List<String>
+    ) {
+        val options: MutableList<String> = options.toMutableList()
+
         fun getCommaSeparatedOptions(): String {
             if (options.isEmpty()) return ""
             var commaSeparatedOptions = ""
@@ -126,6 +135,18 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             }
             return commaSeparatedOptions
         }
+
+        fun asGlobalAttribute(siteID: Int) =
+                WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute(id.toInt(), siteID)
+
+        fun generateProductVariantOption(selectedOption: String) =
+                takeIf { options.contains(selectedOption) }?.let {
+                    ProductVariantOption(
+                            id = id,
+                            name = name,
+                            option = selectedOption
+                    )
+                }
     }
 
     override fun getId() = id
@@ -134,13 +155,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         this.id = id
     }
 
-    fun addAttribute(newAttribute: WCProductAttributeModel) {
-        mutableListOf<WCProductAttributeModel>()
+    fun addAttribute(newAttribute: ProductAttribute) {
+        mutableListOf<ProductAttribute>()
                 .apply {
                     attributeList
                             .takeIf {
                                 it.find { currentAttribute ->
-                                    currentAttribute.globalAttributeId == newAttribute.globalAttributeId
+                                    currentAttribute.id == newAttribute.id
                                 } == null
                             }?.let { currentAttributes ->
                                 add(newAttribute)
@@ -152,19 +173,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     fun removeAttribute(attributeID: Int) =
-            mutableListOf<WCProductAttributeModel>().apply {
+            mutableListOf<ProductAttribute>().apply {
                 attributeList
                         .takeIf { it.isNotEmpty() }
-                        ?.filter { attributeID != it.globalAttributeId }
+                        ?.filter { attributeID != it.id.toInt() }
                         ?.let { addAll(it) }
             }.also { attributes = Gson().toJson(it) }
 
     fun getAttribute(attributeID: Int) =
-        attributeList.find { it.globalAttributeId == attributeID }
+        attributeList.find { it.id == attributeID.toLong() }
 
-    fun updateAttribute(updatedAttribute: WCProductAttributeModel) = apply {
-        getAttribute(updatedAttribute.globalAttributeId)
-                ?.let { removeAttribute(it.globalAttributeId) }
+    fun updateAttribute(updatedAttribute: ProductAttribute) = apply {
+        getAttribute(updatedAttribute.id.toInt())
+                ?.let { removeAttribute(it.id.toInt()) }
         addAttribute(updatedAttribute)
     }
 
@@ -244,6 +265,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                             ProductAttribute(
                                     id = this.getLong("id"),
                                     name = this.getString("name") ?: "",
+                                    variation = this.getBoolean("variation", true),
                                     visible = this.getBoolean("visible", true),
                                     options = getAttributeOptions(this.getAsJsonArray("options"))
                             )

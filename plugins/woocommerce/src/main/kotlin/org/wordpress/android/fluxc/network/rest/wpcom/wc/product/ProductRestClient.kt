@@ -71,6 +71,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
 import javax.inject.Singleton
@@ -714,6 +715,58 @@ class ProductRestClient(
                 })
         add(request)
     }
+
+    /**
+     * Makes a PUT request to
+     * `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/[WCProductVariationModel.remoteVariationId]`
+     * to replace a variation's attributes with [WCProductVariationModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to update the given variation attributes
+     * @param [variation] Locally updated product variation to be sent
+     */
+
+    suspend fun updateVariationAttributes(
+        site: SiteModel,
+        productId: Long,
+        variationId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
+                .let { url ->
+                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                            this@ProductRestClient,
+                            site,
+                            url,
+                            mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
+                            ProductVariationApiResponse::class.java
+                    )?.handleResult()
+                }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
+     * to replace a product's attributes with [WCProductModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to update the given product attributes
+     * @param [product] Locally updated product to be sent
+     */
+
+    suspend fun updateProductAttributes(
+        site: SiteModel,
+        productId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                        this,
+                        site,
+                        url,
+                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
+                        ProductApiResponse::class.java
+                )?.handleResult()
+            }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
