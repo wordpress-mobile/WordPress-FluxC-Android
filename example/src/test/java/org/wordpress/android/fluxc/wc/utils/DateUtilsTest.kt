@@ -111,6 +111,30 @@ class DateUtilsTest {
     }
 
     @Test
+    fun testGetQuantityInWeeksFranceLocale() {
+        val startDate = DateUtils.getDateFromString("2019-01-13")
+        val endDate = DateUtils.getDateFromString("2019-01-20")
+        val startDateCalendar = DateUtils.getStartDateCalendar(startDate, Locale.FRANCE)
+        val endDateCalendar = DateUtils.getEndDateCalendar(endDate, Locale.FRANCE)
+        val quantity = DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
+        assertEquals(2, quantity)
+
+        val startDate2 = DateUtils.getDateFromString("2018-12-01")
+        val endDate2 = DateUtils.getDateFromString("2018-12-31")
+        val startDateCalendar2 = DateUtils.getStartDateCalendar(startDate2, Locale.FRANCE)
+        val endDateCalendar2 = DateUtils.getEndDateCalendar(endDate2, Locale.FRANCE)
+        val quantity2 = DateUtils.getQuantityInWeeks(startDateCalendar2, endDateCalendar2)
+        assertEquals(6, quantity2)
+
+        val startDate3 = DateUtils.getDateFromString("2018-10-22")
+        val endDate3 = DateUtils.getDateFromString("2018-10-22")
+        val startDateCalendar3 = DateUtils.getStartDateCalendar(startDate3, Locale.FRANCE)
+        val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3, Locale.FRANCE)
+        val quantity3 = DateUtils.getQuantityInWeeks(startDateCalendar3, endDateCalendar3)
+        assertEquals(1, quantity3)
+    }
+
+    @Test
     fun testGetQuantityInMonths() {
         val startDate = DateUtils.getDateFromString("2018-12-13")
         val endDate = DateUtils.getDateFromString("2019-01-20")
