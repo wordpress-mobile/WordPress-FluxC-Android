@@ -87,25 +87,25 @@ class DateUtilsTest {
     }
 
     @Test
-    fun testGetQuantityInWeeks() {
+    fun testGetQuantityInWeeksUSLocale() {
         val startDate = DateUtils.getDateFromString("2019-01-13")
         val endDate = DateUtils.getDateFromString("2019-01-20")
-        val startDateCalendar = DateUtils.getStartDateCalendar(startDate)
-        val endDateCalendar = DateUtils.getEndDateCalendar(endDate)
+        val startDateCalendar = DateUtils.getStartDateCalendar(startDate, Locale.US)
+        val endDateCalendar = DateUtils.getEndDateCalendar(endDate, Locale.US)
         val quantity = DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
         assertEquals(2, quantity)
 
         val startDate2 = DateUtils.getDateFromString("2018-12-01")
         val endDate2 = DateUtils.getDateFromString("2018-12-31")
-        val startDateCalendar2 = DateUtils.getStartDateCalendar(startDate2)
-        val endDateCalendar2 = DateUtils.getEndDateCalendar(endDate2)
+        val startDateCalendar2 = DateUtils.getStartDateCalendar(startDate2, Locale.US)
+        val endDateCalendar2 = DateUtils.getEndDateCalendar(endDate2, Locale.US)
         val quantity2 = DateUtils.getQuantityInWeeks(startDateCalendar2, endDateCalendar2)
         assertEquals(6, quantity2)
 
         val startDate3 = DateUtils.getDateFromString("2018-10-22")
         val endDate3 = DateUtils.getDateFromString("2018-10-22")
-        val startDateCalendar3 = DateUtils.getStartDateCalendar(startDate3)
-        val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3)
+        val startDateCalendar3 = DateUtils.getStartDateCalendar(startDate3, Locale.US)
+        val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3, Locale.US)
         val quantity3 = DateUtils.getQuantityInWeeks(startDateCalendar3, endDateCalendar3)
         assertEquals(1, quantity3)
     }
