@@ -275,8 +275,7 @@ object DateUtils {
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
-    fun getFirstDayOfCurrentWeek(locale: Locale = Locale.getDefault()): String {
-        val cal = Calendar.getInstance(locale)
+    fun getFirstDayOfCurrentWeek(cal: Calendar): String {
         cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
