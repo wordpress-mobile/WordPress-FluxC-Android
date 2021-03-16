@@ -91,17 +91,12 @@ class WCCustomerStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    val isCachingNeeded = searchQuery == null &&
-                            email == null &&
-                            role == null &&
-                            remoteCustomerIds.isNullOrEmpty() &&
-                            excludedCustomerIds.isNullOrEmpty()
                     val customers = response.result.map { mapper.mapToModel(site, it) }
-                    if (isCachingNeeded) {
-                        // clear cache if it's the first page for the site
-                        if (offset == 0L) CustomerSqlUtils.deleteCustomersForSite(site)
-                        CustomerSqlUtils.insertOrUpdateCustomers(customers)
-                    }
+
+                    // clear cache if it's the first page for the site
+                    if (offset == 0L) CustomerSqlUtils.deleteCustomersForSite(site)
+                    CustomerSqlUtils.insertOrUpdateCustomers(customers)
+
                     WooResult(customers)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
