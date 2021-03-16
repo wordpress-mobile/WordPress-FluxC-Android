@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/activity_start_end_margin"
+    android:orientation="vertical"
+    tools:ignore="HardcodedText">
 
     <Button
         android:id="@+id/fetch_wpcom_themes"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fetch WP.com themes" />
 
     <Button
         android:id="@+id/fetch_installed_themes"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fetch installed themes" />
 
     <Button
         android:id="@+id/fetch_current_theme_jp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fetch current theme Jetpack" />
 
     <Button
         android:id="@+id/fetch_current_theme_wpcom"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fetch current theme WP.com" />
 
@@ -34,29 +36,30 @@
         android:id="@+id/theme_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter the theme's id here" />
+        android:hint="Enter the theme's id here"
+        android:inputType="number" />
 
     <Button
         android:id="@+id/activate_theme_wpcom"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Activate theme WP.com" />
 
     <Button
         android:id="@+id/activate_theme_jp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Activate theme Jetpack" />
 
     <Button
         android:id="@+id/install_theme_jp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Install WP.com theme on Jetpack site" />
 
     <Button
         android:id="@+id/delete_theme_jp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Delete theme on Jetpack site" />
 
