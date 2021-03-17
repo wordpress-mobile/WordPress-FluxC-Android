@@ -209,7 +209,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         post = mPostStore.getPostByLocalPostId(post.getId());
 
         post.setTitle("From testChangingLocalDraft, redux");
-        post.setContent("Some new content");
+        String postContent = generateUniquePostContent();
+        post.setContent(postContent);
         post.setFeaturedImageId(7);
 
         // Wait one sec
@@ -229,7 +230,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals("From testChangingLocalDraft, redux", post.getTitle());
-        assertEquals("Some new content", post.getContent());
+        assertEquals(postContent, post.getContent());
         assertEquals(7, post.getFeaturedImageId());
         assertFalse(post.isLocallyChanged());
         assertTrue(post.isLocalDraft());
@@ -254,7 +255,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         post = mPostStore.getPostByLocalPostId(post.getId());
 
         post.setTitle("From testMultipleLocalChangesToUploadedPost, redux");
-        post.setContent("Some different content");
+        String postContent = generateUniquePostContent();
+        post.setContent(postContent);
         post.setFeaturedImageId(5);
 
         // Save new changes locally
@@ -267,7 +269,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", post.getTitle());
-        assertEquals("Some different content", post.getContent());
+        assertEquals(postContent, post.getContent());
         assertEquals(5, post.getFeaturedImageId());
         assertTrue(post.isLocallyChanged());
         assertFalse(post.isLocalDraft());
@@ -353,7 +355,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
 
         post.setTitle("A fully featured post");
-        post.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
+        String postContent = generateUniquePostContent();
+        post.setContent(postContent);
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         post.setDateCreated(date);
 
@@ -380,7 +383,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals("A fully featured post", newPost.getTitle());
-        assertEquals("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.", newPost.getContent());
+        assertEquals(postContent, newPost.getContent());
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
@@ -397,7 +400,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
         post.setIsPage(true);
         post.setTitle("A fully featured page");
-        post.setContent("Some content here! <strong>Bold text</strong>.");
+        post.setContent(generateUniquePostContent());
         post.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
         uploadPost(post);
         assertEquals(1, mPostStore.getPagesCountForSite(sSite));
@@ -426,7 +429,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         post.setIsPage(true);
 
         post.setTitle("A fully featured page");
-        post.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
+        String postContent = generateUniquePostContent();
+        post.setContent(postContent);
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         post.setDateCreated(date);
 
@@ -453,7 +457,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, newPage.getRemotePostId());
 
         assertEquals("A fully featured page", newPage.getTitle());
-        assertEquals("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.", newPage.getContent());
+        assertEquals(postContent, newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
 
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
@@ -464,7 +468,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
 
         post.setTitle("A post with tags");
-        post.setContent("Some content here! <strong>Bold text</strong>.");
+        post.setContent(generateUniquePostContent());
 
         List<Long> categoryIds = new ArrayList<>(1);
         categoryIds.add((long) 1);
@@ -533,7 +537,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
 
         post.setTitle("A post with location");
-        post.setContent("Some content");
+        String postContent = generateUniquePostContent();
+        post.setContent(postContent);
 
         uploadPost(post);
 
@@ -544,7 +549,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals("A post with location", post.getTitle());
-        assertEquals("Some content", post.getContent());
+        assertEquals(postContent, post.getContent());
 
         // The post should not have a location since we never set one
         assertFalse(post.hasLocation());
@@ -570,7 +575,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
 
         post.setTitle("A post with location");
-        post.setContent("Some content");
+        String postContent = generateUniquePostContent();
+        post.setContent(postContent);
 
         post.setLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
 
@@ -583,7 +589,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals("A post with location", post.getTitle());
-        assertEquals("Some content", post.getContent());
+        assertEquals(postContent, post.getContent());
 
         // The set location should be stored in the remote post
         assertTrue(post.hasLocation());
@@ -702,7 +708,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(post.getId());
 
         // Act
-        uploadedPost.setContent("content edited");
+        uploadedPost.setContent(generateUniquePostContent());
         remoteAutoSavePost(uploadedPost);
 
         // Assert
@@ -732,7 +738,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(post.getId());
 
         // Act
-        uploadedPost.setContent("post content edited");
+        uploadedPost.setContent(generateUniquePostContent());
         remoteAutoSavePost(uploadedPost);
 
         // Assert
@@ -757,7 +763,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(post.getId());
 
         // Act
-        uploadedPost.setContent("post content edited");
+        uploadedPost.setContent(generateUniquePostContent());
         remoteAutoSavePost(uploadedPost);
 
         // Assert
@@ -1011,7 +1017,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     private void setupPostAttributes(PostModel post) {
         post.setTitle(POST_DEFAULT_TITLE);
-        post.setContent(POST_DEFAULT_DESCRIPTION);
+        post.setContent(generateUniquePostContent());
     }
 
     private PostModel createNewPost() {
@@ -1094,5 +1100,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostStatusAction(new RemotePostPayload(post, sSite)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private String generateUniquePostContent() {
+        return POST_DEFAULT_DESCRIPTION + " Timestamp for uniqueness: " + System.currentTimeMillis();
     }
 }
