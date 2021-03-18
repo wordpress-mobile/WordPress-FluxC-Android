@@ -1,4 +1,3 @@
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -6,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
