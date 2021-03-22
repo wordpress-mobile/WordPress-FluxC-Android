@@ -46,6 +46,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Calendar
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -119,7 +120,7 @@ class OrderRestClient(
      * the optional parameters in effect.
      * @param offset Used to retrieve older orders
      */
-    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long) {
+    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long, requestStartTime: Calendar) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
         val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
@@ -146,13 +147,18 @@ class OrderRestClient(
                             listDescriptor = listDescriptor,
                             orderSummaries = orderSummaries,
                             loadedMore = offset > 0,
-                            canLoadMore = canLoadMore
+                            canLoadMore = canLoadMore,
+                            requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderListResponsePayload(error = orderError, listDescriptor = listDescriptor)
+                    val payload = FetchOrderListResponsePayload(
+                            error = orderError,
+                            listDescriptor = listDescriptor,
+                            requestStartTime = requestStartTime
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })

@@ -15,6 +15,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_wc_order_list.*
 import org.apache.commons.lang3.time.DateUtils
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.TimeGroup.GROUP_FUTURE
 import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_MONTH
@@ -36,7 +38,10 @@ import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInter
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderSummariesFetched
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
 import javax.inject.Inject
@@ -70,6 +75,8 @@ class WCOrderListActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        dispatcher.register(this)
 
         val orderListDescriptor = WCOrderListDescriptor(
                 site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
@@ -112,6 +119,11 @@ class WCOrderListActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        dispatcher.unregister(this)
+    }
+
     private fun loadList(descriptor: WCOrderListDescriptor) {
         pagedListWrapper?.apply {
             val lifecycleOwner = this@WCOrderListActivity
@@ -142,6 +154,12 @@ class WCOrderListActivity : AppCompatActivity() {
                 }
             })
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = MAIN)
+    fun onOrderSummariesFetched(event: OnOrderSummariesFetched) {
+        AppLog.d(T.TESTS, "Received list changed event. Total duration = ${event.duration}.")
     }
 }
 

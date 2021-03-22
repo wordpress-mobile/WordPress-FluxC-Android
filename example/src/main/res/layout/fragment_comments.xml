@@ -1,31 +1,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              tools:context="org.wordpress.android.fluxc.example.CommentsFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/activity_start_end_margin"
+    android:orientation="vertical"
+    tools:context="org.wordpress.android.fluxc.example.CommentsFragment"
+    tools:ignore="HardcodedText">
 
     <Button
         android:id="@+id/fetch_comments"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fetch comments from first site" />
 
     <Button
         android:id="@+id/reply_to_comment"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Reply to first comment" />
 
     <Button
         android:id="@+id/like_comment"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Like/Unlike first comment" />
 
     <Button
         android:id="@+id/show_link_address"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Show link address" />
 

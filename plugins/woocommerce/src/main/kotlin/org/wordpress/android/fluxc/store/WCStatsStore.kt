@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.utils.PreferenceUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -487,7 +488,7 @@ class WCStatsStore @Inject constructor(
         val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
         val startDate = payload.startDate ?: when (payload.granularity) {
             StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-            StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek()
+            StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek(Calendar.getInstance(Locale.getDefault()))
             StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
             StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
         }

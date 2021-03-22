@@ -1,10 +1,18 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="org.wordpress.android.fluxc.example.MainExampleActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/ToolbarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        app:title="@string/app_name" />
 
     <ScrollView
         android:id="@+id/fragment_container"
@@ -24,7 +32,7 @@
         android:padding="4dp"
         android:scrollbars="vertical"
         android:textColor="@android:color/holo_green_light"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:typeface="monospace" />
 
 </LinearLayout>

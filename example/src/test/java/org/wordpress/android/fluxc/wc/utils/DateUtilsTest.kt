@@ -6,9 +6,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.WeekFields
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -87,27 +85,65 @@ class DateUtilsTest {
     }
 
     @Test
-    fun testGetQuantityInWeeks() {
+    fun testGetQuantityInWeeksUSLocale() {
         val startDate = DateUtils.getDateFromString("2019-01-13")
         val endDate = DateUtils.getDateFromString("2019-01-20")
-        val startDateCalendar = DateUtils.getStartDateCalendar(startDate)
-        val endDateCalendar = DateUtils.getEndDateCalendar(endDate)
+        val startDateCalendar = DateUtils.getStartDateCalendar(startDate, Locale.US)
+        val endDateCalendar = DateUtils.getEndDateCalendar(endDate, Locale.US)
         val quantity = DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
         assertEquals(2, quantity)
 
         val startDate2 = DateUtils.getDateFromString("2018-12-01")
         val endDate2 = DateUtils.getDateFromString("2018-12-31")
-        val startDateCalendar2 = DateUtils.getStartDateCalendar(startDate2)
-        val endDateCalendar2 = DateUtils.getEndDateCalendar(endDate2)
+        val startDateCalendar2 = DateUtils.getStartDateCalendar(startDate2, Locale.US)
+        val endDateCalendar2 = DateUtils.getEndDateCalendar(endDate2, Locale.US)
         val quantity2 = DateUtils.getQuantityInWeeks(startDateCalendar2, endDateCalendar2)
         assertEquals(6, quantity2)
 
         val startDate3 = DateUtils.getDateFromString("2018-10-22")
         val endDate3 = DateUtils.getDateFromString("2018-10-22")
-        val startDateCalendar3 = DateUtils.getStartDateCalendar(startDate3)
-        val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3)
+        val startDateCalendar3 = DateUtils.getStartDateCalendar(startDate3, Locale.US)
+        val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3, Locale.US)
         val quantity3 = DateUtils.getQuantityInWeeks(startDateCalendar3, endDateCalendar3)
         assertEquals(1, quantity3)
+
+        val startDate4 = DateUtils.getDateFromString("2019-01-14")
+        val endDate4 = DateUtils.getDateFromString("2019-01-20")
+        val startDateCalendar4 = DateUtils.getStartDateCalendar(startDate4, Locale.US)
+        val endDateCalendar4 = DateUtils.getEndDateCalendar(endDate4, Locale.US)
+        val quantity4 = DateUtils.getQuantityInWeeks(startDateCalendar4, endDateCalendar4)
+        assertEquals(2, quantity4)
+    }
+
+    @Test
+    fun testGetQuantityInWeeksFranceLocale() {
+        val startDate = DateUtils.getDateFromString("2019-01-13")
+        val endDate = DateUtils.getDateFromString("2019-01-20")
+        val startDateCalendar = DateUtils.getStartDateCalendar(startDate, Locale.FRANCE)
+        val endDateCalendar = DateUtils.getEndDateCalendar(endDate, Locale.FRANCE)
+        val quantity = DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
+        assertEquals(2, quantity)
+
+        val startDate2 = DateUtils.getDateFromString("2018-12-01")
+        val endDate2 = DateUtils.getDateFromString("2018-12-31")
+        val startDateCalendar2 = DateUtils.getStartDateCalendar(startDate2, Locale.FRANCE)
+        val endDateCalendar2 = DateUtils.getEndDateCalendar(endDate2, Locale.FRANCE)
+        val quantity2 = DateUtils.getQuantityInWeeks(startDateCalendar2, endDateCalendar2)
+        assertEquals(6, quantity2)
+
+        val startDate3 = DateUtils.getDateFromString("2018-10-22")
+        val endDate3 = DateUtils.getDateFromString("2018-10-22")
+        val startDateCalendar3 = DateUtils.getStartDateCalendar(startDate3, Locale.FRANCE)
+        val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3, Locale.FRANCE)
+        val quantity3 = DateUtils.getQuantityInWeeks(startDateCalendar3, endDateCalendar3)
+        assertEquals(1, quantity3)
+
+        val startDate4 = DateUtils.getDateFromString("2019-01-14")
+        val endDate4 = DateUtils.getDateFromString("2019-01-20")
+        val startDateCalendar4 = DateUtils.getStartDateCalendar(startDate4, Locale.FRANCE)
+        val endDateCalendar4 = DateUtils.getEndDateCalendar(endDate4, Locale.FRANCE)
+        val quantity4 = DateUtils.getQuantityInWeeks(startDateCalendar4, endDateCalendar4)
+        assertEquals(1, quantity4)
     }
 
     @Test
@@ -224,39 +260,6 @@ class DateUtilsTest {
     }
 
     @Test
-    fun testGetStartDayOfCurrentWeekForSite() {
-        val site = SiteModel().apply { id = 1 }
-
-        // test get start date for current day
-        for (offset in -20..20) {
-            site.timezone = offset.toString()
-
-            val fieldISO = WeekFields.of(Locale.ROOT).dayOfWeek()
-
-            // Setting a zone id where the start of the week is always Sunday
-            val zoneId = ZoneId.of("America/New_York")
-
-            val expectedDate = LocalDateTime.now(ZoneId.of("UTC"))
-                    // Adds the offset that are being tested
-                    // This is a way to add the offset using LocalDateTime without changing the zone
-                    .plusHours(offset.toLong())
-                    .atZone(zoneId)
-                    .with(fieldISO, 1)
-                    .toLocalDate()
-                    .atStartOfDay()
-                    .atZone(zoneId)
-                    .toInstant()
-
-            val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
-            // format the current date to string
-            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
-            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
-            val dateString1 = DateUtils.getFirstDayOfCurrentWeekBySite(site)
-            assertEquals(expectedDateString, dateString1)
-        }
-    }
-
-    @Test
     fun testGetStartDayOfCurrentMonthForSite() {
         val site = SiteModel().apply { id = 1 }
 
@@ -295,5 +298,113 @@ class DateUtilsTest {
             val dateString1 = DateUtils.getFirstDayOfCurrentYearBySite(site)
             assertEquals(expectedDateString, dateString1)
         }
+    }
+
+    @Test
+    fun testGetConstantForLastDayOfWeekUSLocale() {
+        val constant = DateUtils.getConstantForLastDayOfWeek(Calendar.getInstance(Locale.US))
+        assertEquals(Calendar.SATURDAY, constant)
+    }
+
+    @Test
+    fun testGetConstantForLastDayOfWeekFranceLocale() {
+        val constant = DateUtils.getConstantForLastDayOfWeek(Calendar.getInstance(Locale.FRANCE))
+        assertEquals(Calendar.SUNDAY, constant)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForWednesdayUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-03-08 00:00:00 Monday
+        cal.time = Date(1615183200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-07", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSundayUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-03-07 00:00:00 Sunday
+        cal.time = Date(1615096800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-07", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSaturdayUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-03-13 00:00:00 Saturday
+        cal.time = Date(1615615200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-07", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekAcrossMonthsUSLocale() {
+        val cal = Calendar.getInstance(Locale.US)
+        // 2021-04-01 00:00:00 Thursday April
+        cal.time = Date(1617256800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday March
+        assertEquals("2021-03-28", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForWednesdayFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-03-08 00:00:00 Monday
+        cal.time = Date(1615183200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-08", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSundayFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-03-07 00:00:00 Sunday
+        cal.time = Date(1615096800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-01", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekForSaturdayFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-03-13 00:00:00 Saturday
+        cal.time = Date(1615615200000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday
+        assertEquals("2021-03-08", result)
+    }
+
+    @Test
+    fun testGetFirstDayOfWeekAcrossMonthsFranceLocale() {
+        val cal = Calendar.getInstance(Locale.FRANCE)
+        // 2021-04-01 00:00:00 Thursday April
+        cal.time = Date(1617256800000)
+
+        val result = DateUtils.getFirstDayOfCurrentWeek(cal)
+
+        // Monday March
+        assertEquals("2021-03-29", result)
     }
 }
