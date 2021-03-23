@@ -244,7 +244,7 @@ constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packagesData: List<WCShippingLabelPackageData>
-    ): WooPayload<PurchaseShippingLabelApiResponse> {
+    ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
         val params = mapOf(
@@ -258,7 +258,30 @@ constructor(
                 site,
                 url,
                 params,
-                PurchaseShippingLabelApiResponse::class.java
+                ShippingLabelStatusApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun fetchShippingLabelsStatus(
+        site: SiteModel,
+        orderId: Long,
+        labelIds: List<Int>
+    ): WooPayload<ShippingLabelStatusApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                ShippingLabelStatusApiResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
