@@ -44,7 +44,7 @@ class ProductVariationApiResponse : Response {
     var download_expiry = 0
 
     var manage_stock = false
-    var stock_quantity = 0
+    var stock_quantity = 0.0
     var stock_status: String? = null
 
     var image: JsonElement? = null
