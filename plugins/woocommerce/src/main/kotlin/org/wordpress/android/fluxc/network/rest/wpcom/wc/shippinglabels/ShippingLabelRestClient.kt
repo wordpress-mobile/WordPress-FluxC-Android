@@ -248,6 +248,7 @@ constructor(
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
         val params = mapOf(
+                "async" to true,
                 "origin" to origin.toMap(),
                 "destination" to destination.toMap(),
                 "packages" to packagesData.map { it.toMap() }
@@ -273,7 +274,7 @@ constructor(
     suspend fun fetchShippingLabelsStatus(
         site: SiteModel,
         orderId: Long,
-        labelIds: List<Int>
+        labelIds: List<Long>
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
