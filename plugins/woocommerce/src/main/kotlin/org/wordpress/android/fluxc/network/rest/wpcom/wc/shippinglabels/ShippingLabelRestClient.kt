@@ -277,7 +277,7 @@ constructor(
         labelIds: List<Long>
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
                 site,
                 url,
