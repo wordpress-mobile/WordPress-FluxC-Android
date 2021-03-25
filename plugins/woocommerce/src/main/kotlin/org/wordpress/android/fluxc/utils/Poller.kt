@@ -22,7 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 class Poller(private val delayInMs: Long, private val maxRetries: Int) {
     suspend fun <T : WooPayload<*>> poll(
         request: suspend () -> T,
-        predicate: (T) -> Boolean,
+        predicate: (T) -> Boolean
     ): T {
         return pollInternal(request)
                 .filter { predicate.invoke(it) }
@@ -30,7 +30,7 @@ class Poller(private val delayInMs: Long, private val maxRetries: Int) {
     }
 
     private suspend fun <T : WooPayload<*>> pollInternal(
-        request: suspend () -> T,
+        request: suspend () -> T
     ): Flow<T> {
         var retries = 0
         return flow {
