@@ -91,9 +91,9 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
 
     private val gson by lazy { Gson() }
 
-    val attributeList by lazy {
-        gson.fromJson(attributes, Array<ProductVariantOption>::class.java)
-    }
+    private val attributeList
+        get() = gson.fromJson(attributes, Array<ProductVariantOption>::class.java)
+
     fun addVariant(newAttribute: ProductVariantOption) =
             mutableListOf<ProductVariantOption>()
                     .apply {
