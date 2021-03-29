@@ -12,7 +12,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
  * and automatic retrying on errors, the logic is as follows:
  * 1. Invoke the request.
  * 2. If the request fails, retry for the number of times specified by maxRetries after the specified delay
- * 3. If the request succeeds, check the predicate agains the result
+ * 3. If the request succeeds, check the predicate against the result
  * 4. If it's true, then return the result.
  * 5. If it's false, repeat from 1.
  *
