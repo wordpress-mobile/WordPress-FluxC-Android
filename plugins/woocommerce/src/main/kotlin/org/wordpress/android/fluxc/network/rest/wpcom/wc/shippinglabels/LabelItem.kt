@@ -18,4 +18,10 @@ class LabelItem {
     val rate: BigDecimal? = null
     val currency: String? = null
     val refund: JsonElement? = null
+    val error: String? = null
+
+    companion object {
+        const val STATUS_PURCHASED = "PURCHASED"
+        const val STATUS_ERROR = "PURCHASE_ERROR"
+    }
 }
