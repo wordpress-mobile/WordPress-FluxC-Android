@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.pay.WCConnectionTokenResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -16,9 +17,9 @@ class WCPayStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: PayRestClient
 ) {
-    suspend fun fetchConnectionToken(siteId: Long): WooResult<WCConnectionTokenResult> {
+    suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
-            val response = restClient.fetchConnectionToken(siteId)
+            val response = restClient.fetchConnectionToken(site)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
