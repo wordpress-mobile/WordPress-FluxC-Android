@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig

@@ -27,7 +27,7 @@ class WCPayStoreTest {
     }
 
     @Test
-    fun `given server returns valid token, when fetchConnectionToken, then result contains the token`()= test {
+    fun `given server returns valid token, when fetchConnectionToken, then result contains the token`() = test {
         val token = "valid token"
         whenever(restClient.fetchConnectionToken(any())).thenReturn(
                 WooPayload(ConnectionTokenApiResponse(token, false))
@@ -39,7 +39,7 @@ class WCPayStoreTest {
     }
 
     @Test
-    fun `given server response is testMode=true, when fetchConnectionToken, then testMode=true returned`()= test {
+    fun `given server response is testMode=true, when fetchConnectionToken, then testMode=true returned`() = test {
         val isTestMode = true
         whenever(restClient.fetchConnectionToken(any())).thenReturn(
                 WooPayload(ConnectionTokenApiResponse("", isTestMode))
@@ -51,7 +51,7 @@ class WCPayStoreTest {
     }
 
     @Test
-    fun `given server response is error, when fetchConnectionToken, then WooError returned`()= test {
+    fun `given server response is error, when fetchConnectionToken, then WooError returned`() = test {
         whenever(restClient.fetchConnectionToken(any())).thenReturn(
                 WooPayload(mock())
         )
