@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.ThemeStore;
@@ -31,6 +32,7 @@ import org.wordpress.android.fluxc.store.ThemeStore.OnThemeRemoved;
 import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.SiteThemePayload;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -362,7 +364,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(new ArrayList())));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);

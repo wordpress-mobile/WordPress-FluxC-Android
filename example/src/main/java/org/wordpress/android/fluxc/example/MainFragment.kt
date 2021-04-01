@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload
 import org.wordpress.android.util.AppLog
@@ -228,7 +229,7 @@ class MainFragment : Fragment() {
         } else {
             if (!siteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(T.API, "Account data fetched - fetching sites")
-                dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction())
+                dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload(emptyList())))
             }
         }
     }

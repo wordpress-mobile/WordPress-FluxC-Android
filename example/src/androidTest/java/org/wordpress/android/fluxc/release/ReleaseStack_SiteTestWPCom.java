@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.FetchJetpackCapabilitiesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchPrivateAtomicCookiePayload;
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
@@ -47,6 +48,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -731,7 +733,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Fetch sites from REST API, and wait for OnSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(new ArrayList())));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);
