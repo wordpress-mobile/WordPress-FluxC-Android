@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestCli
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
@@ -167,6 +168,17 @@ class ReleaseWCNetworkModule {
         userAgent: UserAgent,
         requestBuilder: JetpackTunnelGsonRequestBuilder
     ) = ProductAttributeRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent, requestBuilder)
+
+    @Singleton
+    @Provides
+    fun providePayRestClient(
+        appContext: Context,
+        requestBuilder: JetpackTunnelGsonRequestBuilder,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) = PayRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
 
     @Singleton
     @Provides
