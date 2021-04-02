@@ -16,12 +16,15 @@ import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
@@ -871,6 +874,33 @@ class WCProductStore @Inject constructor(
                         ?.model?.asProductVariationModel()
                         ?.apply { insertOrUpdateProductVariation(this) }
                         ?.let { WooResult(it) }
+            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+
+    suspend fun generateEmptyVariation(
+        site: SiteModel,
+            productId: Long
+    ): WooResult<WCProductVariationModel> =
+            coroutineEngine?.withDefaultContext(T.API, this, "generateEmptyVariation") {
+                wcProductRestClient.generateEmptyVariation(site, productId)
+                        ?.asWooResult()
+                        ?.model?.asProductVariationModel()
+                        ?.apply { insertOrUpdateProductVariation(this) }
+                        ?.let { WooResult(it) }
+                        ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
+            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+
+    suspend fun deleteVariation(
+        site: SiteModel,
+            productId: Long,
+            variationId: Long
+    ): WooResult<WCProductVariationModel> =
+            coroutineEngine?.withDefaultContext(T.API, this, "deleteVariation") {
+                wcProductRestClient.deleteVariation(site, productId, variationId)
+                        ?.asWooResult()
+                        ?.model?.asProductVariationModel()
+                        ?.apply { deleteVariationsForProduct(site, productId) }
+                        ?.let { WooResult(it) }
+                        ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
             } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     override fun onRegister() = AppLog.d(T.API, "WCProductStore onRegister")
