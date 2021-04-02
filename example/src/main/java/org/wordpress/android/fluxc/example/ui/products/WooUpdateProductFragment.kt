@@ -241,7 +241,7 @@ class WooUpdateProductFragment : Fragment() {
         product_length.onTextChanged { selectedProductModel?.length = it }
         product_weight.onTextChanged { selectedProductModel?.weight = it }
         product_stock_quantity.onTextChanged { text ->
-            text.toIntOrNull()?.let { selectedProductModel?.stockQuantity = it }
+            text.toDoubleOrNull()?.let { selectedProductModel?.stockQuantity = it }
         }
 
         product_sold_individually.setOnCheckedChangeListener { _, isChecked ->
