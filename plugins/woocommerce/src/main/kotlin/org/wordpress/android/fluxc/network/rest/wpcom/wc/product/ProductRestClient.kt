@@ -717,6 +717,50 @@ class ProductRestClient(
     }
 
     /**
+     * Makes a POST request to `/wp-json/wc/v3/products` to create
+     * a empty variation to a given variable product
+     *
+     * @param [site] The site containing the product
+     * @param [productId] the ID of the variable product to create the empty variation
+     */
+    suspend fun generateEmptyVariation(
+        site: SiteModel,
+        productId: Long
+    ) = WOOCOMMERCE.products.id(productId).variations.pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncPostRequest(
+                        this@ProductRestClient,
+                        site,
+                        url,
+                        mapOf(),
+                        ProductVariationApiResponse::class.java
+                )?.handleResult()
+            }
+
+    /**
+     * Makes a DELETE request to `/wp-json/wc/v3/products/<id>` to delete a product
+     *
+     * @param [site] The site containing the product
+     * @param [productId] the ID of the variable product who holds the variation to be deleted
+     * @param [variationId] the ID of the variation model to delete
+     *
+     * Force delete option is not available as Variation doesn't support trashing
+     */
+    suspend fun deleteVariation(
+        site: SiteModel,
+        productId: Long,
+        variationId: Long
+    ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncDeleteRequest(
+                        this@ProductRestClient,
+                        site,
+                        url,
+                        ProductVariationApiResponse::class.java
+                )?.handleResult()
+            }
+
+    /**
      * Makes a PUT request to
      * `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/[WCProductVariationModel.remoteVariationId]`
      * to replace a variation's attributes with [WCProductVariationModel.attributes]
