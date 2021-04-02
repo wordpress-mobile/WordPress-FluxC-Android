@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.FormData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.PurchaseShippingLabelApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelApiResponse
 import javax.inject.Inject
 
@@ -38,7 +38,7 @@ class WCShippingLabelMapper
     }
 
     fun map(
-        response: PurchaseShippingLabelApiResponse,
+        response: ShippingLabelStatusApiResponse,
         orderId: Long,
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,

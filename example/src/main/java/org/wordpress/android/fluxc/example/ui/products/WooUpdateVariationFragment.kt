@@ -123,7 +123,7 @@ class WooUpdateVariationFragment : Fragment() {
         product_length.onTextChanged { selectedVariationModel?.length = it }
         product_weight.onTextChanged { selectedVariationModel?.weight = it }
         product_stock_quantity.onTextChanged {
-            if (it.isNotEmpty()) { selectedVariationModel?.stockQuantity = it.toInt() }
+            if (it.isNotEmpty()) { selectedVariationModel?.stockQuantity = it.toDouble() }
         }
 
         product_manage_stock.setOnCheckedChangeListener { _, isChecked ->
