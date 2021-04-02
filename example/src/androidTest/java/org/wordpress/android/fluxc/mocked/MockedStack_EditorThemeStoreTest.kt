@@ -28,6 +28,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     private lateinit var countDownLatch: CountDownLatch
     private lateinit var site: SiteModel
     private lateinit var payload: FetchEditorThemePayload
+    private lateinit var payloadWithGSS: FetchEditorThemePayload
     private var editorTheme: EditorTheme? = null
 
     override fun setUp() {
@@ -39,6 +40,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         site = SiteModel()
         site.setIsWPCom(true)
         payload = FetchEditorThemePayload(site)
+        payloadWithGSS = FetchEditorThemePayload(site, true)
         countDownLatch = CountDownLatch(1)
     }
 
@@ -132,6 +134,49 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         // Validate Bundle
         val themeBundle = editorTheme!!.themeSupport.toBundle()
         assertEmpty(themeBundle)
+    }
+
+    @Test
+    fun testGlobalStylesSettingsOffSuccess() {
+        interceptor.respondWith("global-styles-off-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payloadWithGSS))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertNotEmpty(editorTheme)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertNotEmpty(cachedTheme)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertNotEmpty(themeBundle)
+    }
+
+    @Test
+    fun testGlobalStylesSettingsFullSuccess() {
+        interceptor.respondWith("global-styles-full-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payloadWithGSS))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertEmpty(editorTheme)
+        Assert.assertNotNull(editorTheme?.themeSupport?.rawGlobalStylesBaseStyles)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertEmpty(cachedTheme)
+        Assert.assertNotNull(cachedTheme?.themeSupport?.rawGlobalStylesBaseStyles)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertEmpty(themeBundle)
+        Assert.assertNotNull(themeBundle.getString("rawGlobalStylesBaseStyles"))
     }
 
     private fun assertNotEmpty(theme: EditorTheme?) {
