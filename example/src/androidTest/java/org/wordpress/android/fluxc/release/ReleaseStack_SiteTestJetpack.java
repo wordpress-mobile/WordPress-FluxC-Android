@@ -186,7 +186,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         // Only atomic site exists
         assertEquals(1, mSiteStore.getSitesCount());
-        assertTrue(mSiteStore.getSitesAccessedViaWPComRest().get(0).isWPComAtomic());
+        assertTrue(mSiteStore.hasWPComAtomicSite());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         // Only wpcom site exists
         assertEquals(1, mSiteStore.getSitesCount());
-        assertTrue(mSiteStore.getSitesAccessedViaWPComRest().get(0).isWPCom());
+        assertTrue(mSiteStore.hasWPComSite());
     }
 
     @Test
