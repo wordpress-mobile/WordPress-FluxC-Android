@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
-import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -75,7 +74,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         mExpectedRowsAffected = mSiteStore.getSitesCount();
 
         mInterceptor.respondWith("sites-fetch-response-success.json");
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(new ArrayList())));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload()));
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 

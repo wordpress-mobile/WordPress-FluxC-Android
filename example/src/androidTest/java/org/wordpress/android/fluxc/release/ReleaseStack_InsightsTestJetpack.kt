@@ -313,7 +313,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = CountDownLatch(1)
         nextEvent = TestEvents.SITE_CHANGED
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload(emptyList())))
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(siteStore.sitesCount > 0)

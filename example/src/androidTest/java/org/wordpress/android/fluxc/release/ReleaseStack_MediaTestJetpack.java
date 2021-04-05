@@ -25,7 +25,6 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
-import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -236,7 +235,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(new ArrayList())));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

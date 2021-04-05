@@ -229,7 +229,7 @@ class MainFragment : Fragment() {
         } else {
             if (!siteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(T.API, "Account data fetched - fetching sites")
-                dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload(emptyList())))
+                dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
             }
         }
     }

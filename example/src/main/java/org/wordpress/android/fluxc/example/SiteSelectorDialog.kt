@@ -57,7 +57,7 @@ class SiteSelectorDialog : DialogFragment() {
 
         // get sites from api
         if (siteStore.sites.isEmpty()) {
-            dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload(emptyList())))
+            dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
         }
     }
 

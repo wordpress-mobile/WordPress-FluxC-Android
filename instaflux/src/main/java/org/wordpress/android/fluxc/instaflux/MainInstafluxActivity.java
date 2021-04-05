@@ -35,8 +35,6 @@ import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
-import java.util.ArrayList;
-
 import javax.inject.Inject;
 
 public class MainInstafluxActivity extends AppCompatActivity {
@@ -181,7 +179,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         } else {
             if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(AppLog.T.API, "Account data fetched - fetching sites");
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(new ArrayList())));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload()));
             }
         }
     }
