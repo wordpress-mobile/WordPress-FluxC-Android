@@ -206,6 +206,23 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    public void testFetchSitesWithTwoFilters() throws InterruptedException {
+        List<SiteFilter> filters = new ArrayList<>();
+        filters.add(SiteFilter.WPCOM);
+        filters.add(SiteFilter.ATOMIC);
+
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
+                filters
+                                      );
+
+        assertEquals(2, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasWPComAtomicSite());
+    }
+
+    @Test
     public void testXMLRPCNonJetpackSiteFetch() throws InterruptedException {
         // Add a non-Jetpack self-hosted site
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
