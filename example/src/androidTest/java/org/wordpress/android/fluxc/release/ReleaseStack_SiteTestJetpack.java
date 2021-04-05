@@ -498,9 +498,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
 
-        FetchSitesPayload fetchSitesPayload = new FetchSitesPayload();
-        fetchSitesPayload.filters = filters;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(fetchSitesPayload));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(filters)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);
