@@ -150,8 +150,6 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 filters
         );
 
-        mSiteStore.getSitesCount();
-
         // All sites exist
         assertEquals(3, mSiteStore.getSitesCount());
         assertEquals(3, mSiteStore.getSitesAccessedViaWPComRestCount());
@@ -167,8 +165,6 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
                 filters
         );
-
-        mSiteStore.getSitesCount();
 
         // Only Jetpack site exists
         assertEquals(1, mSiteStore.getSitesCount());
@@ -188,8 +184,6 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 filters
         );
 
-        mSiteStore.getSitesCount();
-
         // Only atomic site exists
         assertEquals(1, mSiteStore.getSitesCount());
         assertTrue(mSiteStore.getSitesAccessedViaWPComRest().get(0).isWPComAtomic());
@@ -205,8 +199,6 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
                 filters
         );
-
-        mSiteStore.getSitesCount();
 
         // Only wpcom site exists
         assertEquals(1, mSiteStore.getSitesCount());
