@@ -390,7 +390,7 @@ class WooShippingLabelFragment : Fragment() {
                             rateId = rate.rateId,
                             serviceId = rate.serviceId,
                             carrierId = rate.carrierId,
-                            products = order.getLineItemList().map { it.id!! }
+                            products = order.getLineItemList().map { it.productId!! }
                     )
                     val result = wcShippingLabelStore.purchaseShippingLabels(
                             site,

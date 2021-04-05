@@ -65,7 +65,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var taxClass = ""
 
     @Column var manageStock = false
-    @Column var stockQuantity = 0
+    @Column var stockQuantity = 0.0
     @Column var stockStatus = "" // instock, outofstock, onbackorder
 
     @Column var backorders = "" // no, notify, yes

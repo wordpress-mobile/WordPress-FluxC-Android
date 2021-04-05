@@ -63,7 +63,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var shippingClassId = 0
 
     @Column var manageStock = false
-    @Column var stockQuantity = 0
+    @Column var stockQuantity = 0.0
     @Column var stockStatus = ""
 
     @Column var image = ""
