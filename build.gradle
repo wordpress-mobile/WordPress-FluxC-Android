@@ -24,7 +24,11 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url "http://dl.bintray.com/terl/lazysodium-maven" }
+        mavenCentral {
+            content {
+                includeModule("com.goterl", "lazysodium-android")
+            }
+        }
     }
 
     task checkstyle(type: Checkstyle) {
