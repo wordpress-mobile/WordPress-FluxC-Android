@@ -123,6 +123,33 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    suspend fun checkShippingLabelCreationEligibility(
+        site: SiteModel,
+        orderId: Long,
+        canCreatePackage: Boolean,
+        canCreatePaymentMethod: Boolean,
+        canCreateCustomsForm: Boolean
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "printShippingLabel") {
+            val response = restClient.checkShippingLabelCreationEligibility(
+                    site = site,
+                    orderId = orderId,
+                    canCreatePackage = canCreatePackage,
+                    canCreatePaymentMethod = canCreatePaymentMethod,
+                    canCreateCustomsForm = canCreateCustomsForm
+            )
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    WooResult(response.result.isEligible)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     suspend fun verifyAddress(
         site: SiteModel,
         address: ShippingLabelAddress,
