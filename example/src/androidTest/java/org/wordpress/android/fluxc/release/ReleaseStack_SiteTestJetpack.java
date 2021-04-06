@@ -15,14 +15,18 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.SiteFilter;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -134,6 +138,88 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSite());
         assertFalse(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+    }
+
+    @Test
+    public void testFetchSitesWithoutFilter() throws InterruptedException {
+        List<SiteFilter> filters = new ArrayList<>();
+
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
+                filters
+        );
+
+        // All sites exist
+        assertEquals(3, mSiteStore.getSitesCount());
+        assertEquals(3, mSiteStore.getSitesAccessedViaWPComRestCount());
+    }
+
+    @Test
+    public void testFetchSitesWithJetpackFilter() throws InterruptedException {
+        List<SiteFilter> filters = new ArrayList<>();
+        filters.add(SiteFilter.JETPACK);
+
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
+                filters
+        );
+
+        // Only Jetpack site exists
+        assertEquals(1, mSiteStore.getSitesCount());
+        SiteModel fetchedSite = mSiteStore.getSitesAccessedViaWPComRest().get(0);
+        assertTrue(fetchedSite.isJetpackConnected());
+        assertFalse(fetchedSite.isWPComAtomic());
+    }
+
+    @Test
+    public void testFetchSitesWithAtomicFilter() throws InterruptedException {
+        List<SiteFilter> filters = new ArrayList<>();
+        filters.add(SiteFilter.ATOMIC);
+
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
+                filters
+        );
+
+        // Only atomic site exists
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasWPComAtomicSite());
+    }
+
+    @Test
+    public void testFetchSitesWithWpComFilter() throws InterruptedException {
+        List<SiteFilter> filters = new ArrayList<>();
+        filters.add(SiteFilter.WPCOM);
+
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
+                filters
+        );
+
+        // Only wpcom site exists
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasWPComSite());
+    }
+
+    @Test
+    public void testFetchSitesWithTwoFilters() throws InterruptedException {
+        List<SiteFilter> filters = new ArrayList<>();
+        filters.add(SiteFilter.WPCOM);
+        filters.add(SiteFilter.ATOMIC);
+
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC,
+                filters
+                                      );
+
+        assertEquals(2, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasWPComAtomicSite());
     }
 
     @Test
@@ -382,7 +468,18 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
-    private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
+    private void authenticateWPComAndFetchSites(
+            String username,
+            String password
+    ) throws InterruptedException {
+        authenticateWPComAndFetchSites(username, password, null);
+    }
+
+    private void authenticateWPComAndFetchSites(
+            String username,
+            String password,
+            List<SiteFilter> filters
+    ) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
@@ -400,7 +497,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchSitesPayload(filters)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);

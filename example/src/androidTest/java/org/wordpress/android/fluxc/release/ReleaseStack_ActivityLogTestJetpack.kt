@@ -34,6 +34,7 @@ import org.wordpress.android.fluxc.store.ActivityLogStore.FetchActivityTypesPayl
 import org.wordpress.android.fluxc.store.ActivityLogStore.OnActivityTypesFetched
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindErrorType
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.tools.FormattableContent
@@ -344,7 +345,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = CountDownLatch(1)
         nextEvent = TestEvents.SITE_CHANGED
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction())
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(siteStore.sitesCount > 0)
