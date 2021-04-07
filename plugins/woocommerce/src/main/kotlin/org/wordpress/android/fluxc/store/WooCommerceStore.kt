@@ -42,7 +42,6 @@ open class WooCommerceStore @Inject constructor(
     private val appContext: Context,
     dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
-    private val pluginRestClient: WooPluginRestClient,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient
 ) : Store(dispatcher) {
