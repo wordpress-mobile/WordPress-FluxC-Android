@@ -8,6 +8,7 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient.FetchPluginsResponse.PluginModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse.ActivePluginModel
 
 object WCPluginSqlUtils {
     fun insertOrUpdate(data: List<WCPluginModel>) {
@@ -54,6 +55,14 @@ object WCPluginSqlUtils {
                 active = networkModel.isActive,
                 displayName = networkModel.displayName,
                 slug = networkModel.slug,
+                version = networkModel.version
+        )
+
+        constructor(site: SiteModel, networkModel: ActivePluginModel) : this(
+                localSiteId = site.id,
+                active = true,
+                displayName = networkModel.name,
+                slug = networkModel.name,
                 version = networkModel.version
         )
 

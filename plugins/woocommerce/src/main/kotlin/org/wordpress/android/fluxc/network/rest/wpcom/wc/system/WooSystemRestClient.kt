@@ -5,13 +5,9 @@ import com.android.volley.RequestQueue
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
-import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
@@ -30,7 +26,7 @@ constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<ActivePluginsResponse> {
+    suspend fun fetchActivePlugins(site: SiteModel): WooPayload<ActivePluginsResponse> {
         val url = WOOCOMMERCE.system_status.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -50,8 +46,10 @@ constructor(
         }
     }
 
-    data class ActivePluginsResponse(val plugins: List<PluginModel>) {
-        data class PluginModel(
+    data class ActivePluginsResponse(
+        @SerializedName("active_plugins") val plugins: List<ActivePluginModel>
+    ) {
+        data class ActivePluginModel(
             val name: String,
             val version: String
         )
