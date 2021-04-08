@@ -99,9 +99,9 @@ class WooCommerceStoreTest {
     private suspend fun getPlugin(isError: Boolean = false): WooResult<WCPluginModel> {
         val payload = WooPayload(response)
         if (isError) {
-            whenever(restClient.fetchActivePlugins(any())).thenReturn(WooPayload(error))
+            whenever(restClient.fetchInstalledPlugins(any())).thenReturn(WooPayload(error))
         } else {
-            whenever(restClient.fetchActivePlugins(any())).thenReturn(payload)
+            whenever(restClient.fetchInstalledPlugins(any())).thenReturn(payload)
         }
         return wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
     }

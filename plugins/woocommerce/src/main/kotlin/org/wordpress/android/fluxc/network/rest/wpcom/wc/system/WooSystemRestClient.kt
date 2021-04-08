@@ -24,7 +24,7 @@ constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchActivePlugins(site: SiteModel): WooPayload<ActivePluginsResponse> {
+    suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<ActivePluginsResponse> {
         val url = WOOCOMMERCE.system_status.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
