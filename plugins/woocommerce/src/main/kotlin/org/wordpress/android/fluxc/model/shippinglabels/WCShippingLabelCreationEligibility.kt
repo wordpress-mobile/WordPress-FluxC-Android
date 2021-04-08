@@ -18,7 +18,6 @@ class WCShippingLabelCreationEligibility(@PrimaryKey @Column private var id: Int
         set
     @Column var reason: String? = null
 
-
     override fun setId(id: Int) {
         this.id = id
     }

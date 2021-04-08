@@ -79,7 +79,7 @@ object WCShippingLabelSqlUtils {
                 .endWhere().execute()
     }
 
-    fun insertOrUpdateSLCreationEligibility(eligibility: WCShippingLabelCreationEligibility) : Int {
+    fun insertOrUpdateSLCreationEligibility(eligibility: WCShippingLabelCreationEligibility): Int {
         val result = WellSql.select(WCShippingLabelCreationEligibility::class.java)
                 .where().beginGroup()
                 .equals(WCShippingLabelCreationEligibilityTable.ID, eligibility.id)
@@ -106,7 +106,7 @@ object WCShippingLabelSqlUtils {
     fun getSLCreationEligibilityForOrder(
         localSiteId: Int,
         orderId: Long
-    ) : WCShippingLabelCreationEligibility? {
+    ): WCShippingLabelCreationEligibility? {
         return WellSql.select(WCShippingLabelCreationEligibility::class.java)
                 .where()
                 .equals(WCShippingLabelCreationEligibilityTable.LOCAL_SITE_ID, localSiteId)
