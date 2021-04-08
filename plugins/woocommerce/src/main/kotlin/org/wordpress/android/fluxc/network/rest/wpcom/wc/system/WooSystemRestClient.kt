@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Singleton
 
-@Singleton
 class WooSystemRestClient
 constructor(
     dispatcher: Dispatcher,
