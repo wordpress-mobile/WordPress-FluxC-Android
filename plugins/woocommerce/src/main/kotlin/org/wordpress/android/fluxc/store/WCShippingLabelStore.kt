@@ -130,14 +130,14 @@ class WCShippingLabelStore @Inject constructor(
         canCreatePackage: Boolean,
         canCreatePaymentMethod: Boolean,
         canCreateCustomsForm: Boolean
-    ): Boolean? {
+    ): WCShippingLabelCreationEligibility? {
         val eligibility = WCShippingLabelSqlUtils.getSLCreationEligibilityForOrder(site.id, orderId)
                 ?: return null
 
         return if (eligibility.canCreatePackage == canCreatePackage &&
                 eligibility.canCreatePaymentMethod == canCreatePaymentMethod &&
                 eligibility.canCreateCustomsForm == canCreateCustomsForm) {
-            eligibility.isEligible
+            eligibility
         } else {
             null
         }
@@ -149,7 +149,7 @@ class WCShippingLabelStore @Inject constructor(
         canCreatePackage: Boolean,
         canCreatePaymentMethod: Boolean,
         canCreateCustomsForm: Boolean
-    ): WooResult<Boolean> {
+    ): WooResult<WCShippingLabelCreationEligibility> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchShippingLabelCreationEligibility") {
             val response = restClient.checkShippingLabelCreationEligibility(
                     site = site,
@@ -170,10 +170,11 @@ class WCShippingLabelStore @Inject constructor(
                         this.canCreatePaymentMethod = canCreatePaymentMethod
                         this.canCreateCustomsForm = canCreateCustomsForm
                         this.isEligible = response.result.isEligible
+                        this.reason = response.result.reason
                     }
                     WCShippingLabelSqlUtils.insertOrUpdateSLCreationEligibility(eligibility)
 
-                    WooResult(response.result.isEligible)
+                    WooResult(eligibility)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
