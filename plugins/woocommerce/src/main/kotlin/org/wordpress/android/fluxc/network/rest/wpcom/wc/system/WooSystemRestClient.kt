@@ -33,7 +33,7 @@ constructor(
                 this,
                 site,
                 url,
-                mapOf("_fields" to "active_plugins"),
+                mapOf("_fields" to "active_plugins,inactive_plugins"),
                 ActivePluginsResponse::class.java
         )
         return when (response) {
@@ -47,11 +47,16 @@ constructor(
     }
 
     data class ActivePluginsResponse(
-        @SerializedName("active_plugins") val plugins: List<ActivePluginModel>
+        @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>,
+        @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>
     ) {
-        data class ActivePluginModel(
+        val plugins: List<SystemPluginModel>
+            get() = activePlugins.map { it.copy(isActive = true) } + inactivePlugins
+
+        data class SystemPluginModel(
             val name: String,
-            val version: String
+            val version: String,
+            val isActive: Boolean = false
         )
     }
 }

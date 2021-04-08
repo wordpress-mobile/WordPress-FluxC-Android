@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse.ActivePluginModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse.SystemPluginModel
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -40,8 +40,11 @@ class WooCommerceStoreTest {
 
     private val response = ActivePluginsResponse(
             listOf(
-                    ActivePluginModel("WooCommerce Shipping &amp; Tax", "1.0"),
-                    ActivePluginModel("Other Plugin", "2.0")
+                    SystemPluginModel("WooCommerce Shipping &amp; Tax", "1.0"),
+                    SystemPluginModel("Other Plugin", "2.0")
+            ),
+            listOf(
+                    SystemPluginModel("Inactive", "1.0")
             )
     )
 
