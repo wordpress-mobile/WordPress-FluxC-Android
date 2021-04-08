@@ -6,5 +6,5 @@ data class SLCreationEligibilityApiResponse(
     @SerializedName("is_eligible")
     val isEligible: Boolean,
     @SerializedName("reason")
-    val reason: String
+    val reason: String?
 )

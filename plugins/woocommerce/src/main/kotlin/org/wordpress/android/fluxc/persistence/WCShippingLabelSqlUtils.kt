@@ -82,7 +82,7 @@ object WCShippingLabelSqlUtils {
     fun insertOrUpdateSLCreationEligibility(eligibility: WCShippingLabelCreationEligibility) : Int {
         val result = WellSql.select(WCShippingLabelCreationEligibility::class.java)
                 .where().beginGroup()
-                .equals(WCShippingLabelModelTable.ID, eligibility.id)
+                .equals(WCShippingLabelCreationEligibilityTable.ID, eligibility.id)
                 .or()
                 .beginGroup()
                 .equals(WCShippingLabelCreationEligibilityTable.REMOTE_ORDER_ID, eligibility.remoteOrderId)
