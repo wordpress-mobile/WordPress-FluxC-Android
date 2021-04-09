@@ -14,15 +14,16 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class GatewayRestClient
-constructor(
+class GatewayRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     appContext: Context?,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {

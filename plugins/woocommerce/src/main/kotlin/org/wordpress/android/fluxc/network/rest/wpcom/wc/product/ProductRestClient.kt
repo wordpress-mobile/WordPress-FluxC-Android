@@ -74,13 +74,15 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class ProductRestClient(
+class ProductRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder? = null

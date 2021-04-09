@@ -27,13 +27,15 @@ import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettings
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsError
 import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsErrorType
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class WooCommerceRestClient(
+class WooCommerceRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
