@@ -6,7 +6,6 @@ import dagger.Component
 import dagger.android.AndroidInjector
 import dagger.android.AndroidInjectionModule
 import org.wordpress.android.fluxc.example.ExampleApp
-import org.wordpress.android.fluxc.module.ReleaseBaseModule
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule
 import javax.inject.Singleton
@@ -17,7 +16,6 @@ import javax.inject.Singleton
         ApplicationModule::class,
         AppConfigModule::class,
         ReleaseOkHttpClientModule::class,
-        ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
         MainActivityModule::class,
         WCOrderListActivityModule::class))

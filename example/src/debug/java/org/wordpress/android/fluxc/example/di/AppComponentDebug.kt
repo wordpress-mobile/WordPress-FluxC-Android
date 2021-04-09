@@ -5,7 +5,6 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import org.wordpress.android.fluxc.module.DebugOkHttpClientModule
-import org.wordpress.android.fluxc.module.ReleaseBaseModule
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
 import javax.inject.Singleton
 
@@ -16,7 +15,6 @@ import javax.inject.Singleton
         AppConfigModule::class,
         InterceptorModule::class,
         DebugOkHttpClientModule::class,
-        ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
         MainActivityModule::class,
         WCOrderListActivityModule::class))
