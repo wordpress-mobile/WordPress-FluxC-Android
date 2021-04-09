@@ -462,7 +462,7 @@ class WooShippingLabelFragment : Fragment() {
                         val label = it.first()
                         prependToLog(
                                 "Purchased a shipping label with the following details:\n" +
-                                        "Order Id: ${label.localOrderId}\n" +
+                                        "Order Id: ${label.remoteOrderId}\n" +
                                         "Products: ${label.productNames}\n" +
                                         "Label Id: ${label.remoteShippingLabelId}\n" +
                                         "Price: ${label.rate}"

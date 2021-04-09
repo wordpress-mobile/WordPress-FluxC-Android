@@ -181,7 +181,7 @@ class WCShippingLabelStoreTest {
         val shippingLabelModels = mapper.map(sampleShippingLabelApiResponse!!, site)
 
         assertThat(result.model?.size).isEqualTo(shippingLabelModels.size)
-        assertThat(result.model?.first()?.localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(result.model?.first()?.remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(result.model?.first()?.localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(result.model?.first()?.remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -189,7 +189,6 @@ class WCShippingLabelStoreTest {
         assertThat(result.model?.first()?.packageName).isEqualTo(shippingLabelModels.first().packageName)
         assertThat(result.model?.first()?.refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(result.model?.first()?.rate).isEqualTo(shippingLabelModels.first().rate)
-        assertThat(result.model?.first()?.paperSize).isEqualTo(shippingLabelModels.first().paperSize)
         assertThat(result.model?.first()?.getProductNameList()?.size)
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
         assertThat(result.model?.first()?.getProductIdsList()?.size)
@@ -210,7 +209,7 @@ class WCShippingLabelStoreTest {
 
         val shippingLabelModels = mapper.map(sampleShippingLabelApiResponse!!, site)
         assertThat(storedShippingLabelsList.size).isEqualTo(shippingLabelModels.size)
-        assertThat(storedShippingLabelsList.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(storedShippingLabelsList.first().remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(storedShippingLabelsList.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(storedShippingLabelsList.first().remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -219,7 +218,6 @@ class WCShippingLabelStoreTest {
         assertThat(storedShippingLabelsList.first().refundableAmount)
                 .isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(storedShippingLabelsList.first().rate).isEqualTo(shippingLabelModels.first().rate)
-        assertThat(storedShippingLabelsList.first().paperSize).isEqualTo(shippingLabelModels.first().paperSize)
         assertNotNull(storedShippingLabelsList.first().refund)
         assertThat(storedShippingLabelsList.first().getProductNameList().size)
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
@@ -463,7 +461,7 @@ class WCShippingLabelStoreTest {
                         .map { it.labelId!! })
 
         assertThat(result.model!!.size).isEqualTo(shippingLabelModels.size)
-        assertThat(result.model!!.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(result.model!!.first().remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(result.model!!.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(result.model!!.first().remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)

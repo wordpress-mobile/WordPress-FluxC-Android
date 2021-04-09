@@ -14,7 +14,7 @@ object WCShippingLabelSqlUtils {
         return WellSql.select(WCShippingLabelModel::class.java)
                 .where()
                 .equals(WCShippingLabelModelTable.LOCAL_SITE_ID, localSiteId)
-                .equals(WCShippingLabelModelTable.LOCAL_ORDER_ID, orderId)
+                .equals(WCShippingLabelModelTable.REMOTE_ORDER_ID, orderId)
                 .endWhere()
                 .asModel
     }
@@ -27,7 +27,7 @@ object WCShippingLabelSqlUtils {
         return WellSql.select(WCShippingLabelModel::class.java)
                 .where()
                 .equals(WCShippingLabelModelTable.LOCAL_SITE_ID, localSiteId)
-                .equals(WCShippingLabelModelTable.LOCAL_ORDER_ID, orderId)
+                .equals(WCShippingLabelModelTable.REMOTE_ORDER_ID, orderId)
                 .equals(WCShippingLabelModelTable.REMOTE_SHIPPING_LABEL_ID, remoteShippingLabelId)
                 .endWhere()
                 .asModel.firstOrNull()
@@ -46,7 +46,7 @@ object WCShippingLabelSqlUtils {
                 .or()
                 .beginGroup()
                 .equals(WCShippingLabelModelTable.REMOTE_SHIPPING_LABEL_ID, shippingLabel.remoteShippingLabelId)
-                .equals(WCShippingLabelModelTable.LOCAL_ORDER_ID, shippingLabel.localOrderId)
+                .equals(WCShippingLabelModelTable.REMOTE_ORDER_ID, shippingLabel.remoteOrderId)
                 .equals(WCShippingLabelModelTable.LOCAL_SITE_ID, shippingLabel.localSiteId)
                 .endGroup()
                 .endGroup().endWhere()
@@ -67,7 +67,7 @@ object WCShippingLabelSqlUtils {
     fun deleteShippingLabelsForOrder(orderId: Long): Int =
             WellSql.delete(WCShippingLabelModel::class.java)
                     .where()
-                    .equals(WCShippingLabelModelTable.LOCAL_ORDER_ID, orderId)
+                    .equals(WCShippingLabelModelTable.REMOTE_ORDER_ID, orderId)
                     .endWhere().execute()
 
     fun deleteShippingLabelsForSite(localSiteId: Int): Int {
