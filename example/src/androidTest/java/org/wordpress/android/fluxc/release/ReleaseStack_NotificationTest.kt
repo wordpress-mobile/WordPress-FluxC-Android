@@ -21,13 +21,11 @@ import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsRes
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadPayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsSeenPayload
 import org.wordpress.android.fluxc.store.NotificationStore.OnNotificationChanged
-import java.lang.Exception
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
-import kotlin.AssertionError
 import kotlin.properties.Delegates
 
 class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {

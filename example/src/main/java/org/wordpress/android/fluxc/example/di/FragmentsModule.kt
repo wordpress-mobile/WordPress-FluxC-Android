@@ -35,8 +35,8 @@ import org.wordpress.android.fluxc.example.ui.products.WooUpdateVariationFragmen
 import org.wordpress.android.fluxc.example.ui.refunds.WooRefundsFragment
 import org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment
 import org.wordpress.android.fluxc.example.ui.shippinglabels.WooVerifyAddressFragment
-import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
+import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 
 @Module

@@ -37,8 +37,8 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)

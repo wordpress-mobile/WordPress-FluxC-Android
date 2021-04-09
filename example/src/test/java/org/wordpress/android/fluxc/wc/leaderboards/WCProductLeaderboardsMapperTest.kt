@@ -19,8 +19,8 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
-import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateStubbedProductIdList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 
