@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.delay
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
@@ -19,16 +20,22 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.LabelItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse.FormSchema.PackageOption.PackageDefinition
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.UpdateSettingsApiRequest
 import org.wordpress.android.fluxc.persistence.WCShippingLabelSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.fluxc.utils.Poller
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -294,13 +301,79 @@ class WCShippingLabelStore @Inject constructor(
             val response = restClient.purchaseShippingLabels(site, orderId, origin, destination, packagesData)
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
-                response.result?.labels != null && response.result.labels.all { it.status == "PURCHASED" } -> {
-                    val shippingLabels = mapper.map(response.result, orderId, origin, destination, site)
-                    WCShippingLabelSqlUtils.insertOrUpdateShippingLabels(shippingLabels)
-
-                    WooResult(shippingLabels)
+                response.result?.labels != null -> {
+                    delay(2000)
+                    val labelsStatusResponse = pollShippingLabelsForPurchase(
+                            site,
+                            orderId,
+                            response.result.labels.map { it.labelId!! }
+                    )
+                    if (labelsStatusResponse.isError) {
+                        WooResult(labelsStatusResponse.error)
+                    } else {
+                        val shippingLabels = mapper.map(
+                                labelsStatusResponse.result!!,
+                                orderId,
+                                origin,
+                                destination,
+                                site
+                        )
+                        WCShippingLabelSqlUtils.insertOrUpdateShippingLabels(shippingLabels)
+                        WooResult(shippingLabels)
+                    }
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    private suspend fun pollShippingLabelsForPurchase(
+        site: SiteModel,
+        orderId: Long,
+        labelIds: List<Long>
+    ): WooPayload<ShippingLabelStatusApiResponse> {
+        val poller = Poller(delayInMs = 1000, maxRetries = 3)
+        val remainingLabels: MutableList<Long> = labelIds.toMutableList()
+        val doneLabels: MutableList<LabelItem> = mutableListOf()
+
+        val response = poller.poll(
+                request = {
+                    restClient.fetchShippingLabelsStatus(
+                            site,
+                            orderId,
+                            remainingLabels.toList()
+                    )
+                },
+                predicate = { response ->
+                    // Stop the polling if the response has an error after the retries
+                    if (response.isError || response.result!!.labels == null) return@poll true
+                    // Stop the polling if the purchase of one of the labels failed
+                    if (response.result.labels!!.any { it.status == LabelItem.STATUS_ERROR }) return@poll true
+
+                    val purchasedLabels = response.result.labels.filter { it.status == LabelItem.STATUS_PURCHASED }
+                    doneLabels.addAll(purchasedLabels)
+                    remainingLabels.removeAll { labelId ->
+                        purchasedLabels.any { it.labelId == labelId }
+                    }
+                    remainingLabels.isEmpty()
+                }
+        )
+
+        return when {
+            response.isError -> {
+                response
+            }
+            response.result?.labels?.any { it.status == LabelItem.STATUS_ERROR } == true -> {
+                WooPayload(
+                        WooError(
+                                API_ERROR,
+                                SERVER_ERROR,
+                                message = response.result.labels.first { it.status == LabelItem.STATUS_ERROR }.error
+                        )
+                )
+            }
+            else -> {
+                WooPayload(ShippingLabelStatusApiResponse(isSuccess = true, labels = doneLabels))
             }
         }
     }

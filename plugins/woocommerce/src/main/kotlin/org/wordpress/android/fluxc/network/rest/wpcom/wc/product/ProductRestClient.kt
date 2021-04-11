@@ -1210,7 +1210,10 @@ class ProductRestClient(
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
             if (storedWCProductModel.stockQuantity != updatedProductModel.stockQuantity) {
-                body["stock_quantity"] = updatedProductModel.stockQuantity
+                // Conversion/rounding down because core API only accepts Int value for stock quantity.
+                // On the app side, make sure it only allows whole decimal quantity when updating, so that
+                // there's no undesirable conversion effect.
+                body["stock_quantity"] = updatedProductModel.stockQuantity.toInt()
             }
             if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
@@ -1372,7 +1375,10 @@ class ProductRestClient(
         // only allowed to change the following params if manageStock is enabled
         if (updatedVariationModel.manageStock) {
             if (storedVariationModel.stockQuantity != updatedVariationModel.stockQuantity) {
-                body["stock_quantity"] = updatedVariationModel.stockQuantity
+                // Conversion/rounding down because core API only accepts Int value for stock quantity.
+                // On the app side, make sure it only allows whole decimal quantity when updating, so that
+                // there's no undesirable conversion effect.
+                body["stock_quantity"] = updatedVariationModel.stockQuantity.toInt()
             }
             if (storedVariationModel.backorders != updatedVariationModel.backorders) {
                 body["backorders"] = updatedVariationModel.backorders

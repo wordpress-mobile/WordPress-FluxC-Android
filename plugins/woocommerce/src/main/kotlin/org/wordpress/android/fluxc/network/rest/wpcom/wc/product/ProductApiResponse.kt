@@ -42,7 +42,7 @@ class ProductApiResponse : Response {
     var tax_class: String? = null
 
     var manage_stock: String? = null
-    var stock_quantity = 0
+    var stock_quantity = 0.0
     var stock_status: String? = null
 
     var date_on_sale_from: String? = null
