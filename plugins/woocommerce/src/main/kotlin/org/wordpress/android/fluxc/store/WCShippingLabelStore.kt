@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomP
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelCreationEligibility
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -117,6 +118,63 @@ class WCShippingLabelStore @Inject constructor(
                 }
                 response.result?.success == true -> {
                     WooResult(response.result.b64Content)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    fun isOrderEligibleForShippingLabelCreation(
+        site: SiteModel,
+        orderId: Long,
+        canCreatePackage: Boolean,
+        canCreatePaymentMethod: Boolean,
+        canCreateCustomsForm: Boolean
+    ): WCShippingLabelCreationEligibility? {
+        val eligibility = WCShippingLabelSqlUtils.getSLCreationEligibilityForOrder(site.id, orderId)
+                ?: return null
+
+        return if (eligibility.canCreatePackage == canCreatePackage &&
+                eligibility.canCreatePaymentMethod == canCreatePaymentMethod &&
+                eligibility.canCreateCustomsForm == canCreateCustomsForm) {
+            eligibility
+        } else {
+            null
+        }
+    }
+
+    suspend fun fetchShippingLabelCreationEligibility(
+        site: SiteModel,
+        orderId: Long,
+        canCreatePackage: Boolean,
+        canCreatePaymentMethod: Boolean,
+        canCreateCustomsForm: Boolean
+    ): WooResult<WCShippingLabelCreationEligibility> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchShippingLabelCreationEligibility") {
+            val response = restClient.checkShippingLabelCreationEligibility(
+                    site = site,
+                    orderId = orderId,
+                    canCreatePackage = canCreatePackage,
+                    canCreatePaymentMethod = canCreatePaymentMethod,
+                    canCreateCustomsForm = canCreateCustomsForm
+            )
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val eligibility = WCShippingLabelCreationEligibility().apply {
+                        this.localSiteId = site.id
+                        this.remoteOrderId = orderId
+                        this.canCreatePackage = canCreatePackage
+                        this.canCreatePaymentMethod = canCreatePaymentMethod
+                        this.canCreateCustomsForm = canCreateCustomsForm
+                        this.isEligible = response.result.isEligible
+                        this.reason = response.result.reason
+                    }
+                    WCShippingLabelSqlUtils.insertOrUpdateSLCreationEligibility(eligibility)
+
+                    WooResult(eligibility)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }

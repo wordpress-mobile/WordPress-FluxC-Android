@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.Predefi
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCPaymentMethod
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelCreationEligibility
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -40,6 +41,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.LabelItem
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.SLCreationEligibilityApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse.ShippingOption.Rate
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.VerifyAddressResponse
@@ -153,7 +155,11 @@ class WCShippingLabelStoreTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(SiteModel::class.java, WCShippingLabelModel::class.java),
+                listOf(
+                        SiteModel::class.java,
+                        WCShippingLabelModel::class.java,
+                        WCShippingLabelCreationEligibility::class.java
+                ),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -175,7 +181,7 @@ class WCShippingLabelStoreTest {
         val shippingLabelModels = mapper.map(sampleShippingLabelApiResponse!!, site)
 
         assertThat(result.model?.size).isEqualTo(shippingLabelModels.size)
-        assertThat(result.model?.first()?.localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(result.model?.first()?.remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(result.model?.first()?.localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(result.model?.first()?.remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -183,7 +189,6 @@ class WCShippingLabelStoreTest {
         assertThat(result.model?.first()?.packageName).isEqualTo(shippingLabelModels.first().packageName)
         assertThat(result.model?.first()?.refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(result.model?.first()?.rate).isEqualTo(shippingLabelModels.first().rate)
-        assertThat(result.model?.first()?.paperSize).isEqualTo(shippingLabelModels.first().paperSize)
         assertThat(result.model?.first()?.getProductNameList()?.size)
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
         assertThat(result.model?.first()?.getProductIdsList()?.size)
@@ -204,7 +209,7 @@ class WCShippingLabelStoreTest {
 
         val shippingLabelModels = mapper.map(sampleShippingLabelApiResponse!!, site)
         assertThat(storedShippingLabelsList.size).isEqualTo(shippingLabelModels.size)
-        assertThat(storedShippingLabelsList.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(storedShippingLabelsList.first().remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(storedShippingLabelsList.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(storedShippingLabelsList.first().remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -213,7 +218,6 @@ class WCShippingLabelStoreTest {
         assertThat(storedShippingLabelsList.first().refundableAmount)
                 .isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(storedShippingLabelsList.first().rate).isEqualTo(shippingLabelModels.first().rate)
-        assertThat(storedShippingLabelsList.first().paperSize).isEqualTo(shippingLabelModels.first().paperSize)
         assertNotNull(storedShippingLabelsList.first().refund)
         assertThat(storedShippingLabelsList.first().getProductNameList().size)
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
@@ -457,7 +461,7 @@ class WCShippingLabelStoreTest {
                         .map { it.labelId!! })
 
         assertThat(result.model!!.size).isEqualTo(shippingLabelModels.size)
-        assertThat(result.model!!.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(result.model!!.first().remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(result.model!!.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(result.model!!.first().remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -499,6 +503,69 @@ class WCShippingLabelStoreTest {
 
         assertThat(result.isError).isTrue()
         assertThat(result.error.message).isEqualTo(statusErrorResponse.labels!!.first().error)
+    }
+
+    @Test
+    fun `fetch shipping label eligibility`() = test {
+        val result = fetchSLCreationEligibility(
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false,
+                isEligible = true,
+                isError = false
+        )
+        assertThat(result.model).isNotNull
+        assertThat(result.model!!.isEligible).isTrue
+
+        val failedResult = fetchSLCreationEligibility(
+            canCreatePackage = false,
+            canCreatePaymentMethod = false,
+            canCreateCustomsForm = false,
+            isError = true
+        )
+        assertThat(failedResult.model).isNull()
+        assertThat(failedResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `get stored eligibility`() = test {
+        fetchSLCreationEligibility(
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false,
+                isEligible = true,
+                isError = false
+        )
+
+        val eligibility = store.isOrderEligibleForShippingLabelCreation(
+                site = site,
+                orderId = orderId,
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false
+        )
+        assertThat(eligibility).isNotNull
+        assertThat(eligibility!!.isEligible).isTrue
+    }
+
+    @Test
+    fun `invalidate cached data if parameters are different`() = test {
+        fetchSLCreationEligibility(
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false,
+                isEligible = true,
+                isError = false
+        )
+
+        val eligibility = store.isOrderEligibleForShippingLabelCreation(
+                site = site,
+                orderId = orderId,
+                canCreatePackage = true,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false
+        )
+        assertThat(eligibility).isNull()
     }
 
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
@@ -578,5 +645,32 @@ class WCShippingLabelStoreTest {
             whenever(restClient.getAccountSettings(any())).thenReturn(accountSettingsPayload)
         }
         return store.getAccountSettings(site)
+    }
+
+    private suspend fun fetchSLCreationEligibility(
+        canCreatePackage: Boolean,
+        canCreatePaymentMethod: Boolean,
+        canCreateCustomsForm: Boolean,
+        isEligible: Boolean = false,
+        isError: Boolean = false
+    ): WooResult<WCShippingLabelCreationEligibility> {
+        if (isError) {
+            whenever(restClient.checkShippingLabelCreationEligibility(any(), any(), any(), any(), any()))
+                    .thenReturn(WooPayload(error))
+        } else {
+            val result = SLCreationEligibilityApiResponse(
+                    isEligible = isEligible,
+                    reason = if (isEligible) null else "reason"
+            )
+            whenever(restClient.checkShippingLabelCreationEligibility(any(), any(), any(), any(), any()))
+                    .thenReturn(WooPayload(result))
+        }
+        return store.fetchShippingLabelCreationEligibility(
+                site = site,
+                orderId = orderId,
+                canCreatePackage = canCreatePackage,
+                canCreatePaymentMethod = canCreatePaymentMethod,
+                canCreateCustomsForm = canCreateCustomsForm
+        )
     }
 }

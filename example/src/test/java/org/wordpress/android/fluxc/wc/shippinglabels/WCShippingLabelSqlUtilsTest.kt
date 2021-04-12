@@ -54,7 +54,7 @@ class WCShippingLabelSqlUtilsTest {
         var savedShippingLabels = WCShippingLabelSqlUtils.getShippingClassesForOrder(site.id, orderId)
         assertEquals(savedShippingLabels.size, 1)
         assertEquals(savedShippingLabels[0].localSiteId, shippingLabel.localSiteId)
-        assertEquals(savedShippingLabels[0].localOrderId, shippingLabel.localOrderId)
+        assertEquals(savedShippingLabels[0].remoteOrderId, shippingLabel.remoteOrderId)
         assertEquals(savedShippingLabels[0].remoteShippingLabelId, shippingLabel.remoteShippingLabelId)
         assertEquals(savedShippingLabels[0].serviceName, shippingLabel.serviceName)
         assertNotNull(savedShippingLabels[0].refund)
@@ -69,7 +69,7 @@ class WCShippingLabelSqlUtilsTest {
         savedShippingLabels = WCShippingLabelSqlUtils.getShippingClassesForOrder(site.id, orderId)
         assertEquals(savedShippingLabels.size, 1)
         assertEquals(savedShippingLabels[0].localSiteId, shippingLabel.localSiteId)
-        assertEquals(savedShippingLabels[0].localOrderId, shippingLabel.localOrderId)
+        assertEquals(savedShippingLabels[0].remoteOrderId, shippingLabel.remoteOrderId)
         assertEquals(savedShippingLabels[0].remoteShippingLabelId, shippingLabel.remoteShippingLabelId)
         assertEquals(savedShippingLabels[0].serviceName, shippingLabel.serviceName)
         assertEquals(savedShippingLabels[0].refund, shippingLabel.refund)
@@ -128,7 +128,7 @@ class WCShippingLabelSqlUtilsTest {
         val savedShippingLabelExists = WCShippingLabelSqlUtils.getShippingLabelById(
                 site.id, orderId, shippingLabelId + 1
         )
-        assertEquals(shippingLabels[0].localOrderId, savedShippingLabelExists?.localOrderId)
+        assertEquals(shippingLabels[0].remoteOrderId, savedShippingLabelExists?.remoteOrderId)
         assertEquals(shippingLabels[0].remoteShippingLabelId, savedShippingLabelExists?.remoteShippingLabelId)
         assertEquals(shippingLabels[0].localSiteId, savedShippingLabelExists?.localSiteId)
 
