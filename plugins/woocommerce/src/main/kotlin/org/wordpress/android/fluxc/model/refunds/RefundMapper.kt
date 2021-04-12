@@ -31,7 +31,8 @@ class RefundMapper
                             it.sku,
                             it.price?.toBigDecimalOrNull()
                     )
-                }
+                },
+                response.shippingLineItems
         )
     }
 
