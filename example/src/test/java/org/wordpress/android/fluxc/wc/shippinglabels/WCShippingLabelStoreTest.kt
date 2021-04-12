@@ -352,8 +352,8 @@ class WCShippingLabelStoreTest {
     fun `get packages`() = test {
         val expectedResult = WCPackagesResult(
                 listOf(
-                        CustomPackage("Krabica", false, "1 x 2 x 3"),
-                        CustomPackage("Obalka", true, "2 x 3 x 4")
+                        CustomPackage("Krabica", false, "1 x 2 x 3", 1f),
+                        CustomPackage("Obalka", true, "2 x 3 x 4", 5f)
                 ),
                 listOf(
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
@@ -362,13 +362,15 @@ class WCShippingLabelStoreTest {
                                                 "small_flat_box",
                                                 "Small Flat Rate Box",
                                                 false,
-                                                "21.91 x 13.65 x 4.13"
+                                                "21.91 x 13.65 x 4.13",
+                                                0f
                                         ),
                                         PredefinedPackage(
                                                 "medium_flat_box_top",
                                                 "Medium Flat Rate Box 1, Top Loading",
                                                 false,
-                                                "28.57 x 22.22 x 15.24"
+                                                "28.57 x 22.22 x 15.24",
+                                                0f
                                         )
                                 )
                         ),
@@ -378,7 +380,8 @@ class WCShippingLabelStoreTest {
                                         "LargePaddedPouch",
                                         "Large Padded Pouch",
                                         true,
-                                        "30.22 x 35.56 x 2.54"
+                                        "30.22 x 35.56 x 2.54",
+                                        0f
                                 ))
                         )
                 )
