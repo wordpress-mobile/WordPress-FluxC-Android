@@ -279,7 +279,8 @@ class WCShippingLabelStore @Inject constructor(
                                 id = definition.id,
                                 title = definition.name,
                                 isLetter = definition.isLetter,
-                                dimensions = definition.outerDimensions
+                                dimensions = definition.outerDimensions,
+                                boxWeight = definition.boxWeight ?: 0f
                         )
                 )
             }
@@ -289,7 +290,12 @@ class WCShippingLabelStore @Inject constructor(
 
     private fun getCustomPackages(result: GetPackageTypesResponse): List<CustomPackage> {
         return result.formData.customData.map {
-            CustomPackage(it.name, it.isLetter, it.outerDimensions ?: it.innerDimensions ?: "")
+            CustomPackage(
+                    title = it.name,
+                    isLetter = it.isLetter,
+                    dimensions = it.outerDimensions ?: it.innerDimensions ?: "",
+                    boxWeight = it.boxWeight ?: 0f
+            )
         }
     }
 
