@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -878,10 +879,13 @@ class WCProductStore @Inject constructor(
 
     suspend fun generateEmptyVariation(
         site: SiteModel,
-            productId: Long
+        product: WCProductModel
     ): WooResult<WCProductVariationModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "generateEmptyVariation") {
-                wcProductRestClient.generateEmptyVariation(site, productId)
+                product.attributeList
+                        .map { ProductVariantOption(it.id, it.name, "") }
+                        .let { mapOf("attributes" to it) }
+                        .let { wcProductRestClient.generateEmptyVariation(site, product.remoteProductId, it) }
                         ?.asWooResult()
                         ?.model?.asProductVariationModel()
                         ?.apply { insertOrUpdateProductVariation(this) }
