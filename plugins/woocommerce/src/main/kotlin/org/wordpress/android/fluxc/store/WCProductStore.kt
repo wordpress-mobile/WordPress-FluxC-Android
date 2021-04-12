@@ -884,7 +884,7 @@ class WCProductStore @Inject constructor(
             coroutineEngine?.withDefaultContext(T.API, this, "generateEmptyVariation") {
                 product.attributeList
                         .map { ProductVariantOption(it.id, it.name, "") }
-                        .let { mapOf("attributes" to it) }
+                        .let { Gson().toJson(it) }
                         .let { wcProductRestClient.generateEmptyVariation(site, product.remoteProductId, it) }
                         ?.asWooResult()
                         ?.model?.asProductVariationModel()

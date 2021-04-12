@@ -726,14 +726,14 @@ class ProductRestClient(
     suspend fun generateEmptyVariation(
         site: SiteModel,
         productId: Long,
-        arguments: Map<String, Any> = mapOf()
+        attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.pathV3
             .let { url ->
                 jetpackTunnelGsonRequestBuilder?.syncPostRequest(
                         this@ProductRestClient,
                         site,
                         url,
-                        arguments,
+                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
                         ProductVariationApiResponse::class.java
                 )?.handleResult()
             }
