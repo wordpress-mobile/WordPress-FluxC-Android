@@ -725,14 +725,15 @@ class ProductRestClient(
      */
     suspend fun generateEmptyVariation(
         site: SiteModel,
-        productId: Long
+        productId: Long,
+        arguments: Map<String, Any> = mapOf()
     ) = WOOCOMMERCE.products.id(productId).variations.pathV3
             .let { url ->
                 jetpackTunnelGsonRequestBuilder?.syncPostRequest(
                         this@ProductRestClient,
                         site,
                         url,
-                        mapOf(),
+                        arguments,
                         ProductVariationApiResponse::class.java
                 )?.handleResult()
             }
