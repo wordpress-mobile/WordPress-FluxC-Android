@@ -27,9 +27,7 @@ class WCShippingLabelMapper
                 refund = labelItem.refund.toString()
                 dateCreated = labelItem.dateCreated?.toString() ?: ""
 
-                localOrderId = response.orderId ?: 0L
-                paperSize = response.paperSize ?: ""
-                storeOptions = response.storeOptions.toString()
+                remoteOrderId = response.orderId ?: 0L
                 formData = response.formData.toString()
 
                 localSiteId = site.id
@@ -61,7 +59,7 @@ class WCShippingLabelMapper
                 refund = labelItem.refund.toString()
                 dateCreated = labelItem.dateCreated?.toString() ?: ""
 
-                localOrderId = orderId
+                remoteOrderId = orderId
                 formData = gson.toJson(FormData(origin = origin, destination = destination))
 
                 localSiteId = site.id
