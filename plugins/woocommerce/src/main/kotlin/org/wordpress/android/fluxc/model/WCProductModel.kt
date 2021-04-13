@@ -136,6 +136,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             return commaSeparatedOptions
         }
 
+        fun isSameAttribute(other: ProductAttribute): Boolean {
+            return id == other.id &&
+                    name == other.name &&
+                    variation == other.variation &&
+                    visible == other.visible &&
+                    options == other.options
+        }
+
         fun asGlobalAttribute(siteID: Int) =
                 WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute(id.toInt(), siteID)
 
@@ -187,6 +195,22 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         getAttribute(updatedAttribute.id.toInt())
                 ?.let { removeAttribute(it.id.toInt()) }
         addAttribute(updatedAttribute)
+    }
+
+    fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
+        val otherAttributes = otherProduct.attributeList
+        val thisAttributes = this.attributeList
+        if (thisAttributes.size != otherAttributes.size) {
+            return false
+        }
+
+        for (i in 0 until thisAttributes.size) {
+            if (!thisAttributes.get(i).isSameAttribute(otherAttributes.get(i))) {
+                return false
+            }
+        }
+
+        return true
     }
 
     /**
