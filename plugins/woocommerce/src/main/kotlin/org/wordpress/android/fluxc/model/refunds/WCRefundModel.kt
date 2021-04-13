@@ -4,7 +4,15 @@ import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 import java.util.Date
-
+/**
+ * Note:
+ * For the purpose of creating a refund through API, only a list of `WCRefundItem` is accepted. To be able to refund
+ * shipping lines, they will need to be converted into a list of `WCRefundItem` before being sent to the API.
+ *
+ * On the other hand, for the purpose of fetching a refund through API and persisting the data, product items and
+ * shipping lines are listed separately in the API response. To mimic that, here we also add `shippingLineItems` as
+ * one of the class properties.
+ */
 data class WCRefundModel(
     val id: Long,
     val dateCreated: Date,
