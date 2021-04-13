@@ -198,11 +198,26 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
-        val otherAttributes = otherProduct.getAttributeList()
-        val thisAttributes = this.getAttributeList()
+        val otherAttributes = otherProduct.attributeList
+        val thisAttributes = this.attributeList
         if (thisAttributes.size != otherAttributes.size) {
             return false
         }
+
+        fun logAttributes(name: String, attributes: Array<ProductAttribute>) {
+            AppLog.e(T.API, name)
+            for (i in 0 until attributes.size) {
+                AppLog.e(T.API, "* ${attributes[i].name}")
+                AppLog.e(T.API,  " id = ${attributes[i].id}")
+                AppLog.e(T.API,  " variation = ${attributes[i].variation}")
+                AppLog.e(T.API,  " visible = ${attributes[i].visible}")
+                AppLog.e(T.API,  " options = ${attributes[i].options}")
+            }
+        }
+
+        // TODO: remove logging
+        logAttributes("*** otherAttributes", otherAttributes)
+        logAttributes("*** thisAttributes", thisAttributes)
 
         for (i in 0 until thisAttributes.size) {
             if (!thisAttributes[i].isSameAttribute(otherAttributes[i])) {
