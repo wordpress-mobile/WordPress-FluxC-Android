@@ -205,7 +205,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
 
         for (i in 0 until thisAttributes.size) {
-            if (!thisAttributes.get(i).isSameAttribute(otherAttributes.get(i))) {
+            if (!thisAttributes[i].isSameAttribute(otherAttributes[i])) {
                 return false
             }
         }
