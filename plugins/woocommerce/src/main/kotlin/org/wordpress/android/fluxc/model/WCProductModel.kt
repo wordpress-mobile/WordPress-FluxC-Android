@@ -198,8 +198,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
-        val otherAttributes = otherProduct.attributeList
-        val thisAttributes = this.attributeList
+        val otherAttributes = otherProduct.getAttributeList()
+        val thisAttributes = this.getAttributeList()
         if (thisAttributes.size != otherAttributes.size) {
             return false
         }
