@@ -201,9 +201,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * Returns true if this product has the same attributes as the passed product
      */
     fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
-        AppLog.e(T.API, "this attributes = ${this.attributes}")
-        AppLog.e(T.API, "other attributes = ${otherProduct.attributes}")
-
         // do a quick string comparison first so we can avoid parsing the attributes when possible
         if (this.attributes == otherProduct.attributes) {
             return true
