@@ -197,7 +197,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         addAttribute(updatedAttribute)
     }
 
+    /**
+     * Returns true if this product has the same attributes as the passed product
+     */
     fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
+        AppLog.e(T.API, "this attributes = $attributes")
+        AppLog.e(T.API, "other attributes = ${otherProduct.attributes}")
+
         val otherAttributes = otherProduct.attributeList
         val thisAttributes = this.attributeList
         if (thisAttributes.size != otherAttributes.size) {
