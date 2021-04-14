@@ -51,6 +51,9 @@ local.properties
 example/properties/
 gradle.properties
 tests.properties
+api.properties
+!example/properties-example/tests.properties
+!example/properties-example/api.properties
 tests.properties-extra
 .gradletasknamecache
 
