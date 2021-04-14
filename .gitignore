@@ -48,6 +48,7 @@ local.properties
 
 # Gradle
 .gradle/
+example/properties/
 gradle.properties
 tests.properties
 tests.properties-extra
