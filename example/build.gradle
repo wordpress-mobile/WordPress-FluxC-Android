@@ -62,22 +62,6 @@ android {
     }
 }
 
-def loadProperties(fileName, warningDetail) {
-    def propertiesFolder = "properties"
-    def examplePropertiesFolder = "properties-example"
-    Properties properties = new Properties()
-    File propertiesFile = file("$propertiesFolder/$fileName")
-    if (propertiesFile.exists()) {
-        properties.load(new InputStreamReader(new FileInputStream(apiPropertiesFile), "utf-8"))
-    } else {
-        // Load defaults
-        def examplePropertiesFilePath = "$examplePropertiesFolder/$fileName"
-        println("WARNING: you're using the $examplePropertiesFilePath file - $warningDetail")
-        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFilePath)), "utf-8"))
-    }
-}
-
-
 android.buildTypes.all { buildType ->
     // Add properties named "wp.xxx" to our BuildConfig
     Properties apiProperties = loadProperties("api.properties", "example app can't access WordPress.com servers")
@@ -159,4 +143,27 @@ dependencies {
 
     // Multidex
     implementation 'androidx.multidex:multidex:2.0.1'
+}
+
+def loadProperties(fileName, warningDetail) {
+    checkDeprecatedPropertiesFiles()
+
+    def propertiesFolder = "properties"
+    def examplePropertiesFolder = "properties-example"
+    Properties properties = new Properties()
+    File propertiesFile = file("$propertiesFolder/$fileName")
+    if (propertiesFile.exists()) {
+        properties.load(new InputStreamReader(new FileInputStream(apiPropertiesFile), "utf-8"))
+    } else {
+        // Load defaults
+        def examplePropertiesFilePath = "$examplePropertiesFolder/$fileName"
+        logger.quiet("WARNING: you're using the $examplePropertiesFilePath file - $warningDetail")
+        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFilePath)), "utf-8"))
+    }
+}
+
+def checkDeprecatedPropertiesFiles() {
+    if (["tests.properties", "tests.properties-extra"].any { file(it).exists() }) {
+        throw new InvalidUserDataException("'example/tests.properties' and 'example/tests.properties-extra' property files are deprecated. Please see 'example/properties-example/README.md' for details.")
+    }
 }
