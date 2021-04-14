@@ -153,7 +153,7 @@ def loadProperties(fileName, warningDetail) {
     Properties properties = new Properties()
     File propertiesFile = file("$propertiesFolder/$fileName")
     if (propertiesFile.exists()) {
-        properties.load(new InputStreamReader(new FileInputStream(apiPropertiesFile), "utf-8"))
+        properties.load(new InputStreamReader(new FileInputStream(propertiesFile), "utf-8"))
     } else {
         // Load defaults
         def examplePropertiesFilePath = "$examplePropertiesFolder/$fileName"
