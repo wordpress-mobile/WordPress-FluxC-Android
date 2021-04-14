@@ -155,6 +155,20 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                             option = selectedOption
                     )
                 }
+
+        fun toJson(): JsonObject {
+            val jsonOptions = JsonArray().also {
+                for (option in options) {
+                    it.add(option)
+                }
+            }
+            return JsonObject().also { json ->
+                json.addProperty("id", id)
+                json.addProperty("name", name)
+                json.addProperty("visible", visible)
+                json.add("options", jsonOptions)
+            }
+        }
     }
 
     override fun getId() = id
