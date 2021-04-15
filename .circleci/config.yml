@@ -70,9 +70,7 @@ jobs:
           command: ./gradlew applyConfiguration
       - run:
           name: Merge properties files
-          command: |
-            ls .configure-files
-            ./tools/merge_properties.sh example/properties/tests.properties-extra example/properties/tests.properties > example/properties/tests.properties
+          command: ./gradlew :example:combineTestsPropertiesWithExtraTestsProperties
       - run:
           name: Build
           command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
