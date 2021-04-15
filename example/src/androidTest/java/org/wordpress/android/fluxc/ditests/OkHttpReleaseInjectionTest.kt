@@ -2,10 +2,10 @@ package org.wordpress.android.fluxc.ditests
 
 import okhttp3.CookieJar
 import okhttp3.OkHttpClient
+import okhttp3.internal.tls.OkHostnameVerifier
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.wordpress.android.fluxc.module.OkHttpConstants
 import org.wordpress.android.fluxc.network.BaseRequest
 import javax.inject.Inject
 import javax.inject.Named
@@ -34,7 +34,7 @@ class OkHttpReleaseInjectionTest {
         regularClient.apply {
             assertThat(cookieJar).isEqualTo(customCookieJar)
             assertThat(followRedirects).isTrue
-            assertThat(hostnameVerifier).isEqualTo(OkHttpConstants.DEFAULT_HOSTNAME_VERIFIER)
+            assertThat(hostnameVerifier).isEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
             assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
             assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
@@ -47,11 +47,11 @@ class OkHttpReleaseInjectionTest {
         noRedirectsOkHttpClient.apply {
             assertThat(cookieJar).isEqualTo(customCookieJar)
             assertThat(followRedirects).isFalse
-            assertThat(hostnameVerifier).isEqualTo(OkHttpConstants.DEFAULT_HOSTNAME_VERIFIER)
+            assertThat(hostnameVerifier).isEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(OkHttpConstants.DEFAULT_CONNECT_TIMEOUT_MILLIS)
-            assertThat(readTimeoutMillis).isEqualTo(OkHttpConstants.DEFAULT_READ_TIMEOUT_MILLIS)
-            assertThat(writeTimeoutMillis).isEqualTo(OkHttpConstants.DEFAULT_WRITE_TIMEOUT_MILLIS)
+            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
+            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
         }
     }
 
@@ -60,11 +60,15 @@ class OkHttpReleaseInjectionTest {
         customSslOkHttpClient.apply {
             assertThat(cookieJar).isEqualTo(customCookieJar)
             assertThat(followRedirects).isTrue
-            assertThat(hostnameVerifier).isNotEqualTo(OkHttpConstants.DEFAULT_HOSTNAME_VERIFIER)
+            assertThat(hostnameVerifier).isNotEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
             assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
             assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
             assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
         }
+    }
+
+    companion object {
+        val DEFAULT_HOSTNAME_VERIFIER = OkHostnameVerifier
     }
 }
