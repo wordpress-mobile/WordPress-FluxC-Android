@@ -166,6 +166,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 json.addProperty("id", id)
                 json.addProperty("name", name)
                 json.addProperty("visible", visible)
+                json.addProperty("variation", variation)
                 json.add("options", jsonOptions)
             }
         }
