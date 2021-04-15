@@ -26,7 +26,7 @@ class WCShippingLabelMapper
                 productIds = labelItem.productIds.toString()
                 refund = labelItem.refund.toString()
                 dateCreated = labelItem.dateCreated?.toString() ?: ""
-
+                expiryDate = labelItem.expiryDate
                 remoteOrderId = response.orderId ?: 0L
                 formData = response.formData.toString()
 
@@ -58,6 +58,7 @@ class WCShippingLabelMapper
                 productIds = labelItem.productIds.toString()
                 refund = labelItem.refund.toString()
                 dateCreated = labelItem.dateCreated?.toString() ?: ""
+                expiryDate = labelItem.expiryDate
 
                 remoteOrderId = orderId
                 formData = gson.toJson(FormData(origin = origin, destination = destination))

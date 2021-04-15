@@ -18,6 +18,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var trackingNumber = ""
     @Column var carrierId = ""
     @Column var dateCreated = ""
+    @Column var expiryDate: Long? = null
     @Column var serviceName = ""
     @Column var status = ""
     @Column var packageName = ""
