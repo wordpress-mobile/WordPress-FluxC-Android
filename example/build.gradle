@@ -160,6 +160,7 @@ def loadProperties(fileName, warningDetail) {
         logger.quiet("WARNING: you're using the $examplePropertiesFilePath file - $warningDetail")
         properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFilePath)), "utf-8"))
     }
+    return properties
 }
 
 def checkDeprecatedPropertiesFiles() {
