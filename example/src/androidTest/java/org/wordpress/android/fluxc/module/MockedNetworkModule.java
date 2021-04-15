@@ -61,32 +61,32 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClientBuilder, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    public RequestQueue provideRequestQueue(OkHttpClient okHttpClient, Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
     @Named("regular")
     @Provides
-    public RequestQueue provideRegularRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideRegularRequestQueue(OkHttpClient okHttpClient,
                                             Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
     @Named("no-redirects")
     @Provides
-    public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient okHttpClient,
                                                        Context appContext) {
-        return provideRegularRequestQueue(okHttpClientBuilder, appContext);
+        return provideRegularRequestQueue(okHttpClient, appContext);
     }
 
     @Singleton
     @Named("custom-ssl")
     @Provides
-    public RequestQueue provideCustomRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideCustomRequestQueue(OkHttpClient okHttpClient,
                                                    Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
