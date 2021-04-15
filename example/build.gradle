@@ -62,9 +62,14 @@ android {
     }
 }
 
+if (["tests.properties", "tests.properties-extra"].any { file(it).exists() }) {
+    throw new InvalidUserDataException("'example/tests.properties' and 'example/tests.properties-extra' property files are deprecated. Please see 'example/properties-example/README.md' for details.")
+}
+
 android.buildTypes.all { buildType ->
     // Add properties named "wp.xxx" to our BuildConfig
-    Properties apiProperties = loadProperties("api.properties", "example app can't access WordPress.com servers")
+    Properties apiProperties = loadPropertiesOrUseExampleProperties("api.properties",
+            "example app can't access WordPress.com servers")
     apiProperties.any { property ->
         if (property.key.toLowerCase().startsWith("wp.")) {
             buildType.buildConfigField "String", property.key.replace("wp.", "").replace(".", "_").toUpperCase(),
@@ -73,7 +78,8 @@ android.buildTypes.all { buildType ->
     }
 
     // Load test properties and add them to BuildConfig
-    Properties testProperties = loadProperties("tests.properties", "tests won't pass")
+    Properties testProperties = loadPropertiesOrUseExampleProperties("tests.properties",
+            "tests won't pass")
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
     }
@@ -145,26 +151,24 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
 }
 
-def loadProperties(fileName, warningDetail) {
-    checkDeprecatedPropertiesFiles()
-
-    def propertiesFolder = "properties"
-    def examplePropertiesFolder = "properties-example"
+def loadPropertiesOrUseExampleProperties(fileName, warningDetail) {
     Properties properties = new Properties()
-    File propertiesFile = file("$propertiesFolder/$fileName")
+    File propertiesFile = propertiesFile(fileName)
     if (propertiesFile.exists()) {
         properties.load(new InputStreamReader(new FileInputStream(propertiesFile), "utf-8"))
     } else {
-        // Load defaults
-        def examplePropertiesFilePath = "$examplePropertiesFolder/$fileName"
-        logger.quiet("WARNING: you're using the $examplePropertiesFilePath file - $warningDetail")
-        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFilePath)), "utf-8"))
+        def examplePropertiesFile = examplePropertiesFile(fileName)
+        logger.quiet("WARNING: you're using the $examplePropertiesFile file - $warningDetail")
+        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFile)), "utf-8"))
     }
     return properties
 }
 
-def checkDeprecatedPropertiesFiles() {
-    if (["tests.properties", "tests.properties-extra"].any { file(it).exists() }) {
-        throw new InvalidUserDataException("'example/tests.properties' and 'example/tests.properties-extra' property files are deprecated. Please see 'example/properties-example/README.md' for details.")
-    }
+def propertiesFile(fileName) {
+    return file("properties/$fileName")
 }
+
+def examplePropertiesFile(fileName) {
+    return file("properties-example/$fileName")
+}
+
