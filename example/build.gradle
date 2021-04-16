@@ -153,30 +153,30 @@ dependencies {
 
 def loadPropertiesOrUseExampleProperties(fileName, warningDetail) {
     Properties properties = new Properties()
-    File propertiesFile = propertiesFile(fileName)
+    File propertiesFile = file(propertiesFilePath(fileName))
     if (propertiesFile.exists()) {
         properties.load(new InputStreamReader(new FileInputStream(propertiesFile), "utf-8"))
     } else {
-        def examplePropertiesFile = examplePropertiesFile(fileName)
-        logger.quiet("WARNING: you're using the $examplePropertiesFile file - $warningDetail")
-        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFile)), "utf-8"))
+        def examplePropertiesFilePath = examplePropertiesFilePath(fileName)
+        logger.quiet("WARNING: you're using the '$examplePropertiesFilePath' file - $warningDetail")
+        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFilePath)), "utf-8"))
     }
     return properties
 }
 
-def propertiesFile(fileName) {
-    return file("properties/$fileName")
+def propertiesFilePath(fileName) {
+    return "properties/$fileName"
 }
 
-def examplePropertiesFile(fileName) {
-    return file("properties-example/$fileName")
+def examplePropertiesFilePath(fileName) {
+    return "properties-example/$fileName"
 }
 
 tasks.register("combineTestsPropertiesWithExtraTestsProperties") {
     Properties properties = new Properties()
 
-    File testsProperties = propertiesFile("tests.properties")
-    File testsPropertiesExtra = propertiesFile("tests.properties-extra")
+    File testsProperties = file(propertiesFilePath("tests.properties"))
+    File testsPropertiesExtra = file(propertiesFilePath("tests.properties-extra"))
     if (testsProperties.exists()) {
         properties.load(new InputStreamReader(new FileInputStream(testsProperties), "utf-8"))
     }
