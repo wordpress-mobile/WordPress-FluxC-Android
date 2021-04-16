@@ -895,8 +895,8 @@ class WCProductStore @Inject constructor(
 
     suspend fun deleteVariation(
         site: SiteModel,
-            productId: Long,
-            variationId: Long
+        productId: Long,
+        variationId: Long
     ): WooResult<WCProductVariationModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "deleteVariation") {
                 wcProductRestClient.deleteVariation(site, productId, variationId)
