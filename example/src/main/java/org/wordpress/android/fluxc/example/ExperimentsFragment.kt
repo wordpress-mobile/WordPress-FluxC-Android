@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.experiments.Assignments
 import org.wordpress.android.fluxc.store.ExperimentStore
-import org.wordpress.android.fluxc.store.ExperimentStore.FetchAssignmentsPayload
 import org.wordpress.android.fluxc.store.ExperimentStore.OnAssignmentsFetched
 import org.wordpress.android.fluxc.store.ExperimentStore.Platform
 import org.wordpress.android.fluxc.store.ExperimentStore.Platform.WORDPRESS_COM
@@ -56,10 +55,9 @@ class ExperimentsFragment : Fragment() {
         fetch_assignments.setOnClickListener {
             val platform = selectedPlatform ?: WORDPRESS_COM
             val anonymousId = anon_id_edit_text.text.toString()
-            val payload = FetchAssignmentsPayload(platform, anonymousId)
-            prependToLog("Fetching assignments with payload: $payload")
+            prependToLog("Fetching assignments with: platform=$platform, anonymousId=$anonymousId")
             GlobalScope.launch(Dispatchers.Default) {
-                val result = experimentStore.fetchAssignments(payload)
+                val result = experimentStore.fetchAssignments(platform, anonymousId)
                 withContext(Dispatchers.Main) {
                     onAssignmentsFetched(result)
                 }
