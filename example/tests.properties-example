@@ -175,6 +175,10 @@ TEST_WPCOM_PASSWORD_MULTIPLE_JETPACK = FIXME
 TEST_WPCOM_USERNAME_JETPACK_MULTISITE = FIXME
 TEST_WPCOM_PASSWORD_JETPACK_MULTISITE = FIXME
 
+# WP.com - Account with one WordPress.com site, one Jetpack site and one Atomic site
+TEST_WPCOM_USERNAME_ONE_JETPACK_ONE_ATOMIC = FIXME
+TEST_WPCOM_PASSWORD_ONE_JETPACK_ONE_ATOMIC = FIXME
+
 # Self hosted - Jetpack active but not connected to WP.com
 TEST_WPORG_USERNAME_JETPACK_DISCONNECTED = FIXME
 TEST_WPORG_PASSWORD_JETPACK_DISCONNECTED = FIXME
@@ -199,6 +203,14 @@ TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE = FIXME
 TEST_WPCOM_USERNAME_HAS_POST_FORMATS = FIXME
 TEST_WPCOM_PASSWORD_HAS_POST_FORMATS = FIXME
 
+# WP.com - Account with P2s for testing xposting
+TEST_WPCOM_USERNAME_XPOSTS = FIXME
+TEST_WPCOM_PASSWORD_XPOSTS = FIXME
+
+# WP.com - Account with a single P2 site on a free plan
+TEST_WPCOM_USERNAME_P2 = FIXME
+TEST_WPCOM_PASSWORD_P2 = FIXME
+
 # WP.com - Account connected to the following Jetpack sites
 TEST_WPCOM_USERNAME_JETPACK = FIXME
 TEST_WPCOM_PASSWORD_JETPACK = FIXME
@@ -208,6 +220,14 @@ TEST_WPORG_USERNAME_JETPACK_COMPLETE = FIXME
 TEST_WPORG_PASSWORD_JETPACK_COMPLETE = FIXME
 TEST_WPORG_URL_JETPACK_COMPLETE = FIXME
 TEST_WPORG_URL_JETPACK_COMPLETE_ENDPOINT = FIXME
+
+# Self Hosted - Jetpack site with Scan Daily plan including a threat
+TEST_WPORG_USERNAME_JETPACK_SCAN_DAILY = FIXME
+TEST_WPORG_PASSWORD_JETPACK_SCAN_DAILY = FIXME
+TEST_WPORG_URL_JETPACK_SCAN_DAILY = FIXME
+TEST_WPORG_URL_JETPACK_SCAN_DAILY_ENDPOINT = FIXME
+# Valid threat Id
+TEST_THREAT_ID = FIXME
 
 ## Woo
 
@@ -233,6 +253,6 @@ TEST_WPCOM_PASSWORD_WOO_JP_WCPAY = FIXME
 # Local files to override default samples. Keep the empty string to use default samples.
 # These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections.
 # Path (on device) to a test image for uploading, e.g. /sdcard/Pictures/flux-capacitor-schematics.png
-TEST_LOCAL_IMAGE =
+TEST_LOCAL_IMAGE = FIXME
 # Path (on device) to a test video for uploading, e.g. /sdcard/Video/1985-10-26-Einstein-temporal-experiment.mp4
-TEST_LOCAL_VIDEO =
+TEST_LOCAL_VIDEO = FIXME

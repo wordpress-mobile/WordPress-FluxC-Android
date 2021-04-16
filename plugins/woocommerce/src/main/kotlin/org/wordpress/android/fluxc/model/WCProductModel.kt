@@ -136,6 +136,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             return commaSeparatedOptions
         }
 
+        fun isSameAttribute(other: ProductAttribute): Boolean {
+            return id == other.id &&
+                    name == other.name &&
+                    variation == other.variation &&
+                    visible == other.visible &&
+                    options == other.options
+        }
+
         fun asGlobalAttribute(siteID: Int) =
                 WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute(id.toInt(), siteID)
 
@@ -147,6 +155,21 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                             option = selectedOption
                     )
                 }
+
+        fun toJson(): JsonObject {
+            val jsonOptions = JsonArray().also {
+                for (option in options) {
+                    it.add(option)
+                }
+            }
+            return JsonObject().also { json ->
+                json.addProperty("id", id)
+                json.addProperty("name", name)
+                json.addProperty("visible", visible)
+                json.addProperty("variation", variation)
+                json.add("options", jsonOptions)
+            }
+        }
     }
 
     override fun getId() = id
@@ -187,6 +210,30 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         getAttribute(updatedAttribute.id.toInt())
                 ?.let { removeAttribute(it.id.toInt()) }
         addAttribute(updatedAttribute)
+    }
+
+    /**
+     * Returns true if this product has the same attributes as the passed product
+     */
+    fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
+        // do a quick string comparison first so we can avoid parsing the attributes when possible
+        if (this.attributes == otherProduct.attributes) {
+            return true
+        }
+
+        val otherAttributes = otherProduct.attributeList
+        val thisAttributes = this.attributeList
+        if (thisAttributes.size != otherAttributes.size) {
+            return false
+        }
+
+        for (i in 0 until thisAttributes.size) {
+            if (!thisAttributes[i].isSameAttribute(otherAttributes[i])) {
+                return false
+            }
+        }
+
+        return true
     }
 
     /**
