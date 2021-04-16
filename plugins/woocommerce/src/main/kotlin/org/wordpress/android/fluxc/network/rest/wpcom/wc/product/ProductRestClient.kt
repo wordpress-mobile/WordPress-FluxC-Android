@@ -1284,7 +1284,7 @@ class ProductRestClient(
                 }
             }
         }
-        if (storedWCProductModel.attributes != updatedProductModel.attributes) {
+        if (!storedWCProductModel.hasSameAttributes(updatedProductModel)) {
             JsonParser().apply {
                 body["attributes"] = try {
                     parse(updatedProductModel.attributes).asJsonArray
