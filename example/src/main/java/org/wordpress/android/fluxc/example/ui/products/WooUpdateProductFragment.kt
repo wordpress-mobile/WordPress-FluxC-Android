@@ -720,10 +720,13 @@ class WooUpdateProductFragment : Fragment() {
         product_download_limit.isEnabled = it.downloadable
         product_download_expiry.setText(it.downloadExpiry.toString())
         product_download_expiry.isEnabled = it.downloadable
-        attach_attribute.isEnabled = true
-        detach_attribute.isEnabled = true
-        generate_variation.isEnabled = true
-        delete_variation.isEnabled = true
+
+        it.takeIf { it.type == "variable" }?.let {
+            attach_attribute.isEnabled = true
+            detach_attribute.isEnabled = true
+            generate_variation.isEnabled = true
+            delete_variation.isEnabled = true
+        }
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
