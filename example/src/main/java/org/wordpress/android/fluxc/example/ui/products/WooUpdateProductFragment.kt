@@ -721,7 +721,7 @@ class WooUpdateProductFragment : Fragment() {
         product_download_expiry.setText(it.downloadExpiry.toString())
         product_download_expiry.isEnabled = it.downloadable
 
-        it.takeIf { it.type == "variable" }?.let {
+        if (it.type == CoreProductType.VARIABLE.toString()) {
             attach_attribute.isEnabled = true
             detach_attribute.isEnabled = true
             generate_variation.isEnabled = true
