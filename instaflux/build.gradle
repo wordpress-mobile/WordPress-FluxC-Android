@@ -1,21 +1,8 @@
-buildscript {
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    }
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.kapt"
 }
-
-repositories {
-    jcenter()
-}
-
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -26,6 +13,8 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+
+        multiDexEnabled true
     }
 
     compileOptions {
