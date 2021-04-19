@@ -9,7 +9,6 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
         classpath 'com.automattic.android:fetchstyle:1.1'
         classpath 'com.automattic.android:configure:0.5.0'
     }
@@ -40,16 +39,16 @@ allprojects {
 }
 
 subprojects {
-    configurations.all {
-        resolutionStrategy {
-            forcedModules = [
-                    // Needed for com.nhaarman:mockito-kotlin-kt1.1
-                    // Can possibly be dropped when v2 of mockito-kotlin is released
-                    "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-            ]
-        }
-    }
+//    configurations.all {
+//        resolutionStrategy {
+//            forcedModules = [
+//                    // Needed for com.nhaarman:mockito-kotlin-kt1.1
+//                    // Can possibly be dropped when v2 of mockito-kotlin is released
+//                    "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+//                    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+//            ]
+//        }
+//    }
 
     configurations {
         ktlint
