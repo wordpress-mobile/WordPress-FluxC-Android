@@ -56,9 +56,12 @@ class ExperimentsFragment : Fragment() {
             val platform = selectedPlatform ?: WORDPRESS_COM
             val experimentNames = experiment_names_edit_text.text.split(',').map { it.trim() }
             val anonymousId = anon_id_edit_text.text.toString()
-            prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, anonymousId=$anonymousId")
+            prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, " +
+                    "anonymousId=$anonymousId")
             GlobalScope.launch(Dispatchers.Default) {
                 val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
+                result.assignments.variations // Contained variations for experiments which were currently running
+                result.assignments.variations // Contains variations only for the requests experiments
                 withContext(Dispatchers.Main) {
                     onAssignmentsFetched(result)
                 }
