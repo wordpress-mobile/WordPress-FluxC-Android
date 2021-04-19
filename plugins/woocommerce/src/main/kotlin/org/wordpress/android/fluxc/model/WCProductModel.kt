@@ -65,7 +65,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var taxClass = ""
 
     @Column var manageStock = false
-    @Column var stockQuantity = 0
+    @Column var stockQuantity = 0.0
     @Column var stockStatus = "" // instock, outofstock, onbackorder
 
     @Column var backorders = "" // no, notify, yes
@@ -102,7 +102,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var height = ""
 
     val attributeList: Array<ProductAttribute>
-        get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java)
+        get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
@@ -136,6 +136,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             return commaSeparatedOptions
         }
 
+        fun isSameAttribute(other: ProductAttribute): Boolean {
+            return id == other.id &&
+                    name == other.name &&
+                    variation == other.variation &&
+                    visible == other.visible &&
+                    options == other.options
+        }
+
         fun asGlobalAttribute(siteID: Int) =
                 WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute(id.toInt(), siteID)
 
@@ -147,6 +155,21 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                             option = selectedOption
                     )
                 }
+
+        fun toJson(): JsonObject {
+            val jsonOptions = JsonArray().also {
+                for (option in options) {
+                    it.add(option)
+                }
+            }
+            return JsonObject().also { json ->
+                json.addProperty("id", id)
+                json.addProperty("name", name)
+                json.addProperty("visible", visible)
+                json.addProperty("variation", variation)
+                json.add("options", jsonOptions)
+            }
+        }
     }
 
     override fun getId() = id
@@ -187,6 +210,30 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         getAttribute(updatedAttribute.id.toInt())
                 ?.let { removeAttribute(it.id.toInt()) }
         addAttribute(updatedAttribute)
+    }
+
+    /**
+     * Returns true if this product has the same attributes as the passed product
+     */
+    fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
+        // do a quick string comparison first so we can avoid parsing the attributes when possible
+        if (this.attributes == otherProduct.attributes) {
+            return true
+        }
+
+        val otherAttributes = otherProduct.attributeList
+        val thisAttributes = this.attributeList
+        if (thisAttributes.size != otherAttributes.size) {
+            return false
+        }
+
+        for (i in thisAttributes.indices) {
+            if (!thisAttributes[i].isSameAttribute(otherAttributes[i])) {
+                return false
+            }
+        }
+
+        return true
     }
 
     /**

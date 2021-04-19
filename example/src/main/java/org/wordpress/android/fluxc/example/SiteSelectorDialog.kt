@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -56,7 +57,7 @@ class SiteSelectorDialog : DialogFragment() {
 
         // get sites from api
         if (siteStore.sites.isEmpty()) {
-            dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction())
+            dispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
         }
     }
 

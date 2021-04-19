@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.FormData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.PurchaseShippingLabelApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelApiResponse
 import javax.inject.Inject
 
@@ -25,11 +25,9 @@ class WCShippingLabelMapper
                 productNames = labelItem.productNames.toString()
                 productIds = labelItem.productIds.toString()
                 refund = labelItem.refund.toString()
-                dateCreated = labelItem.dateCreated?.toString() ?: ""
-
-                localOrderId = response.orderId ?: 0L
-                paperSize = response.paperSize ?: ""
-                storeOptions = response.storeOptions.toString()
+                dateCreated = labelItem.dateCreated
+                expiryDate = labelItem.expiryDate
+                remoteOrderId = response.orderId ?: 0L
                 formData = response.formData.toString()
 
                 localSiteId = site.id
@@ -38,7 +36,7 @@ class WCShippingLabelMapper
     }
 
     fun map(
-        response: PurchaseShippingLabelApiResponse,
+        response: ShippingLabelStatusApiResponse,
         orderId: Long,
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
@@ -59,9 +57,10 @@ class WCShippingLabelMapper
                 productNames = labelItem.productNames.toString()
                 productIds = labelItem.productIds.toString()
                 refund = labelItem.refund.toString()
-                dateCreated = labelItem.dateCreated?.toString() ?: ""
+                dateCreated = labelItem.dateCreated
+                expiryDate = labelItem.expiryDate
 
-                localOrderId = orderId
+                remoteOrderId = orderId
                 formData = gson.toJson(FormData(origin = origin, destination = destination))
 
                 localSiteId = site.id

@@ -19,9 +19,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient.FetchPluginsResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient.FetchPluginsResponse.PluginModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse.SystemPluginModel
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -33,15 +33,18 @@ import kotlin.test.assertEquals
 @RunWith(RobolectricTestRunner::class)
 class WooCommerceStoreTest {
     private val appContext = RuntimeEnvironment.application.applicationContext
-    private val restClient = mock<WooPluginRestClient>()
+    private val restClient = mock<WooSystemRestClient>()
     private val wooCommerceStore = WooCommerceStore(appContext, Dispatcher(), initCoroutineEngine(), restClient, mock())
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply { id = 1 }
 
-    private val response = FetchPluginsResponse(
+    private val response = ActivePluginsResponse(
             listOf(
-                    PluginModel("woocommerce-services", "1.0", true, "Woo Services"),
-                    PluginModel("other", "2.0", false, "Other Plugin")
+                    SystemPluginModel("WooCommerce Shipping &amp; Tax", "1.0"),
+                    SystemPluginModel("Other Plugin", "2.0")
+            ),
+            listOf(
+                    SystemPluginModel("Inactive", "1.0")
             )
     )
 

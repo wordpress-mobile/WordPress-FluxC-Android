@@ -5,11 +5,11 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.AccountSettingsApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.PurchaseShippingLabelApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.PrintShippingLabelApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelStatusApiResponse
 
 object WCShippingLabelTestUtils {
     private fun generateSampleShippingLabel(
@@ -23,14 +23,13 @@ object WCShippingLabelTestUtils {
         rate: Float = 7.65F,
         refundableAmount: Float = 7.65F,
         currency: String = "USD",
-        paperSize: String = "label",
         refund: String? = null,
         productNames: String = "[Woo T-shirt, Herman Chair]",
         productIds: String = "[60, 61, 62]"
     ): WCShippingLabelModel {
         return WCShippingLabelModel().apply {
             localSiteId = siteId
-            localOrderId = orderId
+            remoteOrderId = orderId
             remoteShippingLabelId = remoteId
             this.carrierId = carrierId
             this.serviceName = serviceName
@@ -39,7 +38,6 @@ object WCShippingLabelTestUtils {
             this.rate = rate
             this.refundableAmount = refundableAmount
             this.currency = currency
-            this.paperSize = paperSize
             this.productNames = productNames
             this.productIds = productIds
             refund?.let { this.refund = it }
@@ -104,11 +102,27 @@ object WCShippingLabelTestUtils {
         return Gson().fromJson(json, AccountSettingsApiResponse::class.java)
     }
 
-    fun generateSamplePurchaseShippingLabelsApiResponse(): PurchaseShippingLabelApiResponse {
+    fun generateSamplePurchaseShippingLabelsApiResponse(): ShippingLabelStatusApiResponse {
         val json = UnitTestUtils.getStringFromResourceFile(
                 this.javaClass,
                 "wc/purchase-shipping-labels.json"
         )
-        return Gson().fromJson(json, PurchaseShippingLabelApiResponse::class.java)
+        return Gson().fromJson(json, ShippingLabelStatusApiResponse::class.java)
+    }
+
+    fun generateSampleShippingLabelsStatusApiResponse(done: Boolean): ShippingLabelStatusApiResponse {
+        val json = UnitTestUtils.getStringFromResourceFile(
+                this.javaClass,
+                "wc/status-shipping-labels-${if (done) 2 else 1}.json"
+        )
+        return Gson().fromJson(json, ShippingLabelStatusApiResponse::class.java)
+    }
+
+    fun generateErrorShippingLabelsStatusApiResponse(): ShippingLabelStatusApiResponse {
+        val json = UnitTestUtils.getStringFromResourceFile(
+                this.javaClass,
+                "wc/status-shipping-labels-error.json"
+        )
+        return Gson().fromJson(json, ShippingLabelStatusApiResponse::class.java)
     }
 }

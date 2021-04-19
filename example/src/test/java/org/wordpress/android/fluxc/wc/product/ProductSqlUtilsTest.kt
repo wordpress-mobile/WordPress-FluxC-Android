@@ -84,6 +84,37 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testInsertOrUpdateProductWithDecimalQuantity() {
+        val productModel = ProductTestUtils.generateSampleProduct(
+                remoteId = 42,
+                stockQuantity = 4.2
+        )
+        val site = SiteModel().apply { id = productModel.localSiteId }
+
+        // Test inserting product
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+        val storedProductsCount = ProductSqlUtils.getProductCountForSite(site)
+        assertEquals(1, storedProductsCount)
+
+        // Test updating product
+        val storedProduct = ProductSqlUtils.getProductByRemoteId(site, productModel.remoteProductId)
+        storedProduct?.apply {
+            stockQuantity = 4.0
+        }
+        storedProduct?.also {
+            ProductSqlUtils.insertOrUpdateProduct(it)
+        }
+
+        val updatedProductsCount = ProductSqlUtils.getProductCountForSite(site)
+        assertEquals(1, updatedProductsCount)
+
+        val updatedProduct = ProductSqlUtils.getProductByRemoteId(site, productModel.remoteProductId)
+        assertEquals(storedProduct?.id, updatedProduct?.id)
+        assertEquals(storedProduct?.name, updatedProduct?.name)
+        assertEquals(storedProduct?.virtual, updatedProduct?.virtual)
+    }
+
+    @Test
     fun testInsertOrUpdateProducts() {
         val site = SiteModel().apply { id = 2 }
         val products = ArrayList<WCProductModel>().apply {
