@@ -102,7 +102,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var height = ""
 
     val attributeList: Array<ProductAttribute>
-        get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java)
+        get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
@@ -227,7 +227,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             return false
         }
 
-        for (i in 0 until thisAttributes.size) {
+        for (i in thisAttributes.indices) {
             if (!thisAttributes[i].isSameAttribute(otherAttributes[i])) {
                 return false
             }
