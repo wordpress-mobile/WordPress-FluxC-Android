@@ -1,28 +1,40 @@
 pluginManagement {
     plugins {
-        id "com.android.application" version "4.0.1"
-        id "com.android.library" version "4.0.1"
-        id "org.jetbrains.kotlin.jvm" version "1.4.10"
-        id "org.jetbrains.kotlin.android" version "1.4.10"
-        id "org.jetbrains.kotlin.kapt" version "1.4.10"
-        id "org.jetbrains.kotlin.android.extensions" version "1.4.10"
-        id "com.github.dcendents.android-maven" version "2.0"
+        id "com.android.application" version "4.0.1" apply false
+        id "com.android.library" version "4.0.1" apply false
+        id "com.automattic.android.configure" version "0.3.0"
+        id "com.automattic.android.fetchstyle" version "1.1"
+        id "com.github.dcendents.android-maven" version "2.0" apply false
+        id "org.jetbrains.kotlin.android" version "1.4.10" apply false
+        id "org.jetbrains.kotlin.android.extensions" version "1.4.10" apply false
+        id "org.jetbrains.kotlin.jvm" version "1.4.10" apply false
+        id "org.jetbrains.kotlin.kapt" version "1.4.10" apply false
     }
     repositories {
         gradlePluginPortal()
         google()
         jcenter()
+        maven { url "https://dl.bintray.com/automattic/maven/" }
     }
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id.contains("com.android")) {
                 useModule("com.android.tools.build:gradle:4.0.1")
             }
+            if (requested.id.id == "com.automattic.android.fetchstyle") {
+                useModule("com.automattic.android:fetchstyle:1.1")
+            }
+            if (requested.id.id == "com.automattic.android.configure") {
+                useModule("com.automattic.android:configure:0.3.0")
+            }
         }
     }
 }
 
-include ':fluxc', ':fluxc-processor', ':fluxc-annotations', ':plugins:woocommerce'
-include ':example'
-include ':instaflux'
-include ':tests:api'
+include ':fluxc',
+        ':fluxc-processor',
+        ':fluxc-annotations',
+        ':plugins:woocommerce',
+        ':example',
+        ':instaflux',
+        ':tests:api'

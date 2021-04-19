@@ -1,21 +1,12 @@
 buildscript {
     ext.kotlinVersion = '1.4.10'
     ext.kotlinCoroutinesVersion = '1.3.9'
-
-    repositories {
-        google()
-        jcenter()
-        maven { url "https://dl.bintray.com/automattic/maven/" }
-    }
-
-    dependencies {
-        classpath 'com.automattic.android:fetchstyle:1.1'
-        classpath 'com.automattic.android:configure:0.5.0'
-    }
 }
 
-apply plugin: 'com.automattic.android.fetchstyle'
-apply plugin: 'com.automattic.android.configure'
+plugins {
+    id "com.automattic.android.fetchstyle" version "1.1"
+    id "com.automattic.android.configure" version "0.5.0"
+}
 
 allprojects {
     apply plugin: 'checkstyle'
@@ -39,17 +30,6 @@ allprojects {
 }
 
 subprojects {
-//    configurations.all {
-//        resolutionStrategy {
-//            forcedModules = [
-//                    // Needed for com.nhaarman:mockito-kotlin-kt1.1
-//                    // Can possibly be dropped when v2 of mockito-kotlin is released
-//                    "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-//                    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-//            ]
-//        }
-//    }
-
     configurations {
         ktlint
     }
