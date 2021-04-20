@@ -1,149 +1,144 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              tools:context="org.wordpress.android.fluxc.example.MainFragment">
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:id="@+id/sign_in_fetch_sites_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign In And Fetch Sites"
-            android:layout_alignParentTop="true" />
-
-        <Button
-            android:id="@+id/signout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign Out"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
-
-        <Button
-            android:id="@+id/signed_out_actions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Signed Out Actions"
-            android:layout_below="@+id/sign_in_fetch_sites_button"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-    </RelativeLayout>
-
-    <ImageView
-        android:id="@+id/divider1"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/material_grey_600" />
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/activity_start_end_margin"
+    tools:context="org.wordpress.android.fluxc.example.MainFragment"
+    tools:ignore="HardcodedText">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="left"
-            android:layout_weight="1">
+            android:orientation="vertical">
 
             <Button
-                android:id="@+id/account"
-                android:layout_width="wrap_content"
+                android:id="@+id/sign_in_fetch_sites_button"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Account" />
+                android:text="Sign In &amp; Fetch Sites" />
 
             <Button
-                android:id="@+id/sites"
-                android:layout_width="wrap_content"
+                android:id="@+id/signout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sites" />
+                android:text="Sign Out" />
 
             <Button
-                android:id="@+id/posts"
-                android:layout_width="wrap_content"
+                android:id="@+id/signed_out_actions"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Posts" />
-
-            <Button
-                android:id="@+id/comments"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Comments" />
-
-            <Button
-                android:id="@+id/media"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Media" />
-
-            <Button
-                android:id="@+id/taxonomies"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Taxonomies" />
-
-            <Button
-                android:id="@+id/uploads"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Uploads" />
-
-            <Button
-                android:id="@+id/themes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Themes" />
-
+                android:text="Signed Out Actions" />
         </LinearLayout>
 
+        <View
+            android:id="@+id/divider1"
+            style="@style/Divider" />
+
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="right"
-            android:layout_weight="1">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/woo"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:text="Woo" />
+                android:layout_marginEnd="@dimen/activity_start_end_half_margin"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <Button
-                android:id="@+id/notifs"
+                <Button
+                    android:id="@+id/account"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Account" />
+
+                <Button
+                    android:id="@+id/sites"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sites" />
+
+                <Button
+                    android:id="@+id/posts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Posts" />
+
+                <Button
+                    android:id="@+id/comments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Comments" />
+
+                <Button
+                    android:id="@+id/media"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Media" />
+
+                <Button
+                    android:id="@+id/taxonomies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Taxonomies" />
+
+                <Button
+                    android:id="@+id/uploads"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Uploads" />
+
+                <Button
+                    android:id="@+id/themes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Themes" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:text="Notifications"/>
+                android:layout_marginStart="@dimen/activity_start_end_half_margin"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <Button
-                android:id="@+id/reactnative"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:text="React Native"/>
+                <Button
+                    android:id="@+id/woo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Woo" />
 
-            <Button
-                android:id="@+id/editortheme"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:text="Editor Theme" />
+                <Button
+                    android:id="@+id/notifs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Notifications" />
 
-            <Button
-                android:id="@+id/experiments"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:text="Experiments" />
+                <Button
+                    android:id="@+id/reactnative"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="React Native" />
+
+                <Button
+                    android:id="@+id/editortheme"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Editor Theme" />
+
+                <Button
+                    android:id="@+id/experiments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Experiments" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,7 +49,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrderListPayload(
         val listDescriptor: WCOrderListDescriptor,
-        val offset: Long
+        val offset: Long,
+        val requestStartTime: Calendar = Calendar.getInstance()
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersByIdsPayload(
@@ -70,9 +72,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val listDescriptor: WCOrderListDescriptor,
         var orderSummaries: List<WCOrderSummaryModel> = emptyList(),
         var loadedMore: Boolean = false,
-        var canLoadMore: Boolean = false
+        var canLoadMore: Boolean = false,
+        val requestStartTime: Calendar
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, listDescriptor: WCOrderListDescriptor) : this(listDescriptor) {
+        constructor(
+            error: OrderError,
+            listDescriptor: WCOrderListDescriptor,
+            requestStartTime: Calendar
+        ) : this(listDescriptor, requestStartTime = requestStartTime) {
             this.error = error
         }
     }
@@ -302,6 +309,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var causeOfChange: WCOrderAction? = null
     }
 
+    /**
+     * Emitted after fetching a list of Order summaries from the network.
+     */
+    class OnOrderSummariesFetched(
+        val listDescriptor: WCOrderListDescriptor,
+        val duration: Long
+    ) : OnChanged<OrderError>()
+
     class OnOrdersFetchedByIds(
         val site: SiteModel,
         val orderIds: List<RemoteId>
@@ -457,7 +472,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
-        wcOrderRestClient.fetchOrderListSummaries(payload.listDescriptor, payload.offset)
+        wcOrderRestClient.fetchOrderListSummaries(
+                listDescriptor = payload.listDescriptor,
+                offset = payload.offset,
+                requestStartTime = payload.requestStartTime
+        )
     }
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
@@ -558,6 +577,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // Fetch outdated orders
             fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         }
+
+        val duration = Calendar.getInstance().timeInMillis - payload.requestStartTime.timeInMillis
+        emitChange(OnOrderSummariesFetched(listDescriptor = payload.listDescriptor, duration = duration))
 
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,

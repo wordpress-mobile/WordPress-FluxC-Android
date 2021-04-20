@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.fluxc.network.rest.wpcom.common.LikesResponseUtilsProvider;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaResponseUtils;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient;
@@ -60,32 +61,32 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClientBuilder, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    public RequestQueue provideRequestQueue(OkHttpClient okHttpClient, Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
     @Named("regular")
     @Provides
-    public RequestQueue provideRegularRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideRegularRequestQueue(OkHttpClient okHttpClient,
                                             Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
     @Named("no-redirects")
     @Provides
-    public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient okHttpClient,
                                                        Context appContext) {
-        return provideRegularRequestQueue(okHttpClientBuilder, appContext);
+        return provideRegularRequestQueue(okHttpClient, appContext);
     }
 
     @Singleton
     @Named("custom-ssl")
     @Provides
-    public RequestQueue provideCustomRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+    public RequestQueue provideCustomRequestQueue(OkHttpClient okHttpClient,
                                                    Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
@@ -138,8 +139,9 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public PostRestClient providePostRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue,
-                                                AppSecrets appSecrets, AccessToken token, UserAgent userAgent) {
-        return new PostRestClient(appContext, dispatcher, requestQueue, token, userAgent);
+                                                AppSecrets appSecrets, AccessToken token, UserAgent userAgent,
+                                                LikesResponseUtilsProvider likesResponseUtilsProvider) {
+        return new PostRestClient(appContext, dispatcher, requestQueue, token, userAgent, likesResponseUtilsProvider);
     }
 
     @Singleton

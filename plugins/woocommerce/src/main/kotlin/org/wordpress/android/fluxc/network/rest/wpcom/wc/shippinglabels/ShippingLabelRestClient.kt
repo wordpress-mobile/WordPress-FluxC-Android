@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -102,6 +103,36 @@ constructor(
                 url,
                 params,
                 PrintShippingLabelApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun checkShippingLabelCreationEligibility(
+        site: SiteModel,
+        orderId: Long,
+        canCreatePackage: Boolean,
+        canCreatePaymentMethod: Boolean,
+        canCreateCustomsForm: Boolean
+    ): WooPayload<SLCreationEligibilityApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).creation_eligibility.pathV1
+        val params = mapOf(
+                "can_create_package" to canCreatePackage.toString(),
+                "can_create_payment_method" to canCreatePaymentMethod.toString(),
+                "can_create_customs_form" to canCreateCustomsForm.toString()
+        )
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                SLCreationEligibilityApiResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
@@ -226,6 +257,62 @@ constructor(
                 url,
                 params,
                 ShippingRatesApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun purchaseShippingLabels(
+        site: SiteModel,
+        orderId: Long,
+        origin: ShippingLabelAddress,
+        destination: ShippingLabelAddress,
+        packagesData: List<WCShippingLabelPackageData>
+    ): WooPayload<ShippingLabelStatusApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
+
+        val params = mapOf(
+                "async" to true,
+                "origin" to origin.toMap(),
+                "destination" to destination.toMap(),
+                "packages" to packagesData.map { it.toMap() }
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                ShippingLabelStatusApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun fetchShippingLabelsStatus(
+        site: SiteModel,
+        orderId: Long,
+        labelIds: List<Long>
+    ): WooPayload<ShippingLabelStatusApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                ShippingLabelStatusApiResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> {

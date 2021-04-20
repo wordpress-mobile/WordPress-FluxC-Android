@@ -124,13 +124,15 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
     testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'androidx.test:core:1.3.0'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
-    testImplementation 'org.assertj:assertj-core:3.15.0'
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
     testImplementation "androidx.arch.core:core-testing:$arch_core_version"
 
     androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
     androidTestImplementation 'org.apache.commons:commons-lang3:3.7'
+    androidTestImplementation "org.assertj:assertj-core:$assertJVersion"
     androidTestImplementation "androidx.arch.core:core-testing:$arch_core_version"
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'

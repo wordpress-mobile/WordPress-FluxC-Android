@@ -11,16 +11,19 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
 import javax.inject.Named
 import javax.inject.Singleton
@@ -67,6 +70,17 @@ class ReleaseWCNetworkModule {
         token: AccessToken,
         userAgent: UserAgent
     ) = OrderStatsRestClient(appContext, dispatcher, requestQueue, token, userAgent)
+
+    @Singleton
+    @Provides
+    fun provideCustomerRestClient(
+        appContext: Context,
+        requestBuilder: JetpackTunnelGsonRequestBuilder,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) = CustomerRestClient(appContext, requestBuilder, dispatcher, requestQueue, token, userAgent)
 
     @Singleton
     @Provides
@@ -136,6 +150,17 @@ class ReleaseWCNetworkModule {
 
     @Singleton
     @Provides
+    fun provideWooSystemRestClient(
+        appContext: Context,
+        requestBuilder: JetpackTunnelGsonRequestBuilder,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) = WooSystemRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
+
+    @Singleton
+    @Provides
     fun provideLeaderboardsRestClient(
         appContext: Context,
         dispatcher: Dispatcher,
@@ -155,6 +180,17 @@ class ReleaseWCNetworkModule {
         userAgent: UserAgent,
         requestBuilder: JetpackTunnelGsonRequestBuilder
     ) = ProductAttributeRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent, requestBuilder)
+
+    @Singleton
+    @Provides
+    fun providePayRestClient(
+        appContext: Context,
+        requestBuilder: JetpackTunnelGsonRequestBuilder,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) = PayRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
 
     @Singleton
     @Provides

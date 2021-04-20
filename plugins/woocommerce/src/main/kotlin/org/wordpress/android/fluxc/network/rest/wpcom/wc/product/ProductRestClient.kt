@@ -71,6 +71,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import java.util.HashMap
 import javax.inject.Singleton
@@ -716,6 +717,103 @@ class ProductRestClient(
     }
 
     /**
+     * Makes a POST request to `/wp-json/wc/v3/products` to create
+     * a empty variation to a given variable product
+     *
+     * @param [site] The site containing the product
+     * @param [productId] the ID of the variable product to create the empty variation
+     */
+    suspend fun generateEmptyVariation(
+        site: SiteModel,
+        productId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).variations.pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncPostRequest(
+                        this@ProductRestClient,
+                        site,
+                        url,
+                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
+                        ProductVariationApiResponse::class.java
+                )?.handleResult()
+            }
+
+    /**
+     * Makes a DELETE request to `/wp-json/wc/v3/products/<id>` to delete a product
+     *
+     * @param [site] The site containing the product
+     * @param [productId] the ID of the variable product who holds the variation to be deleted
+     * @param [variationId] the ID of the variation model to delete
+     *
+     * Force delete option is not available as Variation doesn't support trashing
+     */
+    suspend fun deleteVariation(
+        site: SiteModel,
+        productId: Long,
+        variationId: Long
+    ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncDeleteRequest(
+                        this@ProductRestClient,
+                        site,
+                        url,
+                        ProductVariationApiResponse::class.java
+                )?.handleResult()
+            }
+
+    /**
+     * Makes a PUT request to
+     * `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/[WCProductVariationModel.remoteVariationId]`
+     * to replace a variation's attributes with [WCProductVariationModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to update the given variation attributes
+     * @param [variation] Locally updated product variation to be sent
+     */
+
+    suspend fun updateVariationAttributes(
+        site: SiteModel,
+        productId: Long,
+        variationId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
+                .let { url ->
+                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                            this@ProductRestClient,
+                            site,
+                            url,
+                            mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
+                            ProductVariationApiResponse::class.java
+                    )?.handleResult()
+                }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
+     * to replace a product's attributes with [WCProductModel.attributes]
+     *
+     * Returns a WooPayload with the Api response as result
+     *
+     * @param [site] The site to update the given product attributes
+     * @param [product] Locally updated product to be sent
+     */
+
+    suspend fun updateProductAttributes(
+        site: SiteModel,
+        productId: Long,
+        attributesJson: String
+    ) = WOOCOMMERCE.products.id(productId).pathV3
+            .let { url ->
+                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                        this,
+                        site,
+                        url,
+                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
+                        ProductApiResponse::class.java
+                )?.handleResult()
+            }
+
+    /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
      * with the passed media list
      *
@@ -1113,7 +1211,10 @@ class ProductRestClient(
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
             if (storedWCProductModel.stockQuantity != updatedProductModel.stockQuantity) {
-                body["stock_quantity"] = updatedProductModel.stockQuantity
+                // Conversion/rounding down because core API only accepts Int value for stock quantity.
+                // On the app side, make sure it only allows whole decimal quantity when updating, so that
+                // there's no undesirable conversion effect.
+                body["stock_quantity"] = updatedProductModel.stockQuantity.toInt()
             }
             if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
@@ -1228,7 +1329,7 @@ class ProductRestClient(
                 }
             }
         }
-        if (storedWCProductModel.attributes != updatedProductModel.attributes) {
+        if (!storedWCProductModel.hasSameAttributes(updatedProductModel)) {
             JsonParser().apply {
                 body["attributes"] = try {
                     parse(updatedProductModel.attributes).asJsonArray
@@ -1275,7 +1376,10 @@ class ProductRestClient(
         // only allowed to change the following params if manageStock is enabled
         if (updatedVariationModel.manageStock) {
             if (storedVariationModel.stockQuantity != updatedVariationModel.stockQuantity) {
-                body["stock_quantity"] = updatedVariationModel.stockQuantity
+                // Conversion/rounding down because core API only accepts Int value for stock quantity.
+                // On the app side, make sure it only allows whole decimal quantity when updating, so that
+                // there's no undesirable conversion effect.
+                body["stock_quantity"] = updatedVariationModel.stockQuantity.toInt()
             }
             if (storedVariationModel.backorders != updatedVariationModel.backorders) {
                 body["backorders"] = updatedVariationModel.backorders

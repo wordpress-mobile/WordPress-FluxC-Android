@@ -31,17 +31,22 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
-import org.wordpress.android.fluxc.store.WCOrderStore
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
+import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
@@ -75,7 +80,7 @@ class WooShippingLabelFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         shipping_labels_select_site.setOnClickListener {
-            showSiteSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
+            showStoreSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
                 override fun onSiteSelected(site: SiteModel, pos: Int) {
                     selectedSite = site
                     selectedPos = pos
@@ -196,6 +201,61 @@ class WooShippingLabelFragment : Fragment() {
             }
         }
 
+        check_creation_eligibility.setOnClickListener {
+            selectedSite?.let {
+                coroutineScope.launch {
+                    val orderId = showSingleLineDialog(requireActivity(), "Order Id?", isNumeric = true)?.toLong()
+                    if (orderId == null) {
+                        prependToLog("Please enter a valid order id")
+                        return@launch
+                    }
+                    val canCreatePackage = showSingleLineDialog(
+                            requireActivity(),
+                            "Can Create Package? (true or false)"
+                    ).toBoolean()
+                    val canCreatePaymentMethod = showSingleLineDialog(
+                            requireActivity(),
+                            "Can Create Payment Method? (true or false)"
+                    ).toBoolean()
+                    val canCreateCustomsForm = showSingleLineDialog(
+                            requireActivity(),
+                            "Can Create Customs Form? (true or false)"
+                    ).toBoolean()
+
+                    var eligibility = wcShippingLabelStore.isOrderEligibleForShippingLabelCreation(
+                            site = it,
+                            orderId = orderId,
+                            canCreatePackage = canCreatePackage,
+                            canCreatePaymentMethod = canCreatePaymentMethod,
+                            canCreateCustomsForm = canCreateCustomsForm
+                    )
+                    if (eligibility == null) {
+                        prependToLog("Fetching eligibility")
+                        val result = wcShippingLabelStore.fetchShippingLabelCreationEligibility(
+                                site = it,
+                                orderId = orderId,
+                                canCreatePackage = canCreatePackage,
+                                canCreatePaymentMethod = canCreatePaymentMethod,
+                                canCreateCustomsForm = canCreateCustomsForm
+                        )
+                        if (result.isError) {
+                            prependToLog("${result.error.type}: ${result.error.message}")
+                            return@launch
+                        }
+                        eligibility = result.model!!
+                    }
+
+                    prependToLog(
+                            "The order is ${if (!eligibility.isEligible) "not " else ""}eligible " +
+                                    "for Shipping Labels Creation"
+                    )
+                    if (!eligibility.isEligible) {
+                        prependToLog("Reason for non eligibility: ${eligibility.reason}")
+                    }
+                }
+            }
+        }
+
         verify_address.setOnClickListener {
             selectedSite?.let { site ->
                 replaceFragment(WooVerifyAddressFragment.newInstance(site))
@@ -221,89 +281,75 @@ class WooShippingLabelFragment : Fragment() {
         get_shipping_rates.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
-                    prependToLog("Loading shipping data...")
+                    val orderId = showSingleLineDialog(requireActivity(), "Enter order id:", isNumeric = true)
+                            ?.toLong() ?: return@launch
 
-                    dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
+                    val (order, origin, destination) = loadData(site, orderId)
 
-                    val payload = FetchOrdersPayload(site, loadMore = false)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
-
-                    delay(5000)
-
-                    val origin = wooCommerceStore.getSiteSettings(site)?.let {
-                        ShippingLabelAddress(
-                            address = it.address,
-                            city = it.city,
-                            postcode = it.postalCode,
-                            state = it.stateCode,
-                            country = it.countryCode
-                        )
+                    if (order == null) {
+                        prependToLog("Couldn't retrieve order data")
+                        return@launch
                     }
-
-                    val order = wcOrderStore.getOrdersForSite(site).firstOrNull()
-                    val destination = order?.getShippingAddress()?.let {
-                        ShippingLabelAddress(
-                            address = it.address1,
-                            city = it.city,
-                            postcode = it.postcode,
-                            state = it.state,
-                            country = it.country
-                        )
-                    }
-
                     if (origin == null || destination == null) {
-                        prependToLog("Invalid origin or destination address:\n" +
-                                "Origin:\n$origin\nDestination:\n$destination")
-                    } else {
-                        var name: String
-                        showSingleLineDialog(activity, "Enter package name:") { text ->
-                            name = text.text.toString()
+                        prependToLog(
+                                "Invalid origin or destination address:\n" +
+                                        "Origin:\n$origin\nDestination:\n$destination"
+                        )
+                        return@launch
+                    }
+                    var name: String
+                    showSingleLineDialog(activity, "Enter package name:") { text ->
+                        name = text.text.toString()
 
-                            var height: Float?
-                            showSingleLineDialog(activity, "Enter height:", isNumeric = true) { h ->
-                                height = h.text.toString().toFloatOrNull()
+                        var height: Float?
+                        showSingleLineDialog(activity, "Enter height:", isNumeric = true) { h ->
+                            height = h.text.toString().toFloatOrNull()
 
-                                var width: Float?
-                                showSingleLineDialog(activity, "Enter width:", isNumeric = true) { w ->
-                                    width = w.text.toString().toFloatOrNull()
+                            var width: Float?
+                            showSingleLineDialog(activity, "Enter width:", isNumeric = true) { w ->
+                                width = w.text.toString().toFloatOrNull()
 
-                                    var length: Float?
-                                    showSingleLineDialog(activity, "Enter length:", isNumeric = true) { l ->
-                                        length = l.text.toString().toFloatOrNull()
+                                var length: Float?
+                                showSingleLineDialog(activity, "Enter length:", isNumeric = true) { l ->
+                                    length = l.text.toString().toFloatOrNull()
 
-                                        var weight: Float?
-                                        showSingleLineDialog(activity, "Enter weight:", isNumeric = true) { t ->
-                                            weight = t.text.toString().toFloatOrNull()
+                                    var weight: Float?
+                                    showSingleLineDialog(activity, "Enter weight:", isNumeric = true) { t ->
+                                        weight = t.text.toString().toFloatOrNull()
 
-                                            val box: ShippingLabelPackage?
-                                            if (height == null || width == null || length == null || weight == null) {
-                                                prependToLog("Invalid package parameters:\n" +
-                                                    "Height: $height\nWidth: $width\nLength: $length\nWeight: $weight")
-                                            } else {
-                                                box = ShippingLabelPackage(
+                                        val box: ShippingLabelPackage?
+                                        if (height == null || width == null || length == null || weight == null) {
+                                            prependToLog(
+                                                    "Invalid package parameters:\n" +
+                                                            "Height: $height\n" +
+                                                            "Width: $width\n" +
+                                                            "Length: $length\n" +
+                                                            "Weight: $weight"
+                                            )
+                                        } else {
+                                            box = ShippingLabelPackage(
                                                     name,
                                                     "medium_flat_box_top",
                                                     height!!,
                                                     length!!,
                                                     width!!,
                                                     weight!!
-                                                )
+                                            )
 
-                                                coroutineScope.launch {
-                                                    val result = wcShippingLabelStore.getShippingRates(
+                                            coroutineScope.launch {
+                                                val result = wcShippingLabelStore.getShippingRates(
                                                         site,
                                                         order.remoteOrderId,
                                                         origin,
                                                         destination,
                                                         listOf(box)
-                                                    )
+                                                )
 
-                                                    result.error?.let {
-                                                        prependToLog("${it.type}: ${it.message}")
-                                                    }
-                                                    result.model?.let {
-                                                        prependToLog("$it")
-                                                    }
+                                                result.error?.let {
+                                                    prependToLog("${it.type}: ${it.message}")
+                                                }
+                                                result.model?.let {
+                                                    prependToLog("$it")
                                                 }
                                             }
                                         }
@@ -311,6 +357,116 @@ class WooShippingLabelFragment : Fragment() {
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        purchase_label.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val orderId = showSingleLineDialog(requireActivity(), "Enter order id:", isNumeric = true)
+                            ?.toLong() ?: return@launch
+
+                    val (order, origin, destination) = loadData(site, orderId)
+
+                    if (order == null) {
+                        prependToLog("Couldn't retrieve order data")
+                        return@launch
+                    }
+                    if (origin == null || destination == null) {
+                        prependToLog(
+                                "Invalid origin or destination address:\n" +
+                                        "Origin:\n$origin\nDestination:\n$destination"
+                        )
+                        return@launch
+                    }
+
+                    val boxId = showSingleLineDialog(
+                            requireActivity(), "Enter box Id", defaultValue = "medium_flat_box_top"
+                    )
+                    val height = showSingleLineDialog(requireActivity(), "Enter height:", isNumeric = true)
+                            ?.toFloat()
+                    val width = showSingleLineDialog(requireActivity(), "Enter width:", isNumeric = true)
+                            ?.toFloat()
+                    val length = showSingleLineDialog(requireActivity(), "Enter length:", isNumeric = true)
+                            ?.toFloat()
+                    val weight = showSingleLineDialog(requireActivity(), "Enter weight:", isNumeric = true)
+                            ?.toFloat()
+                    if (boxId == null || height == null || width == null || length == null || weight == null) {
+                        prependToLog(
+                                "Invalid package parameters:\n" +
+                                        "BoxId: $boxId\n" +
+                                        "Height: $height\n" +
+                                        "Width: $width\n" +
+                                        "Length: $length\n" +
+                                        "Weight: $weight"
+                        )
+                    }
+                    prependToLog("Retrieving rates")
+
+                    val box = ShippingLabelPackage(
+                            "default",
+                            boxId!!,
+                            height!!,
+                            length!!,
+                            width!!,
+                            weight!!
+                    )
+                    val ratesResult = wcShippingLabelStore.getShippingRates(
+                            site,
+                            order.remoteOrderId,
+                            origin,
+                            destination,
+                            listOf(box)
+                    )
+                    if (ratesResult.isError) {
+                        prependToLog(
+                                "Getting rates failed: " +
+                                        "${ratesResult.error.type}: ${ratesResult.error.message}"
+                        )
+                        return@launch
+                    }
+                    if (ratesResult.model!!.packageRates.isEmpty() ||
+                            ratesResult.model!!.packageRates.first().shippingOptions.isEmpty() ||
+                            ratesResult.model!!.packageRates.first().shippingOptions.first().rates.isEmpty()) {
+                        prependToLog("Couldn't find rates for the given input, please try with different parameters")
+                        return@launch
+                    }
+                    val rate = ratesResult.model!!.packageRates.first().shippingOptions.first().rates.first()
+                    val packageData = WCShippingLabelPackageData(
+                            id = "default",
+                            boxId = "medium_flat_box_top",
+                            length = length,
+                            height = height,
+                            width = width,
+                            weight = weight,
+                            shipmentId = rate.shipmentId,
+                            rateId = rate.rateId,
+                            serviceId = rate.serviceId,
+                            carrierId = rate.carrierId,
+                            products = order.getLineItemList().map { it.productId!! }
+                    )
+                    val result = wcShippingLabelStore.purchaseShippingLabels(
+                            site,
+                            order.remoteOrderId,
+                            origin,
+                            destination,
+                            listOf(packageData)
+                    )
+
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        val label = it.first()
+                        prependToLog(
+                                "Purchased a shipping label with the following details:\n" +
+                                        "Order Id: ${label.remoteOrderId}\n" +
+                                        "Products: ${label.productNames}\n" +
+                                        "Label Id: ${label.remoteShippingLabelId}\n" +
+                                        "Price: ${label.rate}"
+                        )
                     }
                 }
             }
@@ -405,11 +561,39 @@ class WooShippingLabelFragment : Fragment() {
         }
     }
 
-    private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
-        fragmentManager?.let { fm ->
-            val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
-            dialog.show(fm, "StoreSelectorDialog")
+    private suspend fun loadData(site: SiteModel, orderId: Long):
+            Triple<WCOrderModel?, ShippingLabelAddress?, ShippingLabelAddress?> {
+        prependToLog("Loading shipping data...")
+
+        dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
+
+        val payload = FetchOrdersByIdsPayload(site, listOf(RemoteId(orderId)))
+        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
+
+        delay(5000)
+
+        val origin = wooCommerceStore.getSiteSettings(site)?.let {
+            ShippingLabelAddress(
+                    address = it.address,
+                    city = it.city,
+                    postcode = it.postalCode,
+                    state = it.stateCode,
+                    country = it.countryCode
+            )
         }
+
+        val order = wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, orderId))
+        val destination = order?.getShippingAddress()?.let {
+            ShippingLabelAddress(
+                    address = it.address1,
+                    city = it.city,
+                    postcode = it.postcode,
+                    state = it.state,
+                    country = it.country
+            )
+        }
+
+        return Triple(order, origin, destination)
     }
 
     /**
