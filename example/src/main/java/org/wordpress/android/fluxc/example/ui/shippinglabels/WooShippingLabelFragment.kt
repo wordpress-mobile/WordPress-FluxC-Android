@@ -201,6 +201,61 @@ class WooShippingLabelFragment : Fragment() {
             }
         }
 
+        check_creation_eligibility.setOnClickListener {
+            selectedSite?.let {
+                coroutineScope.launch {
+                    val orderId = showSingleLineDialog(requireActivity(), "Order Id?", isNumeric = true)?.toLong()
+                    if (orderId == null) {
+                        prependToLog("Please enter a valid order id")
+                        return@launch
+                    }
+                    val canCreatePackage = showSingleLineDialog(
+                            requireActivity(),
+                            "Can Create Package? (true or false)"
+                    ).toBoolean()
+                    val canCreatePaymentMethod = showSingleLineDialog(
+                            requireActivity(),
+                            "Can Create Payment Method? (true or false)"
+                    ).toBoolean()
+                    val canCreateCustomsForm = showSingleLineDialog(
+                            requireActivity(),
+                            "Can Create Customs Form? (true or false)"
+                    ).toBoolean()
+
+                    var eligibility = wcShippingLabelStore.isOrderEligibleForShippingLabelCreation(
+                            site = it,
+                            orderId = orderId,
+                            canCreatePackage = canCreatePackage,
+                            canCreatePaymentMethod = canCreatePaymentMethod,
+                            canCreateCustomsForm = canCreateCustomsForm
+                    )
+                    if (eligibility == null) {
+                        prependToLog("Fetching eligibility")
+                        val result = wcShippingLabelStore.fetchShippingLabelCreationEligibility(
+                                site = it,
+                                orderId = orderId,
+                                canCreatePackage = canCreatePackage,
+                                canCreatePaymentMethod = canCreatePaymentMethod,
+                                canCreateCustomsForm = canCreateCustomsForm
+                        )
+                        if (result.isError) {
+                            prependToLog("${result.error.type}: ${result.error.message}")
+                            return@launch
+                        }
+                        eligibility = result.model!!
+                    }
+
+                    prependToLog(
+                            "The order is ${if (!eligibility.isEligible) "not " else ""}eligible " +
+                                    "for Shipping Labels Creation"
+                    )
+                    if (!eligibility.isEligible) {
+                        prependToLog("Reason for non eligibility: ${eligibility.reason}")
+                    }
+                }
+            }
+        }
+
         verify_address.setOnClickListener {
             selectedSite?.let { site ->
                 replaceFragment(WooVerifyAddressFragment.newInstance(site))
@@ -407,7 +462,7 @@ class WooShippingLabelFragment : Fragment() {
                         val label = it.first()
                         prependToLog(
                                 "Purchased a shipping label with the following details:\n" +
-                                        "Order Id: ${label.localOrderId}\n" +
+                                        "Order Id: ${label.remoteOrderId}\n" +
                                         "Products: ${label.productNames}\n" +
                                         "Label Id: ${label.remoteShippingLabelId}\n" +
                                         "Price: ${label.rate}"
