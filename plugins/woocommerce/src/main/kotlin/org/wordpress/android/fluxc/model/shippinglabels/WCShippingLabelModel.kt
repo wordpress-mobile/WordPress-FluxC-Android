@@ -13,23 +13,22 @@ import java.math.BigDecimal
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
-    @Column var localOrderId = 0L // The local db unique identifier for the parent order object
+    @Column var remoteOrderId = 0L // The remote identifier for the parent order object
     @Column var remoteShippingLabelId = 0L // The unique identifier for this note on the server
     @Column var trackingNumber = ""
     @Column var carrierId = ""
-    @Column var dateCreated = ""
+    @Column var dateCreated: Long? = null
+    @Column var expiryDate: Long? = null
     @Column var serviceName = ""
     @Column var status = ""
     @Column var packageName = ""
     @Column var rate = 0F
     @Column var refundableAmount = 0F
     @Column var currency = ""
-    @Column var paperSize = ""
     @Column var productNames = "" // list of product names the shipping label was purchased for
     @Column var productIds = "" // list of product ids the shipping label was purchased for
 
     @Column var formData = "" // map containing package and product details related to that shipping label
-    @Column var storeOptions = "" // map containing store settings such as currency and dimensions
 
     @Column var refund = "" // map containing refund information for a shipping label
 
@@ -57,14 +56,6 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
      * Returns the product details for the order wrapped in a list of [ProductItem]
      */
     fun getProductItems() = getFormData()?.selectedPackage?.defaultBox?.productItems ?: emptyList()
-
-    /**
-     * Returns the store details such as currency, country and dimensions wrapped in [StoreOptions]
-     */
-    fun getStoreOptionsModel(): StoreOptions? {
-        val responseType = object : TypeToken<StoreOptions>() {}.type
-        return gson.fromJson(storeOptions, responseType) as? StoreOptions
-    }
 
     /**
      * Returns default data related to the order such as the origin address,

@@ -407,6 +407,8 @@ class WooUpdateProductFragment : Fragment() {
 
         attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
         detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
+        generate_variation.setOnClickListener(::onGenerateVariationButtonClicked)
+        delete_variation.setOnClickListener(::onDeleteVariationButtonClicked)
 
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
 
@@ -591,6 +593,44 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    private fun onGenerateVariationButtonClicked(view: View) {
+        try {
+            coroutineScope.launch {
+                takeAsyncRequestWithValidSite { site ->
+                    selectedProductModel?.let { wcProductStore.generateEmptyVariation(site, it) }
+                }?.model?.let { prependToLog("Variation ${it.remoteVariationId} created") }
+                        ?: prependToLog("Couldn't create Variation.")
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't create Variation. Error: ${ex.message}")
+        }
+    }
+
+    private fun onDeleteVariationButtonClicked(view: View) {
+        try {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the variation ID you want to delete:"
+            ) { variationIdEditText ->
+                coroutineScope.launch {
+                    takeAsyncRequestWithValidSite { site ->
+                        variationIdEditText.text.toString().toLongOrNull()
+                                ?.let { variationID ->
+                                    wcProductStore.deleteVariation(
+                                            site,
+                                            selectedProductModel?.remoteProductId ?: 0L,
+                                            variationID
+                                    )
+                                }
+                    }?.model?.let { prependToLog("Variation ${it.remoteVariationId} deleted") }
+                            ?: prependToLog("Couldn't delete Variation.")
+                }
+            }
+        } catch (ex: Exception) {
+            prependToLog("Couldn't delete Variation. Error: ${ex.message}")
+        }
+    }
+
     /***
      * This method will acquire the requested Attribute
      * with the respective Terms and assign to the Product the fetched
@@ -680,8 +720,13 @@ class WooUpdateProductFragment : Fragment() {
         product_download_limit.isEnabled = it.downloadable
         product_download_expiry.setText(it.downloadExpiry.toString())
         product_download_expiry.isEnabled = it.downloadable
-        attach_attribute.isEnabled = true
-        detach_attribute.isEnabled = true
+
+        if (it.type == CoreProductType.VARIABLE.value) {
+            attach_attribute.isEnabled = true
+            detach_attribute.isEnabled = true
+            generate_variation.isEnabled = true
+            delete_variation.isEnabled = true
+        }
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
