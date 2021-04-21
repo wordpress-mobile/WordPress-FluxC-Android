@@ -3,8 +3,6 @@ package org.wordpress.android.fluxc.mocked;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.MockedNetworkModule;
-import org.wordpress.android.fluxc.module.MockedWCNetworkModule;
-import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 
 import javax.inject.Singleton;
 
@@ -14,9 +12,7 @@ import dagger.Component;
 @Component(modules = {
         AppContextModule.class,
         AppConfigModule.class,
-        ReleaseBaseModule.class,
-        MockedNetworkModule.class, // Mocked module
-        MockedWCNetworkModule.class // Mocked module
+        MockedNetworkModule.class // Mocked module
 })
 public interface MockedNetworkAppComponent {
     void inject(MockedStack_AccountTest object);

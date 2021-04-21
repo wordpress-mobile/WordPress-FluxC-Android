@@ -16,8 +16,8 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION

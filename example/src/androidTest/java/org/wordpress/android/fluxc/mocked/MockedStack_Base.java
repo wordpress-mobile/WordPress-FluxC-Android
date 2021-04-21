@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
@@ -19,7 +20,7 @@ public class MockedStack_Base {
     Context mAppContext;
     MockedNetworkAppComponent mMockedNetworkAppComponent;
 
-    @Inject RequestQueue mRequestQueue;
+    @Inject @Named("regular") RequestQueue mRequestQueue;
 
     @Before
     public void setUp() throws Exception {

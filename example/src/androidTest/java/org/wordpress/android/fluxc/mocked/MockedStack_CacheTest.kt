@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.properties.Delegates.notNull
 
@@ -40,7 +41,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
     }
 
     @Inject internal lateinit var wpComRestClient: WPComRestClientForTests
-    @Inject internal lateinit var requestQueue: RequestQueue
+    @Inject @Named("regular") internal lateinit var requestQueue: RequestQueue
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
@@ -208,7 +209,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
     class WPComRestClientForTests @Inject constructor(
         appContext: Context,
         dispatcher: Dispatcher,
-        requestQueue: RequestQueue,
+        @Named("regular") requestQueue: RequestQueue,
         accessToken: AccessToken,
         userAgent: UserAgent
     ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {

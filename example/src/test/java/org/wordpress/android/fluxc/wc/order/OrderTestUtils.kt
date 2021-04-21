@@ -12,8 +12,8 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiResponse
