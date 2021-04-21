@@ -60,8 +60,6 @@ class ExperimentsFragment : Fragment() {
                     "anonymousId=$anonymousId")
             GlobalScope.launch(Dispatchers.Default) {
                 val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
-                result.assignments.variations // Contained variations for experiments which were currently running
-                result.assignments.variations // Contains variations only for the requests experiments
                 withContext(Dispatchers.Main) {
                     onAssignmentsFetched(result)
                 }
