@@ -5,61 +5,67 @@ import android.content.Context;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import org.wordpress.android.fluxc.module.MockedNetworkModule.MockedNetworkModuleBindings;
 import org.wordpress.android.fluxc.network.OkHttpStack;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.OkHttpClient;
 
-@Module
+@Module(includes = MockedNetworkModuleBindings.class)
 public class MockedNetworkModule {
-    @Singleton
+    @Module
+    interface MockedNetworkModuleBindings {
+        @Named("regular")
+        @Binds OkHttpClient bindsRegularOkHttpClient(OkHttpClient okHttpClient);
+
+        @Named("custom-ssl")
+        @Binds OkHttpClient provideCustomSslOkHttpClient(OkHttpClient okHttpClient);
+
+        @Named("no-redirects")
+        @Binds OkHttpClient bindsNoRedirectsOkHttpClient(OkHttpClient okHttpClient);
+    }
+
     @Provides
-    public OkHttpClient.Builder provideOkHttpClientBuilder(ResponseMockingInterceptor responseMockingInterceptor) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.addInterceptor(responseMockingInterceptor);
-        return builder;
+    public OkHttpClient provideOkHttpClientInstance(ResponseMockingInterceptor responseMockingInterceptor) {
+        return new OkHttpClient.Builder()
+                .addInterceptor(responseMockingInterceptor)
+                .build();
     }
 
     @Singleton
     @Provides
-    @Named("regular")
-    public OkHttpClient provideRegularOkHttpClientInstance(OkHttpClient.Builder builder) {
-        return builder.build();
-    }
-
-    @Singleton
-    @Provides
-    public RequestQueue provideRequestQueue(OkHttpClient okHttpClient, Context appContext) {
+    public RequestQueue provideRequestQueue(@Named("regular") OkHttpClient okHttpClient, Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
     @Named("regular")
     @Provides
-    public RequestQueue provideRegularRequestQueue(OkHttpClient okHttpClient,
-                                            Context appContext) {
+    public RequestQueue provideRegularRequestQueue(@Named("regular") OkHttpClient okHttpClient,
+                                                          Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
     @Named("no-redirects")
     @Provides
-    public RequestQueue provideNoRedirectsRequestQueue(OkHttpClient okHttpClient,
-                                                       Context appContext) {
+    public RequestQueue provideNoRedirectsRequestQueue(@Named("no-redirects") OkHttpClient okHttpClient,
+                                                              Context appContext) {
         return provideRegularRequestQueue(okHttpClient, appContext);
     }
 
     @Singleton
     @Named("custom-ssl")
     @Provides
-    public RequestQueue provideCustomRequestQueue(OkHttpClient okHttpClient,
-                                                   Context appContext) {
+    public RequestQueue provideCustomRequestQueue(@Named("custom-ssl") OkHttpClient okHttpClient,
+                                                         Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
