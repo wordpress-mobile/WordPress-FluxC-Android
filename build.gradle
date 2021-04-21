@@ -81,4 +81,5 @@ ext {
     arch_core_version = '2.0.1'
     appcompat_version = '1.0.2'
     mockitoVersion = '3.3.3'
+    assertJVersion = '3.19.0'
 }

@@ -7,7 +7,8 @@ data class WCPackagesResult(
     data class CustomPackage(
         val title: String,
         val isLetter: Boolean,
-        val dimensions: String
+        val dimensions: String,
+        val boxWeight: Float
     )
 
     data class PredefinedOption(
@@ -18,7 +19,8 @@ data class WCPackagesResult(
             val id: String,
             val title: String,
             val isLetter: Boolean,
-            val dimensions: String
+            val dimensions: String,
+            val boxWeight: Float
         )
     }
 }
