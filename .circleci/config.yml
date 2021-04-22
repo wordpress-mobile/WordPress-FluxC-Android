@@ -148,11 +148,11 @@ workflows:
       - Optional Tests:
           type: approval
           filters:
-            branches:
+            branches: 
               ignore:
                 - develop
                 - /^release.*/
-      - Firebase Test:
+      - Firebase Test: 
           requires: [Optional Tests]
           name: Optional Connected Tests
           results-history-name: CircleCI FluxC Optional Connected Tests
