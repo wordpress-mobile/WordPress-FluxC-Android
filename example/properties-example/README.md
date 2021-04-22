@@ -3,8 +3,8 @@
 We use gradle property files to store sensitive information under the git ignored `example/properties/` folder.
 There are 2 ways to set these up:
 
-1. If you work at Automattic, you should have a mobile secrets folder which should contain all the necessary properties.
-You can run `./gradlew applyConfiguration` from the root of the project to copy these.
+1. If you work at Automattic, you should have a mobile secrets folder which should contain the necessary decryption key.
+You can run `./gradlew applyConfiguration` from the root of the project to decrypt the files in `.configure-files`.
 2. Otherwise, you can copy the `properties-example` folder with the following command and use your own credentials: `cp -a example/properties-example/ example/properties/`
 
 ### Deprecated Properties
