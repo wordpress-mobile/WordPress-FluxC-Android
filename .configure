@@ -1,6 +1,6 @@
 {
   "project_name": "FluxC-Android",
-  "branch": "fluxc-properties",
+  "branch": "trunk",
   "pinned_hash": "2f178d5deabe62d00125beeb4cfaa45b29de3931",
   "files_to_copy": [
     {
