@@ -54,10 +54,12 @@ class ExperimentsFragment : Fragment() {
         generate_anon_id_button.setOnClickListener { anon_id_edit_text.setText(UUID.randomUUID().toString()) }
         fetch_assignments.setOnClickListener {
             val platform = selectedPlatform ?: WORDPRESS_COM
+            val experimentNames = experiment_names_edit_text.text.split(',').map { it.trim() }
             val anonymousId = anon_id_edit_text.text.toString()
-            prependToLog("Fetching assignments with: platform=$platform, anonymousId=$anonymousId")
+            prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, " +
+                    "anonymousId=$anonymousId")
             GlobalScope.launch(Dispatchers.Default) {
-                val result = experimentStore.fetchAssignments(platform, anonymousId)
+                val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
                 withContext(Dispatchers.Main) {
                     onAssignmentsFetched(result)
                 }
