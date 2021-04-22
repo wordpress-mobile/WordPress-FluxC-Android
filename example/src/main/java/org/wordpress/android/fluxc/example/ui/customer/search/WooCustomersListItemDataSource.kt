@@ -19,9 +19,7 @@ import javax.inject.Inject
 
 const val PAGE_SIZE = 15
 
-class WooCustomersListItemDataSource
-@Inject
-constructor(
+class WooCustomersListItemDataSource @Inject constructor(
     private val store: WCCustomerStore,
     private val dispatcher: Dispatcher,
     private val activity: MainExampleActivity

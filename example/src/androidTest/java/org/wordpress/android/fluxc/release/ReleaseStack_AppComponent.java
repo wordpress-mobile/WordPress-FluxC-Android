@@ -3,11 +3,9 @@ package org.wordpress.android.fluxc.release;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
-import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
 import org.wordpress.android.fluxc.module.ReleaseToolsModule;
-import org.wordpress.android.fluxc.module.ReleaseWCNetworkModule;
 
 import javax.inject.Singleton;
 
@@ -19,9 +17,7 @@ import dagger.Component;
         AppContextModule.class,
         AppConfigModule.class,
         ReleaseOkHttpClientModule.class,
-        ReleaseBaseModule.class,
         ReleaseNetworkModule.class,
-        ReleaseWCNetworkModule.class,
         ReleaseToolsModule.class,
         MockedToolsModule.class
 })

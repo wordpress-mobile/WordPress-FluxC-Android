@@ -13,14 +13,15 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.handleResult
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class LeaderboardsRestClient
-constructor(
+class LeaderboardsRestClient @Inject constructor(
     appContext: Context?,
     dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder

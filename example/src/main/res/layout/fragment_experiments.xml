@@ -21,6 +21,20 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Experiment names (separated by comma)"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/experiment_names_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Experiment names"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Anonymous ID for this participant"
         tools:ignore="HardcodedText" />
 

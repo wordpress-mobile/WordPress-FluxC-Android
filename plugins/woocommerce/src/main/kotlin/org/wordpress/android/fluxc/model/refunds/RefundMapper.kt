@@ -9,8 +9,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-class RefundMapper
-@Inject constructor() {
+class RefundMapper @Inject constructor() {
     fun map(response: RefundResponse): WCRefundModel {
         return WCRefundModel(
                 response.refundId,
