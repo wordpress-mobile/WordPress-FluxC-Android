@@ -1,19 +1,19 @@
 {
   "project_name": "FluxC-Android",
   "branch": "trunk",
-  "pinned_hash": "a3dc97d4e81396183a054ee2c11aa9bf200e927c",
+  "pinned_hash": "2f178d5deabe62d00125beeb4cfaa45b29de3931",
   "files_to_copy": [
     {
       "file": "android/FluxC/tests.properties",
-      "destination": ".configure-files/tests.properties"
+      "destination": "example/properties/tests.properties"
     },
     {
       "file": "android/FluxC/tests.properties-extra",
-      "destination": ".configure-files/tests.properties-extra"
+      "destination": "example/properties/tests.properties-extra"
     },
     {
-      "file": "android/FluxC/gradle.properties",
-      "destination": ".configure-files/gradle.properties"
+      "file": "android/FluxC/api.properties",
+      "destination": "example/properties/api.properties"
     },
     {
       "file": "android/FluxC/firebase.secrets.json",
