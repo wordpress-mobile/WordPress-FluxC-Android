@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.properties.Delegates.notNull
 
 /**
@@ -39,7 +40,7 @@ import kotlin.properties.Delegates.notNull
 class MockedStack_WCStatsTest : MockedStack_Base() {
     @Inject internal lateinit var orderStatsRestClient: OrderStatsRestClient
     @Inject internal lateinit var dispatcher: Dispatcher
-    @Inject internal lateinit var requestQueue: RequestQueue
+    @Inject @Named("regular") internal lateinit var requestQueue: RequestQueue
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 

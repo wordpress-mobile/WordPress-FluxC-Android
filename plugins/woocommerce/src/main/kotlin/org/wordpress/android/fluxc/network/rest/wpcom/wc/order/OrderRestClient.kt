@@ -47,14 +47,16 @@ import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
 @Singleton
-class OrderRestClient(
+class OrderRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {

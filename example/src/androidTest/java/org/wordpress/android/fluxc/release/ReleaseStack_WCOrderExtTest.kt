@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTracking
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
-import java.lang.AssertionError
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.CountDownLatch
