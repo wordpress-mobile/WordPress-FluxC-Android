@@ -4,8 +4,16 @@ buildscript {
 }
 
 plugins {
-    id "com.automattic.android.fetchstyle" version "1.1"
-    id "com.automattic.android.configure" version "0.5.0"
+    // Those declarations are just a workaround for a false-positive Kotlin Gradle Plugin warning
+    // https://youtrack.jetbrains.com/issue/KT-46200
+    id "com.android.application" apply false
+    id "org.jetbrains.kotlin.android" apply false
+    id "org.jetbrains.kotlin.android.extensions" apply false
+    id "org.jetbrains.kotlin.jvm" apply false
+    id "org.jetbrains.kotlin.kapt" apply false
+
+    id "com.automattic.android.fetchstyle"
+    id "com.automattic.android.configure"
 }
 
 allprojects {
