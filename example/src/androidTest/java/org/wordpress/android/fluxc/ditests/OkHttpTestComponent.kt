@@ -2,16 +2,16 @@ package org.wordpress.android.fluxc.ditests
 
 import dagger.Component
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
-import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule
+import org.wordpress.android.fluxc.module.OkHttpClientModule
 import javax.inject.Singleton
 
 @Singleton
 @Component(
         modules = [
-            ReleaseOkHttpClientModule::class,
+            OkHttpClientModule::class,
             ReleaseNetworkModule::class
         ]
 )
-interface OkHttpReleaseTestComponent {
-    fun inject(testRelease: OkHttpReleaseInjectionTest)
+interface OkHttpTestComponent {
+    fun inject(test: OkHttpInjectionTest)
 }

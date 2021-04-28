@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.network.BaseRequest
 import javax.inject.Inject
 import javax.inject.Named
 
-class OkHttpReleaseInjectionTest {
+class OkHttpInjectionTest {
     @Inject @Named("regular")
     lateinit var regularClient: OkHttpClient
 
@@ -24,7 +24,7 @@ class OkHttpReleaseInjectionTest {
 
     @Before
     fun setUp() {
-        DaggerOkHttpReleaseTestComponent.builder()
+        DaggerOkHttpTestComponent.builder()
                 .build()
                 .inject(this)
     }

@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.instaflux;
 
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
-import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
+import org.wordpress.android.fluxc.module.OkHttpClientModule;
 
 import javax.inject.Singleton;
 
@@ -12,7 +12,7 @@ import dagger.Component;
 @Component(modules = {
         AppContextModule.class,
         AppConfigModule.class,
-        ReleaseOkHttpClientModule.class,
+        OkHttpClientModule.class,
         ReleaseNetworkModule.class
 })
 public interface AppComponent {
