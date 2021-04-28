@@ -36,9 +36,8 @@ class OkHttpInjectionTest {
             assertThat(followRedirects).isTrue
             assertThat(hostnameVerifier).isEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
-            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
-            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertDefaultRequestTimeouts()
+            assertInterceptorsPresence()
         }
     }
 
@@ -49,9 +48,8 @@ class OkHttpInjectionTest {
             assertThat(followRedirects).isFalse
             assertThat(hostnameVerifier).isEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
-            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
-            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertDefaultRequestTimeouts()
+            assertInterceptorsPresence()
         }
     }
 
@@ -62,10 +60,20 @@ class OkHttpInjectionTest {
             assertThat(followRedirects).isTrue
             assertThat(hostnameVerifier).isNotEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
-            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
-            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertDefaultRequestTimeouts()
+            assertInterceptorsPresence()
         }
+    }
+
+    private fun OkHttpClient.assertDefaultRequestTimeouts() {
+        assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+        assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
+        assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+    }
+
+    private fun OkHttpClient.assertInterceptorsPresence() {
+        assertThat(interceptors).containsOnly(DummyInterceptor)
+        assertThat(networkInterceptors).containsOnly(DummyNetworkInterceptor)
     }
 
     companion object {

@@ -9,7 +9,8 @@ import javax.inject.Singleton
 @Component(
         modules = [
             OkHttpClientModule::class,
-            ReleaseNetworkModule::class
+            ReleaseNetworkModule::class,
+            TestInterceptorModule::class
         ]
 )
 interface OkHttpTestComponent {
