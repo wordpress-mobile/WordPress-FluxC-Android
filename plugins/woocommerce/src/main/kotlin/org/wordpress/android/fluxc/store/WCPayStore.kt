@@ -39,7 +39,6 @@ class WCPayStore @Inject constructor(
                 response.isError -> WooResult(response.error)
                 else -> WooResult(Unit)
             }
-
         }
     }
 }

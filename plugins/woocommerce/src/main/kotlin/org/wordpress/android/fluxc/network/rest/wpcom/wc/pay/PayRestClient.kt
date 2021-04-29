@@ -49,6 +49,7 @@ class PayRestClient @Inject constructor(
     }
 
     suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WooPayload<CapturePaymentApiResponse> {
+        // TODO cardreader add error handling + introduce tests for both happy and error paths
         val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
         val params = mapOf(
                 "payment_intent_id" to paymentId,
