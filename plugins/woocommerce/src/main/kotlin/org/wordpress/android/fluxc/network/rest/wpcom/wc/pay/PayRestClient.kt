@@ -5,6 +5,7 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.network.utils.toMap
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -34,6 +36,29 @@ class PayRestClient @Inject constructor(
                 url,
                 mapOf(),
                 ConnectionTokenApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WooPayload<CapturePaymentApiResponse> {
+        val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
+        val params = mapOf(
+                "payment_intent_id" to paymentId,
+        )
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                CapturePaymentApiResponse::class.java
         )
 
         return when (response) {

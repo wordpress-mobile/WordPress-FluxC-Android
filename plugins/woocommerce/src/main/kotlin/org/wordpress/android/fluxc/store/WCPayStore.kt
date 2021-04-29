@@ -31,4 +31,15 @@ class WCPayStore @Inject constructor(
             }
         }
     }
+
+    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
+            val response = restClient.capturePayment(site, paymentId, orderId)
+            return@withDefaultContext when {
+                response.isError -> WooResult(response.error)
+                else -> WooResult(Unit)
+            }
+
+        }
+    }
 }
