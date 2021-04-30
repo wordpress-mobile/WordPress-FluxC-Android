@@ -67,6 +67,7 @@ class WCUserStoreTest {
         val userRole = mapper.map(sampleUserApiResponse!!)
         assertThat(result.model?.size).isEqualTo(userRole.size)
         assertThat(result.model).isEqualTo(userRole)
+        assertThat(result.model?.get(0)?.isSupported() == true)
 
         val invalidRequestResult = store.fetchUserRole(errorSite)
         assertThat(invalidRequestResult.model).isNull()
