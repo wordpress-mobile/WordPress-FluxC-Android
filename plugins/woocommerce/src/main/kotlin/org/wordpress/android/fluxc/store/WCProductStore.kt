@@ -883,6 +883,7 @@ class WCProductStore @Inject constructor(
     ): WooResult<WCProductVariationModel> =
             coroutineEngine?.withDefaultContext(T.API, this, "generateEmptyVariation") {
                 product.attributeList
+                        .filter { it.variation }
                         .map { ProductVariantOption(it.id, it.name, "") }
                         .let { Gson().toJson(it) }
                         .let { wcProductRestClient.generateEmptyVariation(site, product.remoteProductId, it) }
