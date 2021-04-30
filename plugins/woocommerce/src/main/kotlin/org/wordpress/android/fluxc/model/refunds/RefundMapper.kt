@@ -30,7 +30,8 @@ class RefundMapper @Inject constructor() {
                             it.sku,
                             it.price?.toBigDecimalOrNull()
                     )
-                }
+                },
+                response.shippingLineItems
         )
     }
 
