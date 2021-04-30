@@ -5,7 +5,9 @@ import javax.inject.Inject
 
 class WCUserMapper
 @Inject constructor() {
-    fun map(user: UserApiResponse): UserRole {
-        return UserRole.fromValue(user.roles[0]) ?: UserRole.OTHER
+    fun map(user: UserApiResponse): List<UserRole> {
+        val userRoles = mutableListOf<UserRole>()
+        user.roles.map { userRoles.add(UserRole.fromValue(it)) }
+        return userRoles
     }
 }
