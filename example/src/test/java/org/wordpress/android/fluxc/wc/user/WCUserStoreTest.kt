@@ -65,6 +65,7 @@ class WCUserStoreTest {
     fun `fetch user role`() = test {
         val result = fetchUserRole()
         val userRole = mapper.map(sampleUserApiResponse!!)
+        assertThat(result.model?.size).isEqualTo(userRole.size)
         assertThat(result.model).isEqualTo(userRole)
 
         val invalidRequestResult = store.fetchUserRole(errorSite)
@@ -72,7 +73,7 @@ class WCUserStoreTest {
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
-    private suspend fun fetchUserRole(): WooResult<WCUserRole> {
+    private suspend fun fetchUserRole(): WooResult<List<WCUserRole>> {
         val fetchUserRolePayload = WooPayload(sampleUserApiResponse)
         whenever(restClient.fetchUserInfo(site)).thenReturn(fetchUserRolePayload)
         whenever(restClient.fetchUserInfo(errorSite)).thenReturn(WooPayload(error))
