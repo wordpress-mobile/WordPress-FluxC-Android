@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.UserRole
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserRole
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserStore
@@ -72,7 +72,7 @@ class WCUserStoreTest {
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
-    private suspend fun fetchUserRole(): WooResult<UserRole> {
+    private suspend fun fetchUserRole(): WooResult<WCUserRole> {
         val fetchUserRolePayload = WooPayload(sampleUserApiResponse)
         whenever(restClient.fetchUserInfo(site)).thenReturn(fetchUserRolePayload)
         whenever(restClient.fetchUserInfo(errorSite)).thenReturn(WooPayload(error))

@@ -16,7 +16,7 @@ class WCUserStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val mapper: WCUserMapper
 ) {
-    suspend fun fetchUserRole(site: SiteModel): WooResult<List<UserRole>> {
+    suspend fun fetchUserRole(site: SiteModel): WooResult<List<WCUserRole>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchUserInfo") {
             val response = restClient.fetchUserInfo(site)
             return@withDefaultContext when {
