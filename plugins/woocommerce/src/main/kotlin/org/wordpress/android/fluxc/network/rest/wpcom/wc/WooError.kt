@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 
-class WooError(
+open class WooError(
     var type: WooErrorType,
     var original: GenericErrorType,
     var message: String? = null
@@ -29,7 +29,8 @@ enum class WooErrorType {
     INVALID_ID,
     GENERIC_ERROR,
     INVALID_RESPONSE,
-    AUTHORIZATION_REQUIRED
+    AUTHORIZATION_REQUIRED,
+    CUSTOM_ERROR
 }
 
 fun WPComGsonNetworkError.toWooError(): WooError {
