@@ -5,9 +5,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.CUSTOM_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.CaptureFailed
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.MissingOrder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.UncapturablePayment
