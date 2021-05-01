@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -32,7 +33,11 @@ class WCPayStore @Inject constructor(
         }
     }
 
-    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WooResult<Unit, WooError> {
+    suspend fun capturePayment(
+        site: SiteModel,
+        paymentId: String,
+        orderId: Long
+    ): WooResult<Unit, CaptureTerminalPaymentError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
             val response = restClient.capturePayment(site, paymentId, orderId)
             return@withDefaultContext when {

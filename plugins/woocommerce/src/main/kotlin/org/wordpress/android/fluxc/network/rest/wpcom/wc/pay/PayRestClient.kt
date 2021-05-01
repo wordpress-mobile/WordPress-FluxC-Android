@@ -5,6 +5,7 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -12,7 +13,14 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.CUSTOM_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.CaptureFailed
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.MissingOrder
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.OtherError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.UncapturablePayment
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient.CaptureTerminalPaymentError.WCPayServerError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
 import javax.inject.Named
@@ -51,7 +59,7 @@ class PayRestClient @Inject constructor(
         site: SiteModel,
         paymentId: String,
         orderId: Long
-    ): WooPayload<CapturePaymentApiResponse, WooError> {
+    ): WooPayload<CapturePaymentApiResponse, CaptureTerminalPaymentError> {
         // TODO cardreader add error handling + introduce tests for both happy and error paths
         val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
         val params = mapOf(
@@ -70,8 +78,60 @@ class PayRestClient @Inject constructor(
                 WooPayload(response.data)
             }
             is JetpackError -> {
-                WooPayload(response.error.toWooError())
+                WooPayload(
+                        when (response.error.apiError) {
+                            "wcpay_missing_order" -> MissingOrder(
+                                    original = response.error.type,
+                                    message = response.error.message
+                            )
+                            "wcpay_payment_uncapturable" -> UncapturablePayment(
+                                    original = response.error.type,
+                                    message = response.error.message
+                            )
+                            "wcpay_capture_error" -> CaptureFailed(
+                                    original = response.error.type,
+                                    message = response.error.message
+                            )
+                            "wcpay_server_error" -> WCPayServerError(
+                                    original = response.error.type,
+                                    message = response.error.message
+                            )
+                            else -> OtherError(response.error.toWooError())
+                        }
+                )
             }
         }
+    }
+
+    sealed class CaptureTerminalPaymentError(
+        type: WooErrorType = CUSTOM_ERROR,
+        original: GenericErrorType,
+        message: String? = null
+    ) : WooError(type, original, message) {
+        class MissingOrder(
+            original: GenericErrorType,
+            message: String? = null
+        ) : CaptureTerminalPaymentError(original = original, message = message)
+
+        class UncapturablePayment(
+            original: GenericErrorType,
+            message: String? = null
+        ) : CaptureTerminalPaymentError(original = original, message = message)
+
+        class CaptureFailed(
+            original: GenericErrorType,
+            message: String? = null
+        ) : CaptureTerminalPaymentError(original = original, message = message)
+
+        class WCPayServerError(
+            original: GenericErrorType,
+            message: String? = null
+        ) : CaptureTerminalPaymentError(original = original, message = message)
+
+        data class OtherError(val error: WooError) : CaptureTerminalPaymentError(
+                error.type,
+                error.original,
+                error.message
+        )
     }
 }
