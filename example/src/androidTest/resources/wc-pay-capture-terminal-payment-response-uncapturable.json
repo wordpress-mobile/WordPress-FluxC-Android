@@ -1,0 +1,7 @@
+{
+  "code": "wcpay_payment_uncapturable",
+  "message": "The payment cannot be captured",
+  "data": {
+    "status": 409
+  }
+}
