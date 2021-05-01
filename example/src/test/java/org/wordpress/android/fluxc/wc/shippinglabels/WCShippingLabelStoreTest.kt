@@ -40,11 +40,17 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.AccountSettingsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.LabelItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.SLCreationEligibilityApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.PrintShippingLabelApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse.ShippingOption.Rate
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.VerifyAddressResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelStatusApiResponse
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
@@ -432,7 +438,7 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `purchase shipping labels with polling`() = test {
-        val response = WooPayload(samplePurchaseShippingLabelsResponse)
+        val response = WooPayload<ShippingLabelStatusApiResponse, WooError>(samplePurchaseShippingLabelsResponse)
         whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
@@ -475,7 +481,7 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `purchase shipping labels with polling fail after 3 retries`() = test {
-        val response = WooPayload(samplePurchaseShippingLabelsResponse)
+        val response = WooPayload<ShippingLabelStatusApiResponse, WooError>(samplePurchaseShippingLabelsResponse)
         whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
 
         whenever(restClient.fetchShippingLabelsStatus(any(), any(), any())).thenReturn(WooPayload(error))
@@ -493,7 +499,7 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `purchase shipping labels with polling one label failed`() = test {
-        val response = WooPayload(samplePurchaseShippingLabelsResponse)
+        val response = WooPayload<ShippingLabelStatusApiResponse, WooError>(samplePurchaseShippingLabelsResponse)
         whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
@@ -571,15 +577,15 @@ class WCShippingLabelStoreTest {
         assertThat(eligibility).isNull()
     }
 
-    private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
-        val fetchShippingLabelsPayload = WooPayload(sampleShippingLabelApiResponse)
+    private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>, WooError> {
+        val fetchShippingLabelsPayload = WooPayload<ShippingLabelApiResponse, WooError>(sampleShippingLabelApiResponse)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchShippingLabelsPayload)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, errorSite)).thenReturn(WooPayload(error))
         return store.fetchShippingLabelsForOrder(site, orderId)
     }
 
-    private suspend fun refundShippingLabelForOrder(): WooResult<Boolean> {
-        val refundShippingLabelPayload = WooPayload(sampleShippingLabelApiResponse)
+    private suspend fun refundShippingLabelForOrder(): WooResult<Boolean, WooError> {
+        val refundShippingLabelPayload = WooPayload<ShippingLabelApiResponse, WooError>(sampleShippingLabelApiResponse)
         whenever(restClient.refundShippingLabelForOrder(
                 site, orderId, refundShippingLabelId
         )).thenReturn(refundShippingLabelPayload)
@@ -591,8 +597,10 @@ class WCShippingLabelStoreTest {
         return store.refundShippingLabelForOrder(site, orderId, refundShippingLabelId)
     }
 
-    private suspend fun printShippingLabelForOrder(): WooResult<String> {
-        val printShippingLabelPayload = WooPayload(samplePrintShippingLabelApiResponse)
+    private suspend fun printShippingLabelForOrder(): WooResult<String, WooError> {
+        val printShippingLabelPayload = WooPayload<PrintShippingLabelApiResponse, WooError>(
+                samplePrintShippingLabelApiResponse
+        )
         whenever(restClient.printShippingLabel(
                 site, printPaperSize, refundShippingLabelId
         )).thenReturn(printShippingLabelPayload)
@@ -604,8 +612,10 @@ class WCShippingLabelStoreTest {
         return store.printShippingLabel(site, printPaperSize, refundShippingLabelId)
     }
 
-    private suspend fun verifyAddress(type: ShippingLabelAddress.Type): WooResult<WCAddressVerificationResult> {
-        val verifyAddressPayload = WooPayload(successfulVerifyAddressApiResponse)
+    private suspend fun verifyAddress(
+        type: ShippingLabelAddress.Type
+    ): WooResult<WCAddressVerificationResult, WooError> {
+        val verifyAddressPayload = WooPayload<VerifyAddressResponse, WooError>(successfulVerifyAddressApiResponse)
         whenever(restClient.verifyAddress(
                 site,
                 address,
@@ -621,8 +631,8 @@ class WCShippingLabelStoreTest {
         return store.verifyAddress(site, address, type)
     }
 
-    private suspend fun getShippingRates(): WooResult<WCShippingRatesResult> {
-        val rates = WooPayload(sampleShippingRatesApiResponse)
+    private suspend fun getShippingRates(): WooResult<WCShippingRatesResult, WooError> {
+        val rates = WooPayload<ShippingRatesApiResponse, WooError>(sampleShippingRatesApiResponse)
 
         whenever(restClient.getShippingRates(any(), any(), any(), any(), any()))
                 .thenReturn(rates)
@@ -630,8 +640,8 @@ class WCShippingLabelStoreTest {
         return store.getShippingRates(site, orderId, originAddress, destAddress, packages)
     }
 
-    private suspend fun getPackages(isError: Boolean = false): WooResult<WCPackagesResult> {
-        val getPackagesPayload = WooPayload(samplePackagesApiResponse)
+    private suspend fun getPackages(isError: Boolean = false): WooResult<WCPackagesResult, WooError> {
+        val getPackagesPayload = WooPayload<GetPackageTypesResponse, WooError>(samplePackagesApiResponse)
         if (isError) {
             whenever(restClient.getPackageTypes(any())).thenReturn(WooPayload(error))
         } else {
@@ -640,11 +650,13 @@ class WCShippingLabelStoreTest {
         return store.getPackageTypes(site)
     }
 
-    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCShippingAccountSettings> {
+    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCShippingAccountSettings, WooError> {
         if (isError) {
             whenever(restClient.getAccountSettings(any())).thenReturn(WooPayload(error))
         } else {
-            val accountSettingsPayload = WooPayload(sampleAccountSettingsApiResponse)
+            val accountSettingsPayload = WooPayload<AccountSettingsApiResponse, WooError>(
+                    sampleAccountSettingsApiResponse
+            )
             whenever(restClient.getAccountSettings(any())).thenReturn(accountSettingsPayload)
         }
         return store.getAccountSettings(site)
@@ -656,7 +668,7 @@ class WCShippingLabelStoreTest {
         canCreateCustomsForm: Boolean,
         isEligible: Boolean = false,
         isError: Boolean = false
-    ): WooResult<WCShippingLabelCreationEligibility> {
+    ): WooResult<WCShippingLabelCreationEligibility, WooError> {
         if (isError) {
             whenever(restClient.checkShippingLabelCreationEligibility(any(), any(), any(), any(), any()))
                     .thenReturn(WooPayload(error))
