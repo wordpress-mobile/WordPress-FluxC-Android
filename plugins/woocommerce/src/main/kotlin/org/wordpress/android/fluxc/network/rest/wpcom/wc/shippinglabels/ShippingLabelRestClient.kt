@@ -218,7 +218,10 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
-    suspend fun updateAccountSettings(site: SiteModel, request: UpdateSettingsApiRequest): WooPayload<Boolean, WooError> {
+    suspend fun updateAccountSettings(
+        site: SiteModel,
+        request: UpdateSettingsApiRequest
+    ): WooPayload<Boolean, WooError> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -248,9 +251,9 @@ class ShippingLabelRestClient @Inject constructor(
         val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
 
         val params = mapOf(
-            "origin" to origin.toMap(),
-            "destination" to destination.toMap(),
-            "packages" to packages.map { it.toMap() }
+                "origin" to origin.toMap(),
+                "destination" to destination.toMap(),
+                "packages" to packages.map { it.toMap() }
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
