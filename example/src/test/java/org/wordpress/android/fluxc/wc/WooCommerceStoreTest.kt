@@ -96,8 +96,8 @@ class WooCommerceStoreTest {
         Assertions.assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
-    private suspend fun getPlugin(isError: Boolean = false): WooResult<WCPluginModel> {
-        val payload = WooPayload(response)
+    private suspend fun getPlugin(isError: Boolean = false): WooResult<WCPluginModel, WooError> {
+        val payload = WooPayload<ActivePluginsResponse, WooError>(response)
         if (isError) {
             whenever(restClient.fetchInstalledPlugins(any())).thenReturn(WooPayload(error))
         } else {

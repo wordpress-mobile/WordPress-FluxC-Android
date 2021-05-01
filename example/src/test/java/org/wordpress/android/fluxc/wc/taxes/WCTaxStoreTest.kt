@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxClassApiResponse
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCTaxStore
@@ -86,8 +87,10 @@ class WCTaxStoreTest {
         assertThat(invalidRequestResult.size).isEqualTo(0)
     }
 
-    private suspend fun fetchTaxClassListForSite(): WooResult<List<WCTaxClassModel>> {
-        val fetchTaxClassListPayload = WooPayload(sampleTaxClassList.toTypedArray())
+    private suspend fun fetchTaxClassListForSite(): WooResult<List<WCTaxClassModel>, WooError> {
+        val fetchTaxClassListPayload = WooPayload<Array<TaxClassApiResponse>, WooError>(
+                sampleTaxClassList.toTypedArray()
+        )
         whenever(restClient.fetchTaxClassList(site)).thenReturn(fetchTaxClassListPayload)
         whenever(restClient.fetchTaxClassList(errorSite)).thenReturn(WooPayload(error))
         return store.fetchTaxClassList(site)

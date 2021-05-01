@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_ID
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient.RefundResponse
 import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCRefundStore
@@ -97,8 +98,8 @@ class RefundStoreTest {
         assertThat(refund).isEqualTo(mapper.map(REFUND_RESPONSE))
     }
 
-    private suspend fun fetchSpecificTestRefund(): WooResult<WCRefundModel> {
-        val fetchRefundsPayload = WooPayload(
+    private suspend fun fetchSpecificTestRefund(): WooResult<WCRefundModel, WooError> {
+        val fetchRefundsPayload = WooPayload<RefundResponse, WooError>(
                 REFUND_RESPONSE
         )
         whenever(restClient.fetchRefund(site, orderId, refundId)).thenReturn(
@@ -111,9 +112,9 @@ class RefundStoreTest {
         return store.fetchRefund(site, orderId, refundId)
     }
 
-    private suspend fun fetchAllTestRefunds(): WooResult<List<WCRefundModel>> {
+    private suspend fun fetchAllTestRefunds(): WooResult<List<WCRefundModel>, WooError> {
         val data = arrayOf(REFUND_RESPONSE, REFUND_RESPONSE)
-        val fetchRefundsPayload = WooPayload(
+        val fetchRefundsPayload = WooPayload<Array<RefundResponse>, WooError>(
                 data
         )
         whenever(

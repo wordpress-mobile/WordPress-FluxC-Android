@@ -14,9 +14,11 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.data.WCCountryMapper
 import org.wordpress.android.fluxc.model.data.WCLocationModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataRestClient.CountryApiResponse
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCDataStore
@@ -106,8 +108,8 @@ class WCDataStoreTest {
         assertThat(states).isEqualTo(emptyList<WCLocationModel>())
     }
 
-    private suspend fun fetchCountries(): WooResult<List<WCLocationModel>> {
-        val payload = WooPayload(sampleResponse.toTypedArray())
+    private suspend fun fetchCountries(): WooResult<List<WCLocationModel>, WooError> {
+        val payload = WooPayload<Array<CountryApiResponse>, WooError>(sampleResponse.toTypedArray())
         whenever(restClient.fetchCountries(site)).thenReturn(payload)
         return store.fetchCountriesAndStates(site)
     }

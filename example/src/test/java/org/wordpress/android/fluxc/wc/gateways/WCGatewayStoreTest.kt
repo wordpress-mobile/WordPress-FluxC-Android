@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_ID
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient.GatewayResponse
 import org.wordpress.android.fluxc.persistence.WCGatewaySqlUtils.GatewaysTable
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCGatewayStore
@@ -101,14 +102,14 @@ class WCGatewayStoreTest {
         assertThat(invalidRequestResult).isNull()
     }
 
-    private suspend fun fetchSpecificTestGateway(): WooResult<WCGatewayModel> {
-        val fetchGatewaysPayload = WooPayload(GATEWAYS_RESPONSE.first())
+    private suspend fun fetchSpecificTestGateway(): WooResult<WCGatewayModel, WooError> {
+        val fetchGatewaysPayload = WooPayload<GatewayResponse, WooError>(GATEWAYS_RESPONSE.first())
         whenever(restClient.fetchGateway(site, gatewayId)).thenReturn(fetchGatewaysPayload)
         return store.fetchGateway(site, gatewayId)
     }
 
-    private suspend fun fetchAllTestGateways(): WooResult<List<WCGatewayModel>> {
-        val fetchGatewaysPayload = WooPayload(GATEWAYS_RESPONSE.toTypedArray())
+    private suspend fun fetchAllTestGateways(): WooResult<List<WCGatewayModel>, WooError> {
+        val fetchGatewaysPayload = WooPayload<Array<GatewayResponse>, WooError>(GATEWAYS_RESPONSE.toTypedArray())
         whenever(restClient.fetchAllGateways(site)).thenReturn(fetchGatewaysPayload)
         return store.fetchAllGateways(site)
     }
