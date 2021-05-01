@@ -161,7 +161,7 @@ open class WooCommerceStore @Inject constructor(
 
     suspend fun fetchWooCommerceServicesPluginInfo(
         site: SiteModel
-    ): WooResult<WCPluginModel> {
+    ): WooResult<WCPluginModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchWooCommerceServicesPluginInfo") {
             val response = systemRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {

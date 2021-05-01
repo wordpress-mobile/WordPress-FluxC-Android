@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
@@ -41,7 +42,7 @@ class ShippingLabelRestClient @Inject constructor(
     suspend fun fetchShippingLabelsForOrder(
         orderId: Long,
         site: SiteModel
-    ): WooPayload<ShippingLabelApiResponse> {
+    ): WooPayload<ShippingLabelApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -65,7 +66,7 @@ class ShippingLabelRestClient @Inject constructor(
         site: SiteModel,
         orderId: Long,
         remoteShippingLabelId: Long
-    ): WooPayload<ShippingLabelApiResponse> {
+    ): WooPayload<ShippingLabelApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabelId(remoteShippingLabelId).refund.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -89,7 +90,7 @@ class ShippingLabelRestClient @Inject constructor(
         site: SiteModel,
         paperSize: String,
         remoteShippingLabelId: Long
-    ): WooPayload<PrintShippingLabelApiResponse> {
+    ): WooPayload<PrintShippingLabelApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.print.pathV1
         val params = mapOf(
                 "paper_size" to paperSize,
@@ -121,7 +122,7 @@ class ShippingLabelRestClient @Inject constructor(
         canCreatePackage: Boolean,
         canCreatePaymentMethod: Boolean,
         canCreateCustomsForm: Boolean
-    ): WooPayload<SLCreationEligibilityApiResponse> {
+    ): WooPayload<SLCreationEligibilityApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.order(orderId).creation_eligibility.pathV1
         val params = mapOf(
                 "can_create_package" to canCreatePackage.toString(),
@@ -149,7 +150,7 @@ class ShippingLabelRestClient @Inject constructor(
         site: SiteModel,
         address: ShippingLabelAddress,
         type: ShippingLabelAddress.Type
-    ): WooPayload<VerifyAddressResponse> {
+    ): WooPayload<VerifyAddressResponse, WooError> {
         val url = WOOCOMMERCE.connect.normalize_address.pathV1
         val params = mapOf(
                 "address" to address.toMap(),
@@ -175,7 +176,7 @@ class ShippingLabelRestClient @Inject constructor(
 
     suspend fun getPackageTypes(
         site: SiteModel
-    ): WooPayload<GetPackageTypesResponse> {
+    ): WooPayload<GetPackageTypesResponse, WooError> {
         val url = WOOCOMMERCE.connect.packages.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -197,7 +198,7 @@ class ShippingLabelRestClient @Inject constructor(
 
     suspend fun getAccountSettings(
         site: SiteModel
-    ): WooPayload<AccountSettingsApiResponse> {
+    ): WooPayload<AccountSettingsApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -217,7 +218,7 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
-    suspend fun updateAccountSettings(site: SiteModel, request: UpdateSettingsApiRequest): WooPayload<Boolean> {
+    suspend fun updateAccountSettings(site: SiteModel, request: UpdateSettingsApiRequest): WooPayload<Boolean, WooError> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -243,7 +244,7 @@ class ShippingLabelRestClient @Inject constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packages: List<ShippingLabelPackage>
-    ): WooPayload<ShippingRatesApiResponse> {
+    ): WooPayload<ShippingRatesApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
 
         val params = mapOf(
@@ -275,7 +276,7 @@ class ShippingLabelRestClient @Inject constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packagesData: List<WCShippingLabelPackageData>
-    ): WooPayload<ShippingLabelStatusApiResponse> {
+    ): WooPayload<ShippingLabelStatusApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
         val params = mapOf(
@@ -306,7 +307,7 @@ class ShippingLabelRestClient @Inject constructor(
         site: SiteModel,
         orderId: Long,
         labelIds: List<Long>
-    ): WooPayload<ShippingLabelStatusApiResponse> {
+    ): WooPayload<ShippingLabelStatusApiResponse, WooError> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,

@@ -851,7 +851,7 @@ class WCProductStore @Inject constructor(
         site: SiteModel,
         productId: Long,
         attributes: List<WCProductModel.ProductAttribute>
-    ): WooResult<WCProductModel> =
+    ): WooResult<WCProductModel, WooError> =
             coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
                 wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
                         ?.asWooResult()
@@ -868,7 +868,7 @@ class WCProductStore @Inject constructor(
         productId: Long,
         variationId: Long,
         attributes: List<WCProductModel.ProductAttribute>
-    ): WooResult<WCProductVariationModel> =
+    ): WooResult<WCProductVariationModel, WooError> =
             coroutineEngine?.withDefaultContext(T.API, this, "submitVariationAttributes") {
                 wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
                         ?.asWooResult()
@@ -880,7 +880,7 @@ class WCProductStore @Inject constructor(
     suspend fun generateEmptyVariation(
         site: SiteModel,
         product: WCProductModel
-    ): WooResult<WCProductVariationModel> =
+    ): WooResult<WCProductVariationModel, WooError> =
             coroutineEngine?.withDefaultContext(T.API, this, "generateEmptyVariation") {
                 product.attributeList
                         .filter { it.variation }
@@ -898,7 +898,7 @@ class WCProductStore @Inject constructor(
         site: SiteModel,
         productId: Long,
         variationId: Long
-    ): WooResult<WCProductVariationModel> =
+    ): WooResult<WCProductVariationModel, WooError> =
             coroutineEngine?.withDefaultContext(T.API, this, "deleteVariation") {
                 wcProductRestClient.deleteVariation(site, productId, variationId)
                         ?.asWooResult()

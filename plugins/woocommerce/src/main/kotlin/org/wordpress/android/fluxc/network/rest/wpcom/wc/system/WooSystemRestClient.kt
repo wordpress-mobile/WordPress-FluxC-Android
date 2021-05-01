@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
@@ -27,7 +28,7 @@ class WooSystemRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<ActivePluginsResponse> {
+    suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<ActivePluginsResponse, WooError> {
         val url = WOOCOMMERCE.system_status.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(

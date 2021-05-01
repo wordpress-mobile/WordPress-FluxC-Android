@@ -31,7 +31,7 @@ class WCLeaderboardsStore @Inject constructor(
         unit: StatsGranularity = DAYS,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null
-    ): WooResult<List<WCTopPerformerProductModel>> =
+    ): WooResult<List<WCTopPerformerProductModel>, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
                 fetchAllLeaderboards(site, unit, queryTimeRange, quantity)
                         .model
@@ -52,14 +52,14 @@ class WCLeaderboardsStore @Inject constructor(
     fun fetchCachedProductLeaderboards(
         site: SiteModel,
         unit: StatsGranularity
-    ) = WooResult(getCurrentLeaderboards(site.id, unit))
+    ) = WooResult<List<WCTopPerformerProductModel>, WooError>(getCurrentLeaderboards(site.id, unit))
 
     private suspend fun fetchAllLeaderboards(
         site: SiteModel,
         unit: StatsGranularity? = null,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null
-    ): WooResult<List<LeaderboardsApiResponse>> =
+    ): WooResult<List<LeaderboardsApiResponse>, WooError> =
             with(restClient.fetchLeaderboards(site, unit, queryTimeRange, quantity)) {
                 return when {
                     isError -> WooResult(error)

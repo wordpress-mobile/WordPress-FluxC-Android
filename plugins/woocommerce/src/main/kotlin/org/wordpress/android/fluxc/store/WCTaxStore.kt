@@ -26,7 +26,7 @@ class WCTaxStore @Inject constructor(
     fun getTaxClassListForSite(site: SiteModel): List<WCTaxClassModel> =
             WCTaxSqlUtils.getTaxClassesForSite(site.id)
 
-    suspend fun fetchTaxClassList(site: SiteModel): WooResult<List<WCTaxClassModel>> {
+    suspend fun fetchTaxClassList(site: SiteModel): WooResult<List<WCTaxClassModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxClassList") {
             val response = restClient.fetchTaxClassList(site)
             return@withDefaultContext when {

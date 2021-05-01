@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
@@ -459,7 +460,7 @@ class ProductRestClient @Inject constructor(
                                         .apply { localSiteId = site.id }
                             }
                             .orEmpty()
-                            .let { WooPayload(it.toList()) }
+                            .let { WooPayload<List<WCProductModel>, WooError>(it.toList<WCProductModel>()) }
                 }
                 is JetpackError -> {
                     WooPayload(error.toWooError())

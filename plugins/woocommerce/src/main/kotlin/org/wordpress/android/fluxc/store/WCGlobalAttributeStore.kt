@@ -3,11 +3,13 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeMapper
 import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
+import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.ProductAttributeRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.terms.AttributeTermApiResponse
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.deleteSingleStoredAttribute
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils.getCurrentAttributes
@@ -30,7 +32,7 @@ class WCGlobalAttributeStore @Inject constructor(
 ) {
     suspend fun fetchStoreAttributes(
         site: SiteModel
-    ): WooResult<List<WCGlobalAttributeModel>> =
+    ): WooResult<List<WCGlobalAttributeModel>, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchStoreAttributes") {
                 restClient.fetchProductFullAttributesList(site)
                         .asWooResult()
@@ -50,7 +52,7 @@ class WCGlobalAttributeStore @Inject constructor(
 
     fun loadCachedStoreAttributes(
         site: SiteModel
-    ) = WooResult(getCurrentAttributes(site.id))
+    ) = WooResult<List<WCGlobalAttributeModel>, WooError>(getCurrentAttributes(site.id))
 
     suspend fun fetchAttributeTerms(
         site: SiteModel,
@@ -67,13 +69,13 @@ class WCGlobalAttributeStore @Inject constructor(
                                     ?: handleMissingAttribute(site, attributeID, termsId)
                         }
             }
-            ?.let { WooResult(it) }
+            ?.let { WooResult<List<WCAttributeTermModel>, WooError>(it) }
 
     suspend fun fetchAttribute(
         site: SiteModel,
         attributeID: Long,
         withTerms: Boolean = false
-    ): WooResult<WCGlobalAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
                 restClient.fetchSingleAttribute(site, attributeID)
                         .asWooResult()
@@ -93,7 +95,7 @@ class WCGlobalAttributeStore @Inject constructor(
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
-    ): WooResult<WCGlobalAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createStoreAttributes") {
                 restClient.postNewAttribute(
                         site, mapOf(
@@ -120,7 +122,7 @@ class WCGlobalAttributeStore @Inject constructor(
         type: String = "select",
         orderBy: String = "menu_order",
         hasArchives: Boolean = false
-    ): WooResult<WCGlobalAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "updateStoreAttributes") {
                 restClient.updateExistingAttribute(
                         site, attributeID, mapOf(
@@ -143,7 +145,7 @@ class WCGlobalAttributeStore @Inject constructor(
     suspend fun deleteAttribute(
         site: SiteModel,
         attributeID: Long
-    ): WooResult<WCGlobalAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteStoreAttributes") {
                 restClient.deleteExistingAttribute(site, attributeID)
                         .asWooResult()
@@ -158,7 +160,7 @@ class WCGlobalAttributeStore @Inject constructor(
         site: SiteModel,
         attributeID: Long,
         term: String
-    ): WooResult<WCGlobalAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAttributeTerm") {
                 restClient.postNewTerm(
                         site, attributeID,
@@ -174,7 +176,7 @@ class WCGlobalAttributeStore @Inject constructor(
         site: SiteModel,
         attributeID: Long,
         termID: Long
-    ): WooResult<WCGlobalAttributeModel> =
+    ): WooResult<WCGlobalAttributeModel, WooError> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteAttributeTerm") {
                 restClient.deleteExistingTerm(site, attributeID, termID)
                         .asWooResult()

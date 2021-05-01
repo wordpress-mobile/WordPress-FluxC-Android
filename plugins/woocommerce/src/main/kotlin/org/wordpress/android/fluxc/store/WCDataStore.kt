@@ -32,7 +32,7 @@ class WCDataStore @Inject constructor(
     fun getStates(country: String): List<WCLocationModel> =
             WCCountriesSqlUtils.getStates(country)
 
-    suspend fun fetchCountriesAndStates(site: SiteModel): WooResult<List<WCLocationModel>> {
+    suspend fun fetchCountriesAndStates(site: SiteModel): WooResult<List<WCLocationModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCountries") {
             val response = restClient.fetchCountries(site)
             return@withDefaultContext when {

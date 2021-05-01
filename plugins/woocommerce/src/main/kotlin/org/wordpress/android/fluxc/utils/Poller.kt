@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 
 /**
@@ -20,7 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
  * @param maxRetries: the maximum number of retries when an error occurs
  */
 class Poller(private val delayInMs: Long, private val maxRetries: Int) {
-    suspend fun <T : WooPayload<*>> poll(
+    suspend fun <T : WooPayload<*, WooError>> poll(
         request: suspend () -> T,
         predicate: (T) -> Boolean
     ): T {
@@ -29,7 +30,7 @@ class Poller(private val delayInMs: Long, private val maxRetries: Int) {
                 .first()
     }
 
-    private suspend fun <T : WooPayload<*>> pollInternal(
+    private suspend fun <T : WooPayload<*, WooError>> pollInternal(
         request: suspend () -> T
     ): Flow<T> {
         var retries = 0

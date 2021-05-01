@@ -23,7 +23,7 @@ class WCGatewayStore @Inject constructor(
     fun getGateway(site: SiteModel, gatewayId: String): WCGatewayModel? =
             WCGatewaySqlUtils.selectGateway(site, gatewayId)?.let { mapper.map(it) }
 
-    suspend fun fetchGateway(site: SiteModel, gatewayId: String): WooResult<WCGatewayModel> {
+    suspend fun fetchGateway(site: SiteModel, gatewayId: String): WooResult<WCGatewayModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchGateway") {
             val response = restClient.fetchGateway(site, gatewayId)
             return@withDefaultContext when {
@@ -40,7 +40,7 @@ class WCGatewayStore @Inject constructor(
     fun getAllGateways(site: SiteModel): List<WCGatewayModel> =
             WCGatewaySqlUtils.selectAllGateways(site).map { mapper.map(it) }
 
-    suspend fun fetchAllGateways(site: SiteModel): WooResult<List<WCGatewayModel>> {
+    suspend fun fetchAllGateways(site: SiteModel): WooResult<List<WCGatewayModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchAllGateways") {
             val response = restClient.fetchAllGateways(site)
             return@withDefaultContext when {

@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.customer.WCCustomerListDescriptor
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
@@ -99,7 +100,7 @@ class WooCustomersListItemDataSource @Inject constructor(
 
     private fun dispatchEventWhenFetched(
         listDescriptor: WCCustomerListDescriptor,
-        payload: WooResult<List<WCCustomerModel>>,
+        payload: WooResult<List<WCCustomerModel>, WooError>,
         offset: Long
     ) {
         dispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(

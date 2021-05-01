@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
@@ -28,7 +29,7 @@ class WCTaxRestClient @Inject constructor(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchTaxClassList(
         site: SiteModel
-    ): WooPayload<Array<TaxClassApiResponse>> {
+    ): WooPayload<Array<TaxClassApiResponse>, WooError> {
         val url = WOOCOMMERCE.taxes.classes.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(

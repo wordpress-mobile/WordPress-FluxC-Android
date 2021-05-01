@@ -45,7 +45,7 @@ class WCCustomerStore @Inject constructor(
     /**
      * returns a customer with provided remote id
      */
-    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooResult<WCCustomerModel> {
+    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooResult<WCCustomerModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchSingleCustomer") {
             val response = restClient.fetchSingleCustomer(site, remoteCustomerId)
             when {
@@ -74,7 +74,7 @@ class WCCustomerStore @Inject constructor(
         context: String? = null,
         remoteCustomerIds: List<Long>? = null,
         excludedCustomerIds: List<Long>? = null
-    ): WooResult<List<WCCustomerModel>> {
+    ): WooResult<List<WCCustomerModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomers") {
             val response = restClient.fetchCustomers(
                     site = site,
@@ -111,12 +111,12 @@ class WCCustomerStore @Inject constructor(
         site: SiteModel,
         pageSize: Int = DEFAULT_CUSTOMER_PAGE_SIZE,
         remoteCustomerIds: List<Long>
-    ): WooResult<Unit> {
+    ): WooResult<Unit, WooError> {
         suspend fun doFetch(
             site: SiteModel,
             pageSize: Int,
             remoteCustomerIds: List<Long>
-        ): WooResult<Unit> {
+        ): WooResult<Unit, WooError> {
             val response = restClient.fetchCustomers(
                     site = site,
                     pageSize = pageSize,
@@ -134,7 +134,7 @@ class WCCustomerStore @Inject constructor(
         }
 
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersByIdsAndCache") {
-            val jobs = mutableListOf<Deferred<WooResult<Unit>>>()
+            val jobs = mutableListOf<Deferred<WooResult<Unit, WooError>>>()
             remoteCustomerIds.chunked(pageSize).forEach { idsToFetch ->
                 jobs.add(async { doFetch(site, pageSize, idsToFetch) })
             }
@@ -149,7 +149,7 @@ class WCCustomerStore @Inject constructor(
     /**
      * creates a customer on the backend
      */
-    suspend fun createCustomer(site: SiteModel, customer: WCCustomerModel): WooResult<WCCustomerModel> {
+    suspend fun createCustomer(site: SiteModel, customer: WCCustomerModel): WooResult<WCCustomerModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomer") {
             val response = restClient.createCustomer(site, mapper.mapToDTO(customer))
             when {

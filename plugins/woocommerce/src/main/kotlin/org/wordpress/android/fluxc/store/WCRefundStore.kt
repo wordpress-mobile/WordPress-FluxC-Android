@@ -33,7 +33,7 @@ class WCRefundStore @Inject constructor(
         amount: BigDecimal,
         reason: String = "",
         autoRefund: Boolean = false
-    ): WooResult<WCRefundModel> {
+    ): WooResult<WCRefundModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAmountRefund") {
             val response = restClient.createRefundByAmount(
                     site,
@@ -57,7 +57,7 @@ class WCRefundStore @Inject constructor(
         restockItems: Boolean = true,
         autoRefund: Boolean = false,
         items: List<WCRefundModel.WCRefundItem>
-    ): WooResult<WCRefundModel> {
+    ): WooResult<WCRefundModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createItemsRefund") {
             val response = restClient.createRefundByItems(
                     site,
@@ -82,7 +82,7 @@ class WCRefundStore @Inject constructor(
         site: SiteModel,
         orderId: Long,
         refundId: Long
-    ): WooResult<WCRefundModel> {
+    ): WooResult<WCRefundModel, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchRefund") {
             val response = restClient.fetchRefund(site, orderId, refundId)
             return@withDefaultContext when {
@@ -104,7 +104,7 @@ class WCRefundStore @Inject constructor(
         orderId: Long,
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
-    ): WooResult<List<WCRefundModel>> {
+    ): WooResult<List<WCRefundModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchAllRefunds") {
             val response = restClient.fetchAllRefunds(
                     site,

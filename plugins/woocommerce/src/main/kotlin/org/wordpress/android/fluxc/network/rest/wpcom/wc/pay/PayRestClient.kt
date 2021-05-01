@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
@@ -26,7 +27,7 @@ class PayRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooPayload<ConnectionTokenApiResponse> {
+    suspend fun fetchConnectionToken(site: SiteModel): WooPayload<ConnectionTokenApiResponse, WooError> {
         val url = WOOCOMMERCE.payments.connection_tokens.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
@@ -50,7 +51,7 @@ class PayRestClient @Inject constructor(
         site: SiteModel,
         paymentId: String,
         orderId: Long
-    ): WooPayload<CapturePaymentApiResponse> {
+    ): WooPayload<CapturePaymentApiResponse, WooError> {
         // TODO cardreader add error handling + introduce tests for both happy and error paths
         val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
         val params = mapOf(

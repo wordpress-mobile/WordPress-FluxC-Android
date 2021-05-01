@@ -17,7 +17,7 @@ class WCPayStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: PayRestClient
 ) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult> {
+    suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
             val response = restClient.fetchConnectionToken(site)
             return@withDefaultContext when {
@@ -32,7 +32,7 @@ class WCPayStore @Inject constructor(
         }
     }
 
-    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WooResult<Unit> {
+    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WooResult<Unit, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
             val response = restClient.capturePayment(site, paymentId, orderId)
             return@withDefaultContext when {

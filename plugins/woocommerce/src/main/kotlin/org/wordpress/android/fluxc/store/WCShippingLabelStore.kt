@@ -66,7 +66,7 @@ class WCShippingLabelStore @Inject constructor(
     suspend fun fetchShippingLabelsForOrder(
         site: SiteModel,
         orderId: Long
-    ): WooResult<List<WCShippingLabelModel>> {
+    ): WooResult<List<WCShippingLabelModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchShippingLabelsForOrder") {
             val response = restClient.fetchShippingLabelsForOrder(orderId, site)
             return@withDefaultContext when {
@@ -90,7 +90,7 @@ class WCShippingLabelStore @Inject constructor(
         site: SiteModel,
         orderId: Long,
         remoteShippingLabelId: Long
-    ): WooResult<Boolean> {
+    ): WooResult<Boolean, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "refundShippingLabelForOrder") {
             val response = restClient.refundShippingLabelForOrder(site, orderId, remoteShippingLabelId)
             return@withDefaultContext when {
@@ -109,7 +109,7 @@ class WCShippingLabelStore @Inject constructor(
         site: SiteModel,
         paperSize: String,
         remoteShippingLabelId: Long
-    ): WooResult<String> {
+    ): WooResult<String, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "printShippingLabel") {
             val response = restClient.printShippingLabel(site, paperSize, remoteShippingLabelId)
             return@withDefaultContext when {
@@ -149,7 +149,7 @@ class WCShippingLabelStore @Inject constructor(
         canCreatePackage: Boolean,
         canCreatePaymentMethod: Boolean,
         canCreateCustomsForm: Boolean
-    ): WooResult<WCShippingLabelCreationEligibility> {
+    ): WooResult<WCShippingLabelCreationEligibility, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchShippingLabelCreationEligibility") {
             val response = restClient.checkShippingLabelCreationEligibility(
                     site = site,
@@ -185,7 +185,7 @@ class WCShippingLabelStore @Inject constructor(
         site: SiteModel,
         address: ShippingLabelAddress,
         type: ShippingLabelAddress.Type
-    ): WooResult<WCAddressVerificationResult> {
+    ): WooResult<WCAddressVerificationResult, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "verifyAddress") {
             val response = restClient.verifyAddress(site, address, type)
             return@withDefaultContext if (response.isError) {
@@ -206,7 +206,7 @@ class WCShippingLabelStore @Inject constructor(
 
     suspend fun getPackageTypes(
         site: SiteModel
-    ): WooResult<WCPackagesResult> {
+    ): WooResult<WCPackagesResult, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getPackageTypes") {
             val response = restClient.getPackageTypes(site)
             return@withDefaultContext when {
@@ -229,7 +229,7 @@ class WCShippingLabelStore @Inject constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packages: List<ShippingLabelPackage>
-    ): WooResult<WCShippingRatesResult> {
+    ): WooResult<WCShippingRatesResult, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getShippingRates") {
             val response = restClient.getShippingRates(site, orderId, origin, destination, packages)
             return@withDefaultContext when {
@@ -301,7 +301,7 @@ class WCShippingLabelStore @Inject constructor(
 
     suspend fun getAccountSettings(
         site: SiteModel
-    ): WooResult<WCShippingAccountSettings> {
+    ): WooResult<WCShippingAccountSettings, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAccountSettings") {
             val response = restClient.getAccountSettings(site)
             return@withDefaultContext when {
@@ -337,7 +337,7 @@ class WCShippingLabelStore @Inject constructor(
         selectedPaymentMethodId: Int? = null,
         isEmailReceiptEnabled: Boolean? = null,
         paperSize: WCShippingLabelPaperSize? = null
-    ): WooResult<Boolean> {
+    ): WooResult<Boolean, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "updateSettings") {
             val request = UpdateSettingsApiRequest(
                     isCreatingLabelsEnabled = isCreatingLabelsEnabled,
@@ -360,7 +360,7 @@ class WCShippingLabelStore @Inject constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packagesData: List<WCShippingLabelPackageData>
-    ): WooResult<List<WCShippingLabelModel>> {
+    ): WooResult<List<WCShippingLabelModel>, WooError> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "purchaseShippingLabels") {
             val response = restClient.purchaseShippingLabels(site, orderId, origin, destination, packagesData)
             return@withDefaultContext when {
@@ -395,7 +395,7 @@ class WCShippingLabelStore @Inject constructor(
         site: SiteModel,
         orderId: Long,
         labelIds: List<Long>
-    ): WooPayload<ShippingLabelStatusApiResponse> {
+    ): WooPayload<ShippingLabelStatusApiResponse, WooError> {
         val poller = Poller(delayInMs = 1000, maxRetries = 3)
         val remainingLabels: MutableList<Long> = labelIds.toMutableList()
         val doneLabels: MutableList<LabelItem> = mutableListOf()

@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_DESC
@@ -40,7 +41,7 @@ class CustomerRestClient @Inject constructor(
      *
      * @param [remoteCustomerId] Unique server id of the customer to fetch
      */
-    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooPayload<CustomerDTO> {
+    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooPayload<CustomerDTO, WooError> {
         val url = WOOCOMMERCE.customers.id(remoteCustomerId).pathV3
 
         val response = requestBuilder.syncGetRequest(
@@ -72,7 +73,7 @@ class CustomerRestClient @Inject constructor(
         context: String? = null,
         remoteCustomerIds: List<Long>? = null,
         excludedCustomerIds: List<Long>? = null
-    ): WooPayload<Array<CustomerDTO>> {
+    ): WooPayload<Array<CustomerDTO>, WooError> {
         val url = WOOCOMMERCE.customers.pathV3
 
         val orderBy = when (sortType) {
@@ -122,7 +123,7 @@ class CustomerRestClient @Inject constructor(
     /**
      * Makes a POST call to `/wc/v3/customers/` to create a customer
      */
-    suspend fun createCustomer(site: SiteModel, customer: CustomerDTO): WooPayload<CustomerDTO> {
+    suspend fun createCustomer(site: SiteModel, customer: CustomerDTO): WooPayload<CustomerDTO, WooError> {
         val url = WOOCOMMERCE.customers.pathV3
 
         val response = requestBuilder.syncPostRequest(

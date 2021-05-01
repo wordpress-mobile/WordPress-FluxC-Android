@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
@@ -29,7 +30,7 @@ class WooPluginRestClient @Inject constructor(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchInstalledPlugins(
         site: SiteModel
-    ): WooPayload<FetchPluginsResponse> {
+    ): WooPayload<FetchPluginsResponse, WooError> {
         val url = WPCOMREST.sites.site(site.siteId).plugins.urlV1_2
 
         val response = wpComGsonRequestBuilder.syncGetRequest(
