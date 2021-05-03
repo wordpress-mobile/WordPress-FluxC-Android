@@ -144,10 +144,14 @@ public class CommentStore extends Store {
     public static class FetchCommentLikesPayload extends Payload<BaseNetworkError> {
         public final long siteId;
         public final long remoteCommentId;
+        public final boolean requestNextPage;
+        public final int pageLength;
 
-        public FetchCommentLikesPayload(long siteId, long remoteCommentId) {
+        public FetchCommentLikesPayload(long siteId, long remoteCommentId, boolean requestNextPage, int pageLength) {
             this.siteId = siteId;
             this.remoteCommentId = remoteCommentId;
+            this.requestNextPage = requestNextPage;
+            this.pageLength = pageLength;
         }
     }
 
@@ -155,11 +159,21 @@ public class CommentStore extends Store {
         @NonNull public final List<LikeModel> likes;
         public final long siteId;
         public final long commentRemoteId;
+        public final boolean hasMore;
+        public final boolean isRequestNextPage;
 
-        public FetchedCommentLikesResponsePayload(@NonNull List<LikeModel> likes, long siteId, long commentRemoteId) {
+        public FetchedCommentLikesResponsePayload(
+                @NonNull List<LikeModel> likes,
+                long siteId,
+                long commentRemoteId,
+                boolean isRequestNextPage,
+                boolean hasMore
+        ) {
             this.likes = likes;
             this.siteId = siteId;
             this.commentRemoteId = commentRemoteId;
+            this.hasMore = hasMore;
+            this.isRequestNextPage = isRequestNextPage;
         }
     }
 
@@ -202,16 +216,18 @@ public class CommentStore extends Store {
         public final long siteId;
         public final long commentId;
         public List<LikeModel> commentLikes = new ArrayList<>();
-        public OnCommentLikesChanged(long siteId, long commentId) {
+        public final boolean hasMore;
+
+        public OnCommentLikesChanged(long siteId, long commentId, boolean hasMore) {
             this.siteId = siteId;
             this.commentId = commentId;
+            this.hasMore = hasMore;
         }
     }
 
     // Constructor
 
-    @Inject
-    public CommentStore(Dispatcher dispatcher, CommentRestClient commentRestClient,
+    @Inject public CommentStore(Dispatcher dispatcher, CommentRestClient commentRestClient,
                         CommentXMLRPCClient commentXMLRPCClient) {
         super(dispatcher);
         mCommentRestClient = commentRestClient;
@@ -561,19 +577,33 @@ public class CommentStore extends Store {
     }
 
     private void fetchCommentLikes(FetchCommentLikesPayload payload) {
-        mCommentRestClient.fetchCommentLikes(payload.siteId, payload.remoteCommentId);
+        mCommentRestClient.fetchCommentLikes(
+                payload.siteId,
+                payload.remoteCommentId,
+                payload.requestNextPage,
+                payload.pageLength
+        );
     }
 
     private void handleFetchedCommentLikes(FetchedCommentLikesResponsePayload payload) {
-        OnCommentLikesChanged event = new OnCommentLikesChanged(payload.siteId, payload.commentRemoteId);
+        OnCommentLikesChanged event = new OnCommentLikesChanged(
+                payload.siteId,
+                payload.commentRemoteId,
+                payload.hasMore
+        );
         if (!payload.isError()) {
             if (payload.likes != null) {
-                CommentSqlUtils.deleteCommentLikes(payload.siteId, payload.commentRemoteId);
+                if (!payload.isRequestNextPage) {
+                    CommentSqlUtils.deleteCommentLikesAndPurgeExpired(payload.siteId, payload.commentRemoteId);
+                }
 
                 for (LikeModel like : payload.likes) {
                     CommentSqlUtils.insertOrUpdateCommentLikes(payload.siteId, payload.commentRemoteId, like);
                 }
-                event.commentLikes.addAll(payload.likes);
+                event.commentLikes.addAll(CommentSqlUtils.getCommentLikesByCommentId(
+                        payload.siteId,
+                        payload.commentRemoteId
+                ));
             }
         } else {
             List<LikeModel> cachedLikes = CommentSqlUtils.getCommentLikesByCommentId(

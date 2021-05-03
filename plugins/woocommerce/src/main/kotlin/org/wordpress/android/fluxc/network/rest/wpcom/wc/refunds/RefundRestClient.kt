@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel.LineItem
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -17,15 +18,16 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.utils.sumBy
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class RefundRestClient
-constructor(
+class RefundRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     appContext: Context?,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -143,6 +145,7 @@ constructor(
         @SerializedName("amount") val amount: String?,
         @SerializedName("reason") val reason: String?,
         @SerializedName("refunded_payment") val refundedPayment: Boolean?,
-        @SerializedName("line_items") val items: List<LineItem>
+        @SerializedName("line_items") val items: List<LineItem>,
+        @SerializedName("shipping_lines") val shippingLineItems: List<WCRefundShippingLine>
     )
 }

@@ -20,10 +20,11 @@ import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStreamReader
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ResponseMockingInterceptor : Interceptor {
+class ResponseMockingInterceptor @Inject constructor() : Interceptor {
     companion object {
         private val SUBSTITUTION_DEFAULT = { string: String -> string }
         const val NETWORK_DELAY_MS = 500L

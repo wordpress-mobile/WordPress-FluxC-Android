@@ -25,15 +25,16 @@ import org.wordpress.android.fluxc.network.utils.toMap
 import java.math.BigDecimal
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class ShippingLabelRestClient
-constructor(
+class ShippingLabelRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     appContext: Context?,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {

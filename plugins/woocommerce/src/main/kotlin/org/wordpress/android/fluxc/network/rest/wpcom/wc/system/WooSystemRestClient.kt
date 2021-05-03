@@ -14,15 +14,16 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class WooSystemRestClient
-constructor(
+class WooSystemRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     appContext: Context?,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -47,11 +48,11 @@ constructor(
     }
 
     data class ActivePluginsResponse(
-        @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>,
-        @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>
+        @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>?,
+        @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>?
     ) {
         val plugins: List<SystemPluginModel>
-            get() = activePlugins.map { it.copy(isActive = true) } + inactivePlugins
+            get() = activePlugins.orEmpty().map { it.copy(isActive = true) } + inactivePlugins.orEmpty()
 
         data class SystemPluginModel(
             val name: String,

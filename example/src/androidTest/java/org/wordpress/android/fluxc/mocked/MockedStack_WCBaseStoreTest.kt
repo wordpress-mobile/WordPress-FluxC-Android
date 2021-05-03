@@ -142,6 +142,94 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
     }
 
     @Test
+    fun testGetSiteCurrency() {
+        assumeTrue(
+                "Requires API 23 or higher due to localized currency values differing on older versions",
+                Build.VERSION.SDK_INT >= 23
+        )
+
+        // Override device locale and use en_US so currency symbols can be predicted
+        TestUtils.updateLocale(mAppContext, Locale("en", "US"))
+
+        // -- Site using CAD
+        val cadSettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "CAD",
+                currencyPosition = CurrencyPosition.LEFT,
+                currencyThousandSeparator = ",",
+                currencyDecimalSeparator = ".",
+                currencyDecimalNumber = 2)
+        WCSettingsSqlUtils.insertOrUpdateSettings(cadSettings)
+
+        with(wooCommerceStore) {
+            val formattedCurrencySymbol = getSiteCurrency(siteModel, "CAD")
+            assertEquals("CA$", formattedCurrencySymbol)
+
+            val formattedCurrencyUseSiteCurrency = getSiteCurrency(siteModel, null)
+            assertEquals("CA$", formattedCurrencyUseSiteCurrency)
+
+            val formattedCurrencyDifferentCurrency = getSiteCurrency(siteModel, "EUR")
+            assertEquals("€", formattedCurrencyDifferentCurrency)
+
+            val formattedCurrencyEmptyCodeUseSite = getSiteCurrency(siteModel, "")
+            assertEquals("CA$", formattedCurrencyEmptyCodeUseSite)
+        }
+
+        // -- Site using EUR
+        val eurSettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "EUR",
+                currencyPosition = CurrencyPosition.RIGHT_SPACE,
+                currencyThousandSeparator = ".",
+                currencyDecimalSeparator = ",",
+                currencyDecimalNumber = 2)
+        WCSettingsSqlUtils.insertOrUpdateSettings(eurSettings)
+
+        with(wooCommerceStore) {
+            val formattedCurrencyDouble = getSiteCurrency(siteModel, "EUR")
+            assertEquals("€", formattedCurrencyDouble)
+
+            val formattedCurrencyUseSiteCurrency = getSiteCurrency(siteModel, null)
+            assertEquals("€", formattedCurrencyUseSiteCurrency)
+
+            val formattedCurrencyDifferentCurrency = getSiteCurrency(siteModel, "USD")
+            assertEquals("$", formattedCurrencyDifferentCurrency)
+        }
+
+        // -- Site using JPY
+        val jpySettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "JPY",
+                currencyPosition = CurrencyPosition.LEFT,
+                currencyThousandSeparator = "",
+                currencyDecimalSeparator = "",
+                currencyDecimalNumber = 0)
+        WCSettingsSqlUtils.insertOrUpdateSettings(jpySettings)
+
+        with(wooCommerceStore) {
+            val formattedCurrencyDouble = getSiteCurrency(siteModel, "JPY")
+            assertEquals("¥", formattedCurrencyDouble)
+
+            val formattedCurrencyUseSiteCurrency = getSiteCurrency(siteModel, null)
+            assertEquals("¥", formattedCurrencyUseSiteCurrency)
+        }
+
+        // -- No site settings stored
+        WellSql.delete(WCSettingsBuilder::class.java).execute()
+
+        with(wooCommerceStore) {
+            val formattedCurrencyDouble = getSiteCurrency(siteModel, "CAD")
+            assertEquals("CA$", formattedCurrencyDouble)
+
+            val formattedCurrencyUseSiteCurrency = getSiteCurrency(siteModel, null)
+            assertEquals("", formattedCurrencyUseSiteCurrency)
+
+            val formattedCurrencyDifferentCurrency = getSiteCurrency(siteModel, "INR")
+            assertEquals("₹", formattedCurrencyDifferentCurrency)
+        }
+    }
+
+    @Test
     fun testFormatCurrencyForDisplay() {
         assumeTrue(
                 "Requires API 23 or higher due to localized currency values differing on older versions",

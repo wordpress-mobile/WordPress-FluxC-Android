@@ -22,14 +22,16 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDT
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class CustomerRestClient(
+class CustomerRestClient @Inject constructor(
     appContext: Context,
     private val requestBuilder: JetpackTunnelGsonRequestBuilder,
     dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {

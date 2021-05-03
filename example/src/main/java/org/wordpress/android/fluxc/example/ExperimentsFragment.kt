@@ -16,11 +16,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.experiments.Assignments
-import org.wordpress.android.fluxc.model.experiments.Variation
-import org.wordpress.android.fluxc.model.experiments.Variation.Control
-import org.wordpress.android.fluxc.model.experiments.Variation.Treatment
 import org.wordpress.android.fluxc.store.ExperimentStore
-import org.wordpress.android.fluxc.store.ExperimentStore.FetchAssignmentsPayload
 import org.wordpress.android.fluxc.store.ExperimentStore.OnAssignmentsFetched
 import org.wordpress.android.fluxc.store.ExperimentStore.Platform
 import org.wordpress.android.fluxc.store.ExperimentStore.Platform.WORDPRESS_COM
@@ -52,16 +48,18 @@ class ExperimentsFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
                 selectedPlatform = Platform.fromValue(parent.getItemAtPosition(pos) as String)
             }
+
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
         generate_anon_id_button.setOnClickListener { anon_id_edit_text.setText(UUID.randomUUID().toString()) }
         fetch_assignments.setOnClickListener {
             val platform = selectedPlatform ?: WORDPRESS_COM
+            val experimentNames = experiment_names_edit_text.text.split(',').map { it.trim() }
             val anonymousId = anon_id_edit_text.text.toString()
-            val payload = FetchAssignmentsPayload(platform, anonymousId)
-            prependToLog("Fetching assignments with payload: $payload")
+            prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, " +
+                    "anonymousId=$anonymousId")
             GlobalScope.launch(Dispatchers.Default) {
-                val result = experimentStore.fetchAssignments(payload)
+                val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
                 withContext(Dispatchers.Main) {
                     onAssignmentsFetched(result)
                 }
@@ -94,13 +92,8 @@ class ExperimentsFragment : Fragment() {
 
     private fun handleAssignments(assignments: Assignments) {
         assignments.variations.forEach { entry ->
-            prependToLog("${entry.key}: ${getVariationString(entry.value)}")
+            prependToLog("${entry.key}: ${entry.value.name}")
         }
-    }
-
-    private fun getVariationString(variation: Variation) = when (variation) {
-        is Control -> "control"
-        is Treatment -> variation.name
     }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)

@@ -5,18 +5,18 @@ buildscript {
     repositories {
         google()
         jcenter()
-        maven { url "https://dl.bintray.com/automattic/maven/" }
+        //maven { url "https://dl.bintray.com/automattic/maven/" }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'com.automattic.android:fetchstyle:1.1'
-        classpath 'com.automattic.android:configure:0.3.0'
+        //classpath 'com.automattic.android:fetchstyle:1.1'
+        //classpath 'com.automattic.android:configure:0.5.0'
     }
 }
 
-apply plugin: 'com.automattic.android.fetchstyle'
-apply plugin: 'com.automattic.android.configure'
+//apply plugin: 'com.automattic.android.fetchstyle'
+//apply plugin: 'com.automattic.android.configure'
 
 allprojects {
     apply plugin: 'checkstyle'
@@ -24,7 +24,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url "http://dl.bintray.com/terl/lazysodium-maven" }
+        mavenCentral()
     }
 
     task checkstyle(type: Checkstyle) {
@@ -81,4 +81,5 @@ ext {
     arch_core_version = '2.0.1'
     appcompat_version = '1.0.2'
     mockitoVersion = '3.3.3'
+    assertJVersion = '3.19.0'
 }
