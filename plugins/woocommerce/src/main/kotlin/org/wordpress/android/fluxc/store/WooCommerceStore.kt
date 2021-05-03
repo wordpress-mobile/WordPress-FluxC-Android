@@ -225,6 +225,29 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
+    /**
+     * Fetches the currency symbol for display based on the site's settings and the device locale.
+     *
+     * If there is no [WCSettingsModel] associated with the given [site], the [currencyCode] will be returned if
+     * available, otherwise an empty string is returned.
+     *
+     * @param site the associated [SiteModel] - this will be used to resolve the corresponding [WCSettingsModel]
+     * @param currencyCode an optional, ISO 4217 currency code to use. If not supplied, the site's currency code
+     * will be used (obtained from the [WCSettingsModel] corresponding to the given [site]
+     */
+    fun getSiteCurrency(
+        site: SiteModel,
+        currencyCode: String? = null
+    ): String {
+        val siteSettings = getSiteSettings(site)
+
+        // Resolve the currency code to a localized symbol
+        val resolvedCurrencyCode = currencyCode?.takeIf { it.isNotEmpty() } ?: siteSettings?.currencyCode
+        return resolvedCurrencyCode?.let {
+            WCCurrencyUtils.getLocalizedCurrencySymbolForCode(it, LanguageUtils.getCurrentDeviceLanguage(appContext))
+        } ?: ""
+    }
+
     fun formatCurrencyForDisplay(
         amount: Double,
         site: SiteModel,
