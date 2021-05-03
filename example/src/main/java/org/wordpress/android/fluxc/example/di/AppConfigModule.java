@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.example.di;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.goterl.lazycode.lazysodium.exceptions.SodiumException;
+import com.goterl.lazysodium.exceptions.SodiumException;
 
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLoggingKey;
