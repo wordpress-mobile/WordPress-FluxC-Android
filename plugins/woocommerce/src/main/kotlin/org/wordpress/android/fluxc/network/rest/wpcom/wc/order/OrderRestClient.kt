@@ -60,11 +60,6 @@ class OrderRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
-            "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines,fee_lines"
-    private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
-
     /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -181,8 +176,8 @@ class OrderRestClient @Inject constructor(
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to remoteOrderIds.size.toString(),
-                "include" to remoteOrderIds.map { it.value }.joinToString()
-        )
+                "include" to remoteOrderIds.map { it.value }.joinToString(),
+                "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -809,5 +804,40 @@ class OrderRestClient @Inject constructor(
                 }
 
         return providers
+    }
+
+    companion object {
+        private val ORDER_FIELDS = arrayOf(
+                "billing",
+                "coupon_lines",
+                "currency",
+                "customer_note",
+                "date_created_gmt",
+                "date_modified_gmt",
+                "date_paid_gmt",
+                "discount_total",
+                "fee_lines",
+                "id",
+                "line_items",
+                "number",
+                "payment_method",
+                "payment_method_title",
+                "prices_include_tax",
+                "refunds",
+                "shipping",
+                "shipping_lines",
+                "shipping_total",
+                "status",
+                "total",
+                "total_tax"
+        ).joinToString(separator = ",")
+
+        private val TRACKING_FIELDS = arrayOf(
+                "date_shipped",
+                "tracking_id",
+                "tracking_link",
+                "tracking_number",
+                "tracking_provider"
+        ).joinToString(separator = ",")
     }
 }
