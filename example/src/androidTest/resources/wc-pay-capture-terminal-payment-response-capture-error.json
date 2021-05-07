@@ -1,0 +1,7 @@
+{
+  "code": "wcpay_capture_error",
+  "message": "Payment capture failed to complete with the following message: <ERROR_MESSAGE>",
+  "data": {
+    "status": 502
+  }
+}
