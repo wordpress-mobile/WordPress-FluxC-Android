@@ -20,6 +20,7 @@ import java.util.UUID;
 public class TestUtils {
     public static final int DEFAULT_TIMEOUT_MS = 30000;
     public static final int MULTIPLE_UPLOADS_TIMEOUT_MS = 60000;
+    public static final int CACHE_TIMEOUT_MS = 500;
 
     private static final String SAMPLE_IMAGE = "pony.jpg";
     private static final String SAMPLE_VIDEO = "pony.mp4";
