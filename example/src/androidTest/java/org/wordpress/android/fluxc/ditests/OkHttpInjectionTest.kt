@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.network.BaseRequest
 import javax.inject.Inject
 import javax.inject.Named
 
-class OkHttpReleaseInjectionTest {
+class OkHttpInjectionTest {
     @Inject @Named("regular")
     lateinit var regularClient: OkHttpClient
 
@@ -24,7 +24,7 @@ class OkHttpReleaseInjectionTest {
 
     @Before
     fun setUp() {
-        DaggerOkHttpReleaseTestComponent.builder()
+        DaggerOkHttpTestComponent.builder()
                 .build()
                 .inject(this)
     }
@@ -36,9 +36,8 @@ class OkHttpReleaseInjectionTest {
             assertThat(followRedirects).isTrue
             assertThat(hostnameVerifier).isEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
-            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
-            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertDefaultRequestTimeouts()
+            assertInterceptorsPresence()
         }
     }
 
@@ -49,9 +48,8 @@ class OkHttpReleaseInjectionTest {
             assertThat(followRedirects).isFalse
             assertThat(hostnameVerifier).isEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
-            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
-            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertDefaultRequestTimeouts()
+            assertInterceptorsPresence()
         }
     }
 
@@ -62,10 +60,20 @@ class OkHttpReleaseInjectionTest {
             assertThat(followRedirects).isTrue
             assertThat(hostnameVerifier).isNotEqualTo(DEFAULT_HOSTNAME_VERIFIER)
 
-            assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
-            assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
-            assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+            assertDefaultRequestTimeouts()
+            assertInterceptorsPresence()
         }
+    }
+
+    private fun OkHttpClient.assertDefaultRequestTimeouts() {
+        assertThat(connectTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+        assertThat(readTimeoutMillis).isEqualTo(BaseRequest.UPLOAD_REQUEST_READ_TIMEOUT)
+        assertThat(writeTimeoutMillis).isEqualTo(BaseRequest.DEFAULT_REQUEST_TIMEOUT)
+    }
+
+    private fun OkHttpClient.assertInterceptorsPresence() {
+        assertThat(interceptors).containsOnly(DummyInterceptor)
+        assertThat(networkInterceptors).containsOnly(DummyNetworkInterceptor)
     }
 
     companion object {

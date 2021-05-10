@@ -48,11 +48,11 @@ class WooSystemRestClient @Inject constructor(
     }
 
     data class ActivePluginsResponse(
-        @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>,
-        @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>
+        @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>?,
+        @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>?
     ) {
         val plugins: List<SystemPluginModel>
-            get() = activePlugins.map { it.copy(isActive = true) } + inactivePlugins
+            get() = activePlugins.orEmpty().map { it.copy(isActive = true) } + inactivePlugins.orEmpty()
 
         data class SystemPluginModel(
             val name: String,

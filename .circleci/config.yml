@@ -43,71 +43,71 @@ jobs:
           command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m example:testRelease
       - android/save-gradle-cache
       - android/save-test-results
-  Firebase Test:
-    parameters:
-      results-history-name:
-        type: string
-      package:
-        type: string
-      timeout:
-        type: string
-      num-flaky-test-attempts:
-        type: integer
-      post-slack-status:
-        type: boolean
-      device:
-        type: string
-    executor:
-      name: android/default
-      api-version: "27"
-    steps:
-      - checkout
-      - android/restore-gradle-cache:
-          cache-prefix: connected-tests
-      - copy-gradle-properties
-      - run:
-          name: Decrypt Secrets
-          command: ./gradlew applyConfiguration
-      - run:
-          name: Merge properties files
-          command: ./gradlew :example:combineTestsPropertiesWithExtraTestsProperties
-      - run:
-          name: Build
-          command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
-      - android/firebase-test:
-          key-file: .configure-files/firebase.secrets.json
-          results-history-name: << parameters.results-history-name >>
-          type: instrumentation
-          apk-path: example/build/outputs/apk/debug/example-debug.apk
-          test-apk-path: example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk
-          test-targets: package << parameters.package >>
-          device: << parameters.device >>
-          project: api-project-108380595987
-          timeout: << parameters.timeout >>
-          num-flaky-test-attempts: << parameters.num-flaky-test-attempts >>
-          no-record-video: true
-      - android/save-gradle-cache:
-          cache-prefix: connected-tests
-      - when:
-          condition: << parameters.post-slack-status >>
-          steps:
-            - run:
-                name: Setup Slack messages
-                when: always
-                command: |
-                  FIREBASE_URL="https://console.firebase.google.com/project/api-project-108380595987/testlab/histories/bh.fbe4c2866a46a076"
-                  echo "export SLACK_FAILURE_MESSAGE=':red_circle: FluxC Connected tests have failed!\nSee $FIREBASE_URL'" >> $BASH_ENV
-                  echo "export SLACK_SUCCESS_MESSAGE=':tada: FluxC Connected tests have succeeded!\nSee $FIREBASE_URL'" >> $BASH_ENV
-            - slack/status:
-                fail_only: 'true'
-                failure_message: '${SLACK_FAILURE_MESSAGE}'
-                success_message: '${SLACK_SUCCESS_MESSAGE}'
-                webhook: '${SLACK_FAILURE_WEBHOOK}'
-            - slack/status:
-                fail_only: 'false'
-                failure_message: '${SLACK_FAILURE_MESSAGE}'
-                success_message: '${SLACK_SUCCESS_MESSAGE}'
-                webhook: '${SLACK_STATUS_WEBHOOK}'
+#  Firebase Test:
+#    parameters:
+#      results-history-name:
+#        type: string
+#      package:
+#        type: string
+#      timeout:
+#        type: string
+#      num-flaky-test-attempts:
+#        type: integer
+#      post-slack-status:
+#        type: boolean
+#      device:
+#        type: string
+#    executor:
+#      name: android/default
+#      api-version: "27"
+#    steps:
+#      - checkout
+#      - android/restore-gradle-cache:
+#          cache-prefix: connected-tests
+#      - copy-gradle-properties
+#      - run:
+#          name: Decrypt Secrets
+#          command: ./gradlew applyConfiguration
+#      - run:
+#          name: Merge properties files
+#          command: ./gradlew :example:combineTestsPropertiesWithExtraTestsProperties
+#      - run:
+#          name: Build
+#          command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
+#      - android/firebase-test:
+#          key-file: .configure-files/firebase.secrets.json
+#          results-history-name: << parameters.results-history-name >>
+#          type: instrumentation
+#          apk-path: example/build/outputs/apk/debug/example-debug.apk
+#          test-apk-path: example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk
+#          test-targets: package << parameters.package >>
+#          device: << parameters.device >>
+#          project: api-project-108380595987
+#          timeout: << parameters.timeout >>
+#          num-flaky-test-attempts: << parameters.num-flaky-test-attempts >>
+#          no-record-video: true
+#      - android/save-gradle-cache:
+#          cache-prefix: connected-tests
+#      - when:
+#          condition: << parameters.post-slack-status >>
+#          steps:
+#            - run:
+#                name: Setup Slack messages
+#                when: always
+#                command: |
+#                  FIREBASE_URL="https://console.firebase.google.com/project/api-project-108380595987/testlab/histories/bh.fbe4c2866a46a076"
+#                  echo "export SLACK_FAILURE_MESSAGE=':red_circle: FluxC Connected tests have failed!\nSee $FIREBASE_URL'" >> $BASH_ENV
+#                  echo "export SLACK_SUCCESS_MESSAGE=':tada: FluxC Connected tests have succeeded!\nSee $FIREBASE_URL'" >> $BASH_ENV
+#            - slack/status:
+#                fail_only: 'true'
+#                failure_message: '${SLACK_FAILURE_MESSAGE}'
+#                success_message: '${SLACK_SUCCESS_MESSAGE}'
+#                webhook: '${SLACK_FAILURE_WEBHOOK}'
+#            - slack/status:
+#                fail_only: 'false'
+#                failure_message: '${SLACK_FAILURE_MESSAGE}'
+#                success_message: '${SLACK_SUCCESS_MESSAGE}'
+#                webhook: '${SLACK_STATUS_WEBHOOK}'
   WooCommerce API Tests:
     executor:
       name: android/default
@@ -134,31 +134,31 @@ workflows:
     jobs:
       - Lint
       - Unit Tests
-      - Firebase Test:
-          name: Mocked Connected Tests
-          results-history-name: CircleCI FluxC Mocked Tests
-          package: org.wordpress.android.fluxc.mocked
-          device: model=Nexus5X,version=26,locale=en,orientation=portrait
-          timeout: 10m
-          num-flaky-test-attempts: 0
-          post-slack-status: false
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
-    jobs:
-      - Firebase Test:
-          name: Connected Tests
-          results-history-name: CircleCI FluxC Tests
-          package: org.wordpress.android.fluxc
-          device: model=Nexus5X,version=26,locale=en,orientation=portrait
-          timeout: 30m
-          num-flaky-test-attempts: 1
-          post-slack-status: true
+#      - Firebase Test:
+#          name: Mocked Connected Tests
+#          results-history-name: CircleCI FluxC Mocked Tests
+#          package: org.wordpress.android.fluxc.mocked
+#          device: model=Nexus5X,version=26,locale=en,orientation=portrait
+#          timeout: 10m
+#          num-flaky-test-attempts: 0
+#          post-slack-status: false
+#  nightly:
+#    triggers:
+#      - schedule:
+#          cron: "0 0 * * *"
+#          filters:
+#            branches:
+#              only:
+#                - develop
+#    jobs:
+#      - Firebase Test:
+#          name: Connected Tests
+#          results-history-name: CircleCI FluxC Tests
+#          package: org.wordpress.android.fluxc
+#          device: model=Nexus5X,version=26,locale=en,orientation=portrait
+#          timeout: 30m
+#          num-flaky-test-attempts: 1
+#          post-slack-status: true
   nightly-api-tests:
     triggers:
       - schedule:

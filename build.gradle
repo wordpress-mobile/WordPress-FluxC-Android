@@ -8,8 +8,8 @@ plugins {
     id "org.jetbrains.kotlin.jvm" apply false
     id "org.jetbrains.kotlin.kapt" apply false
 
-    id "com.automattic.android.fetchstyle"
-    id "com.automattic.android.configure"
+//    id "com.automattic.android.fetchstyle"
+//    id "com.automattic.android.configure"
 }
 
 allprojects {
@@ -18,7 +18,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url "http://dl.bintray.com/terl/lazysodium-maven" }
+        mavenCentral()
     }
 
     task checkstyle(type: Checkstyle) {
