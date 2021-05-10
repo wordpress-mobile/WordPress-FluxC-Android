@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.user.WCUserMapper
-import org.wordpress.android.fluxc.model.user.WCUserRole
+import org.wordpress.android.fluxc.model.user.WCUserModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
@@ -65,16 +65,21 @@ class WCUserStoreTest {
     fun `fetch user role`() = test {
         val result = fetchUserRole()
         val userRole = mapper.map(sampleUserApiResponse!!)
-        assertThat(result.model?.size).isEqualTo(userRole.size)
         assertThat(result.model).isEqualTo(userRole)
-        assertThat(result.model?.get(0)?.isSupported() == true)
+        assertThat(result.model?.id).isEqualTo(userRole.id)
+        assertThat(result.model?.username).isEqualTo(userRole.username)
+        assertThat(result.model?.firstName).isEqualTo(userRole.firstName)
+        assertThat(result.model?.lastName).isEqualTo(userRole.lastName)
+        assertThat(result.model?.email).isEqualTo(userRole.email)
+        assertThat(result.model?.roles?.size).isEqualTo(userRole.roles.size)
+        assertThat(result.model?.roles?.get(0)?.isSupported() == true)
 
         val invalidRequestResult = store.fetchUserRole(errorSite)
         assertThat(invalidRequestResult.model).isNull()
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
-    private suspend fun fetchUserRole(): WooResult<List<WCUserRole>> {
+    private suspend fun fetchUserRole(): WooResult<WCUserModel> {
         val fetchUserRolePayload = WooPayload(sampleUserApiResponse)
         whenever(restClient.fetchUserInfo(site)).thenReturn(fetchUserRolePayload)
         whenever(restClient.fetchUserInfo(errorSite)).thenReturn(WooPayload(error))

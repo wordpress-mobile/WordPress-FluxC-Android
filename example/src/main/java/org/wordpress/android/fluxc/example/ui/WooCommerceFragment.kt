@@ -96,7 +96,7 @@ class WooCommerceFragment : Fragment() {
                         prependToLog("${it.type}: ${it.message}")
                     }
                     result.model?.let {
-                        prependToLog("Current user is: ${it.joinToString(", ")}")
+                        prependToLog("Current user is: ${it.roles}")
                     }
                 }
             }

@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.user.WCUserMapper
-import org.wordpress.android.fluxc.model.user.WCUserRole
+import org.wordpress.android.fluxc.model.user.WCUserModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -19,7 +19,7 @@ class WCUserStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val mapper: WCUserMapper
 ) {
-    suspend fun fetchUserRole(site: SiteModel): WooResult<List<WCUserRole>> {
+    suspend fun fetchUserRole(site: SiteModel): WooResult<WCUserModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchUserInfo") {
             val response = restClient.fetchUserInfo(site)
             return@withDefaultContext when {
