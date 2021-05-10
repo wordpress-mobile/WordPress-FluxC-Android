@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.user
+package org.wordpress.android.fluxc.model.user
 
 enum class WCUserRole(val value: String = "") {
     OWNER("owner"),
