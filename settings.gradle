@@ -1,41 +1,4 @@
-pluginManagement {
-    gradle.ext.kotlinVersion = '1.4.10'
-
-    plugins {
-        id "com.github.dcendents.android-maven" version "2.0"
-        id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
-        id "org.jetbrains.kotlin.android.extensions" version gradle.ext.kotlinVersion
-        id "org.jetbrains.kotlin.jvm" version gradle.ext.kotlinVersion
-        id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
-    }
-    repositories {
-        gradlePluginPortal()
-        google()
-        jcenter()
-        maven { url "https://dl.bintray.com/automattic/maven/" }
-    }
-    resolutionStrategy {
-        eachPlugin {
-            // TODO: Remove this as soon as we update to AGP >= 4.2.0
-            if (requested.id.id.contains("com.android")) {
-                useModule("com.android.tools.build:gradle:4.0.2")
-            }
-            // TODO: Remove this as soon as fetchstyle starts supporting Plugin Marker Artifacts
-            if (requested.id.id == "com.automattic.android.fetchstyle") {
-                useModule("com.automattic.android:fetchstyle:1.1")
-            }
-            // TODO: Remove this as soon as configure starts supporting Plugin Marker Artifacts
-            if (requested.id.id == "com.automattic.android.configure") {
-                useModule("com.automattic.android:configure:0.5.0")
-            }
-        }
-    }
-}
-
-include ':fluxc',
-        ':fluxc-processor',
-        ':fluxc-annotations',
-        ':plugins:woocommerce',
-        ':example',
-        ':instaflux',
-        ':tests:api'
+include ':fluxc', ':fluxc-processor', ':fluxc-annotations', ':plugins:woocommerce'
+include ':example'
+include ':instaflux'
+include ':tests:api'
