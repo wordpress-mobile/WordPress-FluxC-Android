@@ -1,2 +1,4 @@
 before_install:
+  - mkdir example/properties
+  - cp example/properties-example/tests.properties example/properties/tests.properties
   - cp gradle.properties-example gradle.properties
