@@ -22,5 +22,5 @@ enum class WCUserRole(val value: String = "") {
         fun fromValue(value: String) = valueMap[value] ?: OTHER
     }
 
-    fun isSupported() = this == ADMINISTRATOR
+    fun isSupported() = this == ADMINISTRATOR || this == SHOP_MANAGER
 }
