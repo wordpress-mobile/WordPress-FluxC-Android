@@ -166,17 +166,20 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
         // Validate Callback
         assertEmpty(editorTheme)
-        Assert.assertNotNull(editorTheme?.themeSupport?.rawGlobalStylesBaseStyles)
+        Assert.assertNotNull(editorTheme?.themeSupport?.rawStyles)
 
         // Validate Cache
         val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
         assertEmpty(cachedTheme)
-        Assert.assertNotNull(cachedTheme?.themeSupport?.rawGlobalStylesBaseStyles)
+        Assert.assertNotNull(cachedTheme?.themeSupport?.rawStyles)
 
         // Validate Bundle
         val themeBundle = editorTheme!!.themeSupport.toBundle()
         assertEmpty(themeBundle)
-        Assert.assertNotNull(themeBundle.getString("rawGlobalStylesBaseStyles"))
+        val styles = themeBundle.getString("rawStyles")
+        val features = themeBundle.getString("rawFeatures")
+        Assert.assertNotNull(styles)
+        Assert.assertNotNull(features)
     }
 
     private fun assertNotEmpty(theme: EditorTheme?) {
