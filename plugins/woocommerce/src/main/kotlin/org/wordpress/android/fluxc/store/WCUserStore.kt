@@ -25,7 +25,7 @@ class WCUserStore @Inject constructor(
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    WooResult(mapper.map(response.result))
+                    WooResult(mapper.map(response.result, site))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
