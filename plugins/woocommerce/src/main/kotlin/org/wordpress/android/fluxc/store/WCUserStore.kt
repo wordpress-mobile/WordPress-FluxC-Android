@@ -34,4 +34,6 @@ class WCUserStore @Inject constructor(
             }
         }
     }
+
+    fun getUserByEmail(site: SiteModel, email: String) = WCUserSqlUtils.getUserBySiteAndEmail(site.id, email)
 }

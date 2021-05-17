@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
-import org.wordpress.android.fluxc.persistence.WCUserSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.test
@@ -77,7 +76,17 @@ class WCUserStoreTest {
         assertThat(result.model?.getUserRoles()?.size).isEqualTo(userRole.getUserRoles().size)
         assertThat(result.model?.getUserRoles()?.get(0)?.isSupported() == true)
 
-        val savedUser = WCUserSqlUtils.getUserBySiteAndEmail(site.id, userRole.email)
+        val invalidRequestResult = store.fetchUserRole(errorSite)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `get user role from db`() = test {
+        val result = fetchUserRole()
+        val userRole = mapper.map(sampleUserApiResponse!!, site)
+
+        val savedUser = store.getUserByEmail(site, userRole.email)
         assertNotNull(savedUser)
         assertThat(savedUser.remoteUserId).isEqualTo(userRole.remoteUserId)
         assertThat(savedUser.username).isEqualTo(userRole.username)
@@ -86,10 +95,6 @@ class WCUserStoreTest {
         assertThat(savedUser.email).isEqualTo(userRole.email)
         assertThat(savedUser.getUserRoles().size).isEqualTo(userRole.getUserRoles().size)
         assertTrue(savedUser.getUserRoles()[0].isSupported())
-
-        val invalidRequestResult = store.fetchUserRole(errorSite)
-        assertThat(invalidRequestResult.model).isNull()
-        assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
     private suspend fun fetchUserRole(): WooResult<WCUserModel> {
