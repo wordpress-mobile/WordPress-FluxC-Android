@@ -236,15 +236,27 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @Test
     public void testFetchBlockLayouts() throws InterruptedException {
-        testFetchBlockLayouts(false);
+        testFetchBlockLayouts(false, false);
+    }
+
+    @Test
+    public void testFetchBlockLayoutsFromCache() throws InterruptedException {
+        testFetchBlockLayouts(false, false);
+        testFetchBlockLayouts(false, true);
     }
 
     @Test
     public void testFetchBlockLayoutsBeta() throws InterruptedException {
-        testFetchBlockLayouts(true);
+        testFetchBlockLayouts(true, false);
     }
 
-    private void testFetchBlockLayouts(boolean isBeta) throws InterruptedException {
+    @Test
+    public void testFetchBlockLayoutsBetaFromCache() throws InterruptedException {
+        testFetchBlockLayouts(true, false);
+        testFetchBlockLayouts(true, true);
+    }
+
+    private void testFetchBlockLayouts(boolean isBeta, boolean preferCache) throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
@@ -260,9 +272,10 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(
                 new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks,
-                        320.0f, 480.0f, 1.0f, isBeta)));
+                        320.0f, 480.0f, 1.0f, isBeta, preferCache)));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch
+                .await(preferCache ? TestUtils.CACHE_TIMEOUT_MS : TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")

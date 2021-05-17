@@ -1,20 +1,8 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
-    }
-}
-
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'com.github.dcendents.android-maven'
-
-repositories {
-    jcenter()
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.kapt"
+    id "com.github.dcendents.android-maven"
 }
 
 android {
@@ -41,7 +29,6 @@ android {
 dependencies {
     implementation project(':fluxc')
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation 'org.apache.commons:commons-lang3:3.7'
 
     // WordPress libs

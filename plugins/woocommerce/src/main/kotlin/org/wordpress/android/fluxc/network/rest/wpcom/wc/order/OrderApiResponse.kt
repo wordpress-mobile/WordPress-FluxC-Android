@@ -39,38 +39,31 @@ class OrderApiResponse : Response {
         val total: String? = null
     }
 
-    val id: Long? = null
-    val number: String? = null
-    val status: String? = null
+    val billing: Billing? = null
+    val coupon_lines: List<CouponLine>? = null
     val currency: String? = null
+    val customer_note: String? = null
     val date_created_gmt: String? = null
     val date_modified_gmt: String? = null
-    val total: String? = null
-    val total_tax: String? = null
-    val shipping_total: String? = null
-    val payment_method: String? = null
-    val payment_method_title: String? = null
     val date_paid_gmt: String? = null
-    val prices_include_tax: Boolean = false
-
-    val customer_note: String? = null
-
     val discount_total: String? = null
-    val coupon_lines: List<CouponLine>? = null
-
-    val billing: Billing? = null
-    val shipping: Shipping? = null
-
+    // Same as shipping_lines, it's a list of objects
+    val fee_lines: JsonElement? = null
+    val id: Long? = null
     // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
     // See WCOrderModel.LineItem
     val line_items: JsonElement? = null
-
+    val number: String? = null
+    val payment_method: String? = null
+    val payment_method_title: String? = null
+    val prices_include_tax: Boolean = false
     val refunds: List<Refund>? = null
-
+    val shipping: Shipping? = null
     // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
     // See WCOrderModel.ShippingLines
     val shipping_lines: JsonElement? = null
-
-    // Same as shipping_lines, it's a list of objects
-    val fee_lines: JsonElement? = null
+    val shipping_total: String? = null
+    val status: String? = null
+    val total: String? = null
+    val total_tax: String? = null
 }
