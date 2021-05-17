@@ -33,7 +33,7 @@ data class WCUserModel(@PrimaryKey @Column private var id: Int = 0) : Identifiab
         val userRoles = ArrayList<WCUserRole>()
         if (roles.isNotEmpty()) {
             Gson().fromJson(roles, JsonElement::class.java).asJsonArray.forEach {
-                userRoles.add(WCUserRole.valueOf(it.asString))
+                userRoles.add(WCUserRole.fromValue(it.asString))
             }
         }
         return userRoles

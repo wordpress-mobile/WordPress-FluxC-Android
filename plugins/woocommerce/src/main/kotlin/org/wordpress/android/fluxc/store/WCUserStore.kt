@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserRestClient
+import org.wordpress.android.fluxc.persistence.WCUserSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -25,7 +26,9 @@ class WCUserStore @Inject constructor(
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    WooResult(mapper.map(response.result, site))
+                    val user = mapper.map(response.result, site)
+                    WCUserSqlUtils.insertOrUpdateUser(user)
+                    WooResult(user)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
