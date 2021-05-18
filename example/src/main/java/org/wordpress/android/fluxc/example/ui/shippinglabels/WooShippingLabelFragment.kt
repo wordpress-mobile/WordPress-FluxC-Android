@@ -440,7 +440,7 @@ class WooShippingLabelFragment : Fragment() {
                                     )
                                 }
 
-                        WCShippingPackageCustoms (
+                        WCShippingPackageCustoms(
                                 id = "default",
                                 contentsType = if (isInternational) WCContentType.Merchandise else null,
                                 restrictionType = if (isInternational) WCRestrictionType.None else null,
