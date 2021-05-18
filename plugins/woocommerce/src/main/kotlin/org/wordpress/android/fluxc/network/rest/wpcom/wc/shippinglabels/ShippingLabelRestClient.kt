@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingPackageCustoms
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -242,14 +243,18 @@ class ShippingLabelRestClient @Inject constructor(
         orderId: Long,
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
-        packages: List<ShippingLabelPackage>
+        packages: List<ShippingLabelPackage>,
+        customsData: List<WCShippingPackageCustoms>?
     ): WooPayload<ShippingRatesApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
 
         val params = mapOf(
             "origin" to origin.toMap(),
             "destination" to destination.toMap(),
-            "packages" to packages.map { it.toMap() }
+            "packages" to packages.map { labelPackage ->
+                val customs = customsData?.first { it.id == labelPackage.id }
+                labelPackage.toMap() + customs.toMap()
+            }
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -274,15 +279,19 @@ class ShippingLabelRestClient @Inject constructor(
         orderId: Long,
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
-        packagesData: List<WCShippingLabelPackageData>
+        packagesData: List<WCShippingLabelPackageData>,
+        customsData: List<WCShippingPackageCustoms>?
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
         val params = mapOf(
                 "async" to true,
-                "origin" to origin.toMap(),
-                "destination" to destination.toMap(),
-                "packages" to packagesData.map { it.toMap() }
+                "origin" to origin,
+                "destination" to destination,
+                "packages" to packagesData.map { labelPackage ->
+                    val customs = customsData?.first { it.id == labelPackage.id }
+                    labelPackage.toMap() + customs.toMap()
+                }
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
