@@ -409,16 +409,17 @@ class WooShippingLabelFragment : Fragment() {
                                         "Length: $length\n" +
                                         "Weight: $weight"
                         )
+                        return@launch
                     }
                     prependToLog("Retrieving rates")
 
                     val box = ShippingLabelPackage(
                             "default",
-                            boxId!!,
-                            height!!,
-                            length!!,
-                            width!!,
-                            weight!!
+                            boxId,
+                            height,
+                            length,
+                            width,
+                            weight
                     )
 
                     val isInternational = destination.country != origin.country
@@ -442,10 +443,8 @@ class WooShippingLabelFragment : Fragment() {
                         WCShippingPackageCustoms (
                                 id = "default",
                                 contentsType = if (isInternational) WCContentType.Merchandise else null,
-                                contentsExplanation = null,
                                 restrictionType = if (isInternational) WCRestrictionType.None else null,
-                                restrictionComments = null,
-                                itn = null,
+                                itn = "AES X20160406131357",
                                 nonDeliveryOption = if (isInternational) WCNonDeliveryOption.Return else null,
                                 customsItems = customsItems
                         )
@@ -475,7 +474,7 @@ class WooShippingLabelFragment : Fragment() {
                     val rate = ratesResult.model!!.packageRates.first().shippingOptions.first().rates.first()
                     val packageData = WCShippingLabelPackageData(
                             id = "default",
-                            boxId = "medium_flat_box_top",
+                            boxId = boxId,
                             length = length,
                             height = height,
                             width = width,
@@ -486,6 +485,7 @@ class WooShippingLabelFragment : Fragment() {
                             carrierId = rate.carrierId,
                             products = order.getLineItemList().map { it.productId!! }
                     )
+                    prependToLog("Purchasing label")
                     val result = wcShippingLabelStore.purchaseShippingLabels(
                             site,
                             order.remoteOrderId,

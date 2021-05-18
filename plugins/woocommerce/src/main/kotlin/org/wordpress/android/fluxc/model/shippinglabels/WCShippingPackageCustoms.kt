@@ -7,9 +7,9 @@ import java.math.BigDecimal
 data class WCShippingPackageCustoms(
     @Expose(serialize = false) val id: String,
     @SerializedName("contents_type") val contentsType: WCContentType?,
-    @SerializedName("contents_explanation") val contentsExplanation: String?,
+    @SerializedName("contents_explanation") val contentsExplanation: String? = null,
     @SerializedName("restriction_type") val restrictionType: WCRestrictionType?,
-    @SerializedName("restriction_comments") val restrictionComments: String?,
+    @SerializedName("restriction_comments") val restrictionComments: String? = null,
     @SerializedName("non_delivery_option") val nonDeliveryOption: WCNonDeliveryOption?,
     @SerializedName("itn") val itn: String?,
     @SerializedName("items") val customsItems: List<WCCustomsItem>?
