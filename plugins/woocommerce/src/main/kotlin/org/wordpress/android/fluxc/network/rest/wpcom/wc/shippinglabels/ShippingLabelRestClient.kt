@@ -359,7 +359,7 @@ class ShippingLabelRestClient @Inject constructor(
         ) {
             data class Rate(
                 val title: String,
-                val insurance: BigDecimal,
+                val insurance: String,
                 val rate: BigDecimal,
                 @SerializedName("rate_id") val rateId: String,
                 @SerializedName("service_id") val serviceId: String,
