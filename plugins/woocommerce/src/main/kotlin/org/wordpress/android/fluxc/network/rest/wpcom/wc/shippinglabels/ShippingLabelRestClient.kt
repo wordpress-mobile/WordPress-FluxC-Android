@@ -253,7 +253,7 @@ class ShippingLabelRestClient @Inject constructor(
             "destination" to destination.toMap(),
             "packages" to packages.map { labelPackage ->
                 val customs = customsData?.first { it.id == labelPackage.id }
-                labelPackage.toMap() + customs.toMap()
+                labelPackage.toMap() + (customs?.toMap() ?: emptyMap())
             }
         )
 
@@ -290,7 +290,7 @@ class ShippingLabelRestClient @Inject constructor(
                 "destination" to destination,
                 "packages" to packagesData.map { labelPackage ->
                     val customs = customsData?.first { it.id == labelPackage.id }
-                    labelPackage.toMap() + customs.toMap()
+                    labelPackage.toMap() + (customs?.toMap() ?: emptyMap())
                 }
         )
 
