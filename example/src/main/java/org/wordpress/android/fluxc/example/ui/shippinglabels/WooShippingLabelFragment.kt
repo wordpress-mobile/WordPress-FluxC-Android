@@ -482,6 +482,7 @@ class WooShippingLabelFragment : Fragment() {
                             shipmentId = rate.shipmentId,
                             rateId = rate.rateId,
                             serviceId = rate.serviceId,
+                            serviceName = rate.title,
                             carrierId = rate.carrierId,
                             products = order.getLineItemList().map { it.productId!! }
                     )
