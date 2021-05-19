@@ -94,7 +94,7 @@ class WCUserStoreTest {
         assertThat(savedUser.lastName).isEqualTo(userRole.lastName)
         assertThat(savedUser.email).isEqualTo(userRole.email)
         assertThat(savedUser.getUserRoles().size).isEqualTo(userRole.getUserRoles().size)
-        assertTrue(savedUser.getUserRoles()[0].isSupported())
+        assertTrue(savedUser.isUserEligible())
     }
 
     private suspend fun fetchUserRole(): WooResult<WCUserModel> {

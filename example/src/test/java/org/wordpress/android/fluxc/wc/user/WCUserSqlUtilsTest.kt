@@ -66,6 +66,25 @@ class WCUserSqlUtilsTest {
         assertEquals(savedUser?.email, user.email)
         assertEquals(savedUser?.roles, user.roles)
         assertTrue(savedUser?.isUserEligible() == true)
+
+        // Test updating user's role
+        user.apply { roles = "[\"author\",\"administrator\"]" }
+        rowsAffected = WCUserSqlUtils.insertOrUpdateUser(user)
+        assertEquals(1, rowsAffected)
+        savedUser = WCUserSqlUtils.getUserBySiteAndEmail(site.id, user.email)
+        assertTrue(savedUser?.isUserEligible() == true)
+
+        user.apply { roles = "[\"author\",\"customer\"]" }
+        rowsAffected = WCUserSqlUtils.insertOrUpdateUser(user)
+        assertEquals(1, rowsAffected)
+        savedUser = WCUserSqlUtils.getUserBySiteAndEmail(site.id, user.email)
+        assertTrue(savedUser?.isUserEligible() == false)
+
+        user.apply { roles = "[\"administrator\",\"shop_manager\"]" }
+        rowsAffected = WCUserSqlUtils.insertOrUpdateUser(user)
+        assertEquals(1, rowsAffected)
+        savedUser = WCUserSqlUtils.getUserBySiteAndEmail(site.id, user.email)
+        assertTrue(savedUser?.isUserEligible() == true)
     }
 
     @Test

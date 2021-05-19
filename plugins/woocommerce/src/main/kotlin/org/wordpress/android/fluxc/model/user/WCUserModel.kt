@@ -39,5 +39,5 @@ data class WCUserModel(@PrimaryKey @Column private var id: Int = 0) : Identifiab
         return userRoles
     }
 
-    fun isUserEligible() = getUserRoles().none { !it.isSupported() }
+    fun isUserEligible() = getUserRoles().any { it.isSupported() }
 }
