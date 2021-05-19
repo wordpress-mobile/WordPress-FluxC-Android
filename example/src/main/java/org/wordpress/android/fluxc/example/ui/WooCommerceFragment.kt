@@ -31,8 +31,8 @@ import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.user.WCUserStore
 import org.wordpress.android.fluxc.store.WCDataStore
+import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
@@ -96,7 +96,7 @@ class WooCommerceFragment : Fragment() {
                         prependToLog("${it.type}: ${it.message}")
                     }
                     result.model?.let {
-                        prependToLog("Current user is: ${it.joinToString(", ")}")
+                        prependToLog("Current user is: ${it.roles}")
                     }
                 }
             }
