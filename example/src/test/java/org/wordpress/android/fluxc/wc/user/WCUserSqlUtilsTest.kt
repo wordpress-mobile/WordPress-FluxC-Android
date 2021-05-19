@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCUserSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -64,6 +65,7 @@ class WCUserSqlUtilsTest {
         assertEquals(savedUser?.username, user.username)
         assertEquals(savedUser?.email, user.email)
         assertEquals(savedUser?.roles, user.roles)
+        assertTrue(savedUser?.isUserEligible() == true)
     }
 
     @Test
