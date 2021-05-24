@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.user
+package org.wordpress.android.fluxc.model.user
 
 enum class WCUserRole(val value: String = "") {
     OWNER("owner"),
@@ -22,5 +22,5 @@ enum class WCUserRole(val value: String = "") {
         fun fromValue(value: String) = valueMap[value] ?: OTHER
     }
 
-    fun isSupported() = this == ADMINISTRATOR
+    fun isSupported() = this == ADMINISTRATOR || this == SHOP_MANAGER
 }

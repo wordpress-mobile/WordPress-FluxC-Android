@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.user
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WPAPI
@@ -49,6 +50,6 @@ class WCUserRestClient @Inject constructor(
         @SerializedName("first_name") val firstName: String?,
         @SerializedName("last_name") val lastName: String?,
         val email: String?,
-        val roles: List<String>
+        val roles: JsonElement
     )
 }
