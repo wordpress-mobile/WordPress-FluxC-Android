@@ -571,6 +571,77 @@ class WCShippingLabelStoreTest {
         assertThat(eligibility).isNull()
     }
 
+    @Test
+    fun `creating a single custom package returns success from API`() = test {
+        val response = WooPayload(sampleShippingLabelCreatePackagesResponse)
+        whenever(restClient.createPackages(
+                site = any(),
+                customPackages = any(),
+                predefinedPackages = any()
+        ).thenReturn(response))
+
+        val successfulRequestResult = store.createPackages(
+                site = any(),
+                customPackages = sampleListOfOneCustomPackage,
+                predefinedPackages = emptyList()
+        )
+        assertTrue(successfulRequestResult)
+    }
+
+    @Test
+    fun `activating a single predefined package returns success from API`() = test {
+        val response = WooPayload(sampleShippingLabelCreatePackagesResponse)
+        whenever(restClient.createPackages(
+                site = any(),
+                customPackages = any(),
+                predefinedPackages = any()
+        ).thenReturn(response))
+
+        val successfulRequestResult = store.createPackages(
+                site = any(),
+                customPackages = emptyList(),
+                predefinedPackages = sampleListofOnePredefinedPackage
+        )
+        assertTrue(successfulRequestResult)
+    }
+
+    @Test
+    fun `creating a mix of custom and predefined package returns success from API`() = test {
+        val response = WooPayload(sampleShippingLabelCreatePackagesResponse)
+        whenever(restClient.createPackages(
+                site = any(),
+                customPackages = any(),
+                predefinedPackages = any()
+        ).thenReturn(response))
+
+        val successfulRequestResult = store.createPackages(
+                site = any(),
+                customPackages = sampleListOfOneCustomPackage,
+                predefinedPackages = sampleListofOnePredefinedPackage
+        )
+        assertTrue(successfulRequestResult)
+    }
+
+    @Test
+    fun `creating a custom package where it uses an existing package name returns an error`() = test {
+        // TODO
+    }
+
+    @Test
+    fun `creating two identical custom packages returns an error`() = test {
+        // TODO
+    }
+
+    @Test
+    fun `activating a predefined package where an existing package in the same carrier has the same name returns an error`() = test {
+        // TODO
+    }
+
+    @Test
+    fun `creating two identical predefined packages returns an error`() = test {
+        // TODO
+    }
+
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
         val fetchShippingLabelsPayload = WooPayload(sampleShippingLabelApiResponse)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchShippingLabelsPayload)
