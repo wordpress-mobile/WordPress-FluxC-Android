@@ -40,11 +40,16 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
+import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
+import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCRestrictionType
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingPackageCustoms
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
@@ -52,6 +57,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -342,7 +348,8 @@ class WooShippingLabelFragment : Fragment() {
                                                         order.remoteOrderId,
                                                         origin,
                                                         destination,
-                                                        listOf(box)
+                                                        listOf(box),
+                                                        null
                                                 )
 
                                                 result.error?.let {
@@ -402,23 +409,54 @@ class WooShippingLabelFragment : Fragment() {
                                         "Length: $length\n" +
                                         "Weight: $weight"
                         )
+                        return@launch
                     }
                     prependToLog("Retrieving rates")
 
                     val box = ShippingLabelPackage(
                             "default",
-                            boxId!!,
-                            height!!,
-                            length!!,
-                            width!!,
-                            weight!!
+                            boxId,
+                            height,
+                            length,
+                            width,
+                            weight
                     )
+
+                    val isInternational = destination.country != origin.country
+                    val customsData = if (isInternational) {
+                        val customsItems =
+                                order.getLineItemList().map {
+                                    val quantity = it.quantity ?: 0f
+                                    WCCustomsItem(
+                                            productId = it.productId!!,
+                                            description = it.name.orEmpty(),
+                                            value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO).multiply(
+                                                    BigDecimal.valueOf(quantity.toDouble())
+                                            ),
+                                            quantity = quantity,
+                                            weight = 1f,
+                                            hsTariffNumber = null,
+                                            originCountry = "US"
+                                    )
+                                }
+
+                        WCShippingPackageCustoms(
+                                id = "default",
+                                contentsType = if (isInternational) WCContentType.Merchandise else null,
+                                restrictionType = if (isInternational) WCRestrictionType.None else null,
+                                itn = "AES X20160406131357",
+                                nonDeliveryOption = if (isInternational) WCNonDeliveryOption.Return else null,
+                                customsItems = customsItems
+                        )
+                    } else null
+
                     val ratesResult = wcShippingLabelStore.getShippingRates(
                             site,
                             order.remoteOrderId,
-                            origin,
+                            if (isInternational) origin.copy(phone = "0000000000") else origin,
                             destination,
-                            listOf(box)
+                            listOf(box),
+                            customsData?.let { listOf(it) }
                     )
                     if (ratesResult.isError) {
                         prependToLog(
@@ -436,7 +474,7 @@ class WooShippingLabelFragment : Fragment() {
                     val rate = ratesResult.model!!.packageRates.first().shippingOptions.first().rates.first()
                     val packageData = WCShippingLabelPackageData(
                             id = "default",
-                            boxId = "medium_flat_box_top",
+                            boxId = boxId,
                             length = length,
                             height = height,
                             width = width,
@@ -444,15 +482,18 @@ class WooShippingLabelFragment : Fragment() {
                             shipmentId = rate.shipmentId,
                             rateId = rate.rateId,
                             serviceId = rate.serviceId,
+                            serviceName = rate.title,
                             carrierId = rate.carrierId,
                             products = order.getLineItemList().map { it.productId!! }
                     )
+                    prependToLog("Purchasing label")
                     val result = wcShippingLabelStore.purchaseShippingLabels(
                             site,
                             order.remoteOrderId,
-                            origin,
+                            if (isInternational) origin.copy(phone = "0000000000") else origin,
                             destination,
-                            listOf(packageData)
+                            listOf(packageData),
+                            customsData?.let { listOf(it) }
                     )
 
                     result.error?.let {

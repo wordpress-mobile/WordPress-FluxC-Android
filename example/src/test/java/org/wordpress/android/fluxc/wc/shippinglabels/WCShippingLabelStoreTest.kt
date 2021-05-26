@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.wc.shippinglabels
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
@@ -145,6 +146,7 @@ class WCShippingLabelStoreTest {
                     shipmentId = "shp_id",
                     rateId = "rate_id",
                     serviceId = "service-1",
+                    serviceName = "USPS - Priority Mail International label",
                     carrierId = "usps",
                     products = listOf(10)
             )
@@ -271,7 +273,7 @@ class WCShippingLabelStoreTest {
                             listOf(
                                 Rate(
                                     title = "USPS - Media Mail",
-                                    insurance = BigDecimal(100),
+                                    insurance = "100",
                                     rate = BigDecimal(3.5),
                                     rateId = "rate_cb976896a09c4171a93ace57ed66ce5b",
                                     serviceId = "MediaMail",
@@ -287,7 +289,7 @@ class WCShippingLabelStoreTest {
                                 ),
                                 Rate(
                                     title = "FedEx - Ground",
-                                    insurance = BigDecimal(100),
+                                    insurance = "100",
                                     rate = BigDecimal(21.5),
                                     rateId = "rate_1b202bd43a8c4c929c73bb46989ef745",
                                     serviceId = "FEDEX_GROUND",
@@ -308,7 +310,7 @@ class WCShippingLabelStoreTest {
                         listOf(
                                 Rate(
                                     title = "USPS - Media Mail",
-                                    insurance = BigDecimal(100),
+                                    insurance = "100",
                                     rate = BigDecimal(13.5),
                                     rateId = "rate_cb976896a09c4171a93ace57ed66ce5b",
                                     serviceId = "MediaMail",
@@ -324,7 +326,7 @@ class WCShippingLabelStoreTest {
                                 ),
                                 Rate(
                                     title = "FedEx - Ground",
-                                    insurance = BigDecimal(100),
+                                    insurance = "100",
                                     rate = BigDecimal(121.5),
                                     rateId = "rate_1b202bd43a8c4c929c73bb46989ef745",
                                     serviceId = "FEDEX_GROUND",
@@ -417,14 +419,16 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `purchase shipping label error`() = test {
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(WooPayload(error))
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull()))
+                .thenReturn(WooPayload(error))
 
         val invalidRequestResult = store.purchaseShippingLabels(
                 site,
                 orderId,
                 originAddress,
                 destAddress,
-                purchaseLabelPackagesData
+                purchaseLabelPackagesData,
+                null
         )
         assertThat(invalidRequestResult.model).isNull()
         assertThat(invalidRequestResult.error).isEqualTo(error)
@@ -433,7 +437,7 @@ class WCShippingLabelStoreTest {
     @Test
     fun `purchase shipping labels with polling`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
         val statusDoneReponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(true)
@@ -442,7 +446,14 @@ class WCShippingLabelStoreTest {
                 .thenReturn(WooPayload(statusDoneReponse))
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks()
 
-        val result = store.purchaseShippingLabels(site, orderId, originAddress, destAddress, purchaseLabelPackagesData)
+        val result = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
         val shippingLabelModels = mapper.map(
                 samplePurchaseShippingLabelsResponse,
                 orderId,
@@ -451,7 +462,7 @@ class WCShippingLabelStoreTest {
                 site
         )
 
-        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any())
+        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())
         verify(restClient).fetchShippingLabelsStatus(
                 site,
                 orderId,
@@ -476,13 +487,20 @@ class WCShippingLabelStoreTest {
     @Test
     fun `purchase shipping labels with polling fail after 3 retries`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
 
         whenever(restClient.fetchShippingLabelsStatus(any(), any(), any())).thenReturn(WooPayload(error))
 
-        val result = store.purchaseShippingLabels(site, orderId, originAddress, destAddress, purchaseLabelPackagesData)
+        val result = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
 
-        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any())
+        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())
         verify(restClient, times(3)).fetchShippingLabelsStatus(
                 site,
                 orderId,
@@ -494,7 +512,7 @@ class WCShippingLabelStoreTest {
     @Test
     fun `purchase shipping labels with polling one label failed`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any())).thenReturn(response)
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
         val statusErrorResponse = WCShippingLabelTestUtils.generateErrorShippingLabelsStatusApiResponse()
@@ -502,7 +520,14 @@ class WCShippingLabelStoreTest {
                 .thenReturn(WooPayload(statusIntermediateResponse))
                 .thenReturn(WooPayload(statusErrorResponse))
 
-        val result = store.purchaseShippingLabels(site, orderId, originAddress, destAddress, purchaseLabelPackagesData)
+        val result = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
 
         assertThat(result.isError).isTrue()
         assertThat(result.error.message).isEqualTo(statusErrorResponse.labels!!.first().error)
@@ -624,10 +649,10 @@ class WCShippingLabelStoreTest {
     private suspend fun getShippingRates(): WooResult<WCShippingRatesResult> {
         val rates = WooPayload(sampleShippingRatesApiResponse)
 
-        whenever(restClient.getShippingRates(any(), any(), any(), any(), any()))
+        whenever(restClient.getShippingRates(any(), any(), any(), any(), any(), anyOrNull()))
                 .thenReturn(rates)
 
-        return store.getShippingRates(site, orderId, originAddress, destAddress, packages)
+        return store.getShippingRates(site, orderId, originAddress, destAddress, packages, null)
     }
 
     private suspend fun getPackages(isError: Boolean = false): WooResult<WCPackagesResult> {
