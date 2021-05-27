@@ -51,6 +51,7 @@ import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.math.BigDecimal
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -147,6 +148,30 @@ class WCShippingLabelStoreTest {
                     serviceId = "service-1",
                     carrierId = "usps",
                     products = listOf(10)
+            )
+    )
+
+    private val sampleListOfOneCustomPackage = listOf(
+            CustomPackage(
+                    "Package 1",
+                    false,
+                    "10 x 10 x 10",
+                    1.0f
+            )
+    )
+
+    private val sampleListOfOnePredefinedPackage = listOf(
+            PredefinedOption(
+                    title = "usps",
+                    predefinedPackages = listOf(
+                            PredefinedPackage(
+                                    id = "small_flat_box",
+                                    title = "Small Flat Box",
+                                    isLetter = false,
+                                    dimensions = "10 x 10 x 10",
+                                    boxWeight = 1.0f
+                            )
+                    )
             )
     )
 
@@ -573,53 +598,47 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `creating a single custom package returns success from API`() = test {
-        val response = WooPayload(sampleShippingLabelCreatePackagesResponse)
-        whenever(restClient.createPackages(
-                site = any(),
-                customPackages = any(),
-                predefinedPackages = any()
-        ).thenReturn(response))
+        val response = WooPayload(true)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
 
+        val expectedResult = WooResult(true)
         val successfulRequestResult = store.createPackages(
                 site = any(),
                 customPackages = sampleListOfOneCustomPackage,
                 predefinedPackages = emptyList()
         )
-        assertTrue(successfulRequestResult)
+        assertEquals(successfulRequestResult, expectedResult)
     }
 
     @Test
     fun `activating a single predefined package returns success from API`() = test {
-        val response = WooPayload(sampleShippingLabelCreatePackagesResponse)
-        whenever(restClient.createPackages(
-                site = any(),
-                customPackages = any(),
-                predefinedPackages = any()
-        ).thenReturn(response))
+        val response = WooPayload(true)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
 
+        val expectedResult = WooResult(true)
         val successfulRequestResult = store.createPackages(
                 site = any(),
                 customPackages = emptyList(),
-                predefinedPackages = sampleListofOnePredefinedPackage
+                predefinedPackages = sampleListOfOnePredefinedPackage
         )
-        assertTrue(successfulRequestResult)
+        assertEquals(successfulRequestResult, expectedResult)
     }
 
     @Test
     fun `creating a mix of custom and predefined package returns success from API`() = test {
-        val response = WooPayload(sampleShippingLabelCreatePackagesResponse)
-        whenever(restClient.createPackages(
-                site = any(),
-                customPackages = any(),
-                predefinedPackages = any()
-        ).thenReturn(response))
+        val response = WooPayload(true)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
 
+        val expectedResult = WooResult(true)
         val successfulRequestResult = store.createPackages(
                 site = any(),
                 customPackages = sampleListOfOneCustomPackage,
-                predefinedPackages = sampleListofOnePredefinedPackage
+                predefinedPackages = sampleListOfOnePredefinedPackage
         )
-        assertTrue(successfulRequestResult)
+        assertEquals(successfulRequestResult, expectedResult)
     }
 
     @Test

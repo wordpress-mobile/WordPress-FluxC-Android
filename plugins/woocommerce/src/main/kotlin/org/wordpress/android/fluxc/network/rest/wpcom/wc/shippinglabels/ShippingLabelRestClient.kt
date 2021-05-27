@@ -10,6 +10,8 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
@@ -325,6 +327,48 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
+    suspend fun createPackages(
+        site: SiteModel,
+        customPackages: List<CustomPackage> = emptyList(),
+        predefinedOptions: List<PredefinedOption> = emptyList()
+    ): WooPayload<Boolean> {
+        val url = WOOCOMMERCE.connect.packages.pathV1
+
+        // A PredefinedOption instance contains more information than what's needed in the request,
+        // so here we simplify the list  into a list of PredefinedOptionParam instead.
+        val predefinedParam: MutableList<PredefinedOptionParam> = mutableListOf()
+        predefinedOptions.forEach { predefinedOption ->
+            predefinedParam.add(
+                    PredefinedOptionParam(
+                            predefinedOption.title,
+                            predefinedOption.predefinedPackages.map { it.title }
+                    )
+            )
+        }
+
+        val params = mapOf(
+                "custom" to customPackages.toMap(),
+                "predefined" to predefinedParam.toMap()
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                JsonObject::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data!!["success"].asBoolean)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
@@ -454,4 +498,9 @@ class ShippingLabelRestClient @Inject constructor(
                 }
         }
     }
+
+    data class PredefinedOptionParam(
+        val title: String,
+        val items: List<String>
+    )
 }
