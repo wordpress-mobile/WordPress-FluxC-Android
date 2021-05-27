@@ -2,8 +2,8 @@ package org.wordpress.android.fluxc
 
 import android.util.Base64
 import android.util.Base64.DEFAULT
-import com.goterl.lazycode.lazysodium.interfaces.SecretStream
-import com.goterl.lazycode.lazysodium.utils.KeyPair
+import com.goterl.lazysodium.interfaces.SecretStream
+import com.goterl.lazysodium.utils.KeyPair
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

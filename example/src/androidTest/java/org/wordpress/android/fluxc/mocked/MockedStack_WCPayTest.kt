@@ -51,7 +51,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error.type == MISSING_ORDER)
+        Assert.assertTrue(result.error?.type == MISSING_ORDER)
     }
 
     @Test
@@ -60,7 +60,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error.type == PAYMENT_ALREADY_CAPTURED)
+        Assert.assertTrue(result.error?.type == PAYMENT_ALREADY_CAPTURED)
     }
 
     @Test
@@ -69,7 +69,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error.type == CAPTURE_ERROR)
+        Assert.assertTrue(result.error?.type == CAPTURE_ERROR)
     }
 
     @Test
@@ -78,6 +78,6 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error.type == SERVER_ERROR)
+        Assert.assertTrue(result.error?.type == SERVER_ERROR)
     }
 }

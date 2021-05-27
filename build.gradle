@@ -9,7 +9,7 @@ plugins {
     id "org.jetbrains.kotlin.kapt" apply false
 
 //    id "com.automattic.android.fetchstyle"
-//    id "com.automattic.android.configure"
+    id "com.automattic.android.configure"
 }
 
 allprojects {
