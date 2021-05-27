@@ -441,4 +441,23 @@ class WCShippingLabelStore @Inject constructor(
             }
         }
     }
+
+    suspend fun createPackages(
+        site:SiteModel,
+        customPackages: List<CustomPackage> = emptyList(),
+        predefinedPackages: List<PredefinedOption> = emptyList()): WooResult<Boolean> {
+        // We need at least one of the lists to not be empty to continue with API call.
+        if(customPackages.isEmpty() && predefinedPackages.isEmpty()) {
+            return WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+        }
+
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createPackages") {
+            val response = restClient.createPackages(site, customPackages, predefinedPackages)
+            return@withDefaultContext when {
+                response.isError -> WooResult(response.error)
+                response.result == true -> WooResult(true)
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
 }
