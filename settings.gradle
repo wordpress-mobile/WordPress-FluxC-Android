@@ -27,7 +27,7 @@ pluginManagement {
             }
             // TODO: Remove this as soon as configure starts supporting Plugin Marker Artifacts
             if (requested.id.id == "com.automattic.android.configure") {
-                useModule("com.automattic.android:configure:0.6.0")
+                useModule("com.automattic.android:configure:0.6.1")
             }
         }
     }
