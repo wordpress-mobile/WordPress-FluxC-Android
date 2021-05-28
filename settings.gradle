@@ -1,5 +1,5 @@
 pluginManagement {
-    gradle.ext.kotlinVersion = '1.5.0'
+    gradle.ext.kotlinVersion = '1.4.10'
 
     plugins {
         id "com.github.dcendents.android-maven" version "2.0"
