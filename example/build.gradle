@@ -25,6 +25,14 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation":"$projectDir/schemas".toString(),
+                        "room.incremental":"true",
+                        "room.expandProjection":"true"]
+            }
+        }
     }
 
     buildTypes {
@@ -103,6 +111,10 @@ dependencies {
     }
 
     implementation 'com.google.code.gson:gson:2.8.5'
+
+    implementation "androidx.room:room-runtime:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
 
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"
