@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCOrderStoreTest {
-    private val orderStore = WCOrderStore(Dispatcher(), mock())
+    private val orderStore = WCOrderStore(Dispatcher(), mock(), mock())
 
     @Before
     fun setUp() {

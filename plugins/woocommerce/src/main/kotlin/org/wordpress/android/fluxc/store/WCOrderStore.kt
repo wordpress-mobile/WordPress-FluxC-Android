@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
-import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -34,8 +33,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrderRestClient: OrderRestClient) :
-        Store(dispatcher) {
+class WCOrderStore @Inject constructor(
+    dispatcher: Dispatcher,
+    private val wcOrderRestClient: OrderRestClient,
+    private val wcOrderFetcher: WCOrderFetcher
+) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
         const val DEFAULT_ORDER_STATUS = "any"
@@ -574,8 +576,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // Save order summaries to the db
             OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
 
-            // Fetch outdated orders
-            fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
+            // Fetch outdated or missing orders
+            fetchOutdatedOrMissingOrders(payload.listDescriptor.site, payload.orderSummaries)
         }
 
         val duration = Calendar.getInstance().timeInMillis - payload.requestStartTime.timeInMillis
@@ -593,14 +595,34 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         )))
     }
 
-    private fun fetchOutdatedOrders(site: SiteModel, orderSummaries: List<WCOrderSummaryModel>) {
-        val summaryModifiedDates = orderSummaries.associate { it.remoteOrderId to it.dateModified }
-        val remoteIds = orderSummaries.map { RemoteId(it.remoteOrderId) }
-        val remoteIdsToFetch = OrderSqlUtils.getOrdersForSiteByRemoteIds(site, remoteIds).filter {
-            it.dateModified != summaryModifiedDates[it.remoteOrderId]
-        }.map { RemoteId(it.remoteOrderId) }
-        val payload = FetchOrdersByIdsPayload(site = site, remoteIds = remoteIdsToFetch)
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
+    private fun fetchOutdatedOrMissingOrders(site: SiteModel, fetchedSummaries: List<WCOrderSummaryModel>) {
+        val fetchedSummariesIds = fetchedSummaries.map { RemoteId(it.remoteOrderId) }
+        val localOrdersForFetchedSummaries = OrderSqlUtils.getOrdersForSiteByRemoteIds(site, fetchedSummariesIds)
+
+        val idsToFetch = outdatedOrdersIds(fetchedSummaries, localOrdersForFetchedSummaries)
+                .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))
+
+        wcOrderFetcher.fetchOrders(site = site, remoteItemIds = idsToFetch)
+    }
+
+    private fun outdatedOrdersIds(
+        fetchedSummaries: List<WCOrderSummaryModel>,
+        localOrdersForSiteByRemoteIds: List<WCOrderModel>
+    ): List<RemoteId> {
+        val summaryModifiedDates = fetchedSummaries.associate { it.remoteOrderId to it.dateModified }
+
+        return localOrdersForSiteByRemoteIds.filter { order ->
+            order.dateModified != summaryModifiedDates[order.remoteOrderId]
+        }.map(WCOrderModel::remoteOrderId).map(::RemoteId)
+    }
+
+    private fun missingOrdersIds(
+        fetchedSummariesIds: List<RemoteId>,
+        localOrdersForSiteByRemoteIds: List<WCOrderModel>
+    ): List<RemoteId> {
+        return fetchedSummariesIds.minus(
+                localOrdersForSiteByRemoteIds.map(WCOrderModel::remoteOrderId).map(::RemoteId)
+        )
     }
 
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
