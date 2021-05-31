@@ -7,7 +7,6 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import org.wordpress.android.fluxc.example.di.AppComponent
 import org.wordpress.android.fluxc.example.di.DaggerAppComponent
-import org.wordpress.android.fluxc.persistence.WPAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import javax.inject.Inject
 
@@ -25,7 +24,6 @@ open class ExampleApp : MultiDexApplication(), HasAndroidInjector {
         component.inject(this)
         val wellSqlConfig = WellSqlConfig(applicationContext, WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(wellSqlConfig)
-        WPAndroidDatabase.buildDb(applicationContext)
     }
 
     override fun androidInjector(): AndroidInjector<Any> = androidInjector
