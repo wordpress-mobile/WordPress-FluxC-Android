@@ -12,6 +12,7 @@ pluginManagement {
         gradlePluginPortal()
         google()
         jcenter()
+        maven { url 'https://a8c-libs.s3.amazonaws.com/android' }
         maven { url "https://dl.bintray.com/automattic/maven/" }
     }
     resolutionStrategy {
@@ -26,7 +27,7 @@ pluginManagement {
             }
             // TODO: Remove this as soon as configure starts supporting Plugin Marker Artifacts
             if (requested.id.id == "com.automattic.android.configure") {
-                useModule("com.automattic.android:configure:0.5.0")
+                useModule("com.automattic.android:configure:0.6.1")
             }
         }
     }
