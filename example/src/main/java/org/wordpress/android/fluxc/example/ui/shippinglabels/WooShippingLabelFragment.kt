@@ -493,7 +493,8 @@ class WooShippingLabelFragment : Fragment() {
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             destination,
                             listOf(packageData),
-                            customsData?.let { listOf(it) }
+                            customsData?.let { listOf(it) },
+                            emailReceipts = true
                     )
 
                     result.error?.let {
