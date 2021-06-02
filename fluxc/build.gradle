@@ -1,21 +1,9 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
-    }
-}
-
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'com.github.dcendents.android-maven'
-
-repositories {
-    jcenter()
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.android.extensions"
+    id "org.jetbrains.kotlin.kapt"
+    id "com.github.dcendents.android-maven"
 }
 
 android {
@@ -63,15 +51,13 @@ android.buildTypes.all { buildType ->
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
-
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "androidx.recyclerview:recyclerview:1.0.0"
 
     implementation "androidx.exifinterface:exifinterface:1.0.0"
 
     // WordPress libs
-    implementation ('org.wordpress:utils:1.26') {
+    implementation('org.wordpress:utils:1.30.3-beta.1') {
         // Using official volley package
         exclude group: "com.mcxiaoke.volley"
         exclude group: "com.android.support"
@@ -86,7 +72,7 @@ dependencies {
     kapt project(':fluxc-processor')
 
     // External libs
-    api 'org.greenrobot:eventbus:3.1.1'
+    api 'org.greenrobot:eventbus:3.2.0'
     api 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.9.0'
     api 'com.android.volley:volley:1.1.1'
@@ -104,8 +90,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 
     // Encrypted Logging
-    api "com.goterl.lazycode:lazysodium-android:4.1.0@aar"
-    api "net.java.dev.jna:jna:4.5.1@aar"
+    api "com.goterl:lazysodium-android:5.0.2@aar"
+    api "net.java.dev.jna:jna:5.5.0@aar"
 }
 
 version = android.defaultConfig.versionName

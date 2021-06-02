@@ -43,24 +43,23 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Calendar
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
 @Singleton
-class OrderRestClient(
+class OrderRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
-            "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines,fee_lines"
-    private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
-
     /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -118,7 +117,7 @@ class OrderRestClient(
      * the optional parameters in effect.
      * @param offset Used to retrieve older orders
      */
-    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long) {
+    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long, requestStartTime: Calendar) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
         val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
@@ -130,10 +129,9 @@ class OrderRestClient(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id,date_created_gmt,date_modified_gmt")
-        listDescriptor.searchQuery.takeUnless { it.isNullOrEmpty() }?.let {
-            params.put("search", it)
-        }
+                "_fields" to "id,date_created_gmt,date_modified_gmt"
+        ).putIfNotEmpty("search" to listDescriptor.searchQuery)
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderSummaryApiResponse>? ->
                     val orderSummaries = response?.map {
@@ -146,13 +144,18 @@ class OrderRestClient(
                             listDescriptor = listDescriptor,
                             orderSummaries = orderSummaries,
                             loadedMore = offset > 0,
-                            canLoadMore = canLoadMore
+                            canLoadMore = canLoadMore,
+                            requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderListResponsePayload(error = orderError, listDescriptor = listDescriptor)
+                    val payload = FetchOrderListResponsePayload(
+                            error = orderError,
+                            listDescriptor = listDescriptor,
+                            requestStartTime = requestStartTime
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
@@ -173,8 +176,8 @@ class OrderRestClient(
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to remoteOrderIds.size.toString(),
-                "include" to remoteOrderIds.map { it.value }.joinToString()
-        )
+                "include" to remoteOrderIds.map { it.value }.joinToString(),
+                "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -238,12 +241,13 @@ class OrderRestClient(
     fun searchOrders(site: SiteModel, searchQuery: String, offset: Int) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
-        val params = mapOf(
+        val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
-                "search" to searchQuery,
-                "_fields" to ORDER_FIELDS)
+                "_fields" to ORDER_FIELDS
+        ).putIfNotEmpty("search" to searchQuery)
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -800,5 +804,40 @@ class OrderRestClient(
                 }
 
         return providers
+    }
+
+    companion object {
+        private val ORDER_FIELDS = arrayOf(
+                "billing",
+                "coupon_lines",
+                "currency",
+                "customer_note",
+                "date_created_gmt",
+                "date_modified_gmt",
+                "date_paid_gmt",
+                "discount_total",
+                "fee_lines",
+                "id",
+                "line_items",
+                "number",
+                "payment_method",
+                "payment_method_title",
+                "prices_include_tax",
+                "refunds",
+                "shipping",
+                "shipping_lines",
+                "shipping_total",
+                "status",
+                "total",
+                "total_tax"
+        ).joinToString(separator = ",")
+
+        private val TRACKING_FIELDS = arrayOf(
+                "date_shipped",
+                "tracking_id",
+                "tracking_link",
+                "tracking_number",
+                "tracking_provider"
+        ).joinToString(separator = ",")
     }
 }

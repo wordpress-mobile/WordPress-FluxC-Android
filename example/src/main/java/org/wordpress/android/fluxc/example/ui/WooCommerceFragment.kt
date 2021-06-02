@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -18,6 +19,7 @@ import org.wordpress.android.fluxc.example.LogUtils
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
+import org.wordpress.android.fluxc.example.ui.customer.WooCustomersFragment
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
 import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
@@ -25,11 +27,12 @@ import org.wordpress.android.fluxc.example.ui.products.WooProductAttributeFragme
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
 import org.wordpress.android.fluxc.example.ui.refunds.WooRefundsFragment
 import org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment
-import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
+import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.store.WCDataStore
+import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
@@ -43,6 +46,7 @@ class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject lateinit var wooCommerceStore: WooCommerceStore
     @Inject lateinit var wooDataStore: WCDataStore
+    @Inject lateinit var wooUserStore: WCUserStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -80,6 +84,22 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchProductSettingsAction(it))
             } ?: showNoWCSitesToast()
+        }
+
+        get_user_role.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooUserStore.fetchUserRole(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("Current user is: ${it.roles}")
+                    }
+                }
+            }
         }
 
         orders.setOnClickListener {
@@ -145,17 +165,21 @@ class WooCommerceFragment : Fragment() {
                 replaceFragment(WooProductAttributeFragment())
             } ?: showNoWCSitesToast()
         }
+
+        customers.setOnClickListener {
+            getFirstWCSite()?.let {
+                replaceFragment(WooCustomersFragment())
+            } ?: showNoWCSitesToast()
+        }
     }
 
     private fun launchCountriesRequest() {
         coroutineScope.launch {
             try {
                 getFirstWCSite()?.let {
-                    wooDataStore.fetchCountriesAndStates(it).model?.let {
-                        it.forEach { location ->
-                            if (location.parentCode == null) {
-                                prependToLog(location.name)
-                            }
+                    wooDataStore.fetchCountriesAndStates(it).model?.let { country ->
+                        country.forEach { location ->
+                            prependToLog(location.name)
                         }
                     }
                     ?: prependToLog("Couldn't fetch countries.")

@@ -23,8 +23,10 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.FetchPages;
+import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.FetchPostLikes;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.FetchPosts;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.RemoveAllPosts;
+import org.wordpress.android.fluxc.model.LikeModel;
 import org.wordpress.android.fluxc.model.LocalOrRemoteId;
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId;
 import org.wordpress.android.fluxc.model.PostModel;
@@ -165,10 +167,60 @@ public class PostStore extends Store {
     public static class RemotePostPayload extends Payload<PostError> {
         public PostModel post;
         public SiteModel site;
+        public boolean isFirstTimePublish;
 
         public RemotePostPayload(PostModel post, SiteModel site) {
             this.post = post;
             this.site = site;
+        }
+    }
+
+    public static class FetchPostLikesPayload extends Payload<BaseNetworkError> {
+        public final long siteId;
+        public final long remotePostId;
+        public final boolean requestNextPage;
+        public final int pageLength;
+
+        public FetchPostLikesPayload(long siteId, long remotePostId, boolean requestNextPage, int pageLength) {
+            this.siteId = siteId;
+            this.remotePostId = remotePostId;
+            this.requestNextPage = requestNextPage;
+            this.pageLength = pageLength;
+        }
+    }
+
+    public static class FetchedPostLikesResponsePayload extends Payload<PostError> {
+        @NonNull public final List<LikeModel> likes;
+        public final long siteId;
+        public final long remotePostId;
+        public final boolean hasMore;
+        public final boolean isRequestNextPage;
+
+        public FetchedPostLikesResponsePayload(
+                @NonNull List<LikeModel> likes,
+                long siteId,
+                long remotePostId,
+                boolean isRequestNextPage,
+                boolean hasMore
+        ) {
+            this.likes = likes;
+            this.siteId = siteId;
+            this.remotePostId = remotePostId;
+            this.hasMore = hasMore;
+            this.isRequestNextPage = isRequestNextPage;
+        }
+
+        public FetchedPostLikesResponsePayload(
+                long siteId,
+                long remotePostId,
+                boolean isRequestNextPage,
+                boolean hasMore
+        ) {
+            this.likes = new ArrayList<>();
+            this.siteId = siteId;
+            this.remotePostId = remotePostId;
+            this.hasMore = hasMore;
+            this.isRequestNextPage = isRequestNextPage;
         }
     }
 
@@ -307,11 +359,28 @@ public class PostStore extends Store {
         }
     }
 
+    public static class OnPostLikesChanged extends OnChanged<PostError> {
+        public final CauseOfOnPostChanged causeOfChange;
+        public final long siteId;
+        public final long postId;
+        public List<LikeModel> postLikes = new ArrayList<>();
+        public final boolean hasMore;
+
+        public OnPostLikesChanged(CauseOfOnPostChanged causeOfChange, long siteId, long postId, boolean hasMore) {
+            this.causeOfChange = causeOfChange;
+            this.siteId = siteId;
+            this.postId = postId;
+            this.hasMore = hasMore;
+        }
+    }
+
     public static class OnPostUploaded extends OnChanged<PostError> {
         public PostModel post;
+        public boolean isFirstTimePublish;
 
-        public OnPostUploaded(PostModel post) {
+        public OnPostUploaded(PostModel post, boolean isFirstTimePublish) {
             this.post = post;
+            this.isFirstTimePublish = isFirstTimePublish;
         }
     }
 
@@ -373,8 +442,7 @@ public class PostStore extends Store {
     @SuppressWarnings("unused")
     @Inject UploadStore mUploadStore;
 
-    @Inject
-    public PostStore(Dispatcher dispatcher, PostRestClient postRestClient, PostXMLRPCClient postXMLRPCClient,
+    @Inject public PostStore(Dispatcher dispatcher, PostRestClient postRestClient, PostXMLRPCClient postXMLRPCClient,
                      PostSqlUtils postSqlUtils) {
         super(dispatcher);
         mPostRestClient = postRestClient;
@@ -685,7 +753,49 @@ public class PostStore extends Store {
             case FETCHED_REVISIONS:
                 handleFetchedRevisions((FetchRevisionsResponsePayload) action.getPayload());
                 break;
+            case FETCH_POST_LIKES:
+                fetchPostLikes((FetchPostLikesPayload) action.getPayload());
+                break;
+            case FETCHED_POST_LIKES:
+                handleFetchedPostLikes((FetchedPostLikesResponsePayload) action.getPayload());
+                break;
         }
+    }
+
+    private void fetchPostLikes(FetchPostLikesPayload payload) {
+        mPostRestClient.fetchPostLikes(
+                payload.siteId,
+                payload.remotePostId,
+                payload.requestNextPage,
+                payload.pageLength
+        );
+    }
+
+    private void handleFetchedPostLikes(FetchedPostLikesResponsePayload payload) {
+        OnPostLikesChanged event = new OnPostLikesChanged(
+                FetchPostLikes.INSTANCE,
+                payload.siteId,
+                payload.remotePostId,
+                payload.hasMore
+        );
+        if (!payload.isError()) {
+            if (payload.likes != null) {
+                if (!payload.isRequestNextPage) {
+                    mPostSqlUtils.deletePostLikesAndPurgeExpired(payload.siteId, payload.remotePostId);
+                }
+
+                for (LikeModel like : payload.likes) {
+                    mPostSqlUtils.insertOrUpdatePostLikes(payload.siteId, payload.remotePostId, like);
+                }
+
+                event.postLikes.addAll(mPostSqlUtils.getPostLikesByPostId(payload.siteId, payload.remotePostId));
+            }
+        } else {
+            List<LikeModel> cachedLikes = mPostSqlUtils.getPostLikesByPostId(payload.siteId, payload.remotePostId);
+            event.postLikes.addAll(cachedLikes);
+        }
+        event.error = payload.error;
+        emitChange(event);
     }
 
     private void deletePost(RemotePostPayload payload) {
@@ -931,7 +1041,7 @@ public class PostStore extends Store {
 
     private void handleFetchSinglePostCompleted(FetchPostResponsePayload payload) {
         if (payload.origin == PostAction.PUSH_POST) {
-            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post);
+            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post, payload.isFirstTimePublish);
             if (payload.isError()) {
                 onPostUploaded.error = payload.error;
             } else {
@@ -960,7 +1070,7 @@ public class PostStore extends Store {
 
     private void handlePushPostCompleted(RemotePostPayload payload) {
         if (payload.isError()) {
-            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post);
+            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post, payload.isFirstTimePublish);
             onPostUploaded.error = payload.error;
             emitChange(onPostUploaded);
         } else {
@@ -968,13 +1078,14 @@ public class PostStore extends Store {
                 // The WP.COM REST API response contains the modified post, so we're already in sync with the server
                 // All we need to do is store it and emit OnPostChanged
                 updatePost(payload.post, false);
-                emitChange(new OnPostUploaded(payload.post));
+                emitChange(new OnPostUploaded(payload.post, payload.isFirstTimePublish));
             } else {
                 // XML-RPC does not respond to new/edit post calls with the modified post
                 // Update the post locally to reflect its uploaded status, but also request a fresh copy
                 // from the server to ensure local copy matches server
                 mPostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(payload.post);
-                mPostXMLRPCClient.fetchPost(payload.post, payload.site, PostAction.PUSH_POST);
+                mPostXMLRPCClient
+                        .fetchPost(payload.post, payload.site, PostAction.PUSH_POST, payload.isFirstTimePublish);
             }
         }
     }
@@ -1000,7 +1111,7 @@ public class PostStore extends Store {
 
     private void pushPost(RemotePostPayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.pushPost(payload.post, payload.site);
+            mPostRestClient.pushPost(payload.post, payload.site, payload.isFirstTimePublish);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
             PostModel postToPush = payload.post;
@@ -1008,7 +1119,7 @@ public class PostStore extends Store {
             if (TextUtils.isEmpty(postToPush.getStatus())) {
                 postToPush.setStatus(PostStatus.PUBLISHED.toString());
             }
-            mPostXMLRPCClient.pushPost(postToPush, payload.site);
+            mPostXMLRPCClient.pushPost(postToPush, payload.site, payload.isFirstTimePublish);
         }
     }
 

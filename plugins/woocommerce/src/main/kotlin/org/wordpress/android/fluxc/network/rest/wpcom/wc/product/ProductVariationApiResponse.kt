@@ -1,7 +1,9 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import com.google.gson.JsonElement
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.Response
+import org.wordpress.android.fluxc.network.utils.getString
 
 @Suppress("PropertyName")
 class ProductVariationApiResponse : Response {
@@ -42,7 +44,7 @@ class ProductVariationApiResponse : Response {
     var download_expiry = 0
 
     var manage_stock = false
-    var stock_quantity = 0
+    var stock_quantity = 0.0
     var stock_status: String? = null
 
     var image: JsonElement? = null
@@ -53,4 +55,65 @@ class ProductVariationApiResponse : Response {
     var dimensions: JsonElement? = null
     var attributes: JsonElement? = null
     var downloads: JsonElement? = null
+
+    fun asProductVariationModel() =
+        WCProductVariationModel().apply {
+            val response = this@ProductVariationApiResponse
+            remoteVariationId = response.id
+            permalink = response.permalink ?: ""
+
+            dateCreated = response.date_created ?: ""
+            dateModified = response.date_modified ?: ""
+
+            status = response.status ?: ""
+            description = response.description ?: ""
+            sku = response.sku ?: ""
+
+            price = response.price ?: ""
+            regularPrice = response.regular_price ?: ""
+            salePrice = response.sale_price ?: ""
+            onSale = response.on_sale
+
+            dateOnSaleFrom = response.date_on_sale_from ?: ""
+            dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
+
+            taxStatus = response.tax_status ?: ""
+            taxClass = response.tax_class ?: ""
+
+            backorders = response.backorders ?: ""
+            backordersAllowed = response.backorders_allowed
+            backordered = response.backordered
+
+            shippingClass = response.shipping_class ?: ""
+            shippingClassId = response.shipping_class_id
+
+            downloadLimit = response.download_limit
+            downloadExpiry = response.download_expiry
+
+            virtual = response.virtual
+            downloadable = response.downloadable
+            purchasable = response.purchasable
+
+            manageStock = response.manage_stock
+            stockQuantity = response.stock_quantity
+            stockStatus = response.stock_status ?: ""
+
+            attributes = response.attributes?.toString() ?: ""
+
+            weight = response.weight ?: ""
+            menuOrder = response.menu_order
+
+            attributes = response.attributes?.toString() ?: ""
+            downloads = response.downloads?.toString() ?: ""
+
+            response.dimensions?.asJsonObject?.let { json ->
+                length = json.getString("length") ?: ""
+                width = json.getString("width") ?: ""
+                height = json.getString("height") ?: ""
+            }
+
+            image = response.image?.toString() ?: ""
+        }
 }

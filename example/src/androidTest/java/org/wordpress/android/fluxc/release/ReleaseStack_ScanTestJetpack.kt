@@ -6,6 +6,7 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -20,12 +21,14 @@ import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.SCANNING
 import org.wordpress.android.fluxc.persistence.ScanSqlUtils
 import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.CompleteJetpackSite
+import org.wordpress.android.fluxc.release.ReleaseStack_ScanTestJetpack.Sites.ScanDailyJetpackSite
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ScanStore
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.util.AppLog
@@ -69,7 +72,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         mCountDownLatch = CountDownLatch(1)
         val fetchedScanStatePayload = runBlocking { scanStore.fetchScanState(payload) }
-        val scanStateForSite = scanStore.getScanStateForSite(site)
+        val scanStateForSite = runBlocking { scanStore.getScanStateForSite(site) }
 
         assertNotNull(fetchedScanStatePayload)
         assertNotNull(scanStateForSite)
@@ -99,7 +102,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         scanSqlUtils.replaceScanState(site, model)
 
-        val scanState = scanStore.getScanStateForSite(site)
+        val scanState = runBlocking { scanStore.getScanStateForSite(site) }
 
         assertNotNull(scanState)
         assertEquals(model.state, scanState?.state)
@@ -132,7 +135,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         scanSqlUtils.replaceScanState(site, model)
 
-        val scanState = scanStore.getScanStateForSite(site)
+        val scanState = runBlocking { scanStore.getScanStateForSite(site) }
 
         assertNotNull(scanState)
         assertEquals(model.state, scanState?.state)
@@ -157,6 +160,20 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(scanStartResultPayload)
         assertNull(scanStartResultPayload.error)
+    }
+
+    @Test
+    fun fetchScanHistory() {
+        val site = authenticate(ScanDailyJetpackSite)
+        val payload = ScanStore.FetchScanHistoryPayload(site)
+
+        mCountDownLatch = CountDownLatch(1)
+        val scanHistoryPayload = runBlocking { scanStore.fetchScanHistory(payload) }
+        val dbContent = runBlocking { scanStore.getScanHistoryForSite(site) }
+
+        assertNotNull(scanHistoryPayload)
+        assertNull(scanHistoryPayload.error)
+        assertTrue(dbContent.isNotEmpty())
     }
 
     @Subscribe
@@ -217,7 +234,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = CountDownLatch(1)
         nextEvent = TestEvents.SITE_CHANGED
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction())
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
         Assert.assertTrue(siteStore.sitesCount > 0)
@@ -228,6 +245,11 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
             wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
             siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
+        )
+        object ScanDailyJetpackSite : Sites(
+                wpUserName = BuildConfig.TEST_WPCOM_USERNAME_JETPACK,
+                wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
+                siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_SCAN_DAILY
         )
     }
 }

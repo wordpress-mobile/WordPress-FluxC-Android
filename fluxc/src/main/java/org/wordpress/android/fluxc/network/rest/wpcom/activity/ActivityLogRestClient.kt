@@ -33,6 +33,9 @@ import org.wordpress.android.fluxc.store.ActivityLogStore.BackupDownloadRequestT
 import org.wordpress.android.fluxc.store.ActivityLogStore.BackupDownloadResultPayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.BackupDownloadStatusError
 import org.wordpress.android.fluxc.store.ActivityLogStore.BackupDownloadStatusErrorType
+import org.wordpress.android.fluxc.store.ActivityLogStore.DismissBackupDownloadError
+import org.wordpress.android.fluxc.store.ActivityLogStore.DismissBackupDownloadErrorType
+import org.wordpress.android.fluxc.store.ActivityLogStore.DismissBackupDownloadResultPayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchActivityLogPayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityLogPayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityTypesResultPayload
@@ -50,15 +53,17 @@ import org.wordpress.android.fluxc.utils.NetworkErrorMapper
 import org.wordpress.android.fluxc.utils.TimeZoneProvider
 import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class ActivityLogRestClient(
+class ActivityLogRestClient @Inject constructor(
     private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
     private val timeZoneProvider: TimeZoneProvider,
     dispatcher: Dispatcher,
     appContext: Context?,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) :
@@ -124,12 +129,14 @@ class ActivityLogRestClient(
                 }
             }
             is Error -> {
-                val error = RewindError(NetworkErrorMapper.map(
+                val error = RewindError(
+                        NetworkErrorMapper.map(
                                 response.error,
                                 RewindErrorType.GENERIC_ERROR,
                                 RewindErrorType.INVALID_RESPONSE,
                                 RewindErrorType.AUTHORIZATION_REQUIRED
-                        ), response.error.message)
+                        ), response.error.message
+                )
                 RewindResultPayload(error, rewindId, site)
             }
         }
@@ -152,13 +159,18 @@ class ActivityLogRestClient(
                         response.data.backupPoint,
                         response.data.startedAt,
                         response.data.progress,
-                        site)
+                        site
+                )
             }
             is Error -> {
-                val error = BackupDownloadError(NetworkErrorMapper.map(response.error,
-                        BackupDownloadErrorType.GENERIC_ERROR,
-                        BackupDownloadErrorType.INVALID_RESPONSE,
-                        BackupDownloadErrorType.AUTHORIZATION_REQUIRED), response.error.message)
+                val error = BackupDownloadError(
+                        NetworkErrorMapper.map(
+                                response.error,
+                                BackupDownloadErrorType.GENERIC_ERROR,
+                                BackupDownloadErrorType.INVALID_RESPONSE,
+                                BackupDownloadErrorType.AUTHORIZATION_REQUIRED
+                        ), response.error.message
+                )
                 BackupDownloadResultPayload(error, rewindId, site)
             }
         }
@@ -174,7 +186,11 @@ class ActivityLogRestClient(
         )
         return when (response) {
             is Success -> {
-                buildBackupDownloadStatusPayload(response.data[0], site)
+                if (response.data.isNotEmpty()) {
+                    buildBackupDownloadStatusPayload(response.data[0], site)
+                } else {
+                    FetchedBackupDownloadStatePayload(null, site)
+                }
             }
             is Error -> {
                 val errorType = NetworkErrorMapper.map(
@@ -211,6 +227,38 @@ class ActivityLogRestClient(
                 )
                 val error = ActivityTypesError(errorType, response.error.message)
                 FetchedActivityTypesResultPayload(error, remoteSiteId)
+            }
+        }
+    }
+
+    suspend fun dismissBackupDownload(
+        site: SiteModel,
+        downloadId: Long
+    ): DismissBackupDownloadResultPayload {
+        val url = WPCOMV2.sites.site(site.siteId).rewind.downloads.download(downloadId).url
+        val request = mapOf("dismissed" to true.toString())
+        val response = wpComGsonRequestBuilder.syncPostRequest(
+                this,
+                url,
+                null,
+                request,
+                DismissBackupDownloadResponse::class.java
+        )
+        return when (response) {
+            is Success -> DismissBackupDownloadResultPayload(
+                    site.siteId,
+                    response.data.downloadId,
+                    response.data.isDismissed
+            )
+            is Error -> {
+                val errorType = NetworkErrorMapper.map(
+                        response.error,
+                        DismissBackupDownloadErrorType.GENERIC_ERROR,
+                        DismissBackupDownloadErrorType.INVALID_RESPONSE,
+                        DismissBackupDownloadErrorType.AUTHORIZATION_REQUIRED
+                )
+                val error = DismissBackupDownloadError(errorType, response.error.message)
+                DismissBackupDownloadResultPayload(error, site.siteId, downloadId)
             }
         }
     }
@@ -324,7 +372,9 @@ class ActivityLogRestClient(
                     restoreId = restoreId,
                     status = restoreStatus,
                     progress = it.progress,
-                    reason = it.reason
+                    reason = it.reason,
+                    message = it.message,
+                    currentEntry = it.currentEntry
             )
         }
 
@@ -419,7 +469,9 @@ class ActivityLogRestClient(
         val last_updated: Date,
         val can_autoconfigure: Boolean?,
         val credentials: List<Credentials>?,
-        val rewind: Rewind?
+        val rewind: Rewind?,
+        val message: String?,
+        val currentEntry: String?
     ) {
         data class Credentials(
             val type: String,
@@ -435,7 +487,9 @@ class ActivityLogRestClient(
             val restore_id: Long?,
             val rewind_id: String?,
             val progress: Int?,
-            val reason: String?
+            val reason: String?,
+            val message: String?,
+            val currentEntry: String?
         )
     }
 
@@ -474,4 +528,9 @@ class ActivityLogRestClient(
             val count: Int?
         )
     }
+
+    class DismissBackupDownloadResponse(
+        val downloadId: Long,
+        val isDismissed: Boolean
+    )
 }

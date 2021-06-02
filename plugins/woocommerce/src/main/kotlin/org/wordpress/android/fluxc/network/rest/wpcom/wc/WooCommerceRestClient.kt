@@ -27,13 +27,15 @@ import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettings
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsError
 import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsErrorType
+import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class WooCommerceRestClient(
+class WooCommerceRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
-    requestQueue: RequestQueue,
+    @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -94,7 +96,15 @@ class WooCommerceRestClient(
                         val currencyThousandSep = getValueForSettingsField(it, "woocommerce_price_thousand_sep")
                         val currencyDecimalSep = getValueForSettingsField(it, "woocommerce_price_decimal_sep")
                         val currencyNumDecimals = getValueForSettingsField(it, "woocommerce_price_num_decimals")
-                        val countryCode = getValueForSettingsField(it, "woocommerce_default_country")
+                        val address = getValueForSettingsField(it, "woocommerce_store_address")
+                        val address2 = getValueForSettingsField(it, "woocommerce_store_address_2")
+                        val city = getValueForSettingsField(it, "woocommerce_store_city")
+                        val postalCode = getValueForSettingsField(it, "woocommerce_store_postcode")
+                        val countryAndState = getValueForSettingsField(it, "woocommerce_default_country")
+                                ?.split(":")
+                        val country = countryAndState?.firstOrNull()
+                        val state = countryAndState?.getOrNull(1)
+
                         val settings = WCSettingsModel(
                                 localSiteId = site.id,
                                 currencyCode = currencyCode ?: "",
@@ -102,11 +112,12 @@ class WooCommerceRestClient(
                                 currencyThousandSeparator = currencyThousandSep ?: "",
                                 currencyDecimalSeparator = currencyDecimalSep ?: "",
                                 currencyDecimalNumber = currencyNumDecimals?.toIntOrNull() ?: 2,
-                                /**
-                                 * The default store country is provided in a format like `US:NY`
-                                 * If no country code is available, storing empty value
-                                 * */
-                                countryCode = countryCode ?: ""
+                                countryCode = country ?: "",
+                                stateCode = state ?: "",
+                                address = address ?: "",
+                                address2 = address2 ?: "",
+                                city = city ?: "",
+                                postalCode = postalCode ?: ""
                         )
 
                         val payload = FetchWCSiteSettingsResponsePayload(site, settings)

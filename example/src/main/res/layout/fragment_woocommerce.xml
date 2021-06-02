@@ -1,109 +1,122 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.wordpress.android.fluxc.example.ui.WooCommerceFragment">
+    android:layout_margin="@dimen/activity_start_end_margin"
+    tools:context="org.wordpress.android.fluxc.example.ui.WooCommerceFragment"
+    tools:ignore="HardcodedText">
 
-        <LinearLayout
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/log_sites"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:text="Log Sites" />
 
-                <Button
-                    android:id="@+id/log_sites"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Log Sites"/>
+        <Button
+            android:id="@+id/log_woo_api_versions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Log Woo API versions" />
 
-                <Button
-                    android:id="@+id/log_woo_api_versions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Log Woo API versions"/>
+        <Button
+            android:id="@+id/fetch_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch WC site settings" />
 
-                <Button
-                    android:id="@+id/fetch_settings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Fetch WC site settings"/>
+        <Button
+            android:id="@+id/fetch_product_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch WC product settings" />
 
-                <Button
-                    android:id="@+id/fetch_product_settings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Fetch WC product settings"/>
+        <Button
+            android:id="@+id/get_user_role"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Get user_role" />
 
-                <ImageView
-                    android:id="@+id/divider1"
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:background="@color/material_grey_600"/>
+        <View
+            android:id="@+id/divider1"
+            style="@style/Divider" />
 
-                <Button
-                    android:id="@+id/orders"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Orders"/>
+        <Button
+            android:id="@+id/orders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Orders" />
 
-                <Button
-                    android:id="@+id/products"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Products"/>
+        <Button
+            android:id="@+id/products"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Products" />
 
-                <Button
-                    android:id="@+id/stats"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Stats"/>
+        <Button
+            android:id="@+id/stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stats" />
 
-                <Button
-                    android:id="@+id/stats_revenue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Revenue Stats"/>
+        <Button
+            android:id="@+id/stats_revenue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Revenue Stats" />
 
-                <Button
-                    android:id="@+id/refunds"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Refunds"/>
+        <Button
+            android:id="@+id/refunds"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Refunds" />
 
-                <Button
-                    android:id="@+id/gateways"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Gateways"/>
+        <Button
+            android:id="@+id/gateways"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gateways" />
 
-                <Button
-                    android:id="@+id/taxes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Taxes"/>
+        <Button
+            android:id="@+id/taxes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Taxes" />
 
-                <Button
-                    android:id="@+id/shipping_labels"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Shipping Labels"/>
+        <Button
+            android:id="@+id/shipping_labels"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Shipping Labels" />
 
-                <Button
-                    android:id="@+id/leaderboards"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Leadearboards"/>
+        <Button
+            android:id="@+id/leaderboards"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Leadearboards" />
 
-                <Button
-                    android:id="@+id/countries"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Countries"/>
+        <Button
+            android:id="@+id/countries"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch Countries" />
 
-                <Button
-                    android:id="@+id/attributes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Attributes"/>
-        </LinearLayout>
+        <Button
+            android:id="@+id/attributes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Attributes" />
+
+        <Button
+            android:id="@+id/customers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Customers" />
+
+    </LinearLayout>
 </ScrollView>

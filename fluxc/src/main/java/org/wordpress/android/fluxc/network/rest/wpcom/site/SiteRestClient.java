@@ -39,11 +39,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.AutomatedTransferEligibilityCheckResponse.EligibilityError;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteWPComRestResponse.SitesResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.UserRoleWPComRestResponse.UserRolesResponse;
-import org.wordpress.android.fluxc.store.SiteStore.FetchedBlockLayoutsResponsePayload;
-import org.wordpress.android.fluxc.store.SiteStore.FetchedJetpackCapabilitiesPayload;
-import org.wordpress.android.fluxc.store.SiteStore.JetpackCapabilitiesError;
-import org.wordpress.android.fluxc.store.SiteStore.JetpackCapabilitiesErrorType;
-import org.wordpress.android.fluxc.store.SiteStore.PrivateAtomicCookieError;
 import org.wordpress.android.fluxc.store.SiteStore.AccessCookieErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferEligibilityResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferError;
@@ -65,17 +60,22 @@ import org.wordpress.android.fluxc.store.SiteStore.DomainSupportedCountriesRespo
 import org.wordpress.android.fluxc.store.SiteStore.DomainSupportedStatesError;
 import org.wordpress.android.fluxc.store.SiteStore.DomainSupportedStatesErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainSupportedStatesResponsePayload;
-import org.wordpress.android.fluxc.store.SiteStore.FetchedPrivateAtomicCookiePayload;
+import org.wordpress.android.fluxc.store.SiteStore.FetchedBlockLayoutsResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedEditorsPayload;
+import org.wordpress.android.fluxc.store.SiteStore.FetchedJetpackCapabilitiesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedPlansPayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedPostFormatsPayload;
+import org.wordpress.android.fluxc.store.SiteStore.FetchedPrivateAtomicCookiePayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedUserRolesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.InitiateAutomatedTransferResponsePayload;
+import org.wordpress.android.fluxc.store.SiteStore.JetpackCapabilitiesError;
+import org.wordpress.android.fluxc.store.SiteStore.JetpackCapabilitiesErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.NewSiteError;
 import org.wordpress.android.fluxc.store.SiteStore.NewSiteErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.PlansError;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsError;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.PrivateAtomicCookieError;
 import org.wordpress.android.fluxc.store.SiteStore.QuickStartCompletedResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.QuickStartError;
 import org.wordpress.android.fluxc.store.SiteStore.QuickStartErrorType;
@@ -83,6 +83,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteEditorsError;
 import org.wordpress.android.fluxc.store.SiteStore.SiteEditorsErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteError;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.SiteFilter;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainError;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainErrorType;
@@ -105,6 +106,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
@@ -112,6 +115,8 @@ public class SiteRestClient extends BaseWPComRestClient {
     public static final int NEW_SITE_TIMEOUT_MS = 90000;
     private static final String SITE_FIELDS = "ID,URL,name,description,jetpack,visible,is_private,options,plan,"
         + "capabilities,quota,icon,meta";
+    public static final String FIELDS = "fields";
+    public static final String FILTERS = "filters";
 
     private final AppSecrets mAppSecrets;
 
@@ -142,16 +147,20 @@ public class SiteRestClient extends BaseWPComRestClient {
         public SiteModel site;
     }
 
-    public SiteRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue, AppSecrets appSecrets,
-                          AccessToken accessToken, UserAgent userAgent) {
+    @Inject public SiteRestClient(Context appContext,
+                          Dispatcher dispatcher,
+                          @Named("regular") RequestQueue requestQueue,
+                          AppSecrets appSecrets,
+                          AccessToken accessToken,
+                          UserAgent userAgent) {
         super(appContext, dispatcher, requestQueue, accessToken, userAgent);
         mAppSecrets = appSecrets;
     }
 
-    public void fetchSites() {
-        Map<String, String> params = new HashMap<>();
-        params.put("fields", SITE_FIELDS);
-        String url = WPCOMREST.me.sites.getUrlV1_1();
+    public void fetchSites(@NonNull List<SiteFilter> filters) {
+        Map<String, String> params = getFetchSitesParams(filters);
+
+        String url = WPCOMREST.me.sites.getUrlV1_2();
         final WPComGsonRequest<SitesResponse> request = WPComGsonRequest.buildGetRequest(url, params,
                 SitesResponse.class,
                 new Listener<SitesResponse>() {
@@ -184,9 +193,17 @@ public class SiteRestClient extends BaseWPComRestClient {
         add(request);
     }
 
+    @NonNull
+    private Map<String, String> getFetchSitesParams(@NonNull List<SiteFilter> filters) {
+        Map<String, String> params = new HashMap<>();
+        if (!filters.isEmpty()) params.put(FILTERS, TextUtils.join(",", filters));
+        params.put(FIELDS, SITE_FIELDS);
+        return params;
+    }
+
     public void fetchSite(final SiteModel site) {
         Map<String, String> params = new HashMap<>();
-        params.put("fields", SITE_FIELDS);
+        params.put(FIELDS, SITE_FIELDS);
         String url = WPCOMREST.sites.getUrlV1_1() + site.getSiteId();
         final WPComGsonRequest<SiteWPComRestResponse> request = WPComGsonRequest.buildGetRequest(url, params,
                 SiteWPComRestResponse.class,
@@ -572,23 +589,29 @@ public class SiteRestClient extends BaseWPComRestClient {
     public void fetchWpComBlockLayouts(final SiteModel site,
                                        List<String> supportedBlocks,
                                        Float previewWidth,
-                                       Float scale) {
+                                       Float previewHeight,
+                                       Float scale,
+                                       Boolean isBeta) {
         String url = WPCOMV2.sites.site(site.getSiteId()).block_layouts.getUrl();
-        fetchBlockLayouts(site, url, supportedBlocks, previewWidth, scale);
+        fetchBlockLayouts(site, url, supportedBlocks, previewWidth, previewHeight, scale, isBeta);
     }
 
     public void fetchSelfHostedBlockLayouts(final SiteModel site,
                                             List<String> supportedBlocks,
                                             Float previewWidth,
-                                            Float scale) {
+                                            Float previewHeight,
+                                            Float scale,
+                                            Boolean isBeta) {
         String url = WPCOMV2.common_block_layouts.getUrl();
-        fetchBlockLayouts(site, url, supportedBlocks, previewWidth, scale);
+        fetchBlockLayouts(site, url, supportedBlocks, previewWidth, previewHeight, scale, isBeta);
     }
 
     private void fetchBlockLayouts(final SiteModel site, String url,
                                    List<String> supportedBlocks,
                                    Float previewWidth,
-                                   Float scale) {
+                                   Float previewHeight,
+                                   Float scale,
+                                   Boolean isBeta) {
         Map<String, String> params = new HashMap<>();
 
         if (supportedBlocks != null && !supportedBlocks.isEmpty()) {
@@ -599,8 +622,18 @@ public class SiteRestClient extends BaseWPComRestClient {
             params.put("preview_width", String.format(Locale.US, "%.1f", previewWidth));
         }
 
+        if (previewHeight != null) {
+            params.put("preview_height", String.format(Locale.US, "%.1f", previewHeight));
+        }
+
         if (scale != null) {
             params.put("scale", String.format(Locale.US, "%.1f", scale));
+        }
+
+        params.put("type", "mobile");
+
+        if (isBeta != null) {
+            params.put("is_beta", String.valueOf(isBeta));
         }
 
         final WPComGsonRequest<BlockLayoutsResponse> request = WPComGsonRequest.buildGetRequest(url, params,

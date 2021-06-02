@@ -6,12 +6,14 @@
 /sites/$site/activity/count/group
 /sites/$site/rewind
 /sites/$site/rewind/downloads
+/sites/$site/rewind/downloads/$download_id
 
 /sites/$site/scan
 /sites/$site/scan/enqueue
 /sites/$site/scan/threat/$threat_id
 /sites/$site/alerts/fix
 /sites/$site/alerts/$threat_id
+/sites/$site/scan/history
 
 /sites/$site/rewind/capabilities
 
@@ -24,6 +26,7 @@
 
 /sites/$site/block-layouts
 /common-block-layouts
+/common-starter-site-designs
 
 /sites/$site/xposts
 

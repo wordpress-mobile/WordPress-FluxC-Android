@@ -9,9 +9,11 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -63,7 +65,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var taxClass = ""
 
     @Column var manageStock = false
-    @Column var stockQuantity = 0
+    @Column var stockQuantity = 0.0
     @Column var stockStatus = "" // instock, outofstock, onbackorder
 
     @Column var backorders = "" // no, notify, yes
@@ -99,6 +101,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
+    val attributeList: Array<ProductAttribute>
+        get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
+
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
             return JsonObject().also { json ->
@@ -109,7 +114,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
     }
 
-    class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
+    class ProductAttribute(
+        val id: Long,
+        val name: String,
+        val variation: Boolean,
+        val visible: Boolean,
+        options: List<String>
+    ) {
+        val options: MutableList<String> = options.toMutableList()
+
         fun getCommaSeparatedOptions(): String {
             if (options.isEmpty()) return ""
             var commaSeparatedOptions = ""
@@ -122,12 +135,105 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             }
             return commaSeparatedOptions
         }
+
+        fun isSameAttribute(other: ProductAttribute): Boolean {
+            return id == other.id &&
+                    name == other.name &&
+                    variation == other.variation &&
+                    visible == other.visible &&
+                    options == other.options
+        }
+
+        fun asGlobalAttribute(siteID: Int) =
+                WCGlobalAttributeSqlUtils.fetchSingleStoredAttribute(id.toInt(), siteID)
+
+        fun generateProductVariantOption(selectedOption: String) =
+                takeIf { options.contains(selectedOption) }?.let {
+                    ProductVariantOption(
+                            id = id,
+                            name = name,
+                            option = selectedOption
+                    )
+                }
+
+        fun toJson(): JsonObject {
+            val jsonOptions = JsonArray().also {
+                for (option in options) {
+                    it.add(option)
+                }
+            }
+            return JsonObject().also { json ->
+                json.addProperty("id", id)
+                json.addProperty("name", name)
+                json.addProperty("visible", visible)
+                json.addProperty("variation", variation)
+                json.add("options", jsonOptions)
+            }
+        }
     }
 
     override fun getId() = id
 
     override fun setId(id: Int) {
         this.id = id
+    }
+
+    fun addAttribute(newAttribute: ProductAttribute) {
+        mutableListOf<ProductAttribute>()
+                .apply {
+                    attributeList
+                            .takeIf {
+                                it.find { currentAttribute ->
+                                    currentAttribute.id == newAttribute.id
+                                } == null
+                            }?.let { currentAttributes ->
+                                add(newAttribute)
+                                currentAttributes
+                                        .takeIf { it.isNotEmpty() }
+                                        ?.let { addAll(it) }
+                            }
+                }.also { attributes = Gson().toJson(it) }
+    }
+
+    fun removeAttribute(attributeID: Int) =
+            mutableListOf<ProductAttribute>().apply {
+                attributeList
+                        .takeIf { it.isNotEmpty() }
+                        ?.filter { attributeID != it.id.toInt() }
+                        ?.let { addAll(it) }
+            }.also { attributes = Gson().toJson(it) }
+
+    fun getAttribute(attributeID: Int) =
+        attributeList.find { it.id == attributeID.toLong() }
+
+    fun updateAttribute(updatedAttribute: ProductAttribute) = apply {
+        getAttribute(updatedAttribute.id.toInt())
+                ?.let { removeAttribute(it.id.toInt()) }
+        addAttribute(updatedAttribute)
+    }
+
+    /**
+     * Returns true if this product has the same attributes as the passed product
+     */
+    fun hasSameAttributes(otherProduct: WCProductModel): Boolean {
+        // do a quick string comparison first so we can avoid parsing the attributes when possible
+        if (this.attributes == otherProduct.attributes) {
+            return true
+        }
+
+        val otherAttributes = otherProduct.attributeList
+        val thisAttributes = this.attributeList
+        if (thisAttributes.size != otherAttributes.size) {
+            return false
+        }
+
+        for (i in thisAttributes.indices) {
+            if (!thisAttributes[i].isSameAttribute(otherAttributes[i])) {
+                return false
+            }
+        }
+
+        return true
     }
 
     /**
@@ -206,6 +312,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                             ProductAttribute(
                                     id = this.getLong("id"),
                                     name = this.getString("name") ?: "",
+                                    variation = this.getBoolean("variation", true),
                                     visible = this.getBoolean("visible", true),
                                     options = getAttributeOptions(this.getAsJsonArray("options"))
                             )
@@ -239,24 +346,38 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return fileList
     }
 
-    fun getNumVariations(): Int {
-        return try {
-            Gson().fromJson(variations, JsonElement::class.java).asJsonArray.size()
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-            0
-        }
-    }
-
     /**
      * Returns a list of product IDs from the passed string, assumed to be a JSON array of IDs
      */
-    private fun parseProductIds(jsonString: String): List<Long> {
+    /**
+     * Deserializes the [jsonString] passed to the method. This can include:
+     * variations, groupedProductIds, upsellIds, crossSellIds
+     *
+     * There are some instances where the [jsonString] param can be a JsonArray or a JsonElement.
+     * https://github.com/woocommerce/woocommerce-android/issues/2374
+     *
+     * To address this issue, we check if the [jsonString] param is a JsonArray or a JsonElement
+     * and return a appropriate response, if that's the case.
+     */
+    private fun parseJson(jsonString: String): List<Long> {
         val productIds = ArrayList<Long>()
         try {
             if (jsonString.isNotEmpty()) {
-                Gson().fromJson(jsonString, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    jsonElement.asLong.let { productIds.add(it) }
+                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
+                when {
+                    jsonElement.isJsonNull -> {
+                        return emptyList()
+                    }
+                    jsonElement.isJsonArray -> {
+                        jsonElement.asJsonArray.forEach { jsonArray ->
+                            jsonArray.asLong.let { productIds.add(it) }
+                        }
+                    }
+                    jsonElement.isJsonObject -> {
+                        jsonElement.asJsonObject.entrySet().forEach {
+                            productIds.add(it.value.asLong)
+                        }
+                    }
                 }
             }
         } catch (e: JsonParseException) {
@@ -265,11 +386,31 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return productIds
     }
 
-    fun getGroupedProductIdList() = parseProductIds(groupedProductIds)
+    fun getNumVariations(): Int {
+        return try {
+            if (variations.isNotEmpty()) {
+                val jsonElement = Gson().fromJson(variations, JsonElement::class.java)
+                when {
+                    jsonElement.isJsonArray -> {
+                        jsonElement.asJsonArray.size()
+                    }
+                    jsonElement.isJsonObject -> {
+                        jsonElement.asJsonObject.entrySet().size
+                    }
+                    else -> 0
+                }
+            } else 0
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+            0
+        }
+    }
 
-    fun getUpsellProductIdList() = parseProductIds(upsellIds)
+    fun getGroupedProductIdList() = parseJson(groupedProductIds)
 
-    fun getCrossSellProductIdList() = parseProductIds(crossSellIds)
+    fun getUpsellProductIdList() = parseJson(upsellIds)
+
+    fun getCrossSellProductIdList() = parseJson(crossSellIds)
 
     fun getCategoryList() = getTriplets(categories)
 
@@ -296,15 +437,18 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val triplets = ArrayList<ProductTriplet>()
         try {
             if (jsonStr.isNotEmpty()) {
-                Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    with(jsonElement.asJsonObject) {
-                        triplets.add(
-                                ProductTriplet(
-                                        id = this.getLong("id"),
-                                        name = this.getString("name") ?: "",
-                                        slug = this.getString("slug") ?: ""
-                                )
-                        )
+                val jsonElement = Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java)
+                if (jsonElement.isJsonArray) {
+                    jsonElement.asJsonArray.forEach { jsonArray ->
+                        with(jsonArray.asJsonObject) {
+                            triplets.add(
+                                    ProductTriplet(
+                                            id = this.getLong("id"),
+                                            name = this.getString("name") ?: "",
+                                            slug = this.getString("slug") ?: ""
+                                    )
+                            )
+                        }
                     }
                 }
             }

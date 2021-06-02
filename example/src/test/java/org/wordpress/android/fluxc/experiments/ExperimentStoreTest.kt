@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.model.experiments.AssignmentsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.experiments.ExperimentRestClient
 import org.wordpress.android.fluxc.store.ExperimentStore
 import org.wordpress.android.fluxc.store.ExperimentStore.Companion.EXPERIMENT_ASSIGNMENTS_KEY
-import org.wordpress.android.fluxc.store.ExperimentStore.FetchAssignmentsPayload
 import org.wordpress.android.fluxc.store.ExperimentStore.FetchedAssignmentsPayload
 import org.wordpress.android.fluxc.store.ExperimentStore.OnAssignmentsFetched
 import org.wordpress.android.fluxc.store.ExperimentStore.Platform.CALYPSO
@@ -44,18 +43,18 @@ class ExperimentStoreTest {
 
     @Test
     fun `fetch assignments emits correct event when successful`() = test {
-        whenever(experimentRestClient.fetchAssignments(defaultPlatform)).thenReturn(successfulPayload)
+        whenever(experimentRestClient.fetchAssignments(defaultPlatform, emptyList())).thenReturn(successfulPayload)
 
-        val onAssignmentsFetched = experimentStore.fetchAssignments(FetchAssignmentsPayload(defaultPlatform))
+        val onAssignmentsFetched = experimentStore.fetchAssignments(defaultPlatform, emptyList())
 
         assertThat(onAssignmentsFetched).isEqualTo(OnAssignmentsFetched(successfulAssignments))
     }
 
     @Test
     fun `fetch assignments stores result locally when successful`() = test {
-        whenever(experimentRestClient.fetchAssignments(defaultPlatform)).thenReturn(successfulPayload)
+        whenever(experimentRestClient.fetchAssignments(defaultPlatform, emptyList())).thenReturn(successfulPayload)
 
-        experimentStore.fetchAssignments(FetchAssignmentsPayload(defaultPlatform))
+        experimentStore.fetchAssignments(defaultPlatform, emptyList())
 
         verify(sharedPreferences).edit()
         inOrder(sharedPreferencesEditor).apply {
@@ -87,19 +86,17 @@ class ExperimentStoreTest {
         val defaultPlatform = CALYPSO
 
         private val successfulVariations = mapOf(
-                "experiment_one" to "control",
+                "experiment_one" to null,
                 "experiment_two" to "treatment",
-                "experiment_three" to null,
-                "experiment_four" to "other"
+                "experiment_three" to "other"
         )
 
         private val successfulModel = AssignmentsModel(successfulVariations, 3600, 1604964458273)
 
         const val successfulModelJson = "{\"variations\":{" +
-                "\"experiment_one\":\"control\"," +
+                "\"experiment_one\":null," +
                 "\"experiment_two\":\"treatment\"," +
-                "\"experiment_three\":null," +
-                "\"experiment_four\":\"other\"}," +
+                "\"experiment_three\":\"other\"}," +
                 "\"ttl\":3600," +
                 "\"fetchedAt\":1604964458273}"
 

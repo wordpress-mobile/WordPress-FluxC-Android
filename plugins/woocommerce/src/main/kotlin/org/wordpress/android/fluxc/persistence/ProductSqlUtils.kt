@@ -50,8 +50,11 @@ object ProductSqlUtils {
             1
         } else {
             // Update
-            val oldId = productResult.id
-            WellSql.update(WCProductModel::class.java).whereId(oldId)
+            WellSql.update(WCProductModel::class.java)
+                    .where().beginGroup()
+                    .equals(WCProductModelTable.REMOTE_PRODUCT_ID, productResult.remoteProductId)
+                    .equals(WCProductModelTable.LOCAL_SITE_ID, productResult.localSiteId)
+                    .endGroup().endWhere()
                     .put(product, UpdateAllExceptId(WCProductModel::class.java)).execute()
         }
     }
@@ -94,6 +97,25 @@ object ProductSqlUtils {
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
                 .asModel
+    }
+
+    fun getProductCountByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): Int {
+        return WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .isIn(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductIds)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .count().toInt()
+    }
+
+    fun getVirtualProductCountByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): Int {
+        return WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .isIn(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductIds)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCProductModelTable.VIRTUAL, true)
+                .endGroup().endWhere()
+                .count().toInt()
     }
 
     fun getProductsByFilterOptions(

@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.ActivityLogAction
 import org.wordpress.android.fluxc.action.ActivityLogAction.BACKUP_DOWNLOAD
+import org.wordpress.android.fluxc.action.ActivityLogAction.DISMISS_BACKUP_DOWNLOAD
 import org.wordpress.android.fluxc.action.ActivityLogAction.FETCH_ACTIVITIES
 import org.wordpress.android.fluxc.action.ActivityLogAction.FETCH_ACTIVITY_TYPES
 import org.wordpress.android.fluxc.action.ActivityLogAction.FETCH_BACKUP_DOWNLOAD_STATE
@@ -28,7 +29,7 @@ import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val ACTIVITY_LOG_PAGE_SIZE = 20
+private const val ACTIVITY_LOG_PAGE_SIZE = 100
 
 @Singleton
 class ActivityLogStore
@@ -70,6 +71,11 @@ class ActivityLogStore
             FETCH_ACTIVITY_TYPES -> {
                 coroutineEngine.launch(AppLog.T.API, this, "ActivityLog: On FETCH_ACTIVITY_TYPES") {
                     emitChange(fetchActivityTypes(action.payload as FetchActivityTypesPayload))
+                }
+            }
+            DISMISS_BACKUP_DOWNLOAD -> {
+                coroutineEngine.launch(AppLog.T.API, this, "ActivityLog: On DISMISS_BACKUP_DOWNLOAD") {
+                    emitChange(dismissBackupDownload(action.payload as DismissBackupDownloadPayload))
                 }
             }
         }
@@ -160,6 +166,13 @@ class ActivityLogStore
         return emitActivityTypesResult(payload, FETCH_ACTIVITY_TYPES)
     }
 
+    suspend fun dismissBackupDownload(backupDownloadPayload: DismissBackupDownloadPayload): OnDismissBackupDownload {
+        val payload = activityLogRestClient.dismissBackupDownload(
+                backupDownloadPayload.site,
+                backupDownloadPayload.downloadId)
+        return emitDismissBackupDownloadResult(payload, DISMISS_BACKUP_DOWNLOAD)
+    }
+
     private fun storeActivityLog(payload: FetchedActivityLogPayload, action: ActivityLogAction): OnActivityLogFetched {
         return if (payload.error != null) {
             OnActivityLogFetched(payload.error, action)
@@ -183,6 +196,8 @@ class ActivityLogStore
         } else {
             if (payload.rewindStatusModelResponse != null) {
                 activityLogSqlUtils.replaceRewindStatus(payload.site, payload.rewindStatusModelResponse)
+            } else {
+                activityLogSqlUtils.deleteRewindStatus(payload.site)
             }
             OnRewindStatusFetched(action)
         }
@@ -195,6 +210,8 @@ class ActivityLogStore
         } else {
             if (payload.backupDownloadStatusModelResponse != null) {
                 activityLogSqlUtils.replaceBackupDownloadStatus(payload.site, payload.backupDownloadStatusModelResponse)
+            } else {
+                activityLogSqlUtils.deleteBackupDownloadStatus(payload.site)
             }
             OnBackupDownloadStatusFetched(action)
         }
@@ -237,6 +254,21 @@ class ActivityLogStore
                     remoteSiteId = payload.remoteSiteId,
                     activityTypeModels = payload.activityTypeModels,
                     totalItems = payload.totalItems
+            )
+        }
+    }
+
+    private fun emitDismissBackupDownloadResult(
+        payload: DismissBackupDownloadResultPayload,
+        action: ActivityLogAction
+    ): OnDismissBackupDownload {
+        return if (payload.error != null) {
+            OnDismissBackupDownload(payload.downloadId, payload.error, action)
+        } else {
+            OnDismissBackupDownload(
+                    downloadId = payload.downloadId,
+                    isDismissed = payload.isDismissed,
+                    causeOfChange = action
             )
         }
     }
@@ -304,6 +336,17 @@ class ActivityLogStore
             error: ActivityTypesError,
             causeOfChange: ActivityLogAction
         ) : this(remoteSiteId = remoteSiteId, causeOfChange = causeOfChange, activityTypeModels = listOf()) {
+            this.error = error
+        }
+    }
+
+    data class OnDismissBackupDownload(
+        val downloadId: Long,
+        val isDismissed: Boolean = false,
+        var causeOfChange: ActivityLogAction
+    ) : Store.OnChanged<DismissBackupDownloadError>() {
+        constructor(downloadId: Long, error: DismissBackupDownloadError, causeOfChange: ActivityLogAction) :
+                this(downloadId = downloadId, causeOfChange = causeOfChange) {
             this.error = error
         }
     }
@@ -430,6 +473,25 @@ class ActivityLogStore
         val contents: Boolean
     )
 
+    class DismissBackupDownloadPayload(
+        val site: SiteModel,
+        val downloadId: Long
+    ) : Payload<BaseRequest.BaseNetworkError>()
+
+    class DismissBackupDownloadResultPayload(
+        val siteId: Long,
+        val downloadId: Long,
+        val isDismissed: Boolean = false
+    ) : Payload<DismissBackupDownloadError>() {
+        constructor(
+            error: DismissBackupDownloadError,
+            siteId: Long,
+            downloadId: Long
+        ) : this(siteId = siteId, downloadId = downloadId) {
+            this.error = error
+        }
+    }
+
     // Errors
     enum class ActivityLogErrorType {
         GENERIC_ERROR,
@@ -489,4 +551,13 @@ class ActivityLogStore
     }
 
     class ActivityTypesError(var type: ActivityTypesErrorType, var message: String? = null) : OnChangedError
+
+    class DismissBackupDownloadError(var type: DismissBackupDownloadErrorType, var message: String? = null) :
+            OnChangedError
+
+    enum class DismissBackupDownloadErrorType {
+        GENERIC_ERROR,
+        AUTHORIZATION_REQUIRED,
+        INVALID_RESPONSE
+    }
 }

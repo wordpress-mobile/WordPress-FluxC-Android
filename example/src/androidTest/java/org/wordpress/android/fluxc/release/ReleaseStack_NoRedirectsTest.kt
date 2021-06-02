@@ -19,7 +19,7 @@ private const val TIMEOUT = 100
 private const val BACKOFF_MULTIPLIER = 1f
 
 class ReleaseStack_NoRedirectsTest : ReleaseStack_Base() {
-    @Inject @Named("no-redirects") lateinit var okHttpClientBuilder: OkHttpClient.Builder
+    @Inject @Named("no-redirects") lateinit var okHttpClient: OkHttpClient
 
     @Throws(Exception::class) override fun setUp() {
         super.setUp()
@@ -28,7 +28,7 @@ class ReleaseStack_NoRedirectsTest : ReleaseStack_Base() {
 
     @Test
     fun testRetriesOccurOnRedirect() {
-        val network = RetryOnRedirectBasicNetwork(OkHttpStack(okHttpClientBuilder))
+        val network = RetryOnRedirectBasicNetwork(OkHttpStack(okHttpClient))
         val request = StringRequest(Request.Method.GET, TEST_TEMPORARY_REDIRECT_307, null, null)
         request.retryPolicy = DefaultRetryPolicy(TIMEOUT, RETRIES, BACKOFF_MULTIPLIER)
         val response = try {

@@ -34,16 +34,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
 public class CommentXMLRPCClient extends BaseXMLRPCClient {
-    public CommentXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, UserAgent userAgent,
+    @Inject public CommentXMLRPCClient(Dispatcher dispatcher,
+                               @Named("custom-ssl") RequestQueue requestQueue,
+                               UserAgent userAgent,
                                HTTPAuthManager httpAuthManager) {
         super(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
-    public void fetchComments(final SiteModel site, final int number, final int offset, CommentStatus status) {
+    public void fetchComments(final SiteModel site, final int number, final int offset, final CommentStatus status) {
         List<Object> params = new ArrayList<>(4);
         Map<String, Object> commentParams = new HashMap<>();
         commentParams.put("number", number);
@@ -63,7 +67,7 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         List<CommentModel> comments = commentsResponseToCommentList(response, site);
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(comments, site, number,
-                                offset);
+                                offset, status);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
                     }
                 },
@@ -334,8 +338,16 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         Date datePublished = XMLRPCUtils.safeGetMapValue(commentMap, "date_created_gmt", new Date());
         comment.setDatePublished(DateTimeUtils.iso8601UTCFromDate(datePublished));
         comment.setContent(XMLRPCUtils.safeGetMapValue(commentMap, "content", ""));
-        comment.setRemoteParentCommentId(XMLRPCUtils.safeGetMapValue(commentMap, "parent", 0L));
         comment.setUrl(XMLRPCUtils.safeGetMapValue(commentMap, "link", ""));
+
+        // Parent
+        comment.setRemoteParentCommentId(XMLRPCUtils.safeGetMapValue(commentMap, "parent", 0L));
+        if (comment.getRemoteParentCommentId() > 0) {
+            comment.setParentId(comment.getRemoteParentCommentId());
+            comment.setHasParent(true);
+        } else {
+            comment.setHasParent(false);
+        }
 
         // Author
         comment.setAuthorUrl(XMLRPCUtils.safeGetMapValue(commentMap, "author_url", ""));

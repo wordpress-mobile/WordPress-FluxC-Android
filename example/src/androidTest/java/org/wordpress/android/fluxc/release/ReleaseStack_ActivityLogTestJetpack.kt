@@ -34,6 +34,7 @@ import org.wordpress.android.fluxc.store.ActivityLogStore.FetchActivityTypesPayl
 import org.wordpress.android.fluxc.store.ActivityLogStore.OnActivityTypesFetched
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindErrorType
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.tools.FormattableContent
@@ -105,7 +106,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         )
 
         assertNotNull(fetchActivities)
-        assertEquals(fetchActivities.rowsAffected, PAGE_SIZE) // All activities are persisted.
+        assertEquals(fetchActivities.rowsAffected, ALL_SITE_ACTIVITIES) // All activities are persisted.
         assertEquals(activityLogForSite.size, 0) // Non retrieved, all activities are non-rewindable.
     }
 
@@ -233,7 +234,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val restoreId: Long = 123
         val status = RUNNING
         val progress = 30
-        val rewind = Rewind(rewindId, restoreId, status, progress, null)
+        val rewind = Rewind(rewindId, restoreId, status, progress, null, null, null)
         val model = RewindStatusModel(ACTIVE, null, Date(), null, null, rewind)
 
         activityLogSqlUtils.replaceRewindStatus(site, model)
@@ -344,7 +345,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = CountDownLatch(1)
         nextEvent = TestEvents.SITE_CHANGED
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction())
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(siteStore.sitesCount > 0)
@@ -365,6 +366,6 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     companion object {
-        private const val PAGE_SIZE = 20
+        private const val ALL_SITE_ACTIVITIES = 20
     }
 }

@@ -21,7 +21,8 @@ object ProductTestUtils {
         virtual: Boolean = false,
         siteId: Int = 6,
         stockStatus: String = CoreProductStockStatus.IN_STOCK.value,
-        status: String = "publish"
+        status: String = "publish",
+        stockQuantity: Double = 0.0
     ): WCProductModel {
         return WCProductModel().apply {
             remoteProductId = remoteId
@@ -31,6 +32,7 @@ object ProductTestUtils {
             this.virtual = virtual
             this.stockStatus = stockStatus
             this.status = status
+            this.stockQuantity = stockQuantity
         }
     }
 
@@ -38,13 +40,15 @@ object ProductTestUtils {
         remoteId: Long,
         variationId: Long,
         siteId: Int = 6,
-        status: String = "publish"
+        status: String = "publish",
+        stockQuantity: Double = 0.0
     ): WCProductVariationModel {
         return WCProductVariationModel().apply {
             remoteProductId = remoteId
             remoteVariationId = variationId
             localSiteId = siteId
             this.status = status
+            this.stockQuantity = stockQuantity
         }
     }
 

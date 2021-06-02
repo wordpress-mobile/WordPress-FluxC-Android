@@ -42,7 +42,8 @@ data class FormattableMedia(
 data class FormattableMeta(
     @SerializedName("ids") val ids: Ids? = null,
     @SerializedName("links") val links: Links? = null,
-    @SerializedName("titles") val titles: Titles? = null
+    @SerializedName("titles") val titles: Titles? = null,
+    @SerializedName("is_mobile_button") val isMobileButton: Boolean? = null
 ) {
     data class Ids(
         @SerializedName("site") val site: Long? = null,
@@ -93,6 +94,7 @@ enum class FormattableRangeType {
     COMMENT,
     USER,
     STAT,
+    SCAN,
     BLOCKQUOTE,
     FOLLOW,
     NOTICON,
@@ -100,6 +102,7 @@ enum class FormattableRangeType {
     MATCH,
     MEDIA,
     B,
+    REWIND_DOWNLOAD_READY,
     UNKNOWN;
 
     companion object {
@@ -111,6 +114,7 @@ enum class FormattableRangeType {
                 "comment" -> COMMENT
                 "user" -> USER
                 "stat" -> STAT
+                "scan" -> SCAN
                 "blockquote" -> BLOCKQUOTE
                 "follow" -> FOLLOW
                 "noticon" -> NOTICON
@@ -118,6 +122,7 @@ enum class FormattableRangeType {
                 "match" -> MATCH
                 "media" -> MEDIA
                 "b" -> B
+                "rewind_download_ready" -> REWIND_DOWNLOAD_READY
                 else -> UNKNOWN
             }
         }

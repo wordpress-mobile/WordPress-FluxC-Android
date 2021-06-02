@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.plugins.WooPluginRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
@@ -41,7 +41,7 @@ open class WooCommerceStore @Inject constructor(
     private val appContext: Context,
     dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
-    private val pluginRestClient: WooPluginRestClient,
+    private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient
 ) : Store(dispatcher) {
     companion object {
@@ -49,7 +49,7 @@ open class WooCommerceStore @Inject constructor(
         const val WOO_API_NAMESPACE_V2 = "wc/v2"
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
 
-        private const val WOO_SERVICES_PLUGIN_NAME = "woocommerce-services"
+        private const val WOO_SERVICES_PLUGIN_NAME = "WooCommerce Shipping &amp; Tax"
     }
 
     class FetchApiVersionResponsePayload(
@@ -163,12 +163,12 @@ open class WooCommerceStore @Inject constructor(
         site: SiteModel
     ): WooResult<WCPluginModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchWooCommerceServicesPluginInfo") {
-            val response = pluginRestClient.fetchInstalledPlugins(site)
+            val response = systemRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
                 }
-                response.result != null -> {
+                response.result?.plugins != null -> {
                     val plugins = response.result.plugins.map { WCPluginModel(site, it) }
                     WCPluginSqlUtils.insertOrUpdate(plugins)
                     val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
@@ -223,6 +223,29 @@ open class WooCommerceStore @Inject constructor(
             })
             return toString()
         }
+    }
+
+    /**
+     * Fetches the currency symbol for display based on the site's settings and the device locale.
+     *
+     * If there is no [WCSettingsModel] associated with the given [site], the [currencyCode] will be returned if
+     * available, otherwise an empty string is returned.
+     *
+     * @param site the associated [SiteModel] - this will be used to resolve the corresponding [WCSettingsModel]
+     * @param currencyCode an optional, ISO 4217 currency code to use. If not supplied, the site's currency code
+     * will be used (obtained from the [WCSettingsModel] corresponding to the given [site]
+     */
+    fun getSiteCurrency(
+        site: SiteModel,
+        currencyCode: String? = null
+    ): String {
+        val siteSettings = getSiteSettings(site)
+
+        // Resolve the currency code to a localized symbol
+        val resolvedCurrencyCode = currencyCode?.takeIf { it.isNotEmpty() } ?: siteSettings?.currencyCode
+        return resolvedCurrencyCode?.let {
+            WCCurrencyUtils.getLocalizedCurrencySymbolForCode(it, LanguageUtils.getCurrentDeviceLanguage(appContext))
+        } ?: ""
     }
 
     fun formatCurrencyForDisplay(

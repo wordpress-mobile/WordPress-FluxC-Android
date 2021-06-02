@@ -1,22 +1,16 @@
-buildscript {
-    ext.kotlinVersion = '1.4.10'
-    ext.kotlinCoroutinesVersion = '1.3.9'
 
-    repositories {
-        google()
-        jcenter()
-        maven { url "https://dl.bintray.com/automattic/maven/" }
-    }
+plugins {
+    // Those declarations are just a workaround for a false-positive Kotlin Gradle Plugin warning
+    // https://youtrack.jetbrains.com/issue/KT-46200
+    id "com.android.application" apply false
+    id "org.jetbrains.kotlin.android" apply false
+    id "org.jetbrains.kotlin.android.extensions" apply false
+    id "org.jetbrains.kotlin.jvm" apply false
+    id "org.jetbrains.kotlin.kapt" apply false
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'com.automattic.android:fetchstyle:1.1'
-        classpath 'com.automattic.android:configure:0.3.0'
-    }
+//    id "com.automattic.android.fetchstyle"
+    id "com.automattic.android.configure"
 }
-
-apply plugin: 'com.automattic.android.fetchstyle'
-apply plugin: 'com.automattic.android.configure'
 
 allprojects {
     apply plugin: 'checkstyle'
@@ -24,7 +18,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url "http://dl.bintray.com/terl/lazysodium-maven" }
+        mavenCentral()
     }
 
     task checkstyle(type: Checkstyle) {
@@ -40,17 +34,6 @@ allprojects {
 }
 
 subprojects {
-    configurations.all {
-        resolutionStrategy {
-            forcedModules = [
-                    // Needed for com.nhaarman:mockito-kotlin-kt1.1
-                    // Can possibly be dropped when v2 of mockito-kotlin is released
-                    "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-                    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-            ]
-        }
-    }
-
     configurations {
         ktlint
     }
@@ -81,4 +64,6 @@ ext {
     arch_core_version = '2.0.1'
     appcompat_version = '1.0.2'
     mockitoVersion = '3.3.3'
+    assertJVersion = '3.19.0'
+    kotlinCoroutinesVersion = '1.3.9'
 }

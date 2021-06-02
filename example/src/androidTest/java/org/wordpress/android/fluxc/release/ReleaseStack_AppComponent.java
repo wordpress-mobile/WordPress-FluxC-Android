@@ -3,11 +3,9 @@ package org.wordpress.android.fluxc.release;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
-import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
-import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
+import org.wordpress.android.fluxc.module.OkHttpClientModule;
 import org.wordpress.android.fluxc.module.ReleaseToolsModule;
-import org.wordpress.android.fluxc.module.ReleaseWCNetworkModule;
 
 import javax.inject.Singleton;
 
@@ -18,10 +16,8 @@ import dagger.Component;
 @Component(modules = {
         AppContextModule.class,
         AppConfigModule.class,
-        ReleaseOkHttpClientModule.class,
-        ReleaseBaseModule.class,
+        OkHttpClientModule.class,
         ReleaseNetworkModule.class,
-        ReleaseWCNetworkModule.class,
         ReleaseToolsModule.class,
         MockedToolsModule.class
 })
@@ -72,4 +68,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_EncryptedLogTest test);
     void inject(ReleaseStack_XPostsTest test);
     void inject(ReleaseStack_NoRedirectsTest test);
+    void inject(ReleaseStack_WCPayTest test);
 }

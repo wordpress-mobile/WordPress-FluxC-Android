@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.instaflux;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.goterl.lazycode.lazysodium.exceptions.SodiumException;
+import com.goterl.lazysodium.exceptions.SodiumException;
 
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLoggingKey;
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptionUtils;

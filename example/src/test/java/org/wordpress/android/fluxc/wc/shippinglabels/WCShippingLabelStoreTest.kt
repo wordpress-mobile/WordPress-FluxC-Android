@@ -1,7 +1,10 @@
 package org.wordpress.android.fluxc.wc.shippinglabels
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import org.assertj.core.api.Assertions.assertThat
@@ -11,6 +14,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowLooper
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
@@ -19,23 +23,35 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPaymentMethod
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelCreationEligibility
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.LabelItem
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.SLCreationEligibilityApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.ShippingRatesApiResponse.ShippingOption.Rate
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.VerifyAddressResponse
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import java.math.BigDecimal
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -67,12 +83,85 @@ class WCShippingLabelStoreTest {
 
     private val samplePackagesApiResponse = WCShippingLabelTestUtils.generateSampleGetPackagesApiResponse()
 
+    private val sampleAccountSettingsApiResponse = WCShippingLabelTestUtils.generateSampleAccountSettingsApiResponse()
+
+    private val sampleShippingRatesApiResponse = WCShippingLabelTestUtils.generateSampleGetShippingRatesApiResponse()
+
+    private val samplePurchaseShippingLabelsResponse =
+            WCShippingLabelTestUtils.generateSamplePurchaseShippingLabelsApiResponse()
+
+    private val originAddress = ShippingLabelAddress(
+            "Company",
+            "Ondrej Ruttkay",
+            "",
+            "US",
+            "NY",
+            "42 Jewel St.",
+            "",
+            "Brooklyn",
+            "11222"
+    )
+
+    private val destAddress = ShippingLabelAddress(
+            "Company",
+            "Ondrej Ruttkay",
+            "",
+            "US",
+            "NY",
+            "82 Jewel St.",
+            "",
+            "Brooklyn",
+            "11222"
+    )
+
+    private val packages = listOf(
+            ShippingLabelPackage(
+                    "Krabka 1",
+                    "medium_flat_box_top",
+                    10f,
+                    10f,
+                    10f,
+                    10f,
+                    false
+            ),
+            ShippingLabelPackage(
+                    "Krabka 2",
+                    "medium_flat_box_side",
+                    5f,
+                    5f,
+                    5f,
+                    5f,
+                    false
+            )
+    )
+
+    private val purchaseLabelPackagesData = listOf(
+            WCShippingLabelPackageData(
+                    id = "id1",
+                    boxId = "medium_flat_box_top",
+                    height = 10f,
+                    width = 10f,
+                    length = 10f,
+                    weight = 10f,
+                    shipmentId = "shp_id",
+                    rateId = "rate_id",
+                    serviceId = "service-1",
+                    serviceName = "USPS - Priority Mail International label",
+                    carrierId = "usps",
+                    products = listOf(10)
+            )
+    )
+
     @Before
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(SiteModel::class.java, WCShippingLabelModel::class.java),
+                listOf(
+                        SiteModel::class.java,
+                        WCShippingLabelModel::class.java,
+                        WCShippingLabelCreationEligibility::class.java
+                ),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -94,7 +183,7 @@ class WCShippingLabelStoreTest {
         val shippingLabelModels = mapper.map(sampleShippingLabelApiResponse!!, site)
 
         assertThat(result.model?.size).isEqualTo(shippingLabelModels.size)
-        assertThat(result.model?.first()?.localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(result.model?.first()?.remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(result.model?.first()?.localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(result.model?.first()?.remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -102,7 +191,6 @@ class WCShippingLabelStoreTest {
         assertThat(result.model?.first()?.packageName).isEqualTo(shippingLabelModels.first().packageName)
         assertThat(result.model?.first()?.refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(result.model?.first()?.rate).isEqualTo(shippingLabelModels.first().rate)
-        assertThat(result.model?.first()?.paperSize).isEqualTo(shippingLabelModels.first().paperSize)
         assertThat(result.model?.first()?.getProductNameList()?.size)
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
         assertThat(result.model?.first()?.getProductIdsList()?.size)
@@ -123,7 +211,7 @@ class WCShippingLabelStoreTest {
 
         val shippingLabelModels = mapper.map(sampleShippingLabelApiResponse!!, site)
         assertThat(storedShippingLabelsList.size).isEqualTo(shippingLabelModels.size)
-        assertThat(storedShippingLabelsList.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
+        assertThat(storedShippingLabelsList.first().remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
         assertThat(storedShippingLabelsList.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
         assertThat(storedShippingLabelsList.first().remoteShippingLabelId)
                 .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
@@ -132,7 +220,6 @@ class WCShippingLabelStoreTest {
         assertThat(storedShippingLabelsList.first().refundableAmount)
                 .isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(storedShippingLabelsList.first().rate).isEqualTo(shippingLabelModels.first().rate)
-        assertThat(storedShippingLabelsList.first().paperSize).isEqualTo(shippingLabelModels.first().paperSize)
         assertNotNull(storedShippingLabelsList.first().refund)
         assertThat(storedShippingLabelsList.first().getProductNameList().size)
                 .isEqualTo(shippingLabelModels.first().getProductNameList().size)
@@ -175,33 +262,128 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
+    fun `get shipping rates`() = test {
+        val expectedRatesResult = WCShippingRatesResult(
+            listOf(
+                ShippingPackage(
+                    "default_box",
+                    listOf(
+                        ShippingOption(
+                            "default",
+                            listOf(
+                                Rate(
+                                    title = "USPS - Media Mail",
+                                    insurance = "100",
+                                    rate = BigDecimal(3.5),
+                                    rateId = "rate_cb976896a09c4171a93ace57ed66ce5b",
+                                    serviceId = "MediaMail",
+                                    carrierId = "usps",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = false,
+                                    retailRate = BigDecimal(3.5),
+                                    isSelected = false,
+                                    isPickupFree = false,
+                                    deliveryDays = 2,
+                                    deliveryDateGuaranteed = false,
+                                    deliveryDate = null
+                                ),
+                                Rate(
+                                    title = "FedEx - Ground",
+                                    insurance = "100",
+                                    rate = BigDecimal(21.5),
+                                    rateId = "rate_1b202bd43a8c4c929c73bb46989ef745",
+                                    serviceId = "FEDEX_GROUND",
+                                    carrierId = "fedex",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = false,
+                                    retailRate = BigDecimal(21.5),
+                                    isSelected = false,
+                                    isPickupFree = false,
+                                    deliveryDays = 1,
+                                    deliveryDateGuaranteed = true,
+                                    deliveryDate = null
+                                )
+                        )
+                ),
+                ShippingOption(
+                        "with_signature",
+                        listOf(
+                                Rate(
+                                    title = "USPS - Media Mail",
+                                    insurance = "100",
+                                    rate = BigDecimal(13.5),
+                                    rateId = "rate_cb976896a09c4171a93ace57ed66ce5b",
+                                    serviceId = "MediaMail",
+                                    carrierId = "usps",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = true,
+                                    retailRate = BigDecimal(13.5),
+                                    isSelected = false,
+                                    isPickupFree = true,
+                                    deliveryDays = 2,
+                                    deliveryDateGuaranteed = false,
+                                    deliveryDate = null
+                                ),
+                                Rate(
+                                    title = "FedEx - Ground",
+                                    insurance = "100",
+                                    rate = BigDecimal(121.5),
+                                    rateId = "rate_1b202bd43a8c4c929c73bb46989ef745",
+                                    serviceId = "FEDEX_GROUND",
+                                    carrierId = "fedex",
+                                    shipmentId = "shp_0a9b3ff983c6427eaf1e24cb344de36a",
+                                    hasTracking = true,
+                                    retailRate = BigDecimal(121.5),
+                                    isSelected = false,
+                                    isPickupFree = true,
+                                    deliveryDays = 1,
+                                    deliveryDateGuaranteed = true,
+                                    deliveryDate = null
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val result = getShippingRates()
+        assertThat(result.model).isEqualTo(expectedRatesResult)
+    }
+
+    @Test
     fun `get packages`() = test {
         val expectedResult = WCPackagesResult(
                 listOf(
-                        CustomPackage("Krabica", false, "1 x 2 x 3"),
-                        CustomPackage("Obalka", true, "2 x 3 x 4")
+                        CustomPackage("Krabica", false, "1 x 2 x 3", 1f),
+                        CustomPackage("Obalka", true, "2 x 3 x 4", 5f)
                 ),
                 listOf(
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
                                 listOf(
                                         PredefinedPackage(
+                                                "small_flat_box",
                                                 "Small Flat Rate Box",
                                                 false,
-                                                "21.91 x 13.65 x 4.13"
+                                                "21.91 x 13.65 x 4.13",
+                                                0f
                                         ),
                                         PredefinedPackage(
+                                                "medium_flat_box_top",
                                                 "Medium Flat Rate Box 1, Top Loading",
                                                 false,
-                                                "28.57 x 22.22 x 15.24"
+                                                "28.57 x 22.22 x 15.24",
+                                                0f
                                         )
                                 )
                         ),
                         PredefinedOption(
                                 "DHL Express",
                                 listOf(PredefinedPackage(
+                                        "LargePaddedPouch",
                                         "Large Padded Pouch",
                                         true,
-                                        "30.22 x 35.56 x 2.54"
+                                        "30.22 x 35.56 x 2.54",
+                                        0f
                                 ))
                         )
                 )
@@ -212,6 +394,206 @@ class WCShippingLabelStoreTest {
         val invalidRequestResult = getPackages(true)
         assertThat(invalidRequestResult.model).isNull()
         assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `get account settings`() = test {
+        val expectedPaymentMethodList = listOf(WCPaymentMethod(
+                paymentMethodId = 4144354,
+                name = "John Doe",
+                cardType = "visa",
+                cardDigits = "5454",
+                expiry = "2023-12-31"
+        ))
+        val result = getAccountSettings()
+        val model = result.model!!
+        assertThat(model.canManagePayments).isTrue()
+        assertThat(model.lastUsedBoxId).isEqualTo("small_flat_box")
+        assertThat(model.selectedPaymentMethodId).isEqualTo(4144354)
+        assertThat(model.paymentMethods).isEqualTo(expectedPaymentMethodList)
+
+        val invalidRequestResult = getAccountSettings(true)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `purchase shipping label error`() = test {
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull()))
+                .thenReturn(WooPayload(error))
+
+        val invalidRequestResult = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `purchase shipping labels with polling`() = test {
+        val response = WooPayload(samplePurchaseShippingLabelsResponse)
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
+
+        val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
+        val statusDoneReponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(true)
+        whenever(restClient.fetchShippingLabelsStatus(any(), any(), any()))
+                .thenReturn(WooPayload(statusIntermediateResponse))
+                .thenReturn(WooPayload(statusDoneReponse))
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks()
+
+        val result = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
+        val shippingLabelModels = mapper.map(
+                samplePurchaseShippingLabelsResponse,
+                orderId,
+                originAddress,
+                destAddress,
+                site
+        )
+
+        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())
+        verify(restClient).fetchShippingLabelsStatus(
+                site,
+                orderId,
+                samplePurchaseShippingLabelsResponse.labels!!.map { it.labelId!! })
+        verify(restClient).fetchShippingLabelsStatus(
+                site,
+                orderId,
+                statusIntermediateResponse.labels!!
+                        .filter { it.status != LabelItem.STATUS_PURCHASED }
+                        .map { it.labelId!! })
+
+        assertThat(result.model!!.size).isEqualTo(shippingLabelModels.size)
+        assertThat(result.model!!.first().remoteOrderId).isEqualTo(shippingLabelModels.first().remoteOrderId)
+        assertThat(result.model!!.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
+        assertThat(result.model!!.first().remoteShippingLabelId)
+                .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
+        assertThat(result.model!!.first().carrierId).isEqualTo(shippingLabelModels.first().carrierId)
+        assertThat(result.model!!.first().packageName).isEqualTo(shippingLabelModels.first().packageName)
+        assertThat(result.model!!.first().refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
+    }
+
+    @Test
+    fun `purchase shipping labels with polling fail after 3 retries`() = test {
+        val response = WooPayload(samplePurchaseShippingLabelsResponse)
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
+
+        whenever(restClient.fetchShippingLabelsStatus(any(), any(), any())).thenReturn(WooPayload(error))
+
+        val result = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
+
+        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())
+        verify(restClient, times(3)).fetchShippingLabelsStatus(
+                site,
+                orderId,
+                samplePurchaseShippingLabelsResponse.labels!!.map { it.labelId!! })
+
+        assertThat(result.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `purchase shipping labels with polling one label failed`() = test {
+        val response = WooPayload(samplePurchaseShippingLabelsResponse)
+        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
+
+        val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
+        val statusErrorResponse = WCShippingLabelTestUtils.generateErrorShippingLabelsStatusApiResponse()
+        whenever(restClient.fetchShippingLabelsStatus(any(), any(), any()))
+                .thenReturn(WooPayload(statusIntermediateResponse))
+                .thenReturn(WooPayload(statusErrorResponse))
+
+        val result = store.purchaseShippingLabels(
+                site,
+                orderId,
+                originAddress,
+                destAddress,
+                purchaseLabelPackagesData,
+                null
+        )
+
+        assertThat(result.isError).isTrue()
+        assertThat(result.error.message).isEqualTo(statusErrorResponse.labels!!.first().error)
+    }
+
+    @Test
+    fun `fetch shipping label eligibility`() = test {
+        val result = fetchSLCreationEligibility(
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false,
+                isEligible = true,
+                isError = false
+        )
+        assertThat(result.model).isNotNull
+        assertThat(result.model!!.isEligible).isTrue
+
+        val failedResult = fetchSLCreationEligibility(
+            canCreatePackage = false,
+            canCreatePaymentMethod = false,
+            canCreateCustomsForm = false,
+            isError = true
+        )
+        assertThat(failedResult.model).isNull()
+        assertThat(failedResult.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `get stored eligibility`() = test {
+        fetchSLCreationEligibility(
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false,
+                isEligible = true,
+                isError = false
+        )
+
+        val eligibility = store.isOrderEligibleForShippingLabelCreation(
+                site = site,
+                orderId = orderId,
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false
+        )
+        assertThat(eligibility).isNotNull
+        assertThat(eligibility!!.isEligible).isTrue
+    }
+
+    @Test
+    fun `invalidate cached data if parameters are different`() = test {
+        fetchSLCreationEligibility(
+                canCreatePackage = false,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false,
+                isEligible = true,
+                isError = false
+        )
+
+        val eligibility = store.isOrderEligibleForShippingLabelCreation(
+                site = site,
+                orderId = orderId,
+                canCreatePackage = true,
+                canCreatePaymentMethod = false,
+                canCreateCustomsForm = false
+        )
+        assertThat(eligibility).isNull()
     }
 
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
@@ -264,6 +646,15 @@ class WCShippingLabelStoreTest {
         return store.verifyAddress(site, address, type)
     }
 
+    private suspend fun getShippingRates(): WooResult<WCShippingRatesResult> {
+        val rates = WooPayload(sampleShippingRatesApiResponse)
+
+        whenever(restClient.getShippingRates(any(), any(), any(), any(), any(), anyOrNull()))
+                .thenReturn(rates)
+
+        return store.getShippingRates(site, orderId, originAddress, destAddress, packages, null)
+    }
+
     private suspend fun getPackages(isError: Boolean = false): WooResult<WCPackagesResult> {
         val getPackagesPayload = WooPayload(samplePackagesApiResponse)
         if (isError) {
@@ -272,5 +663,42 @@ class WCShippingLabelStoreTest {
             whenever(restClient.getPackageTypes(any())).thenReturn(getPackagesPayload)
         }
         return store.getPackageTypes(site)
+    }
+
+    private suspend fun getAccountSettings(isError: Boolean = false): WooResult<WCShippingAccountSettings> {
+        if (isError) {
+            whenever(restClient.getAccountSettings(any())).thenReturn(WooPayload(error))
+        } else {
+            val accountSettingsPayload = WooPayload(sampleAccountSettingsApiResponse)
+            whenever(restClient.getAccountSettings(any())).thenReturn(accountSettingsPayload)
+        }
+        return store.getAccountSettings(site)
+    }
+
+    private suspend fun fetchSLCreationEligibility(
+        canCreatePackage: Boolean,
+        canCreatePaymentMethod: Boolean,
+        canCreateCustomsForm: Boolean,
+        isEligible: Boolean = false,
+        isError: Boolean = false
+    ): WooResult<WCShippingLabelCreationEligibility> {
+        if (isError) {
+            whenever(restClient.checkShippingLabelCreationEligibility(any(), any(), any(), any(), any()))
+                    .thenReturn(WooPayload(error))
+        } else {
+            val result = SLCreationEligibilityApiResponse(
+                    isEligible = isEligible,
+                    reason = if (isEligible) null else "reason"
+            )
+            whenever(restClient.checkShippingLabelCreationEligibility(any(), any(), any(), any(), any()))
+                    .thenReturn(WooPayload(result))
+        }
+        return store.fetchShippingLabelCreationEligibility(
+                site = site,
+                orderId = orderId,
+                canCreatePackage = canCreatePackage,
+                canCreatePaymentMethod = canCreatePaymentMethod,
+                canCreateCustomsForm = canCreateCustomsForm
+        )
     }
 }

@@ -28,15 +28,14 @@ our example:
 
 ## Building and running tests and the example app
 
-    $ cp example/gradle.properties-example example/gradle.properties
-    $ cp example/tests.properties-example example/tests.properties
+    $ cp -a example/properties-example/ example/properties/
     $ ./gradlew cAT       # Regression tests
     $ ./gradlew testDebug # Unit tests
 
-Note: this is the default `example/gradle.properties` file. You'll have to get
+Note: this uses the default `example/properties/api.properties` file. You'll have to get
 a [WordPress.com OAuth2 ID and secret](#oauth2-authentication).
 
-We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/tests.properties`, you must edit it or obtain the real file to run the tests.
+We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/properties/tests.properties`, you must edit it or obtain the real file to run the tests.
 
 Please note that, unless using special credentials which cannot be shared publicly, some of the WordPress.com connected tests will not pass unless the OAuth2 ID and secret are registered to the account that the test is attempting to log into.
 
@@ -46,7 +45,7 @@ To test with your own OAuth2 ID and Secret you will need to create an applicatio
 
 When creating your application, you should select "Native client" for the application type. The applications manager currently requires a "redirect URL", but this isn't used for mobile apps. Just use "https://localhost".
 
-Once you've created your application in the [applications manager][7], you'll need to edit the `example/gradle.properties` file and change the `wp.OAUTH.APP.ID` and `wp.OAUTH.APP.SECRET` fields.
+Once you've created your application in the [applications manager][7], you'll need to edit the `example/properties/api.properties` file and change the `wp.OAUTH.APP.ID` and `wp.OAUTH.APP.SECRET` fields.
 
 ## Setting up Checkstyle
 

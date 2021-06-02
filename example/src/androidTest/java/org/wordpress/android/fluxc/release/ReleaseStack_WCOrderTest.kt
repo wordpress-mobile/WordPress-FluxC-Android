@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release
 
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -9,6 +10,7 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
@@ -18,11 +20,13 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
@@ -100,6 +104,23 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                 firstFetchOrders.isNotEmpty() &&
                         firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
         )
+    }
+
+    @Test
+    fun testFetchOrdersById() {
+        val idsToRequest = listOf(RemoteId(1128), RemoteId(1129))
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCOrderActionBuilder.newFetchOrdersByIdsAction(
+                        FetchOrdersByIdsPayload(
+                                sSite,
+                                idsToRequest
+                        )
+                )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertTrue(orderStore.getOrdersForSite(sSite).count() == idsToRequest.size)
     }
 
     @Throws(InterruptedException::class)
@@ -334,6 +355,14 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.FETCHED_ORDER_STATUS_OPTIONS, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Subscribe(threadMode = MAIN)
+    fun onOrdersFetchedByIds(event: OnOrdersFetchedByIds) {
+        event.error?.let {
+            throw AssertionError("OnOrderStatusOptionsChanged has error: " + it.type)
+        }
         mCountDownLatch.countDown()
     }
 }

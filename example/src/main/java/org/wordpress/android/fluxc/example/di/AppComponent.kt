@@ -3,13 +3,11 @@ package org.wordpress.android.fluxc.example.di
 import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
-import dagger.android.AndroidInjector
 import dagger.android.AndroidInjectionModule
+import dagger.android.AndroidInjector
 import org.wordpress.android.fluxc.example.ExampleApp
-import org.wordpress.android.fluxc.module.ReleaseBaseModule
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
-import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule
-import org.wordpress.android.fluxc.module.ReleaseWCNetworkModule
+import org.wordpress.android.fluxc.module.OkHttpClientModule
 import javax.inject.Singleton
 
 @Singleton
@@ -17,10 +15,8 @@ import javax.inject.Singleton
         AndroidInjectionModule::class,
         ApplicationModule::class,
         AppConfigModule::class,
-        ReleaseOkHttpClientModule::class,
-        ReleaseBaseModule::class,
+        OkHttpClientModule::class,
         ReleaseNetworkModule::class,
-        ReleaseWCNetworkModule::class,
         MainActivityModule::class,
         WCOrderListActivityModule::class))
 interface AppComponent : AndroidInjector<ExampleApp> {

@@ -10,7 +10,7 @@ commands:
     steps:
       - run:
           name: Setup gradle.properties
-          command: cp example/gradle.properties-example example/gradle.properties && cp gradle.properties-example gradle.properties
+          command: cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
 jobs:
   Lint:
     executor:
@@ -70,10 +70,7 @@ jobs:
           command: ./gradlew applyConfiguration
       - run:
           name: Merge properties files
-          command: |
-            ls .configure-files
-            ./tools/merge_properties.sh .configure-files/tests.properties-extra .configure-files/tests.properties > example/tests.properties
-            cp .configure-files/gradle.properties example/gradle.properties
+          command: ./gradlew :example:combineTestsPropertiesWithExtraTestsProperties
       - run:
           name: Build
           command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest

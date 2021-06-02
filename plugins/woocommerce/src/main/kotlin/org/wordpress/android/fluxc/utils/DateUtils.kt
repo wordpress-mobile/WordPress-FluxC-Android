@@ -76,8 +76,8 @@ object DateUtils {
      * The start date time is set to 00:00:00
      *
      */
-    fun getStartDateCalendar(startDate: Date): Calendar {
-        val cal1 = Calendar.getInstance()
+    fun getStartDateCalendar(startDate: Date, locale: Locale = Locale.getDefault()): Calendar {
+        val cal1 = Calendar.getInstance(locale)
         cal1.time = startDate
         cal1.set(Calendar.HOUR_OF_DAY, 0)
         cal1.set(Calendar.MINUTE, 0)
@@ -94,8 +94,8 @@ object DateUtils {
      * The end date time is set to 23:59:59
      *
      */
-    fun getEndDateCalendar(endDate: Date): Calendar {
-        val cal2 = Calendar.getInstance()
+    fun getEndDateCalendar(endDate: Date, locale: Locale = Locale.getDefault()): Calendar {
+        val cal2 = Calendar.getInstance(locale)
         cal2.time = endDate
         cal2.set(Calendar.HOUR_OF_DAY, 23)
         cal2.set(Calendar.MINUTE, 59)
@@ -137,10 +137,10 @@ object DateUtils {
          *
          * */
         if (startDateCalendar.get(Calendar.DAY_OF_WEEK) > 1) {
-            startDateCalendar.set(Calendar.DAY_OF_WEEK, 1)
+            startDateCalendar.set(Calendar.DAY_OF_WEEK, startDateCalendar.firstDayOfWeek)
         }
         if (endDateCalendar.get(Calendar.DAY_OF_WEEK) < 1) {
-            endDateCalendar.set(Calendar.DAY_OF_WEEK, 7)
+            endDateCalendar.set(Calendar.DAY_OF_WEEK, getConstantForLastDayOfWeek(endDateCalendar))
         }
 
         val diffInDays = getQuantityInDays(startDateCalendar, endDateCalendar).toDouble()
@@ -275,9 +275,8 @@ object DateUtils {
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
-    fun getFirstDayOfCurrentWeek(): String {
-        val cal = Calendar.getInstance(Locale.ROOT)
-        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
+    fun getFirstDayOfCurrentWeek(cal: Calendar): String {
+        cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
@@ -293,10 +292,10 @@ object DateUtils {
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
-    fun getFirstDayOfCurrentWeekBySite(site: SiteModel): String {
-        val cal = Calendar.getInstance(Locale.ROOT)
+    fun getFirstDayOfCurrentWeekBySite(site: SiteModel, locale: Locale = Locale.getDefault()): String {
+        val cal = Calendar.getInstance(locale)
         cal.time = getCurrentDateFromSite(site)
-        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
+        cal.set(Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
@@ -314,10 +313,10 @@ object DateUtils {
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
-    fun getLastDayOfCurrentWeekForSite(site: SiteModel): String {
-        val cal = Calendar.getInstance(Locale.ROOT)
+    fun getLastDayOfCurrentWeekForSite(site: SiteModel, locale: Locale = Locale.getDefault()): String {
+        val cal = Calendar.getInstance(locale)
         cal.time = getCurrentDateFromSite(site)
-        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMaximum(Calendar.DAY_OF_WEEK))
+        cal.set(Calendar.DAY_OF_WEEK, getConstantForLastDayOfWeek(cal))
         return formatDate(DATE_TIME_FORMAT_END, cal.time)
     }
 
@@ -333,6 +332,18 @@ object DateUtils {
         cal.time = getCurrentDateFromSite(site)
         cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR))
         return formatDate(DATE_TIME_FORMAT_END, cal.time)
+    }
+
+    /**
+     * Returns (#Calendar.DAY_OF_WEEK) constant for last day of week.
+     */
+    fun getConstantForLastDayOfWeek(calendar: Calendar): Int {
+        val lastDay = calendar.firstDayOfWeek + 6
+        return if (lastDay > 7) {
+            lastDay % 8 + 1
+        } else {
+            lastDay
+        }
     }
 
     /**

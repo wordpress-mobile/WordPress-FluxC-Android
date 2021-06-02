@@ -20,13 +20,14 @@ import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStreamReader
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ResponseMockingInterceptor : Interceptor {
+class ResponseMockingInterceptor @Inject constructor() : Interceptor {
     companion object {
         private val SUBSTITUTION_DEFAULT = { string: String -> string }
-        private const val NETWORK_DELAY_MS = 500L
+        const val NETWORK_DELAY_MS = 500L
     }
 
     /**
@@ -38,6 +39,7 @@ class ResponseMockingInterceptor : Interceptor {
 
     private var nextResponseJson: String? = null
     private var nextResponseCode: Int = 200
+    private var nextResponseDelay: Long = NETWORK_DELAY_MS
 
     private var mode: InterceptorMode = ONE_TIME
     private var transformStickyResponse = SUBSTITUTION_DEFAULT
@@ -62,13 +64,19 @@ class ResponseMockingInterceptor : Interceptor {
     fun respondWith(jsonResponseFileName: String) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseCode = 200
+        nextResponseDelay = NETWORK_DELAY_MS
         mode = ONE_TIME
         transformStickyResponse = SUBSTITUTION_DEFAULT
     }
 
-    fun respondWithSticky(jsonResponseFileName: String, transformResponse: ((String) -> String)? = null) {
+    fun respondWithSticky(
+        jsonResponseFileName: String,
+        responseDelay: Long = NETWORK_DELAY_MS,
+        transformResponse: ((String) -> String)? = null
+    ) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseCode = 200
+        nextResponseDelay = responseDelay
         transformResponse?.let {
             transformStickyResponse = it
         }
@@ -79,11 +87,13 @@ class ResponseMockingInterceptor : Interceptor {
     fun respondWithError(jsonResponseFileName: String, errorCode: Int = 404) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseCode = errorCode
+        nextResponseDelay = NETWORK_DELAY_MS
     }
 
     fun respondWith(jsonResponse: JsonElement) {
         nextResponseJson = jsonResponse.toString()
         nextResponseCode = 200
+        nextResponseDelay = NETWORK_DELAY_MS
     }
 
     @JvmOverloads

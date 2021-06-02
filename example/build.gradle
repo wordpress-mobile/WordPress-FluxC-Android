@@ -1,16 +1,9 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    }
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.android.extensions"
+    id "org.jetbrains.kotlin.kapt"
 }
-
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 28
@@ -62,9 +55,15 @@ android {
     }
 }
 
+if (["tests.properties", "tests.properties-extra"].any { file(it).exists() }) {
+    throw new InvalidUserDataException("'example/tests.properties' and 'example/tests.properties-extra' property files are deprecated. Please see 'example/properties-example/README.md' for details.")
+}
+
 android.buildTypes.all { buildType ->
     // Add properties named "wp.xxx" to our BuildConfig
-    project.properties.any { property ->
+    Properties apiProperties = loadPropertiesOrUseExampleProperties("api.properties",
+            "example app can't access WordPress.com servers")
+    apiProperties.any { property ->
         if (property.key.toLowerCase().startsWith("wp.")) {
             buildType.buildConfigField "String", property.key.replace("wp.", "").replace(".", "_").toUpperCase(),
                     "\"${property.value}\""
@@ -72,15 +71,8 @@ android.buildTypes.all { buildType ->
     }
 
     // Load test properties and add them to BuildConfig
-    Properties testProperties = new Properties()
-    File testFile = file("tests.properties")
-    if (testFile.exists()) {
-        testProperties.load(new InputStreamReader(new FileInputStream(testFile), "utf-8"))
-    } else {
-        // Load defaults
-        println("WARNING: you're using the example example/tests.properties-example file - tests won't pass")
-        testProperties.load(new InputStreamReader(new FileInputStream(file("tests.properties-example")), "utf-8"))
-    }
+    Properties testProperties = loadPropertiesOrUseExampleProperties("tests.properties",
+            "tests won't pass")
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
     }
@@ -93,8 +85,6 @@ androidExtensions {
 dependencies {
     implementation project(':fluxc')
     implementation project(':plugins:woocommerce')
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
@@ -122,21 +112,26 @@ dependencies {
     kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
 
     testImplementation 'junit:junit:4.13'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$gradle.ext.kotlinVersion"
     testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'androidx.test:core:1.3.0'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
-    testImplementation 'org.assertj:assertj-core:3.15.0'
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
     testImplementation "androidx.arch.core:core-testing:$arch_core_version"
 
     androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
     androidTestImplementation 'org.apache.commons:commons-lang3:3.7'
+    androidTestImplementation "org.assertj:assertj-core:$assertJVersion"
     androidTestImplementation "androidx.arch.core:core-testing:$arch_core_version"
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
     // Test orchestrator
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestUtil 'androidx.test:orchestrator:1.2.0'
+
+    androidTestImplementation "com.goterl:lazysodium-android:5.0.2@aar"
+    androidTestImplementation "net.java.dev.jna:jna:5.5.0@aar"
 
     // Debug dependencies
     debugImplementation 'com.facebook.flipper:flipper:0.51.0'
@@ -148,5 +143,42 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 
     // Multidex
-    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.multidex:multidex:2.0.1'
+}
+
+def loadPropertiesOrUseExampleProperties(fileName, warningDetail) {
+    Properties properties = new Properties()
+    File propertiesFile = file(propertiesFilePath(fileName))
+    if (propertiesFile.exists()) {
+        properties.load(new InputStreamReader(new FileInputStream(propertiesFile), "utf-8"))
+    } else {
+        def examplePropertiesFilePath = examplePropertiesFilePath(fileName)
+        logger.quiet("WARNING: you're using the '$examplePropertiesFilePath' file - $warningDetail")
+        properties.load(new InputStreamReader(new FileInputStream(file(examplePropertiesFilePath)), "utf-8"))
+    }
+    return properties
+}
+
+def propertiesFilePath(fileName) {
+    return "properties/$fileName"
+}
+
+def examplePropertiesFilePath(fileName) {
+    return "properties-example/$fileName"
+}
+
+tasks.register("combineTestsPropertiesWithExtraTestsProperties") {
+    Properties properties = new Properties()
+
+    File testsProperties = file(propertiesFilePath("tests.properties"))
+    File testsPropertiesExtra = file(propertiesFilePath("tests.properties-extra"))
+    if (testsProperties.exists()) {
+        properties.load(new InputStreamReader(new FileInputStream(testsProperties), "utf-8"))
+    }
+    if (testsPropertiesExtra.exists()) {
+        properties.load(new InputStreamReader(new FileInputStream(testsPropertiesExtra), "utf-8"))
+    }
+
+    def comment = "This file is generated by combineTestsPropertiesWithExtraTestsProperties Gradle task which combines existing tests.properties file with tests.properties-extra file. It prioritizes the values in tests.properties-extra file"
+    properties.store(new FileOutputStream(testsProperties), comment)
 }

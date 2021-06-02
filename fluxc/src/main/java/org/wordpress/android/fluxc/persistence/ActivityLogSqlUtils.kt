@@ -96,6 +96,24 @@ class ActivityLogSqlUtils
                 .execute()
     }
 
+    fun deleteRewindStatus(site: SiteModel): Int {
+        return WellSql
+                .delete(RewindStatusBuilder::class.java)
+                .where()
+                .equals(RewindStatusTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .execute()
+    }
+
+    fun deleteBackupDownloadStatus(site: SiteModel): Int {
+        return WellSql
+                .delete(BackupDownloadStatusBuilder::class.java)
+                .where()
+                .equals(BackupDownloadStatusTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .execute()
+    }
+
     fun replaceRewindStatus(site: SiteModel, rewindStatusModel: RewindStatusModel) {
         val rewindStatusBuilder = rewindStatusModel.toBuilder(site)
         WellSql.delete(RewindStatusBuilder::class.java)
@@ -195,7 +213,9 @@ class ActivityLogSqlUtils
                 restoreId = this.rewind?.restoreId,
                 rewindStatus = this.rewind?.status?.value,
                 rewindProgress = this.rewind?.progress,
-                rewindReason = this.rewind?.reason
+                rewindReason = this.rewind?.reason,
+                message = this.rewind?.message,
+                currentEntry = this.rewind?.currentEntry
         )
     }
 
@@ -294,7 +314,9 @@ class ActivityLogSqlUtils
         @Column var restoreId: Long? = null,
         @Column var rewindStatus: String? = null,
         @Column var rewindProgress: Int? = null,
-        @Column var rewindReason: String? = null
+        @Column var rewindReason: String? = null,
+        @Column var message: String? = null,
+        @Column var currentEntry: String? = null
     ) : Identifiable {
         constructor() : this(-1, 0, 0, "", 0)
 
@@ -310,7 +332,9 @@ class ActivityLogSqlUtils
                     restoreId,
                     rewindStatus,
                     rewindProgress,
-                    rewindReason
+                    rewindReason,
+                    message,
+                    currentEntry
             )
             return RewindStatusModel(
                     RewindStatusModel.State.fromValue(state) ?: RewindStatusModel.State.UNKNOWN,

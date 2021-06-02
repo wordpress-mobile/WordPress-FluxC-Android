@@ -16,6 +16,8 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
+import org.wordpress.android.fluxc.model.LikeModel;
+import org.wordpress.android.fluxc.model.LikeModel.LikeType;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -33,6 +35,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
+import org.wordpress.android.fluxc.network.rest.wpcom.common.LikeWPComRestResponse.LikesWPComRestResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.common.LikesUtilsProvider;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse.PostMeta.PostData.PostAutoSave;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse.PostMetaData;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse.PostsResponse;
@@ -47,6 +51,7 @@ import org.wordpress.android.fluxc.store.PostStore.FetchPostResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostStatusResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.FetchRevisionsResponsePayload;
+import org.wordpress.android.fluxc.store.PostStore.FetchedPostLikesResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.PostDeleteActionType;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.PostListItem;
@@ -63,13 +68,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
 public class PostRestClient extends BaseWPComRestClient {
-    public PostRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
-                          UserAgent userAgent) {
+    LikesUtilsProvider mLikesUtilsProvider;
+
+    @Inject public PostRestClient(Context appContext,
+                          Dispatcher dispatcher,
+                          @Named("regular") RequestQueue requestQueue,
+                          AccessToken accessToken,
+                          UserAgent userAgent,
+                          LikesUtilsProvider likesUtilsProvider) {
         super(appContext, dispatcher, requestQueue, accessToken, userAgent);
+        mLikesUtilsProvider = likesUtilsProvider;
     }
 
     public void fetchPost(final PostModel post, final SiteModel site) {
@@ -102,6 +116,69 @@ public class PostRestClient extends BaseWPComRestClient {
                         FetchPostResponsePayload payload = new FetchPostResponsePayload(post, site);
                         payload.error = new PostError(error.apiError, error.message);
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
+                    }
+                }
+        );
+        add(request);
+    }
+
+    public void fetchPostLikes(
+            final long siteId,
+            final long remotePostId,
+            final boolean requestNextPage,
+            final int pageLength
+    ) {
+        String url = WPCOMREST.sites.site(siteId).posts.post(remotePostId).likes.getUrlV1_2();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("number", String.valueOf(pageLength));
+
+        if (requestNextPage) {
+            Map<String, String> pageOffsetParams = mLikesUtilsProvider.getPageOffsetParams(
+                    LikeType.POST_LIKE,
+                    siteId,
+                    remotePostId
+            );
+            if (pageOffsetParams != null) {
+                params.putAll(pageOffsetParams);
+            }
+        }
+
+        final WPComGsonRequest<LikesWPComRestResponse> request = WPComGsonRequest.buildGetRequest(
+                url, params, LikesWPComRestResponse.class,
+                new Listener<LikesWPComRestResponse>() {
+                    @Override
+                    public void onResponse(LikesWPComRestResponse response) {
+                        List<LikeModel> likes = mLikesUtilsProvider.likesResponseToLikeList(
+                                response,
+                                siteId,
+                                remotePostId,
+                                LikeType.POST_LIKE
+                        );
+
+                        FetchedPostLikesResponsePayload payload = new FetchedPostLikesResponsePayload(
+                                likes,
+                                siteId,
+                                remotePostId,
+                                requestNextPage,
+                                likes.size() >= pageLength
+                        );
+                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostLikesAction(payload));
+                    }
+                },
+
+                new WPComErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
+                        FetchedPostLikesResponsePayload payload = new FetchedPostLikesResponsePayload(
+                                siteId,
+                                remotePostId,
+                                requestNextPage,
+                                true
+                        );
+                        payload.error = new PostError(error.apiError, error.message);
+
+                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostLikesAction(payload));
                     }
                 }
         );
@@ -227,7 +304,7 @@ public class PostRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    public void pushPost(final PostModel post, final SiteModel site) {
+    public void pushPost(final PostModel post, final SiteModel site, final boolean isFirstTimePublish) {
         String url;
 
         if (post.isLocalDraft()) {
@@ -251,6 +328,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         uploadedPost.setLocalSiteId(site.getId());
 
                         RemotePostPayload payload = new RemotePostPayload(uploadedPost, site);
+                        payload.isFirstTimePublish = isFirstTimePublish;
                         mDispatcher.dispatch(UploadActionBuilder.newPushedPostAction(payload));
                     }
                 },

@@ -2,7 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_margin="@dimen/activity_start_end_margin"
+    android:orientation="vertical"
+    tools:ignore="HardcodedText">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,9 +14,23 @@
 
     <Spinner
         android:id="@+id/platform_spinner"
+        style="@style/Widget.AppCompat.Spinner.Underlined"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Experiment names (separated by comma)"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/experiment_names_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.AppCompat.Spinner.Underlined"/>
+        android:hint="Experiment names"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -45,21 +61,21 @@
 
     <Button
         android:id="@+id/fetch_assignments"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fetch assignments"
         tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/get_cached_assignments"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Get cached assignments"
         tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/clear_cached_assignments"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Clear cached assignments"
         tools:ignore="HardcodedText" />

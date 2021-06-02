@@ -84,6 +84,37 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testInsertOrUpdateProductWithDecimalQuantity() {
+        val productModel = ProductTestUtils.generateSampleProduct(
+                remoteId = 42,
+                stockQuantity = 4.2
+        )
+        val site = SiteModel().apply { id = productModel.localSiteId }
+
+        // Test inserting product
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+        val storedProductsCount = ProductSqlUtils.getProductCountForSite(site)
+        assertEquals(1, storedProductsCount)
+
+        // Test updating product
+        val storedProduct = ProductSqlUtils.getProductByRemoteId(site, productModel.remoteProductId)
+        storedProduct?.apply {
+            stockQuantity = 4.0
+        }
+        storedProduct?.also {
+            ProductSqlUtils.insertOrUpdateProduct(it)
+        }
+
+        val updatedProductsCount = ProductSqlUtils.getProductCountForSite(site)
+        assertEquals(1, updatedProductsCount)
+
+        val updatedProduct = ProductSqlUtils.getProductByRemoteId(site, productModel.remoteProductId)
+        assertEquals(storedProduct?.id, updatedProduct?.id)
+        assertEquals(storedProduct?.name, updatedProduct?.name)
+        assertEquals(storedProduct?.virtual, updatedProduct?.virtual)
+    }
+
+    @Test
     fun testInsertOrUpdateProducts() {
         val site = SiteModel().apply { id = 2 }
         val products = ArrayList<WCProductModel>().apply {
@@ -135,6 +166,61 @@ class ProductSqlUtilsTest {
         // verify that the site 1 product is increases by 1
         val storedProductForSite1Count = ProductSqlUtils.getProductCountForSite(site1)
         assertEquals(2, storedProductForSite1Count)
+    }
+
+    @Test
+    fun testGetVirtualProductsForSite() {
+        // insert products for one site
+        val site1 = SiteModel().apply { id = 2 }
+        val products = ArrayList<WCProductModel>().apply {
+            this.add(ProductTestUtils.generateSampleProduct(40, siteId = site1.id, virtual = true))
+            this.add(ProductTestUtils.generateSampleProduct(41, siteId = site1.id, virtual = false))
+            this.add(ProductTestUtils.generateSampleProduct(42, siteId = site1.id, virtual = true))
+        }
+
+        ProductSqlUtils.insertOrUpdateProducts(products)
+
+        // verify that the product list exists locally
+        val remoteProductIds = products.map { it.remoteProductId }.toList()
+        val storedProductCountForSite1 = ProductSqlUtils.getProductCountByRemoteIds(site1, remoteProductIds)
+        assertEquals(remoteProductIds.size, storedProductCountForSite1)
+
+        // verify that only 2 of the products are virtual
+        assertEquals(2, ProductSqlUtils.getVirtualProductCountByRemoteIds(site1, remoteProductIds))
+
+        // insert products for another site
+        val site2 = SiteModel().apply { id = 10 }
+        val products2 = ArrayList<WCProductModel>().apply {
+            this.add(ProductTestUtils.generateSampleProduct(40, siteId = site2.id, virtual = true))
+            this.add(ProductTestUtils.generateSampleProduct(41, siteId = site2.id, virtual = true))
+            this.add(ProductTestUtils.generateSampleProduct(42, siteId = site2.id, virtual = true))
+        }
+        ProductSqlUtils.insertOrUpdateProducts(products2)
+
+        // verify that it is stored
+        val remoteProductIds2 = products2.map { it.remoteProductId }.toList()
+        val storedProductCountForSite2 = ProductSqlUtils.getProductCountByRemoteIds(site2, remoteProductIds2)
+        assertEquals(remoteProductIds2.size, storedProductCountForSite2)
+
+        // verify that all of the products are virtual
+        assertEquals(3, ProductSqlUtils.getVirtualProductCountByRemoteIds(site2, remoteProductIds2))
+
+        // insert products for another site
+        val site3 = SiteModel().apply { id = 11 }
+        val products3 = ArrayList<WCProductModel>().apply {
+            this.add(ProductTestUtils.generateSampleProduct(40, siteId = site3.id))
+            this.add(ProductTestUtils.generateSampleProduct(41, siteId = site3.id))
+            this.add(ProductTestUtils.generateSampleProduct(42, siteId = site3.id))
+        }
+        ProductSqlUtils.insertOrUpdateProducts(products3)
+
+        // verify that it is stored
+        val remoteProductIds3 = products3.map { it.remoteProductId }.toList()
+        val storedProductCountForSite3 = ProductSqlUtils.getProductCountByRemoteIds(site3, remoteProductIds3)
+        assertEquals(remoteProductIds3.size, storedProductCountForSite3)
+
+        // verify that none of the products are virtual
+        assertEquals(0, ProductSqlUtils.getVirtualProductCountByRemoteIds(site3, remoteProductIds3))
     }
 
     @Test

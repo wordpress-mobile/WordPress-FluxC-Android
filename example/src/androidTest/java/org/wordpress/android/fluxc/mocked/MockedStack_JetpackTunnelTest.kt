@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -191,7 +192,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
     class JetpackTunnelClientForTests @Inject constructor(
         appContext: Context,
         dispatcher: Dispatcher,
-        requestQueue: RequestQueue,
+        @Named("regular") requestQueue: RequestQueue,
         accessToken: AccessToken,
         userAgent: UserAgent
     ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {

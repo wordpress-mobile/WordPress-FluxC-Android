@@ -24,11 +24,11 @@ import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.SitesModel;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
+import org.wordpress.android.fluxc.network.rest.wpcom.site.AtomicCookie;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.GutenbergLayout;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.GutenbergLayoutCategory;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.PrivateAtomicCookie;
-import org.wordpress.android.fluxc.network.rest.wpcom.site.AtomicCookie;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.PrivateAtomicCookieResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient.DeleteSiteResponsePayload;
@@ -77,6 +77,22 @@ public class SiteStore extends Store {
         public String username;
         public String password;
         public String url;
+    }
+
+    public static class FetchSitesPayload extends Payload<BaseNetworkError> {
+        @NonNull private List<SiteFilter> mFilters = new ArrayList<>();
+
+        public FetchSitesPayload() {
+        }
+
+        public FetchSitesPayload(@NonNull List<SiteFilter> filters) {
+            this.mFilters = filters;
+        }
+
+        @NonNull
+        public List<SiteFilter> getFilters() {
+            return mFilters;
+        }
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -160,16 +176,25 @@ public class SiteStore extends Store {
         @NonNull public SiteModel site;
         @Nullable public List<String> supportedBlocks;
         @Nullable public Float previewWidth;
+        @Nullable public Float previewHeight;
         @Nullable public Float scale;
+        @Nullable public Boolean isBeta;
+        @Nullable public Boolean preferCache;
 
         public FetchBlockLayoutsPayload(@NonNull SiteModel site,
                                         @Nullable List<String> supportedBlocks,
                                         @Nullable Float previewWidth,
-                                        @Nullable Float scale) {
+                                        @Nullable Float previewHeight,
+                                        @Nullable Float scale,
+                                        @Nullable Boolean isBeta,
+                                        @Nullable Boolean preferCache) {
             this.site = site;
             this.supportedBlocks = supportedBlocks;
             this.previewWidth = previewWidth;
+            this.previewHeight = previewHeight;
             this.scale = scale;
+            this.isBeta = isBeta;
+            this.preferCache = preferCache;
         }
     }
 
@@ -1207,13 +1232,29 @@ public class SiteStore extends Store {
         }
     }
 
+    public enum SiteFilter {
+        ATOMIC("atomic"),
+        JETPACK("jetpack"),
+        WPCOM("wpcom");
+
+        private final String mString;
+
+        SiteFilter(final String s) {
+            mString = s;
+        }
+
+        @Override
+        public String toString() {
+            return mString;
+        }
+    }
+
     private SiteRestClient mSiteRestClient;
     private SiteXMLRPCClient mSiteXMLRPCClient;
     private PostSqlUtils mPostSqlUtils;
     private PrivateAtomicCookie mPrivateAtomicCookie;
 
-    @Inject
-    public SiteStore(Dispatcher dispatcher, PostSqlUtils postSqlUtils, SiteRestClient siteRestClient,
+    @Inject public SiteStore(Dispatcher dispatcher, PostSqlUtils postSqlUtils, SiteRestClient siteRestClient,
                      SiteXMLRPCClient siteXMLRPCClient, PrivateAtomicCookie privateAtomicCookie) {
         super(dispatcher);
         mSiteRestClient = siteRestClient;
@@ -1304,6 +1345,13 @@ public class SiteStore extends Store {
     }
 
     /**
+     * Returns the number of .COM Atomic sites in the store.
+     */
+    public int getWPComAtomicSitesCount() {
+        return (int) SiteSqlUtils.getSitesWith(SiteModelTable.IS_WPCOM_ATOMIC, true).count();
+    }
+
+    /**
      * Returns sites with a name or url matching the search string.
      */
     @NonNull
@@ -1325,6 +1373,13 @@ public class SiteStore extends Store {
      */
     public boolean hasWPComSite() {
         return getWPComSitesCount() != 0;
+    }
+
+    /**
+     * Checks whether the store contains at least one .COM Atomic site.
+     */
+    public boolean hasWPComAtomicSite() {
+        return getWPComAtomicSitesCount() != 0;
     }
 
     /**
@@ -1486,6 +1541,28 @@ public class SiteStore extends Store {
         }
     }
 
+    /**
+     * Gets the cached content of a page layout
+     *
+     * @param site the current site
+     * @param slug the slug of the layout
+     * @return the content or null if the content is not cached
+     */
+    public @Nullable String getBlockLayoutContent(@NonNull SiteModel site, @NonNull String slug) {
+        return SiteSqlUtils.getBlockLayoutContent(site, slug);
+    }
+
+    /**
+     * Gets the cached page layout
+     *
+     * @param site the current site
+     * @param slug the slug of the layout
+     * @return the layout or null if the layout is not cached
+     */
+    public @Nullable GutenbergLayout getBlockLayout(@NonNull SiteModel site, @NonNull String slug) {
+        return SiteSqlUtils.getBlockLayout(site, slug);
+    }
+
     public List<PostFormatModel> getPostFormats(SiteModel site) {
         return SiteSqlUtils.getPostFormats(site);
     }
@@ -1513,7 +1590,7 @@ public class SiteStore extends Store {
                 fetchSite((SiteModel) action.getPayload());
                 break;
             case FETCH_SITES:
-                mSiteRestClient.fetchSites();
+                fetchSites((FetchSitesPayload) action.getPayload());
                 break;
             case FETCHED_SITES:
                 handleFetchedSitesWPComRest((SitesModel) action.getPayload());
@@ -1701,6 +1778,10 @@ public class SiteStore extends Store {
         } else {
             mSiteXMLRPCClient.fetchSite(site);
         }
+    }
+
+    private void fetchSites(FetchSitesPayload payload) {
+        mSiteRestClient.fetchSites(payload.getFilters());
     }
 
     private void fetchSitesXmlRpc(RefreshSitesXMLRPCPayload payload) {
@@ -1899,12 +1980,14 @@ public class SiteStore extends Store {
     }
 
     private void fetchBlockLayouts(FetchBlockLayoutsPayload payload) {
+        if (payload.preferCache != null && payload.preferCache && cachedLayoutsRetrieved(payload.site)) return;
         if (payload.site.isUsingWpComRestApi()) {
             mSiteRestClient
-                    .fetchWpComBlockLayouts(payload.site, payload.supportedBlocks, payload.previewWidth, payload.scale);
+                    .fetchWpComBlockLayouts(payload.site, payload.supportedBlocks,
+                            payload.previewWidth, payload.previewHeight, payload.scale, payload.isBeta);
         } else {
-            mSiteRestClient.fetchSelfHostedBlockLayouts(payload.site, payload.supportedBlocks, payload.previewWidth,
-                    payload.scale);
+            mSiteRestClient.fetchSelfHostedBlockLayouts(payload.site, payload.supportedBlocks,
+                    payload.previewWidth, payload.previewHeight, payload.scale, payload.isBeta);
         }
     }
 
@@ -2174,17 +2257,29 @@ public class SiteStore extends Store {
     private void handleFetchedBlockLayouts(FetchedBlockLayoutsResponsePayload payload) {
         if (payload.isError()) {
             // Return cached layouts on error
-            List<GutenbergLayout> layouts = SiteSqlUtils.getBlockLayouts(payload.site);
-            List<GutenbergLayoutCategory> categories = SiteSqlUtils.getBlockLayoutCategories(payload.site);
-            if (!layouts.isEmpty() && !categories.isEmpty()) {
-                emitChange(new OnBlockLayoutsFetched(layouts, categories, null));
-            } else {
+            if (!cachedLayoutsRetrieved(payload.site)) {
                 emitChange(new OnBlockLayoutsFetched(payload.layouts, payload.categories, payload.error));
             }
         } else {
             SiteSqlUtils.insertOrReplaceBlockLayouts(payload.site, payload.categories, payload.layouts);
             emitChange(new OnBlockLayoutsFetched(payload.layouts, payload.categories, payload.error));
         }
+    }
+
+    /**
+     * Emits a new [OnBlockLayoutsFetched] event with cached layouts for a given site
+     *
+     * @param site the site for which the cached layouts should be retrieved
+     * @return true if cached layouts were retrieved successfully
+     */
+    private boolean cachedLayoutsRetrieved(SiteModel site) {
+        List<GutenbergLayout> layouts = SiteSqlUtils.getBlockLayouts(site);
+        List<GutenbergLayoutCategory> categories = SiteSqlUtils.getBlockLayoutCategories(site);
+        if (!layouts.isEmpty() && !categories.isEmpty()) {
+            emitChange(new OnBlockLayoutsFetched(layouts, categories, null));
+            return true;
+        }
+        return false;
     }
 
     // Automated Transfers
