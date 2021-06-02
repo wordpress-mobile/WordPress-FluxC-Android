@@ -362,7 +362,8 @@ class WCShippingLabelStore @Inject constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packagesData: List<WCShippingLabelPackageData>,
-        customsData: List<WCShippingPackageCustoms>?
+        customsData: List<WCShippingPackageCustoms>?,
+        emailReceipts: Boolean = false
     ): WooResult<List<WCShippingLabelModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "purchaseShippingLabels") {
             val response = restClient.purchaseShippingLabels(
@@ -371,7 +372,8 @@ class WCShippingLabelStore @Inject constructor(
                     origin,
                     destination,
                     packagesData,
-                    customsData
+                    customsData,
+                    emailReceipts
             )
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
