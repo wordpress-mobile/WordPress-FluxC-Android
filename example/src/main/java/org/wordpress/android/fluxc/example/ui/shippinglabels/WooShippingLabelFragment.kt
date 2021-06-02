@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
@@ -267,6 +268,38 @@ class WooShippingLabelFragment : Fragment() {
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
                         wcShippingLabelStore.getPackageTypes(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("$it")
+                    }
+                }
+            }
+        }
+
+        create_package.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        val customPackage = CustomPackage(
+                                title = "example package 2",
+                                isLetter = false,
+                                dimensions = "12 x 12 x 12",
+                                boxWeight = 1.0f
+                        )
+                        val customPackage2 = CustomPackage(
+                                title = "example package 3",
+                                isLetter = false,
+                                dimensions = "12 x 12 x 12",
+                                boxWeight = 1.0f
+                        )
+                        wcShippingLabelStore.createPackages(
+                                site = site,
+                                customPackages = listOf(customPackage, customPackage2),
+                                predefinedPackages = emptyList()
+                        )
                     }
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")

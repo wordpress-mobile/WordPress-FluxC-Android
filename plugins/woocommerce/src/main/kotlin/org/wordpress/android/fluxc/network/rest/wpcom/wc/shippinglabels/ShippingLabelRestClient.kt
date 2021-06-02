@@ -347,7 +347,7 @@ class ShippingLabelRestClient @Inject constructor(
         }
 
         val params = mapOf(
-                "custom" to customPackages.toMap(),
+                "custom" to customPackages.map { it.toMap() },
                 "predefined" to predefinedParam.toMap()
         )
 
