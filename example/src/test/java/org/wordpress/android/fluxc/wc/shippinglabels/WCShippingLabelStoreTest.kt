@@ -426,7 +426,7 @@ class WCShippingLabelStoreTest {
                 any(),
                 any(),
                 anyOrNull(),
-                emailReceipts
+                any()
         ))
                 .thenReturn(WooPayload(error))
 
@@ -452,7 +452,7 @@ class WCShippingLabelStoreTest {
                 any(),
                 any(),
                 anyOrNull(),
-                emailReceipts
+                any()
         )).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
@@ -485,7 +485,7 @@ class WCShippingLabelStoreTest {
                 any(),
                 any(),
                 anyOrNull(),
-                emailReceipts
+                any()
         )
         verify(restClient).fetchShippingLabelsStatus(
                 site,
@@ -518,7 +518,7 @@ class WCShippingLabelStoreTest {
                 any(),
                 any(),
                 anyOrNull(),
-                emailReceipts
+                any()
         )).thenReturn(response)
 
         whenever(restClient.fetchShippingLabelsStatus(any(), any(), any())).thenReturn(WooPayload(error))
@@ -539,7 +539,7 @@ class WCShippingLabelStoreTest {
                 any(),
                 any(),
                 anyOrNull(),
-                emailReceipts
+                any()
         )
         verify(restClient, times(3)).fetchShippingLabelsStatus(
                 site,
@@ -559,7 +559,7 @@ class WCShippingLabelStoreTest {
                 any(),
                 any(),
                 anyOrNull(),
-                emailReceipts
+                any()
         )).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
