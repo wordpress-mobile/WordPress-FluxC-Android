@@ -430,9 +430,7 @@ class WooShippingLabelFragment : Fragment() {
                                     WCCustomsItem(
                                             productId = it.productId!!,
                                             description = it.name.orEmpty(),
-                                            value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO).multiply(
-                                                    BigDecimal.valueOf(quantity.toDouble())
-                                            ),
+                                            value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO),
                                             quantity = quantity,
                                             weight = 1f,
                                             hsTariffNumber = null,
