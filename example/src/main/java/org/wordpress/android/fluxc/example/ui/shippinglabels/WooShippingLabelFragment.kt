@@ -279,33 +279,49 @@ class WooShippingLabelFragment : Fragment() {
             }
         }
 
-        create_package.setOnClickListener {
+        create_custom_package.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
-                    val result = withContext(Dispatchers.Default) {
-                        val customPackage = CustomPackage(
-                                title = "example package 2",
-                                isLetter = false,
-                                dimensions = "12 x 12 x 12",
-                                boxWeight = 1.0f
-                        )
-                        val customPackage2 = CustomPackage(
-                                title = "example package 3",
-                                isLetter = false,
-                                dimensions = "12 x 12 x 12",
-                                boxWeight = 1.0f
-                        )
-                        wcShippingLabelStore.createPackages(
-                                site = site,
-                                customPackages = listOf(customPackage, customPackage2),
-                                predefinedPackages = emptyList()
-                        )
-                    }
-                    result.error?.let {
-                        prependToLog("${it.type}: ${it.message}")
-                    }
-                    result.model?.let {
-                        prependToLog("$it")
+                    val customPackageName = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter Package name"
+                    ).toString()
+                    val customPackageDimension = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter Package dimensions"
+                    ).toString()
+                    val customPackageIsLetter = showSingleLineDialog(
+                            requireActivity(),
+                            "Is it a letter? (true or false)"
+                    ).toBoolean()
+                    val customPackageWeightText = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter Package weight"
+                    ).toString()
+
+                    val customPackageWeight = customPackageWeightText.toFloatOrNull()
+                    if(customPackageWeight == null) {
+                        prependToLog("Invalid float value for package weight: $customPackageWeightText\n")
+                    } else {
+                        val result = withContext(Dispatchers.Default) {
+                            val customPackage = CustomPackage(
+                                    title = customPackageName,
+                                    isLetter = customPackageIsLetter,
+                                    dimensions = customPackageDimension,
+                                    boxWeight = customPackageWeight
+                            )
+                            wcShippingLabelStore.createPackages(
+                                    site = site,
+                                    customPackages = listOf(customPackage),
+                                    predefinedPackages = emptyList()
+                            )
+                        }
+                        result.error?.let {
+                            prependToLog("${it.type}: ${it.message}")
+                        }
+                        result.model?.let {
+                            prependToLog("$it")
+                        }
                     }
                 }
             }
