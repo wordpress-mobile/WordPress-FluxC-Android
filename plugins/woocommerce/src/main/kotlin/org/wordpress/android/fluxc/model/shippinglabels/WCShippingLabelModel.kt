@@ -104,13 +104,6 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         return gson.fromJson(refund, responseType) as? WCShippingLabelRefundModel
     }
 
-    class StoreOptions {
-        @SerializedName("currency_symbol") val currencySymbol: String? = null
-        @SerializedName("dimension_unit") val dimensionUnit: String? = null
-        @SerializedName("weight_unit") val weightUnit: String? = null
-        @SerializedName("origin_country") val originCountry: String? = null
-    }
-
     /**
      * Model class corresponding to the [formData] map from the API response.
      * The [formData] contains the [origin] and [destination] address and the
