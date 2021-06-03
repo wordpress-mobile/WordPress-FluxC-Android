@@ -29,7 +29,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var productIds = "" // list of product ids the shipping label was purchased for
     @Column var formData = "" // map containing package and product details related to that shipping label
     @Column var refund = "" // map containing refund information for a shipping label
-    @Column var commercialInvoiceUrl: String? =  null // URL pointing to the international commercial URL
+    @Column var commercialInvoiceUrl: String? = null // URL pointing to the international commercial URL
 
     override fun getId() = id
 
