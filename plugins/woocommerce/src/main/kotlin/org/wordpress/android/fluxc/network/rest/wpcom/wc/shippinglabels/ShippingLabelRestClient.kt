@@ -346,8 +346,23 @@ class ShippingLabelRestClient @Inject constructor(
             )
         }
 
+        val mappedCustomPackages = customPackages.map {
+            mapOf(
+                    "name" to it.title,
+                    "is_letter" to it.isLetter,
+                    "inner_dimensions" to it.dimensions,
+                    "box_weight" to it.boxWeight,
+
+                    /*
+                    In wp-admin, The two values below are not user-editable but are saved during
+                    package creation with hardcoded values. Here we replicate the same behavior.
+                     */
+                    "is_user_defined" to true,
+                    "max_weight" to 0
+            )
+        }
         val params = mapOf(
-                "custom" to customPackages.map { it.toMap() },
+                "custom" to mappedCustomPackages.map { it.toMap() },
                 "predefined" to predefinedParam.toMap()
         )
 
