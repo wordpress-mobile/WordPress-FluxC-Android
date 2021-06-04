@@ -327,25 +327,21 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
+    // Supports both creating custom package(s), or activating existing predefined package(s).
+    // Creating singular or multiple items, as well as mixed items at once are supported.
     suspend fun createPackages(
         site: SiteModel,
         customPackages: List<CustomPackage> = emptyList(),
         predefinedOptions: List<PredefinedOption> = emptyList()
     ): WooPayload<Boolean> {
-        val url = WOOCOMMERCE.connect.packages.pathV1
-
-        // A PredefinedOption instance contains more information than what's needed in the request,
-        // so here we simplify the list  into a list of PredefinedOptionParam instead.
-        val predefinedParam: MutableList<PredefinedOptionParam> = mutableListOf()
-        predefinedOptions.forEach { predefinedOption ->
-            predefinedParam.add(
-                    PredefinedOptionParam(
-                            predefinedOption.title,
-                            predefinedOption.predefinedPackages.map { it.title }
-                    )
-            )
+        // We need at least one of the lists to not be empty to continue with API call.
+        if(customPackages.isEmpty() && predefinedOptions.isEmpty()) {
+            return WooPayload(false)
         }
 
+        val url = WOOCOMMERCE.connect.packages.pathV1
+
+        // Mapping for custom packages
         val mappedCustomPackages = customPackages.map {
             mapOf(
                     "name" to it.title,
@@ -361,9 +357,42 @@ class ShippingLabelRestClient @Inject constructor(
                     "max_weight" to 0
             )
         }
+
+        // Mapping for predefined options.
+        // First, grab all unique carriers.
+        val carriers = mutableListOf<String>()
+        predefinedOptions.distinctBy { it.carrier }.forEach { option ->
+            carriers.add(option.carrier)
+        }
+
+        // Next, build a Map replicating the required JSON request structure. It should be like the following:
+        //
+        //    "carrier_1": [
+        //      "package_1",
+        //      "package_2",
+        //      ...
+        //    ],
+        //    "carrier_2": [
+        //      "package_3",
+        //      "package_4",
+        //      ...
+        //    ]
+        //
+        val predefinedParam = mutableMapOf<String, List<String>>()
+        carriers.forEach { carrier ->
+            val packageIds = mutableListOf<String>()
+            val packagesOnThisCarrier = predefinedOptions.filter { it.carrier == carrier }
+            packagesOnThisCarrier.forEach { option ->
+                option.predefinedPackages.forEach {
+                    packageIds.add(it.id)
+                }
+            }
+            predefinedParam[carrier] = packageIds
+        }
+
         val params = mapOf(
                 "custom" to mappedCustomPackages.map { it.toMap() },
-                "predefined" to predefinedParam.toMap()
+                "predefined" to predefinedParam
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -513,9 +542,4 @@ class ShippingLabelRestClient @Inject constructor(
                 }
         }
     }
-
-    data class PredefinedOptionParam(
-        val title: String,
-        val items: List<String>
-    )
 }
