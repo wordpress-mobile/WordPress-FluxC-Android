@@ -215,7 +215,7 @@ class WCShippingLabelStore @Inject constructor(
                 }
                 response.result?.isSuccess == true -> {
                     val customPackages = getCustomPackages(response.result)
-                    val predefinedOptions = getPredefinedOptions(response.result)
+                    val predefinedOptions = getActivePredefinedOptions(response.result)
                     WooResult(WCPackagesResult(customPackages, predefinedOptions))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -252,7 +252,52 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
-    private fun getPredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
+    suspend fun getAllPredefinedOptions(
+        site: SiteModel
+    ): WooResult<List<PredefinedOption>> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAllPredefinedOptions") {
+            val response = restClient.getPackageTypes(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.isSuccess == true -> {
+                    WooResult(selectAllPredefinedOptions(response.result))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    private fun selectAllPredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
+        val predefinedOptions = mutableListOf<PredefinedOption>()
+        result.formSchema.predefinedSchema.entries.forEach { carrier ->
+            carrier.value.forEach { option ->
+                val predefinedPackages = mutableListOf<PredefinedPackage>()
+                option.value.definitions.forEach { definition ->
+                    predefinedPackages.add(
+                            PredefinedPackage(
+                                    id = definition.id,
+                                    title = definition.name,
+                                    isLetter = definition.isLetter,
+                                    dimensions = definition.outerDimensions,
+                                    boxWeight = definition.boxWeight ?: 0f
+                            )
+                    )
+                }
+                predefinedOptions.add(
+                        PredefinedOption(
+                                title = option.value.title,
+                                carrier = carrier.key,
+                                predefinedPackages = predefinedPackages
+                        )
+                )
+            }
+        }
+        return predefinedOptions
+    }
+
+    private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
         val predefinedOptions = mutableListOf<PredefinedOption>()
         result.formSchema.predefinedSchema.entries.forEach { provider ->
             provider.value.forEach { option ->
