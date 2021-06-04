@@ -41,6 +41,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
@@ -322,6 +323,51 @@ class WooShippingLabelFragment : Fragment() {
                         result.model?.let {
                             prependToLog("$it")
                         }
+                    }
+                }
+            }
+        }
+
+        // This test gets all available predefined options, picks one at random, then activates one package in it.
+        // The end result can either it succeeds (if it hasn't been activated before), or it won't. For the
+        // latter case, the button can be re-tried again by tester.
+        activate_predefined_package.setOnClickListener {
+            prependToLog("Grabbing all available predefined package options...")
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val allPredefinedOptions = mutableListOf<PredefinedOption>()
+                    val allPredefinedResult = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.getAllPredefinedOptions(site)
+                    }
+
+                    allPredefinedResult.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    allPredefinedResult.model?.let {
+                        allPredefinedOptions.addAll(it)
+                    }
+
+                    // Pick a random Option, and then pick only one Package inside of it.
+                    val randomOption = allPredefinedOptions.random()
+                    val randomParam = PredefinedOption(
+                            title = randomOption.title,
+                            carrier = randomOption.carrier,
+                            predefinedPackages = listOf(randomOption.predefinedPackages.random())
+                    )
+                    prependToLog("Activating ${randomParam.predefinedPackages.first().id} from ${randomParam.carrier}...")
+
+                    val result = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.createPackages(
+                                site = site,
+                                customPackages = emptyList(),
+                                predefinedPackages = listOf(randomParam)
+                        )
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("$it")
                     }
                 }
             }
