@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.NETWORK_E
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
+import org.wordpress.android.fluxc.model.pay.WCPayAccountResponsePayload
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -93,6 +94,12 @@ class PayRestClient @Inject constructor(
                 )
             }
         }
+    }
+
+    suspend fun loadAccount(
+        site: SiteModel
+    ): WCPayAccountResponsePayload {
+        val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
     }
 
     private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
