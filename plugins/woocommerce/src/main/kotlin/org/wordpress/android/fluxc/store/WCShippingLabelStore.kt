@@ -259,7 +259,7 @@ class WCShippingLabelStore @Inject constructor(
                 result.formData.predefinedData[provider.key]?.let { packageIds ->
                     val predefinedPackages = getPredefinedPackages(packageIds, option.value.definitions)
                     if (predefinedPackages.isNotEmpty()) {
-                        predefinedOptions.add(PredefinedOption(option.value.title, predefinedPackages))
+                        predefinedOptions.add(PredefinedOption(option.value.title, provider.key, predefinedPackages))
                     }
                 }
             }

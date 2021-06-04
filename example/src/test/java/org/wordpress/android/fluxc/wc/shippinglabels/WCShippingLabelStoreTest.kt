@@ -162,7 +162,8 @@ class WCShippingLabelStoreTest {
 
     private val sampleListOfOnePredefinedPackage = listOf(
             PredefinedOption(
-                    title = "usps",
+                    title = "USPS Priority Mail Flat Rate Boxes",
+                    carrier = "usps",
                     predefinedPackages = listOf(
                             PredefinedPackage(
                                     id = "small_flat_box",
@@ -382,6 +383,7 @@ class WCShippingLabelStoreTest {
                 ),
                 listOf(
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
+                                "usps",
                                 listOf(
                                         PredefinedPackage(
                                                 "small_flat_box",
@@ -401,6 +403,7 @@ class WCShippingLabelStoreTest {
                         ),
                         PredefinedOption(
                                 "DHL Express",
+                                "dhlexpress",
                                 listOf(PredefinedPackage(
                                         "LargePaddedPouch",
                                         "Large Padded Pouch",
