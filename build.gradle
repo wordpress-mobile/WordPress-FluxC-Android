@@ -66,4 +66,5 @@ ext {
     mockitoVersion = '3.3.3'
     assertJVersion = '3.19.0'
     kotlinCoroutinesVersion = '1.3.9'
+    roomVersion = "2.3.0"
 }
