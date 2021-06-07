@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.persistence.EditorThemeSqlUtils
-import org.wordpress.android.fluxc.persistence.WPAndroidDatabase
 import org.wordpress.android.fluxc.store.EditorThemeStore
 import org.wordpress.android.fluxc.store.EditorThemeStore.FetchEditorThemePayload
 import org.wordpress.android.fluxc.store.EditorThemeStore.OnEditorThemeChanged
@@ -26,7 +25,6 @@ class EditorThemeFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var editorThemeStore: EditorThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher
-        @Inject lateinit var database: WPAndroidDatabase
 
     val site: SiteModel? by lazy {
         siteStore.sites.firstOrNull {
