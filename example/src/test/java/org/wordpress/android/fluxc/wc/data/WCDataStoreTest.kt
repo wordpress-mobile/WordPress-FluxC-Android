@@ -11,13 +11,13 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.data.WCCountryMapper
 import org.wordpress.android.fluxc.model.data.WCLocationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.data.WCDataRestClient
-import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCDataStore
 import org.wordpress.android.fluxc.test
@@ -51,7 +51,7 @@ class WCDataStoreTest {
                 mapper
         )
 
-        SiteSqlUtils.insertOrUpdateSite(site)
+        TestSiteSqlUtils.siteSqlUtils.insertOrUpdateSite(site)
     }
 
     @Test

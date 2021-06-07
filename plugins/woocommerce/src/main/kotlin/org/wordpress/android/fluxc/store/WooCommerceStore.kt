@@ -42,7 +42,8 @@ open class WooCommerceStore @Inject constructor(
     dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
     private val systemRestClient: WooSystemRestClient,
-    private val wcCoreRestClient: WooCommerceRestClient
+    private val wcCoreRestClient: WooCommerceRestClient,
+    private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
@@ -132,7 +133,7 @@ open class WooCommerceStore @Inject constructor(
     }
 
     fun getWooCommerceSites(): MutableList<SiteModel> =
-            SiteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
+            siteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
 
     /**
      * Given a [SiteModel], returns its WooCommerce site settings, or null if no settings are stored for this site.
