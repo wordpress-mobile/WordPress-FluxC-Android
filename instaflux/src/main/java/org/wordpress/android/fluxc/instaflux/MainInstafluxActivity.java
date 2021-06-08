@@ -136,6 +136,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
             wpcomFetchSites(username, password);
         } else {
             mSelfhostedPayload = new RefreshSitesXMLRPCPayload(username, password, url);
+
             mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url));
         }
     }
@@ -215,7 +216,8 @@ public class MainInstafluxActivity extends AppCompatActivity {
             } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.HTTP_AUTH_REQUIRED) {
                 showHTTPAuthDialog(event.failedEndpoint);
             } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                mSelfhostedPayload.url = event.failedEndpoint;
+                mSelfhostedPayload = mSelfhostedPayload
+                        .copy(mSelfhostedPayload.username, mSelfhostedPayload.password, event.failedEndpoint);
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
             AppLog.e(AppLog.T.API, "Discover error: " + event.error);

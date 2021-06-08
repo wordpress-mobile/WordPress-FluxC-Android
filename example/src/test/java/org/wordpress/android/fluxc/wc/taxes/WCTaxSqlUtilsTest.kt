@@ -8,9 +8,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
-import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCTaxSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
@@ -37,7 +37,7 @@ class WCTaxSqlUtilsTest {
         config.reset()
 
         // Insert the site into the db so it's available later for tax classes
-        SiteSqlUtils.insertOrUpdateSite(site)
+        TestSiteSqlUtils.siteSqlUtils.insertOrUpdateSite(site)
     }
 
     @Test
@@ -127,7 +127,7 @@ class WCTaxSqlUtilsTest {
         assertEquals(taxClassList.size, savedTaxClassList.size)
 
         // Delete site and verify tac class list  deleted via foreign key constraint
-        SiteSqlUtils.deleteSite(site)
+        TestSiteSqlUtils.siteSqlUtils.deleteSite(site)
         savedTaxClassList = WCTaxSqlUtils.getTaxClassesForSite(site.id)
         assertEquals(0, savedTaxClassList.size)
     }

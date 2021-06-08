@@ -13,6 +13,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -34,7 +35,14 @@ import kotlin.test.assertEquals
 class WooCommerceStoreTest {
     private val appContext = RuntimeEnvironment.application.applicationContext
     private val restClient = mock<WooSystemRestClient>()
-    private val wooCommerceStore = WooCommerceStore(appContext, Dispatcher(), initCoroutineEngine(), restClient, mock())
+    private val wooCommerceStore = WooCommerceStore(
+            appContext,
+            Dispatcher(),
+            initCoroutineEngine(),
+            restClient,
+            mock(),
+            TestSiteSqlUtils.siteSqlUtils
+    )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply { id = 1 }
 

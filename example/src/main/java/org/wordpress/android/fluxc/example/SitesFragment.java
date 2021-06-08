@@ -40,6 +40,7 @@ public class SitesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
     @Inject XPostsStore mXPostsStore;
+    @Inject SiteSqlUtils mSiteSqlUtils;
 
     @Override
     public void onAttach(Context context) {
@@ -112,7 +113,7 @@ public class SitesFragment extends Fragment {
             @Override public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Delete site from db
-                SiteSqlUtils.deleteSite(site);
+                mSiteSqlUtils.deleteSite(site);
 
                 prependToLog("Site " + site.getName() + "has been deleted from the db");
             }
