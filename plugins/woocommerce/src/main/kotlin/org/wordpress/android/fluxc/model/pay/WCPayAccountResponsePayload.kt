@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.model.pay
 
+import com.google.gson.annotations.SerializedName
 import java.util.Date
 
 data class WCPayAccountResponsePayload(
@@ -24,7 +25,8 @@ data class WCPayAccountResponsePayload(
     enum class WCPayAccountStatusEnum {
         /// This is the normal state for a fully functioning WCPay account. The merchant should be able to collect
         /// card present payments.
-        complete,
+        @SerializedName("complete")
+        COMPLETE,
 
         /// This state occurs when there is required business information missing from the account.
         /// If `hasOverdueRequirements` is also true, then the deadline for providing that information HAS PASSED and
@@ -34,29 +36,36 @@ data class WCPayAccountResponsePayload(
         /// until the deadline.
         /// Otherwise, if neither `hasOverdueRequirements` nor `hasPendingRequirements` is true, then the account is under
         /// review by Stripe and the merchant will probably not be able to collect card present payments.
-        restricted,
+        @SerializedName("restricted")
+        RESTRICTED,
 
         /// This state occurs when our payment processor rejects the merchant account due to suspected fraudulent
         /// activity. The merchant will NOT be able to collect card present payments.
-        rejectedFraud,
+        @SerializedName("rejectedFraud")
+        REJECTED_FRAUD,
 
         /// This state occurs when our payment processor rejects the merchant account due to terms of
         /// service violation(s). The merchant will NOT be able to collect card present payments.
-        rejectedTermsOfService,
+        @SerializedName("rejectedTermsOfService")
+        REJECTED_TERMS_OF_SERVICE,
 
         /// This state occurs when our payment processor rejects the merchant account due to sanctions/being
         /// on a watch list. The merchant will NOT be able to collect card present payments.
-        rejectedListed,
+        @SerializedName("rejectedListed")
+        REJECTED_LISTED,
 
         /// This state occurs when our payment processor rejects the merchant account due to any other reason.
         /// The merchant will NOT be able to collect card present payments.
-        rejectedOther,
+        @SerializedName("rejectedOther")
+        REJECTED_OTHER,
 
         /// This state occurs when the merchant hasn't  on-boarded yet. The merchant will NOT be able to
         /// collect card present payments.
-        noAccount,
+        @SerializedName("rejectedOther")
+        NO_ACCOUNT,
 
         /// This state occurs when the self-hosted site responded in a way we don't recognize.
-        unknown
+        @SerializedName("unknown")
+        UNKNOWN
     }
 }

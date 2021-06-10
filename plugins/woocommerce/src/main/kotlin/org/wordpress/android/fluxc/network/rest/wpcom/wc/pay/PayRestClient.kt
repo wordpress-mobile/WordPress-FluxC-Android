@@ -99,7 +99,7 @@ class PayRestClient @Inject constructor(
     suspend fun loadAccount(
         site: SiteModel
     ): WCPayAccountResponsePayload {
-        val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
+        val url = WOOCOMMERCE.payments.accounts.pathV3
     }
 
     private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
