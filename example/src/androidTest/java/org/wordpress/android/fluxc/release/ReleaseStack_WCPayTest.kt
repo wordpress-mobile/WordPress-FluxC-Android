@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
@@ -29,5 +30,19 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
         val result = payStore.fetchConnectionToken(sSite)
 
         assertTrue(result.model?.token?.isNotEmpty() == true)
+    }
+
+    @Test
+    fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
+        val result = payStore.loadAccount(sSite)
+
+        assertEquals(result.model?.country, "US")
+        assertEquals(result.model?.hasPendingRequirements, false)
+        assertEquals(result.model?.hasOverdueRequirements, false)
+        assertEquals(result.model?.statementDescriptor, "DO.WPMT.CO")
+        assertEquals(result.model?.country, "US")
+        assertEquals(result.model?.isCardPresentEligible, false)
+        assertEquals(result.model?.storeCurrencies?.default, "usd")
+        assertEquals(result.model?.storeCurrencies?.supportedCurrencies, listOf("usd"))
     }
 }
