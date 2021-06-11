@@ -25,6 +25,7 @@ class WCShippingLabelMapper
                 productNames = labelItem.productNames.toString()
                 productIds = labelItem.productIds.toString()
                 refund = labelItem.refund.toString()
+                commercialInvoiceUrl = labelItem.commercialInvoiceUrl
                 dateCreated = labelItem.dateCreated
                 expiryDate = labelItem.expiryDate
                 remoteOrderId = response.orderId ?: 0L
@@ -57,6 +58,7 @@ class WCShippingLabelMapper
                 productNames = labelItem.productNames.toString()
                 productIds = labelItem.productIds.toString()
                 refund = labelItem.refund.toString()
+                commercialInvoiceUrl = labelItem.commercialInvoiceUrl
                 dateCreated = labelItem.dateCreated
                 expiryDate = labelItem.expiryDate
 

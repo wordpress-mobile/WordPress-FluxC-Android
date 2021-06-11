@@ -2,10 +2,7 @@ package org.wordpress.android.fluxc.example.ui.shippinglabels
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
-import android.os.Environment
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +12,6 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Spinner
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
@@ -45,6 +41,7 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCRestrictionType
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
@@ -58,6 +55,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.math.BigDecimal
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -192,16 +190,61 @@ class WooShippingLabelFragment : Fragment() {
                                 prependToLog("${it.type}: ${it.message}")
                             }
                             response.model?.let { base64Content ->
-                                // Since this function is used only by Woo testers and the Woo app
-                                // only supports API > 21, it's fine to add a check here to support devices
-                                // above API 19
-                                if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
-                                    writePDFToFile(base64Content)?.let { openWebView(it) }
-                                }
+                                writePDFToFile(base64Content)?.let { openPdfReader(it) }
                             }
                         } catch (e: Exception) {
                             prependToLog("Error: ${e.message}")
                         }
+                    }
+                }
+            }
+        }
+
+        print_commercial_invoice.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val orderId = showSingleLineDialog(requireActivity(), "Enter the order ID", isNumeric = true)
+                            ?.toLong()
+
+                    val labelId = showSingleLineDialog(requireActivity(), "Enter the label ID", isNumeric = true)
+                            ?.toLong()
+
+                    if (orderId == null || labelId == null) {
+                        prependToLog(
+                                "One of the submitted parameters is null\n" +
+                                        "Order ID: $orderId\n" +
+                                        "Label ID: $labelId"
+                        )
+                        return@launch
+                    }
+
+                    val label: WCShippingLabelModel? = wcShippingLabelStore.getShippingLabelById(site, orderId, labelId)
+                            ?: suspend {
+                                prependToLog("Fetching label")
+                                wcShippingLabelStore.fetchShippingLabelsForOrder(site, orderId)
+                                wcShippingLabelStore.getShippingLabelById(site, orderId, labelId)
+                            }.invoke()
+
+                    if (label == null) {
+                        prependToLog("Couldn't find a label with the id $labelId")
+                        return@launch
+                    }
+
+                    if (label.commercialInvoiceUrl.isNullOrEmpty()) {
+                        prependToLog(
+                                "The label doesn't have a commercial invoice URL, " +
+                                        "please make sure to use a international label with a carrier that requires " +
+                                        "a commercial invoice URL (DHL for example)"
+                        )
+                        return@launch
+                    }
+
+                    prependToLog("Downloading the commercial invoice")
+                    val invoiceFile = withContext(Dispatchers.IO) {
+                        downloadUrl(label.commercialInvoiceUrl!!)
+                    }
+                    invoiceFile?.let {
+                        openPdfReader(it)
                     }
                 }
             }
@@ -639,10 +682,9 @@ class WooShippingLabelFragment : Fragment() {
     /**
      * Creates a temporary file for storing captured photos
      */
-    @RequiresApi(VERSION_CODES.KITKAT)
     private fun createTempPdfFile(context: Context): File? {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+        val storageDir = context.externalCacheDir
         return try {
             File.createTempFile(
                     "PDF_${timeStamp}_",
@@ -656,12 +698,6 @@ class WooShippingLabelFragment : Fragment() {
         }
     }
 
-    /**
-     * Since this function is used only by Woo testers and the Woo app
-     * only supports API > 21, it's fine to leave this method to support only
-     * API 19 and above.
-     */
-    @RequiresApi(VERSION_CODES.KITKAT)
     private fun writePDFToFile(base64Content: String): File? {
         return try {
             createTempPdfFile(requireContext())?.let { file ->
@@ -679,7 +715,7 @@ class WooShippingLabelFragment : Fragment() {
         }
     }
 
-    private fun openWebView(file: File) {
+    private fun openPdfReader(file: File) {
         val authority = requireContext().applicationContext.packageName + ".provider"
         val fileUri = FileProvider.getUriForFile(
                 requireContext(),
@@ -692,5 +728,22 @@ class WooShippingLabelFragment : Fragment() {
         sendIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(sendIntent)
+    }
+
+    private fun downloadUrl(url: String): File? {
+        return try {
+            URL(url).openConnection().inputStream.use { inputStream ->
+                createTempPdfFile(requireContext())?.let { file ->
+                    file.outputStream().use { output ->
+                        inputStream.copyTo(output)
+                    }
+                    file
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            prependToLog("Error downloading the file: ${e.message}")
+            null
+        }
     }
 }
