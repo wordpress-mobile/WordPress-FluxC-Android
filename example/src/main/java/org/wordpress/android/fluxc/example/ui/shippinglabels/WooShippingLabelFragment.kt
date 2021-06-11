@@ -430,9 +430,7 @@ class WooShippingLabelFragment : Fragment() {
                                     WCCustomsItem(
                                             productId = it.productId!!,
                                             description = it.name.orEmpty(),
-                                            value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO).multiply(
-                                                    BigDecimal.valueOf(quantity.toDouble())
-                                            ),
+                                            value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO),
                                             quantity = quantity,
                                             weight = 1f,
                                             hsTariffNumber = null,
@@ -493,7 +491,8 @@ class WooShippingLabelFragment : Fragment() {
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             destination,
                             listOf(packageData),
-                            customsData?.let { listOf(it) }
+                            customsData?.let { listOf(it) },
+                            emailReceipts = true
                     )
 
                     result.error?.let {
