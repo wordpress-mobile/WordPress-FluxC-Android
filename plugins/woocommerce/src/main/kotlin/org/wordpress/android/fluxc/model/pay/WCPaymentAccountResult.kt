@@ -106,6 +106,6 @@ data class WCPaymentAccountResult(
         @SerializedName("default")
         val default: String,
         @SerializedName("supported")
-        val supportedCurrencies: List<String>,
+        val supportedCurrencies: List<String>
     )
 }
