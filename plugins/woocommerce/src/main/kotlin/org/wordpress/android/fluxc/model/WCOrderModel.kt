@@ -113,7 +113,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         val price: String? = null // The per-item price
 
         @SerializedName("meta_data")
-        private val attributes: JsonArray? = null
+        val attributes: JsonArray? = null
 
         class Attribute(val key: String?, val value: String?)
 

@@ -35,7 +35,9 @@ data class WCRefundModel(
         val variationId: Long? = null,
         val total: BigDecimal? = null,
         val sku: String? = null,
-        val price: BigDecimal? = null
+        val price: BigDecimal? = null,
+        @SerializedName("meta_data")
+        val metaData: JsonArray? = null
     )
 
     data class WCRefundShippingLine(
@@ -48,6 +50,6 @@ data class WCRefundModel(
         @SerializedName("method_title")
         val methodTitle: String? = null,
         @SerializedName("meta_data")
-        val metaData: JsonArray? = null
+        val metata: JsonArray? = null
     )
 }
