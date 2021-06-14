@@ -732,6 +732,7 @@ class OrderRestClient @Inject constructor(
             lineItems = response.line_items.toString()
             shippingLines = response.shipping_lines.toString()
             feeLines = response.fee_lines.toString()
+            metaData = response.meta_data.toString()
         }
     }
 
