@@ -7,5 +7,5 @@ data class WCMetaData(
     @SerializedName("key") val key: String,
     @SerializedName("value") val value: Any,
     @SerializedName("display_key") val displayKey: String?,
-    @SerializedName("display_value")  val displayValue: Any?
+    @SerializedName("display_value") val displayValue: Any?
 )
