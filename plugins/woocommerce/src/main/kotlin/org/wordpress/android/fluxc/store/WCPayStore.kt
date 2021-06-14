@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.pay.WCConnectionTokenResult
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -35,7 +36,13 @@ class WCPayStore @Inject constructor(
 
     suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WCCapturePaymentResponsePayload {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
-            return@withDefaultContext restClient.capturePayment(site, paymentId, orderId)
+            restClient.capturePayment(site, paymentId, orderId)
+        }
+    }
+
+    suspend fun loadAccount(site: SiteModel): WooResult<WCPaymentAccountResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "loadAccount") {
+            restClient.loadAccount(site).asWooResult()
         }
     }
 }

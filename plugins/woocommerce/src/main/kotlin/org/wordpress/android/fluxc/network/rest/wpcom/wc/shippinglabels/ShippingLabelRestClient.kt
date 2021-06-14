@@ -280,7 +280,8 @@ class ShippingLabelRestClient @Inject constructor(
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
         packagesData: List<WCShippingLabelPackageData>,
-        customsData: List<WCShippingPackageCustoms>?
+        customsData: List<WCShippingPackageCustoms>?,
+        emailReceipts: Boolean = false
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
@@ -291,7 +292,8 @@ class ShippingLabelRestClient @Inject constructor(
                 "packages" to packagesData.map { labelPackage ->
                     val customs = customsData?.first { it.id == labelPackage.id }
                     labelPackage.toMap() + (customs?.toMap() ?: emptyMap())
-                }
+                },
+                "email_receipt" to emailReceipts
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
