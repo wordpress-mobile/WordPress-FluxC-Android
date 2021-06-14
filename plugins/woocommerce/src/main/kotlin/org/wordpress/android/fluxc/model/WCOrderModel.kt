@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
@@ -112,7 +111,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         val price: String? = null // The per-item price
 
         @SerializedName("meta_data")
-        private val metaData: List<WCMetaData>? = null
+        val metaData: List<WCMetaData>? = null
 
         class Attribute(val key: String?, val value: String?)
 

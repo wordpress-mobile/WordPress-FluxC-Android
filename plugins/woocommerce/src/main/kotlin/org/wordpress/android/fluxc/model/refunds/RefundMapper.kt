@@ -28,7 +28,8 @@ class RefundMapper @Inject constructor() {
                             variationId = it.variationId,
                             total = it.total?.toBigDecimalOrNull(),
                             sku = it.sku,
-                            price = it.price?.toBigDecimalOrNull()
+                            price = it.price?.toBigDecimalOrNull(),
+                            metaData = it.metaData
                     )
                 } ?: emptyList(),
                 shippingLineItems = response.shippingLineItems ?: emptyList()
