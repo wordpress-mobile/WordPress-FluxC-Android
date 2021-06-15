@@ -28,16 +28,29 @@ object OrderTestUtils {
     fun generateSampleOrder(
         remoteId: Long,
         orderStatus: String = CoreOrderStatus.PROCESSING.value,
-        siteId: Int = 6
+        siteId: Int = 6,
+        modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = remoteId
             localSiteId = siteId
             status = orderStatus
+            dateModified = modified
             dateCreated = "1955-11-05T14:15:00Z"
             datePaid = "1956-11-05T14:15:00Z"
             currency = "USD"
             total = "10.0"
+        }
+    }
+
+    fun generateSampleOrderSummary(
+        id: Number,
+        remoteId: Number,
+        modified: String = "1955-11-05T14:15:00Z"
+    ): WCOrderSummaryModel {
+        return WCOrderSummaryModel(id.toInt()).apply {
+            remoteOrderId = remoteId.toLong()
+            dateModified = modified
         }
     }
 
