@@ -651,7 +651,20 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `creating two identical custom packages returns an error`() = test {
-        // TODO
+        val response = WooPayload(false)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
+
+        val sampleListOfTwoIdenticalCustomPackages =
+                sampleListOfOneCustomPackage + sampleListOfOneCustomPackage
+
+        val expectedResult = WooResult(null)
+        val errorRequestResult = store.createPackages(
+                site = site,
+                customPackages = sampleListOfTwoIdenticalCustomPackages,
+                predefinedPackages = emptyList()
+        )
+        assertEquals(errorRequestResult, expectedResult)
     }
 
     @Test
