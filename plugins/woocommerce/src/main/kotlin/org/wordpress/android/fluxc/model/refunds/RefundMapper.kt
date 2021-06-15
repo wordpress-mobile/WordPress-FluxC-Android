@@ -12,26 +12,27 @@ import javax.inject.Inject
 class RefundMapper @Inject constructor() {
     fun map(response: RefundResponse): WCRefundModel {
         return WCRefundModel(
-                response.refundId,
-                response.dateCreated?.let { fromFormattedDate(it) } ?: Date(),
-                response.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                response.reason,
-                response.refundedPayment ?: false,
-                response.items.map {
+                id = response.refundId,
+                dateCreated = response.dateCreated?.let { fromFormattedDate(it) } ?: Date(),
+                amount = response.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                reason = response.reason,
+                automaticGatewayRefund = response.refundedPayment ?: false,
+                items = response.items?.map {
                     WCRefundItem(
-                            it.id ?: -1,
-                            it.quantity?.toInt() ?: 0,
-                            it.subtotal?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                            it.totalTax?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                            it.name,
-                            it.productId,
-                            it.variationId,
-                            it.total?.toBigDecimalOrNull(),
-                            it.sku,
-                            it.price?.toBigDecimalOrNull()
+                            itemId = it.id ?: -1,
+                            quantity = it.quantity?.toInt() ?: 0,
+                            subtotal = it.subtotal?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                            totalTax = it.totalTax?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                            name = it.name,
+                            productId = it.productId,
+                            variationId = it.variationId,
+                            total = it.total?.toBigDecimalOrNull(),
+                            sku = it.sku,
+                            price = it.price?.toBigDecimalOrNull(),
+                            metaData = it.metaData
                     )
-                },
-                response.shippingLineItems
+                } ?: emptyList(),
+                shippingLineItems = response.shippingLineItems ?: emptyList()
         )
     }
 

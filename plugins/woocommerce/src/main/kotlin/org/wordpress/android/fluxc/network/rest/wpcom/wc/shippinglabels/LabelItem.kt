@@ -15,6 +15,7 @@ class LabelItem {
     @SerializedName("product_names") val productNames: List<String>? = emptyList()
     @SerializedName("product_ids") val productIds: List<Long>? = emptyList()
     @SerializedName("refundable_amount") val refundableAmount: BigDecimal? = null
+    @SerializedName("commercial_invoice_url") val commercialInvoiceUrl: String? = null
     val status: String? = null
     val rate: BigDecimal? = null
     val currency: String? = null

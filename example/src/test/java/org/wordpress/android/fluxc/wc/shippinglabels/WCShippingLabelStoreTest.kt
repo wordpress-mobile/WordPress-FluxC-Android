@@ -419,7 +419,15 @@ class WCShippingLabelStoreTest {
 
     @Test
     fun `purchase shipping label error`() = test {
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull()))
+        whenever(restClient.purchaseShippingLabels(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                any()
+        ))
                 .thenReturn(WooPayload(error))
 
         val invalidRequestResult = store.purchaseShippingLabels(
@@ -437,7 +445,15 @@ class WCShippingLabelStoreTest {
     @Test
     fun `purchase shipping labels with polling`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
+        whenever(restClient.purchaseShippingLabels(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                any()
+        )).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
         val statusDoneReponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(true)
@@ -462,7 +478,15 @@ class WCShippingLabelStoreTest {
                 site
         )
 
-        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())
+        verify(restClient).purchaseShippingLabels(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                any()
+        )
         verify(restClient).fetchShippingLabelsStatus(
                 site,
                 orderId,
@@ -487,7 +511,15 @@ class WCShippingLabelStoreTest {
     @Test
     fun `purchase shipping labels with polling fail after 3 retries`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
+        whenever(restClient.purchaseShippingLabels(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                any()
+        )).thenReturn(response)
 
         whenever(restClient.fetchShippingLabelsStatus(any(), any(), any())).thenReturn(WooPayload(error))
 
@@ -500,7 +532,15 @@ class WCShippingLabelStoreTest {
                 null
         )
 
-        verify(restClient).purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())
+        verify(restClient).purchaseShippingLabels(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                any()
+        )
         verify(restClient, times(3)).fetchShippingLabelsStatus(
                 site,
                 orderId,
@@ -512,7 +552,15 @@ class WCShippingLabelStoreTest {
     @Test
     fun `purchase shipping labels with polling one label failed`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
-        whenever(restClient.purchaseShippingLabels(any(), any(), any(), any(), any(), anyOrNull())).thenReturn(response)
+        whenever(restClient.purchaseShippingLabels(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                any()
+        )).thenReturn(response)
 
         val statusIntermediateResponse = WCShippingLabelTestUtils.generateSampleShippingLabelsStatusApiResponse(false)
         val statusErrorResponse = WCShippingLabelTestUtils.generateErrorShippingLabelsStatusApiResponse()
