@@ -342,6 +342,7 @@ class WooShippingLabelFragment : Fragment() {
 
                     allPredefinedResult.error?.let {
                         prependToLog("${it.type}: ${it.message}")
+                        return@launch
                     }
                     allPredefinedResult.model?.let {
                         allPredefinedOptions.addAll(it)
@@ -365,6 +366,7 @@ class WooShippingLabelFragment : Fragment() {
                     }
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
+                        return@launch
                     }
                     result.model?.let {
                         prependToLog("$it")
