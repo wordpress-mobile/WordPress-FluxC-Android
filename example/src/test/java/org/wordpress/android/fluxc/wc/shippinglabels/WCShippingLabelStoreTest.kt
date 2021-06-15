@@ -607,7 +607,7 @@ class WCShippingLabelStoreTest {
 
         val expectedResult = WooResult(true)
         val successfulRequestResult = store.createPackages(
-                site = any(),
+                site = site,
                 customPackages = sampleListOfOneCustomPackage,
                 predefinedPackages = emptyList()
         )
@@ -622,7 +622,7 @@ class WCShippingLabelStoreTest {
 
         val expectedResult = WooResult(true)
         val successfulRequestResult = store.createPackages(
-                site = any(),
+                site = site,
                 customPackages = emptyList(),
                 predefinedPackages = sampleListOfOnePredefinedPackage
         )
@@ -637,7 +637,7 @@ class WCShippingLabelStoreTest {
 
         val expectedResult = WooResult(true)
         val successfulRequestResult = store.createPackages(
-                site = any(),
+                site = site,
                 customPackages = sampleListOfOneCustomPackage,
                 predefinedPackages = sampleListOfOnePredefinedPackage
         )
