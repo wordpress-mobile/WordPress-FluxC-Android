@@ -36,7 +36,9 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
@@ -165,6 +167,29 @@ class WCShippingLabelStoreTest {
                     title = "USPS Priority Mail Flat Rate Boxes",
                     carrier = "usps",
                     predefinedPackages = listOf(
+                            PredefinedPackage(
+                                    id = "small_flat_box",
+                                    title = "Small Flat Box",
+                                    isLetter = false,
+                                    dimensions = "10 x 10 x 10",
+                                    boxWeight = 1.0f
+                            )
+                    )
+            )
+    )
+
+    private val sampleListOfTwoIdenticalPredefinedPackages = listOf(
+            PredefinedOption(
+                    title = "USPS Priority Mail Flat Rate Boxes",
+                    carrier = "usps",
+                    predefinedPackages = listOf(
+                            PredefinedPackage(
+                                    id = "small_flat_box",
+                                    title = "Small Flat Box",
+                                    isLetter = false,
+                                    dimensions = "10 x 10 x 10",
+                                    boxWeight = 1.0f
+                            ),
                             PredefinedPackage(
                                     id = "small_flat_box",
                                     title = "Small Flat Box",
@@ -645,36 +670,114 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
-    fun `creating a custom package where it uses an existing package name returns an error`() = test {
-        // TODO
+    fun `creating a custom package where it uses an existing package name returns an error from API`() = test {
+        val firstResponse = WooPayload(true)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(firstResponse)
+
+        val expectedFirstResult = WooResult(true)
+        val successfulRequestResult = store.createPackages(
+                site = site,
+                customPackages = sampleListOfOneCustomPackage,
+                predefinedPackages = emptyList()
+        )
+        assertEquals(successfulRequestResult, expectedFirstResult)
+
+        // Creating the same custom package again
+        val secondResponse = WooPayload(false)
+        val wooError = WooError(GENERIC_ERROR,
+                UNKNOWN,
+                "At least one of the new custom packages has the same name as existing packages.")
+        secondResponse.error = wooError
+
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(secondResponse)
+
+        val expectedSecondResult = WooResult<Boolean>(wooError)
+        val errorRequestResult = store.createPackages(
+                site = site,
+                customPackages = sampleListOfOneCustomPackage,
+                predefinedPackages = emptyList()
+        )
+        assertEquals(errorRequestResult, expectedSecondResult)
+        assertEquals(expectedSecondResult.error.message,
+                "At least one of the new custom packages has the same name as existing packages.")
     }
 
     @Test
-    fun `creating two identical custom packages returns an error`() = test {
+    fun `creating two identical custom packages returns an error from API`() = test {
         val response = WooPayload(false)
+        val wooError = WooError(GENERIC_ERROR, UNKNOWN, "The new custom package names are not unique.")
+        response.error = wooError
+
         whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
                 .thenReturn(response)
 
         val sampleListOfTwoIdenticalCustomPackages =
                 sampleListOfOneCustomPackage + sampleListOfOneCustomPackage
 
-        val expectedResult = WooResult(null)
+        val expectedResult = WooResult<Boolean>(wooError)
         val errorRequestResult = store.createPackages(
                 site = site,
                 customPackages = sampleListOfTwoIdenticalCustomPackages,
                 predefinedPackages = emptyList()
         )
         assertEquals(errorRequestResult, expectedResult)
+        assertEquals(expectedResult.error.message, "The new custom package names are not unique.")
     }
 
     @Test
-    fun `activating a predefined package where an existing package in the same carrier has the same name returns an error`() = test {
-        // TODO
+    fun `activating a predefined package where an existing package in the same carrier has the same name returns an error from API`() = test {
+        val firstResponse = WooPayload(true)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(firstResponse)
+
+        val expectedFirstResult = WooResult(true)
+        val successfulRequestResult = store.createPackages(
+                site = site,
+                customPackages = emptyList(),
+                predefinedPackages = sampleListOfOnePredefinedPackage
+        )
+        assertEquals(successfulRequestResult, expectedFirstResult)
+
+        // Activating the same predefined package again
+        val secondResponse = WooPayload(false)
+        val wooError = WooError(GENERIC_ERROR,
+                UNKNOWN,
+                "At least one of the new predefined packages has the same name as existing packages.")
+        secondResponse.error = wooError
+
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(secondResponse)
+
+        val expectedSecondResult = WooResult<Boolean>(wooError)
+        val errorRequestResult = store.createPackages(
+                site = site,
+                customPackages = emptyList(),
+                predefinedPackages = sampleListOfOnePredefinedPackage
+        )
+        assertEquals(errorRequestResult, expectedSecondResult)
+        assertEquals(expectedSecondResult.error.message,
+                "At least one of the new predefined packages has the same name as existing packages.")
     }
 
     @Test
-    fun `creating two identical predefined packages returns an error`() = test {
-        // TODO
+    fun `creating two identical predefined packages returns an error from API`() = test {
+        val response = WooPayload(false)
+        val wooError = WooError(GENERIC_ERROR, UNKNOWN, "The new predefined package names are not unique.")
+        response.error = wooError
+
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
+
+        val expectedResult = WooResult<Boolean>(wooError)
+        val errorRequestResult = store.createPackages(
+                site = site,
+                customPackages = emptyList(),
+                predefinedPackages = sampleListOfTwoIdenticalPredefinedPackages
+        )
+        assertEquals(errorRequestResult, expectedResult)
+        assertEquals(expectedResult.error.message, "The new predefined package names are not unique.")
     }
 
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
