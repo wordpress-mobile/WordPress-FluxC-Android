@@ -341,7 +341,9 @@ class ShippingLabelRestClient @Inject constructor(
 
         val url = WOOCOMMERCE.connect.packages.pathV1
 
-        // Mapping for custom packages
+        // 1. Mapping for custom packages
+        // Here we convert each CustomPackage instance into a Map with proper key names.
+        // This list of Maps will then be used as the "customs" key's value in the API request.
         val mappedCustomPackages = customPackages.map {
             mapOf(
                     "name" to it.title,
@@ -358,31 +360,25 @@ class ShippingLabelRestClient @Inject constructor(
             )
         }
 
-        // Mapping for predefined options.
-        // First, grab all unique carriers.
-        val carriers = mutableListOf<String>()
-        predefinedOptions.distinctBy { it.carrier }.forEach { option ->
-            carriers.add(option.carrier)
-        }
+        // 2. Mapping for predefined options.
+        // First, grab all unique carriers. distinct() is used because predefinedOptions can contain
+        // multiple PredefinedOption with the same carrier name. (For example, "USPS Priority Mail Express Boxes"
+        // and "USPS Priority Mail Boxes" are two different options with the same "USPS" carrier".
+        val carriers = predefinedOptions.map { it.carrier }.distinct()
 
-        // Next, build a Map replicating the required JSON request structure. It should be like the following:
+        // Next, build a predefinedParam Map replicating the required JSON request structure.
+        // It should be like the following:
         //
-        //    "carrier_1": [
-        //      "package_1",
-        //      "package_2",
-        //      ...
-        //    ],
-        //    "carrier_2": [
-        //      "package_3",
-        //      "package_4",
-        //      ...
-        //    ]
+        //    "carrier_1": [ "package_1", "package_2", ... ],
+        //    "carrier_2": [ "package_3", "package_4", "package_5" ... ],
         //
         val predefinedParam = mutableMapOf<String, List<String>>()
         carriers.forEach { carrier ->
             val packageIds = mutableListOf<String>()
-            val packagesOnThisCarrier = predefinedOptions.filter { it.carrier == carrier }
-            packagesOnThisCarrier.forEach { option ->
+            // Get all predefined options having the same carrier.
+            val predefinedOptionsForThisCarrier = predefinedOptions.filter { it.carrier == carrier }
+            // Get all package id(s) included in all options.
+            predefinedOptionsForThisCarrier.forEach { option ->
                 option.predefinedPackages.forEach {
                     packageIds.add(it.id)
                 }
@@ -391,7 +387,7 @@ class ShippingLabelRestClient @Inject constructor(
         }
 
         val params = mapOf(
-                "custom" to mappedCustomPackages.map { it.toMap() },
+                "custom" to mappedCustomPackages,
                 "predefined" to predefinedParam
         )
 
