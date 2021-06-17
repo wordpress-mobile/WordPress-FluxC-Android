@@ -25,6 +25,14 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation":"$projectDir/schemas".toString(),
+                        "room.incremental":"true",
+                        "room.expandProjection":"true"]
+            }
+        }
     }
 
     buildTypes {
@@ -104,6 +112,10 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.8.5'
 
+    implementation "androidx.room:room-runtime:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
+
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"
@@ -129,6 +141,9 @@ dependencies {
     // Test orchestrator
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestUtil 'androidx.test:orchestrator:1.2.0'
+
+    androidTestImplementation "com.goterl:lazysodium-android:5.0.2@aar"
+    androidTestImplementation "net.java.dev.jna:jna:5.5.0@aar"
 
     // Debug dependencies
     debugImplementation 'com.facebook.flipper:flipper:0.51.0'

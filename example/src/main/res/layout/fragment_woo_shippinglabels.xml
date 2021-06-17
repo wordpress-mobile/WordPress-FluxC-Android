@@ -64,6 +64,13 @@
             android:text="Print Shipping Label" />
 
         <Button
+            android:id="@+id/print_commercial_invoice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Print Commercial Invoice" />
+
+        <Button
             android:id="@+id/check_creation_eligibility"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

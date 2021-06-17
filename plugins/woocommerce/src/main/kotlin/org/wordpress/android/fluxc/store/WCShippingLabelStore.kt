@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.Shi
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPaperSize
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingPackageCustoms
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
@@ -228,10 +229,11 @@ class WCShippingLabelStore @Inject constructor(
         orderId: Long,
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
-        packages: List<ShippingLabelPackage>
+        packages: List<ShippingLabelPackage>,
+        customsData: List<WCShippingPackageCustoms>?
     ): WooResult<WCShippingRatesResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getShippingRates") {
-            val response = restClient.getShippingRates(site, orderId, origin, destination, packages)
+            val response = restClient.getShippingRates(site, orderId, origin, destination, packages, customsData)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
@@ -404,10 +406,20 @@ class WCShippingLabelStore @Inject constructor(
         orderId: Long,
         origin: ShippingLabelAddress,
         destination: ShippingLabelAddress,
-        packagesData: List<WCShippingLabelPackageData>
+        packagesData: List<WCShippingLabelPackageData>,
+        customsData: List<WCShippingPackageCustoms>?,
+        emailReceipts: Boolean = false
     ): WooResult<List<WCShippingLabelModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "purchaseShippingLabels") {
-            val response = restClient.purchaseShippingLabels(site, orderId, origin, destination, packagesData)
+            val response = restClient.purchaseShippingLabels(
+                    site,
+                    orderId,
+                    origin,
+                    destination,
+                    packagesData,
+                    customsData,
+                    emailReceipts
+            )
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result?.labels != null -> {

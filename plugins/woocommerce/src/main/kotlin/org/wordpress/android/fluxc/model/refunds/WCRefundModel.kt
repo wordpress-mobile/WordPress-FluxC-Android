@@ -1,9 +1,10 @@
 package org.wordpress.android.fluxc.model.refunds
 
-import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.WCMetaData
 import java.math.BigDecimal
 import java.util.Date
+
 /**
  * Note:
  * For the purpose of creating a refund through API, only a list of `WCRefundItem` is accepted. To be able to refund
@@ -35,7 +36,9 @@ data class WCRefundModel(
         val variationId: Long? = null,
         val total: BigDecimal? = null,
         val sku: String? = null,
-        val price: BigDecimal? = null
+        val price: BigDecimal? = null,
+        @SerializedName("meta_data")
+        val metaData: List<WCMetaData>? = null
     )
 
     data class WCRefundShippingLine(
@@ -48,6 +51,6 @@ data class WCRefundModel(
         @SerializedName("method_title")
         val methodTitle: String? = null,
         @SerializedName("meta_data")
-        val metaData: JsonArray? = null
+        val metaData: List<WCMetaData>? = null
     )
 }

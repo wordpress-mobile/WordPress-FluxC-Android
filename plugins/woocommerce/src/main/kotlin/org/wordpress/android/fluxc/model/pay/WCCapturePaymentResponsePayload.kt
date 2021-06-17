@@ -10,7 +10,7 @@ class WCCapturePaymentResponsePayload(
     val orderId: Long,
     val status: String?
 ) : Payload<WCCapturePaymentError?>() {
-    public constructor(
+    constructor(
         error: WCCapturePaymentError,
         site: SiteModel,
         paymentId: String,
