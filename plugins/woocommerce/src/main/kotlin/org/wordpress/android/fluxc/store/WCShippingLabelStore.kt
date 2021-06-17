@@ -488,11 +488,11 @@ class WCShippingLabelStore @Inject constructor(
     }
 
     suspend fun createPackages(
-        site:SiteModel,
+        site: SiteModel,
         customPackages: List<CustomPackage> = emptyList(),
         predefinedPackages: List<PredefinedOption> = emptyList()): WooResult<Boolean> {
         // We need at least one of the lists to not be empty to continue with API call.
-        if(customPackages.isEmpty() && predefinedPackages.isEmpty()) {
+        if (customPackages.isEmpty() && predefinedPackages.isEmpty()) {
             return WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
 

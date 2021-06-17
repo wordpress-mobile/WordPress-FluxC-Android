@@ -335,7 +335,7 @@ class ShippingLabelRestClient @Inject constructor(
         predefinedOptions: List<PredefinedOption> = emptyList()
     ): WooPayload<Boolean> {
         // We need at least one of the lists to not be empty to continue with API call.
-        if(customPackages.isEmpty() && predefinedOptions.isEmpty()) {
+        if (customPackages.isEmpty() && predefinedOptions.isEmpty()) {
             return WooPayload(false)
         }
 

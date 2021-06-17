@@ -727,7 +727,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
-    fun `activating a predefined package where an existing package in the same carrier has the same name returns an error from API`() = test {
+    fun `activating predefined package(s) with one already activated returns an error from API`() = test {
         val firstResponse = WooPayload(true)
         whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
                 .thenReturn(firstResponse)
@@ -762,7 +762,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
-    fun `creating two identical predefined packages returns an error from API`() = test {
+    fun `activating two identical predefined packages returns an error from API`() = test {
         val response = WooPayload(false)
         val wooError = WooError(GENERIC_ERROR, UNKNOWN, "The new predefined package names are not unique.")
         response.error = wooError

@@ -301,7 +301,7 @@ class WooShippingLabelFragment : Fragment() {
                     ).toString()
 
                     val customPackageWeight = customPackageWeightText.toFloatOrNull()
-                    if(customPackageWeight == null) {
+                    if (customPackageWeight == null) {
                         prependToLog("Invalid float value for package weight: $customPackageWeightText\n")
                     } else {
                         val result = withContext(Dispatchers.Default) {
@@ -355,7 +355,8 @@ class WooShippingLabelFragment : Fragment() {
                             carrier = randomOption.carrier,
                             predefinedPackages = listOf(randomOption.predefinedPackages.random())
                     )
-                    prependToLog("Activating ${randomParam.predefinedPackages.first().id} from ${randomParam.carrier}...")
+                    prependToLog(
+                            "Activating ${randomParam.predefinedPackages.first().id} from ${randomParam.carrier}...")
 
                     val result = withContext(Dispatchers.Default) {
                         wcShippingLabelStore.createPackages(
