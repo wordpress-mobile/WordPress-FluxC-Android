@@ -177,11 +177,9 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         val themeBundle = editorTheme!!.themeSupport.toBundle()
         assertEmpty(themeBundle)
         val styles = themeBundle.getString("rawStyles")
-        val colors = themeBundle.getString("colors")
-        val gradients = themeBundle.getString("gradients")
+        val features = themeBundle.getString("rawFeatures")
         Assert.assertNotNull(styles)
-        Assert.assertNotNull(colors)
-        Assert.assertNotNull(gradients)
+        Assert.assertNotNull(features)
     }
 
     private fun assertNotEmpty(theme: EditorTheme?) {
