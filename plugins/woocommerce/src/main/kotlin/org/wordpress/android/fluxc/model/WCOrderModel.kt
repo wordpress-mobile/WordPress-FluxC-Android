@@ -66,6 +66,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
 
     @Column var feeLines = ""
 
+    @Column var metaData = ""
+
     companion object {
         private val gson by lazy { Gson() }
     }
@@ -196,6 +198,14 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     fun getFeeLineList(): List<FeeLine> {
         val responseType = object : TypeToken<List<FeeLine>>() {}.type
         return gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
+    }
+
+    /**
+     * Deserializes the JSON contained in [metaData] into a list of [WCMetaData] objects.
+     */
+    fun getMetaDataList(): List<WCMetaData> {
+        val responseType = object : TypeToken<List<WCMetaData>>() {}.type
+        return gson.fromJson(metaData, responseType) as? List<WCMetaData> ?: emptyList()
     }
 
     fun isMultiShippingLinesAvailable() = getShippingLineList().size > 1
