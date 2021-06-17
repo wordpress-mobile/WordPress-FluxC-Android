@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.instaflux;
 
 import org.wordpress.android.fluxc.module.AppContextModule;
+import org.wordpress.android.fluxc.module.DatabaseModule;
 import org.wordpress.android.fluxc.module.OkHttpClientModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 
@@ -14,6 +15,7 @@ import dagger.Component;
         AppConfigModule.class,
         OkHttpClientModule.class,
         InterceptorModule.class,
-        ReleaseNetworkModule.class
+        ReleaseNetworkModule.class,
+        DatabaseModule.class
 })
 public interface AppComponentDebug extends AppComponent {}
