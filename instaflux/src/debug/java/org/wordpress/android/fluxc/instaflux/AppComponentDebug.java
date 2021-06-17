@@ -15,7 +15,6 @@ import dagger.Component;
         AppConfigModule.class,
         OkHttpClientModule.class,
         InterceptorModule.class,
-        ReleaseNetworkModule.class,
-        DatabaseModule.class
+        ReleaseNetworkModule.class
 })
 public interface AppComponentDebug extends AppComponent {}
