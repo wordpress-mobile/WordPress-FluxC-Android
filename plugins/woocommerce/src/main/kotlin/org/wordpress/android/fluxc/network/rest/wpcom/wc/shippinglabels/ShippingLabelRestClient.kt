@@ -389,8 +389,7 @@ class ShippingLabelRestClient @Inject constructor(
                     carrier to options
                             .flatMap { it.predefinedPackages } // Put all found package(s) in a list
                             .map { it.id } // Grab all found package id(s)
-                }
-               .asMap() // Convert list of Map to Map
+                }.asMap() // Convert list of Map to Map
 
         val params = mapOf(
                 "custom" to mappedCustomPackages,
