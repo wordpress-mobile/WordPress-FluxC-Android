@@ -370,7 +370,7 @@ class WooShippingLabelFragment : Fragment() {
                             prependToLog("${it.type}: ${it.message}")
                         }
                         result.model?.let {
-                            prependToLog("$it")
+                            prependToLog("Custom package created: $it")
                         }
                     }
                 }
@@ -419,7 +419,7 @@ class WooShippingLabelFragment : Fragment() {
                         return@launch
                     }
                     result.model?.let {
-                        prependToLog("$it")
+                        prependToLog("Predefined package activated: $it")
                     }
                 }
             }
