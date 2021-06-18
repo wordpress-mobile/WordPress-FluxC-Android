@@ -31,6 +31,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlin.collections.toMap as asMap
 
 @Singleton
 class ShippingLabelRestClient @Inject constructor(
@@ -372,30 +373,24 @@ class ShippingLabelRestClient @Inject constructor(
         }
 
         // 2. Mapping for predefined options.
-        // First, grab all unique carriers. distinct() is used because predefinedOptions can contain
-        // multiple PredefinedOption with the same carrier name. (For example, "USPS Priority Mail Express Boxes"
-        // and "USPS Priority Mail Boxes" are two different options with the same "USPS" carrier".
-        val carriers = predefinedOptions.map { it.carrier }.distinct()
+        val predefinedParam = predefinedOptions
+                // First we group all options by carrier, because the list of predefinedOptions can contain
+                // multiple instances with the same carrier name.
+                //  For example, "USPS Priority Mail Express Boxes" and "USPS Priority Mail Boxes" are two separate
+                //  options having the same carrier: "usps".
+                .groupBy { it.carrier }
 
-        // Next, build a predefinedParam Map replicating the required JSON request structure.
-        // It should be like the following:
-        //
-        //    "carrier_1": [ "package_1", "package_2", ... ],
-        //    "carrier_2": [ "package_3", "package_4", "package_5" ... ],
-        //
-        val predefinedParam = mutableMapOf<String, List<String>>()
-        carriers.forEach { carrier ->
-            val packageIds = mutableListOf<String>()
-            // Get all predefined options having the same carrier.
-            val predefinedOptionsForThisCarrier = predefinedOptions.filter { it.carrier == carrier }
-            // Get all package id(s) included in all options.
-            predefinedOptionsForThisCarrier.forEach { option ->
-                option.predefinedPackages.forEach {
-                    packageIds.add(it.id)
+                // Next, build a predefinedParam Map replicating the required JSON request structure.
+                // Example structure:
+                //
+                //    "carrier_1": [ "package_1", "package_2", ... ],
+                //    "carrier_2": [ "package_3", "package_4", "package_5" ... ],
+                .map { (carrier, options) ->
+                    carrier to options
+                            .flatMap { it.predefinedPackages } // Put all found package(s) in a list
+                            .map { it.id } // Grab all found package id(s)
                 }
-            }
-            predefinedParam[carrier] = packageIds
-        }
+               .asMap() // Convert list of Map to Map
 
         val params = mapOf(
                 "custom" to mappedCustomPackages,
