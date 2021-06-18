@@ -272,31 +272,25 @@ class WCShippingLabelStore @Inject constructor(
     }
 
     private fun selectAllPredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
-        val predefinedOptions = mutableListOf<PredefinedOption>()
-        result.formSchema.predefinedSchema.entries.forEach { carrier ->
-            carrier.value.forEach { option ->
-                val predefinedPackages = mutableListOf<PredefinedPackage>()
-                option.value.definitions.forEach { definition ->
-                    predefinedPackages.add(
-                            PredefinedPackage(
-                                    id = definition.id,
-                                    title = definition.name,
-                                    isLetter = definition.isLetter,
-                                    dimensions = definition.outerDimensions,
-                                    boxWeight = definition.boxWeight ?: 0f
-                            )
+        return result.formSchema.predefinedSchema.entries.map { carrier ->
+            carrier.value.map { option ->
+                val predefinedPackages = option.value.definitions.map { definition ->
+                    PredefinedPackage(
+                            id = definition.id,
+                            title = definition.name,
+                            isLetter = definition.isLetter,
+                            dimensions = definition.outerDimensions,
+                            boxWeight = definition.boxWeight ?: 0f
                     )
                 }
-                predefinedOptions.add(
-                        PredefinedOption(
-                                title = option.value.title,
-                                carrier = carrier.key,
-                                predefinedPackages = predefinedPackages
-                        )
+
+                PredefinedOption(
+                        title = option.value.title,
+                        carrier = carrier.key,
+                        predefinedPackages = predefinedPackages
                 )
-            }
-        }
-        return predefinedOptions
+            } // At this step, we end up with a list of lists of PredefinedOptions
+        }.flatten() // Flat it
     }
 
     private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
