@@ -698,7 +698,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
-    fun `creating a single custom package returns success from API`() = test {
+    fun `creating packages returns true if the API call succeeds`() = test {
         val response = WooPayload(true)
         whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
                 .thenReturn(response)
@@ -713,144 +713,22 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
-    fun `activating a single predefined package returns success from API`() = test {
-        val response = WooPayload(true)
+    fun `creating packages returns error if the API call fails`() = test {
+        // In practice, the API returns more specific error message(s) depending on the error case.
+        // In `createPackages()` that error message isn't modified further, so here we use a mock message instead.
+        val errorMessage = "error message"
+        val response = WooPayload<Boolean>(WooError(GENERIC_ERROR, UNKNOWN, errorMessage))
         whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
                 .thenReturn(response)
 
-        val expectedResult = WooResult(true)
-        val successfulRequestResult = store.createPackages(
+        val expectedResult = WooResult<Boolean>(response.error)
+        val errorRequestResult = store.createPackages(
                 site = site,
                 customPackages = emptyList(),
                 predefinedPackages = sampleListOfOnePredefinedPackage
-        )
-        assertEquals(successfulRequestResult, expectedResult)
-    }
-
-    @Test
-    fun `creating a mix of custom and predefined package returns success from API`() = test {
-        val response = WooPayload(true)
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(response)
-
-        val expectedResult = WooResult(true)
-        val successfulRequestResult = store.createPackages(
-                site = site,
-                customPackages = sampleListOfOneCustomPackage,
-                predefinedPackages = sampleListOfOnePredefinedPackage
-        )
-        assertEquals(successfulRequestResult, expectedResult)
-    }
-
-    @Test
-    fun `creating a custom package where it uses an existing package name returns an error from API`() = test {
-        val firstResponse = WooPayload(true)
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(firstResponse)
-
-        val expectedFirstResult = WooResult(true)
-        val successfulRequestResult = store.createPackages(
-                site = site,
-                customPackages = sampleListOfOneCustomPackage,
-                predefinedPackages = emptyList()
-        )
-        assertEquals(successfulRequestResult, expectedFirstResult)
-
-        // Creating the same custom package again
-        val secondResponse = WooPayload(false)
-        val wooError = WooError(GENERIC_ERROR,
-                UNKNOWN,
-                "At least one of the new custom packages has the same name as existing packages.")
-        secondResponse.error = wooError
-
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(secondResponse)
-
-        val expectedSecondResult = WooResult<Boolean>(wooError)
-        val errorRequestResult = store.createPackages(
-                site = site,
-                customPackages = sampleListOfOneCustomPackage,
-                predefinedPackages = emptyList()
-        )
-        assertEquals(errorRequestResult, expectedSecondResult)
-        assertEquals(expectedSecondResult.error.message,
-                "At least one of the new custom packages has the same name as existing packages.")
-    }
-
-    @Test
-    fun `creating two identical custom packages returns an error from API`() = test {
-        val response = WooPayload(false)
-        val wooError = WooError(GENERIC_ERROR, UNKNOWN, "The new custom package names are not unique.")
-        response.error = wooError
-
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(response)
-
-        val sampleListOfTwoIdenticalCustomPackages =
-                sampleListOfOneCustomPackage + sampleListOfOneCustomPackage
-
-        val expectedResult = WooResult<Boolean>(wooError)
-        val errorRequestResult = store.createPackages(
-                site = site,
-                customPackages = sampleListOfTwoIdenticalCustomPackages,
-                predefinedPackages = emptyList()
         )
         assertEquals(errorRequestResult, expectedResult)
-        assertEquals(expectedResult.error.message, "The new custom package names are not unique.")
-    }
-
-    @Test
-    fun `activating predefined package(s) with one already activated returns an error from API`() = test {
-        val firstResponse = WooPayload(true)
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(firstResponse)
-
-        val expectedFirstResult = WooResult(true)
-        val successfulRequestResult = store.createPackages(
-                site = site,
-                customPackages = emptyList(),
-                predefinedPackages = sampleListOfOnePredefinedPackage
-        )
-        assertEquals(successfulRequestResult, expectedFirstResult)
-
-        // Activating the same predefined package again
-        val secondResponse = WooPayload(false)
-        val wooError = WooError(GENERIC_ERROR,
-                UNKNOWN,
-                "At least one of the new predefined packages has the same name as existing packages.")
-        secondResponse.error = wooError
-
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(secondResponse)
-
-        val expectedSecondResult = WooResult<Boolean>(wooError)
-        val errorRequestResult = store.createPackages(
-                site = site,
-                customPackages = emptyList(),
-                predefinedPackages = sampleListOfOnePredefinedPackage
-        )
-        assertEquals(errorRequestResult, expectedSecondResult)
-        assertEquals(expectedSecondResult.error.message,
-                "At least one of the new predefined packages has the same name as existing packages.")
-    }
-
-    @Test
-    fun `activating two identical predefined packages returns an error from API`() = test {
-        val response = WooPayload(false)
-        val wooError = WooError(GENERIC_ERROR, UNKNOWN, "The new predefined package names are not unique.")
-        response.error = wooError
-
-        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
-                .thenReturn(response)
-
-        val expectedResult = WooResult<Boolean>(wooError)
-        val errorRequestResult = store.createPackages(
-                site = site,
-                customPackages = emptyList(),
-                predefinedPackages = sampleListOfTwoIdenticalPredefinedPackages
-        )
-        assertEquals(errorRequestResult, expectedResult)
-        assertEquals(expectedResult.error.message, "The new predefined package names are not unique.")
+        assertEquals(expectedResult.error.message, errorMessage)
     }
 
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
