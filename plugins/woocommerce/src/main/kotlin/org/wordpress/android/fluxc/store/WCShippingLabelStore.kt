@@ -493,13 +493,16 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    /**
+     * Allows creation of new custom packages, or activation of predefined packages. At least one of the
+     * [customPackages] or [predefinedPackages] parameters should be a non-empty list.
+     */
     suspend fun createPackages(
         site: SiteModel,
         customPackages: List<CustomPackage> = emptyList(),
         predefinedPackages: List<PredefinedOption> = emptyList()): WooResult<Boolean> {
-        // We need at least one of the lists to not be empty to continue with API call.
         if (customPackages.isEmpty() && predefinedPackages.isEmpty()) {
-            return WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            throw IllegalArgumentException("customPackages and predefinedPackages can't both be an empty list.")
         }
 
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createPackages") {
