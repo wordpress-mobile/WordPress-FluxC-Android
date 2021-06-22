@@ -64,6 +64,13 @@
             android:text="Print Shipping Label" />
 
         <Button
+            android:id="@+id/print_commercial_invoice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Print Commercial Invoice" />
+
+        <Button
             android:id="@+id/check_creation_eligibility"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -83,6 +90,20 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Get packages" />
+
+        <Button
+            android:id="@+id/create_custom_package"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Create A Custom Package" />
+
+        <Button
+            android:id="@+id/activate_predefined_package"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Activate A random Predefined Package" />
 
         <Button
             android:id="@+id/get_shipping_rates"

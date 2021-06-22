@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
@@ -11,7 +10,6 @@ import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.AddressType
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.model.order.OrderProductAttributeListDeserializer
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import java.util.Locale
 
@@ -68,6 +66,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
 
     @Column var feeLines = ""
 
+    @Column var metaData = ""
+
     companion object {
         private val gson by lazy { Gson() }
     }
@@ -113,15 +113,16 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         val price: String? = null // The per-item price
 
         @SerializedName("meta_data")
-        private val attributes: JsonArray? = null
+        val metaData: List<WCMetaData>? = null
 
         class Attribute(val key: String?, val value: String?)
 
         fun getAttributeList(): List<Attribute> {
-            val responseType = object : TypeToken<List<Attribute>>() {}.type
-            val newGson = gson.newBuilder()
-                    .registerTypeAdapter(responseType, OrderProductAttributeListDeserializer()).create()
-            return newGson.fromJson(attributes, responseType)
+            return metaData?.filter {
+                it.displayKey is String && it.displayValue is String
+            }?.map {
+                Attribute(it.displayKey, it.displayValue as String)
+            } ?: emptyList()
         }
 
         /**
@@ -197,6 +198,14 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     fun getFeeLineList(): List<FeeLine> {
         val responseType = object : TypeToken<List<FeeLine>>() {}.type
         return gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
+    }
+
+    /**
+     * Deserializes the JSON contained in [metaData] into a list of [WCMetaData] objects.
+     */
+    fun getMetaDataList(): List<WCMetaData> {
+        val responseType = object : TypeToken<List<WCMetaData>>() {}.type
+        return gson.fromJson(metaData, responseType) as? List<WCMetaData> ?: emptyList()
     }
 
     fun isMultiShippingLinesAvailable() = getShippingLineList().size > 1

@@ -9,11 +9,15 @@ pluginManagement {
         id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
     }
     repositories {
+        maven {
+            url 'https://a8c-libs.s3.amazonaws.com/android' 
+            content {
+                includeGroup "com.automattic.android"
+            }
+        }
         gradlePluginPortal()
         google()
         jcenter()
-        maven { url 'https://a8c-libs.s3.amazonaws.com/android' }
-        maven { url "https://dl.bintray.com/automattic/maven/" }
     }
     resolutionStrategy {
         eachPlugin {

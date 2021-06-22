@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.NETWORK_E
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -95,6 +96,24 @@ class PayRestClient @Inject constructor(
         }
     }
 
+    suspend fun loadAccount(site: SiteModel): WooPayload<WCPaymentAccountResult> {
+        val url = WOOCOMMERCE.payments.accounts.pathV3
+        val params = mapOf("_fields" to ACCOUNT_REQUESTED_FIELDS)
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                WCPaymentAccountResult::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
     private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
         val type = when {
             error == null -> GENERIC_ERROR
@@ -108,5 +127,11 @@ class PayRestClient @Inject constructor(
             else -> GENERIC_ERROR
         }
         return WCCapturePaymentError(type, message)
+    }
+
+    companion object {
+        private const val ACCOUNT_REQUESTED_FIELDS: String =
+                "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
+                        "store_currencies,country,card_present_eligible"
     }
 }
