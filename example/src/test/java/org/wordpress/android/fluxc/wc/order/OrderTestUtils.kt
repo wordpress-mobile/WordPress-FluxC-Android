@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
+import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -17,7 +18,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiRespo
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiResponse
-import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.utils.DateUtils
 import kotlin.collections.MutableMap.MutableEntry
@@ -170,8 +170,8 @@ object OrderTestUtils {
         var siteModel = SiteUtils.generateTestSite(556, "", "", false, true).apply {
             name = "Generic WP site"
         }
-        SiteSqlUtils.insertOrUpdateSite(siteModel)
-        siteModel = SiteSqlUtils.getSitesByNameOrUrlMatching("Generic").firstOrNull()
+        TestSiteSqlUtils.siteSqlUtils.insertOrUpdateSite(siteModel)
+        siteModel = TestSiteSqlUtils.siteSqlUtils.getSitesByNameOrUrlMatching("Generic").firstOrNull()
         assertNotNull(siteModel)
 
         return siteModel

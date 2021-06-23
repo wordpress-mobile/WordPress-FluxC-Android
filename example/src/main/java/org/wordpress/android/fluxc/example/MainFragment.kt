@@ -165,7 +165,7 @@ class MainFragment : Fragment() {
                 httpAuthManager.addHTTPAuthCredentials(username, password, url, null)
                 // Retry login action
                 selfHostedPayload?.let {
-                    signInAction(it.username, it.password, url)
+                    signInAction(it.username ?: "", it.password ?: "", url)
                 }
             }
         }, "Username", "Password", "unused")
@@ -180,12 +180,7 @@ class MainFragment : Fragment() {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password)
         } else {
-            val payload = RefreshSitesXMLRPCPayload()
-            payload.url = url
-            payload.username = username
-            payload.password = password
-            selfHostedPayload = payload
-
+            selfHostedPayload = RefreshSitesXMLRPCPayload(username, password, url)
             dispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url))
         }
     }
@@ -205,10 +200,7 @@ class MainFragment : Fragment() {
     }
 
     private fun selfHostedFetchSites(username: String, password: String, xmlrpcEndpoint: String) {
-        val payload = RefreshSitesXMLRPCPayload()
-        payload.username = username
-        payload.password = password
-        payload.url = xmlrpcEndpoint
+        val payload = RefreshSitesXMLRPCPayload(username, password, xmlrpcEndpoint)
         selfHostedPayload = payload
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         dispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload))
@@ -286,12 +278,12 @@ class MainFragment : Fragment() {
             when (event.error) {
                 DiscoveryError.WORDPRESS_COM_SITE -> {
                     selfHostedPayload?.let {
-                        wpcomFetchSites(it.username, it.password)
+                        wpcomFetchSites(it.username ?: "", it.password ?: "")
                     }
                 }
                 DiscoveryError.HTTP_AUTH_REQUIRED -> showHTTPAuthDialog(event.failedEndpoint)
                 DiscoveryError.ERRONEOUS_SSL_CERTIFICATE -> {
-                    selfHostedPayload?.url = event.failedEndpoint
+                    selfHostedPayload = selfHostedPayload?.copy(url = event.failedEndpoint)
                     showSSLWarningDialog(memorizingTrustManager.lastFailure.toString())
                 }
                 else -> { }
@@ -314,7 +306,7 @@ class MainFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSiteChanged(event: OnSiteChanged) {
         if (event.isError) {
-            prependToLog("SiteChanged error: " + event.error.type)
+            prependToLog("SiteChanged error: " + event.error?.type)
             return
         }
         if (siteStore.hasSite()) {

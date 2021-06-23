@@ -49,6 +49,7 @@ import kotlin.properties.Delegates.notNull
 
 class MockedStack_WCProductsTest : MockedStack_Base() {
     @Inject internal lateinit var productRestClient: ProductRestClient
+    @Inject internal lateinit var siteSqlUtils: SiteSqlUtils
     @Inject internal lateinit var dispatcher: Dispatcher
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
@@ -76,7 +77,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         // Insert the site into the db so it's available later for product
         // reviews
-        SiteSqlUtils.insertOrUpdateSite(siteModel)
+        siteSqlUtils.insertOrUpdateSite(siteModel)
     }
 
     @Test
