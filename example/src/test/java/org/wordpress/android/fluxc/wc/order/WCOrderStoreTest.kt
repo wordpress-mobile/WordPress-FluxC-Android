@@ -1,29 +1,42 @@
 package org.wordpress.android.fluxc.wc.order
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
+import com.nhaarman.mockitokotlin2.check
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.yarolegovich.wellsql.WellSql
+import okhttp3.internal.toImmutableMap
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import java.util.Calendar
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -31,11 +44,12 @@ import kotlin.test.assertTrue
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCOrderStoreTest {
-    private val orderStore = WCOrderStore(Dispatcher(), mock())
+    private val orderFetcher: WCOrderFetcher = mock()
+    private val orderStore = WCOrderStore(Dispatcher(), mock(), orderFetcher)
 
     @Before
     fun setUp() {
-        val appContext = RuntimeEnvironment.application.applicationContext
+        val appContext = ApplicationProvider.getApplicationContext<Application>()
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
                 listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java, WCOrderStatusModel::class.java),
@@ -216,4 +230,95 @@ class WCOrderStoreTest {
             assertEquals(duplicateRemoteOrder.apply { id = 1 }, orderStore.getOrderByIdentifier(packagedOrder))
         }
     }
+
+    @Test
+    fun testFetchingOnlyOutdatedOrMissingOrders() {
+        val site = SiteModel().apply { id = 8 }
+
+        val upToDate = setupUpToDateOrders(site)
+        upToDate.orders.filterNotNull().forEach(OrderSqlUtils::insertOrUpdateOrder)
+        assertThat(OrderSqlUtils.getOrdersForSite(site)).hasSize(10)
+
+        val outdated = setupOutdatedOrders(site)
+        outdated.orders.filterNotNull().forEach(OrderSqlUtils::insertOrUpdateOrder)
+        assertThat(OrderSqlUtils.getOrdersForSite(site)).hasSize(20)
+
+        val missing = setupMissingOrders()
+        assertThat(OrderSqlUtils.getOrdersForSite(site)).hasSize(20)
+
+        orderStore.onAction(
+                newFetchedOrderListAction(
+                        FetchOrderListResponsePayload(
+                                WCOrderListDescriptor(site = site),
+                                requestStartTime = Calendar.getInstance(),
+                                orderSummaries = upToDate.summaries + outdated.summaries + missing.summaries
+                        )
+                )
+        )
+
+        verify(orderFetcher).fetchOrders(eq(site), check { remoteIdsToFetch ->
+            assertThat(remoteIdsToFetch).containsExactlyInAnyOrderElementsOf(
+                    (outdated.summaries + missing.summaries).map { RemoteId(it.remoteOrderId) }
+            )
+        })
+    }
+
+    private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, WCOrderModel?> {
+        return mutableMapOf<WCOrderSummaryModel, WCOrderModel?>().apply {
+            (21L..30L).forEach { index ->
+                put(
+                        OrderTestUtils.generateSampleOrderSummary(
+                                id = index,
+                                remoteId = index
+                        ),
+                        null
+                )
+            }
+        }
+    }
+
+    private fun setupOutdatedOrders(site: SiteModel) =
+            mutableMapOf<WCOrderSummaryModel, WCOrderModel>().apply {
+                val baselineDate = "2021-01-05T12:00:00Z"
+                val oneDayAfterBaselineDate = "2021-01-06T12:00:00Z"
+                (11L..20L).forEach { index ->
+                    put(
+                            OrderTestUtils.generateSampleOrderSummary(
+                                    id = index,
+                                    remoteId = index,
+                                    modified = oneDayAfterBaselineDate
+                            ),
+                            OrderTestUtils.generateSampleOrder(
+                                    siteId = site.id,
+                                    remoteId = index,
+                                    modified = baselineDate
+                            )
+                    )
+                }
+            }.toImmutableMap()
+
+    private fun setupUpToDateOrders(site: SiteModel) =
+            mutableMapOf<WCOrderSummaryModel, WCOrderModel>().apply {
+                val baselineDate = "2021-01-05T12:00:00Z"
+                (1L..10L).forEach { index ->
+                    put(
+                            OrderTestUtils.generateSampleOrderSummary(
+                                    id = index,
+                                    remoteId = index,
+                                    modified = baselineDate
+                            ),
+                            OrderTestUtils.generateSampleOrder(
+                                    siteId = site.id,
+                                    remoteId = index,
+                                    modified = baselineDate
+                            )
+                    )
+                }
+            }.toImmutableMap()
+
+    private val Map<WCOrderSummaryModel, WCOrderModel?>.summaries
+        get() = keys.toList()
+
+    private val Map<WCOrderSummaryModel, WCOrderModel?>.orders
+        get() = values.toList()
 }
