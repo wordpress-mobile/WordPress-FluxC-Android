@@ -66,4 +66,5 @@ class OrderApiResponse : Response {
     val status: String? = null
     val total: String? = null
     val total_tax: String? = null
+    val meta_data: JsonElement? = null
 }

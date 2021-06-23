@@ -36,6 +36,8 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
 import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
@@ -322,6 +324,102 @@ class WooShippingLabelFragment : Fragment() {
                     }
                     result.model?.let {
                         prependToLog("$it")
+                    }
+                }
+            }
+        }
+
+        create_custom_package.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val customPackageName = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter Package name"
+                    ).toString()
+                    val customPackageDimension = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter Package dimensions"
+                    ).toString()
+                    val customPackageIsLetter = showSingleLineDialog(
+                            requireActivity(),
+                            "Is it a letter? (true or false)"
+                    ).toBoolean()
+                    val customPackageWeightText = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter Package weight"
+                    ).toString()
+
+                    val customPackageWeight = customPackageWeightText.toFloatOrNull()
+                    if (customPackageWeight == null) {
+                        prependToLog("Invalid float value for package weight: $customPackageWeightText\n")
+                    } else {
+                        val result = withContext(Dispatchers.Default) {
+                            val customPackage = CustomPackage(
+                                    title = customPackageName,
+                                    isLetter = customPackageIsLetter,
+                                    dimensions = customPackageDimension,
+                                    boxWeight = customPackageWeight
+                            )
+                            wcShippingLabelStore.createPackages(
+                                    site = site,
+                                    customPackages = listOf(customPackage),
+                                    predefinedPackages = emptyList()
+                            )
+                        }
+                        result.error?.let {
+                            prependToLog("${it.type}: ${it.message}")
+                        }
+                        result.model?.let {
+                            prependToLog("Custom package created: $it")
+                        }
+                    }
+                }
+            }
+        }
+
+        // This test gets all available predefined options, picks one at random, then activates one package in it.
+        // The end result can either it succeeds (if it hasn't been activated before), or it won't. For the
+        // latter case, the button can be re-tried again by tester.
+        activate_predefined_package.setOnClickListener {
+            prependToLog("Grabbing all available predefined package options...")
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val allPredefinedOptions = mutableListOf<PredefinedOption>()
+                    val allPredefinedResult = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.getAllPredefinedOptions(site)
+                    }
+
+                    allPredefinedResult.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                        return@launch
+                    }
+                    allPredefinedResult.model?.let {
+                        allPredefinedOptions.addAll(it)
+                    }
+
+                    // Pick a random Option, and then pick only one Package inside of it.
+                    val randomOption = allPredefinedOptions.random()
+                    val randomParam = PredefinedOption(
+                            title = randomOption.title,
+                            carrier = randomOption.carrier,
+                            predefinedPackages = listOf(randomOption.predefinedPackages.random())
+                    )
+                    prependToLog(
+                            "Activating ${randomParam.predefinedPackages.first().id} from ${randomParam.carrier}...")
+
+                    val result = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.createPackages(
+                                site = site,
+                                customPackages = emptyList(),
+                                predefinedPackages = listOf(randomParam)
+                        )
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                        return@launch
+                    }
+                    result.model?.let {
+                        prependToLog("Predefined package activated: $it")
                     }
                 }
             }
