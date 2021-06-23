@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -36,6 +35,7 @@ import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
 import org.wordpress.android.fluxc.store.ListStore
+import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderSummariesFetched
@@ -136,7 +136,7 @@ class WCOrderListActivity : AppCompatActivity() {
 
         pagedListWrapper = listStore.getList(
                 listDescriptor = descriptor,
-                dataSource = WCOrderListItemDataSource(dispatcher, wcOrderStore, lifecycle),
+                dataSource = WCOrderListItemDataSource(dispatcher, wcOrderStore),
                 lifecycle = lifecycle
         ).also { wrapper ->
             wrapper.fetchFirstPage()
@@ -231,10 +231,9 @@ enum class TimeGroup {
 
 private class WCOrderListItemDataSource(
     val dispatcher: Dispatcher,
-    val wcOrderStore: WCOrderStore,
-    val lifecycle: Lifecycle
+    val wcOrderStore: WCOrderStore
 ) : ListItemDataSourceInterface<WCOrderListDescriptor, WCOrderListItemIdentifier, WCOrderListItemUIType> {
-    private val fetcher = WCOrderFetcher(lifecycle, dispatcher)
+    private val fetcher = WCOrderFetcher(dispatcher)
 
     override fun getItemsAndFetchIfNecessary(
         listDescriptor: WCOrderListDescriptor,
