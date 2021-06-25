@@ -30,7 +30,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 154
+        return 155
     }
 
     override fun getDbName(): String {
@@ -1783,6 +1783,16 @@ open class WellSqlConfig : DefaultWellConfig {
                                     "VERSION TEXT," +
                                     "RAW_STYLES TEXT," +
                                     "RAW_FEATURES TEXT," +
+                                    "FOREIGN KEY(LOCAL_SITE_ID) REFERENCES SiteModel(_id) ON DELETE CASCADE)"
+                    )
+                }
+                154 -> migrate(version) {
+                    db.execSQL("DROP TABLE IF EXISTS RawEditorSettings")
+                    db.execSQL(
+                            "CREATE TABLE RawEditorSettings(" +
+                                    "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                                    "LOCAL_SITE_ID INTEGER," +
+                                    "RAW_EDITOR_SETTINGS TEXT," +
                                     "FOREIGN KEY(LOCAL_SITE_ID) REFERENCES SiteModel(_id) ON DELETE CASCADE)"
                     )
                 }
