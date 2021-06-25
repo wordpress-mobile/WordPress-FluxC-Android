@@ -61,7 +61,7 @@ class WCUserStoreTest {
         )
 
         // Insert the site into the db so it's available later when testing user role
-        SiteSqlUtils.insertOrUpdateSite(site)
+        SiteSqlUtils().insertOrUpdateSite(site)
     }
 
     @Test

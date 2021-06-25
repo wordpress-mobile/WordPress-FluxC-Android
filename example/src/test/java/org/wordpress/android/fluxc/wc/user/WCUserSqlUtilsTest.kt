@@ -8,9 +8,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.user.WCUserModel
-import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCUserSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
@@ -36,7 +36,7 @@ class WCUserSqlUtilsTest {
         config.reset()
 
         // Insert the site into the db so it's available later
-        SiteSqlUtils.insertOrUpdateSite(site)
+        TestSiteSqlUtils.siteSqlUtils.insertOrUpdateSite(site)
     }
 
     @Test
@@ -120,7 +120,7 @@ class WCUserSqlUtilsTest {
         assertEquals(1, savedUsers.size)
 
         // Delete site and verify users are deleted via foreign key constraint
-        SiteSqlUtils.deleteSite(site)
+        TestSiteSqlUtils.siteSqlUtils.deleteSite(site)
         savedUsers = WCUserSqlUtils.getUsersBySite(site.id)
         assertEquals(0, savedUsers.size)
     }
