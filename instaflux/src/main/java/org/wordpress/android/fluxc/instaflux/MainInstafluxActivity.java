@@ -135,10 +135,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
-            mSelfhostedPayload.url = url;
-            mSelfhostedPayload.username = username;
-            mSelfhostedPayload.password = password;
+            mSelfhostedPayload = new RefreshSitesXMLRPCPayload(username, password, url);
 
             mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url));
         }
@@ -150,10 +147,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = username;
-        payload.password = password;
-        payload.url = xmlrpcEndpoint;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, xmlrpcEndpoint);
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
@@ -222,7 +216,8 @@ public class MainInstafluxActivity extends AppCompatActivity {
             } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.HTTP_AUTH_REQUIRED) {
                 showHTTPAuthDialog(event.failedEndpoint);
             } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                mSelfhostedPayload.url = event.failedEndpoint;
+                mSelfhostedPayload = mSelfhostedPayload
+                        .copy(mSelfhostedPayload.username, mSelfhostedPayload.password, event.failedEndpoint);
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
             AppLog.e(AppLog.T.API, "Discover error: " + event.error);

@@ -107,10 +107,10 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     public void testXMLRPCSelfSignedSSLFetchSites() throws InterruptedException {
         mMemorizingTrustManager.clearLocalTrustStore();
 
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL_ENDPOINT;
+        RefreshSitesXMLRPCPayload payload =
+                new RefreshSitesXMLRPCPayload(BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
+                        BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL,
+                        BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL_ENDPOINT);
 
         // Expecting to receive an OnAuthenticationChanged event with error INVALID_SSL_CERTIFICATE, as well as an
         // OnSiteChanged event with error GENERIC_ERROR
@@ -134,10 +134,8 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @Test
     public void testXMLRPCHTTPAuthFetchSites() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT);
 
         // Expecting to receive an OnAuthenticationChanged event with error HTTP_AUTH_ERROR, as well as an
         // OnSiteChanged event with error GENERIC_ERROR
@@ -161,10 +159,8 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @Test
     public void testXMLRPCHTTPAuthFetchSites2() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT);
         mNextEvent = TestEvents.SITE_CHANGED;
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
@@ -368,10 +364,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     private void fetchProfile(String username, String password, String endpointUrl) throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = username;
-        payload.password = password;
-        payload.url = endpointUrl;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, endpointUrl);
 
         // Expecting to receive a OnSiteChanged event
         mNextEvent = TestEvents.SITE_CHANGED;
@@ -391,10 +384,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     private void fetchSites(String username, String password, String endpointUrl) throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = username;
-        payload.password = password;
-        payload.url = endpointUrl;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, endpointUrl);
 
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);

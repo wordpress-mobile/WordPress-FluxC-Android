@@ -13,6 +13,7 @@ data class WCPackagesResult(
 
     data class PredefinedOption(
         val title: String,
+        val carrier: String,
         val predefinedPackages: List<PredefinedPackage>
     ) {
         data class PredefinedPackage(

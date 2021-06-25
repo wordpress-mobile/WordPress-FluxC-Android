@@ -7,13 +7,14 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 
 open class ReleaseStack_WCBase : ReleaseStack_WPComBase() {
+    private val siteSqlUtils = SiteSqlUtils()
     private val authenticatePayload by lazy {
         AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_WOO_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_WOO_JETPACK)
     }
 
     override fun getSiteFromDb(): SiteModel {
-        val wcSites = SiteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
+        val wcSites = siteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
         if (wcSites.isEmpty()) {
             throw AssertionError("This test account doesn't seem to have any WooCommerce sites!")
         } else {
