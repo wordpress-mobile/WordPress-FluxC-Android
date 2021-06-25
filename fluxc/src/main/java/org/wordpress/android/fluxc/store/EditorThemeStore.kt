@@ -1,12 +1,14 @@
 package org.wordpress.android.fluxc.store
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.EditorThemeAction
 import org.wordpress.android.fluxc.action.EditorThemeAction.FETCH_EDITOR_THEME
+import org.wordpress.android.fluxc.action.EditorThemeAction.UPDATE_EDITOR_THEME
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.BlockEditorSettings
 import org.wordpress.android.fluxc.model.EditorTheme
@@ -35,6 +37,9 @@ class EditorThemeStore
     private val editorThemeSqlUtils = EditorThemeSqlUtils()
 
     class FetchEditorThemePayload @JvmOverloads constructor(val site: SiteModel, val gssEnabled: Boolean = false) :
+            Payload<BaseNetworkError>()
+
+    class UpdateEditorThemePayload constructor(val site: SiteModel, val editorSettings: JsonObject) :
             Payload<BaseNetworkError>()
 
     data class OnEditorThemeChanged(
@@ -70,6 +75,10 @@ class EditorThemeStore
                         handleFetchEditorTheme(payload.site, actionType)
                     }
                 }
+            }
+            UPDATE_EDITOR_THEME -> {
+                val payload  = action.payload as UpdateEditorThemePayload
+                handleUpdateGlobalStylesSettings(payload.site, payload.editorSettings, actionType)
             }
         }
     }

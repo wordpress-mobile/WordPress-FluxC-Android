@@ -7,9 +7,11 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.EditorSettingsAction
 import org.wordpress.android.fluxc.action.EditorSettingsAction.FETCH_EDITOR_SETTINGS
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.persistence.RawEditorSettingsSqlUtils
+import org.wordpress.android.fluxc.store.EditorThemeStore.UpdateEditorThemePayload
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -95,16 +97,9 @@ class RawEditorSettingsStore
                     emitChange(onChanged)
                 }
 
-                /* THIS IS WHERE WE BRANCH */
-
-//                val blockEditorSettings = Gson().fromJson(editorSettings, BlockEditorSettings::class.java)
-//                val newTheme = EditorTheme(blockEditorSettings)
-//                val existingTheme = editorThemeSqlUtils.getEditorThemeForSite(site)
-//                if (newTheme != existingTheme) {
-//                    editorThemeSqlUtils.replaceEditorThemeForSite(site, newTheme)
-//                    val onChanged = OnEditorThemeChanged(newTheme, site.id, action)
-//                    emitChange(onChanged)
-//                }
+                // Update the theme editor store with the fetched theme data
+                val payload = UpdateEditorThemePayload(site, editorSettings)
+                mDispatcher.dispatch(EditorThemeActionBuilder.newUpdateEditorThemeAction(payload))
             }
             is Error -> {
                 val onChanged = OnEditorSettingsChanged(EditorSettingsError(response.error.message), action)
