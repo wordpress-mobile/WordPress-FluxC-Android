@@ -127,19 +127,24 @@ class EditorThemeStore
                     return
                 }
 
-                val blockEditorSettings = Gson().fromJson(responseTheme, BlockEditorSettings::class.java)
-                val newTheme = EditorTheme(blockEditorSettings)
-                val existingTheme = editorThemeSqlUtils.getEditorThemeForSite(site)
-                if (newTheme != existingTheme) {
-                    editorThemeSqlUtils.replaceEditorThemeForSite(site, newTheme)
-                    val onChanged = OnEditorThemeChanged(newTheme, site.id, action)
-                    emitChange(onChanged)
-                }
+                handleUpdateGlobalStylesSettings(site, responseTheme, action)
             }
             is Error -> {
                 val onChanged = OnEditorThemeChanged(EditorThemeError(response.error.message), action)
                 emitChange(onChanged)
             }
+        }
+    }
+
+    private fun handleUpdateGlobalStylesSettings(site: SiteModel, editorSettings: JsonObject,
+        action: EditorThemeAction) {
+        val blockEditorSettings = Gson().fromJson(editorSettings, BlockEditorSettings::class.java)
+        val newTheme = EditorTheme(blockEditorSettings)
+        val existingTheme = editorThemeSqlUtils.getEditorThemeForSite(site)
+        if (newTheme != existingTheme) {
+            editorThemeSqlUtils.replaceEditorThemeForSite(site, newTheme)
+            val onChanged = OnEditorThemeChanged(newTheme, site.id, action)
+            emitChange(onChanged)
         }
     }
 
