@@ -58,10 +58,19 @@ class InternalPagedListDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIF
      * @param endPosition End position that's exclusive
      */
     private fun getItemIds(startPosition: Int, endPosition: Int): List<ITEM_IDENTIFIER> {
-        require(startPosition in 0 until endPosition && endPosition <= totalSize) {
+        /**
+         * After upgrading to Paging 3 in the client app, screens using legacy paging crashed on fast scrolling.
+         * See https://github.com/wordpress-mobile/WordPress-Android/issues/14860.
+         * A pattern was noticed: the crash occurred only on the last page where endPosition was set to
+         * (startPosition + 20) > totalSize. This workaround fixes this problem by resetting
+         * endPosition to totalSize as tte crash occurred only on the last page.
+         */
+        var newEndPosition = endPosition
+        if (endPosition > totalSize) newEndPosition = totalSize
+        require(startPosition in 0 until newEndPosition && newEndPosition <= totalSize) {
             "Illegal start($startPosition) or end($endPosition) position for totalSize($totalSize)"
         }
 
-        return itemIdentifiers.subList(startPosition, endPosition)
+        return itemIdentifiers.subList(startPosition, newEndPosition)
     }
 }
