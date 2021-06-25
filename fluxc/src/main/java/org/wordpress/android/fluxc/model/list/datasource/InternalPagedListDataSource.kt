@@ -63,7 +63,7 @@ class InternalPagedListDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIF
          * See https://github.com/wordpress-mobile/WordPress-Android/issues/14860.
          * A pattern was noticed: the crash occurred only on the last page where endPosition was set to
          * (startPosition + 20) > totalSize. This workaround fixes this problem by resetting
-         * endPosition to totalSize as tte crash occurred only on the last page.
+         * endPosition to totalSize as the crash occurred only on the last page.
          */
         var newEndPosition = endPosition
         if (endPosition > totalSize) newEndPosition = totalSize
