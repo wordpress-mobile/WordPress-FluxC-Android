@@ -1773,7 +1773,10 @@ open class WellSqlConfig : DefaultWellConfig {
                 152 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
                     db.execSQL("ALTER TABLE WCShippingLabelModel ADD COMMERCIAL_INVOICE_URL TEXT")
                 }
-                153 -> migrate(version) {
+                153 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
+                    db.execSQL("ALTER TABLE WCOrderModel ADD META_DATA TEXT")
+                }
+                154 -> migrate(version) {
                     db.execSQL("DROP TABLE IF EXISTS EditorTheme")
                     db.execSQL(
                             "CREATE TABLE EditorTheme(" +

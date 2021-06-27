@@ -10,6 +10,8 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
@@ -29,6 +31,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlin.collections.toMap as asMap
 
 @Singleton
 class ShippingLabelRestClient @Inject constructor(
@@ -329,6 +332,81 @@ class ShippingLabelRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    // Supports both creating custom package(s), or activating existing predefined package(s).
+    // Creating singular or multiple items, as well as mixed items at once are supported.
+    suspend fun createPackages(
+        site: SiteModel,
+        customPackages: List<CustomPackage> = emptyList(),
+        predefinedOptions: List<PredefinedOption> = emptyList()
+    ): WooPayload<Boolean> {
+        // We need at least one of the lists to not be empty to continue with API call.
+        if (customPackages.isEmpty() && predefinedOptions.isEmpty()) {
+            return WooPayload(false)
+        }
+
+        val url = WOOCOMMERCE.connect.packages.pathV1
+
+        // 1. Mapping for custom packages
+        // Here we convert each CustomPackage instance into a Map with proper key names.
+        // This list of Maps will then be used as the "customs" key's value in the API request.
+        val mappedCustomPackages = customPackages.map {
+            mapOf(
+                    "name" to it.title,
+                    "is_letter" to it.isLetter,
+                    "inner_dimensions" to it.dimensions,
+                    "box_weight" to it.boxWeight,
+
+                    /*
+                    In wp-admin, The two values below are not user-editable but are saved during
+                    package creation with hardcoded values. Here we replicate the same behavior.
+                     */
+                    "is_user_defined" to true,
+                    "max_weight" to 0
+            )
+        }
+
+        // 2. Mapping for predefined options.
+        val predefinedParam = predefinedOptions
+                // First we group all options by carrier, because the list of predefinedOptions can contain
+                // multiple instances with the same carrier name.
+                //  For example, "USPS Priority Mail Express Boxes" and "USPS Priority Mail Boxes" are two separate
+                //  options having the same carrier: "usps".
+                .groupBy { it.carrier }
+
+                // Next, build a predefinedParam Map replicating the required JSON request structure.
+                // Example structure:
+                //
+                //    "carrier_1": [ "package_1", "package_2", ... ],
+                //    "carrier_2": [ "package_3", "package_4", "package_5" ... ],
+                .map { (carrier, options) ->
+                    carrier to options
+                            .flatMap { it.predefinedPackages } // Put all found package(s) in a list
+                            .map { it.id } // Grab all found package id(s)
+                }.asMap() // Convert list of Map to Map
+
+        val params = mapOf(
+                "custom" to mappedCustomPackages,
+                "predefined" to predefinedParam
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                JsonObject::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data!!["success"].asBoolean)
             }
             is JetpackError -> {
                 WooPayload(response.error.toWooError())

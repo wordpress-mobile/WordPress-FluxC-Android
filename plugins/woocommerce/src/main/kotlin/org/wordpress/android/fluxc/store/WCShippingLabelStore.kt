@@ -216,7 +216,7 @@ class WCShippingLabelStore @Inject constructor(
                 }
                 response.result?.isSuccess == true -> {
                     val customPackages = getCustomPackages(response.result)
-                    val predefinedOptions = getPredefinedOptions(response.result)
+                    val predefinedOptions = getActivePredefinedOptions(response.result)
                     WooResult(WCPackagesResult(customPackages, predefinedOptions))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -254,14 +254,53 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
-    private fun getPredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
+    suspend fun getAllPredefinedOptions(
+        site: SiteModel
+    ): WooResult<List<PredefinedOption>> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getAllPredefinedOptions") {
+            val response = restClient.getPackageTypes(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.isSuccess == true -> {
+                    WooResult(selectAllPredefinedOptions(response.result))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    private fun selectAllPredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
+        return result.formSchema.predefinedSchema.entries.map { carrier ->
+            carrier.value.map { option ->
+                val predefinedPackages = option.value.definitions.map { definition ->
+                    PredefinedPackage(
+                            id = definition.id,
+                            title = definition.name,
+                            isLetter = definition.isLetter,
+                            dimensions = definition.outerDimensions,
+                            boxWeight = definition.boxWeight ?: 0f
+                    )
+                }
+
+                PredefinedOption(
+                        title = option.value.title,
+                        carrier = carrier.key,
+                        predefinedPackages = predefinedPackages
+                )
+            } // At this step, we end up with a list of lists of PredefinedOptions
+        }.flatten() // Flat it
+    }
+
+    private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
         val predefinedOptions = mutableListOf<PredefinedOption>()
         result.formSchema.predefinedSchema.entries.forEach { provider ->
             provider.value.forEach { option ->
                 result.formData.predefinedData[provider.key]?.let { packageIds ->
                     val predefinedPackages = getPredefinedPackages(packageIds, option.value.definitions)
                     if (predefinedPackages.isNotEmpty()) {
-                        predefinedOptions.add(PredefinedOption(option.value.title, predefinedPackages))
+                        predefinedOptions.add(PredefinedOption(option.value.title, provider.key, predefinedPackages))
                     }
                 }
             }
@@ -450,6 +489,28 @@ class WCShippingLabelStore @Inject constructor(
             }
             else -> {
                 WooPayload(ShippingLabelStatusApiResponse(isSuccess = true, labels = doneLabels))
+            }
+        }
+    }
+
+    /**
+     * Allows creation of new custom packages, or activation of predefined packages. At least one of the
+     * [customPackages] or [predefinedPackages] parameters should be a non-empty list.
+     */
+    suspend fun createPackages(
+        site: SiteModel,
+        customPackages: List<CustomPackage> = emptyList(),
+        predefinedPackages: List<PredefinedOption> = emptyList()): WooResult<Boolean> {
+        if (customPackages.isEmpty() && predefinedPackages.isEmpty()) {
+            throw IllegalArgumentException("customPackages and predefinedPackages can't both be an empty list.")
+        }
+
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createPackages") {
+            val response = restClient.createPackages(site, customPackages, predefinedPackages)
+            return@withDefaultContext when {
+                response.isError -> WooResult(response.error)
+                response.result == true -> WooResult(true)
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }

@@ -37,7 +37,9 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingRatesResult.ShippingPackage
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
@@ -52,6 +54,7 @@ import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.math.BigDecimal
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -149,6 +152,54 @@ class WCShippingLabelStoreTest {
                     serviceName = "USPS - Priority Mail International label",
                     carrierId = "usps",
                     products = listOf(10)
+            )
+    )
+
+    private val sampleListOfOneCustomPackage = listOf(
+            CustomPackage(
+                    "Package 1",
+                    false,
+                    "10 x 10 x 10",
+                    1.0f
+            )
+    )
+
+    private val sampleListOfOnePredefinedPackage = listOf(
+            PredefinedOption(
+                    title = "USPS Priority Mail Flat Rate Boxes",
+                    carrier = "usps",
+                    predefinedPackages = listOf(
+                            PredefinedPackage(
+                                    id = "small_flat_box",
+                                    title = "Small Flat Box",
+                                    isLetter = false,
+                                    dimensions = "10 x 10 x 10",
+                                    boxWeight = 1.0f
+                            )
+                    )
+            )
+    )
+
+    private val sampleListOfTwoIdenticalPredefinedPackages = listOf(
+            PredefinedOption(
+                    title = "USPS Priority Mail Flat Rate Boxes",
+                    carrier = "usps",
+                    predefinedPackages = listOf(
+                            PredefinedPackage(
+                                    id = "small_flat_box",
+                                    title = "Small Flat Box",
+                                    isLetter = false,
+                                    dimensions = "10 x 10 x 10",
+                                    boxWeight = 1.0f
+                            ),
+                            PredefinedPackage(
+                                    id = "small_flat_box",
+                                    title = "Small Flat Box",
+                                    isLetter = false,
+                                    dimensions = "10 x 10 x 10",
+                                    boxWeight = 1.0f
+                            )
+                    )
             )
     )
 
@@ -359,6 +410,7 @@ class WCShippingLabelStoreTest {
                 ),
                 listOf(
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
+                                "usps",
                                 listOf(
                                         PredefinedPackage(
                                                 "small_flat_box",
@@ -378,6 +430,7 @@ class WCShippingLabelStoreTest {
                         ),
                         PredefinedOption(
                                 "DHL Express",
+                                "dhlexpress",
                                 listOf(PredefinedPackage(
                                         "LargePaddedPouch",
                                         "Large Padded Pouch",
@@ -642,6 +695,40 @@ class WCShippingLabelStoreTest {
                 canCreateCustomsForm = false
         )
         assertThat(eligibility).isNull()
+    }
+
+    @Test
+    fun `creating packages returns true if the API call succeeds`() = test {
+        val response = WooPayload(true)
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
+
+        val expectedResult = WooResult(true)
+        val successfulRequestResult = store.createPackages(
+                site = site,
+                customPackages = sampleListOfOneCustomPackage,
+                predefinedPackages = emptyList()
+        )
+        assertEquals(successfulRequestResult, expectedResult)
+    }
+
+    @Test
+    fun `creating packages returns error if the API call fails`() = test {
+        // In practice, the API returns more specific error message(s) depending on the error case.
+        // In `createPackages()` that error message isn't modified further, so here we use a mock message instead.
+        val errorMessage = "error message"
+        val response = WooPayload<Boolean>(WooError(GENERIC_ERROR, UNKNOWN, errorMessage))
+        whenever(restClient.createPackages(site = any(), customPackages = any(), predefinedOptions = any()))
+                .thenReturn(response)
+
+        val expectedResult = WooResult<Boolean>(response.error)
+        val errorRequestResult = store.createPackages(
+                site = site,
+                customPackages = emptyList(),
+                predefinedPackages = sampleListOfOnePredefinedPackage
+        )
+        assertEquals(errorRequestResult, expectedResult)
+        assertEquals(expectedResult.error.message, errorMessage)
     }
 
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
