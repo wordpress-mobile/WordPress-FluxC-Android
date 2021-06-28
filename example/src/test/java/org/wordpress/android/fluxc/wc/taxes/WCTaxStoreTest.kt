@@ -56,7 +56,7 @@ class WCTaxStoreTest {
         )
 
         // Insert the site into the db so it's available later when fetching tax classes
-        SiteSqlUtils.insertOrUpdateSite(site)
+        SiteSqlUtils().insertOrUpdateSite(site)
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
@@ -16,7 +17,6 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
-import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import kotlin.test.assertEquals
@@ -51,7 +51,7 @@ class ProductSqlUtilsTest {
 
         // Insert the site into the db so it's available later for product
         // reviews
-        SiteSqlUtils.insertOrUpdateSite(site)
+        TestSiteSqlUtils.siteSqlUtils.insertOrUpdateSite(site)
     }
 
     @Test
@@ -367,7 +367,7 @@ class ProductSqlUtilsTest {
         assertEquals(shippingClassList.size, savedShippingClassList.size)
 
         // Delete site and verify shipping class list  deleted via foreign key constraint
-        SiteSqlUtils.deleteSite(site)
+        TestSiteSqlUtils.siteSqlUtils.deleteSite(site)
         savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(site.id)
         assertEquals(0, savedShippingClassList.size)
     }
@@ -608,7 +608,7 @@ class ProductSqlUtilsTest {
         assertEquals(reviews.size, savedReviews.size)
 
         // Delete site and verify reviews deleted via foreign key constraint
-        SiteSqlUtils.deleteSite(site)
+        TestSiteSqlUtils.siteSqlUtils.deleteSite(site)
         savedReviews = ProductSqlUtils.getProductReviewsForSite(site)
         assertEquals(0, savedReviews.size)
     }
@@ -868,7 +868,7 @@ class ProductSqlUtilsTest {
         assertEquals(tags.size, savedTags.size)
 
         // Delete site and verify tags are deleted via foreign key constraint
-        SiteSqlUtils.deleteSite(site)
+        TestSiteSqlUtils.siteSqlUtils.deleteSite(site)
         savedTags = ProductSqlUtils.getProductTagsForSite(site.id)
         assertEquals(0, savedTags.size)
     }
