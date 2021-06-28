@@ -39,6 +39,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
         site = SiteModel()
         site.setIsWPCom(true)
+        site.softwareVersion = "5.8"
         payload = FetchEditorThemePayload(site)
         payloadWithGSS = FetchEditorThemePayload(site, true)
         countDownLatch = CountDownLatch(1)
