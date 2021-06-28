@@ -299,10 +299,10 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
 
         // Attempt to add the same Jetpack site as a self-hosted site
-        RefreshSitesXMLRPCPayload xmlrpcPayload = new RefreshSitesXMLRPCPayload();
-        xmlrpcPayload.username = BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY;
-        xmlrpcPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY;
-        xmlrpcPayload.url = BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY_ENDPOINT;
+        RefreshSitesXMLRPCPayload xmlrpcPayload =
+                new RefreshSitesXMLRPCPayload(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
+                        BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY,
+                        BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY_ENDPOINT);
 
         // Expect a DUPLICATE_SITE error since we're already signed into this site with Jetpack
         mNextEvent = TestEvents.ERROR_DUPLICATE_SITE;
@@ -517,10 +517,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
     private void fetchSitesXMLRPC(String username, String password, String endpointUrl)
             throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = username;
-        payload.password = password;
-        payload.url = endpointUrl;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, endpointUrl);
 
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);

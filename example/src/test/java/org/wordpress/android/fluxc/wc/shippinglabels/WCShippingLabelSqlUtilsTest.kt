@@ -40,7 +40,7 @@ class WCShippingLabelSqlUtilsTest {
         config.reset()
 
         // Insert the site into the db so it's available later for shipping labels
-        SiteSqlUtils.insertOrUpdateSite(site)
+        SiteSqlUtils().insertOrUpdateSite(site)
     }
 
     @Test

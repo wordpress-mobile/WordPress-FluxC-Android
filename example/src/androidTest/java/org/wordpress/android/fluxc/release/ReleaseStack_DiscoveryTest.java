@@ -575,10 +575,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.url = mUrl;
-        payload.username = mUsername;
-        payload.password = mPassword;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(mUsername, mPassword, mUrl);
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
