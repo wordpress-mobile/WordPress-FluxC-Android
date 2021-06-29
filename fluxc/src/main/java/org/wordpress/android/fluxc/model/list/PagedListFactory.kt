@@ -3,13 +3,14 @@ package org.wordpress.android.fluxc.model.list
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
+import kotlin.math.min
 
 /**
  * A [DataSource.Factory] instance for `ListStore` lists.
  *
  * @param createDataSource A function that creates an instance of [InternalPagedListDataSource].
  */
-class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM>(
+class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any>(
     private val createDataSource: () -> InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
 ) : DataSource.Factory<Int, LIST_ITEM>() {
     private var currentSource: PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>? = null
@@ -30,7 +31,7 @@ class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_I
  *
  * @param dataSource Describes how to take certain actions such as fetching list for the item type [LIST_ITEM].
  */
-private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM>(
+private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any>(
     private val dataSource: InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
 ) : PositionalDataSource<LIST_ITEM>() {
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<LIST_ITEM>) {
@@ -46,7 +47,8 @@ private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, IT
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<LIST_ITEM>) {
-        val items = loadRangeInternal(params.startPosition, params.loadSize)
+        val loadSize = min(dataSource.totalSize - params.startPosition, params.loadSize)
+        val items = loadRangeInternal(params.startPosition, loadSize)
         callback.onResult(items)
     }
 
