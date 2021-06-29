@@ -50,7 +50,7 @@ internal enum class IsLoadingMoreValue(override val value: Boolean) : ObservedVa
  * @param testSetup The test setup to be run before waiting for all values to be observed
  *
  */
-internal fun <T> PagedListWrapper<T>.testExpectedListWrapperStateChanges(
+internal fun <T : Any> PagedListWrapper<T>.testExpectedListWrapperStateChanges(
     expectedIsEmptyValues: List<IsEmptyValue>,
     expectedIsFetchingFirstPageValues: List<IsFetchingFirstPageValue>,
     expectedIsLoadingMoreValues: List<IsLoadingMoreValue>,
@@ -87,7 +87,7 @@ internal fun <T> PagedListWrapper<T>.testExpectedListWrapperStateChanges(
  * item's index to trigger loading more data from remote. It'll then destroy the lifecycle so it doesn't keep
  * fetching more pages.
  */
-internal fun <T> PagedListWrapper<T>.triggerLoadMore() {
+internal fun <T : Any> PagedListWrapper<T>.triggerLoadMore() {
     val lifecycle = SimpleTestLifecycle()
     this.data.observe(lifecycle, Observer {
         if (it != null && it.size > 0) {

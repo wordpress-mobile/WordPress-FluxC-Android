@@ -25,7 +25,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      *
      * It uses a default [Lifecycle] instance which will NOT be destroyed throughout the test.
      */
-    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> getList(
+    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM : Any> getList(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle = SimpleTestLifecycle().lifecycle
@@ -46,7 +46,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      *
      * @param createPagedListWrapper A factory function that will create a [PagedListWrapper] instance.
      */
-    fun <T> runTest(
+    fun <T : Any> runTest(
         testMode: ListStoreConnectedTestMode,
         createPagedListWrapper: () -> PagedListWrapper<T>
     ) {
@@ -61,7 +61,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      * A helper function that initially fetches the first page of a list and then triggers loading more data to assert
      * that correct values are observed for the given [PagedListWrapper].
      */
-    private fun <T> testLoadMore(pagedListWrapper: PagedListWrapper<T>) {
+    private fun <T : Any> testLoadMore(pagedListWrapper: PagedListWrapper<T>) {
         testFirstPage(pagedListWrapper, true)
         pagedListWrapper.testExpectedListWrapperStateChanges(
                 expectedIsEmptyValues = listOf(NOT_EMPTY),
@@ -78,7 +78,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      *
      * @param pagedListWrapper [PagedListWrapper] instance that will be tested
      */
-    private fun <T> testFirstPage(pagedListWrapper: PagedListWrapper<T>, ensureListIsNotEmpty: Boolean) {
+    private fun <T : Any> testFirstPage(pagedListWrapper: PagedListWrapper<T>, ensureListIsNotEmpty: Boolean) {
         val isEmptyValues = if (ensureListIsNotEmpty) listOf(EMPTY, NOT_EMPTY) else listOf(EMPTY)
         pagedListWrapper.testExpectedListWrapperStateChanges(
                 expectedIsEmptyValues = isEmptyValues,
