@@ -59,4 +59,30 @@ private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, IT
         }
         return dataSource.getItemsInRange(startPosition, endPosition)
     }
+
+    // extracted from PositionalDataSource
+    private fun computeInitialLoadPosition(params: LoadInitialParams, totalCount: Int): Int {
+        val position = params.requestedStartPosition
+        val initialLoadSize = params.requestedLoadSize
+        val pageSize = params.pageSize
+
+        var pageStart = position / pageSize * pageSize
+
+        // maximum start pos is that which will encompass end of list
+        val maximumLoadPage =
+                (totalCount - initialLoadSize + pageSize - 1) / pageSize * pageSize
+        pageStart = minOf(maximumLoadPage, pageStart)
+
+        // minimum start position is 0
+        pageStart = maxOf(0, pageStart)
+
+        return pageStart
+    }
+
+    // extracted from PositionalDataSource
+    private fun computeInitialLoadSize(
+        params: LoadInitialParams,
+        initialLoadPosition: Int,
+        totalCount: Int
+    ): Int = minOf(totalCount - initialLoadPosition, params.requestedLoadSize)
 }
