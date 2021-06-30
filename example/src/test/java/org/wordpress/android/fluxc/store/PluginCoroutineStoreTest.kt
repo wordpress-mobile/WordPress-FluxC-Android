@@ -26,6 +26,8 @@ import org.wordpress.android.fluxc.network.discovery.DiscoveryWPAPIRestClient
 import org.wordpress.android.fluxc.network.rest.wpapi.Nonce
 import org.wordpress.android.fluxc.network.rest.wpapi.NonceRestClient
 import org.wordpress.android.fluxc.network.rest.wpapi.plugin.PluginWPAPIRestClient
+import org.wordpress.android.fluxc.persistence.PluginCapabilitiesDao
+import org.wordpress.android.fluxc.persistence.PluginCapabilitiesDao.PluginCapabilities
 import org.wordpress.android.fluxc.persistence.PluginSqlUtilsWrapper
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.PluginCoroutineStore.WPApiPluginsPayload
@@ -49,6 +51,7 @@ class PluginCoroutineStoreTest {
     @Mock lateinit var nonceRestClient: NonceRestClient
     @Mock lateinit var currentTimeProvider: CurrentTimeProvider
     @Mock lateinit var pluginSqlUtils: PluginSqlUtilsWrapper
+    @Mock lateinit var pluginCapabilitiesDao: PluginCapabilitiesDao
     private lateinit var store: PluginCoroutineStore
     private lateinit var site: SiteModel
     private val nonce = Nonce.Available("nonce")
@@ -66,9 +69,11 @@ class PluginCoroutineStoreTest {
                 siteSqlUtils,
                 nonceRestClient,
                 currentTimeProvider,
-                pluginSqlUtils
+                pluginSqlUtils,
+                pluginCapabilitiesDao
         )
         site = SiteModel()
+        site.id = 1
         site.url = "site.com"
         whenever(nonceRestClient.getNonce(site)).thenReturn(nonce)
         onFetchedEventCaptor = argumentCaptor()
@@ -93,6 +98,7 @@ class PluginCoroutineStoreTest {
         assertThat(result.isError).isFalse()
         assertThat(result.type).isEqualTo(SITE)
         verify(pluginSqlUtils).insertOrReplaceSitePlugins(site, fetchedPlugins)
+        verify(pluginCapabilitiesDao).insert(PluginCapabilities(site.id, false))
     }
 
     @Test

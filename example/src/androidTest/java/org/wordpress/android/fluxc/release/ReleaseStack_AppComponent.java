@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
+import org.wordpress.android.fluxc.module.DatabaseModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.OkHttpClientModule;
@@ -19,7 +20,8 @@ import dagger.Component;
         OkHttpClientModule.class,
         ReleaseNetworkModule.class,
         ReleaseToolsModule.class,
-        MockedToolsModule.class
+        MockedToolsModule.class,
+        DatabaseModule.class
 })
 public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountTest test);

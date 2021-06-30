@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.mocked;
 
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
+import org.wordpress.android.fluxc.module.DatabaseModule;
 import org.wordpress.android.fluxc.module.MockedNetworkModule;
 
 import javax.inject.Singleton;
@@ -12,6 +13,7 @@ import dagger.Component;
 @Component(modules = {
         AppContextModule.class,
         AppConfigModule.class,
+        DatabaseModule.class,
         MockedNetworkModule.class // Mocked module
 })
 public interface MockedNetworkAppComponent {

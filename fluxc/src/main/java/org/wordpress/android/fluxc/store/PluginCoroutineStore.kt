@@ -13,6 +13,8 @@ import org.wordpress.android.fluxc.network.rest.wpapi.Nonce.FailedRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.Nonce.Unknown
 import org.wordpress.android.fluxc.network.rest.wpapi.NonceRestClient
 import org.wordpress.android.fluxc.network.rest.wpapi.plugin.PluginWPAPIRestClient
+import org.wordpress.android.fluxc.persistence.PluginCapabilitiesDao
+import org.wordpress.android.fluxc.persistence.PluginCapabilitiesDao.PluginCapabilities
 import org.wordpress.android.fluxc.persistence.PluginSqlUtilsWrapper
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginError
@@ -38,7 +40,8 @@ class PluginCoroutineStore
     private val siteSqlUtils: SiteSqlUtils,
     private val nonceRestClient: NonceRestClient,
     private val currentTimeProvider: CurrentTimeProvider,
-    private val pluginSqlUtils: PluginSqlUtilsWrapper
+    private val pluginSqlUtils: PluginSqlUtilsWrapper,
+    private val pluginCapabilitiesDao: PluginCapabilitiesDao
 ) {
     fun fetchWPApiPlugins(siteModel: SiteModel) = coroutineEngine.launch(T.PLUGINS, this, "Fetching WPAPI plugins") {
         val event = syncFetchWPApiPlugins(siteModel)
@@ -56,6 +59,7 @@ class PluginCoroutineStore
         } else if (!payload.data.isNullOrEmpty()) {
             event.canLoadMore = false
             pluginSqlUtils.insertOrReplaceSitePlugins(siteModel, payload.data)
+            pluginCapabilitiesDao.insert(PluginCapabilities(siteModel.id, false))
         }
         return event
     }

@@ -21,6 +21,8 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
+import org.wordpress.android.fluxc.persistence.PluginCapabilitiesDao;
+import org.wordpress.android.fluxc.persistence.PluginCapabilitiesDao.PluginCapabilities;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -165,6 +167,7 @@ public class PluginStore extends Store {
         // Used for PluginDirectoryType.SITE
         public SiteModel site;
         public List<SitePluginModel> sitePlugins;
+        public boolean canAutoUpdate;
 
         public FetchedPluginDirectoryPayload(PluginDirectoryType type, List<WPOrgPluginModel> wpOrgPlugins,
                                              boolean loadMore, boolean canLoadMore, int page) {
@@ -175,10 +178,11 @@ public class PluginStore extends Store {
             this.page = page;
         }
 
-        public FetchedPluginDirectoryPayload(SiteModel site, List<SitePluginModel> sitePlugins) {
+        public FetchedPluginDirectoryPayload(SiteModel site, List<SitePluginModel> sitePlugins, boolean canAutoUpdate) {
             this.type = PluginDirectoryType.SITE;
             this.site = site;
             this.sitePlugins = sitePlugins;
+            this.canAutoUpdate = canAutoUpdate;
         }
 
         public FetchedPluginDirectoryPayload(PluginDirectoryType type, boolean loadMore, PluginDirectoryError error) {
@@ -676,15 +680,18 @@ public class PluginStore extends Store {
     private final PluginRestClient mPluginRestClient;
     private final PluginWPOrgClient mPluginWPOrgClient;
     private final PluginCoroutineStore mPluginCoroutineStore;
+    private final PluginCapabilitiesDao mPluginCapabilitiesDao;
 
     @Inject public PluginStore(Dispatcher dispatcher,
                                PluginRestClient pluginRestClient,
                                PluginWPOrgClient pluginWPOrgClient,
-                               PluginCoroutineStore pluginCoroutineStore) {
+                               PluginCoroutineStore pluginCoroutineStore,
+                               PluginCapabilitiesDao pluginCapabilitiesDao) {
         super(dispatcher);
         mPluginRestClient = pluginRestClient;
         mPluginWPOrgClient = pluginWPOrgClient;
         mPluginCoroutineStore = pluginCoroutineStore;
+        mPluginCapabilitiesDao = pluginCapabilitiesDao;
     }
 
     @Override
@@ -748,6 +755,15 @@ public class PluginStore extends Store {
             case UPDATED_SITE_PLUGIN:
                 updatedSitePlugin((UpdatedSitePluginPayload) action.getPayload());
                 break;
+        }
+    }
+
+    public boolean canAutoUpdate(@NonNull SiteModel siteModel) {
+        PluginCapabilities pluginCapabilities = mPluginCapabilitiesDao.getBySiteId(siteModel.getId());
+        if (pluginCapabilities != null) {
+            return pluginCapabilities.getAutoUpdateFiles();
+        } else {
+            return false;
         }
     }
 
@@ -919,6 +935,7 @@ public class PluginStore extends Store {
         } else {
             event.canLoadMore = payload.canLoadMore;
             if (event.type == PluginDirectoryType.SITE) {
+                mPluginCapabilitiesDao.insert(new PluginCapabilities(payload.site.getId(), payload.canAutoUpdate));
                 PluginSqlUtils.insertOrReplaceSitePlugins(payload.site, payload.sitePlugins);
             } else {
                 if (!payload.loadMore) {

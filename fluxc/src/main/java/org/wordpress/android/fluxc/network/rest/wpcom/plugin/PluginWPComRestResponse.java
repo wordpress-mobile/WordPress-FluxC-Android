@@ -2,14 +2,8 @@ package org.wordpress.android.fluxc.network.rest.wpcom.plugin;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
 public class PluginWPComRestResponse {
-    public class FetchPluginsResponse {
-        public List<PluginWPComRestResponse> plugins;
-    }
-
-    public class ActionLinks {
+    public static class ActionLinks {
         @SerializedName("Settings")
         public String settings;
     }
