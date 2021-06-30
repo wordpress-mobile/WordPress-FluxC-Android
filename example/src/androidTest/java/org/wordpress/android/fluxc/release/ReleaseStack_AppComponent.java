@@ -69,4 +69,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_XPostsTest test);
     void inject(ReleaseStack_NoRedirectsTest test);
     void inject(ReleaseStack_WCPayTest test);
+    void inject(ReleaseStack_WPApiPluginTest test);
 }
