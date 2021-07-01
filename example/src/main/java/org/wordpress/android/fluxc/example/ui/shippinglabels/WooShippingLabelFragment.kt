@@ -62,6 +62,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.ceil
 
 class WooShippingLabelFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
@@ -572,7 +573,7 @@ class WooShippingLabelFragment : Fragment() {
                                             productId = it.productId!!,
                                             description = it.name.orEmpty(),
                                             value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO),
-                                            quantity = quantity,
+                                            quantity = ceil(quantity).toInt(),
                                             weight = 1f,
                                             hsTariffNumber = null,
                                             originCountry = "US"
