@@ -36,8 +36,8 @@ private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, IT
 ) : PositionalDataSource<LIST_ITEM>() {
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<LIST_ITEM>) {
         val totalSize = dataSource.totalSize
-        val startPosition = computeInitialLoadPosition(params, totalSize)
-        val loadSize = computeInitialLoadSize(params, startPosition, totalSize)
+        val startPosition = computeInitialLoadPositionInternal(params, totalSize)
+        val loadSize = computeInitialLoadSizeInternal(params, startPosition, totalSize)
         val items = loadRangeInternal(startPosition, loadSize)
         if (params.placeholdersEnabled) {
             callback.onResult(items, startPosition, totalSize)
@@ -61,7 +61,7 @@ private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, IT
     }
 
     // extracted from PositionalDataSource
-    private fun computeInitialLoadPosition(params: LoadInitialParams, totalCount: Int): Int {
+    private fun computeInitialLoadPositionInternal(params: LoadInitialParams, totalCount: Int): Int {
         val position = params.requestedStartPosition
         val initialLoadSize = params.requestedLoadSize
         val pageSize = params.pageSize
@@ -80,7 +80,7 @@ private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, IT
     }
 
     // extracted from PositionalDataSource
-    private fun computeInitialLoadSize(
+    private fun computeInitialLoadSizeInternal(
         params: LoadInitialParams,
         initialLoadPosition: Int,
         totalCount: Int
