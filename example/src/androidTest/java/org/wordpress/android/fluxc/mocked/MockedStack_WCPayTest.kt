@@ -93,7 +93,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenLoadAccountEmptyStatusThenFallbackToNoAcctoun() = runBlocking {
+    fun whenLoadAccountEmptyStatusThenFallbackToNoAccount() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-empty-status.json", 200)
 
         val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
