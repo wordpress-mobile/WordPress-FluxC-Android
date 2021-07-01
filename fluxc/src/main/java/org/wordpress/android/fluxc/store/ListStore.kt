@@ -298,7 +298,7 @@ class ListStore @Inject constructor(
     private fun handleListDataInvalidated(typeIdentifier: ListDescriptorTypeIdentifier) {
         debouncer?.cancel()
         debouncer = coroutineEngine.launch(AppLog.T.API, this, "ListStore: Invalidating list") {
-            delay(750)
+            delay(LIST_INVALIDATION_DEBOUNCER_DELAY_MS)
             emitChange(OnListDataInvalidated(type = typeIdentifier))
         }
     }
@@ -446,5 +446,9 @@ class ListStore @Inject constructor(
     enum class ListErrorType {
         GENERIC_ERROR,
         PERMISSION_ERROR
+    }
+
+    companion object {
+        private const val LIST_INVALIDATION_DEBOUNCER_DELAY_MS = 750L
     }
 }
