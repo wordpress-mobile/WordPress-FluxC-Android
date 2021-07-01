@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Reason
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind.Status.RUNNING
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State.ACTIVE
@@ -235,7 +236,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val status = RUNNING
         val progress = 30
         val rewind = Rewind(rewindId, restoreId, status, progress, null, null, null)
-        val model = RewindStatusModel(ACTIVE, null, Date(), null, null, rewind)
+        val model = RewindStatusModel(ACTIVE, Reason.NO_REASON, Date(), null, null, rewind)
 
         activityLogSqlUtils.replaceRewindStatus(site, model)
 
