@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.FetchPluginsResponse.FileModCapabilities;
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginError;
 import org.wordpress.android.fluxc.store.PluginStore.ConfiguredSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginError;
@@ -63,9 +64,14 @@ public class PluginRestClient extends BaseWPComRestClient {
                                 plugins.add(pluginModelFromResponse(site, pluginResponse));
                             }
                         }
+                        FileModCapabilities fileModCapabilities = response.getFileModCapabilities();
+                        boolean canAutoUpdate = false;
+                        if (fileModCapabilities != null) {
+                            canAutoUpdate = fileModCapabilities.getCanAutoUpdate();
+                        }
                         FetchedPluginDirectoryPayload payload =
                                 new FetchedPluginDirectoryPayload(site, plugins,
-                                        response.getFileModCapabilities().getCanAutoUpdate());
+                                        canAutoUpdate);
                         mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginDirectoryAction(payload));
                     }
                 },
