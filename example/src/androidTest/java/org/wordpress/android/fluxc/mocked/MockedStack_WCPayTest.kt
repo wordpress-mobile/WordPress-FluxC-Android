@@ -2,12 +2,14 @@ package org.wordpress.android.fluxc.mocked
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.CAPTURE_ERROR
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.MISSING_ORDER
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
 import javax.inject.Inject
@@ -31,8 +33,8 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.fetchConnectionToken(SiteModel().apply { siteId = 123L })
 
-        Assert.assertTrue(result.result?.token?.isNotEmpty() == true)
-        Assert.assertTrue(result.result?.isTestMode == true)
+        assertTrue(result.result?.token?.isNotEmpty() == true)
+        assertTrue(result.result?.isTestMode == true)
     }
 
     @Test
@@ -42,7 +44,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
         Assert.assertFalse(result.isError)
-        Assert.assertTrue(result.status != null)
+        assertTrue(result.status != null)
     }
 
     @Test
@@ -51,7 +53,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error?.type == MISSING_ORDER)
+        assertTrue(result.error?.type == MISSING_ORDER)
     }
 
     @Test
@@ -60,7 +62,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error?.type == PAYMENT_ALREADY_CAPTURED)
+        assertTrue(result.error?.type == PAYMENT_ALREADY_CAPTURED)
     }
 
     @Test
@@ -69,7 +71,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error?.type == CAPTURE_ERROR)
+        assertTrue(result.error?.type == CAPTURE_ERROR)
     }
 
     @Test
@@ -78,6 +80,24 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
-        Assert.assertTrue(result.error?.type == SERVER_ERROR)
+        assertTrue(result.error?.type == SERVER_ERROR)
+    }
+
+    @Test
+    fun whenLoadAccountInvalidStatusThenFallbacksToUnknown() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-new-status.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result?.status == WCPayAccountStatusEnum.UNKNOWN)
+    }
+
+    @Test
+    fun whenLoadAccountEmptyStatusThenFallbackToNoAcctoun() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-empty-status.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result?.status == WCPayAccountStatusEnum.NO_ACCOUNT)
     }
 }
