@@ -2,9 +2,12 @@ package org.wordpress.android.fluxc.store
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
+import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.paging.PagedList.BoundaryCallback
 import com.yarolegovich.wellsql.WellSql
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -56,6 +59,8 @@ class ListStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     dispatcher: Dispatcher
 ) : Store(dispatcher) {
+    private var debouncer: Job? = null
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? ListAction ?: return
@@ -136,7 +141,7 @@ class ListStore @Inject constructor(
                 super.onItemAtEndLoaded(itemAtEnd)
             }
         }
-        return LegacyLivePagedListBuilder(pagedListFactory, pagedListConfig)
+        return LivePagedListBuilder(pagedListFactory, pagedListConfig)
                 .setBoundaryCallback(boundaryCallback).build()
     }
 
@@ -157,7 +162,8 @@ class ListStore @Inject constructor(
                             isListFullyFetched = getIsListFullyFetched(),
                             itemDataSource = dataSource
                     )
-                })
+                }
+        )
     }
 
     /**
@@ -286,9 +292,15 @@ class ListStore @Inject constructor(
      *
      * Whenever the data of a list is invalidated, [OnListDataInvalidated] event will be emitted so the listening
      * lists can invalidate their data.
+     *
+     * In Paging 3 constant invalidating of the backing DataSource could cause issue, so we throttle it
      */
     private fun handleListDataInvalidated(typeIdentifier: ListDescriptorTypeIdentifier) {
-        emitChange(OnListDataInvalidated(type = typeIdentifier))
+        debouncer?.cancel()
+        debouncer = coroutineEngine.launch(AppLog.T.API, this, "ListStore: Invalidating list") {
+            delay(750)
+            emitChange(OnListDataInvalidated(type = typeIdentifier))
+        }
     }
 
     /**
