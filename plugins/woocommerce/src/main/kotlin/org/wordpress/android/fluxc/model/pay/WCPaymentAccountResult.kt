@@ -1,9 +1,16 @@
 package org.wordpress.android.fluxc.model.pay
 
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
+import java.lang.reflect.Type
 import java.util.Date
 
 data class WCPaymentAccountResult(
+    @SerializedName("status")
     val status: WCPayAccountStatusEnum,
     @SerializedName("has_pending_requirements")
     val hasPendingRequirements: Boolean,
@@ -35,12 +42,12 @@ data class WCPaymentAccountResult(
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
      */
+    @JsonAdapter(WCPayAccountStatusEnum.Deserializer::class)
     enum class WCPayAccountStatusEnum {
         /**
          * This is the normal state for a fully functioning WCPay account. The merchant should be able to collect
          * card present payments.
          */
-        @SerializedName("complete")
         COMPLETE,
 
         /**
@@ -53,59 +60,70 @@ data class WCPaymentAccountResult(
          * Otherwise, if neither `hasOverdueRequirements` nor `hasPendingRequirements` is true, then the account is under
          * review by Stripe and the merchant will probably not be able to collect card present payments.
          */
-        @SerializedName("restricted")
         RESTRICTED,
 
         /**
          * This state occurs when our payment processor rejects the merchant account due to suspected fraudulent
          * activity. The merchant will NOT be able to collect card present payments.
          */
-        @SerializedName("rejectedFraud")
         REJECTED_FRAUD,
 
         /** This state occurs when our payment processor rejects the merchant account due to terms of
          * service violation(s). The merchant will NOT be able to collect card present payments.
          */
-        @SerializedName("rejectedTermsOfService")
         REJECTED_TERMS_OF_SERVICE,
 
         /**
          * This state occurs when our payment processor rejects the merchant account due to sanctions/being
         on a watch list. The merchant will NOT be able to collect card present payments.
          */
-        @SerializedName("rejectedListed")
         REJECTED_LISTED,
 
         /**
          * This state occurs when our payment processor rejects the merchant account due to any other reason.
          * The merchant will NOT be able to collect card present payments.
          */
-        @SerializedName("rejectedOther")
         REJECTED_OTHER,
 
         /**
          * This state occurs when the merchant hasn't  on-boarded yet. The merchant will NOT be able to
          * collect card present payments.
          */
-        @SerializedName("rejectedOther")
         NO_ACCOUNT,
 
         /**
          * This state occurs when the self-hosted site responded in a way we don't recognize.
          */
-        @SerializedName("unknown")
-        UNKNOWN
+        UNKNOWN;
+
+        class Deserializer : JsonDeserializer<WCPayAccountStatusEnum> {
+            override fun deserialize(
+                json: JsonElement,
+                typeOfT: Type?,
+                context: JsonDeserializationContext?
+            ): WCPayAccountStatusEnum =
+                    when (json.asString) {
+                        "complete" -> COMPLETE
+                        "restricted" -> RESTRICTED
+                        "rejected.fraud" -> REJECTED_FRAUD
+                        "rejected.terms_of_service" -> REJECTED_TERMS_OF_SERVICE
+                        "rejected.listed" -> REJECTED_LISTED
+                        "rejected.other" -> REJECTED_OTHER
+                        "NOACCOUNT", "" -> NO_ACCOUNT
+                        else -> UNKNOWN
+                    }
+        }
+
+        data class StoreCurrencies(
+            /**
+             * A three character lowercase currency code, e.g. `usd`
+             * See https://stripe.com/docs/api/accounts/object#account_object-default_currency
+             */
+
+            @SerializedName("default")
+            val default: String,
+            @SerializedName("supported")
+            val supportedCurrencies: List<String>
+        )
     }
-
-    data class StoreCurrencies(
-        /**
-         * A three character lowercase currency code, e.g. `usd`
-         * See https://stripe.com/docs/api/accounts/object#account_object-default_currency
-         */
-
-        @SerializedName("default")
-        val default: String,
-        @SerializedName("supported")
-        val supportedCurrencies: List<String>
-    )
 }
