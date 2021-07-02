@@ -2,9 +2,11 @@ package org.wordpress.android.fluxc.store
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
-import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import androidx.paging.PagedList.BoundaryCallback
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.liveData
 import com.yarolegovich.wellsql.WellSql
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -26,7 +28,7 @@ import org.wordpress.android.fluxc.model.list.ListItemModel
 import org.wordpress.android.fluxc.model.list.ListModel
 import org.wordpress.android.fluxc.model.list.ListState
 import org.wordpress.android.fluxc.model.list.ListState.FETCHED
-import org.wordpress.android.fluxc.model.list.PagedListFactory
+import org.wordpress.android.fluxc.model.list.PagedListPositionalDataSource
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
 import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
@@ -86,7 +88,7 @@ class ListStore @Inject constructor(
      * @return A [PagedListWrapper] that provides all the necessary information to consume a list such as its data,
      * whether the first page is being fetched, whether there are any errors etc. in `LiveData` format.
      */
-    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any> getList(
+    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER: Any, LIST_ITEM: Any> getList(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle
@@ -94,8 +96,7 @@ class ListStore @Inject constructor(
         val factory = createPagedListFactory(listDescriptor, dataSource)
         val pagedListData = createPagedListLiveData(
                 listDescriptor = listDescriptor,
-                dataSource = dataSource,
-                pagedListFactory = factory
+                dataSource = dataSource
         )
         return PagedListWrapper(
                 data = pagedListData,
@@ -116,49 +117,43 @@ class ListStore @Inject constructor(
      * A helper function that creates a [PagedList] [LiveData] for the given [LIST_DESCRIPTOR], [dataSource] and the
      * [PagedListFactory].
      */
-    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any> createPagedListLiveData(
+    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER : Any, LIST_ITEM: Any> createPagedListLiveData(
         listDescriptor: LIST_DESCRIPTOR,
-        dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
-        pagedListFactory: PagedListFactory<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
-    ): LiveData<PagedList<LIST_ITEM>> {
-        val pagedListConfig = PagedList.Config.Builder()
-                .setEnablePlaceholders(true)
-                .setInitialLoadSizeHint(listDescriptor.config.initialLoadSize)
-                .setPageSize(listDescriptor.config.dbPageSize)
-                .build()
-        val boundaryCallback = object : BoundaryCallback<LIST_ITEM>() {
-            override fun onItemAtEndLoaded(itemAtEnd: LIST_ITEM) {
-                // Load more items if we are near the end of list
-                coroutineEngine.launch(AppLog.T.API, this, "ListStore: Loading next page") {
-                    handleFetchList(listDescriptor, loadMore = true) { offset ->
-                        dataSource.fetchList(listDescriptor, offset)
-                    }
-                }
-                super.onItemAtEndLoaded(itemAtEnd)
-            }
-        }
-        return LivePagedListBuilder<Int, LIST_ITEM>(pagedListFactory, pagedListConfig)
-                .setBoundaryCallback(boundaryCallback).build()
+        dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
+    ): LiveData<PagingData<LIST_ITEM>> {
+        val pagingConfig = PagingConfig(enablePlaceholders = true, initialLoadSize = listDescriptor.config.initialLoadSize, pageSize = listDescriptor.config.dbPageSize)
+//        val boundaryCallback = object : BoundaryCallback<LIST_ITEM>() {
+//            override fun onItemAtEndLoaded(itemAtEnd: LIST_ITEM) {
+//                // Load more items if we are near the end of list
+//                coroutineEngine.launch(AppLog.T.API, this, "ListStore: Loading next page") {
+//                    handleFetchList(listDescriptor, loadMore = true) { offset ->
+//                        dataSource.fetchList(listDescriptor, offset)
+//                    }
+//                }
+//                super.onItemAtEndLoaded(itemAtEnd)
+//            }
+//        }
+        val pager = Pager(pagingConfig) { createPagedListFactory(listDescriptor, dataSource) }
+        return pager.liveData
     }
 
     /**
      * A helper function that creates a [PagedListFactory] for the given [LIST_DESCRIPTOR] and [dataSource].
      */
-    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any> createPagedListFactory(
+    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER: Any, LIST_ITEM: Any> createPagedListFactory(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
-    ): PagedListFactory<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM> {
+    ): PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM> {
         val getRemoteItemIds = { getListItems(listDescriptor).map { RemoteId(value = it) } }
         val getIsListFullyFetched = { getListState(listDescriptor) == FETCHED }
-        return PagedListFactory(
-                createDataSource = {
-                    InternalPagedListDataSource(
-                            listDescriptor = listDescriptor,
-                            remoteItemIds = getRemoteItemIds(),
-                            isListFullyFetched = getIsListFullyFetched(),
-                            itemDataSource = dataSource
-                    )
-                })
+        return PagedListPositionalDataSource(
+                InternalPagedListDataSource(
+                        listDescriptor = listDescriptor,
+                        remoteItemIds = getRemoteItemIds(),
+                        isListFullyFetched = getIsListFullyFetched(),
+                        itemDataSource = dataSource
+                )
+        )
     }
 
     /**

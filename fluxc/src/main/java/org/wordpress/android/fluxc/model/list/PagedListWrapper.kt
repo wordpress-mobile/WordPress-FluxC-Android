@@ -7,6 +7,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.paging.PagedList
+import androidx.paging.PagingData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,7 +33,7 @@ import kotlin.coroutines.CoroutineContext
  * to either let the user know of each error or present the error in the empty view when it's visible.
  */
 class PagedListWrapper<T: Any>(
-    val data: LiveData<PagedList<T>>,
+    val data: LiveData<PagingData<T>>,
     private val dispatcher: Dispatcher,
     private val listDescriptor: ListDescriptor,
     private val lifecycle: Lifecycle,
@@ -63,7 +64,7 @@ class PagedListWrapper<T: Any>(
      */
     init {
         _isEmpty.addSource(data) {
-            _isEmpty.value = it?.isEmpty()
+            _isEmpty.value = false//it?.isEmpty()
         }
         dispatcher.register(this)
         lifecycle.addObserver(this)
