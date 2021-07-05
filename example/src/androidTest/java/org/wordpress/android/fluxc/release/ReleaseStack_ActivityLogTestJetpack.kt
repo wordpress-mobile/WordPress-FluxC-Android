@@ -18,10 +18,9 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Reason
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind
-import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind.Status.RUNNING
-import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State.ACTIVE
-import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State.UNAVAILABLE
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State
 import org.wordpress.android.fluxc.persistence.ActivityLogSqlUtils
 import org.wordpress.android.fluxc.release.ReleaseStack_ActivityLogTestJetpack.Sites.CompleteJetpackSite
 import org.wordpress.android.fluxc.release.ReleaseStack_ActivityLogTestJetpack.Sites.FreeJetpackSite
@@ -141,7 +140,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertNotNull(rewindStatusForSite)
         rewindStatusForSite?.apply {
             assertNotNull(this.state)
-            assertEquals(this.state, UNAVAILABLE)
+            assertEquals(this.state, State.UNAVAILABLE)
         }
     }
 
@@ -232,10 +231,10 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         val rewindId = "rewindId"
         val restoreId: Long = 123
-        val status = RUNNING
+        val status = Rewind.Status.RUNNING
         val progress = 30
         val rewind = Rewind(rewindId, restoreId, status, progress, null, null, null)
-        val model = RewindStatusModel(ACTIVE, null, Date(), null, null, rewind)
+        val model = RewindStatusModel(State.ACTIVE, Reason.NO_REASON, Date(), null, null, rewind)
 
         activityLogSqlUtils.replaceRewindStatus(site, model)
 
