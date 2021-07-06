@@ -122,10 +122,8 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
     }
 
     private void signInToHTTPAuthSite() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT);
         mNextEvent = TestEvents.SITE_CHANGED;
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,

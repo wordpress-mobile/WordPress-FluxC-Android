@@ -87,8 +87,8 @@ class SiteSelectorDialog : DialogFragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSiteChanged(event: OnSiteChanged) {
         if (event.isError) {
-            AppLog.e(T.TESTS, "SiteChanged error: " + event.error.type)
-            prependToLog("SiteChanged error: " + event.error.type)
+            AppLog.e(T.TESTS, "SiteChanged error: " + event.error?.type)
+            prependToLog("SiteChanged error: " + event.error?.type)
         } else {
             prependToLog("SiteChanged: rowsAffected = " + event.rowsAffected)
             siteStore.sites?.let {
@@ -100,7 +100,7 @@ class SiteSelectorDialog : DialogFragment() {
 
     class SiteAdapter(
         ctx: Context,
-        items: MutableList<SiteModel>
+        items: List<SiteModel>
     ) : ArrayAdapter<SiteModel>(ctx, android.R.layout.simple_list_item_1, items) {
         fun refreshSites(newItems: List<SiteModel>) {
             setNotifyOnChange(true)

@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Assert.assertEquals
@@ -20,7 +21,8 @@ import org.mockito.junit.MockitoJUnitRunner
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityTypeModel
-import org.wordpress.android.fluxc.model.activity.RewindStatusModel
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Reason
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.UserAgent
@@ -263,7 +265,7 @@ class ActivityLogRestClientTest {
 
     @Test
     fun fetchActivityRewind_dispatchesResponseOnSuccess() = test {
-        val state = RewindStatusModel.State.ACTIVE
+        val state = State.ACTIVE
         val rewindResponse = REWIND_STATUS_RESPONSE.copy(state = state.value)
         initFetchRewindStatus(rewindResponse)
 
@@ -274,7 +276,7 @@ class ActivityLogRestClientTest {
             assertNull(error)
             assertNotNull(rewindStatusModelResponse)
             rewindStatusModelResponse?.apply {
-                assertEquals(reason, REWIND_STATUS_RESPONSE.reason)
+                assertEquals(reason, Reason.UNKNOWN)
                 assertEquals(state, state)
                 assertNotNull(rewind)
                 rewind?.apply {
@@ -623,7 +625,8 @@ class ActivityLogRestClientTest {
                 urlCaptor.capture(),
                 eq(null),
                 eq(mapOf()),
-                eq(RewindResponse::class.java)
+                eq(RewindResponse::class.java),
+                isNull()
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
         return response
@@ -641,7 +644,8 @@ class ActivityLogRestClientTest {
                 urlCaptor.capture(),
                 eq(null),
                 eq(mapOf("types" to requestTypes)),
-                eq(RewindResponse::class.java)
+                eq(RewindResponse::class.java),
+                isNull()
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
         return response
@@ -661,7 +665,8 @@ class ActivityLogRestClientTest {
                 eq(null),
                 eq(mapOf("rewindId" to rewindId,
                         "types" to requestTypes)),
-                eq(BackupDownloadResponse::class.java)
+                eq(BackupDownloadResponse::class.java),
+                isNull()
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
         return response
@@ -718,7 +723,8 @@ class ActivityLogRestClientTest {
                 urlCaptor.capture(),
                 anyOrNull(),
                 eq(mapOf("dismissed" to true.toString())),
-                eq(DismissBackupDownloadResponse::class.java)
+                eq(DismissBackupDownloadResponse::class.java),
+                isNull()
         )).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)
         return response

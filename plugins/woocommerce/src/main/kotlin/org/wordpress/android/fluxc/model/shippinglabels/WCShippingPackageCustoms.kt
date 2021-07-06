@@ -27,7 +27,7 @@ data class WCShippingPackageCustoms(
 data class WCCustomsItem(
     @SerializedName("product_id") val productId: Long,
     val description: String,
-    val quantity: Float,
+    val quantity: Int,
     val value: BigDecimal,
     val weight: Float,
     @SerializedName("hs_tariff_number") val hsTariffNumber: String?,
