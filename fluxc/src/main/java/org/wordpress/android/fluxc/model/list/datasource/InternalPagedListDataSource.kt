@@ -23,7 +23,8 @@ class InternalPagedListDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIF
     private val listDescriptor: LIST_DESCRIPTOR,
     remoteItemIds: List<RemoteId>,
     isListFullyFetched: Boolean,
-    private val itemDataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
+    private val itemDataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
+    val onItemAtEndLoaded: () -> Unit
 ) {
     /*
      * PagedList library needs a snapshot of the data. It does the heavy lifting by caching the items provided to it,

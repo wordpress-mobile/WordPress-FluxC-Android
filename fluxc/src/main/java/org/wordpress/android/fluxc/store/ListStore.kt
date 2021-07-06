@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.model.list.ListItemModel
 import org.wordpress.android.fluxc.model.list.ListModel
 import org.wordpress.android.fluxc.model.list.ListState
 import org.wordpress.android.fluxc.model.list.ListState.FETCHED
+import org.wordpress.android.fluxc.model.list.PagedListFactory
 import org.wordpress.android.fluxc.model.list.PagedListPositionalDataSource
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
@@ -93,10 +94,10 @@ class ListStore @Inject constructor(
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle
     ): PagedListWrapper<LIST_ITEM> {
-        val factory = createPagedListFactory(listDescriptor, dataSource)
+        val factory = PagedListFactory(createDataSource = { createPagedListDataSource(listDescriptor, dataSource) })
         val pagedListData = createPagedListLiveData(
                 listDescriptor = listDescriptor,
-                dataSource = dataSource
+                factory = factory
         )
         return PagedListWrapper(
                 data = pagedListData,
@@ -119,28 +120,17 @@ class ListStore @Inject constructor(
      */
     private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER : Any, LIST_ITEM: Any> createPagedListLiveData(
         listDescriptor: LIST_DESCRIPTOR,
-        dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
+        factory: PagedListFactory<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
     ): LiveData<PagingData<LIST_ITEM>> {
         val pagingConfig = PagingConfig(enablePlaceholders = true, initialLoadSize = listDescriptor.config.initialLoadSize, pageSize = listDescriptor.config.dbPageSize)
-//        val boundaryCallback = object : BoundaryCallback<LIST_ITEM>() {
-//            override fun onItemAtEndLoaded(itemAtEnd: LIST_ITEM) {
-//                // Load more items if we are near the end of list
-//                coroutineEngine.launch(AppLog.T.API, this, "ListStore: Loading next page") {
-//                    handleFetchList(listDescriptor, loadMore = true) { offset ->
-//                        dataSource.fetchList(listDescriptor, offset)
-//                    }
-//                }
-//                super.onItemAtEndLoaded(itemAtEnd)
-//            }
-//        }
-        val pager = Pager(pagingConfig) { createPagedListFactory(listDescriptor, dataSource) }
+        val pager = Pager(pagingConfig) { factory.create() }
         return pager.liveData
     }
 
     /**
      * A helper function that creates a [PagedListFactory] for the given [LIST_DESCRIPTOR] and [dataSource].
      */
-    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER: Any, LIST_ITEM: Any> createPagedListFactory(
+    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER: Any, LIST_ITEM: Any> createPagedListDataSource(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
     ): PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM> {
@@ -151,7 +141,15 @@ class ListStore @Inject constructor(
                         listDescriptor = listDescriptor,
                         remoteItemIds = getRemoteItemIds(),
                         isListFullyFetched = getIsListFullyFetched(),
-                        itemDataSource = dataSource
+                        itemDataSource = dataSource,
+                        onItemAtEndLoaded = {
+                            // Load more items if we are near the end of list
+                            coroutineEngine.launch(AppLog.T.API, this, "ListStore: Loading next page") {
+                                handleFetchList(listDescriptor, loadMore = true) { offset ->
+                                    dataSource.fetchList(listDescriptor, offset)
+                                }
+                            }
+                        }
                 )
         )
     }
