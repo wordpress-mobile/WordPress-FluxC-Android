@@ -92,6 +92,7 @@ androidExtensions {
 
 dependencies {
     implementation project(':fluxc')
+    implementation "androidx.paging:paging-runtime:$pagingVersion"
     implementation project(':plugins:woocommerce')
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
