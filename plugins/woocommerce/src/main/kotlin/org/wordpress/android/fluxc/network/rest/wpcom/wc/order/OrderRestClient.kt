@@ -391,7 +391,7 @@ class OrderRestClient @Inject constructor(
     ) {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
         val params = mapOf("status" to status)
-        val initialOrder = OrderSqlUtils.getOrder(remoteOrderId)
+        val initialOrder = OrderSqlUtils.getOrder(localOrderId)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
                 listener = { response: OrderApiResponse? ->

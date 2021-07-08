@@ -315,10 +315,10 @@ object OrderSqlUtils {
                     .orderBy(WCOrderShipmentProviderModelTable.COUNTRY, SelectQuery.ORDER_ASCENDING)
                     .asModel
 
-    fun getOrder(remoteOrderId: Long): WCOrderModel =
+    fun getOrder(localOrderId: Int): WCOrderModel =
             WellSql.select(WCOrderModel::class.java)
                     .where()
-                    .equals(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderId)
+                    .equals(WCOrderModelTable.ID, localOrderId)
                     .endWhere()
                     .asModel
                     .first()

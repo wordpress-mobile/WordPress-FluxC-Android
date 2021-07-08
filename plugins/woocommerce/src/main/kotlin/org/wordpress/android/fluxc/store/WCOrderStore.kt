@@ -511,7 +511,7 @@ class WCOrderStore @Inject constructor(
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
         with(payload) {
-            val rowsAffected = updateOrderStatusLocally(payload.remoteOrderId, payload.status)
+            val rowsAffected = updateOrderStatusLocally(payload.localOrderId, payload.status)
 
             emitChange(OrderStatusUpdated(rowsAffected, newOrderStatus = payload.status))
 
@@ -519,8 +519,8 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private fun updateOrderStatusLocally(remoteOrderId: Long, newStatus: String): Int {
-        val updatedOrder = OrderSqlUtils.getOrder(remoteOrderId).apply {
+    private fun updateOrderStatusLocally(localOrderId: Int, newStatus: String): Int {
+        val updatedOrder = OrderSqlUtils.getOrder(localOrderId).apply {
             status = newStatus
         }
         return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
@@ -729,7 +729,7 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
-        val rowsAffected = updateOrderStatusLocally(payload.order.remoteOrderId, payload.order.status)
+        val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.order.status)
         return OnOrderChanged(rowsAffected).also { it.error = payload.error }
     }
 

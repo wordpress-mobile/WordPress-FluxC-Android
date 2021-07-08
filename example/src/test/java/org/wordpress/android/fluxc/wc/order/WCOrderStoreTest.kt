@@ -273,12 +273,12 @@ class WCOrderStoreTest {
         val site = SiteModel().apply { id = orderModel.localSiteId }
         OrderSqlUtils.insertOrUpdateOrder(orderModel)
 
-        assertThat(OrderSqlUtils.getOrder(orderModel.remoteOrderId).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
+        assertThat(OrderSqlUtils.getOrder(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
 
         orderStore.onAction(
                 newUpdateOrderStatusAction(
                         UpdateOrderStatusPayload(
-                                orderModel.localSiteId,
+                                orderModel.id,
                                 orderModel.remoteOrderId,
                                 site,
                                 CoreOrderStatus.COMPLETED.value
@@ -286,7 +286,7 @@ class WCOrderStoreTest {
                 )
         )
 
-        assertThat(OrderSqlUtils.getOrder(orderModel.remoteOrderId).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
+        assertThat(OrderSqlUtils.getOrder(orderModel.id).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
     }
 
     @Test
@@ -298,7 +298,7 @@ class WCOrderStoreTest {
         orderStore.onAction(
                 newUpdateOrderStatusAction(
                         UpdateOrderStatusPayload(
-                                orderModel.localSiteId,
+                                orderModel.id,
                                 orderModel.remoteOrderId,
                                 site,
                                 CoreOrderStatus.COMPLETED.value
@@ -306,7 +306,7 @@ class WCOrderStoreTest {
                 )
         )
 
-        assertThat(OrderSqlUtils.getOrder(orderModel.remoteOrderId).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
+        assertThat(OrderSqlUtils.getOrder(orderModel.id).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
 
         orderStore.onAction(
                 newUpdatedOrderStatusAction(
@@ -318,7 +318,7 @@ class WCOrderStoreTest {
                 )
         )
 
-        assertThat(OrderSqlUtils.getOrder(orderModel.remoteOrderId).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
+        assertThat(OrderSqlUtils.getOrder(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
     }
 
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, WCOrderModel?> {
