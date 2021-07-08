@@ -71,7 +71,7 @@ class WooCustomersSearchFragment : Fragment() {
             isEmpty.removeObservers(lifecycleOwner)
 
             data.observe(lifecycleOwner, {
-                it?.let { customersAdapter.submitList(it) }
+                it?.let { customersAdapter.submitData(viewLifecycleOwner.lifecycle, it) }
             })
 
             fetchFirstPage()

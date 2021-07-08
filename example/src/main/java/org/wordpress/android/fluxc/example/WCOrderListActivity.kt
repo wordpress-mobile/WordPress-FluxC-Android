@@ -150,7 +150,7 @@ class WCOrderListActivity : AppCompatActivity() {
             })
             wrapper.data.observe(this, Observer {
                 it?.let { orderListData ->
-                    orderListAdapter.submitList(orderListData)
+                    orderListAdapter.submitData(lifecycle, orderListData)
                 }
             })
         }

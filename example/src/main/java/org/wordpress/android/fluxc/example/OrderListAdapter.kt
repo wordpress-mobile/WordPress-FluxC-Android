@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.LayoutRes
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -21,7 +21,7 @@ private const val VIEW_TYPE_ORDER_ITEM = 0
 private const val VIEW_TYPE_LOADING = 1
 private const val VIEW_TYPE_SECTION_HEADER = 2
 
-class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(OrderListDiffItemCallback) {
+class OrderListAdapter : PagingDataAdapter<WCOrderListItemUIType, ViewHolder>(OrderListDiffItemCallback) {
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is WCOrderListUIItem -> VIEW_TYPE_ORDER_ITEM

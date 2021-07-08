@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -20,7 +21,7 @@ private const val VIEW_TYPE_ITEM = 0
 private const val VIEW_TYPE_LOADING = 1
 
 class WooCustomersSearchAdapter @Inject constructor(context: MainExampleActivity) :
-        PagedListAdapter<CustomerListItemType, ViewHolder>(customerListDiffItemCallback) {
+        PagingDataAdapter<CustomerListItemType, ViewHolder>(customerListDiffItemCallback) {
     private val layoutInflater = LayoutInflater.from(context)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
