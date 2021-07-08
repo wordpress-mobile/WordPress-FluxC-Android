@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newUpdateOrderStatusAction
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -36,6 +37,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayl
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import java.util.Calendar
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -261,6 +263,28 @@ class WCOrderStoreTest {
                     (outdated.summaries + missing.summaries).map { RemoteId(it.remoteOrderId) }
             )
         })
+    }
+
+    @Test
+    fun testUpdateOrderStatusRequestUpdatesLocalDatabase() {
+        val orderModel = OrderTestUtils.generateSampleOrder(42, orderStatus = CoreOrderStatus.PROCESSING.value)
+        val site = SiteModel().apply { id = orderModel.localSiteId }
+        OrderSqlUtils.insertOrUpdateOrder(orderModel)
+
+        assertThat(OrderSqlUtils.getOrder(orderModel.remoteOrderId).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
+
+        orderStore.onAction(
+                newUpdateOrderStatusAction(
+                        UpdateOrderStatusPayload(
+                                orderModel.localSiteId,
+                                orderModel.remoteOrderId,
+                                site,
+                                CoreOrderStatus.COMPLETED.value
+                        )
+                )
+        )
+
+        assertThat(OrderSqlUtils.getOrder(orderModel.remoteOrderId).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
     }
 
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, WCOrderModel?> {

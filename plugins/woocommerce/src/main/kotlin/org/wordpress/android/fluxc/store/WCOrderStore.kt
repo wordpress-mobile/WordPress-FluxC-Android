@@ -303,12 +303,18 @@ class WCOrderStore @Inject constructor(
     }
 
     // OnChanged events
-    class OnOrderChanged(
+    open class OnOrderChanged(
         var rowsAffected: Int,
         var statusFilter: String? = null,
         var canLoadMore: Boolean = false
     ) : OnChanged<OrderError>() {
         var causeOfChange: WCOrderAction? = null
+    }
+
+    class OrderStatusUpdated(rowsAffected: Int, val newOrderStatus: String) : OnOrderChanged(rowsAffected) {
+        init {
+            this.causeOfChange = WCOrderAction.UPDATED_ORDER_STATUS
+        }
     }
 
     /**
@@ -504,7 +510,15 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
-        with(payload) { wcOrderRestClient.updateOrderStatus(localOrderId, remoteOrderId, site, status) }
+        with(payload) {
+            val updatedOrder = OrderSqlUtils.getOrder(payload.remoteOrderId).apply {
+                status = payload.status
+            }
+            val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
+            emitChange(OrderStatusUpdated(rowsAffected, newOrderStatus = payload.status))
+
+            wcOrderRestClient.updateOrderStatus(localOrderId, remoteOrderId, site, status)
+        }
     }
 
     private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {

@@ -314,4 +314,12 @@ object OrderSqlUtils {
                     .endWhere()
                     .orderBy(WCOrderShipmentProviderModelTable.COUNTRY, SelectQuery.ORDER_ASCENDING)
                     .asModel
+
+    fun getOrder(remoteOrderId: Long): WCOrderModel =
+            WellSql.select(WCOrderModel::class.java)
+                    .where()
+                    .equals(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderId)
+                    .endWhere()
+                    .asModel
+                    .first()
 }
