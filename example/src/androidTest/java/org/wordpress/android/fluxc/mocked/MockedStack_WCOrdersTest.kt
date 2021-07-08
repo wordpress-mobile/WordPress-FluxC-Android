@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
@@ -218,10 +219,11 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             remoteOrderId = 88
             total = "15.00"
         }
+        OrderSqlUtils.insertOrUpdateOrder(originalOrder)
 
         interceptor.respondWith("wc-order-update-response-success.json")
         orderRestClient.updateOrderStatus(
-                originalOrder.id, originalOrder.remoteOrderId, siteModel, CoreOrderStatus.REFUNDED.value
+                originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 
         countDownLatch = CountDownLatch(1)
@@ -247,6 +249,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             remoteOrderId = 88
             total = "15.00"
         }
+        OrderSqlUtils.insertOrUpdateOrder(originalOrder)
 
         val errorJson = JsonObject().apply {
             addProperty("error", "woocommerce_rest_shop_order_invalid_id")
@@ -255,7 +258,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         interceptor.respondWithError(errorJson, 400)
         orderRestClient.updateOrderStatus(
-                originalOrder.id, originalOrder.remoteOrderId, siteModel, CoreOrderStatus.REFUNDED.value
+                originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 
         countDownLatch = CountDownLatch(1)

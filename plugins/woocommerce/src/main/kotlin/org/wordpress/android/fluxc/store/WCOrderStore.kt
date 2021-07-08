@@ -152,8 +152,7 @@ class WCOrderStore @Inject constructor(
     }
 
     class UpdateOrderStatusPayload(
-        var localOrderId: Int,
-        var remoteOrderId: Long,
+        val order: WCOrderModel,
         val site: SiteModel,
         val status: String
     ) : Payload<BaseNetworkError>()
@@ -511,11 +510,11 @@ class WCOrderStore @Inject constructor(
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
         with(payload) {
-            val rowsAffected = updateOrderStatusLocally(payload.localOrderId, payload.status)
+            val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.status)
 
             emitChange(OrderStatusUpdated(rowsAffected, newOrderStatus = payload.status))
 
-            wcOrderRestClient.updateOrderStatus(localOrderId, remoteOrderId, site, status)
+            wcOrderRestClient.updateOrderStatus(payload.order, site, status)
         }
     }
 

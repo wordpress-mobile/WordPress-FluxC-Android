@@ -278,8 +278,7 @@ class WCOrderStoreTest {
         orderStore.onAction(
                 newUpdateOrderStatusAction(
                         UpdateOrderStatusPayload(
-                                orderModel.id,
-                                orderModel.remoteOrderId,
+                                orderModel,
                                 site,
                                 CoreOrderStatus.COMPLETED.value
                         )
@@ -298,8 +297,7 @@ class WCOrderStoreTest {
         orderStore.onAction(
                 newUpdateOrderStatusAction(
                         UpdateOrderStatusPayload(
-                                orderModel.id,
-                                orderModel.remoteOrderId,
+                                orderModel,
                                 site,
                                 CoreOrderStatus.COMPLETED.value
                         )

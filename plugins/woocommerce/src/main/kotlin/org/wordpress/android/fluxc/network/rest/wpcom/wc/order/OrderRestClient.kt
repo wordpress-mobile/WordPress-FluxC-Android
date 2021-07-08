@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
@@ -384,21 +383,19 @@ class OrderRestClient @Inject constructor(
      * [OrderErrorType.INVALID_ID] if an order by this id was not found on the server
      */
     fun updateOrderStatus(
-        localOrderId: Int,
-        remoteOrderId: Long,
+        orderToUpdate: WCOrderModel,
         site: SiteModel,
         status: String
     ) {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
+        val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId).pathV3
         val params = mapOf("status" to status)
-        val initialOrder = OrderSqlUtils.getOrder(localOrderId)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
                 listener = { response: OrderApiResponse? ->
                     response?.let {
                         val newModel = orderResponseToOrderModel(it).apply {
-                            id = localOrderId
-                            localSiteId = site.id
+                            id = orderToUpdate.id
+                            localSiteId = orderToUpdate.localSiteId
                         }
                         val payload = RemoteOrderPayload(newModel, site)
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
@@ -408,7 +405,7 @@ class OrderRestClient @Inject constructor(
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = RemoteOrderPayload(
                             orderError,
-                            initialOrder,
+                            orderToUpdate,
                             site
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
