@@ -511,14 +511,19 @@ class WCOrderStore @Inject constructor(
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
         with(payload) {
-            val updatedOrder = OrderSqlUtils.getOrder(payload.remoteOrderId).apply {
-                status = payload.status
-            }
-            val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
+            val rowsAffected = updateOrderStatusLocally(payload.remoteOrderId, payload.status)
+
             emitChange(OrderStatusUpdated(rowsAffected, newOrderStatus = payload.status))
 
             wcOrderRestClient.updateOrderStatus(localOrderId, remoteOrderId, site, status)
         }
+    }
+
+    private fun updateOrderStatusLocally(remoteOrderId: Long, newStatus: String): Int {
+        val updatedOrder = OrderSqlUtils.getOrder(remoteOrderId).apply {
+            status = newStatus
+        }
+        return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
     }
 
     private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {
@@ -711,18 +716,21 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun handleUpdateOrderStatusCompleted(payload: RemoteOrderPayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        val onOrderChanged: OnOrderChanged = if (payload.isError) {
+            revertOrderStatus(payload)
         } else {
             val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(payload.order)
-            onOrderChanged = OnOrderChanged(rowsAffected)
+            OnOrderChanged(rowsAffected)
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
 
         emitChange(onOrderChanged)
+    }
+
+    private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
+        val rowsAffected = updateOrderStatusLocally(payload.order.remoteOrderId, payload.order.status)
+        return OnOrderChanged(rowsAffected).also { it.error = payload.error }
     }
 
     private fun handleFetchOrderNotesCompleted(payload: FetchOrderNotesResponsePayload) {

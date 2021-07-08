@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
@@ -390,8 +391,10 @@ class OrderRestClient @Inject constructor(
     ) {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
         val params = mapOf("status" to status)
+        val initialOrder = OrderSqlUtils.getOrder(remoteOrderId)
+
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
-                { response: OrderApiResponse? ->
+                listener = { response: OrderApiResponse? ->
                     response?.let {
                         val newModel = orderResponseToOrderModel(it).apply {
                             id = localOrderId
@@ -401,14 +404,11 @@ class OrderRestClient @Inject constructor(
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                     }
                 },
-                WPComErrorListener { networkError ->
+                errorListener = { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = RemoteOrderPayload(
                             orderError,
-                            WCOrderModel().apply {
-                                this.id = localOrderId
-                                this.remoteOrderId = remoteOrderId
-                            },
+                            initialOrder,
                             site
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
