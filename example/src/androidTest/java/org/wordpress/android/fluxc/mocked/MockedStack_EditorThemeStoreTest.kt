@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.mocked
 
 import android.os.Bundle
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -182,6 +183,49 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         Assert.assertNotNull(styles)
         Assert.assertNotNull(features)
     }
+
+    @Test
+    fun testEditorSettingsNonExperimentalUrl() {
+        interceptor.respondWith("global-styles-full-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payloadWithGSS))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsExperimentalRetryUrl() {
+        val wordPressPayload = payloadWithGSS.apply { site.softwareVersion = "5.8" }
+        interceptor.respondWithError(JsonObject(), 404)
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // In WP 5.8 a retry with the experimental url occurs on error
+        val expectedUrl = "https://public-api.wordpress.com/__experimental/wp-block-editor/v1/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsExperimentalNonRetryUrl() {
+        val wordPressPayload = payloadWithGSS.apply { site.softwareVersion = "5.9" }
+        interceptor.respondWithError(JsonObject(), 404)
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // In WP 5.9 no retry with the experimental url occurs on error
+        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    private fun ResponseMockingInterceptor.assertExpectedUrl(expectedUrl: String) =
+            Assert.assertTrue(lastRequestUrl.startsWith(expectedUrl))
 
     private fun assertNotEmpty(theme: EditorTheme?) {
         Assert.assertFalse(theme?.themeSupport?.colors.isNullOrEmpty())
