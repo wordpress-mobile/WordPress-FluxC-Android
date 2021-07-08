@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.mocked
 
 import android.os.Bundle
 import com.google.gson.JsonArray
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
