@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.STICKY
 import org.wordpress.android.fluxc.store.EditorThemeStore
 import org.wordpress.android.fluxc.store.EditorThemeStore.FetchEditorThemePayload
 import org.wordpress.android.fluxc.store.EditorThemeStore.OnEditorThemeChanged
@@ -185,19 +186,27 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
     @Test
     fun testEditorSettingsNonExperimentalUrl() {
+        val wordPressPayload = payloadWithGSS.apply {
+            site.softwareVersion = "5.8"
+            site.setIsWPCom(true)
+        }
         interceptor.respondWith("global-styles-full-success.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payloadWithGSS))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/settings"
+        val id = payloadWithGSS.site.siteId
+        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/sites/$id/settings"
         interceptor.assertExpectedUrl(expectedUrl)
     }
 
     @Test
     fun testEditorSettingsExperimentalRetryUrl() {
-        val wordPressPayload = payloadWithGSS.apply { site.softwareVersion = "5.8" }
+        val wordPressPayload = payloadWithGSS.apply {
+            site.softwareVersion = "5.8"
+            site.setIsWPCom(true)
+        }
         interceptor.respondWithError(JsonObject(), 404)
         dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
 
@@ -205,13 +214,17 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // In WP 5.8 a retry with the experimental url occurs on error
-        val expectedUrl = "https://public-api.wordpress.com/__experimental/wp-block-editor/v1/settings"
+        val id = payloadWithGSS.site.siteId
+        val expectedUrl = "https://public-api.wordpress.com/__experimental/wp-block-editor/v1/sites/$id/settings"
         interceptor.assertExpectedUrl(expectedUrl)
     }
 
     @Test
     fun testEditorSettingsExperimentalNonRetryUrl() {
-        val wordPressPayload = payloadWithGSS.apply { site.softwareVersion = "5.9" }
+        val wordPressPayload = payloadWithGSS.apply {
+            site.softwareVersion = "5.9"
+            site.setIsWPCom(true)
+        }
         interceptor.respondWithError(JsonObject(), 404)
         dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
 
@@ -219,7 +232,60 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // In WP 5.9 no retry with the experimental url occurs on error
-        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/settings"
+        val id = payloadWithGSS.site.siteId
+        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/sites/$id/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsNonExperimentalOrgUrl() {
+        val wordPressPayload = payloadWithGSS.apply {
+            site.softwareVersion = "5.8"
+            site.url = "https://test.com"
+            site.setIsWPCom(false)
+        }
+        interceptor.respondWith("global-styles-full-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        val expectedUrl = "https://test.com/wp-json/wp-block-editor/v1/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsExperimentalRetryOrgUrl() {
+        val wordPressPayload = payloadWithGSS.apply {
+            site.softwareVersion = "5.8"
+            site.url = "https://test.com"
+            site.setIsWPCom(false)
+        }
+        interceptor.respondWithError(JsonObject(), 404, STICKY)
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // In WP 5.8 a retry with the experimental url occurs on error
+        val expectedUrl = "https://test.com/wp-json/__experimental/wp-block-editor/v1/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsExperimentalNonRetryOrgUrl() {
+        val wordPressPayload = payloadWithGSS.apply {
+            site.softwareVersion = "5.9"
+            site.url = "https://test.com"
+            site.setIsWPCom(false)
+        }
+        interceptor.respondWithError(JsonObject(), 404, STICKY)
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // In WP 5.9 no retry with the experimental url occurs on error
+        val expectedUrl = "https://test.com/wp-json/wp-block-editor/v1/settings"
         interceptor.assertExpectedUrl(expectedUrl)
     }
 
