@@ -20,7 +20,7 @@ import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val EDITOR_SETTINGS_REQUEST_PATH = "__experimental/wp-block-editor/v1/settings?context=mobile"
+private const val EDITOR_SETTINGS_REQUEST_PATH = "wp-block-editor/v1/settings?context=mobile"
 
 @Singleton
 class RawEditorSettingsStore
