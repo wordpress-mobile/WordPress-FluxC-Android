@@ -5,7 +5,7 @@ import androidx.paging.PagingState
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
 import org.wordpress.android.util.AppLog
 
-class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER: Any, LIST_ITEM: Any>(
+class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER : Any, LIST_ITEM : Any>(
     private val createDataSource: () -> PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
 ) {
     private var currentSource: PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>? = null
@@ -26,7 +26,7 @@ class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER: Any, L
  *
  * @param dataSource Describes how to take certain actions such as fetching list for the item type [LIST_ITEM].
  */
-class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER : Any, LIST_ITEM: Any>(
+class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER : Any, LIST_ITEM : Any>(
     private val dataSource: InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
 ) : PagingSource<Int, LIST_ITEM>() {
     init {
@@ -71,9 +71,11 @@ class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENT
     }
 
     override fun getRefreshKey(state: PagingState<Int, LIST_ITEM>): Int? {
-        AppLog.e(AppLog.T.API, "getRefreshKey: ${state.anchorPosition}")
-        return state.anchorPosition
+       val position = state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1)
+        }
+        AppLog.e(AppLog.T.API, "getRefreshKey: ${position}")
+        return position
     }
-
-    override val jumpingSupported: Boolean = true
 }

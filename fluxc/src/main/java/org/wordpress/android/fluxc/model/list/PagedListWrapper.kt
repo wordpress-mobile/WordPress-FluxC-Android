@@ -55,17 +55,11 @@ class PagedListWrapper<T: Any>(
     private val _listError = MutableLiveData<ListError?>()
     val listError: LiveData<ListError?> = _listError
 
-    private val _isEmpty = MediatorLiveData<Boolean>()
-    val isEmpty: LiveData<Boolean> = _isEmpty
-
     /**
      * Register the dispatcher so we can handle `ListStore` events and add an observer for the lifecycle so we can
      * cleanup properly in `onDestroy`.
      */
     init {
-        _isEmpty.addSource(data) {
-            _isEmpty.value = false//it?.isEmpty()
-        }
         dispatcher.register(this)
         lifecycle.addObserver(this)
     }
