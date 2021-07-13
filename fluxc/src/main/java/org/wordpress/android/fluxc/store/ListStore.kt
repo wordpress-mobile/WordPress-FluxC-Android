@@ -1,13 +1,13 @@
 package org.wordpress.android.fluxc.store
 
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.paging.PagedList.BoundaryCallback
 import com.yarolegovich.wellsql.WellSql
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -59,8 +60,6 @@ class ListStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     dispatcher: Dispatcher
 ) : Store(dispatcher) {
-    private var debouncer: Job? = null
-
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? ListAction ?: return
@@ -141,7 +140,15 @@ class ListStore @Inject constructor(
                 super.onItemAtEndLoaded(itemAtEnd)
             }
         }
+        // we set main thread executor here so all the work of fetchDispatcher apart from heavy loading will
+        // be performed on the same thread as notifyDispatcher, to avoid deadlock
         return LivePagedListBuilder(pagedListFactory, pagedListConfig)
+                .setFetchExecutor(object : Executor {
+                    private val handler: Handler = Handler(Looper.getMainLooper())
+                    override fun execute(r: Runnable) {
+                        handler.post(r)
+                    }
+                })
                 .setBoundaryCallback(boundaryCallback).build()
     }
 
@@ -162,7 +169,7 @@ class ListStore @Inject constructor(
                             isListFullyFetched = getIsListFullyFetched(),
                             itemDataSource = dataSource
                     )
-                }
+                }, coroutineEngine
         )
     }
 
@@ -296,11 +303,7 @@ class ListStore @Inject constructor(
      * In Paging 3 constant invalidating of the backing DataSource could cause issue, so we throttle it
      */
     private fun handleListDataInvalidated(typeIdentifier: ListDescriptorTypeIdentifier) {
-        debouncer?.cancel()
-        debouncer = coroutineEngine.launch(AppLog.T.API, this, "ListStore: Invalidating list") {
-            delay(LIST_INVALIDATION_DEBOUNCER_DELAY_MS)
-            emitChange(OnListDataInvalidated(type = typeIdentifier))
-        }
+        emitChange(OnListDataInvalidated(type = typeIdentifier))
     }
 
     /**
@@ -446,9 +449,5 @@ class ListStore @Inject constructor(
     enum class ListErrorType {
         GENERIC_ERROR,
         PERMISSION_ERROR
-    }
-
-    companion object {
-        private const val LIST_INVALIDATION_DEBOUNCER_DELAY_MS = 750L
     }
 }

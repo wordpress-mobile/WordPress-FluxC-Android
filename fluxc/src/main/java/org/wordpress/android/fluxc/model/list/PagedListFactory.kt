@@ -1,8 +1,13 @@
 package org.wordpress.android.fluxc.model.list
 
+import android.os.Handler
+import android.os.Looper
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
+import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.util.AppLog
+import java.util.concurrent.Executor
 import kotlin.math.min
 
 /**
@@ -11,18 +16,32 @@ import kotlin.math.min
  * @param createDataSource A function that creates an instance of [InternalPagedListDataSource].
  */
 class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM : Any>(
-    private val createDataSource: () -> InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
+    private val createDataSource: () -> InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
+    private val coroutineEngine: CoroutineEngine,
 ) : DataSource.Factory<Int, LIST_ITEM>() {
     private var currentSource: PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>? = null
 
+    val mainThreadExecutor = object : Executor {
+        private val handler: Handler = Handler(Looper.getMainLooper())
+        override fun execute(r: Runnable) {
+            handler.post(r)
+        }
+    }
+
     override fun create(): DataSource<Int, LIST_ITEM> {
-        val source = PagedListPositionalDataSource(dataSource = createDataSource.invoke())
+        val source = PagedListPositionalDataSource(dataSource = createDataSource.invoke(), coroutineEngine)
         currentSource = source
         return source
     }
 
     fun invalidate() {
-        currentSource?.invalidate()
+        currentSource?.let {
+            if (!it.isInvalid) {
+                mainThreadExecutor.execute {
+                    currentSource?.invalidate()
+                }
+            }
+        }
     }
 }
 
@@ -32,24 +51,29 @@ class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_I
  * @param dataSource Describes how to take certain actions such as fetching list for the item type [LIST_ITEM].
  */
 private class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM : Any>(
-    private val dataSource: InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
+    private val dataSource: InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
+    private val coroutineEngine: CoroutineEngine
 ) : PositionalDataSource<LIST_ITEM>() {
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<LIST_ITEM>) {
-        val totalSize = dataSource.totalSize
-        val startPosition = computeInitialLoadPositionInternal(params, totalSize)
-        val loadSize = computeInitialLoadSizeInternal(params, startPosition, totalSize)
-        val items = loadRangeInternal(startPosition, loadSize)
-        if (params.placeholdersEnabled) {
-            callback.onResult(items, startPosition, totalSize)
-        } else {
-            callback.onResult(items, startPosition)
+        coroutineEngine.launch(AppLog.T.API, this, "PagedListPositionalDataSource: initial load") {
+            val totalSize = dataSource.totalSize
+            val startPosition = computeInitialLoadPositionInternal(params, totalSize)
+            val loadSize = computeInitialLoadSizeInternal(params, startPosition, totalSize)
+            val items = loadRangeInternal(startPosition, loadSize)
+            if (params.placeholdersEnabled) {
+                callback.onResult(items, startPosition, totalSize)
+            } else {
+                callback.onResult(items, startPosition)
+            }
         }
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<LIST_ITEM>) {
-        val loadSize = min(dataSource.totalSize - params.startPosition, params.loadSize)
-        val items = loadRangeInternal(params.startPosition, loadSize)
-        callback.onResult(items)
+        coroutineEngine.launch(AppLog.T.API, this, "PagedListPositionalDataSource: loading range") {
+            val loadSize = min(dataSource.totalSize - params.startPosition, params.loadSize)
+            val items = loadRangeInternal(params.startPosition, loadSize)
+            callback.onResult(items)
+        }
     }
 
     private fun loadRangeInternal(startPosition: Int, loadSize: Int): List<LIST_ITEM> {
