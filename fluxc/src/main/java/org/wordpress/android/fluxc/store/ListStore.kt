@@ -299,8 +299,6 @@ class ListStore @Inject constructor(
      *
      * Whenever the data of a list is invalidated, [OnListDataInvalidated] event will be emitted so the listening
      * lists can invalidate their data.
-     *
-     * In Paging 3 constant invalidating of the backing DataSource could cause issue, so we throttle it
      */
     private fun handleListDataInvalidated(typeIdentifier: ListDescriptorTypeIdentifier) {
         emitChange(OnListDataInvalidated(type = typeIdentifier))
