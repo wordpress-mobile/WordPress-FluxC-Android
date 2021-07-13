@@ -1,13 +1,12 @@
 package org.wordpress.android.fluxc.model.list
 
-import android.os.Handler
-import android.os.Looper
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
-import java.util.concurrent.Executor
 import kotlin.math.min
 
 /**
@@ -17,16 +16,9 @@ import kotlin.math.min
  */
 class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM : Any>(
     private val createDataSource: () -> InternalPagedListDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
-    private val coroutineEngine: CoroutineEngine,
+    private val coroutineEngine: CoroutineEngine
 ) : DataSource.Factory<Int, LIST_ITEM>() {
     private var currentSource: PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>? = null
-
-    val mainThreadExecutor = object : Executor {
-        private val handler: Handler = Handler(Looper.getMainLooper())
-        override fun execute(r: Runnable) {
-            handler.post(r)
-        }
-    }
 
     override fun create(): DataSource<Int, LIST_ITEM> {
         val source = PagedListPositionalDataSource(dataSource = createDataSource.invoke(), coroutineEngine)
@@ -37,8 +29,10 @@ class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_I
     fun invalidate() {
         currentSource?.let {
             if (!it.isInvalid) {
-                mainThreadExecutor.execute {
-                    currentSource?.invalidate()
+                coroutineEngine.launch(AppLog.T.API, this, "PagedListFactory: invalidating") {
+                    withContext(Dispatchers.Main) {
+                        currentSource?.invalidate()
+                    }
                 }
             }
         }
