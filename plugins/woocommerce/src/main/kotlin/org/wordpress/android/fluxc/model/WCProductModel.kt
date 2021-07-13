@@ -45,7 +45,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var regularPrice = ""
     @Column var salePrice = ""
     @Column var onSale = false
-    @Column var totalSales = 0
+    @Column var totalSales = 0L
 
     @Column var dateOnSaleFrom = ""
     @Column var dateOnSaleTo = ""
