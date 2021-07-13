@@ -23,7 +23,6 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
-        test.java.srcDirs += 'src/test/kotlin'
     }
 }
 
@@ -56,9 +55,6 @@ dependencies {
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
-
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation "org.assertj:assertj-core:$assertJVersion"
 }
 
 group 'org.wordpress'
