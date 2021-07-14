@@ -513,7 +513,7 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun updateOrderStatusLocally(localOrderId: Int, newStatus: String): Int {
-        val updatedOrder = OrderSqlUtils.getOrder(localOrderId).apply {
+        val updatedOrder = OrderSqlUtils.getOrderByLocalId(localOrderId).apply {
             status = newStatus
         }
         return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)

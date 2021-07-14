@@ -315,7 +315,7 @@ object OrderSqlUtils {
                     .orderBy(WCOrderShipmentProviderModelTable.COUNTRY, SelectQuery.ORDER_ASCENDING)
                     .asModel
 
-    fun getOrder(localOrderId: Int): WCOrderModel =
+    fun getOrderByLocalId(localOrderId: Int): WCOrderModel =
             WellSql.select(WCOrderModel::class.java)
                     .where()
                     .equals(WCOrderModelTable.ID, localOrderId)
