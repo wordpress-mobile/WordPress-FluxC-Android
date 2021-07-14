@@ -28,7 +28,7 @@ class ProductApiResponse : Response {
     var regular_price: String? = null
     var sale_price: String? = null
     var on_sale = false
-    var total_sales = 0
+    var total_sales = 0L
 
     var virtual = false
     var downloadable = false
