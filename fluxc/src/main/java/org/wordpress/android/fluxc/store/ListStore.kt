@@ -140,8 +140,12 @@ class ListStore @Inject constructor(
                 super.onItemAtEndLoaded(itemAtEnd)
             }
         }
-        // we set main thread executor here so all the work of fetchDispatcher apart from heavy loading will
-        // be performed on the same thread as notifyDispatcher, to avoid deadlock
+        // When Paging 2 is running alongside Paging 3, we encountered an issue where data source sometimes gets stuck
+        // stuck in invalidated state, and create() is not called from factory. Assumption is that this happens because
+        // of the issue with threading inside library between fetchDispatcher (running on BG thread by default) and
+        // notifyDispatcher that runs on Main thread (deadlock of some sort).
+        // Setting fetchExecutor/Dispatcher to main thread, but doing actual loading on BG thread inside DataSource
+        // fixes this issue.
         return LivePagedListBuilder(pagedListFactory, pagedListConfig)
                 .setFetchExecutor(object : Executor {
                     private val handler: Handler = Handler(Looper.getMainLooper())

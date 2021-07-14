@@ -27,13 +27,11 @@ class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_I
     }
 
     fun invalidate() {
-        currentSource?.let {
-            if (!it.isInvalid) {
-                coroutineEngine.launch(AppLog.T.API, this, "PagedListFactory: invalidating") {
-                    withContext(Dispatchers.Main) {
-                        currentSource?.invalidate()
-                    }
-                }
+        // invalidate() is called from the thread used by loadInitial and loadRange, so we want to manually direct it
+        // to the main thread, where the rest of management logic is happening
+        coroutineEngine.launch(AppLog.T.API, this, "PagedListFactory: invalidating") {
+            withContext(Dispatchers.Main) {
+                currentSource?.invalidate()
             }
         }
     }
