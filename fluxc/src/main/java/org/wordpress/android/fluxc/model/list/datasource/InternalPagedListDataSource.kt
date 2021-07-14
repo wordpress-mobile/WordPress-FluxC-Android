@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model.list.datasource
 
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.list.ListConfig
 import org.wordpress.android.fluxc.model.list.ListDescriptor
 
 /**
@@ -41,6 +42,9 @@ class InternalPagedListDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIF
      */
     val totalSize: Int
         get() = itemIdentifiers.size
+
+    val listConfig: ListConfig
+        get() = listDescriptor.config
 
     /**
      * Returns the list of items [LIST_ITEM] by propagating the call to [ListItemDataSourceInterface]

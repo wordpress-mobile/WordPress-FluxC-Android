@@ -6,6 +6,7 @@ import androidx.paging.PagedList
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource.LoadResult.Page
 import androidx.paging.liveData
 import com.yarolegovich.wellsql.WellSql
 import org.greenrobot.eventbus.Subscribe
@@ -38,6 +39,7 @@ import org.wordpress.android.fluxc.persistence.ListSqlUtils
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged.CauseOfListChange
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
 import javax.inject.Inject
@@ -122,7 +124,14 @@ class ListStore @Inject constructor(
         listDescriptor: LIST_DESCRIPTOR,
         factory: PagedListFactory<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
     ): LiveData<PagingData<LIST_ITEM>> {
-        val pagingConfig = PagingConfig(enablePlaceholders = true, initialLoadSize = listDescriptor.config.initialLoadSize, pageSize = listDescriptor.config.dbPageSize)
+        val pagingConfig = PagingConfig(
+                enablePlaceholders = true,
+                initialLoadSize = listDescriptor.config.initialLoadSize,
+                pageSize = listDescriptor.config.dbPageSize,
+                prefetchDistance = listDescriptor.config.prefetchDistance,
+                maxSize = PagingConfig.MAX_SIZE_UNBOUNDED,
+                jumpThreshold = Page.COUNT_UNDEFINED
+        )
         val pager = Pager(pagingConfig) { factory.create() }
         return pager.liveData
     }
@@ -179,9 +188,11 @@ class ListStore @Inject constructor(
         val currentState = getListState(listDescriptor)
         if (!loadMore && currentState.isFetchingFirstPage()) {
             // already fetching the first page
+            AppLog.d(T.API, "already fetching the first page")
             return
         } else if (loadMore && !currentState.canLoadMore()) {
             // we can only load more if there is more data to be loaded
+            AppLog.d(T.API, "we can only load more if there is more data to be loaded")
             return
         }
 

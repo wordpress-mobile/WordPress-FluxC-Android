@@ -3,10 +3,10 @@ package org.wordpress.android.fluxc.model.list
 import androidx.paging.PagedList.Config.Builder
 import org.wordpress.android.fluxc.store.ListStore
 
-private const val DB_PAGE_SIZE = 10
-private const val INITIAL_LOAD_SIZE = 20
+private const val DB_PAGE_SIZE = 30
+private const val INITIAL_LOAD_SIZE = 40
 private const val NETWORK_PAGE_SIZE = 60
-private const val PRE_FETCH_DISTANCE = DB_PAGE_SIZE * 3
+private const val PRE_FETCH_DISTANCE = 1 * DB_PAGE_SIZE
 
 /**
  * Configures how the [ListStore] loads content from its DataSource.

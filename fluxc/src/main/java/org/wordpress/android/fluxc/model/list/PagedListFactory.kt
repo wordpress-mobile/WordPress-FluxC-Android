@@ -1,9 +1,11 @@
 package org.wordpress.android.fluxc.model.list
 
 import androidx.paging.PagingSource
+import androidx.paging.PagingSource.LoadResult.Page
 import androidx.paging.PagingState
 import org.wordpress.android.fluxc.model.list.datasource.InternalPagedListDataSource
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 
 class PagedListFactory<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER : Any, LIST_ITEM : Any>(
     private val createDataSource: () -> PagedListPositionalDataSource<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
@@ -35,7 +37,7 @@ class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENT
         }
     }
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, LIST_ITEM> {
-        AppLog.e(AppLog.T.API, "Loading $params: ${params.key} & ${params.loadSize}")
+        AppLog.e(AppLog.T.API, "Loading $params: ${params.key} & ${params.loadSize} Thread: ${Thread.currentThread()}")
         val index = params.key ?: 0
         val (firstIndex, lastIndex) = when (params) {
             is LoadParams.Prepend -> {
@@ -58,12 +60,12 @@ class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENT
         val previousKey = if (firstIndex == 0) null else firstIndex
         val nextKey = if (lastIndex < dataSource.totalSize) lastIndex else null
 
-        AppLog.e(AppLog.T.API, "firstIndex/lastIndex: $firstIndex/$lastIndex")
-        AppLog.e(AppLog.T.API, "previousKey/nextKey: $previousKey/$nextKey")
-        AppLog.e(AppLog.T.API, "itemSize: ${items.size}, totalSize: ${dataSource.totalSize}")
+        AppLog.e(AppLog.T.API, "$params firstIndex/lastIndex: $firstIndex/$lastIndex")
+        AppLog.e(AppLog.T.API, "$params previousKey/nextKey: $previousKey/$nextKey")
+        AppLog.e(AppLog.T.API, "$params itemSize: ${items.size}, totalSize: ${dataSource.totalSize}")
 
         // TODO: This is just a temporary replacement for boundary callback
-        if (lastIndex + 10 > dataSource.totalSize) {
+        if (lastIndex + dataSource.listConfig.prefetchDistance > dataSource.totalSize) {
             dataSource.onItemAtEndLoaded()
         }
 
@@ -71,11 +73,25 @@ class PagedListPositionalDataSource<LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENT
     }
 
     override fun getRefreshKey(state: PagingState<Int, LIST_ITEM>): Int? {
-       val position = state.anchorPosition?.let { anchorPosition ->
-            val anchorPage = state.closestPageToPosition(anchorPosition)
-            anchorPage?.prevKey?.plus(1)
+        state.pages.forEachIndexed { index, page ->
+          AppLog.e(T.API, "getRefreshKey: page index $index - ${page.prevKey}/${page.nextKey}")
         }
-        AppLog.e(AppLog.T.API, "getRefreshKey: ${position}")
+
+        val position = state.anchorPosition?.let { anchorPosition ->
+           val closestPageToAnchor = state.closestPageToPosition(anchorPosition)
+           val closestItemToAnchor = state.closestItemToPosition(anchorPosition)
+           val pageIndex = state.pages.indexOf(closestPageToAnchor)
+           val anchorIndexInPage = closestPageToAnchor?.data?.indexOf(closestItemToAnchor)
+
+           AppLog.e(T.API, "getRefreshKey: pageIndex $pageIndex anchorPosition ${anchorPosition} anchorIndexInPage $anchorIndexInPage")
+
+           closestPageToAnchor?.prevKey?.let { prevKey ->
+               anchorIndexInPage?.let { anchorIndexInPage
+                   prevKey - dataSource.listConfig.dbPageSize / 2 + anchorIndexInPage.coerceAtLeast(0)
+               } ?: prevKey
+           }
+        }
+        AppLog.e(AppLog.T.API, "getRefreshKey: position $position")
         return position
     }
 }
