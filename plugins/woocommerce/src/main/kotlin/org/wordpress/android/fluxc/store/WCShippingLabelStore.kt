@@ -109,10 +109,17 @@ class WCShippingLabelStore @Inject constructor(
     suspend fun printShippingLabel(
         site: SiteModel,
         paperSize: String,
-        remoteShippingLabelId: Long
+        shippingLabelId: Long
+    ): WooResult<String> = printShippingLabels(site, paperSize, listOf(shippingLabelId))
+
+    suspend fun printShippingLabels(
+        site: SiteModel,
+        paperSize: String,
+        shippingLabelIds: List<Long>
     ): WooResult<String> {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "printShippingLabel") {
-            val response = restClient.printShippingLabel(site, paperSize, remoteShippingLabelId)
+        require(shippingLabelIds.isNotEmpty())
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "printShippingLabels") {
+            val response = restClient.printShippingLabels(site, paperSize, shippingLabelIds)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
