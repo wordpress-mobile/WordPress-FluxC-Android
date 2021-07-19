@@ -53,6 +53,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_SERVICES
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -663,7 +664,7 @@ class WooShippingLabelFragment : Fragment() {
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
-                    val plugin = wooCommerceStore.getWooCommerceServicesPluginInfo(site)
+                    val plugin = wooCommerceStore.getPluginInfo(site, WOO_SERVICES)
                     plugin?.let {
                         prependToLog("$it")
                     }

@@ -45,12 +45,14 @@ open class WooCommerceStore @Inject constructor(
     private val wcCoreRestClient: WooCommerceRestClient,
     private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
+    enum class WooPlugin(val displayName: String) {
+        WOO_SERVICES("WooCommerce Shipping &amp; Tax"),
+        WOO_PAYMENTS("WooCommerce Payments");
+    }
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
         const val WOO_API_NAMESPACE_V2 = "wc/v2"
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
-
-        private const val WOO_SERVICES_PLUGIN_NAME = "WooCommerce Shipping &amp; Tax"
     }
 
     class FetchApiVersionResponsePayload(
@@ -156,8 +158,8 @@ open class WooCommerceStore @Inject constructor(
         return siteSettings?.countryCode
     }
 
-    fun getWooCommerceServicesPluginInfo(site: SiteModel): WCPluginModel? {
-        return WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
+    fun getPluginInfo(site: SiteModel, plugin: WooPlugin): WCPluginModel? {
+        return WCPluginSqlUtils.selectSingle(site, plugin.displayName)
     }
 
     suspend fun getSitePlugins(site: SiteModel): List<WCPluginModel> {
