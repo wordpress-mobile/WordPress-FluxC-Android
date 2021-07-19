@@ -158,7 +158,7 @@ open class WooCommerceStore @Inject constructor(
         return siteSettings?.countryCode
     }
 
-    fun getPluginInfo(site: SiteModel, plugin: WooPlugin): WCPluginModel? {
+    fun getSitePlugin(site: SiteModel, plugin: WooPlugin): WCPluginModel? {
         return WCPluginSqlUtils.selectSingle(site, plugin.displayName)
     }
 
@@ -168,7 +168,7 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
-    suspend fun fetchSitePlugins(site: SiteModel): WooResult<Unit> {
+    suspend fun fetchSitePlugins(site: SiteModel): WooResult<List<WCPluginModel>> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchWooCommerceServicesPluginInfo") {
             val response = systemRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {
@@ -176,10 +176,9 @@ open class WooCommerceStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result?.plugins != null -> {
-                    response.result.plugins.map { WCPluginModel(site, it) }.let {
-                        WCPluginSqlUtils.insertOrUpdate(it)
-                    }
-                    WooResult()
+                    val plugins = response.result.plugins.map { WCPluginModel(site, it) }
+                    WCPluginSqlUtils.insertOrUpdate(plugins)
+                    WooResult(plugins)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }

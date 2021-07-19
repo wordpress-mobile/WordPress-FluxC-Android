@@ -104,7 +104,8 @@ class WooCommerceStoreTest {
     fun `when fetching plugin succeeds, then success returned`() = test {
         val result = getPlugin(isError = false)
 
-        Assertions.assertThat(result.error).isEqualTo(error)
+        Assertions.assertThat(result.isError).isFalse
+        Assertions.assertThat(result.model).isNotNull
     }
 
     @Test
@@ -119,7 +120,7 @@ class WooCommerceStoreTest {
         Assertions.assertThat(result).isEqualTo(expectedModel)
     }
 
-    private suspend fun getPlugin(isError: Boolean = false): WooResult<Unit> {
+    private suspend fun getPlugin(isError: Boolean = false): WooResult<List<WCPluginModel>> {
         val payload = WooPayload(response)
         if (isError) {
             whenever(restClient.fetchInstalledPlugins(any())).thenReturn(WooPayload(error))

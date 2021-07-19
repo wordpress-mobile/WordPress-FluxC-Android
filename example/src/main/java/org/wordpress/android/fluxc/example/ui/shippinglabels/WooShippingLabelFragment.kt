@@ -664,7 +664,7 @@ class WooShippingLabelFragment : Fragment() {
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
-                    val plugin = wooCommerceStore.getPluginInfo(site, WOO_SERVICES)
+                    val plugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
                     plugin?.let {
                         prependToLog("$it")
                     }
