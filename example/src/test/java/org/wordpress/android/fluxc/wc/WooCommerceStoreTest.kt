@@ -94,23 +94,38 @@ class WooCommerceStoreTest {
     }
 
     @Test
-    fun `test fetching woo services plugin info`() = test {
-        val result = getPlugin()
-        val expectedModel = response.plugins.map { WCPluginModel(site, it).apply { id = 1 } }.first()
-        Assertions.assertThat(result.model).isEqualTo(expectedModel)
+    fun `when fetching plugin fails, then error returned`() = test {
+        val result = getPlugin(isError = true)
 
-        val invalidRequestResult = getPlugin(true)
-        Assertions.assertThat(invalidRequestResult.model).isNull()
-        Assertions.assertThat(invalidRequestResult.error).isEqualTo(error)
+        Assertions.assertThat(result.error).isEqualTo(error)
     }
 
-    private suspend fun getPlugin(isError: Boolean = false): WooResult<WCPluginModel> {
+    @Test
+    fun `when fetching plugin succeeds, then success returned`() = test {
+        val result = getPlugin(isError = false)
+
+        Assertions.assertThat(result.error).isEqualTo(error)
+    }
+
+    @Test
+    fun `when fetching plugin succeeds, then plugins inserted into db`() = test {
+        getPlugin(isError = false)
+        val expectedModel = response.plugins.mapIndexed { index, model ->
+            WCPluginModel(site, model).apply { id = index + 1 }
+        }
+
+        val result = wooCommerceStore.getSitePlugins(site)
+
+        Assertions.assertThat(result).isEqualTo(expectedModel)
+    }
+
+    private suspend fun getPlugin(isError: Boolean = false): WooResult<Unit> {
         val payload = WooPayload(response)
         if (isError) {
             whenever(restClient.fetchInstalledPlugins(any())).thenReturn(WooPayload(error))
         } else {
             whenever(restClient.fetchInstalledPlugins(any())).thenReturn(payload)
         }
-        return wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
+        return wooCommerceStore.fetchSitePlugins(site)
     }
 }

@@ -658,12 +658,13 @@ class WooShippingLabelFragment : Fragment() {
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
+                        wooCommerceStore.fetchSitePlugins(site)
                     }
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
-                    result.model?.let {
+                    val plugin = wooCommerceStore.getWooCommerceServicesPluginInfo(site)
+                    plugin?.let {
                         prependToLog("$it")
                     }
                 }

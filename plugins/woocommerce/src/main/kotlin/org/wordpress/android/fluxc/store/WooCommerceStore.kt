@@ -70,8 +70,8 @@ open class WooCommerceStore @Inject constructor(
         NO_WOO_API;
 
         companion object {
-            private val reverseMap = ApiVersionErrorType.values().associateBy(ApiVersionErrorType::name)
-            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: ApiVersionErrorType.GENERIC_ERROR
+            private val reverseMap = values().associateBy(ApiVersionErrorType::name)
+            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
         }
     }
 
@@ -92,9 +92,9 @@ open class WooCommerceStore @Inject constructor(
         INVALID_RESPONSE;
 
         companion object {
-            private val reverseMap = WCSiteSettingsErrorType.values().associateBy(WCSiteSettingsErrorType::name)
+            private val reverseMap = values().associateBy(WCSiteSettingsErrorType::name)
             fun fromString(type: String) =
-                    reverseMap[type.toUpperCase(Locale.US)] ?: WCSiteSettingsErrorType.GENERIC_ERROR
+                    reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
         }
     }
 
@@ -160,20 +160,24 @@ open class WooCommerceStore @Inject constructor(
         return WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
     }
 
-    suspend fun fetchWooCommerceServicesPluginInfo(
-        site: SiteModel
-    ): WooResult<WCPluginModel> {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchWooCommerceServicesPluginInfo") {
+    suspend fun getSitePlugins(site: SiteModel): List<WCPluginModel> {
+        return coroutineEngine.withDefaultContext(T.DB, this, "getSitePlugins") {
+            WCPluginSqlUtils.selectAll(site)
+        }
+    }
+
+    suspend fun fetchSitePlugins(site: SiteModel): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchWooCommerceServicesPluginInfo") {
             val response = systemRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
                 }
                 response.result?.plugins != null -> {
-                    val plugins = response.result.plugins.map { WCPluginModel(site, it) }
-                    WCPluginSqlUtils.insertOrUpdate(plugins)
-                    val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
-                    WooResult(plugin)
+                    response.result.plugins.map { WCPluginModel(site, it) }.let {
+                        WCPluginSqlUtils.insertOrUpdate(it)
+                    }
+                    WooResult()
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
