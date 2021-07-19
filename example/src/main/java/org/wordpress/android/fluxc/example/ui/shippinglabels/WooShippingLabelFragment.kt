@@ -53,6 +53,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_SERVICES
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -658,12 +659,13 @@ class WooShippingLabelFragment : Fragment() {
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
+                        wooCommerceStore.fetchSitePlugins(site)
                     }
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
-                    result.model?.let {
+                    val plugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
+                    plugin?.let {
                         prependToLog("$it")
                     }
                 }
