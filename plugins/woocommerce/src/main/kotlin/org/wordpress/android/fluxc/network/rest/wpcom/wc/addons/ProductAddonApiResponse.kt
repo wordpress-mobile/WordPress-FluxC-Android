@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.addons
 
-class ProductAddonApiResponse {
+import org.wordpress.android.fluxc.network.Response
+
+class ProductAddonApiResponse : Response {
     val type: AddOnType? = null
     val display: AddOnDisplay? = null
     val name: String? = null
@@ -16,7 +18,7 @@ class ProductAddonApiResponse {
     val price: String? = null
     val min: String? = null
     val max: String? = null
-    val options: String? = null
+    val options: Array<ProductAddonOptionApiResponse>? = null
 
     enum class AddOnType {
         MultipleChoice,
