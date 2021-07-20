@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.persistence.comments
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert
@@ -9,11 +8,14 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
+
+typealias CommentEntityList = List<CommentEntity>
 
 @Dao
 abstract class CommentsDao {
     @Transaction
-    open suspend fun insertOrUpdateComments(comments: List<CommentEntity>): List<Long> {
+    open suspend fun insertOrUpdateComments(comments: CommentEntityList): List<Long> {
         return comments.map { comment ->
             insertOrUpdateCommentInternal(comment)
         }
@@ -25,7 +27,7 @@ abstract class CommentsDao {
     }
 
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses) ORDER BY datePublished DESC")
-    abstract fun pagingSource(siteId: Long, statuses: List<String>): PagingSource<Int, CommentEntity>
+    abstract fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList
 
     @Query("DELETE FROM Comments")
     abstract suspend fun clearAll(): Int
@@ -37,21 +39,18 @@ abstract class CommentsDao {
     abstract suspend fun getCommentsCountForSite(siteId: Long, statuses: List<String>): Int
 
     @Insert
-    abstract suspend fun insertAll(comments: List<CommentEntity>)
+    abstract suspend fun insertAll(comments: CommentEntityList)
 
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
-    abstract fun getCommentBySiteAndRemoteId(siteId: Long, remoteCommentId: Long): List<CommentEntity>
+    abstract fun getCommentBySiteAndRemoteId(siteId: Long, remoteCommentId: Long): CommentEntityList
 
     @Transaction
-    open suspend fun appendOrOverwriteComments(overwrite: Boolean, siteId: Long, statuses: List<String>, comments: List<CommentEntity>) {
+    open suspend fun appendOrOverwriteComments(overwrite: Boolean, siteId: Long, statuses: List<String>, comments: CommentEntityList) {
         if (overwrite) {
             clearAllBySiteId(siteId, statuses)
-            //clearAll()
         }
 
         insertOrUpdateComments(comments)
-        //insertAll(comments)
-
     }
 
     private fun insertOrUpdateCommentInternal(comment: CommentEntity): Long {
@@ -75,11 +74,8 @@ abstract class CommentsDao {
     @Update
     protected abstract fun update(comment: CommentEntity): Int
 
-    //@Query("SELECT * FROM Comments WHERE id = :id LIMIT 1")
-    //protected abstract fun getCommentById(id: Long): List<CommentEntity>
-
     @Query("SELECT * FROM Comments WHERE (id = :commentId OR (remoteCommentId = :remoteCommentId AND localSiteId = :localSiteId))")
-    protected abstract fun getMatchingComments(commentId: Long, remoteCommentId: Long, localSiteId: Int): List<CommentEntity>
+    protected abstract fun getMatchingComments(commentId: Long, remoteCommentId: Long, localSiteId: Int): CommentEntityList
 
     @Entity(
             tableName = "Comments"

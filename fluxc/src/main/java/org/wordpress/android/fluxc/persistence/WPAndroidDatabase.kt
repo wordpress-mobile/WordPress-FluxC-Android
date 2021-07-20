@@ -26,5 +26,6 @@ abstract class WPAndroidDatabase : RoomDatabase() {
                 WPAndroidDatabase::class.java,
                 "wp-android-database"
         ).fallbackToDestructiveMigration().build()
+        // TODOD: add migrations
     }
 }

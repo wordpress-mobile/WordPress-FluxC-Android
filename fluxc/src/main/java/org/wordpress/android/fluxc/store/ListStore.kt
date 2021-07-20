@@ -86,7 +86,7 @@ class ListStore @Inject constructor(
      * @return A [PagedListWrapper] that provides all the necessary information to consume a list such as its data,
      * whether the first page is being fetched, whether there are any errors etc. in `LiveData` format.
      */
-    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any> getList(
+    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> getList(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle
@@ -116,7 +116,7 @@ class ListStore @Inject constructor(
      * A helper function that creates a [PagedList] [LiveData] for the given [LIST_DESCRIPTOR], [dataSource] and the
      * [PagedListFactory].
      */
-    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any> createPagedListLiveData(
+    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> createPagedListLiveData(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         pagedListFactory: PagedListFactory<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
@@ -144,7 +144,7 @@ class ListStore @Inject constructor(
     /**
      * A helper function that creates a [PagedListFactory] for the given [LIST_DESCRIPTOR] and [dataSource].
      */
-    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM: Any> createPagedListFactory(
+    private fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> createPagedListFactory(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>
     ): PagedListFactory<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM> {
