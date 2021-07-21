@@ -1,59 +1,65 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.addons
 
-import org.wordpress.android.fluxc.network.Response
+import com.google.gson.annotations.SerializedName
 
-class ProductAddonApiResponse : Response {
+class ProductAddonApiResponse {
+    @SerializedName("title_format")
+    val titleFormat: AddOnTitleFormat? = null
+    @SerializedName("description_enable")
+    val descriptionEnabled: String? = null
+    @SerializedName("restrictions_type")
+    val restrictionsType: AddOnRestrictionsType? = null
+    @SerializedName("adjust_price")
+    val adjustPrice: String? = null
+    @SerializedName("price_type")
+    val priceType: AddOnPriceType? = null
+
     val type: AddOnType? = null
     val display: AddOnDisplay? = null
     val name: String? = null
-    val titleFormat: AddOnTitleFormat? = null
-    val descriptionEnabled: String? = null
     val description: String? = null
     val required: String? = null
     val position: String? = null
     val restrictions: String? = null
-    val restrictionsType: AddOnRestrictionsType? = null
-    val adjustPrice: String? = null
-    val priceType: AddOnPriceType? = null
     val price: String? = null
     val min: String? = null
     val max: String? = null
     val options: Array<ProductAddonOptionApiResponse>? = null
 
     enum class AddOnType {
-        MultipleChoice,
-        Checkbox,
-        CustomText,
-        CustomTextArea,
-        FileUpload,
-        CustomPrice,
-        InputMultiplier,
-        Heading
+        @SerializedName("description_enable") MultipleChoice,
+        @SerializedName("checkbox") Checkbox,
+        @SerializedName("custom_text") CustomText,
+        @SerializedName("custom_text_area") CustomTextArea,
+        @SerializedName("file_upload") FileUpload,
+        @SerializedName("custom_price") CustomPrice,
+        @SerializedName("input_multiplier") InputMultiplier,
+        @SerializedName("heading") Heading
     }
 
     enum class AddOnDisplay {
-        Dropdown,
-        RadioButton,
-        Images
+        @SerializedName("dropdown") Dropdown,
+        @SerializedName("radiobutton") RadioButton,
+        @SerializedName("images") Images
     }
 
     enum class AddOnTitleFormat {
-        Label,
-        Heading,
-        Hide
+        @SerializedName("label") Label,
+        @SerializedName("heading") Heading,
+        @SerializedName("hide") Hide
     }
 
     enum class AddOnRestrictionsType {
-        AnyText,
-        OnlyLetters,
-        OnlyNumbers,
-        OnlyLettersNumbers,
-        Email
+        @SerializedName("any_text") AnyText,
+        @SerializedName("only_letters") OnlyLetters,
+        @SerializedName("only_numbers") OnlyNumbers,
+        @SerializedName("only_letters_numbers") OnlyLettersNumbers,
+        @SerializedName("email") Email
     }
 
     enum class AddOnPriceType {
-        FlatFee,
-        QuantityBased,
-        PercentageBased
+        @SerializedName("flat_free") FlatFee,
+        @SerializedName("quantity_based") QuantityBased,
+        @SerializedName("percentage_based") PercentageBased
     }
 }
