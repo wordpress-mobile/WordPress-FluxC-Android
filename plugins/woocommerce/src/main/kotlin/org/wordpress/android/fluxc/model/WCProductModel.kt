@@ -131,13 +131,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             const val ADDONS_KEY = "_product_addons"
         }
 
-        val addons by lazy {
-            try {
+        val addons
+            get() = try {
                 Gson().fromJson(value, Array<WCProductAddonModel>::class.java)
             } catch (ex: Exception) {
                 null
             }
-        }
     }
 
     class ProductAttribute(
