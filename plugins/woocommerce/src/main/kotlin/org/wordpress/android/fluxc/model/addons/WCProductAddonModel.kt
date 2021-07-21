@@ -1,8 +1,8 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.addons
+package org.wordpress.android.fluxc.model.addons
 
 import com.google.gson.annotations.SerializedName
 
-class ProductAddonApiResponse {
+class WCProductAddonModel {
     @SerializedName("title_format")
     val titleFormat: AddOnTitleFormat? = null
     @SerializedName("description_enable")
@@ -24,7 +24,7 @@ class ProductAddonApiResponse {
     val price: String? = null
     val min: String? = null
     val max: String? = null
-    val options: Array<ProductAddonOptionApiResponse>? = null
+    val options: Array<ProductAddonOption>? = null
 
     enum class AddOnType {
         @SerializedName("description_enable") MultipleChoice,
@@ -61,5 +61,14 @@ class ProductAddonApiResponse {
         @SerializedName("flat_free") FlatFee,
         @SerializedName("quantity_based") QuantityBased,
         @SerializedName("percentage_based") PercentageBased
+    }
+
+    class ProductAddonOption {
+        @SerializedName("price_type")
+        val priceType: AddOnPriceType? = null
+
+        val label: String? = null
+        val price: String? = null
+        val image: String? = null
     }
 }

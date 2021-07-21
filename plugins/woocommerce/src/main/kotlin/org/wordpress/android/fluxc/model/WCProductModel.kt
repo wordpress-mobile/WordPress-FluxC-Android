@@ -10,7 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.ProductAddonApiResponse
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
@@ -106,7 +106,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
-    val addons: Array<ProductAddonApiResponse>
+    val addons: Array<WCProductAddonModel>
         get() = Gson().fromJson(metadata, Array<ProductMetadata>::class.java)
             ?.find { it.key == ProductMetadata.ADDONS_KEY }
             ?.addons
@@ -133,7 +133,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
         val addons by lazy {
             try {
-                Gson().fromJson(value, Array<ProductAddonApiResponse>::class.java)
+                Gson().fromJson(value, Array<WCProductAddonModel>::class.java)
             } catch (ex: Exception) {
                 null
             }
