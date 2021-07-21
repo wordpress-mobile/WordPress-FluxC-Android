@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.ProductAddonApiResponse
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
@@ -105,10 +106,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
-    val addons: String
+    val addons: Array<ProductAddonApiResponse>
         get() = Gson().fromJson(metadata, Array<ProductMetadata>::class.java)
             ?.find { it.key == ProductMetadata.ADDONS_KEY }
-            ?.value.toString()
+            ?.addons
+            ?: emptyArray()
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
@@ -127,6 +129,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     ) {
         companion object {
             const val ADDONS_KEY = "_product_addons"
+        }
+
+        val addons by lazy {
+            try {
+                Gson().fromJson(value, Array<ProductAddonApiResponse>::class.java)
+            } catch (ex: Exception) {
+                null
+            }
         }
     }
 
