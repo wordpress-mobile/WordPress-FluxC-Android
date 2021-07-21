@@ -105,6 +105,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
+    val addons: String
+        get() = Gson().fromJson(metadata, Array<ProductMetadata>::class.java)
+            ?.find { it.key == ProductMetadata.ADDONS_KEY }
+            ?.value.toString()
+
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
             return JsonObject().also { json ->
@@ -112,6 +117,16 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 json.addProperty("name", name)
                 json.addProperty("slug", slug)
             }
+        }
+    }
+
+    class ProductMetadata(
+        val id: Long,
+        val key: String,
+        val value: JsonElement
+    ) {
+        companion object {
+            const val ADDONS_KEY = "_product_addons"
         }
     }
 
