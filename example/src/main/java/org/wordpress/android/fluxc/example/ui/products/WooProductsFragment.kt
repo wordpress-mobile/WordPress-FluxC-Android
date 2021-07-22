@@ -378,7 +378,10 @@ class WooProductsFragment : Fragment() {
 
         fetch_product_addons.setOnClickListener {
             selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch the addons:") { editText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteProductId of product to fetch the addons:"
+                ) { editText ->
                     pendingFetchSingleProductRemoteId = editText.text.toString().toLongOrNull()
                     pendingFetchSingleProductRemoteId?.let { id ->
                         prependToLog("Submitting request to fetch product by remoteProductID $id")
@@ -389,7 +392,7 @@ class WooProductsFragment : Fragment() {
                                     ?.forEachIndexed { index, addon ->
                                         prependToLog(addon.description?.let { "description: $it" }.orEmpty())
                                         prependToLog(addon.name?.let { "name: $it" }.orEmpty())
-                                        prependToLog("========== Product Add-on #${index} =========")
+                                        prependToLog("========== Product Add-on #$index =========")
                                     } ?: prependToLog("No addons found for this product ID")
                         }
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
