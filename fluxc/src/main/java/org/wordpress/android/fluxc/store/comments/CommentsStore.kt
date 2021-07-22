@@ -21,8 +21,7 @@ class CommentsStore
     private val commentXMLRPCClient: CommentXMLRPCClient,
     private val commentsDao: CommentsDao,
     private val commentsMapper: CommentsMapper,
-)
-{
+) {
     data class CommentsActionPayload<T>(
         val data: T? = null
     ) : Payload<CommentError>() {
@@ -31,7 +30,7 @@ class CommentsStore
         }
     }
 
-    data class CommentsData(val comments: CommentEntityList, val hasMore: Boolean) {
+    data class CommentsData(var comments: CommentEntityList, var hasMore: Boolean = false) {
         companion object {
             fun empty() = CommentsData(comments = listOf(), hasMore = false)
         }
@@ -80,7 +79,23 @@ class CommentsStore
         }
     }
 
-    suspend fun moderateCommentLocally(site: SiteModel, remoteCommentId: Long, newStatus: CommentStatus): CommentsActionPayload<ModeratedCommentInfo> {
+    suspend fun getCachedComments(
+        site: SiteModel,
+        cacheStatuses: List<CommentStatus>
+    ): CommentsActionPayload<CommentsData> {
+        val cachedComments = commentsDao.getFilteredComments(
+                siteId = site.siteId,
+                statuses = cacheStatuses.map { it.toString() }
+        )
+
+        return CommentsActionPayload(CommentsData(comments = cachedComments))
+    }
+
+    suspend fun moderateCommentLocally(
+        site: SiteModel,
+        remoteCommentId: Long,
+        newStatus: CommentStatus
+    ): CommentsActionPayload<ModeratedCommentInfo> {
         val comments = commentsDao.getCommentBySiteAndRemoteId(site.siteId, remoteCommentId)
 
         if (comments.isEmpty()) {

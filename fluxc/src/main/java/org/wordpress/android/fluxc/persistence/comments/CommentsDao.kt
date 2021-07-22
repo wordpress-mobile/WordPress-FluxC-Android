@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.persistence.comments
 
 import androidx.room.Dao
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
@@ -101,7 +102,10 @@ abstract class CommentsDao {
         val hasParent: Boolean,
         val parentId: Long,
         val iLike: Boolean
-    )
+    ){
+        @Ignore
+        var level: Int = 0
+    }
 
     companion object {
         const val EMPTY_ID = -1L
