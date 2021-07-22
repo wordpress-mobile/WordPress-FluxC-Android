@@ -58,7 +58,7 @@ class WCProductAddonModel {
     }
 
     enum class AddOnPriceType {
-        @SerializedName("flat_free") FlatFee,
+        @SerializedName("flat_fee") FlatFee,
         @SerializedName("quantity_based") QuantityBased,
         @SerializedName("percentage_based") PercentageBased
     }
