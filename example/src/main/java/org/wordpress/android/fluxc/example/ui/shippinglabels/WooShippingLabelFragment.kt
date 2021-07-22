@@ -53,6 +53,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_SERVICES
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -62,6 +63,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.ceil
 
 class WooShippingLabelFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
@@ -572,7 +574,7 @@ class WooShippingLabelFragment : Fragment() {
                                             productId = it.productId!!,
                                             description = it.name.orEmpty(),
                                             value = (it.price?.toBigDecimal() ?: BigDecimal.ZERO),
-                                            quantity = quantity,
+                                            quantity = ceil(quantity).toInt(),
                                             weight = 1f,
                                             hsTariffNumber = null,
                                             originCountry = "US"
@@ -657,12 +659,13 @@ class WooShippingLabelFragment : Fragment() {
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooCommerceStore.fetchWooCommerceServicesPluginInfo(site)
+                        wooCommerceStore.fetchSitePlugins(site)
                     }
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
-                    result.model?.let {
+                    val plugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
+                    plugin?.let {
                         prependToLog("$it")
                     }
                 }

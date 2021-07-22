@@ -8,16 +8,25 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.EditorThemeAction
 import org.wordpress.android.fluxc.action.EditorThemeAction.FETCH_EDITOR_THEME
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.model.BlockEditorSettings
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
 import org.wordpress.android.fluxc.persistence.EditorThemeSqlUtils
+import org.wordpress.android.fluxc.store.EditorThemeStore.ThemeChangedEndpoint.BLOCK_EDITOR
+import org.wordpress.android.fluxc.store.EditorThemeStore.ThemeChangedEndpoint.THEME_SUPPORTS
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.helpers.Version
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val THEME_REQUEST_PATH = "/wp/v2/themes?status=active"
+private const val EDITOR_SETTINGS_REQUEST_PATH = "wp-block-editor/v1/settings?context=mobile"
+private const val EDITOR_SETTINGS_WP_VERSION = "5.8"
 
 @Singleton
 class EditorThemeStore
@@ -26,28 +35,28 @@ class EditorThemeStore
     private val coroutineEngine: CoroutineEngine,
     dispatcher: Dispatcher
 ) : Store(dispatcher) {
-    private val THEME_REQUEST_PATH = "/wp/v2/themes?status=active"
     private val editorThemeSqlUtils = EditorThemeSqlUtils()
 
-    class FetchEditorThemePayload(val site: SiteModel) : Payload<BaseNetworkError>() {
-        constructor(
-            error: BaseNetworkError,
-            site: SiteModel
-        ) : this(site = site) {
-            this.error = error
-        }
-    }
+    class FetchEditorThemePayload @JvmOverloads constructor(val site: SiteModel) :
+            Payload<BaseNetworkError>()
 
     data class OnEditorThemeChanged(
         val editorTheme: EditorTheme?,
         val siteId: Int,
-        val causeOfChange: EditorThemeAction
+        val causeOfChange: EditorThemeAction,
+        val endpoint: ThemeChangedEndpoint
     ) : Store.OnChanged<EditorThemeError>() {
-        constructor(error: EditorThemeError, causeOfChange: EditorThemeAction) :
-                this(editorTheme = null, siteId = -1, causeOfChange = causeOfChange) {
+        constructor(error: EditorThemeError, causeOfChange: EditorThemeAction, endpoint: ThemeChangedEndpoint) :
+                this(editorTheme = null, siteId = -1, causeOfChange = causeOfChange, endpoint = endpoint) {
             this.error = error
         }
     }
+
+    enum class ThemeChangedEndpoint(val value: String) {
+        THEME_SUPPORTS("theme_supports"),
+        BLOCK_EDITOR("wp-block-editor"),
+    }
+
     class EditorThemeError(var message: String? = null) : OnChangedError
 
     fun getEditorThemeForSite(site: SiteModel): EditorTheme? {
@@ -59,27 +68,36 @@ class EditorThemeStore
         val actionType = action.type as? EditorThemeAction ?: return
         when (actionType) {
             FETCH_EDITOR_THEME -> {
-            coroutineEngine.launch(
-                    AppLog.T.API,
-                    this,
-                    TransactionsStore::class.java.simpleName + ": On FETCH_EDITOR_THEME"
-            ) {
-                handleFetchEditorTheme((action.payload as FetchEditorThemePayload).site, actionType)
+                coroutineEngine.launch(
+                        AppLog.T.API,
+                        this,
+                        EditorThemeStore::class.java.simpleName + ": On FETCH_EDITOR_THEME"
+                ) {
+                    val payload = action.payload as FetchEditorThemePayload
+                    if (payload.site.hasRequiredWordPressVersion(EDITOR_SETTINGS_WP_VERSION)) {
+                        fetchEditorSettings(payload.site, actionType)
+                    } else {
+                        fetchEditorTheme(payload.site, actionType)
+                    }
+                }
             }
-        }
         }
     }
 
     override fun onRegister() {
-        AppLog.d(AppLog.T.API, TransactionsStore::class.java.simpleName + " onRegister")
+        AppLog.d(AppLog.T.API, EditorThemeStore::class.java.simpleName + " onRegister")
     }
 
-    private suspend fun handleFetchEditorTheme(site: SiteModel, action: EditorThemeAction) {
+    private suspend fun fetchEditorTheme(site: SiteModel, action: EditorThemeAction) {
         val response = reactNativeStore.executeRequest(site, THEME_REQUEST_PATH, false)
 
         when (response) {
             is Success -> {
-                val noThemeError = OnEditorThemeChanged(EditorThemeError("Response does not contain a theme"), action)
+                val noThemeError = OnEditorThemeChanged(
+                        EditorThemeError("Response does not contain a theme"),
+                        action,
+                        THEME_SUPPORTS
+                )
                 if (response.result == null || !response.result.isJsonArray) {
                     emitChange(noThemeError)
                     return
@@ -95,14 +113,89 @@ class EditorThemeStore
                 val existingTheme = editorThemeSqlUtils.getEditorThemeForSite(site)
                 if (newTheme != existingTheme) {
                     editorThemeSqlUtils.replaceEditorThemeForSite(site, newTheme)
-                    val onChanged = OnEditorThemeChanged(newTheme, site.id, action)
+                    val onChanged = OnEditorThemeChanged(newTheme, site.id, action, THEME_SUPPORTS)
                     emitChange(onChanged)
                 }
             }
             is Error -> {
-                val onChanged = OnEditorThemeChanged(EditorThemeError(response.error.message), action)
+                val onChanged = OnEditorThemeChanged(EditorThemeError(response.error.message), action, THEME_SUPPORTS)
                 emitChange(onChanged)
             }
         }
+    }
+
+    private suspend fun fetchEditorSettings(site: SiteModel, action: EditorThemeAction) {
+        val response = reactNativeStore.executeRequest(site, EDITOR_SETTINGS_REQUEST_PATH, false)
+
+        when (response) {
+            is Success -> {
+                response.handleFetchEditorSettingsResponse(site, action, BLOCK_EDITOR)
+            }
+            is Error -> {
+                if (response.error.type == NOT_FOUND) {
+                    /**
+                     * We tried the editor settings call first but since that failed we fall back to the themes endpoint
+                     * since the user may not have the gutenberg plugin installed.
+                     */
+                    fetchEditorTheme(site, action)
+                } else {
+                    response.handleFetchEditorSettingsResponse(action, BLOCK_EDITOR)
+                }
+            }
+        }
+    }
+
+    private fun ReactNativeFetchResponse.Success.handleFetchEditorSettingsResponse(
+        site: SiteModel,
+        action: EditorThemeAction,
+        endpoint: ThemeChangedEndpoint
+    ) {
+        val noGssError = OnEditorThemeChanged(EditorThemeError("Response does not contain GSS"), action, endpoint)
+        if (result == null || !result.isJsonObject) {
+            emitChange(noGssError)
+            return
+        }
+
+        val responseTheme = result.asJsonObject
+        if (responseTheme == null) {
+            emitChange(noGssError)
+            return
+        }
+
+        val blockEditorSettings = Gson().fromJson(responseTheme, BlockEditorSettings::class.java)
+        val newTheme = EditorTheme(blockEditorSettings)
+        val existingTheme = editorThemeSqlUtils.getEditorThemeForSite(site)
+        if (newTheme != existingTheme) {
+            editorThemeSqlUtils.replaceEditorThemeForSite(site, newTheme)
+            val onChanged = OnEditorThemeChanged(newTheme, site.id, action, endpoint)
+            emitChange(onChanged)
+        }
+    }
+
+    private fun ReactNativeFetchResponse.Error.handleFetchEditorSettingsResponse(
+        action: EditorThemeAction,
+        endpoint: ThemeChangedEndpoint
+    ) {
+        val onChanged = OnEditorThemeChanged(EditorThemeError(error.message), action, endpoint)
+        emitChange(onChanged)
+    }
+
+    /**
+     * Checks if the [SiteModel.getSoftwareVersion] is higher or equal to the [requiredVersion]
+     *
+     * Note: At this point semantic version information (alpha, beta etc) is stripped since it
+     * is not supported by our [Version] utility
+     *
+     * @param requiredVersion the required WordPress version
+     * @return true if the check is met
+     */
+    private fun SiteModel.hasRequiredWordPressVersion(requiredVersion: String) = try {
+        val version = if (softwareVersion.contains("-")) {
+            // strip semantic versioning information (alpha, beta etc)
+            softwareVersion.substringBefore("-")
+        } else softwareVersion
+        Version(version) >= Version(requiredVersion)
+    } catch (e: IllegalArgumentException) {
+        false // if version parsing fails return false
     }
 }

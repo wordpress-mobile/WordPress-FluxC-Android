@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.STICKY
 import org.wordpress.android.fluxc.store.EditorThemeStore
 import org.wordpress.android.fluxc.store.EditorThemeStore.FetchEditorThemePayload
 import org.wordpress.android.fluxc.store.EditorThemeStore.OnEditorThemeChanged
@@ -38,6 +39,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
         site = SiteModel()
         site.setIsWPCom(true)
+        site.softwareVersion = "5.7"
         payload = FetchEditorThemePayload(site)
         countDownLatch = CountDownLatch(1)
     }
@@ -133,6 +135,164 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         val themeBundle = editorTheme!!.themeSupport.toBundle()
         assertEmpty(themeBundle)
     }
+
+    @Test
+    fun testGlobalStylesSettingsOffSuccess() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+        }
+        interceptor.respondWith("global-styles-off-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertNotEmpty(editorTheme)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertNotEmpty(cachedTheme)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertNotEmpty(themeBundle)
+    }
+
+    @Test
+    fun testGlobalStylesSettingsFullSuccess() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+        }
+        interceptor.respondWith("global-styles-full-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertEmpty(editorTheme)
+        Assert.assertNotNull(editorTheme?.themeSupport?.rawStyles)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertEmpty(cachedTheme)
+        Assert.assertNotNull(cachedTheme?.themeSupport?.rawStyles)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertEmpty(themeBundle)
+        val styles = themeBundle.getString("rawStyles")
+        val features = themeBundle.getString("rawFeatures")
+        Assert.assertNotNull(styles)
+        Assert.assertNotNull(features)
+    }
+
+    @Test
+    fun testEditorSettingsUrl() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+            site.setIsWPCom(true)
+        }
+        interceptor.respondWith("global-styles-full-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val id = payload.site.siteId
+        val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/sites/$id/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsOldUrl() {
+        payload.apply {
+            site.softwareVersion = "5.7"
+            site.setIsWPCom(true)
+        }
+        interceptor.respondWith("editor-theme-custom-elements-success-response.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val id = payload.site.siteId
+        val expectedUrl = "https://public-api.wordpress.com/wp/v2/sites/$id/themes"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsRetryUrl() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+            site.setIsWPCom(true)
+        }
+        interceptor.respondWithError(JsonObject(), 404)
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // In case of failure we call the theme endpoint
+        val id = payload.site.siteId
+        val expectedUrl = "https://public-api.wordpress.com/wp/v2/sites/$id/themes"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsOrgUrl() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+            site.url = "https://test.com"
+            site.setIsWPCom(false)
+        }
+        interceptor.respondWith("global-styles-full-success.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        val expectedUrl = "https://test.com/wp-json/wp-block-editor/v1/settings"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsOldOrgUrl() {
+        payload.apply {
+            site.softwareVersion = "5.7"
+            site.url = "https://test.com"
+            site.setIsWPCom(false)
+        }
+        interceptor.respondWith("editor-theme-custom-elements-success-response.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val expectedUrl = "https://test.com/wp-json/wp/v2/themes"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    @Test
+    fun testEditorSettingsRetryOrgUrl() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+            site.url = "https://test.com"
+            site.setIsWPCom(false)
+        }
+        interceptor.respondWithError(JsonObject(), 404, STICKY)
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // In case of failure we call the theme endpoint
+        val expectedUrl = "https://test.com/wp-json/wp/v2/themes"
+        interceptor.assertExpectedUrl(expectedUrl)
+    }
+
+    private fun ResponseMockingInterceptor.assertExpectedUrl(expectedUrl: String) =
+            Assert.assertTrue(lastRequestUrl.startsWith(expectedUrl))
 
     private fun assertNotEmpty(theme: EditorTheme?) {
         Assert.assertFalse(theme?.themeSupport?.colors.isNullOrEmpty())
