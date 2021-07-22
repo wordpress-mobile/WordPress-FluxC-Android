@@ -29,7 +29,6 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     private lateinit var countDownLatch: CountDownLatch
     private lateinit var site: SiteModel
     private lateinit var payload: FetchEditorThemePayload
-    private lateinit var payloadWithGSS: FetchEditorThemePayload
     private var editorTheme: EditorTheme? = null
 
     override fun setUp() {
@@ -40,9 +39,8 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
         site = SiteModel()
         site.setIsWPCom(true)
-        site.softwareVersion = "5.8"
+        site.softwareVersion = "5.7"
         payload = FetchEditorThemePayload(site)
-        payloadWithGSS = FetchEditorThemePayload(site, true)
         countDownLatch = CountDownLatch(1)
     }
 
@@ -140,8 +138,11 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
     @Test
     fun testGlobalStylesSettingsOffSuccess() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+        }
         interceptor.respondWith("global-styles-off-success.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payloadWithGSS))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -160,8 +161,11 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
     @Test
     fun testGlobalStylesSettingsFullSuccess() {
+        payload.apply {
+            site.softwareVersion = "5.8"
+        }
         interceptor.respondWith("global-styles-full-success.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payloadWithGSS))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -186,65 +190,65 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
     @Test
     fun testEditorSettingsUrl() {
-        val wordPressPayload = payloadWithGSS.apply {
+        payload.apply {
             site.softwareVersion = "5.8"
             site.setIsWPCom(true)
         }
         interceptor.respondWith("global-styles-full-success.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val id = payloadWithGSS.site.siteId
+        val id = payload.site.siteId
         val expectedUrl = "https://public-api.wordpress.com/wp-block-editor/v1/sites/$id/settings"
         interceptor.assertExpectedUrl(expectedUrl)
     }
 
     @Test
     fun testEditorSettingsOldUrl() {
-        val wordPressPayload = payloadWithGSS.apply {
+        payload.apply {
             site.softwareVersion = "5.7"
             site.setIsWPCom(true)
         }
         interceptor.respondWith("editor-theme-custom-elements-success-response.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val id = payloadWithGSS.site.siteId
+        val id = payload.site.siteId
         val expectedUrl = "https://public-api.wordpress.com/wp/v2/sites/$id/themes"
         interceptor.assertExpectedUrl(expectedUrl)
     }
 
     @Test
     fun testEditorSettingsRetryUrl() {
-        val wordPressPayload = payloadWithGSS.apply {
+        payload.apply {
             site.softwareVersion = "5.8"
             site.setIsWPCom(true)
         }
         interceptor.respondWithError(JsonObject(), 404)
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // In case of failure we call the theme endpoint
-        val id = payloadWithGSS.site.siteId
+        val id = payload.site.siteId
         val expectedUrl = "https://public-api.wordpress.com/wp/v2/sites/$id/themes"
         interceptor.assertExpectedUrl(expectedUrl)
     }
 
     @Test
     fun testEditorSettingsOrgUrl() {
-        val wordPressPayload = payloadWithGSS.apply {
+        payload.apply {
             site.softwareVersion = "5.8"
             site.url = "https://test.com"
             site.setIsWPCom(false)
         }
         interceptor.respondWith("global-styles-full-success.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -254,13 +258,13 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
     @Test
     fun testEditorSettingsOldOrgUrl() {
-        val wordPressPayload = payloadWithGSS.apply {
+        payload.apply {
             site.softwareVersion = "5.7"
             site.url = "https://test.com"
             site.setIsWPCom(false)
         }
         interceptor.respondWith("editor-theme-custom-elements-success-response.json")
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -271,13 +275,13 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
     @Test
     fun testEditorSettingsRetryOrgUrl() {
-        val wordPressPayload = payloadWithGSS.apply {
+        payload.apply {
             site.softwareVersion = "5.8"
             site.url = "https://test.com"
             site.setIsWPCom(false)
         }
         interceptor.respondWithError(JsonObject(), 404, STICKY)
-        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(wordPressPayload))
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
