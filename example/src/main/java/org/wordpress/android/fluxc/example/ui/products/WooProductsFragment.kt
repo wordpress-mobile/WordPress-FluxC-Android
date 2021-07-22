@@ -390,7 +390,7 @@ class WooProductsFragment : Fragment() {
                                         prependToLog(addon.description?.let { "description: $it" }.orEmpty())
                                         prependToLog(addon.name?.let { "name: $it" }.orEmpty())
                                         prependToLog("========== Product Add-on #${index} =========")
-                                    }
+                                    } ?: prependToLog("No addons found for this product ID")
                         }
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
