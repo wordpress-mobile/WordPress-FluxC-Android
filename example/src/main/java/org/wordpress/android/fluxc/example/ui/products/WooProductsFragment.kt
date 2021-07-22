@@ -38,6 +38,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
@@ -389,11 +390,7 @@ class WooProductsFragment : Fragment() {
                             wcProductStore.fetchProductListSynced(site, listOf(id))
                                     .takeUnless { it.isNullOrEmpty() }
                                     ?.first()?.addons
-                                    ?.forEachIndexed { index, addon ->
-                                        prependToLog(addon.description?.let { "description: $it" }.orEmpty())
-                                        prependToLog(addon.name?.let { "name: $it" }.orEmpty())
-                                        prependToLog("========== Product Add-on #$index =========")
-                                    } ?: prependToLog("No addons found for this product ID")
+                                    ?.logAddons()
                         }
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
@@ -688,5 +685,13 @@ class WooProductsFragment : Fragment() {
                 else -> { }
             }
         }
+    }
+
+    private fun Array<WCProductAddonModel>?.logAddons() {
+        this?.forEachIndexed { index, addon ->
+            prependToLog(addon.description?.let { "description: $it" }.orEmpty())
+            prependToLog(addon.name?.let { "name: $it" }.orEmpty())
+            prependToLog("========== Product Add-on #$index =========")
+        } ?: prependToLog("No addons found for this product ID")
     }
 }
