@@ -57,7 +57,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.wordpress.android.fluxc.model.SiteModel.ORIGIN_XMLRPC;
 
 public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
@@ -274,50 +273,6 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertEquals(0, mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE).size());
 
         signOutWPCom();
-    }
-
-    @Test
-    public void testPluginActionNotAvailable() throws InterruptedException {
-        // Setup some test objects to use in tests
-        String pluginSlug = "doesn't matter";
-        String pluginName = "doesn't matter";
-        SitePluginModel sitePluginModel = new SitePluginModel();
-        sitePluginModel.setName(pluginName);
-        sitePluginModel.setSlug(pluginSlug);
-        ImmutablePluginModel pluginModel = ImmutablePluginModel.newInstance(sitePluginModel, null);
-        assertNotNull(pluginModel);
-
-        SiteModel selfHostedSite = new SiteModel();
-        selfHostedSite.setOrigin(ORIGIN_XMLRPC);
-
-        SiteModel wpComSite = new SiteModel();
-        wpComSite.setIsWPCom(true);
-
-        TestEvents expectedEvent = TestEvents.PLUGIN_ACTION_NOT_AVAILABLE;
-
-        // Test configure plugin
-        ConfigureSitePluginPayload configureSelfHostedSitePlugin =
-                new ConfigureSitePluginPayload(selfHostedSite, pluginName, pluginSlug, true, true);
-        configureSitePlugin(configureSelfHostedSitePlugin, expectedEvent);
-        ConfigureSitePluginPayload configureWPComSitePlugin =
-                new ConfigureSitePluginPayload(wpComSite, pluginName, pluginSlug, true, true);
-        configureSitePlugin(configureWPComSitePlugin, expectedEvent);
-
-        // Test delete plugin
-        deleteSitePlugin(selfHostedSite, pluginModel, expectedEvent);
-        deleteSitePlugin(wpComSite, pluginModel, expectedEvent);
-
-        // Test fetch site plugins
-        fetchSitePlugins(selfHostedSite, expectedEvent);
-        fetchSitePlugins(wpComSite, expectedEvent);
-
-        // Test install plugins
-        installSitePlugin(selfHostedSite, pluginSlug, expectedEvent);
-        installSitePlugin(wpComSite, pluginSlug, expectedEvent);
-
-        // Test update plugins
-        updateSitePlugin(selfHostedSite, pluginName, pluginSlug, expectedEvent);
-        updateSitePlugin(wpComSite, pluginName, pluginSlug, expectedEvent);
     }
 
     @SuppressWarnings("unused")
