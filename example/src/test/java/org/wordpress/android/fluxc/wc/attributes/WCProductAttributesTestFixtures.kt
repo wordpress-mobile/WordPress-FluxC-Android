@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.wc.attributes
 
-import org.wordpress.android.fluxc.JsonLoader.jsonFileAs
+import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
