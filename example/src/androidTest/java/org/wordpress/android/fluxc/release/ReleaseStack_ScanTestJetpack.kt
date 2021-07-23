@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.scan.ScanStateModel
+import org.wordpress.android.fluxc.model.scan.ScanStateModel.Reason
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.ScanProgressStatus
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.SCANNING
@@ -96,7 +97,8 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         val model = ScanStateModel(
             state = IDLE,
             hasCloud = false,
-            mostRecentStatus = mostRecentStatus
+            mostRecentStatus = mostRecentStatus,
+            reason = Reason.NO_REASON
         )
 
         scanSqlUtils.replaceScanState(site, model)
@@ -129,7 +131,8 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         val model = ScanStateModel(
             state = SCANNING,
             hasCloud = false,
-            currentStatus = currentStatus
+            currentStatus = currentStatus,
+            reason = Reason.NO_REASON
         )
 
         scanSqlUtils.replaceScanState(site, model)
