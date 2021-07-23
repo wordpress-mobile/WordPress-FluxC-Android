@@ -28,7 +28,7 @@ abstract class CommentsDao {
     }
 
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses) ORDER BY datePublished DESC")
-    abstract fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList
+    abstract suspend fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList
 
     @Query("DELETE FROM Comments")
     abstract suspend fun clearAll(): Int
@@ -36,22 +36,52 @@ abstract class CommentsDao {
     @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses)")
     abstract suspend fun clearAllBySiteId(siteId: Long, statuses: List<String>): Int
 
+    @Transaction
+    open suspend fun deleteComment(comment: CommentEntity): Int {
+        val result = deleteById(comment.id)
+
+        return if (result > 0) {
+            result
+        } else {
+            deleteByRemoteIds(comment.remoteSiteId, comment.remoteCommentId)
+        }
+    }
+
+    @Query("DELETE FROM Comments WHERE id = :commentId")
+    protected abstract fun deleteById(commentId: Long): Int
+
+    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId OR remoteCommentId = :remoteCommentId")
+    protected abstract fun deleteByRemoteIds(siteId: Long, remoteCommentId: Long): Int
+
     @Query("SELECT count(*) FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses)")
     abstract suspend fun getCommentsCountForSite(siteId: Long, statuses: List<String>): Int
 
-    @Insert
-    abstract suspend fun insertAll(comments: CommentEntityList)
+    //@Insert
+    //abstract suspend fun insertAll(comments: CommentEntityList)
+
+
+    //@Query("SELECT * FROM Comments WHERE id = :localId")
+    //abstract suspend fun getCommentsById(localId: Long): CommentEntityList
+
+    @Query("SELECT * FROM Comments WHERE id = :localId LIMIT 1")
+    abstract suspend fun getCommentById(localId: Long): CommentEntityList
+
+    @Deprecated("This has been introduced for legacy compatibility until full migration to room (see CommentsStoreAdapter in WPAndroid)")
+    @Query("SELECT * FROM Comments WHERE localSiteId = :localSiteId AND remoteCommentId = :remoteCommentId")
+    abstract suspend fun getCommentsByLocalSiteAndRemoteCommentId(localSiteId: Int, remoteCommentId: Long): CommentEntityList
+
 
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
-    abstract fun getCommentBySiteAndRemoteId(siteId: Long, remoteCommentId: Long): CommentEntityList
+    abstract fun getCommentsBySiteIdAndRemoteCommentId(siteId: Long, remoteCommentId: Long): CommentEntityList
 
     @Transaction
-    open suspend fun appendOrOverwriteComments(overwrite: Boolean, siteId: Long, statuses: List<String>, comments: CommentEntityList) {
+    open suspend fun appendOrOverwriteComments(overwrite: Boolean, siteId: Long, statuses: List<String>, comments: CommentEntityList): Int {
         if (overwrite) {
             clearAllBySiteId(siteId, statuses)
         }
 
-        insertOrUpdateComments(comments)
+        val affectedIdList = insertOrUpdateComments(comments)
+        return affectedIdList.size
     }
 
     private fun insertOrUpdateCommentInternal(comment: CommentEntity): Long {
@@ -89,16 +119,16 @@ abstract class CommentsDao {
         val remoteParentCommentId: Long,
         val localSiteId: Int,
         val remoteSiteId: Long,
-        val authorUrl: String,
-        val authorName: String,
-        val authorEmail: String,
-        val authorProfileImageUrl: String,
-        val postTitle: String,
-        val status: String,
-        val datePublished: String,
+        val authorUrl: String?,
+        val authorName: String?,
+        val authorEmail: String?,
+        val authorProfileImageUrl: String?,
+        val postTitle: String?,
+        val status: String?,
+        val datePublished: String?,
         val publishedTimestamp: Long,
-        val content: String,
-        val url: String,
+        val content: String?,
+        val url: String?,
         val hasParent: Boolean,
         val parentId: Long,
         val iLike: Boolean
