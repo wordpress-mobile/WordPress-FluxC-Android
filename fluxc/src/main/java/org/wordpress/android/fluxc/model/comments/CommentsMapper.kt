@@ -72,7 +72,6 @@ class CommentsMapper @Inject constructor() {
                 authorName = StringEscapeUtils.unescapeHtml4(XMLRPCUtils.safeGetMapValue(commentMap, "author", "")),
                 authorEmail = XMLRPCUtils.safeGetMapValue(commentMap, "author_email", ""),
                 // TODO: set authorProfileImageUrl - get the hash from the email address?
-                // TODOD: check if legacy code place a null in db or empty string!
                 authorProfileImageUrl = null,
                 postTitle = StringEscapeUtils.unescapeHtml4(
                         XMLRPCUtils.safeGetMapValue(

@@ -122,7 +122,6 @@ class CommentsStore
             CommentsActionPayload(payload.error)
         } else {
             payload.response?.let { comments ->
-                // TODOD: fetchCommentsPage should have same approach as fetchComments (ideally merge them); decide if use the clear all on offset == 0 or the remove gaps approach
                 removeCommentGaps(site, comments, number, offset, networkStatusFilter)
 
                 val entityIds = comments.map { comment ->
@@ -347,7 +346,6 @@ class CommentsStore
         } else {
             val comments = payload.response?.map { it } ?: listOf()
 
-            // TODOD: fetchCommentsPage should have same approach as fetchComments (ideally merge them); decide if use the clear all on offset == 0 or the remove gaps approach
             removeCommentGaps(site, comments, number, offset, networkStatusFilter)
 
             commentsDao.appendOrOverwriteComments(
