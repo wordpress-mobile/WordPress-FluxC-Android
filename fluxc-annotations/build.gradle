@@ -1,4 +1,4 @@
-apply plugin: 'maven'
+//apply plugin: 'maven'
 apply plugin: 'java'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
