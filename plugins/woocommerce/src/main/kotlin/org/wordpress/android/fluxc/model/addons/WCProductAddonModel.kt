@@ -34,22 +34,19 @@ class WCProductAddonModel {
         @SerializedName("file_upload") FileUpload,
         @SerializedName("custom_price") CustomPrice,
         @SerializedName("input_multiplier") InputMultiplier,
-        @SerializedName("heading") Heading,
-        Unknown
+        @SerializedName("heading") Heading
     }
 
     enum class AddOnDisplay {
         @SerializedName("dropdown") Dropdown,
         @SerializedName("radiobutton") RadioButton,
-        @SerializedName("images") Images,
-        Unknown
+        @SerializedName("images") Images
     }
 
     enum class AddOnTitleFormat {
         @SerializedName("label") Label,
         @SerializedName("heading") Heading,
-        @SerializedName("hide") Hide,
-        Unknown
+        @SerializedName("hide") Hide
     }
 
     enum class AddOnRestrictionsType {
@@ -57,15 +54,13 @@ class WCProductAddonModel {
         @SerializedName("only_letters") OnlyLetters,
         @SerializedName("only_numbers") OnlyNumbers,
         @SerializedName("only_letters_numbers") OnlyLettersNumbers,
-        @SerializedName("email") Email,
-        Unknown
+        @SerializedName("email") Email
     }
 
     enum class AddOnPriceType {
         @SerializedName("flat_fee") FlatFee,
         @SerializedName("quantity_based") QuantityBased,
-        @SerializedName("percentage_based") PercentageBased,
-        Unknown
+        @SerializedName("percentage_based") PercentageBased
     }
 
     class ProductAddonOption {
