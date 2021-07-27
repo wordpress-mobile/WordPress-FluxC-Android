@@ -390,7 +390,7 @@ class WooProductsFragment : Fragment() {
                             wcProductStore.fetchProductListSynced(site, listOf(id))
                                     .takeUnless { it.isNullOrEmpty() }
                                     ?.first()?.addons
-                                    ?.logAddons()
+                                    .logAddons()
                         }
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
