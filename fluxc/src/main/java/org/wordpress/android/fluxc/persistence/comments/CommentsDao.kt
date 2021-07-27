@@ -7,48 +7,41 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
-import androidx.sqlite.db.SupportSQLiteQuery
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
 
 typealias CommentEntityList = List<CommentEntity>
 
 @Dao
 abstract class CommentsDao {
-    @Transaction
-    open suspend fun insertOrUpdateComments(comments: CommentEntityList): List<Long> {
-        return comments.map { comment ->
-            insertOrUpdateCommentInternal(comment)
-        }
-    }
-
+    // Public methods
     @Transaction
     open suspend fun insertOrUpdateComment(comment: CommentEntity): Long {
         return insertOrUpdateCommentInternal(comment)
     }
 
-    // TODOD: manual test all the queries with IN (including empty list of :statuses) and LIMIT neutral condition
-    @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses) ORDER BY datePublished DESC")
-    abstract suspend fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList
+    @Transaction
+    open suspend fun insertOrUpdateCommentForResult(comment: CommentEntity): CommentEntityList {
+        val entityId = insertOrUpdateCommentInternal(comment)
+        return getCommentById(entityId)
+    }
 
-    @Query("""
-        SELECT * FROM Comments 
-        WHERE localSiteId = :localSiteId 
-        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
-        ORDER BY 
-        CASE WHEN :orderAscending = 1 THEN datePublished END ASC,
-        CASE WHEN :orderAscending = 0 THEN datePublished END DESC
-        LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
-        """)
-    abstract suspend fun getCommentsForSite(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, limit: Int, orderAscending: Boolean): CommentEntityList
+    @Transaction
+    open suspend fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList {
+        return getFilteredCommentsInternal(siteId, statuses, statuses.isNotEmpty())
+    }
 
-    @Query("DELETE FROM Comments")
-    abstract suspend fun clearAll(): Int
-
-    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses)")
-    abstract suspend fun clearAllBySiteId(siteId: Long, statuses: List<String>): Int
+    @Transaction
+    open suspend fun getCommentsForSite(localSiteId: Int, statuses: List<String>, limit: Int, orderAscending: Boolean): CommentEntityList {
+        return getCommentsForSiteInternal(
+                localSiteId = localSiteId,
+                filterByStatuses = statuses.isNotEmpty(),
+                statuses = statuses,
+                limit = limit,
+                orderAscending = orderAscending
+        )
+    }
 
     @Transaction
     open suspend fun deleteComment(comment: CommentEntity): Int {
@@ -61,30 +54,43 @@ abstract class CommentsDao {
         }
     }
 
-    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND status IN (:statuses) AND remoteCommentId NOT IN (:remoteIds) AND publishedTimestamp >= :startOfRange")
-    abstract fun deleteFromTheTop(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long): Int
+    @Transaction
+    open suspend fun removeGapsFromTheTop(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long): Int {
+        return removeGapsFromTheTopInternal(
+                localSiteId = localSiteId,
+                filterByStatuses = statuses.isNotEmpty(),
+                statuses = statuses,
+                filterByIds = remoteIds.isNotEmpty(),
+                remoteIds = remoteIds,
+                startOfRange = startOfRange
+        )
+    }
 
-    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND status IN (:statuses) AND remoteCommentId NOT IN (:remoteIds) AND publishedTimestamp <= :endOfRange")
-    abstract fun deleteFromTheBottom(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, endOfRange: Long): Int
+    @Transaction
+    open suspend fun removeGapsFromTheBottom(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, endOfRange: Long): Int {
+        return removeGapsFromTheBottomInternal(
+                localSiteId = localSiteId,
+                filterByStatuses = statuses.isNotEmpty(),
+                statuses = statuses,
+                filterByIds = remoteIds.isNotEmpty(),
+                remoteIds = remoteIds,
+                endOfRange = endOfRange
+        )
+    }
 
-    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND status IN (:statuses) AND remoteCommentId NOT IN (:remoteIds) AND publishedTimestamp <= :startOfRange AND publishedTimestamp >= :endOfRange")
-    abstract fun deleteFromTheMiddle(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long, endOfRange: Long): Int
+    @Transaction
+    open suspend fun removeGapsFromTheMiddle(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long, endOfRange: Long): Int {
+        return removeGapsFromTheMiddleInternal(
+                localSiteId = localSiteId,
+                filterByStatuses = statuses.isNotEmpty(),
+                statuses = statuses,
+                filterByIds = remoteIds.isNotEmpty(),
+                remoteIds = remoteIds,
+                startOfRange = startOfRange,
+                endOfRange = endOfRange
+        )
+    }
 
-    @Query("DELETE FROM Comments WHERE id = :commentId")
-    protected abstract fun deleteById(commentId: Long): Int
-
-    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId OR remoteCommentId = :remoteCommentId")
-    protected abstract fun deleteByRemoteIds(siteId: Long, remoteCommentId: Long): Int
-
-    @Query("SELECT count(*) FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses)")
-    abstract suspend fun getCommentsCountForSite(siteId: Long, statuses: List<String>): Int
-
-    //@Insert
-    //abstract suspend fun insertAll(comments: CommentEntityList)
-
-
-    //@Query("SELECT * FROM Comments WHERE id = :localId")
-    //abstract suspend fun getCommentsById(localId: Long): CommentEntityList
 
     @Query("SELECT * FROM Comments WHERE id = :localId LIMIT 1")
     abstract suspend fun getCommentById(localId: Long): CommentEntityList
@@ -94,20 +100,107 @@ abstract class CommentsDao {
 
 
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
-    abstract fun getCommentsBySiteIdAndRemoteCommentId(siteId: Long, remoteCommentId: Long): CommentEntityList
+    abstract suspend fun getCommentsBySiteIdAndRemoteCommentId(siteId: Long, remoteCommentId: Long): CommentEntityList
 
     @Transaction
     open suspend fun appendOrOverwriteComments(overwrite: Boolean, siteId: Long, statuses: List<String>, comments: CommentEntityList): Int {
         if (overwrite) {
-            clearAllBySiteId(siteId, statuses)
+            clearAllBySiteIdInternal(siteId, statuses.isNotEmpty(), statuses)
         }
 
-        val affectedIdList = insertOrUpdateComments(comments)
+        val affectedIdList = insertOrUpdateCommentsInternal(comments)
         return affectedIdList.size
     }
 
-    private fun insertOrUpdateCommentInternal(comment: CommentEntity): Long {
-        val matchingComments = getMatchingComments(comment.id, comment.remoteCommentId, comment.localSiteId)
+    // Protected methods
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract fun insert(comment: CommentEntity): Long
+
+    @Update
+    protected abstract fun update(comment: CommentEntity): Int
+
+    //@Query("SELECT * FROM Comments WHERE (id = :commentId OR (remoteCommentId = :remoteCommentId AND localSiteId = :localSiteId))")
+    //protected abstract fun getMatchingComments(commentId: Long, remoteCommentId: Long, localSiteId: Int): CommentEntityList
+
+    @Query("""
+        SELECT * FROM Comments WHERE remoteSiteId = :siteId 
+        AND CASE WHEN :filterByStatuses = 1 THEN status IN (:statuses) ELSE 1 END 
+        ORDER BY datePublished DESC
+    """)
+    protected abstract fun getFilteredCommentsInternal(siteId: Long, statuses: List<String>, filterByStatuses: Boolean): CommentEntityList
+
+    @Query("""
+        SELECT * FROM Comments 
+        WHERE localSiteId = :localSiteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+        ORDER BY 
+        CASE WHEN :orderAscending = 1 THEN datePublished END ASC,
+        CASE WHEN :orderAscending = 0 THEN datePublished END DESC
+        LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
+    """)
+    protected abstract fun getCommentsForSiteInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, limit: Int, orderAscending: Boolean): CommentEntityList
+
+    @Query("""
+        DELETE FROM Comments 
+        WHERE remoteSiteId = :siteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+    """)
+    protected abstract fun clearAllBySiteIdInternal(siteId: Long, filterByStatuses: Boolean, statuses: List<String>): Int
+
+
+    @Query("""
+        DELETE FROM Comments 
+        WHERE localSiteId = :localSiteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId IN (:remoteIds)) ELSE 1 END
+        AND publishedTimestamp >= :startOfRange
+    """)
+    protected abstract fun removeGapsFromTheTopInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, startOfRange: Long): Int
+
+    @Query("""
+        DELETE FROM Comments 
+        WHERE localSiteId = :localSiteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId IN (:remoteIds)) ELSE 1 END
+        AND publishedTimestamp <= :endOfRange
+    """)
+    protected abstract fun removeGapsFromTheBottomInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, endOfRange: Long): Int
+
+
+    @Query("""
+        DELETE FROM Comments 
+        WHERE localSiteId = :localSiteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId IN (:remoteIds)) ELSE 1 END
+        AND publishedTimestamp <= :startOfRange
+        AND publishedTimestamp >= :endOfRange
+    """)
+    protected abstract fun removeGapsFromTheMiddleInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, startOfRange: Long, endOfRange: Long): Int
+
+    @Query("DELETE FROM Comments WHERE id = :commentId")
+    protected abstract fun deleteById(commentId: Long): Int
+
+    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId OR remoteCommentId = :remoteCommentId")
+    protected abstract fun deleteByRemoteIds(siteId: Long, remoteCommentId: Long): Int
+
+
+    // Private methods
+    private suspend fun insertOrUpdateCommentsInternal(comments: CommentEntityList): List<Long> {
+        return comments.map { comment ->
+            insertOrUpdateCommentInternal(comment)
+        }
+    }
+
+    private suspend fun insertOrUpdateCommentInternal(comment: CommentEntity): Long {
+        //val matchingComments = getMatchingComments(comment.id, comment.remoteCommentId, comment.localSiteId)
+        val commentByLocalId = getCommentById(comment.id)
+
+        val matchingComments = if (commentByLocalId.isEmpty()) {
+            getCommentsByLocalSiteAndRemoteCommentId(comment.localSiteId, comment.remoteCommentId)
+        } else {
+            commentByLocalId
+        }
 
         return if (matchingComments.isEmpty()) {
             insert(comment)
@@ -121,14 +214,18 @@ abstract class CommentsDao {
         }
     }
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    protected abstract fun insert(comment: CommentEntity): Long
 
-    @Update
-    protected abstract fun update(comment: CommentEntity): Int
+/*
+    @Query("DELETE FROM Comments")
+    abstract suspend fun clearAll(): Int
 
-    @Query("SELECT * FROM Comments WHERE (id = :commentId OR (remoteCommentId = :remoteCommentId AND localSiteId = :localSiteId))")
-    protected abstract fun getMatchingComments(commentId: Long, remoteCommentId: Long, localSiteId: Int): CommentEntityList
+    @Query("SELECT count(*) FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses)") use CASE WHEN for :statuses
+    abstract suspend fun getCommentsCountForSite(siteId: Long, statuses: List<String>): Int
+
+*/
+
+
+
 
     @Entity(
             tableName = "Comments"
