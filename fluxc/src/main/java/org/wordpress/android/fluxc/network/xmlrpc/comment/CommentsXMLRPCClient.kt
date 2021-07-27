@@ -190,7 +190,7 @@ class CommentsXMLRPCClient @Inject constructor(
                 "content" to comment.content,
         )
 
-        // TODOD: check how it is possible to create a post comment from the app for a self-hsoted!
+        // TODOD: check how it is possible (if it is) to create a post comment from the app for a self-hsoted!
         if (comment.remoteParentCommentId != 0L) {
             commentParams["comment_parent"] = comment.remoteParentCommentId
         }
