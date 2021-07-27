@@ -25,6 +25,10 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+    companion object {
+        const val ADDONS_METADATA_KEY = "_product_addons"
+    }
+
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
     @Column var name = ""
@@ -107,9 +111,18 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
     val addons: Array<WCProductAddonModel>?
-        get() = Gson().fromJson(metadata, Array<ProductMetadata>::class.java)
-            ?.find { it.key == ProductMetadata.ADDONS_KEY }
+        get() = Gson().fromJson(metadata, Array<WCMetaData>::class.java)
+            ?.find { it.key == ADDONS_METADATA_KEY }
             ?.addons
+
+    private val WCMetaData.addons
+        get() = (value as? JsonElement)?.let {
+            try {
+                Gson().fromJson(value, Array<WCProductAddonModel>::class.java)
+            } catch (ex: Exception) {
+                null
+            }
+        }
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
@@ -119,23 +132,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 json.addProperty("slug", slug)
             }
         }
-    }
-
-    class ProductMetadata(
-        val id: Long,
-        val key: String,
-        val value: JsonElement
-    ) {
-        companion object {
-            const val ADDONS_KEY = "_product_addons"
-        }
-
-        val addons
-            get() = try {
-                Gson().fromJson(value, Array<WCProductAddonModel>::class.java)
-            } catch (ex: Exception) {
-                null
-            }
     }
 
     class ProductAttribute(
