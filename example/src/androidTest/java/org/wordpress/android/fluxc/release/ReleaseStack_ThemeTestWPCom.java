@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnStarterDesignsFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
 import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged;
-import org.wordpress.android.fluxc.store.ThemeStore.SiteThemePayload;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
