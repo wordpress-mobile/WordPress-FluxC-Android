@@ -48,6 +48,7 @@ import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.PagingData
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T.API
+import org.wordpress.android.util.AppLog.T.COMMENTS
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -89,17 +90,13 @@ class CommentsStore
 
         return commentsDao.getCommentsForSite(
                 localSiteId = site.id,
-                filterByStatuses = !statuses.asList().contains(ALL),
-                statuses = statuses.map { it.toString() },
+                statuses = if (statuses.asList().contains(ALL)) listOf() else statuses.map { it.toString() },
                 limit = limit,
                 orderAscending = orderByDateAscending
         )
     }
 
-    @Deprecated(
-            message = "This function is here for backward compatibility while Comments Unification project proceeds"
-    )
-    private suspend fun fetchComments(
+    suspend fun fetchComments(
         site: SiteModel,
         number: Int,
         offset: Int,
@@ -125,9 +122,10 @@ class CommentsStore
             CommentsActionPayload(payload.error)
         } else {
             payload.response?.let { comments ->
-                // TODOD: implement a logic like the removeCommentGaps that is in handleFetchCommentsResponse (or evaluate if it's needed!)
-                val entityIds = /*commentsDto.comments*/comments.map { comment ->
-                    /*val comment = commentsMapper.commentDtoToEntity(commentDto, site)*/
+                // TODOD: fetchCommentsPage should have same approach as fetchComments (ideally merge them); decide if use the clear all on offset == 0 or the remove gaps approach
+                removeCommentGaps(site, comments, number, offset, networkStatusFilter)
+
+                val entityIds = comments.map { comment ->
                     commentsDao.insertOrUpdateComment(comment)
                 }
                 CommentsActionPayload(CommentsActionEntityIds(entityIds, entityIds.size))
@@ -148,10 +146,8 @@ class CommentsStore
             CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
         } else {
             payload.response?.let {
-                val comment = /*commentsMapper.commentDtoToEntity(it, site)*/it
-                val entityId = commentsDao.insertOrUpdateComment(comment)
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+                val cachedCommentAsList = commentsDao.insertOrUpdateCommentForResult(it)
+                CommentsActionPayload(CommentsActionData(cachedCommentAsList, cachedCommentAsList.size))
             } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
         }
     }
@@ -167,11 +163,9 @@ class CommentsStore
             CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
         } else {
             payload.response?.let {
-                val commentUpdated = /*commentsMapper.commentDtoToEntity(it, site)*/it.copy(id = comment.id)
-                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
-                // We need to get it back from the cache in case it was inserted instead of updated
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+                val commentUpdated = it.copy(id = comment.id)
+                val cachedCommentAsList = commentsDao.insertOrUpdateCommentForResult(commentUpdated)
+                CommentsActionPayload(CommentsActionData(cachedCommentAsList, cachedCommentAsList.size))
             } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
         }
     }
@@ -187,11 +181,9 @@ class CommentsStore
             CommentsActionPayload(payload.error, CommentsActionData(reply.toListOrEmpty(), 0))
         } else {
             payload.response?.let {
-                val commentUpdated = /*commentsMapper.commentDtoToEntity(it, site)*/it.copy(id = reply.id)
-                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
-                // We need to get it back from the cache in case it was inserted instead of updated
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+                val commentUpdated = it.copy(id = reply.id)
+                val cachedCommentAsList = commentsDao.insertOrUpdateCommentForResult(commentUpdated)
+                CommentsActionPayload(CommentsActionData(cachedCommentAsList, cachedCommentAsList.size))
             } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
         }
     }
@@ -207,11 +199,9 @@ class CommentsStore
             CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
         } else {
             payload.response?.let {
-                val commentUpdated = /*commentsMapper.commentDtoToEntity(it, site)*/it.copy(id = comment.id)
-                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
-                // We need to get it back from the cache in case it was inserted instead of updated
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+                val commentUpdated = it.copy(id = comment.id)
+                val cachedCommentAsList = commentsDao.insertOrUpdateCommentForResult(commentUpdated)
+                CommentsActionPayload(CommentsActionData(cachedCommentAsList, cachedCommentAsList.size))
             } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
         }
     }
@@ -226,7 +216,7 @@ class CommentsStore
         val payload = if (site.isUsingWpComRestApi) {
             commentsRestClient.deleteComment(site, remoteCommentId)
         } else {
-            commentsXMLRPCClient.deleteComment(site, remoteCommentIdToDelete, commentToDelete)
+            commentsXMLRPCClient.deleteComment(site, remoteCommentIdToDelete)
         }
 
         if (payload.isError) {
@@ -242,7 +232,7 @@ class CommentsStore
                         commentFromEndpoint.copy(id = entity.id)
                     } ?: commentFromEndpoint
                 }
-                else /*!site.isUsingWpComRestApi*/ -> {
+                else /* this means !site.isUsingWpComRestApi is true */ -> {
                     // This is ugly but the XMLRPC response doesn't contain any info about the update comment.
                     // So we're copying the logic here: if the comment status was "trash" before and the delete
                     // call is successful, then we want to delete this comment. Setting the "deleted" status
@@ -268,11 +258,10 @@ class CommentsStore
                     comment.toListOrEmpty()
                 } else {
                     // Update the local copy, only the status should have changed ("trash")
-                    val entityId = commentsDao.insertOrUpdateComment(it)
-                    commentsDao.getCommentById(entityId)
+                    commentsDao.insertOrUpdateCommentForResult(it)
                 }
 
-                CommentsActionPayload(CommentsActionData(deletedCommentAsList, 1))
+                CommentsActionPayload(CommentsActionData(deletedCommentAsList, deletedCommentAsList.size))
             } ?: CommentsActionPayload(CommentsActionData(listOf(), 0))
         }
     }
@@ -302,11 +291,10 @@ class CommentsStore
             CommentsActionPayload(payload.error, CommentsActionData(commentToLike.toListOrEmpty(), 0))
         } else {
             payload.response?.let { endpointResponse ->
-                val updatedComment = commentToLike?.let { it.copy(iLike = endpointResponse.i_like) }
+                val updatedComment = commentToLike?.copy(iLike = endpointResponse.i_like)
 
                 val (rowsAffected, likedCommentAsList) = updatedComment?.let {
-                    val entityId = commentsDao.insertOrUpdateComment(it)
-                    Pair(1, commentsDao.getCommentById(entityId))
+                    Pair(1, commentsDao.insertOrUpdateCommentForResult(it))
                 } ?: Pair(0, updatedComment.toListOrEmpty())
 
                 CommentsActionPayload(CommentsActionData(likedCommentAsList, rowsAffected))
@@ -357,13 +345,13 @@ class CommentsStore
             )
             CommentsActionPayload(payload.error, PagingData(comments = cachedComments, hasMore = true))
         } else {
-            // TODOD: implement a logic like the removeCommentGaps that is in handleFetchCommentsResponse (or evaluate if it's needed!)
-            val comments = payload.response?.map { it } ?: listOf() /*= payload.response?.map {
-                commentsMapper.commentDtoToEntity(it, site)
-            } ?: listOf()*/
+            val comments = payload.response?.map { it } ?: listOf()
+
+            // TODOD: fetchCommentsPage should have same approach as fetchComments (ideally merge them); decide if use the clear all on offset == 0 or the remove gaps approach
+            removeCommentGaps(site, comments, number, offset, networkStatusFilter)
 
             commentsDao.appendOrOverwriteComments(
-                    overwrite = offset == 0,
+                    overwrite = false, //offset == 0,
                     siteId = remoteSiteId,
                     statuses = cacheStatuses.map { it.toString() },
                     comments = comments
@@ -390,12 +378,11 @@ class CommentsStore
         ).firstOrNull() ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
 
         val commentToModerate = comment.copy(status = newStatus.toString())
-        val entityId = commentsDao.insertOrUpdateComment(commentToModerate)
-        val cachedCommentList = commentsDao.getCommentById(entityId)
+        val cachedCommentAsList = commentsDao.insertOrUpdateCommentForResult(commentToModerate)
 
         return CommentsActionPayload(CommentsActionData(
-                comments = cachedCommentList,
-                rowsAffected = cachedCommentList.size
+                comments = cachedCommentAsList,
+                rowsAffected = cachedCommentAsList.size
         ))
     }
 
@@ -484,7 +471,7 @@ class CommentsStore
 
     @Deprecated(
             message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
-            replaceWith = ReplaceWith("use fetchComment suspend fun directly")
+            replaceWith = ReplaceWith("use fetchComments suspend fun directly")
     )
     private suspend fun onFetchComments(payload: FetchCommentsPayload): OnCommentChanged {
         val response = fetchComments(
@@ -655,8 +642,7 @@ class CommentsStore
         return this ?: 0
     }
 
-    // TODOD: better evaluate it but AFAIU SiteModel cannot be null here
-    private fun removeCommentGaps(site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus): Int {
+    private suspend fun removeCommentGaps(site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus): Int {
         if (site == null || commentsList.isNullOrEmpty()) {
             return 0
         }
@@ -678,41 +664,66 @@ class CommentsStore
         val startOfRange = comments.first().publishedTimestamp
         val endOfRange = comments.last().publishedTimestamp
 
+        AppLog.d(
+                COMMENTS, "removeCommentGaps -> startOfRange [" + startOfRange + " - " + comments.first().datePublished + "] "
+                + "endOfRange [" + endOfRange + " - " + comments.last().datePublished + "]"
+        )
+
         val targetStatuses = if (listOf(*statuses).contains(ALL)) {
             listOf(APPROVED, UNAPPROVED)
         } else {
             listOf(*statuses)
         }.map { it.toString() }
 
+        AppLog.d(
+                COMMENTS,
+                "removeCommentGaps -> targetStatuses $targetStatuses"
+        )
+
         var numOfDeletedComments = 0
 
         // try to trim comments from the top
         if (requestOffset == 0) {
-            numOfDeletedComments += commentsDao.deleteFromTheTop(
+            numOfDeletedComments += commentsDao.removeGapsFromTheTop(
                     localSiteId = site.id,
                     statuses = targetStatuses,
                     remoteIds = remoteIds,
                     startOfRange = startOfRange
             )
+            AppLog.d(
+                    COMMENTS,
+                    "removeCommentGaps -> requestOffset == 0 -> numOfDeletedComments $numOfDeletedComments"
+            )
         }
 
         // try to trim comments from the bottom
         if (comments.size < maxEntriesInResponse) {
-            numOfDeletedComments += commentsDao.deleteFromTheBottom(
+            numOfDeletedComments += commentsDao.removeGapsFromTheBottom(
                     localSiteId = site.id,
                     statuses = targetStatuses,
                     remoteIds = remoteIds,
                     endOfRange = endOfRange
             )
+            AppLog.d(
+                    COMMENTS,
+                    "removeCommentGaps -> comments.size() [" + comments.size + "] < maxEntriesInResponse [" + maxEntriesInResponse + "]" + "-> numOfDeletedComments " + numOfDeletedComments
+            )
         }
 
         // remove comments from the middle
-        return numOfDeletedComments + commentsDao.deleteFromTheMiddle(
+        numOfDeletedComments += commentsDao.removeGapsFromTheMiddle(
                 localSiteId = site.id,
                 statuses = targetStatuses,
                 remoteIds = remoteIds,
                 startOfRange = startOfRange,
                 endOfRange = endOfRange
         )
+
+        AppLog.d(
+                COMMENTS,
+                "removeCommentGaps -> removing from middle -> numOfDeletedComments $numOfDeletedComments"
+        )
+
+        return numOfDeletedComments
     }
 }
