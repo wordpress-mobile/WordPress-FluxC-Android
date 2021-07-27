@@ -116,13 +116,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             ?.addons
 
     private val WCMetaData.addons
-        get() = (value as? JsonElement)?.let {
+        get() =
             try {
-                Gson().fromJson(value, Array<WCProductAddonModel>::class.java)
+                Gson().run {
+                    val addonListJson = toJson(value)
+                    fromJson(addonListJson, Array<WCProductAddonModel>::class.java)
+                }
             } catch (ex: Exception) {
                 null
             }
-        }
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
