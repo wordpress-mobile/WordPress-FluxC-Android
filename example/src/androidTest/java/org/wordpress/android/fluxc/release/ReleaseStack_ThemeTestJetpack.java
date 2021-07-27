@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
@@ -404,7 +405,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
-        SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
+        ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
