@@ -6,40 +6,48 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.CommentAction
 import org.wordpress.android.fluxc.action.CommentsAction
+import org.wordpress.android.fluxc.action.CommentsAction.CREATED_NEW_COMMENT
 import org.wordpress.android.fluxc.action.CommentsAction.CREATE_NEW_COMMENT
+import org.wordpress.android.fluxc.action.CommentsAction.DELETED_COMMENT
 import org.wordpress.android.fluxc.action.CommentsAction.DELETE_COMMENT
+import org.wordpress.android.fluxc.action.CommentsAction.FETCHED_COMMENT
+import org.wordpress.android.fluxc.action.CommentsAction.FETCHED_COMMENTS
 import org.wordpress.android.fluxc.action.CommentsAction.FETCH_COMMENT
 import org.wordpress.android.fluxc.action.CommentsAction.FETCH_COMMENTS
+import org.wordpress.android.fluxc.action.CommentsAction.LIKED_COMMENT
 import org.wordpress.android.fluxc.action.CommentsAction.LIKE_COMMENT
+import org.wordpress.android.fluxc.action.CommentsAction.PUSHED_COMMENT
 import org.wordpress.android.fluxc.action.CommentsAction.PUSH_COMMENT
-import org.wordpress.android.fluxc.action.CommentsAction.REMOVE_ALL_COMMENTS
-import org.wordpress.android.fluxc.action.CommentsAction.REMOVE_COMMENT
-import org.wordpress.android.fluxc.action.CommentsAction.REMOVE_COMMENTS
 import org.wordpress.android.fluxc.action.CommentsAction.UPDATE_COMMENT
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.CommentModel
 import org.wordpress.android.fluxc.model.CommentStatus
+import org.wordpress.android.fluxc.model.CommentStatus.ALL
+import org.wordpress.android.fluxc.model.CommentStatus.APPROVED
+import org.wordpress.android.fluxc.model.CommentStatus.DELETED
+import org.wordpress.android.fluxc.model.CommentStatus.TRASH
+import org.wordpress.android.fluxc.model.CommentStatus.UNAPPROVED
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.comments.CommentsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.comment.CommentsRestClient
-import org.wordpress.android.fluxc.network.xmlrpc.comment.CommentXMLRPCClient
+import org.wordpress.android.fluxc.network.xmlrpc.comment.CommentsXMLRPCClient
 import org.wordpress.android.fluxc.persistence.comments.CommentEntityList
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
 import org.wordpress.android.fluxc.store.CommentStore.CommentError
-import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType.DUPLICATE_COMMENT
 import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType.INVALID_INPUT
 import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType.INVALID_RESPONSE
-import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType.UNKNOWN_COMMENT
+import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload
 import org.wordpress.android.fluxc.store.CommentStore.OnCommentChanged
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload
 import org.wordpress.android.fluxc.store.CommentStore.RemoteLikeCommentPayload
 import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.CommentsActionData
-import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.CommentsActionEntityInfo
+import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.CommentsActionEntityIds
 import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.PagingData
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,7 +55,7 @@ import javax.inject.Singleton
 class CommentsStore
 @Inject constructor(
     private val commentsRestClient: CommentsRestClient,
-    private val commentXMLRPCClient: CommentXMLRPCClient,
+    private val commentsXMLRPCClient: CommentsXMLRPCClient,
     private val commentsDao: CommentsDao,
     private val commentsMapper: CommentsMapper,
     private val coroutineEngine: CoroutineEngine,
@@ -72,46 +80,297 @@ class CommentsStore
             }
         }
         data class CommentsActionData(val comments: CommentEntityList, val rowsAffected: Int): CommentsData()
-        data class CommentsActionEntityInfo(val entityIds: List<Long>, val rowsAffected: Int): CommentsData()
-        object DontCare: CommentsData()
-        //data class ModeratedCommentInfo(val commentId: Long): CommentsData()
+        data class CommentsActionEntityIds(val entityIds: List<Long>, val rowsAffected: Int): CommentsData()
+        object DoNotCare: CommentsData()
     }
 
-    suspend fun fetchComments(
+    suspend fun getCommentsForSite(site: SiteModel?, orderByDateAscending: Boolean, limit: Int, vararg statuses: CommentStatus): CommentEntityList {
+        if (site == null) return listOf()
+
+        return commentsDao.getCommentsForSite(
+                localSiteId = site.id,
+                filterByStatuses = !statuses.asList().contains(ALL),
+                statuses = statuses.map { it.toString() },
+                limit = limit,
+                orderAscending = orderByDateAscending
+        )
+    }
+
+    @Deprecated(
+            message = "This function is here for backward compatibility while Comments Unification project proceeds"
+    )
+    private suspend fun fetchComments(
+        site: SiteModel,
+        number: Int,
+        offset: Int,
+        networkStatusFilter: CommentStatus
+    ): CommentsActionPayload<CommentsActionEntityIds> {
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.fetchCommentsPage(
+                    site = site,
+                    number = number,
+                    offset = offset,
+                    status = networkStatusFilter
+            )
+        } else {
+            commentsXMLRPCClient.fetchCommentsPage(
+                    site = site,
+                    number = number,
+                    offset = offset,
+                    status = networkStatusFilter
+            )
+        }
+
+        return if (payload.isError) {
+            CommentsActionPayload(payload.error)
+        } else {
+            payload.response?.let { comments ->
+                // TODOD: implement a logic like the removeCommentGaps that is in handleFetchCommentsResponse (or evaluate if it's needed!)
+                val entityIds = /*commentsDto.comments*/comments.map { comment ->
+                    /*val comment = commentsMapper.commentDtoToEntity(commentDto, site)*/
+                    commentsDao.insertOrUpdateComment(comment)
+                }
+                CommentsActionPayload(CommentsActionEntityIds(entityIds, entityIds.size))
+            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+        }
+    }
+
+    suspend fun fetchComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?): CommentsActionPayload<CommentsActionData> {
+        val remoteCommentIdToFetch = comment?.remoteCommentId ?: remoteCommentId
+
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.fetchComment(site, remoteCommentIdToFetch)
+        } else {
+            commentsXMLRPCClient.fetchComment(site, remoteCommentIdToFetch)
+        }
+
+        return if (payload.isError) {
+            CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
+        } else {
+            payload.response?.let {
+                val comment = /*commentsMapper.commentDtoToEntity(it, site)*/it
+                val entityId = commentsDao.insertOrUpdateComment(comment)
+                val cachedCommentList = commentsDao.getCommentById(entityId)
+                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+        }
+    }
+
+    suspend fun createNewComment(site: SiteModel, comment: CommentEntity): CommentsActionPayload<CommentsActionData> {
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.createNewComment(site, comment.remotePostId, comment.content)
+        } else {
+            commentsXMLRPCClient.createNewComment(site, comment.remotePostId, comment)
+        }
+
+        return if (payload.isError) {
+            CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
+        } else {
+            payload.response?.let {
+                val commentUpdated = /*commentsMapper.commentDtoToEntity(it, site)*/it.copy(id = comment.id)
+                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
+                // We need to get it back from the cache in case it was inserted instead of updated
+                val cachedCommentList = commentsDao.getCommentById(entityId)
+                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+        }
+    }
+
+    suspend fun createNewReply(site: SiteModel, comment: CommentEntity, reply: CommentEntity): CommentsActionPayload<CommentsActionData> {
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.createNewReply(site, comment.remoteCommentId, reply.content)
+        } else {
+            commentsXMLRPCClient.createNewReply(site, comment, reply)
+        }
+
+        return if (payload.isError) {
+            CommentsActionPayload(payload.error, CommentsActionData(reply.toListOrEmpty(), 0))
+        } else {
+            payload.response?.let {
+                val commentUpdated = /*commentsMapper.commentDtoToEntity(it, site)*/it.copy(id = reply.id)
+                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
+                // We need to get it back from the cache in case it was inserted instead of updated
+                val cachedCommentList = commentsDao.getCommentById(entityId)
+                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+        }
+    }
+
+    suspend fun pushComment(site: SiteModel, comment: CommentEntity): CommentsActionPayload<CommentsActionData> {
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.pushComment(site, comment)
+        } else {
+            commentsXMLRPCClient.pushComment(site, comment)
+        }
+
+        return if (payload.isError) {
+            CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
+        } else {
+            payload.response?.let {
+                val commentUpdated = /*commentsMapper.commentDtoToEntity(it, site)*/it.copy(id = comment.id)
+                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
+                // We need to get it back from the cache in case it was inserted instead of updated
+                val cachedCommentList = commentsDao.getCommentById(entityId)
+                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
+            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+        }
+    }
+
+    suspend fun deleteComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?): CommentsActionPayload<CommentsActionData> {
+        // If the comment is stored locally, we want to update it locally (needed because in some
+        // cases we use this to update comments by remote id).
+        val commentToDelete = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(site.id, remoteCommentId)
+                .firstOrNull()
+        val remoteCommentIdToDelete = commentToDelete?.remoteCommentId ?: remoteCommentId
+
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.deleteComment(site, remoteCommentId)
+        } else {
+            commentsXMLRPCClient.deleteComment(site, remoteCommentIdToDelete, commentToDelete)
+        }
+
+        if (payload.isError) {
+            return CommentsActionPayload(payload.error, CommentsActionData(commentToDelete.toListOrEmpty(), 0))
+        } else {
+            val targetComment = when {
+                site.isUsingWpComRestApi && payload.response == null -> {
+                    return CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+                }
+                site.isUsingWpComRestApi && payload.response != null -> {
+                    val commentFromEndpoint: CommentEntity = payload.response
+                    commentToDelete?.let { entity ->
+                        commentFromEndpoint.copy(id = entity.id)
+                    } ?: commentFromEndpoint
+                }
+                else /*!site.isUsingWpComRestApi*/ -> {
+                    // This is ugly but the XMLRPC response doesn't contain any info about the update comment.
+                    // So we're copying the logic here: if the comment status was "trash" before and the delete
+                    // call is successful, then we want to delete this comment. Setting the "deleted" status
+                    // will ensure the comment is deleted in the rest of the logic.
+                    commentToDelete?.let {
+                        it.copy(
+                                status = if (TRASH.toString() == it.status) {
+                                    DELETED.toString()
+                                } else {
+                                    TRASH.toString()
+                                }
+                        )
+                    }
+                }
+            }
+
+            return targetComment?.let {
+                // Delete once means "send to trash", so we don't want to remove it from the DB, just update it's
+                // status. Delete twice means "farewell comment, we won't see you ever again". Only delete from the DB if
+                // the status is "deleted".
+                val deletedCommentAsList = if (it.status?.equals(DELETED.toString()) == true) {
+                    commentsDao.deleteComment(it)
+                    comment.toListOrEmpty()
+                } else {
+                    // Update the local copy, only the status should have changed ("trash")
+                    val entityId = commentsDao.insertOrUpdateComment(it)
+                    commentsDao.getCommentById(entityId)
+                }
+
+                CommentsActionPayload(CommentsActionData(deletedCommentAsList, 1))
+            } ?: CommentsActionPayload(CommentsActionData(listOf(), 0))
+        }
+    }
+
+    suspend fun likeComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?, isLike: Boolean): CommentsActionPayload<CommentsActionData> {
+        // If the comment is stored locally, we want to update it locally (needed because in some
+        // cases we use this to update comments by remote id).
+        val commentToLike = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(site.id, remoteCommentId).firstOrNull()
+        val remoteCommentIdToLike = commentToLike?.remoteCommentId ?: remoteCommentId
+
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.likeComment(site, remoteCommentIdToLike, isLike)
+        } else {
+            return CommentsActionPayload(
+                    CommentError(
+                            INVALID_INPUT,
+                            "Can't like a comment on XMLRPC API"
+                    ),
+                    CommentsActionData(
+                            commentToLike.toListOrEmpty(),
+                            0
+                    )
+            )
+        }
+
+        return if (payload.isError) {
+            CommentsActionPayload(payload.error, CommentsActionData(commentToLike.toListOrEmpty(), 0))
+        } else {
+            payload.response?.let { endpointResponse ->
+                val updatedComment = commentToLike?.let { it.copy(iLike = endpointResponse.i_like) }
+
+                val (rowsAffected, likedCommentAsList) = updatedComment?.let {
+                    val entityId = commentsDao.insertOrUpdateComment(it)
+                    Pair(1, commentsDao.getCommentById(entityId))
+                } ?: Pair(0, updatedComment.toListOrEmpty())
+
+                CommentsActionPayload(CommentsActionData(likedCommentAsList, rowsAffected))
+            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
+        }
+    }
+
+    suspend fun updateComment(isError: Boolean, commentId: Long, comment: CommentEntity): CommentsActionPayload<CommentsActionEntityIds> {
+        val (entityId, rowsAffected) = if (isError) {
+            Pair(commentId, 0)
+        } else {
+            Pair(commentsDao.insertOrUpdateComment(comment), 1)
+        }
+
+        return CommentsActionPayload(CommentsActionEntityIds(listOf(entityId), rowsAffected))
+    }
+
+    suspend fun fetchCommentsPage(
         site: SiteModel,
         number: Int,
         offset: Int,
         networkStatusFilter: CommentStatus,
         cacheStatuses: List<CommentStatus>
     ): CommentsActionPayload<PagingData> {
-        // TODOD: manage for self-hosted!
-        val payload = commentsRestClient.fetchComments(
-                site = site,
-                number = number,
-                offset = offset,
-                status = networkStatusFilter
-        )
+        val (payload, remoteSiteId) = if (site.isUsingWpComRestApi) {
+            Pair(commentsRestClient.fetchCommentsPage(
+                    site = site,
+                    number = number,
+                    offset = offset,
+                    status = networkStatusFilter
+            ),
+            site.siteId
+            )
+        } else {
+            Pair(
+            commentsXMLRPCClient.fetchCommentsPage(
+                    site = site,
+                    number = number,
+                    offset = offset,
+                    status = networkStatusFilter
+            ), site.selfHostedSiteId)
+        }
 
         return if (payload.isError) {
             val cachedComments = commentsDao.getFilteredComments(
-                    siteId = site.siteId,
+                    siteId = remoteSiteId,
                     statuses = cacheStatuses.map { it.toString() }
             )
             CommentsActionPayload(payload.error, PagingData(comments = cachedComments, hasMore = true))
         } else {
-            val comments = payload.response?.comments?.mapNotNull {
+            // TODOD: implement a logic like the removeCommentGaps that is in handleFetchCommentsResponse (or evaluate if it's needed!)
+            val comments = payload.response?.map { it } ?: listOf() /*= payload.response?.map {
                 commentsMapper.commentDtoToEntity(it, site)
-            } ?: listOf()
+            } ?: listOf()*/
 
             commentsDao.appendOrOverwriteComments(
                     overwrite = offset == 0,
-                    siteId = site.siteId,
+                    siteId = remoteSiteId,
                     statuses = cacheStatuses.map { it.toString() },
                     comments = comments
             )
 
             val cachedComments = commentsDao.getFilteredComments(
-                    siteId = site.siteId,
+                    siteId = remoteSiteId,
                     statuses = cacheStatuses.map { it.toString() }
             )
 
@@ -124,28 +383,14 @@ class CommentsStore
         remoteCommentId: Long,
         newStatus: CommentStatus
     ): CommentsActionPayload<CommentsActionData> {
-        val comments = commentsDao.getCommentsBySiteIdAndRemoteCommentId(site.siteId, remoteCommentId)
+        // TODOD: add message to all CommentError to be used in logs (since not localized) in the WPAndroid
+        val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(
+                if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
+                remoteCommentId
+        ).firstOrNull() ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
 
-        if (comments.isEmpty()) {
-            return CommentsActionPayload(
-                    CommentError(
-                            UNKNOWN_COMMENT,
-                            "Unknown comment while moderating [site=${site.siteId} remoteCommentId=$remoteCommentId]"
-                    )
-            )
-        }
-
-        if (comments.size > 1) {
-            return CommentsActionPayload(
-                    CommentError(
-                            DUPLICATE_COMMENT,
-                            "Duplicated comment while moderating [site=${site.siteId} remoteCommentId=$remoteCommentId]"
-                    )
-            )
-        }
-
-        val comment = comments.first().copy(status = newStatus.toString())
-        val entityId = commentsDao.insertOrUpdateComment(comment)
+        val commentToModerate = comment.copy(status = newStatus.toString())
+        val entityId = commentsDao.insertOrUpdateComment(commentToModerate)
         val cachedCommentList = commentsDao.getCommentById(entityId)
 
         return CommentsActionPayload(CommentsActionData(
@@ -156,8 +401,36 @@ class CommentsStore
 
     suspend fun getCommentByLocalId(localId: Long) = commentsDao.getCommentById(localId)
 
-    suspend fun getCommentBySiteAndRemoteId(localSiteId: Int, remoteCommentId: Long) =
+    suspend fun getCommentByLocalSiteAndRemoteId(localSiteId: Int, remoteCommentId: Long) =
             commentsDao.getCommentsByLocalSiteAndRemoteCommentId(localSiteId, remoteCommentId)
+
+    suspend fun pushLocalCommentByRemoteId(site: SiteModel, remoteCommentId: Long): CommentsActionPayload<CommentsActionData> {
+        val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(
+                if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
+                remoteCommentId
+        ).firstOrNull()
+                ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
+
+        return pushComment(site, comment)
+    }
+
+    suspend fun getCachedComments(
+        site: SiteModel,
+        cacheStatuses: List<CommentStatus>,
+        imposeHasMore: Boolean
+    ): CommentsActionPayload<PagingData> {
+        val cachedComments = commentsDao.getFilteredComments(
+                siteId = if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
+                statuses = cacheStatuses.map { it.toString() }
+        )
+
+        return CommentsActionPayload(PagingData(comments = cachedComments, imposeHasMore))
+    }
+
+    @Deprecated("Action and event bus support should be gradually replaced while the Comments Unification project proceeds")
+    override fun onRegister() {
+        AppLog.d(API, this.javaClass.name + ": onRegister")
+    }
 
     @Deprecated("Action and event bus support should be gradually replaced while the Comments Unification project proceeds")
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -166,111 +439,90 @@ class CommentsStore
 
         when (actionType) {
             FETCH_COMMENTS -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On FETCH_COMMENTS") {
-                    emitChange(TODO())
+                coroutineEngine.launch(API, this, "CommentsStore: On FETCH_COMMENTS") {
+                    emitChange(onFetchComments(action.payload as FetchCommentsPayload))
                 }
             }
             FETCH_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On FETCH_COMMENT") {
+                coroutineEngine.launch(API, this, "CommentsStore: On FETCH_COMMENT") {
                     emitChange(onFetchComment(action.payload as RemoteCommentPayload))
                 }
             }
             CREATE_NEW_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On CREATE_NEW_COMMENT") {
+                coroutineEngine.launch(API, this, "CommentsStore: On CREATE_NEW_COMMENT") {
                     emitChange(onCreateNewComment(action.payload as RemoteCreateCommentPayload))
                 }
             }
             PUSH_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On PUSH_COMMENT") {
+                coroutineEngine.launch(API, this, "CommentsStore: On PUSH_COMMENT") {
                     emitChange(onPushComment(action.payload as RemoteCommentPayload))
                 }
             }
             DELETE_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On DELETE_COMMENT") {
+                coroutineEngine.launch(API, this, "CommentsStore: On DELETE_COMMENT") {
                     emitChange(onDeleteComment(action.payload as RemoteCommentPayload))
                 }
             }
             LIKE_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On LIKE_COMMENT") {
+                coroutineEngine.launch(API, this, "CommentsStore: On LIKE_COMMENT") {
                     emitChange(onLikeComment(action.payload as RemoteLikeCommentPayload))
                 }
             }
-            //FETCHED_COMMENTS -> {
-            //    coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On FETCHED_COMMENTS") {
-            //        emitChange(TODO())
-            //    }
-            //}
-            //FETCHED_COMMENT -> {
-            //    coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On FETCHED_COMMENT") {
-            //        emitChange(TODO())
-            //    }
-            //}
-            //CREATED_NEW_COMMENT -> {
-            //    coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On CREATED_NEW_COMMENT") {
-            //        emitChange(TODO())
-            //    }
-            //}
-            //PUSHED_COMMENT -> {
-            //    coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On PUSHED_COMMENT") {
-            //        emitChange(TODO())
-            //    }
-            //}
-            //DELETED_COMMENT -> {
-            //    coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On DELETED_COMMENT") {
-            //        emitChange(TODO())
-            //    }
-            //}
-            //LIKED_COMMENT -> {
-            //    coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On LIKED_COMMENT") {
-            //        emitChange(TODO())
-            //    }
-            //}
             UPDATE_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On UPDATE_COMMENT") {
+                coroutineEngine.launch(API, this, "CommentsStore: On UPDATE_COMMENT") {
                     emitChange(onUpdateComment(action.payload as CommentModel))
                 }
             }
-            REMOVE_COMMENTS -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On REMOVE_COMMENTS") {
-                    emitChange(TODO())
-                }
-            }
-            REMOVE_COMMENT -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On REMOVE_COMMENT") {
-                    emitChange(TODO())
-                }
-            }
-            REMOVE_ALL_COMMENTS -> {
-                coroutineEngine.launch(AppLog.T.API, this, "CommentsStore: On REMOVE_ALL_COMMENTS") {
-                    emitChange(TODO())
-                }
-            }
+            FETCHED_COMMENTS,
+            FETCHED_COMMENT,
+            CREATED_NEW_COMMENT,
+            PUSHED_COMMENT,
+            DELETED_COMMENT,
+            LIKED_COMMENT -> throw IllegalArgumentException("CommentsStore > onAction: received illegal action type [$actionType]")
         }
     }
 
+    @Deprecated(
+            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            replaceWith = ReplaceWith("use fetchComment suspend fun directly")
+    )
+    private suspend fun onFetchComments(payload: FetchCommentsPayload): OnCommentChanged {
+        val response = fetchComments(
+                site = payload.site,
+                number = payload.number,
+                offset = payload.offset,
+                networkStatusFilter = payload.status
+        )
+
+        return createOnCommentChangedEvent(
+                response.data?.rowsAffected.orNone(),
+                CommentAction.FETCH_COMMENTS,
+                response.error,
+                response.data.toCommentIdsListOrEmpty(),
+                payload.status,
+                payload.offset
+        )
+    }
+
+    @Deprecated(
+        message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+        replaceWith = ReplaceWith("use fetchComment suspend fun directly")
+    )
     private suspend fun onFetchComment(payload: RemoteCommentPayload): OnCommentChanged {
-        val commentId = payload.comment?.remoteCommentId ?: payload.remoteCommentId
-        val response = fetchComment(payload.site, commentId)
+        val response = fetchComment(payload.site, payload.remoteCommentId, payload.comment?.let { commentsMapper.commentLegacyModelToEntity(it) })
 
-        return if (response.isError) {
-            OnCommentChanged(0).apply {
-                this.causeOfChange = CommentAction.FETCH_COMMENT
-                this.error = response.error
-            }
-        } else {
-            val rowsAffected = response.data?.rowsAffected.orNone()
-            OnCommentChanged(rowsAffected).apply {
-                response.data?.let { commentsData ->
-                    commentsData.comments.firstOrNull()?.id?.let {
-                        this.changedCommentsLocalIds.add(it.toInt())
-                    }
-                }
-
-                this.causeOfChange = CommentAction.FETCH_COMMENT
-            }
-        }
+        return createOnCommentChangedEvent(
+                response.data?.rowsAffected.orNone(),
+                CommentAction.FETCH_COMMENT,
+                response.error,
+                response.data.toCommentIdsListOrEmpty()
+        )
     }
 
+    @Deprecated(
+            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            replaceWith = ReplaceWith("use updateComment suspend fun directly")
+    )
     private suspend fun onUpdateComment(payload: CommentModel): OnCommentChanged {
         val response = updateComment(
                 isError = payload.isError,
@@ -278,24 +530,34 @@ class CommentsStore
                 comment = commentsMapper.commentLegacyModelToEntity(payload)
         )
 
-        return OnCommentChanged(response.data?.rowsAffected.orNone()).apply {
-            this.changedCommentsLocalIds.addAll(response.data?.entityIds?.map { it.toInt() } ?: listOf())
-            this.causeOfChange = CommentAction.UPDATE_COMMENT
-        }
+        return createOnCommentChangedEvent(
+                response.data?.rowsAffected.orNone(),
+                CommentAction.UPDATE_COMMENT,
+                null,
+                response.data.toCommentIdsListOrEmpty()
+        )
     }
 
+    @Deprecated(
+            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            replaceWith = ReplaceWith("use deleteComment suspend fun directly")
+    )
     private suspend fun onDeleteComment(payload: RemoteCommentPayload): OnCommentChanged {
-        //val commentId = payload.comment?.remoteCommentId ?: payload.remoteCommentId
         val response = deleteComment(payload.site, payload.remoteCommentId, payload.comment?.let { commentsMapper.commentLegacyModelToEntity(it) })
 
-        // TODOD: keeping here the rowsAffected set to 0 as it is in original handleDeletedCommentResponse; better get the rationale!
-        return OnCommentChanged(0).apply {
-            this.changedCommentsLocalIds.addAll(response.data.toCommentIdsListOrEmpty())
-            this.causeOfChange = CommentAction.DELETE_COMMENT
-            this.error = response.error
-        }
+        return createOnCommentChangedEvent(
+                // Keeping here the rowsAffected set to 0 as it is in original handleDeletedCommentResponse
+                0,
+                CommentAction.DELETE_COMMENT,
+                response.error,
+                response.data.toCommentIdsListOrEmpty()
+        )
     }
 
+    @Deprecated(
+            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            replaceWith = ReplaceWith("use likeComment suspend fun directly")
+    )
     private suspend fun onLikeComment(payload: RemoteLikeCommentPayload): OnCommentChanged {
         val response = likeComment(
                 payload.site,
@@ -304,13 +566,18 @@ class CommentsStore
                 payload.like
         )
 
-        return OnCommentChanged(response.data?.rowsAffected.orNone()).apply {
-            this.changedCommentsLocalIds.addAll(response.data.toCommentIdsListOrEmpty())
-            this.causeOfChange = CommentAction.LIKE_COMMENT
-            this.error = response.error
-        }
+        return createOnCommentChangedEvent(
+                response.data?.rowsAffected.orNone(),
+                CommentAction.LIKE_COMMENT,
+                response.error,
+                response.data.toCommentIdsListOrEmpty()
+        )
     }
 
+    @Deprecated(
+            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            replaceWith = ReplaceWith("use pushComment suspend fun directly")
+    )
     private suspend fun onPushComment(payload: RemoteCommentPayload): OnCommentChanged {
         if (payload.comment == null) {
             return OnCommentChanged(0).apply {
@@ -324,13 +591,18 @@ class CommentsStore
                 commentsMapper.commentLegacyModelToEntity(payload.comment)
         )
 
-        return OnCommentChanged(response.data?.rowsAffected.orNone()).apply {
-            this.changedCommentsLocalIds.addAll(response.data.toCommentIdsListOrEmpty())
-            this.causeOfChange = CommentAction.PUSH_COMMENT
-            this.error = response.error
-        }
+        return createOnCommentChangedEvent(
+                response.data?.rowsAffected.orNone(),
+                CommentAction.PUSH_COMMENT,
+                response.error,
+                response.data.toCommentIdsListOrEmpty()
+        )
     }
 
+    @Deprecated(
+            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            replaceWith = ReplaceWith("use createNewComment suspend fun directly")
+    )
     private suspend fun onCreateNewComment(payload: RemoteCreateCommentPayload): OnCommentChanged {
         val response = if (payload.reply == null) {
             // Create a new comment on a specific Post
@@ -340,217 +612,37 @@ class CommentsStore
             )
         } else {
             // Create a new reply to a specific Comment
-            createNewReplay(payload.site, commentsMapper.commentLegacyModelToEntity(payload.comment), commentsMapper.commentLegacyModelToEntity(payload.reply))
+            createNewReply(payload.site, commentsMapper.commentLegacyModelToEntity(payload.comment), commentsMapper.commentLegacyModelToEntity(payload.reply))
         }
 
-        return OnCommentChanged(response.data?.rowsAffected.orNone()).apply {
-            this.changedCommentsLocalIds.addAll(response.data.toCommentIdsListOrEmpty())
-            this.causeOfChange = CommentAction.CREATE_NEW_COMMENT
-            this.error = response.error
-        }
-    }
-
-    private suspend fun createNewComment(site: SiteModel, comment: CommentEntity): CommentsActionPayload<CommentsActionData> {
-        val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.createNewComment(site, comment.remotePostId, comment.content)
-        } else {
-            // TODOD: implement push for self-hosted
-            TODO()
-        }
-
-        return if (payload.isError) {
-            CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
-        } else {
-            payload.response?.let {
-                val commentUpdated = commentsMapper.commentDtoToEntity(it, site).copy(id = comment.id)
-                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
-                // We need to get it back from the cache in case it was inserted instead of updated
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
-            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
-        }
-    }
-
-    private suspend fun createNewReplay(site: SiteModel, comment: CommentEntity, reply: CommentEntity): CommentsActionPayload<CommentsActionData> {
-        val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.createNewReply(site, comment.remoteCommentId, reply.content)
-        } else {
-            // TODOD: implement push for self-hosted
-            TODO()
-        }
-
-        return if (payload.isError) {
-            CommentsActionPayload(payload.error, CommentsActionData(reply.toListOrEmpty(), 0))
-        } else {
-            payload.response?.let {
-                val commentUpdated = commentsMapper.commentDtoToEntity(it, site).copy(id = reply.id)
-                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
-                // We need to get it back from the cache in case it was inserted instead of updated
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
-            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
-        }
-
-        // TODOD: apply the following logic
-        //CommentModel newComment = commentResponseToComment(response, site);
-        //newComment.setId(reply.getId()); // reconciliate local instance and newly created object
-        //RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(newComment);
-    }
-
-
-    suspend fun pushLocalCommentByRemoteId(site: SiteModel, remoteCommentId: Long): CommentsActionPayload<CommentsActionData> {
-        val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(site.siteId, remoteCommentId).firstOrNull()
-                ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
-
-        return pushComment(site, comment)
-    }
-
-
-
-    suspend fun pushComment(site: SiteModel, comment: CommentEntity): CommentsActionPayload<CommentsActionData> {
-        val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.pushComment(site, comment)
-        } else {
-            // TODOD: implement push for self-hosted
-            TODO()
-        }
-
-        return if (payload.isError) {
-            CommentsActionPayload(payload.error, CommentsActionData(comment.toListOrEmpty(), 0))
-        } else {
-            payload.response?.let {
-                val commentUpdated = commentsMapper.commentDtoToEntity(it, site).copy(id = comment.id)
-                val entityId = commentsDao.insertOrUpdateComment(commentUpdated)
-                // We need to get it back from the cache in case it was inserted instead of updated
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
-            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
-        }
-    }
-
-
-    private suspend fun likeComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?, isLike: Boolean): CommentsActionPayload<CommentsActionData> {
-        // If the comment is stored locally, we want to update it locally (needed because in some
-        // cases we use this to update comments by remote id).
-        val commentToLike = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(site.id, remoteCommentId).firstOrNull()
-        val remoteCommentIdToLike = commentToLike?.remoteCommentId ?: remoteCommentId
-
-        val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.likeComment(site, remoteCommentIdToLike, isLike)
-        } else {
-            TODO()
-        }
-
-        return if (payload.isError) {
-            CommentsActionPayload(payload.error, CommentsActionData(commentToLike.toListOrEmpty(), 0))
-        } else {
-            payload.response?.let { endpointResponse ->
-                val updatedComment = commentToLike?.let { it.copy(iLike = endpointResponse.i_like) }
-
-                val rowsAffected = updatedComment?.let {
-                    commentsDao.insertOrUpdateComment(it)
-                    1
-                } ?: 0
-
-                CommentsActionPayload(CommentsActionData(updatedComment.toListOrEmpty(), rowsAffected))
-            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
-        }
-    }
-
-    private suspend fun deleteComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?): CommentsActionPayload<CommentsActionData> {
-        // If the comment is stored locally, we want to update it locally (needed because in some
-        // cases we use this to update comments by remote id).
-        val commentToDelete = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(site.id, remoteCommentId).firstOrNull()
-        val remoteCommentIdToDelete = commentToDelete?.remoteCommentId ?: remoteCommentId
-
-        val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.deleteComment(site, remoteCommentIdToDelete)
-        } else {
-            TODO()
-        }
-
-        return if (payload.isError) {
-            CommentsActionPayload(payload.error, CommentsActionData(commentToDelete.toListOrEmpty(), 0))
-        } else {
-            payload.response?.let {
-                val commentFromEndpoint = commentsMapper.commentDtoToEntity(it, site)
-                val comment = commentToDelete?.let { comment ->
-                    commentFromEndpoint.copy(id = comment.id)
-                } ?: commentFromEndpoint
-
-                if (comment.status?.equals(CommentStatus.DELETED.toString()) == true) {
-                    commentsDao.deleteComment(comment)
-                } else {
-                    commentsDao.insertOrUpdateComment(comment)
-                }
-
-                CommentsActionPayload(CommentsActionData(comment.toListOrEmpty(), 1))
-            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
-        }
-    }
-
-    private suspend fun updateComment(isError: Boolean, commentId: Long, comment: CommentEntity): CommentsActionPayload<CommentsActionEntityInfo> {
-        val (entityId, rowsAffected) = if (isError) {
-            Pair(commentId, 0)
-        } else {
-            Pair(commentsDao.insertOrUpdateComment(comment), 1)
-        }
-
-        return CommentsActionPayload(CommentsActionEntityInfo(listOf(entityId), rowsAffected))
-    }
-
-    private suspend fun fetchComment(site: SiteModel, remoteCommentId: Long): CommentsActionPayload<CommentsActionData> {
-        val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.fetchComment(site, remoteCommentId)
-        } else {
-            TODO()
-        }
-
-        return if (payload.isError) {
-            CommentsActionPayload(payload.error)
-        } else {
-            payload.response?.let {
-                val comment = commentsMapper.commentDtoToEntity(it, site)
-                val entityId = commentsDao.insertOrUpdateComment(comment)
-                //val rowsAffected = if (entityId > 0) 1 else 0
-                val cachedCommentList = commentsDao.getCommentById(entityId)
-                CommentsActionPayload(CommentsActionData(cachedCommentList, 1))
-            } ?: CommentsActionPayload(CommentError(INVALID_RESPONSE, ""))
-        }
-    }
-
-    // TODOD: review implementation to align with other functions eventually
-    suspend fun getCachedComments(
-        site: SiteModel,
-        cacheStatuses: List<CommentStatus>,
-        imposeHasMore: Boolean
-    ): CommentsActionPayload<PagingData> {
-        val cachedComments = commentsDao.getFilteredComments(
-                siteId = site.siteId,
-                statuses = cacheStatuses.map { it.toString() }
+        return createOnCommentChangedEvent(
+                response.data?.rowsAffected.orNone(),
+                CommentAction.CREATE_NEW_COMMENT,
+                response.error,
+                response.data.toCommentIdsListOrEmpty()
         )
-
-        return CommentsActionPayload(PagingData(comments = cachedComments, imposeHasMore))
     }
 
-
-    @Deprecated("Action and event bus support should be gradually replaced while the Comments Unification project proceeds")
-    override fun onRegister() {
-        AppLog.d(AppLog.T.API, this.javaClass.name + ": onRegister")
+    private fun createOnCommentChangedEvent(rowsAffected: Int, actionType: CommentAction, error: CommentError?, commentLocalIds: List<Int>, status: CommentStatus? = null, offset: Int? = null): OnCommentChanged {
+        return OnCommentChanged(rowsAffected).apply {
+            this.changedCommentsLocalIds.addAll(commentLocalIds)
+            this.causeOfChange = actionType
+            this.error = error
+            status?.let {
+                this.requestedStatus = it
+            }
+            offset?.let {
+                this.offset = offset
+            }
+        }
     }
-
-    //private fun CommentEntityList.sublistToLimitOrEmpty(limit: Int): CommentEntityList {
-    //    require(limit >= 0) {"sublistOrEmpty cannot accept negative values [$limit] for limit parameter"}
-//
-    //    return if (this.size <= limit) {
-    //        this
-    //    } else {
-    //        this.subList(0, limit)
-    //    }
-    //}
 
     private fun CommentsActionData?.toCommentIdsListOrEmpty(): List<Int> {
         return this?.comments?.map { it.id.toInt() } ?: listOf()
+    }
+
+    private fun CommentsActionEntityIds?.toCommentIdsListOrEmpty(): List<Int> {
+        return this?.entityIds?.map { it.toInt() } ?: listOf()
     }
 
     private fun CommentEntity?.toListOrEmpty(): List<CommentEntity> {
@@ -561,5 +653,66 @@ class CommentsStore
 
     private fun Int?.orNone(): Int {
         return this ?: 0
+    }
+
+    // TODOD: better evaluate it but AFAIU SiteModel cannot be null here
+    private fun removeCommentGaps(site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus): Int {
+        if (site == null || commentsList.isNullOrEmpty()) {
+            return 0
+        }
+
+        val comments = mutableListOf<CommentEntity>().apply { addAll(commentsList) }
+
+        comments.sortWith { o1, o2 ->
+            val x = o2.publishedTimestamp
+            val y = o1.publishedTimestamp
+            when {
+                x < y -> -1
+                x == y -> 0
+                else -> 1
+            }
+        }
+
+        val remoteIds = comments.map { it.remoteCommentId }
+
+        val startOfRange = comments.first().publishedTimestamp
+        val endOfRange = comments.last().publishedTimestamp
+
+        val targetStatuses = if (listOf(*statuses).contains(ALL)) {
+            listOf(APPROVED, UNAPPROVED)
+        } else {
+            listOf(*statuses)
+        }.map { it.toString() }
+
+        var numOfDeletedComments = 0
+
+        // try to trim comments from the top
+        if (requestOffset == 0) {
+            numOfDeletedComments += commentsDao.deleteFromTheTop(
+                    localSiteId = site.id,
+                    statuses = targetStatuses,
+                    remoteIds = remoteIds,
+                    startOfRange = startOfRange
+            )
+        }
+
+        // try to trim comments from the bottom
+        if (comments.size < maxEntriesInResponse) {
+            numOfDeletedComments += commentsDao.deleteFromTheBottom(
+                    localSiteId = site.id,
+                    statuses = targetStatuses,
+                    remoteIds = remoteIds,
+                    endOfRange = endOfRange
+            )
+        }
+
+        // remove comments from the middle
+        return numOfDeletedComments + commentsDao.deleteFromTheMiddle(
+                localSiteId = site.id,
+                statuses = targetStatuses,
+                remoteIds = remoteIds,
+                startOfRange = startOfRange,
+                endOfRange = endOfRange
+        )
     }
 }

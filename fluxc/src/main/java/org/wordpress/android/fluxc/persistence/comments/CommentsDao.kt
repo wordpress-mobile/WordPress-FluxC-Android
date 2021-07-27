@@ -7,8 +7,10 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.sqlite.db.SupportSQLiteQuery
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
 
 typealias CommentEntityList = List<CommentEntity>
@@ -27,8 +29,20 @@ abstract class CommentsDao {
         return insertOrUpdateCommentInternal(comment)
     }
 
+    // TODOD: manual test all the queries with IN (including empty list of :statuses) and LIMIT neutral condition
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses) ORDER BY datePublished DESC")
     abstract suspend fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList
+
+    @Query("""
+        SELECT * FROM Comments 
+        WHERE localSiteId = :localSiteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+        ORDER BY 
+        CASE WHEN :orderAscending = 1 THEN datePublished END ASC,
+        CASE WHEN :orderAscending = 0 THEN datePublished END DESC
+        LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
+        """)
+    abstract suspend fun getCommentsForSite(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, limit: Int, orderAscending: Boolean): CommentEntityList
 
     @Query("DELETE FROM Comments")
     abstract suspend fun clearAll(): Int
@@ -46,6 +60,15 @@ abstract class CommentsDao {
             deleteByRemoteIds(comment.remoteSiteId, comment.remoteCommentId)
         }
     }
+
+    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND status IN (:statuses) AND remoteCommentId NOT IN (:remoteIds) AND publishedTimestamp >= :startOfRange")
+    abstract fun deleteFromTheTop(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long): Int
+
+    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND status IN (:statuses) AND remoteCommentId NOT IN (:remoteIds) AND publishedTimestamp <= :endOfRange")
+    abstract fun deleteFromTheBottom(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, endOfRange: Long): Int
+
+    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND status IN (:statuses) AND remoteCommentId NOT IN (:remoteIds) AND publishedTimestamp <= :startOfRange AND publishedTimestamp >= :endOfRange")
+    abstract fun deleteFromTheMiddle(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long, endOfRange: Long): Int
 
     @Query("DELETE FROM Comments WHERE id = :commentId")
     protected abstract fun deleteById(commentId: Long): Int
@@ -66,7 +89,6 @@ abstract class CommentsDao {
     @Query("SELECT * FROM Comments WHERE id = :localId LIMIT 1")
     abstract suspend fun getCommentById(localId: Long): CommentEntityList
 
-    @Deprecated("This has been introduced for legacy compatibility until full migration to room (see CommentsStoreAdapter in WPAndroid)")
     @Query("SELECT * FROM Comments WHERE localSiteId = :localSiteId AND remoteCommentId = :remoteCommentId")
     abstract suspend fun getCommentsByLocalSiteAndRemoteCommentId(localSiteId: Int, remoteCommentId: Long): CommentEntityList
 

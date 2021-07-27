@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.CommentStatus
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.comments.CommentsMapper
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
@@ -15,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Re
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.comment.CommentWPComRestResponse.CommentsWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.common.LikesUtilsProvider
+import org.wordpress.android.fluxc.persistence.comments.CommentEntityList
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
 import org.wordpress.android.fluxc.store.CommentStore.CommentError
 import org.wordpress.android.fluxc.utils.CommentErrorUtilsWrapper
@@ -31,22 +33,26 @@ class CommentsRestClient @Inject constructor(
     userAgent: UserAgent,
     private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
     private val likesUtilsProvider: LikesUtilsProvider,
-    private val commentErrorUtilsWrapper: CommentErrorUtilsWrapper
+    private val commentErrorUtilsWrapper: CommentErrorUtilsWrapper,
+    private val commentsMapper: CommentsMapper
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    data class FetchCommentsPayload<T>(
+    // TODOD: move to a common dedicated file (like in the mapper package maybe?)
+    data class CommentsApiPayload<T>(
         val response: T? = null
     ) : Payload<CommentError>() {
-        constructor(error: CommentError) : this() {
+        constructor(error: CommentError, response: T? = null) : this(response) {
             this.error = error
         }
     }
 
-    suspend fun fetchComments(
+    //data class <>(val remoteSiteId: Long, )
+
+    suspend fun fetchCommentsPage(
         site: SiteModel,
         number: Int,
         offset: Int,
         status: CommentStatus
-    ): FetchCommentsPayload<CommentsWPComRestResponse> {
+    ): CommentsApiPayload<CommentEntityList> {
         val url = WPCOMREST.sites.site(site.siteId).comments.urlV1_1
 
         val params = mutableMapOf(
@@ -65,16 +71,18 @@ class CommentsRestClient @Inject constructor(
 
         return when (response) {
             is Success -> {
-                FetchCommentsPayload(response.data)
+                CommentsApiPayload(response.data.comments.map { commentDto ->
+                    commentsMapper.commentDtoToEntity(commentDto, site)
+                }/*, site.siteId*/)
             }
             is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error)/*, site.siteId*/)
             }
         }
     }
 
 
-    suspend fun pushComment(site: SiteModel, comment: CommentEntity): FetchCommentsPayload<CommentWPComRestResponse> {
+    suspend fun pushComment(site: SiteModel, comment: CommentEntity): CommentsApiPayload<CommentEntity> {
         val url = WPCOMREST.sites.site(site.siteId).comments.comment(comment.remoteCommentId).urlV1_1
 
         val request = mutableMapOf(
@@ -93,15 +101,15 @@ class CommentsRestClient @Inject constructor(
 
         return when (response) {
             is Success -> {
-                FetchCommentsPayload(response.data)
+                CommentsApiPayload(commentsMapper.commentDtoToEntity(response.data, site)/*, site.siteId*/)
             }
             is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error)/*, site.siteId*/)
             }
         }
     }
 
-    suspend fun fetchComment(site: SiteModel, remoteCommentId: Long): FetchCommentsPayload<CommentWPComRestResponse> {
+    suspend fun fetchComment(site: SiteModel, remoteCommentId: Long): CommentsApiPayload<CommentEntity> {
         val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).urlV1_1
 
         val response = wpComGsonRequestBuilder.syncGetRequest(
@@ -113,15 +121,15 @@ class CommentsRestClient @Inject constructor(
 
         return when (response) {
             is Success -> {
-                FetchCommentsPayload(response.data)
+                CommentsApiPayload(commentsMapper.commentDtoToEntity(response.data, site)/*, site.siteId*/)
             }
             is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error)/*, site.siteId*/)
             }
         }
     }
 
-    suspend fun deleteComment(site: SiteModel, remoteCommentId: Long): FetchCommentsPayload<CommentWPComRestResponse> {
+    suspend fun deleteComment(site: SiteModel, remoteCommentId: Long): CommentsApiPayload<CommentEntity> {
         val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).delete.urlV1_1
 
         val response = wpComGsonRequestBuilder.syncPostRequest(
@@ -134,65 +142,15 @@ class CommentsRestClient @Inject constructor(
 
         return when (response) {
             is Success -> {
-                FetchCommentsPayload(response.data)
+                CommentsApiPayload(commentsMapper.commentDtoToEntity(response.data, site)/*, site.siteId*/)
             }
             is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error)/*, site.siteId*/)
             }
         }
     }
 
-    suspend fun likeComment(site: SiteModel, remoteCommentId: Long/*, comment: CommentEntity*/, isLike: Boolean): FetchCommentsPayload<CommentLikeWPComRestResponse> {
-        val url = if (isLike) {
-            WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).likes.new_.urlV1_1
-        } else {
-            WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).likes.mine.delete.urlV1_1
-        }
-
-        val response = wpComGsonRequestBuilder.syncPostRequest(
-                this,
-                url,
-                null,
-                null,
-                CommentLikeWPComRestResponse::class.java
-        )
-
-        return when (response) {
-            is Success -> {
-                FetchCommentsPayload(response.data)
-            }
-            is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
-            }
-        }
-    }
-
-    suspend fun createNewComment(site: SiteModel, remotePostId: Long, content: String?): FetchCommentsPayload<CommentWPComRestResponse> {
-        val url = WPCOMREST.sites.site(site.siteId).posts.post(remotePostId).replies.new_.urlV1_1
-
-        val request = mutableMapOf(
-                "content" to content.orEmpty(),
-        )
-
-        val response = wpComGsonRequestBuilder.syncPostRequest(
-                this,
-                url,
-                null,
-                request,
-                CommentWPComRestResponse::class.java
-        )
-
-        return when (response) {
-            is Success -> {
-                FetchCommentsPayload(response.data)
-            }
-            is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
-            }
-        }
-    }
-
-    suspend fun createNewReply(site: SiteModel, remoteCommentId: Long, replayContent: String?): FetchCommentsPayload<CommentWPComRestResponse> {
+    suspend fun createNewReply(site: SiteModel, remoteCommentId: Long, replayContent: String?): CommentsApiPayload<CommentEntity> {
         val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).replies.new_.urlV1_1
 
         val request = mutableMapOf(
@@ -209,14 +167,63 @@ class CommentsRestClient @Inject constructor(
 
         return when (response) {
             is Success -> {
-                FetchCommentsPayload(response.data)
+                CommentsApiPayload(commentsMapper.commentDtoToEntity(response.data, site)/*, site.siteId*/)
             }
             is Error -> {
-                FetchCommentsPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error)/*, site.siteId*/)
             }
         }
     }
 
+    suspend fun createNewComment(site: SiteModel, remotePostId: Long, content: String?): CommentsApiPayload<CommentEntity> {
+        val url = WPCOMREST.sites.site(site.siteId).posts.post(remotePostId).replies.new_.urlV1_1
+
+        val request = mutableMapOf(
+                "content" to content.orEmpty(),
+        )
+
+        val response = wpComGsonRequestBuilder.syncPostRequest(
+                this,
+                url,
+                null,
+                request,
+                CommentWPComRestResponse::class.java
+        )
+
+        return when (response) {
+            is Success -> {
+                CommentsApiPayload(commentsMapper.commentDtoToEntity(response.data, site))
+            }
+            is Error -> {
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+            }
+        }
+    }
+
+    suspend fun likeComment(site: SiteModel, remoteCommentId: Long/*, comment: CommentEntity*/, isLike: Boolean): CommentsApiPayload<CommentLikeWPComRestResponse> {
+        val url = if (isLike) {
+            WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).likes.new_.urlV1_1
+        } else {
+            WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).likes.mine.delete.urlV1_1
+        }
+
+        val response = wpComGsonRequestBuilder.syncPostRequest(
+                this,
+                url,
+                null,
+                null,
+                CommentLikeWPComRestResponse::class.java
+        )
+
+        return when (response) {
+            is Success -> {
+                CommentsApiPayload(response.data)
+            }
+            is Error -> {
+                CommentsApiPayload(commentErrorUtilsWrapper.networkToCommentError(response.error))
+            }
+        }
+    }
 
 
 

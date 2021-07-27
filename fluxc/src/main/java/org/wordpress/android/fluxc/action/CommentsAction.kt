@@ -65,13 +65,13 @@ enum class CommentsAction : IAction {
     @Action(payloadType = CommentModel::class)
     UPDATE_COMMENT,
 
-    @Action(payloadType = SiteModel::class)
-    REMOVE_COMMENTS,
-
-    @Action(payloadType = CommentModel::class)
-    REMOVE_COMMENT,
-
-    @Action
-    REMOVE_ALL_COMMENTS
+    //@Action(payloadType = SiteModel::class)
+    //REMOVE_COMMENTS,
+//
+    //@Action(payloadType = CommentModel::class)
+    //REMOVE_COMMENT,
+//
+    //@Action
+    //REMOVE_ALL_COMMENTS
 
 }
