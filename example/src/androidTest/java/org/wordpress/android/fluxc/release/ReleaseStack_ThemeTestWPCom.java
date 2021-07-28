@@ -75,7 +75,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testActivateTheme() throws InterruptedException {
+    public void testActivateThemeByKeepingHomepage() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
         ThemeModel currentTheme = fetchCurrentTheme();
@@ -88,7 +88,29 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         ThemeModel themeToActivate = getTwentySomethingFreeTheme(currentTheme.getThemeId(),
                 mThemeStore.getWpComThemes());
         assertNotNull(themeToActivate);
-        activateTheme(themeToActivate);
+        activateTheme(themeToActivate, true);
+
+        // Assert that the activation was successful
+        ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
+        assertNotNull(activatedTheme);
+        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
+    }
+
+    @Test
+    public void testActivateThemeByUsingThemeHomepage() throws InterruptedException {
+        // Make sure no theme is active at first
+        assertNull(mThemeStore.getActiveThemeForSite(sSite));
+        ThemeModel currentTheme = fetchCurrentTheme();
+        assertNotNull(currentTheme);
+
+        // Fetch wp.com themes to activate a different theme
+        fetchWpComThemes();
+
+        // activate a different "Twenty ..." theme
+        ThemeModel themeToActivate = getTwentySomethingFreeTheme(currentTheme.getThemeId(),
+                mThemeStore.getWpComThemes());
+        assertNotNull(themeToActivate);
+        activateTheme(themeToActivate, true);
 
         // Assert that the activation was successful
         ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
@@ -210,10 +232,11 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void activateTheme(ThemeModel themeToActivate) throws InterruptedException {
+    private void activateTheme(ThemeModel themeToActivate,
+                               boolean dontChangeHomePage) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
-        ActivateThemePayload payload = new ActivateThemePayload(sSite, themeToActivate);
+        ActivateThemePayload payload = new ActivateThemePayload(sSite, themeToActivate, dontChangeHomePage);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
