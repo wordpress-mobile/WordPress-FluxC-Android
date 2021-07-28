@@ -128,7 +128,16 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertNotNull(themeToActivate);
 
         // activate it
-        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate);
+        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate, false);
+        assertNotNull(activatedTheme);
+        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
+
+        // Select again
+        themeToActivate = getOtherTheme(themes, currentTheme.getThemeId());
+        assertNotNull(themeToActivate);
+
+        // activate it
+        activatedTheme = activateTheme(jetpackSite, themeToActivate, true);
         assertNotNull(activatedTheme);
         assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
 
@@ -401,7 +410,14 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
 
-    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite, @NonNull ThemeModel themeToActivate)
+    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite,
+                                     @NonNull ThemeModel themeToActivate) throws InterruptedException {
+        return activateTheme(jetpackSite, themeToActivate, true);
+    }
+
+    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite,
+                                     @NonNull ThemeModel themeToActivate,
+                                     boolean dontChangeHomepage)
             throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
