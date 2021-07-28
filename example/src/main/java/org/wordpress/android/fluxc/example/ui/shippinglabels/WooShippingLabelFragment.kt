@@ -173,22 +173,32 @@ class WooShippingLabelFragment : Fragment() {
         print_shipping_label.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
-                        activity, "Enter the remote shipping Label Id:", isNumeric = true
+                        activity, "Enter one or multiple shipping Label Ids (separated by commas):", isNumeric = false
                 ) { remoteIdEditText ->
                     if (remoteIdEditText.text.isEmpty()) {
                         prependToLog("Remote Id is null so doing nothing")
                         return@showSingleLineDialog
                     }
 
-                    val remoteId = remoteIdEditText.text.toString().toLong()
-                    prependToLog("Submitting request to print shipping label for id $remoteId")
+                    val remoteIds = try {
+                        remoteIdEditText.text.split(",").map { it.trim().toLong() }
+                    } catch (e: Exception) {
+                        prependToLog("please check that your input is valid")
+                        return@showSingleLineDialog
+                    }
+                    prependToLog(
+                            "Submitting request to print shipping label(s) ${remoteIds.joinToString(" and ")}"
+                    )
 
                     coroutineScope.launch {
                         try {
                             val response = withContext(Dispatchers.Default) {
-                                // the paper size can be label, legal, letter
-                                // For the example app, the default is set as label
-                                wcShippingLabelStore.printShippingLabel(site, "label", remoteId)
+                                if (remoteIds.size == 1) {
+                                    // Use the single label function here to confirm that it's working as well
+                                    wcShippingLabelStore.printShippingLabel(site, "label", remoteIds.first())
+                                } else {
+                                    wcShippingLabelStore.printShippingLabels(site, "label", remoteIds)
+                                }
                             }
                             response.error?.let {
                                 prependToLog("${it.type}: ${it.message}")
@@ -407,7 +417,8 @@ class WooShippingLabelFragment : Fragment() {
                             predefinedPackages = listOf(randomOption.predefinedPackages.random())
                     )
                     prependToLog(
-                            "Activating ${randomParam.predefinedPackages.first().id} from ${randomParam.carrier}...")
+                            "Activating ${randomParam.predefinedPackages.first().id} from ${randomParam.carrier}..."
+                    )
 
                     val result = withContext(Dispatchers.Default) {
                         wcShippingLabelStore.createPackages(

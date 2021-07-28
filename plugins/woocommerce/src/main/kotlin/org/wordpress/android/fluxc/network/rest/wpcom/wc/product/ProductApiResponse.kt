@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.utils.getString
@@ -81,6 +83,8 @@ class ProductApiResponse : Response {
     var cross_sell_ids: JsonElement? = null
     var upsell_ids: JsonElement? = null
     var grouped_products: JsonElement? = null
+    @SerializedName("meta_data")
+    var metadata: JsonArray? = null
 
     fun asProductModel(): WCProductModel {
         val response = this
@@ -160,6 +164,7 @@ class ProductApiResponse : Response {
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
             groupedProductIds = response.grouped_products?.toString() ?: ""
+            metadata = response.metadata?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

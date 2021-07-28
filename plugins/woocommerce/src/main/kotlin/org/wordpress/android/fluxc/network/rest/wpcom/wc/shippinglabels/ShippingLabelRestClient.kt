@@ -89,15 +89,15 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
-    suspend fun printShippingLabel(
+    suspend fun printShippingLabels(
         site: SiteModel,
         paperSize: String,
-        remoteShippingLabelId: Long
+        shippingLabelIds: List<Long>
     ): WooPayload<PrintShippingLabelApiResponse> {
         val url = WOOCOMMERCE.connect.label.print.pathV1
         val params = mapOf(
                 "paper_size" to paperSize,
-                "label_id_csv" to remoteShippingLabelId.toString(),
+                "label_id_csv" to shippingLabelIds.joinToString(","),
                 "caption_csv" to "",
                 "json" to "true"
         )
