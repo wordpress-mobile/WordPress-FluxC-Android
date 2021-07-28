@@ -103,13 +103,18 @@ abstract class CommentsDao {
     abstract suspend fun getCommentsBySiteIdAndRemoteCommentId(siteId: Long, remoteCommentId: Long): CommentEntityList
 
     @Transaction
-    open suspend fun appendOrOverwriteComments(overwrite: Boolean, siteId: Long, statuses: List<String>, comments: CommentEntityList): Int {
-        if (overwrite) {
-            clearAllBySiteIdInternal(siteId, statuses.isNotEmpty(), statuses)
-        }
-
+    open suspend fun appendOrUpdateComments(siteId: Long, statuses: List<String>, comments: CommentEntityList): Int {
         val affectedIdList = insertOrUpdateCommentsInternal(comments)
         return affectedIdList.size
+    }
+
+    @Transaction
+    open suspend fun clearAllBySiteIdAndFilters(siteId: Long, statuses: List<String>): Int {
+        return clearAllBySiteIdAndFiltersInternal(
+                siteId = siteId,
+                filterByStatuses = statuses.isNotEmpty(),
+                statuses = statuses
+        )
     }
 
     // Protected methods
@@ -146,14 +151,14 @@ abstract class CommentsDao {
         WHERE remoteSiteId = :siteId 
         AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
     """)
-    protected abstract fun clearAllBySiteIdInternal(siteId: Long, filterByStatuses: Boolean, statuses: List<String>): Int
+    protected abstract fun clearAllBySiteIdAndFiltersInternal(siteId: Long, filterByStatuses: Boolean, statuses: List<String>): Int
 
 
     @Query("""
         DELETE FROM Comments 
         WHERE localSiteId = :localSiteId 
         AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
-        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId IN (:remoteIds)) ELSE 1 END
+        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp >= :startOfRange
     """)
     protected abstract fun removeGapsFromTheTopInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, startOfRange: Long): Int
@@ -162,7 +167,7 @@ abstract class CommentsDao {
         DELETE FROM Comments 
         WHERE localSiteId = :localSiteId 
         AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
-        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId IN (:remoteIds)) ELSE 1 END
+        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp <= :endOfRange
     """)
     protected abstract fun removeGapsFromTheBottomInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, endOfRange: Long): Int
@@ -172,7 +177,7 @@ abstract class CommentsDao {
         DELETE FROM Comments 
         WHERE localSiteId = :localSiteId 
         AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
-        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId IN (:remoteIds)) ELSE 1 END
+        AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp <= :startOfRange
         AND publishedTimestamp >= :endOfRange
     """)

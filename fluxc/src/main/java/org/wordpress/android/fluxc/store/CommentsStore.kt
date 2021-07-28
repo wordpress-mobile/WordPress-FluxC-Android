@@ -208,12 +208,15 @@ class CommentsStore
     suspend fun deleteComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?): CommentsActionPayload<CommentsActionData> {
         // If the comment is stored locally, we want to update it locally (needed because in some
         // cases we use this to update comments by remote id).
-        val commentToDelete = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(site.id, remoteCommentId)
-                .firstOrNull()
+        val commentToDelete = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(
+                site.id,
+                remoteCommentId
+        ).firstOrNull()
+
         val remoteCommentIdToDelete = commentToDelete?.remoteCommentId ?: remoteCommentId
 
         val payload = if (site.isUsingWpComRestApi) {
-            commentsRestClient.deleteComment(site, remoteCommentId)
+            commentsRestClient.deleteComment(site, remoteCommentIdToDelete)
         } else {
             commentsXMLRPCClient.deleteComment(site, remoteCommentIdToDelete)
         }
@@ -254,7 +257,7 @@ class CommentsStore
                 // the status is "deleted".
                 val deletedCommentAsList = if (it.status?.equals(DELETED.toString()) == true) {
                     commentsDao.deleteComment(it)
-                    comment.toListOrEmpty()
+                    it.toListOrEmpty()
                 } else {
                     // Update the local copy, only the status should have changed ("trash")
                     commentsDao.insertOrUpdateCommentForResult(it)
@@ -348,8 +351,7 @@ class CommentsStore
 
             removeCommentGaps(site, comments, number, offset, networkStatusFilter)
 
-            commentsDao.appendOrOverwriteComments(
-                    overwrite = false, //offset == 0,
+            commentsDao.appendOrUpdateComments(
                     siteId = remoteSiteId,
                     statuses = cacheStatuses.map { it.toString() },
                     comments = comments
@@ -393,8 +395,7 @@ class CommentsStore
         val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(
                 if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
                 remoteCommentId
-        ).firstOrNull()
-                ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
+        ).firstOrNull() ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
 
         return pushComment(site, comment)
     }
@@ -641,8 +642,41 @@ class CommentsStore
     }
 
     private suspend fun removeCommentGaps(site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus): Int {
-        if (site == null || commentsList.isNullOrEmpty()) {
+        if (site == null || commentsList == null) {
             return 0
+        }
+
+        val targetStatuses = if (listOf(*statuses).contains(ALL)) {
+            listOf(APPROVED, UNAPPROVED)
+        } else {
+            listOf(*statuses)
+        }.map { it.toString() }
+
+        AppLog.d(
+                COMMENTS,
+                "removeCommentGaps -> siteId [${site.siteId}]  targetStatuses [$targetStatuses]"
+        )
+
+        if (commentsList.isEmpty()/* && requestOffset == 0*/) {
+            return if (requestOffset == 0) {
+                val numOfDeletedComments = commentsDao.clearAllBySiteIdAndFilters(
+                        siteId = site.siteId,
+                        statuses = targetStatuses
+                )
+
+                AppLog.d(
+                        COMMENTS,
+                        "removeCommentGaps -> commentsList empty deleted $numOfDeletedComments items"
+                )
+
+                numOfDeletedComments
+            } else {
+                AppLog.d(
+                        COMMENTS,
+                        "removeCommentGaps -> commentsList empty and requestOffset != 0"
+                )
+                0
+            }
         }
 
         val comments = mutableListOf<CommentEntity>().apply { addAll(commentsList) }
@@ -665,17 +699,6 @@ class CommentsStore
         AppLog.d(
                 COMMENTS, "removeCommentGaps -> startOfRange [" + startOfRange + " - " + comments.first().datePublished + "] "
                 + "endOfRange [" + endOfRange + " - " + comments.last().datePublished + "]"
-        )
-
-        val targetStatuses = if (listOf(*statuses).contains(ALL)) {
-            listOf(APPROVED, UNAPPROVED)
-        } else {
-            listOf(*statuses)
-        }.map { it.toString() }
-
-        AppLog.d(
-                COMMENTS,
-                "removeCommentGaps -> targetStatuses $targetStatuses"
         )
 
         var numOfDeletedComments = 0
