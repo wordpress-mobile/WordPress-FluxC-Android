@@ -85,6 +85,25 @@ public class ThemeStore extends Store {
         }
     }
 
+    /**
+     * A request and response payload class for theme activation call
+     */
+    public static class ActivateThemePayload extends Payload<ThemesError> {
+        public SiteModel site;
+        public ThemeModel theme;
+        public boolean dontChangeHomepage;
+
+        public ActivateThemePayload(SiteModel site, ThemeModel theme) {
+            this(site, theme, true);
+        }
+
+        public ActivateThemePayload(@NonNull SiteModel site, @NonNull ThemeModel theme, boolean dontChangeHomepage) {
+            this.site = site;
+            this.theme = theme;
+            this.dontChangeHomepage = dontChangeHomepage;
+        }
+    }
+
     public static class FetchStarterDesignsPayload extends Payload<BaseNetworkError> {
         @Nullable public Float previewWidth;
         @Nullable public Float previewHeight;
@@ -181,10 +200,12 @@ public class ThemeStore extends Store {
     public static class OnThemeActivated extends OnChanged<ThemesError> {
         public SiteModel site;
         public ThemeModel theme;
+        public boolean dontChangeHomepage;
 
-        public OnThemeActivated(SiteModel site, ThemeModel theme) {
+        public OnThemeActivated(SiteModel site, ThemeModel theme, boolean dontChangeHomepage) {
             this.site = site;
             this.theme = theme;
+            this.dontChangeHomepage = dontChangeHomepage;
         }
     }
 
@@ -267,10 +288,10 @@ public class ThemeStore extends Store {
                 handleCurrentThemeFetched((FetchedCurrentThemePayload) action.getPayload());
                 break;
             case ACTIVATE_THEME:
-                activateTheme((SiteThemePayload) action.getPayload());
+                activateTheme((ActivateThemePayload) action.getPayload());
                 break;
             case ACTIVATED_THEME:
-                handleThemeActivated((SiteThemePayload) action.getPayload());
+                handleThemeActivated((ActivateThemePayload) action.getPayload());
                 break;
             case INSTALL_THEME:
                 installTheme((SiteThemePayload) action.getPayload());
@@ -415,17 +436,17 @@ public class ThemeStore extends Store {
         emitChange(event);
     }
 
-    private void activateTheme(@NonNull SiteThemePayload payload) {
+    private void activateTheme(@NonNull ActivateThemePayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mThemeRestClient.activateTheme(payload.site, payload.theme);
+            mThemeRestClient.activateTheme(payload.site, payload.theme, payload.dontChangeHomepage);
         } else {
             payload.error = new ThemesError(ThemeErrorType.NOT_AVAILABLE);
             handleThemeActivated(payload);
         }
     }
 
-    private void handleThemeActivated(@NonNull SiteThemePayload payload) {
-        OnThemeActivated event = new OnThemeActivated(payload.site, payload.theme);
+    private void handleThemeActivated(@NonNull ActivateThemePayload payload) {
+        OnThemeActivated event = new OnThemeActivated(payload.site, payload.theme, payload.dontChangeHomepage);
         if (payload.isError()) {
             event.error = payload.error;
         } else {

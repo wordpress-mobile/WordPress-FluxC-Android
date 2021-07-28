@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
@@ -108,7 +109,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
-    public void testActivateTheme() throws InterruptedException {
+    public void testActivateThemeByKeepingHomepage() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // fetch installed themes
@@ -127,7 +128,34 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertNotNull(themeToActivate);
 
         // activate it
-        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate);
+        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate, true);
+        assertNotNull(activatedTheme);
+        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
+
+        signOutWPCom();
+    }
+
+    @Test
+    public void testActivateThemeByUsingThemeHomepage() throws InterruptedException {
+        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
+
+        // fetch installed themes
+        fetchInstalledThemes(jetpackSite);
+
+        // make sure there are at least 2 themes, one that's active and one that will be activated
+        List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
+        assertTrue(themes.size() > 1);
+
+        // fetch active theme
+        ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
+        assertNotNull(currentTheme);
+
+        // select a different theme to activate
+        ThemeModel themeToActivate = getOtherTheme(themes, currentTheme.getThemeId());
+        assertNotNull(themeToActivate);
+
+        // activate it
+        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate, false);
         assertNotNull(activatedTheme);
         assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
 
@@ -400,11 +428,18 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
 
-    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite, @NonNull ThemeModel themeToActivate)
+    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite,
+                                     @NonNull ThemeModel themeToActivate) throws InterruptedException {
+        return activateTheme(jetpackSite, themeToActivate, true);
+    }
+
+    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite,
+                                     @NonNull ThemeModel themeToActivate,
+                                     boolean dontChangeHomepage)
             throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
-        SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
+        ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate, dontChangeHomepage);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 

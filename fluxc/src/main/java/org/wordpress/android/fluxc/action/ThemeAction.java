@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 import org.wordpress.android.fluxc.store.ThemeStore.FetchStarterDesignsPayload;
 import org.wordpress.android.fluxc.store.ThemeStore.FetchedCurrentThemePayload;
 import org.wordpress.android.fluxc.store.ThemeStore.FetchedSiteThemesPayload;
@@ -22,7 +23,7 @@ public enum ThemeAction implements IAction {
     FETCH_INSTALLED_THEMES, // Jetpack only
     @Action(payloadType = SiteModel.class)
     FETCH_CURRENT_THEME,
-    @Action(payloadType = SiteThemePayload.class)
+    @Action(payloadType = ActivateThemePayload.class)
     ACTIVATE_THEME,
     @Action(payloadType = SiteThemePayload.class)
     INSTALL_THEME,
@@ -38,7 +39,7 @@ public enum ThemeAction implements IAction {
     FETCHED_INSTALLED_THEMES,
     @Action(payloadType = FetchedCurrentThemePayload.class)
     FETCHED_CURRENT_THEME,
-    @Action(payloadType = SiteThemePayload.class)
+    @Action(payloadType = ActivateThemePayload.class)
     ACTIVATED_THEME,
     @Action(payloadType = SiteThemePayload.class)
     INSTALLED_THEME,

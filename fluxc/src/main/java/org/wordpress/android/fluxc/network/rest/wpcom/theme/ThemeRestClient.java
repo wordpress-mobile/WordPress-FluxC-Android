@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.theme.JetpackThemeResponse.JetpackThemeListResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.theme.WPComThemeResponse.WPComThemeListResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.theme.WPComThemeResponse.WPComThemeMobileFriendlyTaxonomy;
+import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 import org.wordpress.android.fluxc.store.ThemeStore.FetchedCurrentThemePayload;
 import org.wordpress.android.fluxc.store.ThemeStore.FetchedSiteThemesPayload;
 import org.wordpress.android.fluxc.store.ThemeStore.FetchedStarterDesignsPayload;
@@ -106,17 +107,20 @@ public class ThemeRestClient extends BaseWPComRestClient {
      * Endpoint: v1.1/sites/$siteId/themes/mine
      * @see <a href="https://developer.wordpress.com/docs/api/1.1/get/sites/%24site/themes/mine/">Documentation</a>
      */
-    public void activateTheme(@NonNull final SiteModel site, @NonNull final ThemeModel theme) {
+    public void activateTheme(@NonNull final SiteModel site,
+                              @NonNull final ThemeModel theme,
+                              final boolean dontChangeHomepage) {
         String url = WPCOMREST.sites.site(site.getSiteId()).themes.mine.getUrlV1_1();
         Map<String, Object> params = new HashMap<>();
         params.put("theme", theme.getThemeId());
+        params.put("dont_change_homepage", dontChangeHomepage);
 
+        final ActivateThemePayload payload = new ActivateThemePayload(site, theme, dontChangeHomepage);
         add(WPComGsonRequest.buildPostRequest(url, params, WPComThemeResponse.class,
                 new Response.Listener<WPComThemeResponse>() {
                     @Override
                     public void onResponse(WPComThemeResponse response) {
                         AppLog.d(AppLog.T.API, "Received response to theme activation request.");
-                        SiteThemePayload payload = new SiteThemePayload(site, theme);
                         payload.theme.setActive(StringUtils.equals(theme.getThemeId(), response.id));
                         mDispatcher.dispatch(ThemeActionBuilder.newActivatedThemeAction(payload));
                     }
@@ -124,7 +128,6 @@ public class ThemeRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
                         AppLog.d(AppLog.T.API, "Received error response to theme activation request.");
-                        SiteThemePayload payload = new SiteThemePayload(site, theme);
                         payload.error = new ThemesError(error.apiError, error.message);
                         mDispatcher.dispatch(ThemeActionBuilder.newActivatedThemeAction(payload));
                     }
