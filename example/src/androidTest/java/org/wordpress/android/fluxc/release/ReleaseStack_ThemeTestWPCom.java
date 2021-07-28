@@ -110,7 +110,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         ThemeModel themeToActivate = getTwentySomethingFreeTheme(currentTheme.getThemeId(),
                 mThemeStore.getWpComThemes());
         assertNotNull(themeToActivate);
-        activateTheme(themeToActivate, true);
+        activateTheme(themeToActivate, false);
 
         // Assert that the activation was successful
         ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
