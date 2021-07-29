@@ -36,9 +36,6 @@ enum class CommentsAction : IAction {
     @Action(payloadType = RemoteCommentPayload::class)
     LIKE_COMMENT,
 
-    //@Action(payloadType = FetchCommentLikesPayload::class)
-    //FETCH_COMMENT_LIKES,
-
     // Remote responses
     @Action(payloadType = FetchCommentsResponsePayload::class)
     FETCHED_COMMENTS,
@@ -58,20 +55,7 @@ enum class CommentsAction : IAction {
     @Action(payloadType = RemoteCommentResponsePayload::class)
     LIKED_COMMENT,
 
-    //@Action(payloadType = FetchedCommentLikesResponsePayload::class)
-    //FETCHED_COMMENT_LIKES,
-
     // Local actions
     @Action(payloadType = CommentModel::class)
-    UPDATE_COMMENT,
-
-    //@Action(payloadType = SiteModel::class)
-    //REMOVE_COMMENTS,
-//
-    //@Action(payloadType = CommentModel::class)
-    //REMOVE_COMMENT,
-//
-    //@Action
-    //REMOVE_ALL_COMMENTS
-
+    UPDATE_COMMENT
 }

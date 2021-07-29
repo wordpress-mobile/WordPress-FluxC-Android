@@ -57,19 +57,22 @@ class CommentsMapper @Inject constructor() {
         }
         val commentMap: HashMap<*, *> = commentObject
 
-        val datePublished = DateTimeUtils.iso8601UTCFromDate(XMLRPCUtils.safeGetMapValue(commentMap, "date_created_gmt", Date()))
+        val datePublished = DateTimeUtils.iso8601UTCFromDate(
+                XMLRPCUtils.safeGetMapValue(commentMap, "date_created_gmt", Date())
+        )
         // TODOD: use a wrapper for XMLRPCUtils?
         val remoteParentCommentId = XMLRPCUtils.safeGetMapValue(commentMap, "parent", 0L)
 
         return CommentEntity(
-                //id = 0,
                 remoteCommentId = XMLRPCUtils.safeGetMapValue(commentMap, "comment_id", 0L),
                 remotePostId = XMLRPCUtils.safeGetMapValue(commentMap, "post_id", 0L),
                 remoteParentCommentId = remoteParentCommentId,
                 localSiteId = site.id,
                 remoteSiteId = site.selfHostedSiteId,
                 authorUrl = XMLRPCUtils.safeGetMapValue(commentMap, "author_url", ""),
-                authorName = StringEscapeUtils.unescapeHtml4(XMLRPCUtils.safeGetMapValue(commentMap, "author", "")),
+                authorName = StringEscapeUtils.unescapeHtml4(
+                        XMLRPCUtils.safeGetMapValue(commentMap, "author", "")
+                ),
                 authorEmail = XMLRPCUtils.safeGetMapValue(commentMap, "author_email", ""),
                 // TODO: set authorProfileImageUrl - get the hash from the email address?
                 authorProfileImageUrl = null,
@@ -79,7 +82,9 @@ class CommentsMapper @Inject constructor() {
                                 "post_title", ""
                         )
                 ),
-                status = getCommentStatusFromXMLRPCStatusString(XMLRPCUtils.safeGetMapValue(commentMap, "status", "approve")).toString(),
+                status = getCommentStatusFromXMLRPCStatusString(
+                        XMLRPCUtils.safeGetMapValue(commentMap, "status", "approve")
+                ).toString(),
                 datePublished = datePublished,
                 publishedTimestamp = DateTimeUtils.timestampFromIso8601(datePublished),
                 content = XMLRPCUtils.safeGetMapValue(commentMap, "content", ""),
@@ -104,7 +109,6 @@ class CommentsMapper @Inject constructor() {
 
         return comments
     }
-
 
     fun commentEntityToLegacyModel(entity: CommentEntity): CommentModel {
         return CommentModel().apply {

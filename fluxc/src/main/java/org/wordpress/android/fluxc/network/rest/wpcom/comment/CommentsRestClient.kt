@@ -136,7 +136,11 @@ class CommentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun createNewReply(site: SiteModel, remoteCommentId: Long, replayContent: String?): CommentsApiPayload<CommentEntity> {
+    suspend fun createNewReply(
+        site: SiteModel,
+        remoteCommentId: Long,
+        replayContent: String?
+    ): CommentsApiPayload<CommentEntity> {
         val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).replies.new_.urlV1_1
 
         val request = mutableMapOf(
@@ -161,7 +165,11 @@ class CommentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun createNewComment(site: SiteModel, remotePostId: Long, content: String?): CommentsApiPayload<CommentEntity> {
+    suspend fun createNewComment(
+        site: SiteModel,
+        remotePostId: Long,
+        content: String?
+    ): CommentsApiPayload<CommentEntity> {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remotePostId).replies.new_.urlV1_1
 
         val request = mutableMapOf(
@@ -186,7 +194,11 @@ class CommentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun likeComment(site: SiteModel, remoteCommentId: Long, isLike: Boolean): CommentsApiPayload<CommentLikeWPComRestResponse> {
+    suspend fun likeComment(
+        site: SiteModel,
+        remoteCommentId: Long,
+        isLike: Boolean
+    ): CommentsApiPayload<CommentLikeWPComRestResponse> {
         val url = if (isLike) {
             WPCOMREST.sites.site(site.siteId).comments.comment(remoteCommentId).likes.new_.urlV1_1
         } else {

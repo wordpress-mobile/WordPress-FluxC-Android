@@ -164,7 +164,11 @@ class CommentsXMLRPCClient @Inject constructor(
         }
     }
 
-    suspend fun createNewReply(site: SiteModel, comment: CommentEntity, reply: CommentEntity): CommentsApiPayload<CommentEntity> {
+    suspend fun createNewReply(
+        site: SiteModel,
+        comment: CommentEntity,
+        reply: CommentEntity
+    ): CommentsApiPayload<CommentEntity> {
         val commentParams = mutableMapOf<String, Any?>(
                 "content" to reply.content,
                 "comment_parent" to comment.remoteCommentId,
@@ -185,7 +189,11 @@ class CommentsXMLRPCClient @Inject constructor(
         return newComment(site, comment.remotePostId, reply, comment.remoteCommentId, commentParams)
     }
 
-    suspend fun createNewComment(site: SiteModel, remotePostId: Long, comment: CommentEntity): CommentsApiPayload<CommentEntity> {
+    suspend fun createNewComment(
+        site: SiteModel,
+        remotePostId: Long,
+        comment: CommentEntity
+    ): CommentsApiPayload<CommentEntity> {
         val commentParams = mutableMapOf<String, Any?>(
                 "content" to comment.content,
         )
@@ -207,7 +215,13 @@ class CommentsXMLRPCClient @Inject constructor(
         return newComment(site, remotePostId, comment, comment.remoteParentCommentId, commentParams)
     }
 
-    private suspend fun newComment(site: SiteModel, remotePostId: Long, comment: CommentEntity, parentId: Long, commentParams: Map<String, Any?>): CommentsApiPayload<CommentEntity> {
+    private suspend fun newComment(
+        site: SiteModel,
+        remotePostId: Long,
+        comment: CommentEntity,
+        parentId: Long,
+        commentParams: Map<String, Any?>
+    ): CommentsApiPayload<CommentEntity> {
         val params: MutableList<Any> = ArrayList(5)
 
         params.add(site.selfHostedSiteId)
@@ -227,7 +241,10 @@ class CommentsXMLRPCClient @Inject constructor(
         return when(response) {
             is Success -> {
                 if (response.data is Int) {
-                    val newComment = comment.copy(remoteParentCommentId = parentId, remoteCommentId = response.data.toLong())
+                    val newComment = comment.copy(
+                            remoteParentCommentId = parentId,
+                            remoteCommentId = response.data.toLong()
+                    )
                     CommentsApiPayload(newComment)
                 } else {
                     val newComment = comment.copy(remoteParentCommentId = parentId)

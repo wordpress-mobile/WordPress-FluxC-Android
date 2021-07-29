@@ -33,7 +33,12 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun getCommentsForSite(localSiteId: Int, statuses: List<String>, limit: Int, orderAscending: Boolean): CommentEntityList {
+    open suspend fun getCommentsForSite(
+        localSiteId: Int,
+        statuses: List<String>,
+        limit: Int,
+        orderAscending: Boolean
+    ): CommentEntityList {
         return getCommentsForSiteInternal(
                 localSiteId = localSiteId,
                 filterByStatuses = statuses.isNotEmpty(),
@@ -55,7 +60,12 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun removeGapsFromTheTop(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long): Int {
+    open suspend fun removeGapsFromTheTop(
+        localSiteId: Int,
+        statuses: List<String>,
+        remoteIds: List<Long>,
+        startOfRange: Long
+    ): Int {
         return removeGapsFromTheTopInternal(
                 localSiteId = localSiteId,
                 filterByStatuses = statuses.isNotEmpty(),
@@ -67,7 +77,12 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun removeGapsFromTheBottom(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, endOfRange: Long): Int {
+    open suspend fun removeGapsFromTheBottom(
+        localSiteId: Int,
+        statuses: List<String>,
+        remoteIds: List<Long>,
+        endOfRange: Long
+    ): Int {
         return removeGapsFromTheBottomInternal(
                 localSiteId = localSiteId,
                 filterByStatuses = statuses.isNotEmpty(),
@@ -79,7 +94,13 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun removeGapsFromTheMiddle(localSiteId: Int, statuses: List<String>, remoteIds: List<Long>, startOfRange: Long, endOfRange: Long): Int {
+    open suspend fun removeGapsFromTheMiddle(
+        localSiteId: Int,
+        statuses: List<String>,
+        remoteIds: List<Long>,
+        startOfRange: Long,
+        endOfRange: Long
+    ): Int {
         return removeGapsFromTheMiddleInternal(
                 localSiteId = localSiteId,
                 filterByStatuses = statuses.isNotEmpty(),
@@ -96,7 +117,10 @@ abstract class CommentsDao {
     abstract suspend fun getCommentById(localId: Long): CommentEntityList
 
     @Query("SELECT * FROM Comments WHERE localSiteId = :localSiteId AND remoteCommentId = :remoteCommentId")
-    abstract suspend fun getCommentsByLocalSiteAndRemoteCommentId(localSiteId: Int, remoteCommentId: Long): CommentEntityList
+    abstract suspend fun getCommentsByLocalSiteAndRemoteCommentId(
+        localSiteId: Int,
+        remoteCommentId: Long
+    ): CommentEntityList
 
 
     @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
@@ -125,15 +149,16 @@ abstract class CommentsDao {
     @Update
     protected abstract fun update(comment: CommentEntity): Int
 
-    //@Query("SELECT * FROM Comments WHERE (id = :commentId OR (remoteCommentId = :remoteCommentId AND localSiteId = :localSiteId))")
-    //protected abstract fun getMatchingComments(commentId: Long, remoteCommentId: Long, localSiteId: Int): CommentEntityList
-
     @Query("""
         SELECT * FROM Comments WHERE remoteSiteId = :siteId 
         AND CASE WHEN :filterByStatuses = 1 THEN status IN (:statuses) ELSE 1 END 
         ORDER BY datePublished DESC
     """)
-    protected abstract fun getFilteredCommentsInternal(siteId: Long, statuses: List<String>, filterByStatuses: Boolean): CommentEntityList
+    protected abstract fun getFilteredCommentsInternal(
+        siteId: Long,
+        statuses: List<String>,
+        filterByStatuses: Boolean
+    ): CommentEntityList
 
     @Query("""
         SELECT * FROM Comments 
@@ -144,14 +169,24 @@ abstract class CommentsDao {
         CASE WHEN :orderAscending = 0 THEN datePublished END DESC
         LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
     """)
-    protected abstract fun getCommentsForSiteInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, limit: Int, orderAscending: Boolean): CommentEntityList
+    protected abstract fun getCommentsForSiteInternal(
+        localSiteId: Int,
+        filterByStatuses: Boolean,
+        statuses: List<String>,
+        limit: Int,
+        orderAscending: Boolean
+    ): CommentEntityList
 
     @Query("""
         DELETE FROM Comments 
         WHERE remoteSiteId = :siteId 
         AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
     """)
-    protected abstract fun clearAllBySiteIdAndFiltersInternal(siteId: Long, filterByStatuses: Boolean, statuses: List<String>): Int
+    protected abstract fun clearAllBySiteIdAndFiltersInternal(
+        siteId: Long,
+        filterByStatuses: Boolean,
+        statuses: List<String>
+    ): Int
 
 
     @Query("""
@@ -161,7 +196,14 @@ abstract class CommentsDao {
         AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp >= :startOfRange
     """)
-    protected abstract fun removeGapsFromTheTopInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, startOfRange: Long): Int
+    protected abstract fun removeGapsFromTheTopInternal(
+        localSiteId: Int,
+        filterByStatuses: Boolean,
+        statuses: List<String>,
+        filterByIds: Boolean,
+        remoteIds: List<Long>,
+        startOfRange: Long
+    ): Int
 
     @Query("""
         DELETE FROM Comments 
@@ -170,7 +212,14 @@ abstract class CommentsDao {
         AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp <= :endOfRange
     """)
-    protected abstract fun removeGapsFromTheBottomInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, endOfRange: Long): Int
+    protected abstract fun removeGapsFromTheBottomInternal(
+        localSiteId: Int,
+        filterByStatuses: Boolean,
+        statuses: List<String>,
+        filterByIds: Boolean,
+        remoteIds: List<Long>,
+        endOfRange: Long
+    ): Int
 
 
     @Query("""
@@ -181,14 +230,21 @@ abstract class CommentsDao {
         AND publishedTimestamp <= :startOfRange
         AND publishedTimestamp >= :endOfRange
     """)
-    protected abstract fun removeGapsFromTheMiddleInternal(localSiteId: Int, filterByStatuses: Boolean, statuses: List<String>, filterByIds: Boolean, remoteIds: List<Long>, startOfRange: Long, endOfRange: Long): Int
+    protected abstract fun removeGapsFromTheMiddleInternal(
+        localSiteId: Int,
+        filterByStatuses: Boolean,
+        statuses: List<String>,
+        filterByIds: Boolean,
+        remoteIds: List<Long>,
+        startOfRange: Long,
+        endOfRange: Long
+    ): Int
 
     @Query("DELETE FROM Comments WHERE id = :commentId")
     protected abstract fun deleteById(commentId: Long): Int
 
     @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId OR remoteCommentId = :remoteCommentId")
     protected abstract fun deleteByRemoteIds(siteId: Long, remoteCommentId: Long): Int
-
 
     // Private methods
     private suspend fun insertOrUpdateCommentsInternal(comments: CommentEntityList): List<Long> {
@@ -198,7 +254,6 @@ abstract class CommentsDao {
     }
 
     private suspend fun insertOrUpdateCommentInternal(comment: CommentEntity): Long {
-        //val matchingComments = getMatchingComments(comment.id, comment.remoteCommentId, comment.localSiteId)
         val commentByLocalId = getCommentById(comment.id)
 
         val matchingComments = if (commentByLocalId.isEmpty()) {
@@ -218,19 +273,6 @@ abstract class CommentsDao {
             matchingComment.id
         }
     }
-
-
-/*
-    @Query("DELETE FROM Comments")
-    abstract suspend fun clearAll(): Int
-
-    @Query("SELECT count(*) FROM Comments WHERE remoteSiteId = :siteId AND status IN (:statuses)") use CASE WHEN for :statuses
-    abstract suspend fun getCommentsCountForSite(siteId: Long, statuses: List<String>): Int
-
-*/
-
-
-
 
     @Entity(
             tableName = "Comments"

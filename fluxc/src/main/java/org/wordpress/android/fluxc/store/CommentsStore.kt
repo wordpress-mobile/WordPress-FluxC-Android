@@ -85,7 +85,12 @@ class CommentsStore
         object DoNotCare: CommentsData()
     }
 
-    suspend fun getCommentsForSite(site: SiteModel?, orderByDateAscending: Boolean, limit: Int, vararg statuses: CommentStatus): CommentEntityList {
+    suspend fun getCommentsForSite(
+        site: SiteModel?,
+        orderByDateAscending: Boolean,
+        limit: Int,
+        vararg statuses: CommentStatus
+    ): CommentEntityList {
         if (site == null) return listOf()
 
         return commentsDao.getCommentsForSite(
@@ -132,7 +137,11 @@ class CommentsStore
         }
     }
 
-    suspend fun fetchComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?): CommentsActionPayload<CommentsActionData> {
+    suspend fun fetchComment(
+        site: SiteModel,
+        remoteCommentId: Long,
+        comment: CommentEntity?
+    ): CommentsActionPayload<CommentsActionData> {
         val remoteCommentIdToFetch = comment?.remoteCommentId ?: remoteCommentId
 
         val payload = if (site.isUsingWpComRestApi) {
@@ -169,7 +178,11 @@ class CommentsStore
         }
     }
 
-    suspend fun createNewReply(site: SiteModel, comment: CommentEntity, reply: CommentEntity): CommentsActionPayload<CommentsActionData> {
+    suspend fun createNewReply(
+        site: SiteModel,
+        comment: CommentEntity,
+        reply: CommentEntity
+    ): CommentsActionPayload<CommentsActionData> {
         val payload = if (site.isUsingWpComRestApi) {
             commentsRestClient.createNewReply(site, comment.remoteCommentId, reply.content)
         } else {
@@ -205,7 +218,11 @@ class CommentsStore
         }
     }
 
-    suspend fun deleteComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?): CommentsActionPayload<CommentsActionData> {
+    suspend fun deleteComment(
+        site: SiteModel,
+        remoteCommentId: Long,
+        comment: CommentEntity?
+    ): CommentsActionPayload<CommentsActionData> {
         // If the comment is stored locally, we want to update it locally (needed because in some
         // cases we use this to update comments by remote id).
         val commentToDelete = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(
@@ -234,7 +251,7 @@ class CommentsStore
                         commentFromEndpoint.copy(id = entity.id)
                     } ?: commentFromEndpoint
                 }
-                else /* this means !site.isUsingWpComRestApi is true */ -> {
+                else -> { // this means !site.isUsingWpComRestApi is true
                     // This is ugly but the XMLRPC response doesn't contain any info about the update comment.
                     // So we're copying the logic here: if the comment status was "trash" before and the delete
                     // call is successful, then we want to delete this comment. Setting the "deleted" status
@@ -253,8 +270,8 @@ class CommentsStore
 
             return targetComment?.let {
                 // Delete once means "send to trash", so we don't want to remove it from the DB, just update it's
-                // status. Delete twice means "farewell comment, we won't see you ever again". Only delete from the DB if
-                // the status is "deleted".
+                // status. Delete twice means "farewell comment, we won't see you ever again". Only delete from the
+                // DB if the status is "deleted".
                 val deletedCommentAsList = if (it.status?.equals(DELETED.toString()) == true) {
                     commentsDao.deleteComment(it)
                     it.toListOrEmpty()
@@ -268,10 +285,18 @@ class CommentsStore
         }
     }
 
-    suspend fun likeComment(site: SiteModel, remoteCommentId: Long, comment: CommentEntity?, isLike: Boolean): CommentsActionPayload<CommentsActionData> {
+    suspend fun likeComment(
+        site: SiteModel,
+        remoteCommentId: Long,
+        comment: CommentEntity?,
+        isLike: Boolean
+    ): CommentsActionPayload<CommentsActionData> {
         // If the comment is stored locally, we want to update it locally (needed because in some
         // cases we use this to update comments by remote id).
-        val commentToLike = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(site.id, remoteCommentId).firstOrNull()
+        val commentToLike = comment ?: commentsDao.getCommentsByLocalSiteAndRemoteCommentId(
+                site.id,
+                remoteCommentId
+        ).firstOrNull()
         val remoteCommentIdToLike = commentToLike?.remoteCommentId ?: remoteCommentId
 
         val payload = if (site.isUsingWpComRestApi) {
@@ -304,7 +329,11 @@ class CommentsStore
         }
     }
 
-    suspend fun updateComment(isError: Boolean, commentId: Long, comment: CommentEntity): CommentsActionPayload<CommentsActionEntityIds> {
+    suspend fun updateComment(
+        isError: Boolean,
+        commentId: Long,
+        comment: CommentEntity
+    ): CommentsActionPayload<CommentsActionEntityIds> {
         val (entityId, rowsAffected) = if (isError) {
             Pair(commentId, 0)
         } else {
@@ -391,7 +420,10 @@ class CommentsStore
     suspend fun getCommentByLocalSiteAndRemoteId(localSiteId: Int, remoteCommentId: Long) =
             commentsDao.getCommentsByLocalSiteAndRemoteCommentId(localSiteId, remoteCommentId)
 
-    suspend fun pushLocalCommentByRemoteId(site: SiteModel, remoteCommentId: Long): CommentsActionPayload<CommentsActionData> {
+    suspend fun pushLocalCommentByRemoteId(
+        site: SiteModel,
+        remoteCommentId: Long
+    ): CommentsActionPayload<CommentsActionData> {
         val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(
                 if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
                 remoteCommentId
@@ -413,12 +445,16 @@ class CommentsStore
         return CommentsActionPayload(PagingData(comments = cachedComments, imposeHasMore))
     }
 
-    @Deprecated("Action and event bus support should be gradually replaced while the Comments Unification project proceeds")
+    @Deprecated(
+            "Action and event bus support should be gradually replaced while the Comments Unification project proceeds"
+    )
     override fun onRegister() {
         AppLog.d(API, this.javaClass.name + ": onRegister")
     }
 
-    @Deprecated("Action and event bus support should be gradually replaced while the Comments Unification project proceeds")
+    @Deprecated(
+            "Action and event bus support should be gradually replaced while the Comments Unification project proceeds"
+    )
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? CommentsAction ?: return
@@ -491,11 +527,16 @@ class CommentsStore
     }
 
     @Deprecated(
-        message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+        message = "Action and event bus support should be gradually replaced while the " +
+                "Comments Unification project proceeds",
         replaceWith = ReplaceWith("use fetchComment suspend fun directly")
     )
     private suspend fun onFetchComment(payload: RemoteCommentPayload): OnCommentChanged {
-        val response = fetchComment(payload.site, payload.remoteCommentId, payload.comment?.let { commentsMapper.commentLegacyModelToEntity(it) })
+        val response = fetchComment(
+                payload.site,
+                payload.remoteCommentId,
+                payload.comment?.let { commentsMapper.commentLegacyModelToEntity(it) }
+        )
 
         return createOnCommentChangedEvent(
                 response.data?.rowsAffected.orNone(),
@@ -506,7 +547,8 @@ class CommentsStore
     }
 
     @Deprecated(
-            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            message = "Action and event bus support should be gradually replaced while the " +
+                    "Comments Unification project proceeds",
             replaceWith = ReplaceWith("use updateComment suspend fun directly")
     )
     private suspend fun onUpdateComment(payload: CommentModel): OnCommentChanged {
@@ -525,11 +567,16 @@ class CommentsStore
     }
 
     @Deprecated(
-            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            message = "Action and event bus support should be gradually replaced while the " +
+                    "Comments Unification project proceeds",
             replaceWith = ReplaceWith("use deleteComment suspend fun directly")
     )
     private suspend fun onDeleteComment(payload: RemoteCommentPayload): OnCommentChanged {
-        val response = deleteComment(payload.site, payload.remoteCommentId, payload.comment?.let { commentsMapper.commentLegacyModelToEntity(it) })
+        val response = deleteComment(
+                payload.site,
+                payload.remoteCommentId,
+                payload.comment?.let { commentsMapper.commentLegacyModelToEntity(it) }
+        )
 
         return createOnCommentChangedEvent(
                 // Keeping here the rowsAffected set to 0 as it is in original handleDeletedCommentResponse
@@ -541,7 +588,8 @@ class CommentsStore
     }
 
     @Deprecated(
-            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            message = "Action and event bus support should be gradually replaced while the " +
+                    "Comments Unification project proceeds",
             replaceWith = ReplaceWith("use likeComment suspend fun directly")
     )
     private suspend fun onLikeComment(payload: RemoteLikeCommentPayload): OnCommentChanged {
@@ -561,7 +609,8 @@ class CommentsStore
     }
 
     @Deprecated(
-            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            message = "Action and event bus support should be gradually replaced while the " +
+                    "Comments Unification project proceeds",
             replaceWith = ReplaceWith("use pushComment suspend fun directly")
     )
     private suspend fun onPushComment(payload: RemoteCommentPayload): OnCommentChanged {
@@ -586,7 +635,8 @@ class CommentsStore
     }
 
     @Deprecated(
-            message = "Action and event bus support should be gradually replaced while the Comments Unification project proceeds",
+            message = "Action and event bus support should be gradually replaced while the " +
+                    "Comments Unification project proceeds",
             replaceWith = ReplaceWith("use createNewComment suspend fun directly")
     )
     private suspend fun onCreateNewComment(payload: RemoteCreateCommentPayload): OnCommentChanged {
@@ -598,7 +648,11 @@ class CommentsStore
             )
         } else {
             // Create a new reply to a specific Comment
-            createNewReply(payload.site, commentsMapper.commentLegacyModelToEntity(payload.comment), commentsMapper.commentLegacyModelToEntity(payload.reply))
+            createNewReply(
+                    payload.site,
+                    commentsMapper.commentLegacyModelToEntity(payload.comment),
+                    commentsMapper.commentLegacyModelToEntity(payload.reply)
+            )
         }
 
         return createOnCommentChangedEvent(
@@ -609,7 +663,14 @@ class CommentsStore
         )
     }
 
-    private fun createOnCommentChangedEvent(rowsAffected: Int, actionType: CommentAction, error: CommentError?, commentLocalIds: List<Int>, status: CommentStatus? = null, offset: Int? = null): OnCommentChanged {
+    private fun createOnCommentChangedEvent(
+        rowsAffected: Int,
+        actionType: CommentAction,
+        error: CommentError?,
+        commentLocalIds: List<Int>,
+        status: CommentStatus? = null,
+        offset: Int? = null
+    ): OnCommentChanged {
         return OnCommentChanged(rowsAffected).apply {
             this.changedCommentsLocalIds.addAll(commentLocalIds)
             this.causeOfChange = actionType
@@ -641,7 +702,13 @@ class CommentsStore
         return this ?: 0
     }
 
-    private suspend fun removeCommentGaps(site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus): Int {
+    private suspend fun removeCommentGaps(
+        site: SiteModel?,
+        commentsList: CommentEntityList?,
+        maxEntriesInResponse: Int,
+        requestOffset: Int,
+        vararg statuses: CommentStatus
+    ): Int {
         if (site == null || commentsList == null) {
             return 0
         }
@@ -657,7 +724,7 @@ class CommentsStore
                 "removeCommentGaps -> siteId [${site.siteId}]  targetStatuses [$targetStatuses]"
         )
 
-        if (commentsList.isEmpty()/* && requestOffset == 0*/) {
+        if (commentsList.isEmpty()) {
             return if (requestOffset == 0) {
                 val numOfDeletedComments = commentsDao.clearAllBySiteIdAndFilters(
                         siteId = site.siteId,
@@ -697,7 +764,8 @@ class CommentsStore
         val endOfRange = comments.last().publishedTimestamp
 
         AppLog.d(
-                COMMENTS, "removeCommentGaps -> startOfRange [" + startOfRange + " - " + comments.first().datePublished + "] "
+                COMMENTS,
+                "removeCommentGaps -> startOfRange [" + startOfRange + " - " + comments.first().datePublished + "] "
                 + "endOfRange [" + endOfRange + " - " + comments.last().datePublished + "]"
         )
 
