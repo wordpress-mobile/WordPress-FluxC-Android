@@ -2,9 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.pay
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel

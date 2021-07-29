@@ -39,7 +39,7 @@ data class WCPaymentAccountResult(
      */
     @SerializedName("card_present_eligible")
     val isCardPresentEligible: Boolean
-): JsonObjectOrEmptyArray() {
+) : JsonObjectOrEmptyArray() {
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
      */
