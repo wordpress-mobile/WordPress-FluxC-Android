@@ -11,5 +11,5 @@ PUBLISHED_FLUXC_VERSION=$(buildkite-agent meta-data get "PUBLISHED_FLUXC_VERSION
     -PfluxcAnnotationsVersion="$PUBLISHED_FLUXC_ANNOTATIONS_VERSION" |
     -PfluxcProcessorVersion="$PUBLISHED_FLUXC_PROCESSORS_VERSION" |
     -PfluxcVersion="$PUBLISHED_FLUXC_VERSION" |
-    :prepareToPublishToS3 $(prepare_to_publish_to_s3_params) |
-    :fluxc:woocommerce:publish
+    :plugins:woocommerce:prepareToPublishToS3 $(prepare_to_publish_to_s3_params) |
+    :plugins:woommerce:publish
