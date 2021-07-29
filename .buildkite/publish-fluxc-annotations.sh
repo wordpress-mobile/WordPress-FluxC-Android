@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-./gradlew |
-    :fluxc-annotations:prepareToPublishToS3 |
-    :fluxc-annotations:prepareToPublishToS3 $(prepare_to_publish_to_s3_params) |
+./gradlew \
+    :fluxc-annotations:prepareToPublishToS3 \
+    :fluxc-annotations:prepareToPublishToS3 $(prepare_to_publish_to_s3_params) \
     :fluxc-annotations:publish
 
 # Add meta-data for the published version so we can use it in subsequent steps
