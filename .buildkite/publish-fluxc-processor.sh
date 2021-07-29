@@ -11,4 +11,4 @@ PUBLISHED_FLUXC_ANNOTATIONS_VERSION=$(buildkite-agent meta-data get "PUBLISHED_F
     :fluxc-processor:publish
 
 # Add meta-data for the published version so we can use it in subsequent steps
-cat ./build/published-version.txt | buildkite-agent meta-data set "PUBLISHED_FLUXC_PROCESSOR_VERSION"
+cat ./fluxc-processor/build/published-version.txt | buildkite-agent meta-data set "PUBLISHED_FLUXC_PROCESSOR_VERSION"
