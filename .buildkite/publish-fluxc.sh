@@ -7,7 +7,7 @@ PUBLISHED_FLUXC_ANNOTATIONS_VERSION=$(buildkite-agent meta-data get "PUBLISHED_F
 PUBLISHED_FLUXC_PROCESSOR_VERSION=$(buildkite-agent meta-data get "PUBLISHED_FLUXC_PROCESSOR_VERSION")
 
 ./gradlew |
-    -PfluxCAnnotationsVersion="$PUBLISHED_FLUXC_ANNOTATIONS_VERSION" |
+    -PfluxcAnnotationsVersion="$PUBLISHED_FLUXC_ANNOTATIONS_VERSION" |
     -PfluxcProcessorVersion="$PUBLISHED_FLUXC_PROCESSOR_VERSION" |
     :prepareToPublishToS3 $(prepare_to_publish_to_s3_params) |
     :fluxc:publish
