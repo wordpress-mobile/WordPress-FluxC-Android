@@ -38,7 +38,7 @@ abstract class WPAndroidDatabase : RoomDatabase() {
         )
                 .fallbackToDestructiveMigration()
                 .addMigrations(MIGRATION_1_2)
-                // TODOD: add migrations
+                .addMigrations(MIGRATION_2_3)
                 .build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -78,6 +78,35 @@ abstract class WPAndroidDatabase : RoomDatabase() {
                                     "FOREIGN KEY(`internalPlanId`) REFERENCES `PlanOffers`(`internalPlanId`) " +
                                     "ON UPDATE NO ACTION ON DELETE CASCADE" +
                                     ")"
+                    )
+                }
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.apply {
+                    execSQL(
+                            "CREATE TABLE IF NOT EXISTS `Comments` (" +
+                                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                                    "`remoteCommentId` INTEGER NOT NULL, " +
+                                    "`remotePostId` INTEGER NOT NULL, " +
+                                    "`remoteParentCommentId` INTEGER NOT NULL, " +
+                                    "`localSiteId` INTEGER NOT NULL, " +
+                                    "`remoteSiteId` INTEGER NOT NULL, " +
+                                    "`authorUrl` TEXT, " +
+                                    "`authorName` TEXT, " +
+                                    "`authorEmail` TEXT, " +
+                                    "`authorProfileImageUrl` TEXT, " +
+                                    "`postTitle` TEXT, " +
+                                    "`status` TEXT, " +
+                                    "`datePublished` TEXT, " +
+                                    "`publishedTimestamp` INTEGER NOT NULL, " +
+                                    "`content` TEXT, " +
+                                    "`url` TEXT, " +
+                                    "`hasParent` INTEGER NOT NULL, " +
+                                    "`parentId` INTEGER NOT NULL, " +
+                                    "`iLike` INTEGER NOT NULL)"
                     )
                 }
             }
