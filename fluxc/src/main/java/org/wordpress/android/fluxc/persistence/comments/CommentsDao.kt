@@ -33,14 +33,30 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun getCommentsForSite(
+    open suspend fun getCommentsByLocalSiteId(
         localSiteId: Int,
         statuses: List<String>,
         limit: Int,
         orderAscending: Boolean
     ): CommentEntityList {
-        return getCommentsForSiteInternal(
+        return getCommentsByLocalSiteIdInternal(
                 localSiteId = localSiteId,
+                filterByStatuses = statuses.isNotEmpty(),
+                statuses = statuses,
+                limit = limit,
+                orderAscending = orderAscending
+        )
+    }
+
+    @Transaction
+    open suspend fun getCommentsByRemoteSiteId(
+        remoteSiteId: Long,
+        statuses: List<String>,
+        limit: Int,
+        orderAscending: Boolean
+    ): CommentEntityList {
+        return getCommentsByRemoteSiteIdInternal(
+                remoteSiteId = remoteSiteId,
                 filterByStatuses = statuses.isNotEmpty(),
                 statuses = statuses,
                 limit = limit,
@@ -127,7 +143,7 @@ abstract class CommentsDao {
     abstract suspend fun getCommentsBySiteIdAndRemoteCommentId(siteId: Long, remoteCommentId: Long): CommentEntityList
 
     @Transaction
-    open suspend fun appendOrUpdateComments(siteId: Long, statuses: List<String>, comments: CommentEntityList): Int {
+    open suspend fun appendOrUpdateComments(comments: CommentEntityList): Int {
         val affectedIdList = insertOrUpdateCommentsInternal(comments)
         return affectedIdList.size
     }
@@ -169,13 +185,31 @@ abstract class CommentsDao {
         CASE WHEN :orderAscending = 0 THEN datePublished END DESC
         LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
     """)
-    protected abstract fun getCommentsForSiteInternal(
+    protected abstract fun getCommentsByLocalSiteIdInternal(
         localSiteId: Int,
         filterByStatuses: Boolean,
         statuses: List<String>,
         limit: Int,
         orderAscending: Boolean
     ): CommentEntityList
+
+    @Query("""
+        SELECT * FROM Comments 
+        WHERE remoteSiteId = :remoteSiteId 
+        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
+        ORDER BY 
+        CASE WHEN :orderAscending = 1 THEN datePublished END ASC,
+        CASE WHEN :orderAscending = 0 THEN datePublished END DESC
+        LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
+    """)
+    protected abstract fun getCommentsByRemoteSiteIdInternal(
+        remoteSiteId: Long,
+        filterByStatuses: Boolean,
+        statuses: List<String>,
+        limit: Int,
+        orderAscending: Boolean
+    ): CommentEntityList
+
 
     @Query("""
         DELETE FROM Comments 
@@ -243,7 +277,7 @@ abstract class CommentsDao {
     @Query("DELETE FROM Comments WHERE id = :commentId")
     protected abstract fun deleteById(commentId: Long): Int
 
-    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId OR remoteCommentId = :remoteCommentId")
+    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
     protected abstract fun deleteByRemoteIds(siteId: Long, remoteCommentId: Long): Int
 
     // Private methods

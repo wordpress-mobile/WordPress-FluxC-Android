@@ -93,7 +93,7 @@ class CommentsStore
     ): CommentEntityList {
         if (site == null) return listOf()
 
-        return commentsDao.getCommentsForSite(
+        return commentsDao.getCommentsByLocalSiteId(
                 localSiteId = site.id,
                 statuses = if (statuses.asList().contains(ALL)) listOf() else statuses.map { it.toString() },
                 limit = limit,
@@ -370,25 +370,29 @@ class CommentsStore
         }
 
         return if (payload.isError) {
-            val cachedComments = commentsDao.getFilteredComments(
-                    siteId = remoteSiteId,
-                    statuses = cacheStatuses.map { it.toString() }
-            )
-            CommentsActionPayload(payload.error, PagingData(comments = cachedComments, hasMore = true))
+            val cachedComments = if (offset > 0) {
+                commentsDao.getCommentsByRemoteSiteId(
+                        remoteSiteId = remoteSiteId,
+                        statuses = cacheStatuses.map { it.toString() },
+                        limit = offset,
+                        orderAscending = false
+                )
+            } else {
+                listOf()
+            }
+            CommentsActionPayload(payload.error, PagingData(comments = cachedComments, hasMore = cachedComments.isNotEmpty()))
         } else {
             val comments = payload.response?.map { it } ?: listOf()
 
             removeCommentGaps(site, comments, number, offset, networkStatusFilter)
 
-            commentsDao.appendOrUpdateComments(
-                    siteId = remoteSiteId,
-                    statuses = cacheStatuses.map { it.toString() },
-                    comments = comments
-            )
+            commentsDao.appendOrUpdateComments(comments = comments)
 
-            val cachedComments = commentsDao.getFilteredComments(
-                    siteId = remoteSiteId,
-                    statuses = cacheStatuses.map { it.toString() }
+            val cachedComments = commentsDao.getCommentsByRemoteSiteId(
+                    remoteSiteId = remoteSiteId,
+                    statuses = cacheStatuses.map { it.toString() },
+                    limit = offset + comments.size,
+                    orderAscending = false
             )
 
             CommentsActionPayload(PagingData(comments = cachedComments, hasMore = comments.size == number))
