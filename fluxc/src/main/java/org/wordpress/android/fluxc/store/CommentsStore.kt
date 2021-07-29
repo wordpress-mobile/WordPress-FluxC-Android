@@ -350,29 +350,26 @@ class CommentsStore
         networkStatusFilter: CommentStatus,
         cacheStatuses: List<CommentStatus>
     ): CommentsActionPayload<PagingData> {
-        val (payload, remoteSiteId) = if (site.isUsingWpComRestApi) {
-            Pair(commentsRestClient.fetchCommentsPage(
+        val payload = if (site.isUsingWpComRestApi) {
+            commentsRestClient.fetchCommentsPage(
                     site = site,
                     number = number,
                     offset = offset,
                     status = networkStatusFilter
-            ),
-            site.siteId
             )
         } else {
-            Pair(
             commentsXMLRPCClient.fetchCommentsPage(
                     site = site,
                     number = number,
                     offset = offset,
                     status = networkStatusFilter
-            ), site.selfHostedSiteId)
+            )
         }
 
         return if (payload.isError) {
             val cachedComments = if (offset > 0) {
-                commentsDao.getCommentsByRemoteSiteId(
-                        remoteSiteId = remoteSiteId,
+                commentsDao.getCommentsByLocalSiteId(
+                        localSiteId = site.id,
                         statuses = cacheStatuses.map { it.toString() },
                         limit = offset,
                         orderAscending = false
@@ -380,7 +377,10 @@ class CommentsStore
             } else {
                 listOf()
             }
-            CommentsActionPayload(payload.error, PagingData(comments = cachedComments, hasMore = cachedComments.isNotEmpty()))
+            CommentsActionPayload(payload.error, PagingData(
+                    comments = cachedComments,
+                    hasMore = cachedComments.isNotEmpty()
+            ))
         } else {
             val comments = payload.response?.map { it } ?: listOf()
 
@@ -388,8 +388,8 @@ class CommentsStore
 
             commentsDao.appendOrUpdateComments(comments = comments)
 
-            val cachedComments = commentsDao.getCommentsByRemoteSiteId(
-                    remoteSiteId = remoteSiteId,
+            val cachedComments = commentsDao.getCommentsByLocalSiteId(
+                    localSiteId = site.id,
                     statuses = cacheStatuses.map { it.toString() },
                     limit = offset + comments.size,
                     orderAscending = false
@@ -405,8 +405,8 @@ class CommentsStore
         newStatus: CommentStatus
     ): CommentsActionPayload<CommentsActionData> {
         // TODOD: add message to all CommentError to be used in logs (since not localized) in the WPAndroid
-        val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(
-                if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
+        val comment = commentsDao.getCommentsByLocalSiteAndRemoteCommentId(
+                site.id,
                 remoteCommentId
         ).firstOrNull() ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
 
@@ -428,8 +428,8 @@ class CommentsStore
         site: SiteModel,
         remoteCommentId: Long
     ): CommentsActionPayload<CommentsActionData> {
-        val comment = commentsDao.getCommentsBySiteIdAndRemoteCommentId(
-                if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
+        val comment = commentsDao.getCommentsByLocalSiteAndRemoteCommentId(
+                site.id,
                 remoteCommentId
         ).firstOrNull() ?: return CommentsActionPayload(CommentError(INVALID_INPUT, ""))
 
@@ -442,7 +442,7 @@ class CommentsStore
         imposeHasMore: Boolean
     ): CommentsActionPayload<PagingData> {
         val cachedComments = commentsDao.getFilteredComments(
-                siteId = if (site.isUsingWpComRestApi) site.siteId else site.selfHostedSiteId,
+                localSiteId = site.id,
                 statuses = cacheStatuses.map { it.toString() }
         )
 
@@ -731,7 +731,7 @@ class CommentsStore
         if (commentsList.isEmpty()) {
             return if (requestOffset == 0) {
                 val numOfDeletedComments = commentsDao.clearAllBySiteIdAndFilters(
-                        siteId = site.siteId,
+                        localSiteId = site.id,
                         statuses = targetStatuses
                 )
 

@@ -28,8 +28,8 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun getFilteredComments(siteId: Long, statuses: List<String>): CommentEntityList {
-        return getFilteredCommentsInternal(siteId, statuses, statuses.isNotEmpty())
+    open suspend fun getFilteredComments(localSiteId: Int, statuses: List<String>): CommentEntityList {
+        return getFilteredCommentsInternal(localSiteId, statuses, statuses.isNotEmpty())
     }
 
     @Transaction
@@ -49,29 +49,13 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun getCommentsByRemoteSiteId(
-        remoteSiteId: Long,
-        statuses: List<String>,
-        limit: Int,
-        orderAscending: Boolean
-    ): CommentEntityList {
-        return getCommentsByRemoteSiteIdInternal(
-                remoteSiteId = remoteSiteId,
-                filterByStatuses = statuses.isNotEmpty(),
-                statuses = statuses,
-                limit = limit,
-                orderAscending = orderAscending
-        )
-    }
-
-    @Transaction
     open suspend fun deleteComment(comment: CommentEntity): Int {
         val result = deleteById(comment.id)
 
         return if (result > 0) {
             result
         } else {
-            deleteByRemoteIds(comment.remoteSiteId, comment.remoteCommentId)
+            deleteByLocalSiteAndRemoteIds(comment.localSiteId, comment.remoteCommentId)
         }
     }
 
@@ -138,10 +122,6 @@ abstract class CommentsDao {
         remoteCommentId: Long
     ): CommentEntityList
 
-
-    @Query("SELECT * FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
-    abstract suspend fun getCommentsBySiteIdAndRemoteCommentId(siteId: Long, remoteCommentId: Long): CommentEntityList
-
     @Transaction
     open suspend fun appendOrUpdateComments(comments: CommentEntityList): Int {
         val affectedIdList = insertOrUpdateCommentsInternal(comments)
@@ -149,9 +129,9 @@ abstract class CommentsDao {
     }
 
     @Transaction
-    open suspend fun clearAllBySiteIdAndFilters(siteId: Long, statuses: List<String>): Int {
+    open suspend fun clearAllBySiteIdAndFilters(localSiteId: Int, statuses: List<String>): Int {
         return clearAllBySiteIdAndFiltersInternal(
-                siteId = siteId,
+                localSiteId = localSiteId,
                 filterByStatuses = statuses.isNotEmpty(),
                 statuses = statuses
         )
@@ -166,12 +146,12 @@ abstract class CommentsDao {
     protected abstract fun update(comment: CommentEntity): Int
 
     @Query("""
-        SELECT * FROM Comments WHERE remoteSiteId = :siteId 
+        SELECT * FROM Comments WHERE localSiteId = :localSiteId 
         AND CASE WHEN :filterByStatuses = 1 THEN status IN (:statuses) ELSE 1 END 
         ORDER BY datePublished DESC
     """)
     protected abstract fun getFilteredCommentsInternal(
-        siteId: Long,
+        localSiteId: Int,
         statuses: List<String>,
         filterByStatuses: Boolean
     ): CommentEntityList
@@ -194,30 +174,12 @@ abstract class CommentsDao {
     ): CommentEntityList
 
     @Query("""
-        SELECT * FROM Comments 
-        WHERE remoteSiteId = :remoteSiteId 
-        AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
-        ORDER BY 
-        CASE WHEN :orderAscending = 1 THEN datePublished END ASC,
-        CASE WHEN :orderAscending = 0 THEN datePublished END DESC
-        LIMIT CASE WHEN :limit > 0 THEN :limit ELSE -1 END
-    """)
-    protected abstract fun getCommentsByRemoteSiteIdInternal(
-        remoteSiteId: Long,
-        filterByStatuses: Boolean,
-        statuses: List<String>,
-        limit: Int,
-        orderAscending: Boolean
-    ): CommentEntityList
-
-
-    @Query("""
         DELETE FROM Comments 
-        WHERE remoteSiteId = :siteId 
+        WHERE localSiteId = :localSiteId 
         AND CASE WHEN (:filterByStatuses = 1) THEN (status IN (:statuses)) ELSE 1 END
     """)
     protected abstract fun clearAllBySiteIdAndFiltersInternal(
-        siteId: Long,
+        localSiteId: Int,
         filterByStatuses: Boolean,
         statuses: List<String>
     ): Int
@@ -277,8 +239,8 @@ abstract class CommentsDao {
     @Query("DELETE FROM Comments WHERE id = :commentId")
     protected abstract fun deleteById(commentId: Long): Int
 
-    @Query("DELETE FROM Comments WHERE remoteSiteId = :siteId AND remoteCommentId = :remoteCommentId")
-    protected abstract fun deleteByRemoteIds(siteId: Long, remoteCommentId: Long): Int
+    @Query("DELETE FROM Comments WHERE localSiteId = :localSiteId AND remoteCommentId = :remoteCommentId")
+    protected abstract fun deleteByLocalSiteAndRemoteIds(localSiteId: Int, remoteCommentId: Long): Int
 
     // Private methods
     private suspend fun insertOrUpdateCommentsInternal(comments: CommentEntityList): List<Long> {
