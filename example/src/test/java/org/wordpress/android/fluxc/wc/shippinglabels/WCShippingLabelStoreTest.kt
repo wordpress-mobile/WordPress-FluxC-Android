@@ -753,12 +753,12 @@ class WCShippingLabelStoreTest {
 
     private suspend fun printShippingLabelForOrder(): WooResult<String> {
         val printShippingLabelPayload = WooPayload(samplePrintShippingLabelApiResponse)
-        whenever(restClient.printShippingLabel(
-                site, printPaperSize, refundShippingLabelId
+        whenever(restClient.printShippingLabels(
+                site, printPaperSize, listOf(refundShippingLabelId)
         )).thenReturn(printShippingLabelPayload)
 
-        whenever(restClient.printShippingLabel(
-                errorSite, printPaperSize, refundShippingLabelId
+        whenever(restClient.printShippingLabels(
+                errorSite, printPaperSize, listOf(refundShippingLabelId)
         )).thenReturn(WooPayload(error))
 
         return store.printShippingLabel(site, printPaperSize, refundShippingLabelId)

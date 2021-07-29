@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -16,6 +15,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.scan.ScanStateModel
+import org.wordpress.android.fluxc.model.scan.ScanStateModel.Reason
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.ScanProgressStatus
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.IDLE
 import org.wordpress.android.fluxc.model.scan.ScanStateModel.State.SCANNING
@@ -78,7 +78,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         assertNotNull(scanStateForSite)
         scanStateForSite?.apply {
             assertNotNull(state)
-            Assert.assertTrue(listOf(IDLE, SCANNING).contains(state))
+            assertTrue(listOf(IDLE, SCANNING).contains(state))
         }
     }
 
@@ -97,7 +97,8 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         val model = ScanStateModel(
             state = IDLE,
             hasCloud = false,
-            mostRecentStatus = mostRecentStatus
+            mostRecentStatus = mostRecentStatus,
+            reason = Reason.NO_REASON
         )
 
         scanSqlUtils.replaceScanState(site, model)
@@ -130,7 +131,8 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         val model = ScanStateModel(
             state = SCANNING,
             hasCloud = false,
-            currentStatus = currentStatus
+            currentStatus = currentStatus,
+            reason = Reason.NO_REASON
         )
 
         scanSqlUtils.replaceScanState(site, model)
@@ -204,7 +206,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
             }
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
-        Assert.assertTrue(siteStore.hasSite())
+        assertTrue(siteStore.hasSite())
         assertEquals(TestEvents.SITE_CHANGED, nextEvent)
         mCountDownLatch.countDown()
     }
@@ -224,20 +226,20 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload))
         // Wait for a network response / onChanged event
-        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction())
-        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = CountDownLatch(1)
         nextEvent = TestEvents.SITE_CHANGED
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(FetchSitesPayload()))
 
-        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-        Assert.assertTrue(siteStore.sitesCount > 0)
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        assertTrue(siteStore.sitesCount > 0)
     }
 
     private sealed class Sites(val wpUserName: String, val wpPassword: String, val siteUrl: String) {

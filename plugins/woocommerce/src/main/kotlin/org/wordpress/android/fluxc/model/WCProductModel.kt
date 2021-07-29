@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
@@ -24,6 +25,10 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+    companion object {
+        const val ADDONS_METADATA_KEY = "_product_addons"
+    }
+
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
     @Column var name = ""
@@ -100,9 +105,26 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var length = ""
     @Column var width = ""
     @Column var height = ""
+    @Column var metadata = ""
 
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
+
+    val addons: Array<WCProductAddonModel>?
+        get() = Gson().fromJson(metadata, Array<WCMetaData>::class.java)
+            ?.find { it.key == ADDONS_METADATA_KEY }
+            ?.addons
+
+    private val WCMetaData.addons
+        get() =
+            try {
+                Gson().run {
+                    val addonListJson = toJson(value)
+                    fromJson(addonListJson, Array<WCProductAddonModel>::class.java)
+                }
+            } catch (ex: Exception) {
+                null
+            }
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {

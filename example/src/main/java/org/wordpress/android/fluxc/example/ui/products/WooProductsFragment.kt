@@ -8,6 +8,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_products.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -35,6 +38,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
@@ -85,6 +89,8 @@ class WooProductsFragment : Fragment() {
 
     private var enteredCategoryName: String? = null
     private val enteredTagNames: MutableList<String> = mutableListOf()
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -367,6 +373,26 @@ class WooProductsFragment : Fragment() {
                             prependToLog("Tag name is empty. Doing nothing..")
                         }
                     }
+                }
+            }
+        }
+
+        fetch_product_addons.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteProductId of product to fetch the addons:"
+                ) { editText ->
+                    pendingFetchSingleProductRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchSingleProductRemoteId?.let { id ->
+                        prependToLog("Submitting request to fetch product by remoteProductID $id")
+                        coroutineScope.launch {
+                            wcProductStore.fetchProductListSynced(site, listOf(id))
+                                    .takeUnless { it.isNullOrEmpty() }
+                                    ?.first()?.addons
+                                    .logAddons()
+                        }
+                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
             }
         }
@@ -659,5 +685,13 @@ class WooProductsFragment : Fragment() {
                 else -> { }
             }
         }
+    }
+
+    private fun Array<WCProductAddonModel>?.logAddons() {
+        this?.forEachIndexed { index, addon ->
+            prependToLog(addon.description?.let { "description: $it" }.orEmpty())
+            prependToLog(addon.name?.let { "name: $it" }.orEmpty())
+            prependToLog("========== Product Add-on #$index =========")
+        } ?: prependToLog("No addons found for this product ID")
     }
 }
