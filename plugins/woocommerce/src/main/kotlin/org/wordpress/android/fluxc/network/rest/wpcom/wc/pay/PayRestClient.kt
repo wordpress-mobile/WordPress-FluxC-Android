@@ -2,6 +2,9 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.pay
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -14,6 +17,7 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_A
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResultDeserializer
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -105,11 +109,13 @@ class PayRestClient @Inject constructor(
                 site,
                 url,
                 params,
-                WCPaymentAccountResult::class.java
+                JsonElement::class.java
         )
 
+        val gson = createCustomGson()
+
         return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackSuccess -> WooPayload(gson.fromJson(response.data, WCPaymentAccountResult::class.java))
             is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
@@ -127,6 +133,16 @@ class PayRestClient @Inject constructor(
             else -> GENERIC_ERROR
         }
         return WCCapturePaymentError(type, message)
+    }
+
+    private fun createCustomGson(): Gson {
+        val gsonBuilder = GsonBuilder()
+        gsonBuilder.setLenient()
+        gsonBuilder.registerTypeHierarchyAdapter(
+                WCPaymentAccountResult::class.java,
+                WCPaymentAccountResultDeserializer()
+        )
+        return  gsonBuilder.create()
     }
 
     companion object {

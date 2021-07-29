@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccount
 import java.lang.reflect.Type
 import java.util.Date
 
-@JsonAdapter(WCPaymentAccountResultDeserializer::class)
 data class WCPaymentAccountResult(
     @SerializedName("status")
     val status: WCPayAccountStatusEnum,
@@ -145,7 +144,7 @@ class WCPaymentAccountResultDeserializer : JsonDeserializer<WCPaymentAccountResu
          */
         return when {
             json.isJsonObject -> {
-                Gson().fromJson(json, typeOfT)
+                return gson.fromJson(json, WCPaymentAccountResult::class.java)
             }
             json.isJsonArray -> {
                 WCPaymentAccountResult(NO_ACCOUNT,
@@ -162,5 +161,10 @@ class WCPaymentAccountResultDeserializer : JsonDeserializer<WCPaymentAccountResu
                 null
             }
         }
+    }
+
+    companion object {
+        // Create new Gson instance which skips this deserializer
+        private val gson by lazy { Gson() }
     }
 }
