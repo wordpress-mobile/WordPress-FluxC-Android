@@ -1,14 +1,12 @@
 package org.wordpress.android.fluxc.model.pay
 
-import com.google.gson.Gson
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.NO_ACCOUNT
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArray
 import java.lang.reflect.Type
 import java.util.Date
 
@@ -41,7 +39,7 @@ data class WCPaymentAccountResult(
      */
     @SerializedName("card_present_eligible")
     val isCardPresentEligible: Boolean
-) {
+): JsonObjectOrEmptyArray() {
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
      */
@@ -128,43 +126,5 @@ data class WCPaymentAccountResult(
             @SerializedName("supported")
             val supportedCurrencies: List<String>
         )
-    }
-}
-
-class WCPaymentAccountResultDeserializer : JsonDeserializer<WCPaymentAccountResult?> {
-    @Throws(JsonParseException::class) override fun deserialize(
-        json: JsonElement,
-        typeOfT: Type,
-        context: JsonDeserializationContext
-    ): WCPaymentAccountResult? {
-        /**
-         * There is a bug in WCPay plugin (at least in versions 2.4.0-2.7.2) and when WCPay is installed but the
-         * account setup is not finished, the endpoint returns an empty array instead of a meaningful object.
-         * This workaround turns this response into an empty/default NO_ACCOUNT response.
-         */
-        return when {
-            json.isJsonObject -> {
-                return gson.fromJson(json, WCPaymentAccountResult::class.java)
-            }
-            json.isJsonArray -> {
-                WCPaymentAccountResult(NO_ACCOUNT,
-                        hasPendingRequirements = false,
-                        hasOverdueRequirements = false,
-                        currentDeadline = null,
-                        statementDescriptor = "",
-                        storeCurrencies = StoreCurrencies("", listOf()),
-                        country = "",
-                        isCardPresentEligible = false
-                )
-            }
-            else -> {
-                null
-            }
-        }
-    }
-
-    companion object {
-        // Create new Gson instance which skips this deserializer
-        private val gson by lazy { Gson() }
     }
 }

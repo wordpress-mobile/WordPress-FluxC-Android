@@ -100,4 +100,13 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         assertTrue(result.result?.status == WCPayAccountStatusEnum.NO_ACCOUNT)
     }
+
+    @Test
+    fun whenLoadAccountEmptyArrayThenFallbackToNoAccount() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-empty-array.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result?.status == WCPayAccountStatusEnum.NO_ACCOUNT)
+    }
 }

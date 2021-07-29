@@ -17,7 +17,8 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_A
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResultDeserializer
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.NO_ACCOUNT
+import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -109,16 +110,33 @@ class PayRestClient @Inject constructor(
                 site,
                 url,
                 params,
-                JsonElement::class.java
+                WCPaymentAccountResult::class.java
         )
 
-        val gson = createCustomGson()
-
         return when (response) {
-            is JetpackSuccess -> WooPayload(gson.fromJson(response.data, WCPaymentAccountResult::class.java))
+            is JetpackSuccess -> WooPayload(
+                    response.data ?: createDefaultNoAccountResponse()
+            )
             is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
+
+    private fun createDefaultNoAccountResponse(): WCPaymentAccountResult =
+            /**
+             * There is a bug in WCPay plugin (at least in versions 2.4.0-2.7.2) and when WCPay is installed but the
+             * account setup is not finished, the endpoint returns an empty array instead of a meaningful object.
+             * This workaround turns this response into an empty/default NO_ACCOUNT response.
+             */
+            WCPaymentAccountResult(
+                    NO_ACCOUNT,
+                    hasPendingRequirements = false,
+                    hasOverdueRequirements = false,
+                    currentDeadline = null,
+                    statementDescriptor = "",
+                    storeCurrencies = StoreCurrencies("", listOf()),
+                    country = "",
+                    isCardPresentEligible = false
+            )
 
     private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
         val type = when {
@@ -133,16 +151,6 @@ class PayRestClient @Inject constructor(
             else -> GENERIC_ERROR
         }
         return WCCapturePaymentError(type, message)
-    }
-
-    private fun createCustomGson(): Gson {
-        val gsonBuilder = GsonBuilder()
-        gsonBuilder.setLenient()
-        gsonBuilder.registerTypeHierarchyAdapter(
-                WCPaymentAccountResult::class.java,
-                WCPaymentAccountResultDeserializer()
-        )
-        return  gsonBuilder.create()
     }
 
     companion object {
