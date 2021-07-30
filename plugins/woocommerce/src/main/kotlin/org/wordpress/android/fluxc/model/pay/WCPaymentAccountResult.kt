@@ -17,7 +17,7 @@ data class WCPaymentAccountResult(
     @SerializedName("has_overdue_requirements")
     val hasOverdueRequirements: Boolean,
     @SerializedName("current_deadline")
-    val currentDeadline: Date?,
+    val currentDeadline: Long?,
     /**
      * An alphanumeric string set by the merchant, e.g. `MYSTORE.COM`
      * See https://stripe.com/docs/statement-descriptors
