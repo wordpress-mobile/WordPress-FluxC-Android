@@ -7,7 +7,6 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
-import java.util.Date
 
 data class WCPaymentAccountResult(
     @SerializedName("status")
