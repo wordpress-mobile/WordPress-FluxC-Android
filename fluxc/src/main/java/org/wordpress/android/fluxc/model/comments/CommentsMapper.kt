@@ -12,14 +12,16 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.comment.CommentWPComRestResponse
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCUtils
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
-import org.wordpress.android.util.DateTimeUtils
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper
 import java.util.ArrayList
 import java.util.Date
 import java.util.HashMap
 import javax.inject.Inject
 
 @Reusable
-class CommentsMapper @Inject constructor() {
+class CommentsMapper @Inject constructor(
+    private val dateTimeUtilsWrapper: DateTimeUtilsWrapper
+) {
     fun commentDtoToEntity(commentDto: CommentWPComRestResponse, site: SiteModel): CommentEntity {
         return CommentEntity(
             remoteCommentId = commentDto.ID,
@@ -41,7 +43,7 @@ class CommentsMapper @Inject constructor() {
             postTitle = StringEscapeUtils.unescapeHtml4(commentDto.post?.title),
             status = commentDto.status,
             datePublished = commentDto.date,
-            publishedTimestamp = DateTimeUtils.timestampFromIso8601(commentDto.date),
+            publishedTimestamp = dateTimeUtilsWrapper.timestampFromIso8601(commentDto.date),
             content = commentDto.content,
             url = commentDto.URL,
             remoteParentCommentId = commentDto.author?.ID ?: 0L,
@@ -49,65 +51,6 @@ class CommentsMapper @Inject constructor() {
             parentId = commentDto.parent?.ID ?: 0,
             iLike = commentDto.i_like
         )
-    }
-
-    fun commentXmlRpcDTOToEntity(commentObject: Any?, site: SiteModel): CommentEntity? {
-        if (commentObject !is HashMap<*, *>) {
-            return null
-        }
-        val commentMap: HashMap<*, *> = commentObject
-
-        val datePublished = DateTimeUtils.iso8601UTCFromDate(
-                XMLRPCUtils.safeGetMapValue(commentMap, "date_created_gmt", Date())
-        )
-        // TODOD: use a wrapper for XMLRPCUtils?
-        val remoteParentCommentId = XMLRPCUtils.safeGetMapValue(commentMap, "parent", 0L)
-
-        return CommentEntity(
-                remoteCommentId = XMLRPCUtils.safeGetMapValue(commentMap, "comment_id", 0L),
-                remotePostId = XMLRPCUtils.safeGetMapValue(commentMap, "post_id", 0L),
-                remoteParentCommentId = remoteParentCommentId,
-                localSiteId = site.id,
-                remoteSiteId = site.selfHostedSiteId,
-                authorUrl = XMLRPCUtils.safeGetMapValue(commentMap, "author_url", ""),
-                authorName = StringEscapeUtils.unescapeHtml4(
-                        XMLRPCUtils.safeGetMapValue(commentMap, "author", "")
-                ),
-                authorEmail = XMLRPCUtils.safeGetMapValue(commentMap, "author_email", ""),
-                // TODO: set authorProfileImageUrl - get the hash from the email address?
-                authorProfileImageUrl = null,
-                postTitle = StringEscapeUtils.unescapeHtml4(
-                        XMLRPCUtils.safeGetMapValue(
-                                commentMap,
-                                "post_title", ""
-                        )
-                ),
-                status = getCommentStatusFromXMLRPCStatusString(
-                        XMLRPCUtils.safeGetMapValue(commentMap, "status", "approve")
-                ).toString(),
-                datePublished = datePublished,
-                publishedTimestamp = DateTimeUtils.timestampFromIso8601(datePublished),
-                content = XMLRPCUtils.safeGetMapValue(commentMap, "content", ""),
-                url = XMLRPCUtils.safeGetMapValue(commentMap, "link", ""),
-                hasParent = remoteParentCommentId > 0,
-                parentId = if (remoteParentCommentId > 0) remoteParentCommentId else 0,
-                iLike = false
-        )
-    }
-
-    fun commentXmlRpcDTOToEntityList(response: Any?, site: SiteModel): List<CommentEntity> {
-        val comments: MutableList<CommentEntity> = ArrayList()
-        if (response !is Array<*>) {
-            return comments
-        }
-
-        response.forEach { commentObject ->
-            commentXmlRpcDTOToEntity(commentObject, site)?.let {
-                comments.add(it)
-            }
-        }
-
-        return comments
     }
 
     fun commentEntityToLegacyModel(entity: CommentEntity): CommentModel {
@@ -156,6 +99,65 @@ class CommentsMapper @Inject constructor() {
                 parentId = commentModel.parentId,
                 iLike = commentModel.iLike
         )
+    }
+
+    fun commentXmlRpcDTOToEntity(commentObject: Any?, site: SiteModel): CommentEntity? {
+        if (commentObject !is HashMap<*, *>) {
+            return null
+        }
+        val commentMap: HashMap<*, *> = commentObject
+
+        val datePublished = dateTimeUtilsWrapper.iso8601UTCFromDate(
+                XMLRPCUtils.safeGetMapValue(commentMap, "date_created_gmt", Date())
+        )
+        // TODOD: use a wrapper for XMLRPCUtils?
+        val remoteParentCommentId = XMLRPCUtils.safeGetMapValue(commentMap, "parent", 0L)
+
+        return CommentEntity(
+                remoteCommentId = XMLRPCUtils.safeGetMapValue(commentMap, "comment_id", 0L),
+                remotePostId = XMLRPCUtils.safeGetMapValue(commentMap, "post_id", 0L),
+                remoteParentCommentId = remoteParentCommentId,
+                localSiteId = site.id,
+                remoteSiteId = site.selfHostedSiteId,
+                authorUrl = XMLRPCUtils.safeGetMapValue(commentMap, "author_url", ""),
+                authorName = StringEscapeUtils.unescapeHtml4(
+                        XMLRPCUtils.safeGetMapValue(commentMap, "author", "")
+                ),
+                authorEmail = XMLRPCUtils.safeGetMapValue(commentMap, "author_email", ""),
+                // TODO: set authorProfileImageUrl - get the hash from the email address?
+                authorProfileImageUrl = null,
+                postTitle = StringEscapeUtils.unescapeHtml4(
+                        XMLRPCUtils.safeGetMapValue(
+                                commentMap,
+                                "post_title", ""
+                        )
+                ),
+                status = getCommentStatusFromXMLRPCStatusString(
+                        XMLRPCUtils.safeGetMapValue(commentMap, "status", "approve")
+                ).toString(),
+                datePublished = datePublished,
+                publishedTimestamp = dateTimeUtilsWrapper.timestampFromIso8601(datePublished),
+                content = XMLRPCUtils.safeGetMapValue(commentMap, "content", ""),
+                url = XMLRPCUtils.safeGetMapValue(commentMap, "link", ""),
+                hasParent = remoteParentCommentId > 0,
+                parentId = if (remoteParentCommentId > 0) remoteParentCommentId else 0,
+                iLike = false
+        )
+    }
+
+    fun commentXmlRpcDTOToEntityList(response: Any?, site: SiteModel): List<CommentEntity> {
+        val comments: MutableList<CommentEntity> = ArrayList()
+        if (response !is Array<*>) {
+            return comments
+        }
+
+        response.forEach { commentObject ->
+            commentXmlRpcDTOToEntity(commentObject, site)?.let {
+                comments.add(it)
+            }
+        }
+
+        return comments
     }
 
     private fun getCommentStatusFromXMLRPCStatusString(stringStatus: String): CommentStatus {
