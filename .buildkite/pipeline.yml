@@ -1,4 +1,4 @@
-x-common-params:
+common-params:
   &publish-android-artifacts-docker-container
   docker#v3.8.0:
     image: "public.ecr.aws/automattic/android-build-image:v1.0.0"

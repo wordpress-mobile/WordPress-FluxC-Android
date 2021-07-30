@@ -64,12 +64,6 @@ project.afterEvaluate {
                 groupId "org.wordpress.fluxc.plugins"
                 artifactId "woocommerce"
                 // version is set by 'publish-to-s3' plugin
-
-                versionMapping {
-                    allVariants {
-                        fromResolutionResult()
-                    }
-                }
             }
         }
    }
