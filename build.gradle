@@ -68,16 +68,18 @@ ext {
     roomVersion = "2.3.0"
 }
 
-configurations.all {
-    resolutionStrategy.dependencySubstitution {
-        if (project.hasProperty("fluxcAnnotationsVersion")) {
-            substitute project(":fluxc-annotations") with module("org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}")
-        }
-        if (project.hasProperty("fluxcProcessorVersion")) {
-            substitute project(":fluxc-processor") with module("org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}")
-        }
-        if (project.hasProperty("fluxcVersion")) {
-            substitute project(":fluxc") with module("org.wordpress:fluxc:${project.getProperty("fluxcVersion")}")
+allprojects {
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            if (project.hasProperty("fluxcAnnotationsVersion")) {
+                substitute project(":fluxc-annotations") because "" with module("org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}")
+            }
+            if (project.hasProperty("fluxcProcessorVersion")) {
+                substitute project(":fluxc-processor") with module("org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}")
+            }
+            if (project.hasProperty("fluxcVersion")) {
+                substitute project(":fluxc") with module("org.wordpress:fluxc:${project.getProperty("fluxcVersion")}")
+            }
         }
     }
 }
