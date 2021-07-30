@@ -131,9 +131,14 @@ class CommentsDaoTest {
                     comments = commentList
             )
 
-            val result = commentsDao.getFilteredComments(commentList.first().localSiteId, listOf(APPROVED).map { it.toString() })
+            val result = commentsDao.getFilteredComments(
+                    commentList.first().localSiteId,
+                    listOf(APPROVED).map { it.toString() }
+            )
 
-            assertThat(result.sortedBy { it.remoteCommentId } ).isEqualTo(commentList.filter { it.status == APPROVED.toString() })
+            assertThat(
+                    result.sortedBy { it.remoteCommentId }
+            ).isEqualTo(commentList.filter { it.status == APPROVED.toString() })
         }
     }
 
@@ -198,7 +203,9 @@ class CommentsDaoTest {
                     orderAscending = false
             )
 
-            assertThat(result.sortedBy { it.remoteCommentId }).isEqualTo(commentList.filter { it.status == APPROVED.toString() })
+            assertThat(
+                    result.sortedBy { it.remoteCommentId }
+            ).isEqualTo(commentList.filter { it.status == APPROVED.toString() })
         }
     }
 
