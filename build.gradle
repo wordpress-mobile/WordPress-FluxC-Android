@@ -76,5 +76,5 @@ ext {
 
     fluxcAnnotationsProjectDependency = project.hasProperty("fluxcAnnotationsVersion") ? "org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}" : project(":fluxc-annotations")
     fluxcProcessorProjectDependency = project.hasProperty("fluxcProcessorVersion") ? "org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}" : project(":fluxc-processor")
-    fluxcProjectDependency = project.hasProperty("fluxcVersion") ? "org.wordpress.fluxc:${project.getProperty("fluxcProcessor")}" : project(":fluxc")
+    fluxcProjectDependency = project.hasProperty("fluxcVersion") ? "org.wordpress:fluxc:${project.getProperty("fluxcVersion")}" : project(":fluxc")
 }

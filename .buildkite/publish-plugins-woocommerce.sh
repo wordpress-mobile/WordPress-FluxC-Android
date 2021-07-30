@@ -12,4 +12,4 @@ PUBLISHED_FLUXC_VERSION=$(buildkite-agent meta-data get "PUBLISHED_FLUXC_VERSION
     -PfluxcProcessorVersion="$PUBLISHED_FLUXC_PROCESSOR_VERSION" \
     -PfluxcVersion="$PUBLISHED_FLUXC_VERSION" \
     :plugins:woocommerce:prepareToPublishToS3 $(prepare_to_publish_to_s3_params) \
-    :plugins:woocommmerce:publish
+    :plugins:woocommerce:publish
