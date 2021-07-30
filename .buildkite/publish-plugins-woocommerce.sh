@@ -7,6 +7,7 @@ PUBLISHED_FLUXC_ANNOTATIONS_VERSION=$(buildkite-agent meta-data get "PUBLISHED_F
 PUBLISHED_FLUXC_PROCESSOR_VERSION=$(buildkite-agent meta-data get "PUBLISHED_FLUXC_PROCESSOR_VERSION")
 PUBLISHED_FLUXC_VERSION=$(buildkite-agent meta-data get "PUBLISHED_FLUXC_VERSION")
 
+cp gradle.properties-example gradle.properties
 ./gradlew \
     -PfluxcAnnotationsVersion="$PUBLISHED_FLUXC_ANNOTATIONS_VERSION" \
     -PfluxcProcessorVersion="$PUBLISHED_FLUXC_PROCESSOR_VERSION" \
