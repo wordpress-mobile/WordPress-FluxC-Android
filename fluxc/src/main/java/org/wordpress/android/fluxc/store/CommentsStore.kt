@@ -46,6 +46,7 @@ import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.CommentsActi
 import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.CommentsActionEntityIds
 import org.wordpress.android.fluxc.store.CommentsStore.CommentsData.PagingData
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.fluxc.utils.AppLogWrapper
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T.API
 import org.wordpress.android.util.AppLog.T.COMMENTS
@@ -60,6 +61,7 @@ class CommentsStore
     private val commentsDao: CommentsDao,
     private val commentsMapper: CommentsMapper,
     private val coroutineEngine: CoroutineEngine,
+    private val appLogWrapper: AppLogWrapper,
     dispatcher: Dispatcher
 ) : Store(dispatcher) {
     data class CommentsActionPayload<T>(
@@ -258,7 +260,7 @@ class CommentsStore
                     // will ensure the comment is deleted in the rest of the logic.
                     commentToDelete?.let {
                         it.copy(
-                                status = if (TRASH.toString() == it.status) {
+                                status = if (DELETED.toString() == it.status || TRASH.toString() == it.status) {
                                     DELETED.toString()
                                 } else {
                                     TRASH.toString()
@@ -453,6 +455,7 @@ class CommentsStore
             "Action and event bus support should be gradually replaced while the Comments Unification project proceeds"
     )
     override fun onRegister() {
+        // We cannot use the AppLogWrapper here since it's still null at this point
         AppLog.d(API, this.javaClass.name + ": onRegister")
     }
 
@@ -723,7 +726,7 @@ class CommentsStore
             listOf(*statuses)
         }.map { it.toString() }
 
-        AppLog.d(
+        appLogWrapper.d(
                 COMMENTS,
                 "removeCommentGaps -> siteId [${site.siteId}]  targetStatuses [$targetStatuses]"
         )
@@ -735,14 +738,14 @@ class CommentsStore
                         statuses = targetStatuses
                 )
 
-                AppLog.d(
+                appLogWrapper.d(
                         COMMENTS,
                         "removeCommentGaps -> commentsList empty deleted $numOfDeletedComments items"
                 )
 
                 numOfDeletedComments
             } else {
-                AppLog.d(
+                appLogWrapper.d(
                         COMMENTS,
                         "removeCommentGaps -> commentsList empty and requestOffset != 0"
                 )
@@ -767,7 +770,7 @@ class CommentsStore
         val startOfRange = comments.first().publishedTimestamp
         val endOfRange = comments.last().publishedTimestamp
 
-        AppLog.d(
+        appLogWrapper.d(
                 COMMENTS,
                 "removeCommentGaps -> startOfRange [" + startOfRange + " - " + comments.first().datePublished + "] "
                 + "endOfRange [" + endOfRange + " - " + comments.last().datePublished + "]"
@@ -783,7 +786,7 @@ class CommentsStore
                     remoteIds = remoteIds,
                     startOfRange = startOfRange
             )
-            AppLog.d(
+            appLogWrapper.d(
                     COMMENTS,
                     "removeCommentGaps -> requestOffset == 0 -> numOfDeletedComments $numOfDeletedComments"
             )
@@ -797,7 +800,7 @@ class CommentsStore
                     remoteIds = remoteIds,
                     endOfRange = endOfRange
             )
-            AppLog.d(
+            appLogWrapper.d(
                     COMMENTS,
                     "removeCommentGaps -> comments.size() [" + comments.size + "] < maxEntriesInResponse [" + maxEntriesInResponse + "]" + "-> numOfDeletedComments " + numOfDeletedComments
             )
@@ -812,7 +815,7 @@ class CommentsStore
                 endOfRange = endOfRange
         )
 
-        AppLog.d(
+        appLogWrapper.d(
                 COMMENTS,
                 "removeCommentGaps -> removing from middle -> numOfDeletedComments $numOfDeletedComments"
         )
