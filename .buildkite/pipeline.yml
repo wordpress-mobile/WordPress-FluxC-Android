@@ -27,6 +27,7 @@ steps:
       .buildkite/publish-fluxc-processor.sh
 
   - label: "Publish :fluxc"
+    key: "publish-fluxc"
     depends_on:
       - "publish-fluxc-processor"
       - "publish-fluxc-annotations"
@@ -36,6 +37,7 @@ steps:
       .buildkite/publish-fluxc.sh
 
   - label: "Publish :plugins:woocommerce"
+    key: "publish-plugins-woocommerce"
     depends_on:
       - "publish-fluxc-processor"
       - "publish-fluxc-annotations"
