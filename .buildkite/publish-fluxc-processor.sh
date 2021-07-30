@@ -6,7 +6,7 @@ set -euo pipefail
 PUBLISHED_FLUXC_ANNOTATIONS_VERSION=$(buildkite-agent meta-data get "PUBLISHED_FLUXC_ANNOTATIONS_VERSION")
 
 ./gradlew \
-    -PfluxcAnnotationsVersion=PUBLISHED_FLUXC_ANNOTATIONS_VERSION \
+    -PfluxcAnnotationsVersion="$PUBLISHED_FLUXC_ANNOTATIONS_VERSION" \
     :fluxc-processor:prepareToPublishToS3 $(prepare_to_publish_to_s3_params) \
     :fluxc-processor:publish
 
