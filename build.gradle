@@ -37,6 +37,20 @@ allprojects {
         toolVersion = '8.3'
         configFile file("${project.rootDir}/config/checkstyle.xml")
     }
+
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            if (project.hasProperty("fluxcAnnotationsVersion")) {
+                substitute project(":fluxc-annotations") because "" with module("org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}")
+            }
+            if (project.hasProperty("fluxcProcessorVersion")) {
+                substitute project(":fluxc-processor") with module("org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}")
+            }
+            if (project.hasProperty("fluxcVersion")) {
+                substitute project(":fluxc") with module("org.wordpress:fluxc:${project.getProperty("fluxcVersion")}")
+            }
+        }
+    }
 }
 
 subprojects {
@@ -73,20 +87,4 @@ ext {
     assertJVersion = '3.19.0'
     kotlinCoroutinesVersion = '1.3.9'
     roomVersion = "2.3.0"
-}
-
-allprojects {
-    configurations.all {
-        resolutionStrategy.dependencySubstitution {
-            if (project.hasProperty("fluxcAnnotationsVersion")) {
-                substitute project(":fluxc-annotations") because "" with module("org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}")
-            }
-            if (project.hasProperty("fluxcProcessorVersion")) {
-                substitute project(":fluxc-processor") with module("org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}")
-            }
-            if (project.hasProperty("fluxcVersion")) {
-                substitute project(":fluxc") with module("org.wordpress:fluxc:${project.getProperty("fluxcVersion")}")
-            }
-        }
-    }
 }
