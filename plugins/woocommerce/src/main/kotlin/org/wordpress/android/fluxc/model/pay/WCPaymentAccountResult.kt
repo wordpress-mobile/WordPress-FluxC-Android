@@ -7,7 +7,6 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
-import java.util.Date
 
 data class WCPaymentAccountResult(
     @SerializedName("status")
@@ -17,7 +16,7 @@ data class WCPaymentAccountResult(
     @SerializedName("has_overdue_requirements")
     val hasOverdueRequirements: Boolean,
     @SerializedName("current_deadline")
-    val currentDeadline: Date?,
+    val currentDeadline: Long?,
     /**
      * An alphanumeric string set by the merchant, e.g. `MYSTORE.COM`
      * See https://stripe.com/docs/statement-descriptors

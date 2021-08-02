@@ -102,6 +102,15 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     }
 
     @Test
+    fun whenOverdueRequirementsThenCurrentDeadlineCorrectlyParsed() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-current-deadline.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result?.currentDeadline == 1628258304L)
+    }
+
+    @Test
     fun whenLoadAccountRestrictedSoonStatusThenRestrictedSoonStatusReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-restricted-soon-status.json", 200)
 
