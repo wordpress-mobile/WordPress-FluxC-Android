@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.wc.attributes
 
-import com.google.gson.Gson
-import org.wordpress.android.fluxc.UnitTestUtils
+import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.attributes.AttributeApiResponse
@@ -93,10 +92,4 @@ object WCProductAttributesTestFixtures {
                 false
         )
     }
-
-    private fun <T> String.jsonFileAs(clazz: Class<T>) =
-            UnitTestUtils.getStringFromResourceFile(
-                    this@WCProductAttributesTestFixtures.javaClass,
-                    this
-            )?.let { Gson().fromJson(it, clazz) }
 }
