@@ -1,0 +1,48 @@
+common-params:
+  &publish-android-artifacts-docker-container
+  docker#v3.8.0:
+    image: "public.ecr.aws/automattic/android-build-image:v1.1.0"
+    propagate-environment: true
+    environment:
+      # DO NOT MANUALLY SET THESE VALUES!
+      # They are passed from the Buildkite agent to the Docker container
+      - "AWS_ACCESS_KEY"
+      - "AWS_SECRET_KEY"
+
+steps:
+  - label: "Publish :fluxc-annotations"
+    key: "publish-fluxc-annotations"
+    plugins:
+      - *publish-android-artifacts-docker-container
+    command: |
+      .buildkite/publish-fluxc-annotations.sh
+
+  - label: "Publish :fluxc-processor"
+    key: "publish-fluxc-processor"
+    depends_on:
+      - "publish-fluxc-annotations"
+    plugins:
+      - *publish-android-artifacts-docker-container
+    command: |
+      .buildkite/publish-fluxc-processor.sh
+
+  - label: "Publish :fluxc"
+    key: "publish-fluxc"
+    depends_on:
+      - "publish-fluxc-processor"
+      - "publish-fluxc-annotations"
+    plugins:
+      - *publish-android-artifacts-docker-container
+    command: |
+      .buildkite/publish-fluxc.sh
+
+  - label: "Publish :plugins:woocommerce"
+    key: "publish-plugins-woocommerce"
+    depends_on:
+      - "publish-fluxc-processor"
+      - "publish-fluxc-annotations"
+      - "publish-fluxc"
+    plugins:
+      - *publish-android-artifacts-docker-container
+    command: |
+      .buildkite/publish-plugins-woocommerce.sh

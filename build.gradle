@@ -15,6 +15,13 @@ allprojects {
     apply plugin: 'checkstyle'
 
     repositories {
+        maven {
+            url "https://a8c-libs.s3.amazonaws.com/android"
+            content {
+                includeGroup "org.wordpress"
+                includeGroup "org.wordpress.fluxc"
+            }
+        }
         google()
         jcenter()
         mavenCentral()
@@ -66,4 +73,8 @@ ext {
     assertJVersion = '3.19.0'
     kotlinCoroutinesVersion = '1.3.9'
     roomVersion = "2.3.0"
+
+    fluxcAnnotationsProjectDependency = project.hasProperty("fluxcAnnotationsVersion") ? "org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}" : project(":fluxc-annotations")
+    fluxcProcessorProjectDependency = project.hasProperty("fluxcProcessorVersion") ? "org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}" : project(":fluxc-processor")
+    fluxcProjectDependency = project.hasProperty("fluxcVersion") ? "org.wordpress:fluxc:${project.getProperty("fluxcVersion")}" : project(":fluxc")
 }
