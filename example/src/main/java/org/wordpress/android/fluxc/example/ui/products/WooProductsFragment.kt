@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 import org.wordpress.android.fluxc.store.MediaStore
+import org.wordpress.android.fluxc.store.WCAddonsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
@@ -71,6 +72,7 @@ import javax.inject.Inject
 class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
+    @Inject lateinit var addonsStore: WCAddonsStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
 
@@ -393,6 +395,17 @@ class WooProductsFragment : Fragment() {
                                     .logAddons()
                         }
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                }
+            }
+        }
+
+        fetch_global_addons_groups.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    addonsStore.fetchAllGlobalAddonsGroups(site).run {
+                        error?.let { prependToLog("${it.type}: ${it.message}") }
+                            prependToLog("Global addons: ${this.model}")
+                    }
                 }
             }
         }
