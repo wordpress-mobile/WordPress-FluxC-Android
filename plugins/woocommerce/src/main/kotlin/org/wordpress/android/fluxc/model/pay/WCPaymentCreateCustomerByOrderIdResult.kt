@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 data class WCPaymentCreateCustomerByOrderIdResult(
     @SerializedName("id")
-    val customerId: String?,
+    val customerId: String?
 )

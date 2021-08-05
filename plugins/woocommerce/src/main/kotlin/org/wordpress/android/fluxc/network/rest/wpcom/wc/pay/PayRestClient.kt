@@ -129,7 +129,6 @@ class PayRestClient @Inject constructor(
                 clazz = WCPaymentCreateCustomerByOrderIdResult::class.java
         )
 
-
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data)
             is JetpackError -> WooPayload(response.error.toWooError())

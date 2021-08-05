@@ -48,7 +48,6 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
         assertEquals(WCPayAccountStatusEnum.COMPLETE, result.model?.status)
     }
 
-
     @Test
     fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
         val result = payStore.createCustomerByOrderId(
