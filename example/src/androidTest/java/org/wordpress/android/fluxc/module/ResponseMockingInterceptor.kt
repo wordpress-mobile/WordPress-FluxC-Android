@@ -97,9 +97,10 @@ class ResponseMockingInterceptor @Inject constructor() : Interceptor {
     }
 
     @JvmOverloads
-    fun respondWithError(jsonResponse: JsonElement, errorCode: Int = 404) {
+    fun respondWithError(jsonResponse: JsonElement, errorCode: Int = 404, interceptorMode: InterceptorMode = ONE_TIME) {
         nextResponseJson = jsonResponse.toString()
         nextResponseCode = errorCode
+        mode = interceptorMode
     }
 
     @Throws(IOException::class)

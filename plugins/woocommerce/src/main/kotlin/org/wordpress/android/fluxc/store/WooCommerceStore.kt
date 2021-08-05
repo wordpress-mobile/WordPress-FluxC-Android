@@ -45,12 +45,14 @@ open class WooCommerceStore @Inject constructor(
     private val wcCoreRestClient: WooCommerceRestClient,
     private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
+    enum class WooPlugin(val displayName: String) {
+        WOO_SERVICES("WooCommerce Shipping &amp; Tax"),
+        WOO_PAYMENTS("WooCommerce Payments");
+    }
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
         const val WOO_API_NAMESPACE_V2 = "wc/v2"
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
-
-        private const val WOO_SERVICES_PLUGIN_NAME = "WooCommerce Shipping &amp; Tax"
     }
 
     class FetchApiVersionResponsePayload(
@@ -70,8 +72,8 @@ open class WooCommerceStore @Inject constructor(
         NO_WOO_API;
 
         companion object {
-            private val reverseMap = ApiVersionErrorType.values().associateBy(ApiVersionErrorType::name)
-            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: ApiVersionErrorType.GENERIC_ERROR
+            private val reverseMap = values().associateBy(ApiVersionErrorType::name)
+            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
         }
     }
 
@@ -92,9 +94,9 @@ open class WooCommerceStore @Inject constructor(
         INVALID_RESPONSE;
 
         companion object {
-            private val reverseMap = WCSiteSettingsErrorType.values().associateBy(WCSiteSettingsErrorType::name)
+            private val reverseMap = values().associateBy(WCSiteSettingsErrorType::name)
             fun fromString(type: String) =
-                    reverseMap[type.toUpperCase(Locale.US)] ?: WCSiteSettingsErrorType.GENERIC_ERROR
+                    reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
         }
     }
 
@@ -156,14 +158,18 @@ open class WooCommerceStore @Inject constructor(
         return siteSettings?.countryCode
     }
 
-    fun getWooCommerceServicesPluginInfo(site: SiteModel): WCPluginModel? {
-        return WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
+    fun getSitePlugin(site: SiteModel, plugin: WooPlugin): WCPluginModel? {
+        return WCPluginSqlUtils.selectSingle(site, plugin.displayName)
     }
 
-    suspend fun fetchWooCommerceServicesPluginInfo(
-        site: SiteModel
-    ): WooResult<WCPluginModel> {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchWooCommerceServicesPluginInfo") {
+    suspend fun getSitePlugins(site: SiteModel): List<WCPluginModel> {
+        return coroutineEngine.withDefaultContext(T.DB, this, "getSitePlugins") {
+            WCPluginSqlUtils.selectAll(site)
+        }
+    }
+
+    suspend fun fetchSitePlugins(site: SiteModel): WooResult<List<WCPluginModel>> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchWooCommerceServicesPluginInfo") {
             val response = systemRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {
                 response.isError -> {
@@ -172,8 +178,7 @@ open class WooCommerceStore @Inject constructor(
                 response.result?.plugins != null -> {
                     val plugins = response.result.plugins.map { WCPluginModel(site, it) }
                     WCPluginSqlUtils.insertOrUpdate(plugins)
-                    val plugin = WCPluginSqlUtils.selectSingle(site, WOO_SERVICES_PLUGIN_NAME)
-                    WooResult(plugin)
+                    WooResult(plugins)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }

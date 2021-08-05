@@ -2,15 +2,13 @@ plugins {
     id "com.android.library"
     id "org.jetbrains.kotlin.android"
     id "org.jetbrains.kotlin.kapt"
-    id "com.github.dcendents.android-maven"
+    id "com.automattic.android.publish-to-s3"
 }
 
 android {
     compileSdkVersion 29
 
     defaultConfig {
-        versionCode 1
-        versionName "0.1"
         minSdkVersion 18
         targetSdkVersion 29
     }
@@ -27,7 +25,7 @@ android {
 }
 
 dependencies {
-    implementation project(':fluxc')
+    implementation fluxcProjectDependency
 
     implementation 'org.apache.commons:commons-lang3:3.7'
 
@@ -42,8 +40,8 @@ dependencies {
     kapt "org.wordpress:wellsql-processor:$wellSqlVersion"
 
     // FluxC annotations
-    api project(':fluxc-annotations')
-    kapt project(':fluxc-processor')
+    api fluxcAnnotationsProjectDependency
+    kapt fluxcProcessorProjectDependency
 
     implementation 'com.google.code.gson:gson:2.8.0'
 
@@ -57,4 +55,21 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 }
 
-group 'org.wordpress'
+project.afterEvaluate {
+    publishing {
+        publications {
+            PluginWoocommercePublication(MavenPublication) {
+                from components.release
+
+                groupId "org.wordpress.fluxc.plugins"
+                artifactId "woocommerce"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}
+
+publishToS3Plugin {
+    mavenPublishGroupId "org.wordpress.fluxc.plugins"
+    mavenPublishArtifactId "woocommerce"
+}

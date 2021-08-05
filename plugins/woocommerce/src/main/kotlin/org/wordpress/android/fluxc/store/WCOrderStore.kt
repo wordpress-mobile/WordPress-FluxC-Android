@@ -152,8 +152,7 @@ class WCOrderStore @Inject constructor(
     }
 
     class UpdateOrderStatusPayload(
-        var localOrderId: Int,
-        var remoteOrderId: Long,
+        val order: WCOrderModel,
         val site: SiteModel,
         val status: String
     ) : Payload<BaseNetworkError>()
@@ -504,7 +503,20 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
-        with(payload) { wcOrderRestClient.updateOrderStatus(localOrderId, remoteOrderId, site, status) }
+        with(payload) {
+            val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.status)
+
+            emitChange(OnOrderChanged(rowsAffected).apply { causeOfChange = WCOrderAction.UPDATED_ORDER_STATUS })
+
+            wcOrderRestClient.updateOrderStatus(payload.order, site, status)
+        }
+    }
+
+    private fun updateOrderStatusLocally(localOrderId: Int, newStatus: String): Int {
+        val updatedOrder = OrderSqlUtils.getOrderByLocalId(localOrderId).apply {
+            status = newStatus
+        }
+        return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
     }
 
     private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {
@@ -697,18 +709,21 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun handleUpdateOrderStatusCompleted(payload: RemoteOrderPayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        val onOrderChanged: OnOrderChanged = if (payload.isError) {
+            revertOrderStatus(payload)
         } else {
             val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(payload.order)
-            onOrderChanged = OnOrderChanged(rowsAffected)
+            OnOrderChanged(rowsAffected)
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
 
         emitChange(onOrderChanged)
+    }
+
+    private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
+        val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.order.status)
+        return OnOrderChanged(rowsAffected).also { it.error = payload.error }
     }
 
     private fun handleFetchOrderNotesCompleted(payload: FetchOrderNotesResponsePayload) {

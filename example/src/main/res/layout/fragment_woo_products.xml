@@ -189,6 +189,13 @@
             android:text="Add Product Tags" />
 
         <Button
+            android:id="@+id/fetch_product_addons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Addons" />
+
+        <Button
             android:id="@+id/update_product"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
