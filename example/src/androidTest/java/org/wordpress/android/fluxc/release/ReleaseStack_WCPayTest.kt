@@ -37,15 +37,14 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
     fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
         val result = payStore.loadAccount(sSite)
 
-        assertEquals(result.model!!.country, "US")
-        assertEquals(result.model!!.hasPendingRequirements, false)
-        assertEquals(result.model!!.hasOverdueRequirements, false)
-        assertEquals(result.model!!.statementDescriptor, "DO.WPMT.CO")
-        assertEquals(result.model!!.country, "US")
-        assertEquals(result.model!!.isCardPresentEligible, false)
-        assertEquals(result.model!!.storeCurrencies.default, "usd")
-        assertEquals(result.model!!.storeCurrencies.supportedCurrencies, listOf("usd"))
-        assertEquals(result.model!!.status, WCPayAccountStatusEnum.COMPLETE)
-        assertEquals(result.model!!.isLive, true)
+        assertEquals(result.model?.country, "US")
+        assertEquals(result.model?.hasPendingRequirements, false)
+        assertEquals(result.model?.hasOverdueRequirements, false)
+        assertEquals(result.model?.statementDescriptor, "DO.WPMT.CO")
+        assertEquals(result.model?.country, "US")
+        assertEquals(result.model?.isCardPresentEligible, false)
+        assertEquals(result.model?.storeCurrencies?.default, "usd")
+        assertEquals(result.model?.storeCurrencies?.supportedCurrencies, listOf("usd"))
+        assertEquals(result.model?.status, WCPayAccountStatusEnum.COMPLETE)
     }
 }
