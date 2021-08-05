@@ -2,30 +2,30 @@ package org.wordpress.android.fluxc.model.addons
 
 import com.google.gson.annotations.SerializedName
 
-class WCProductAddonModel {
+data class WCProductAddonModel(
     @SerializedName("title_format")
-    val titleFormat: AddOnTitleFormat? = null
+    val titleFormat: AddOnTitleFormat? = null,
     @SerializedName("description_enable")
-    val descriptionEnabled: String? = null
+    val descriptionEnabled: String? = null,
     @SerializedName("restrictions_type")
-    val restrictionsType: AddOnRestrictionsType? = null
+    val restrictionsType: AddOnRestrictionsType? = null,
     @SerializedName("adjust_price")
-    val adjustPrice: String? = null
+    val adjustPrice: String? = null,
     @SerializedName("price_type")
-    val priceType: AddOnPriceType? = null
+    val priceType: AddOnPriceType? = null,
 
-    val type: AddOnType? = null
-    val display: AddOnDisplay? = null
-    val name: String? = null
-    val description: String? = null
-    val required: String? = null
-    val position: String? = null
-    val restrictions: String? = null
-    val price: String? = null
-    val min: String? = null
-    val max: String? = null
-    val options: Array<ProductAddonOption>? = null
-
+    val type: AddOnType? = null,
+    val display: AddOnDisplay? = null,
+    val name: String? = null,
+    val description: String? = null,
+    val required: String? = null,
+    val position: String? = null,
+    val restrictions: String? = null,
+    val price: String? = null,
+    val min: String? = null,
+    val max: String? = null,
+    val options: List<ProductAddonOption>? = null
+) {
     enum class AddOnType {
         @SerializedName("description_enable") MultipleChoice,
         @SerializedName("checkbox") Checkbox,
@@ -63,12 +63,12 @@ class WCProductAddonModel {
         @SerializedName("percentage_based") PercentageBased
     }
 
-    class ProductAddonOption {
+    data class ProductAddonOption(
         @SerializedName("price_type")
-        val priceType: AddOnPriceType? = null
+        val priceType: AddOnPriceType? = null,
 
-        val label: String? = null
-        val price: String? = null
+        val label: String? = null,
+        val price: String? = null,
         val image: String? = null
-    }
+    )
 }
