@@ -90,8 +90,6 @@ class WCOrderModelTest {
 
             assertEquals("size", attributes[1].key)
             assertEquals("Medium", attributes[1].value)
-
-
         }
 
         with(renderedLineItems[1]) {
