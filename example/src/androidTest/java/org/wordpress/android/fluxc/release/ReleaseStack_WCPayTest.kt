@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum
-import org.wordpress.android.fluxc.release.ReleaseStack_WCBase.SiteAwareAuthenticatePayload.TestSite
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCPayStore
 import javax.inject.Inject
@@ -14,12 +13,11 @@ import javax.inject.Inject
 class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var payStore: WCPayStore
 
-    override val siteAwareAuthenticatePayload = SiteAwareAuthenticatePayload(
-            authenticatePayload = AuthenticatePayload(
-                    BuildConfig.TEST_WPCOM_USERNAME_WOO_JP_WCPAY,
-                    BuildConfig.TEST_WPCOM_PASSWORD_WOO_JP_WCPAY
-            ),
-            site = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY)
+    override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY)
+
+    override fun buildAuthenticatePayload() = AuthenticatePayload(
+            BuildConfig.TEST_WPCOM_USERNAME_WOO_JP_WCPAY,
+            BuildConfig.TEST_WPCOM_PASSWORD_WOO_JP_WCPAY
     )
 
     @Throws(Exception::class)
