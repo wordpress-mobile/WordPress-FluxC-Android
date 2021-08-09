@@ -13,9 +13,11 @@ import javax.inject.Inject
 class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var payStore: WCPayStore
 
+    override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
+
     override fun buildAuthenticatePayload() = AuthenticatePayload(
-            BuildConfig.TEST_WPCOM_USERNAME_WOO_JP_WCPAY,
-            BuildConfig.TEST_WPCOM_PASSWORD_WOO_JP_WCPAY
+            BuildConfig.TEST_WPCOM_USERNAME_WOO_JP,
+            BuildConfig.TEST_WPCOM_PASSWORD_WOO_JP
     )
 
     @Throws(Exception::class)
