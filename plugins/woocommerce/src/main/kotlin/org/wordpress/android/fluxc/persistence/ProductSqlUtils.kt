@@ -140,7 +140,7 @@ object ProductSqlUtils {
         if (filterOptions.containsKey(ProductFilterOption.CATEGORY)) {
             // Building a custom filter, because in the table a product's categories are saved as JSON string, e.g:
             // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
-            val categoryFilter = "id:" + filterOptions[ProductFilterOption.CATEGORY] + ","
+            val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
             queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
         }
 
