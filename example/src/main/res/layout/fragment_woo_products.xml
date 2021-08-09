@@ -196,6 +196,13 @@
             android:text="Fetch Product Addons" />
 
         <Button
+            android:id="@+id/fetch_global_addons_groups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Global Addons groups" />
+
+        <Button
             android:id="@+id/update_product"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
