@@ -104,10 +104,10 @@ class WooProductFiltersFragment : Fragment() {
 
         filter_by_category.setOnClickListener {
             getWCSite()?.let { site ->
-                val selectedCategory = wcProductStore.getProductCategoriesForSite(site).random().remoteCategoryId
+                val randomCategory = wcProductStore.getProductCategoriesForSite(site).random()
                 filterOptions?.clear()
-                filterOptions?.put(CATEGORY, selectedCategory.toString())
-                prependToLog("Selected category: $selectedCategory")
+                filterOptions?.put(CATEGORY, randomCategory.remoteCategoryId.toString())
+                prependToLog("Selected category: ${randomCategory.name} id: ${randomCategory.remoteCategoryId}")
             }
         }
 

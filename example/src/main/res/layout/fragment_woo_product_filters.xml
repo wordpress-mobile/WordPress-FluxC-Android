@@ -44,6 +44,6 @@
             android:id="@+id/filter_products"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Apply Filte" />
+            android:text="Apply Filter" />
     </LinearLayout>
 </ScrollView>
