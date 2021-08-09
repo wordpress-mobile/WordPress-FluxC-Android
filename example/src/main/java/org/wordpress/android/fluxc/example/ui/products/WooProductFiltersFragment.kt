@@ -41,6 +41,7 @@ class WooProductFiltersFragment : Fragment() {
 
     private var selectedSiteId: Int = -1
     private var filterOptions: MutableMap<ProductFilterOption, String>? = null
+
     companion object {
         const val ARG_SELECTED_SITE_ID = "ARG_SELECTED_SITE_ID"
         const val ARG_SELECTED_FILTER_OPTIONS = "ARG_SELECTED_FILTER_OPTIONS"
@@ -164,7 +165,7 @@ class WooProductFiltersFragment : Fragment() {
         if (event.causeOfChange == FETCH_PRODUCTS) {
             prependToLog("Fetched ${event.rowsAffected} products")
             filterOptions?.let {
-                if(it.containsKey(CATEGORY)) {
+                if (it.containsKey(CATEGORY)) {
                     prependToLog("From category ID " + it[CATEGORY])
                 }
             }
