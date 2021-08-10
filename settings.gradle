@@ -3,7 +3,6 @@ pluginManagement {
     gradle.ext.agpVersion = '4.2.2'
 
     plugins {
-        id "com.github.dcendents.android-maven" version "2.0"
         id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.android.extensions" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.jvm" version gradle.ext.kotlinVersion
