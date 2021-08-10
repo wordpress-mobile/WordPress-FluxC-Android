@@ -87,7 +87,10 @@ class WPAndroidDatabaseMigrationTest {
     @Test
     @Throws(IOException::class)
     fun migrate3To4() {
-        helper.createDatabase(WP_DB_NAME, 3).apply {
+        val oldVersion = 3
+        val newVersion = 4
+
+        helper.createDatabase(WP_DB_NAME, oldVersion).apply {
             // populate BloggingReminders with some data
             execSQL(""" 
                 INSERT INTO BloggingReminders 
@@ -97,9 +100,8 @@ class WPAndroidDatabaseMigrationTest {
             close()
         }
 
-        // Re-open the database with version 3 and provide migration to check against.
-        // Ask MigrationTestHelper to verify the schema changes
-        val db = helper.runMigrationsAndValidate(WP_DB_NAME, 4, true, MIGRATION_3_4)
+        // Re-open the database with the new version and provide migration to check against.
+        val db = helper.runMigrationsAndValidate(WP_DB_NAME, newVersion, true, MIGRATION_3_4)
 
         // Validate that the data was migrated properly.
         val cursor = db.query("SELECT * FROM BloggingReminders")
@@ -109,6 +111,8 @@ class WPAndroidDatabaseMigrationTest {
         assertThat(cursor.getInt(0)).isEqualTo(1000)
         assertThat(cursor.getInt(2)).isEqualTo(1)
         assertThat(cursor.getInt(4)).isEqualTo(0)
+        assertThat(cursor.getInt(8)).isEqualTo(10)
+        assertThat(cursor.getInt(9)).isEqualTo(0)
         cursor.close()
         db.close()
     }
