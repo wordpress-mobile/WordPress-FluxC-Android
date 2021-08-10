@@ -58,7 +58,7 @@ class WCProductStore @Inject constructor(
      * Defines the filter options currently supported in the app
      */
     enum class ProductFilterOption {
-        STOCK_STATUS, STATUS, TYPE;
+        STOCK_STATUS, STATUS, TYPE, CATEGORY;
 
         override fun toString() = name.toLowerCase(Locale.US)
     }
@@ -676,8 +676,9 @@ class WCProductStore @Inject constructor(
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
     /**
-     * returns a list of [WCProductModel] for the give [SiteModel] and [filterOptions]
-     * if it exists in the database
+     * returns a list of [WCProductModel] for the given [SiteModel] and [filterOptions]
+     * if it exists in the database. To filter by category, make sure the [filterOptions] value
+     * is the category ID in String.
      */
     fun getProductsByFilterOptions(
         site: SiteModel,
