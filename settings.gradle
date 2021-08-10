@@ -7,12 +7,14 @@ pluginManagement {
         id "org.jetbrains.kotlin.android.extensions" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.jvm" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
+        id "com.automattic.android.publish-to-s3" version "0.6.1"
     }
     repositories {
         maven {
             url 'https://a8c-libs.s3.amazonaws.com/android' 
             content {
                 includeGroup "com.automattic.android"
+                includeGroup "com.automattic.android.publish-to-s3"
             }
         }
         gradlePluginPortal()
@@ -44,3 +46,15 @@ include ':fluxc',
         ':example',
         ':instaflux',
         ':tests:api'
+
+// Build cache is only enabled for CI, at least for now
+if (System.getenv().containsKey("CI")) {
+    buildCache {
+        remote(HttpBuildCache) {
+            url = "http://10.0.2.215:5071/cache/"
+            allowUntrustedServer = true
+            allowInsecureProtocol = true
+            push = true
+        }
+    }
+}

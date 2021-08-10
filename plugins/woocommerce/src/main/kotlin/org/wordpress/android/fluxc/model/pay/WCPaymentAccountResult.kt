@@ -7,7 +7,6 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
-import java.util.Date
 
 data class WCPaymentAccountResult(
     @SerializedName("status")
@@ -17,7 +16,7 @@ data class WCPaymentAccountResult(
     @SerializedName("has_overdue_requirements")
     val hasOverdueRequirements: Boolean,
     @SerializedName("current_deadline")
-    val currentDeadline: Date?,
+    val currentDeadline: Long?,
     /**
      * An alphanumeric string set by the merchant, e.g. `MYSTORE.COM`
      * See https://stripe.com/docs/statement-descriptors
@@ -37,7 +36,12 @@ data class WCPaymentAccountResult(
      * A boolean flag indicating if this Account is eligible for card present payments
      */
     @SerializedName("card_present_eligible")
-    val isCardPresentEligible: Boolean
+    val isCardPresentEligible: Boolean,
+    /**
+     * A boolean flag indicating if this Account is test/live.
+     */
+    @SerializedName("is_live")
+    val isLive: Boolean
 ) {
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
@@ -54,13 +58,21 @@ data class WCPaymentAccountResult(
          * This state occurs when there is required business information missing from the account.
          * If `hasOverdueRequirements` is also true, then the deadline for providing that information HAS PASSED and
          * the merchant will probably NOT be able to collect card present payments.
-         * Otherwise, if `hasPendingRequirements` is true, then the deadline for providing that information has not yet passed.
-         * The deadline is available in `currentDeadline` and the merchant will probably be able to collect card present payments
-         * until the deadline.
-         * Otherwise, if neither `hasOverdueRequirements` nor `hasPendingRequirements` is true, then the account is under
-         * review by Stripe and the merchant will probably not be able to collect card present payments.
+         * Otherwise, if `hasPendingRequirements` is true, then the deadline for providing that information has not yet
+         * passed.
+         * The deadline is available in `currentDeadline` and the merchant will probably be able to collect card present
+         * payments until the deadline.
+         * Otherwise, if neither `hasOverdueRequirements` nor `hasPendingRequirements` is true, then the account is
+         * under review by Stripe and the merchant will probably not be able to collect card present payments.
          */
         RESTRICTED,
+
+        /**
+         * This state occurs when there is required business information missing from the account but the
+         * currentDeadline hasn't passed yet (aka there are no overdueRequirements). The merchant will probably be able
+         * to collect card present payments.
+         */
+        RESTRICTED_SOON,
 
         /**
          * This state occurs when our payment processor rejects the merchant account due to suspected fraudulent
@@ -105,6 +117,7 @@ data class WCPaymentAccountResult(
                     when (json.asString) {
                         "complete" -> COMPLETE
                         "restricted" -> RESTRICTED
+                        "restricted_soon" -> RESTRICTED_SOON
                         "rejected.fraud" -> REJECTED_FRAUD
                         "rejected.terms_of_service" -> REJECTED_TERMS_OF_SERVICE
                         "rejected.listed" -> REJECTED_LISTED

@@ -31,6 +31,12 @@
             android:layout_height="wrap_content"
             android:text="Filter by Product Type" />
 
+        <Button
+            android:id="@+id/filter_by_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Filter by A Random Category" />
+
         <View
             style="@style/Divider" />
 
@@ -38,6 +44,6 @@
             android:id="@+id/filter_products"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Apply Filte" />
+            android:text="Apply Filter" />
     </LinearLayout>
 </ScrollView>
