@@ -41,7 +41,7 @@ class WPAndroidDatabaseMigrationTest {
 
         // Re-open the database with version 3 and provide migration to check against.
         // Ask MigrationTestHelper to verify the schema changes
-        val db = helper.runMigrationsAndValidate(WP_DB_NAME, 1, true, MIGRATION_1_2)
+        val db = helper.runMigrationsAndValidate(WP_DB_NAME, 2, true, MIGRATION_1_2)
 
         // Validate that the data was migrated properly.
         val cursor = db.query("SELECT * FROM BloggingReminders")
@@ -62,8 +62,8 @@ class WPAndroidDatabaseMigrationTest {
             // populate BloggingReminders with some data
             execSQL(""" 
                 INSERT INTO BloggingReminders 
-                (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday, hour, minute) 
-                VALUES (1000,1, 1, 0, 0, 1, 0, 1, 10, 0) 
+                (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
+                VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
             """)
             close()
         }
