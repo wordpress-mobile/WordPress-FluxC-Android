@@ -153,6 +153,6 @@ class PayRestClient @Inject constructor(
     companion object {
         private const val ACCOUNT_REQUESTED_FIELDS: String =
                 "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
-                        "store_currencies,country,card_present_eligible,is_live"
+                        "store_currencies,country,card_present_eligible,is_live,test_mode"
     }
 }
