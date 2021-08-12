@@ -57,6 +57,11 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.5.1'
+    testImplementation 'androidx.test:core:1.4.0'
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
 }
 
 project.afterEvaluate {
