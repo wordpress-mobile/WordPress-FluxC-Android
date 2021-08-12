@@ -305,7 +305,7 @@ class WCShippingLabelStoreTest {
     @Test
     fun `verify shipping address`() = test {
         val result = verifyAddress(ORIGIN)
-        assertThat(result.model).isEqualTo(Valid(address))
+        assertThat(result.model).isEqualTo(Valid(address, successfulVerifyAddressApiResponse.isTrivialNormalization))
 
         val invalidRequestResult = verifyAddress(DESTINATION)
         assertThat(invalidRequestResult.model).isNull()
