@@ -14,7 +14,7 @@ internal fun WCProductAddonModel.toAddonEntity(globalGroupLocalId: Long): AddonE
             titleFormat = this.titleFormat?.toLocalEntity(),
             descriptionEnabled = true,
             restrictionsType = this.restrictionsType?.toLocalEntity(),
-            adjustPrice = this.adjustPrice,
+            adjustPrice = this.adjustPrice?.toBooleanOrNull(),
             priceType = this.priceType?.toLocalEntity(),
             type = this.type?.toLocalEntity(),
             display = this.display?.toLocalEntity(),
