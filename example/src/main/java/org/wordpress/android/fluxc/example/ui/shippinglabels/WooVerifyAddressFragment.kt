@@ -79,7 +79,9 @@ class WooVerifyAddressFragment : Fragment() {
                             prependToLog("${result.error.message}")
                         }
                         result.model is Valid -> {
-                            prependToLog("${(result.model as Valid).suggestedAddress}")
+                            val model = result.model as Valid
+                            prependToLog("Suggested address: ${model.suggestedAddress}\n" +
+                                    "Trivial Change: ${model.isTrivialNormalization}")
                         }
                         result.model is InvalidAddress -> {
                             prependToLog("Address error: ${(result.model as InvalidAddress).message}")
