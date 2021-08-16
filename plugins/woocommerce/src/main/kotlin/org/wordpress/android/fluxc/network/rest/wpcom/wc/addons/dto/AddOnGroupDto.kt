@@ -4,8 +4,8 @@ import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 
 data class AddOnGroupDto(
-    @SerializedName("id") val id: Int,
+    @SerializedName("id") val id: Long,
     @SerializedName("name") val name: String,
-    @SerializedName("restrict_to_category_ids") val categoryIds: List<Int>,
+    @SerializedName("restrict_to_category_ids") val categoryIds: List<Long>?,
     @SerializedName("fields") val addons: List<WCProductAddonModel>
 )

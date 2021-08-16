@@ -40,7 +40,7 @@ jobs:
       - copy-gradle-properties
       - run:
           name: Unit tests
-          command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m example:testRelease
+          command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m example:testRelease plugins:woocommerce:testRelease
       - android/save-gradle-cache
       - android/save-test-results
   Firebase Test:
