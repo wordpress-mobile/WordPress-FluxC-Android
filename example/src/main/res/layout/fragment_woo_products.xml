@@ -200,7 +200,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Global Addons groups" />
+            android:text="Fetch and Cache Global Addons groups" />
+
+        <Button
+            android:id="@+id/show_cached_global_addons_groups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Show cached Global Addons groups" />
 
         <Button
             android:id="@+id/update_product"

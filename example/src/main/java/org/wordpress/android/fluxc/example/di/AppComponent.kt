@@ -5,6 +5,7 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
+import org.wordpress.android.fluxc.di.WCDatabaseModule
 import org.wordpress.android.fluxc.example.ExampleApp
 import org.wordpress.android.fluxc.module.DatabaseModule
 import org.wordpress.android.fluxc.module.OkHttpClientModule
@@ -12,7 +13,7 @@ import org.wordpress.android.fluxc.module.ReleaseNetworkModule
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = arrayOf(
+@Component(modules = [
         AndroidInjectionModule::class,
         ApplicationModule::class,
         AppConfigModule::class,
@@ -20,7 +21,8 @@ import javax.inject.Singleton
         ReleaseNetworkModule::class,
         MainActivityModule::class,
         WCOrderListActivityModule::class,
-        DatabaseModule::class))
+        WCDatabaseModule::class,
+        DatabaseModule::class])
 interface AppComponent : AndroidInjector<ExampleApp> {
     override fun inject(app: ExampleApp)
 
