@@ -12,12 +12,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnDisplay
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnDisplay.Dropdown
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnPriceType.FlatFee
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnRestrictionsType.Email
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnTitleFormat.Heading
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnType.Checkbox
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.ProductAddonOption
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
@@ -144,7 +143,7 @@ internal class AddonsDaoTest {
                                 adjustPrice = "0",
                                 priceType = FlatFee,
                                 type = Checkbox,
-                                display = AddOnDisplay.Dropdown,
+                                display = Dropdown,
                                 name = "Test Addon name",
                                 required = "0",
                                 position = "4",
@@ -153,7 +152,7 @@ internal class AddonsDaoTest {
                                 min = "10",
                                 max = "100",
                                 options = listOf(
-                                        ProductAddonOption(
+                                        WCProductAddonModel.ProductAddonOption(
                                                 priceType = FlatFee,
                                                 label = "Test label",
                                                 price = "Test price",
