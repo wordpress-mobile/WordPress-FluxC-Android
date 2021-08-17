@@ -68,7 +68,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
-import kotlinx.coroutines.flow.first
 
 class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
@@ -411,16 +410,6 @@ class WooProductsFragment : Fragment() {
                                     "Global addons fetch successful"
                                 }
                         )
-                    }
-                }
-            }
-        }
-
-        show_cached_global_addons_groups.setOnClickListener {
-            selectedSite?.let { site ->
-                coroutineScope.launch {
-                    addonsStore.observeGlobalAddonsGroups(site.siteId).first().let {
-                        prependToLog(it.toString())
                     }
                 }
             }
