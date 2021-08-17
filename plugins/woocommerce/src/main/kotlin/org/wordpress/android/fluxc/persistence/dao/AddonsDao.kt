@@ -5,26 +5,65 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
+import org.wordpress.android.fluxc.persistence.mappers.toAddonEntity
+import org.wordpress.android.fluxc.persistence.mappers.toAddonGroupEntity
+import org.wordpress.android.fluxc.persistence.mappers.toAddonOptionEntity
 
 @Dao
-internal interface AddonsDao {
+internal abstract class AddonsDao {
     @Transaction
     @Query("SELECT * FROM GlobalAddonGroupEntity WHERE remoteSiteId = :remoteSiteId")
-    fun getGlobalAddonsForSite(remoteSiteId: Long): Flow<List<GlobalAddonGroupWithAddons>>
+    abstract fun getGlobalAddonsForSite(remoteSiteId: Long): Flow<List<GlobalAddonGroupWithAddons>>
 
     @Insert
-    suspend fun insertGroup(globalAddonGroupEntity: GlobalAddonGroupEntity): Long
+    abstract suspend fun insertGroup(globalAddonGroupEntity: GlobalAddonGroupEntity): Long
 
     @Insert
-    suspend fun insertAddons(addonEntities: AddonEntity): Long
+    abstract suspend fun insertAddons(addonEntities: AddonEntity): Long
 
     @Insert
-    suspend fun insertAddonOptions(vararg addonOptions: AddonOptionEntity)
+    abstract suspend fun insertAddonOptions(vararg addonOptions: AddonOptionEntity)
 
     @Query("DELETE FROM GlobalAddonGroupEntity WHERE remoteSiteId = :remoteSiteId")
-    suspend fun deleteGlobalAddonsForSite(remoteSiteId: Long)
+    abstract suspend fun deleteGlobalAddonsForSite(remoteSiteId: Long)
+
+    @Transaction
+    open suspend fun cacheGroups(
+        globalAddonGroups: List<AddOnGroupDto>,
+        remoteSiteId: Long
+    ) {
+        deleteGlobalAddonsForSite(remoteSiteId)
+
+        globalAddonGroups.forEach { group ->
+            val globalAddonGroupEntityId = insertGroup(group.toAddonGroupEntity(remoteSiteId))
+            insertAddonEntity(group.addons, globalAddonGroupEntityId)
+        }
+    }
+
+    private suspend fun insertAddonEntity(
+        addons: List<WCProductAddonModel>,
+        groupId: Long
+    ) {
+        addons.forEach { addon ->
+            val addonEntity = addon.toAddonEntity(groupId)
+            val addonEntityId = insertAddons(addonEntity)
+            insertAddonOptionEntity(addon.options, addonEntityId)
+        }
+    }
+
+    private suspend fun insertAddonOptionEntity(
+        options: List<WCProductAddonModel.ProductAddonOption>?,
+        addonEntityId: Long
+    ) {
+        options?.forEach { addonOption ->
+            val addonOptionEntity = addonOption.toAddonOptionEntity(addonLocalId = addonEntityId)
+            insertAddonOptions(addonOptionEntity)
+        }
+    }
 }

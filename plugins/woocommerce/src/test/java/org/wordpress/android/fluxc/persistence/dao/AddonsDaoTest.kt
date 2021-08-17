@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.usecase
+package org.wordpress.android.fluxc.persistence.dao
 
 import android.app.Application
 import androidx.room.Room
@@ -12,30 +12,29 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnDisplay.Dropdown
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnPriceType.FlatFee
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnRestrictionsType.Email
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnTitleFormat.Heading
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnType.Checkbox
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnDisplay
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnPriceType
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnRestrictionsType
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnTitleFormat
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnType
+import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.ProductAddonOption
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
-import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
-import org.wordpress.android.fluxc.persistence.entity.AddonEntity.Display
-import org.wordpress.android.fluxc.persistence.entity.AddonEntity.PriceType
-import org.wordpress.android.fluxc.persistence.entity.AddonEntity.RestrictionsType
-import org.wordpress.android.fluxc.persistence.entity.AddonEntity.TitleFormat
-import org.wordpress.android.fluxc.persistence.entity.AddonEntity.Type
+import org.wordpress.android.fluxc.persistence.entity.AddonEntity.Display.Dropdown
+import org.wordpress.android.fluxc.persistence.entity.AddonEntity.PriceType.FlatFee
+import org.wordpress.android.fluxc.persistence.entity.AddonEntity.RestrictionsType.Email
+import org.wordpress.android.fluxc.persistence.entity.AddonEntity.TitleFormat.Heading
+import org.wordpress.android.fluxc.persistence.entity.AddonEntity.Type.Checkbox
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonWithOptions
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
 
 @RunWith(RobolectricTestRunner::class)
-internal class CacheGlobalAddonsGroupsTest {
+internal class AddonsDaoTest {
     private lateinit var database: WCAndroidDatabase
-    private lateinit var addonsDao: AddonsDao
-    private lateinit var sut: CacheGlobalAddonsGroups
+    private lateinit var sut: AddonsDao
 
     @Before
     fun setUp() {
@@ -43,21 +42,19 @@ internal class CacheGlobalAddonsGroupsTest {
         database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
                 .allowMainThreadQueries()
                 .build()
-        addonsDao = database.addonsDao()
-
-        sut = CacheGlobalAddonsGroups(addonsDao)
+        sut = database.addonsDao()
     }
 
     @Test
     fun `save and retrieve global add-on`(): Unit = runBlocking {
         val expectedGlobalAddonGroupEntity = getSampleGlobalAddonGroupWithAddons(DB_GENERATED_ID_IN_FIRST_ITERATION)
 
-        sut.invoke(
+        sut.cacheGroups(
                 globalAddonGroups = listOf(TEST_GLOBAL_ADDON_GROUP_DTO),
                 remoteSiteId = TEST_REMOTE_SITE_ID
         )
 
-        val resultFromDatabase = addonsDao.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
+        val resultFromDatabase = sut.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
         assertThat(resultFromDatabase).containsOnly(expectedGlobalAddonGroupEntity)
     }
 
@@ -65,16 +62,16 @@ internal class CacheGlobalAddonsGroupsTest {
     fun `caching global addon groups doesn't duplicate entities`(): Unit = runBlocking {
         val expectedGlobalAddonGroupEntity = getSampleGlobalAddonGroupWithAddons(DB_GENERATED_ID_IN_SECOND_ITERATION)
 
-        sut.invoke(
+        sut.cacheGroups(
                 globalAddonGroups = listOf(TEST_GLOBAL_ADDON_GROUP_DTO),
                 remoteSiteId = TEST_REMOTE_SITE_ID
         )
-        sut.invoke(
+        sut.cacheGroups(
                 globalAddonGroups = listOf(TEST_GLOBAL_ADDON_GROUP_DTO),
                 remoteSiteId = TEST_REMOTE_SITE_ID
         )
 
-        val resultFromDatabase = addonsDao.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
+        val resultFromDatabase = sut.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
         assertThat(resultFromDatabase).containsOnly(expectedGlobalAddonGroupEntity)
     }
 
@@ -102,18 +99,18 @@ internal class CacheGlobalAddonsGroupsTest {
                                     addon = AddonEntity(
                                             addonLocalId = autoGeneratedId,
                                             globalGroupLocalId = autoGeneratedId,
-                                            type = Type.Checkbox,
-                                            display = Display.Dropdown,
+                                            type = Checkbox,
+                                            display = Dropdown,
                                             name = "Test Addon name",
-                                            titleFormat = TitleFormat.Heading,
+                                            titleFormat = Heading,
                                             descriptionEnabled = true,
                                             description = "Test",
                                             required = false,
                                             position = 4,
                                             restrictions = false,
-                                            restrictionsType = RestrictionsType.Email,
+                                            restrictionsType = Email,
                                             adjustPrice = false,
-                                            priceType = PriceType.FlatFee,
+                                            priceType = FlatFee,
                                             price = "123",
                                             min = 10,
                                             max = 100
@@ -122,7 +119,7 @@ internal class CacheGlobalAddonsGroupsTest {
                                             AddonOptionEntity(
                                                     addonLocalId = autoGeneratedId,
                                                     addonOptionLocalId = autoGeneratedId,
-                                                    priceType = PriceType.FlatFee,
+                                                    priceType = FlatFee,
                                                     label = "Test label",
                                                     price = "Test price",
                                                     image = null
@@ -140,14 +137,14 @@ internal class CacheGlobalAddonsGroupsTest {
                 categoryIds = null,
                 addons = listOf(
                         WCProductAddonModel(
-                                titleFormat = Heading,
+                                titleFormat = AddOnTitleFormat.Heading,
                                 description = "Test",
                                 descriptionEnabled = "1",
-                                restrictionsType = Email,
+                                restrictionsType = AddOnRestrictionsType.Email,
                                 adjustPrice = "0",
-                                priceType = FlatFee,
-                                type = Checkbox,
-                                display = Dropdown,
+                                priceType = AddOnPriceType.FlatFee,
+                                type = AddOnType.Checkbox,
+                                display = AddOnDisplay.Dropdown,
                                 name = "Test Addon name",
                                 required = "0",
                                 position = "4",
@@ -156,8 +153,8 @@ internal class CacheGlobalAddonsGroupsTest {
                                 min = "10",
                                 max = "100",
                                 options = listOf(
-                                        WCProductAddonModel.ProductAddonOption(
-                                                priceType = FlatFee,
+                                        ProductAddonOption(
+                                                priceType = AddOnPriceType.FlatFee,
                                                 label = "Test label",
                                                 price = "Test price",
                                                 image = null
