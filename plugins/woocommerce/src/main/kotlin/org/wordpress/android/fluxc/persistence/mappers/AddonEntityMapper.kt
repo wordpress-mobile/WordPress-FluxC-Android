@@ -11,21 +11,19 @@ import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 internal fun WCProductAddonModel.toAddonEntity(globalGroupLocalId: Long): AddonEntity {
     return AddonEntity(
             globalGroupLocalId = globalGroupLocalId,
-            titleFormat = this.titleFormat?.toLocalEntity(),
-            descriptionEnabled = true,
-            restrictionsType = this.restrictionsType?.toLocalEntity(),
-            adjustPrice = this.adjustPrice?.toBooleanOrNull(),
+            titleFormat = this.titleFormat.toLocalEntity(),
+            restrictions = this.restrictionsType?.toLocalEntity(),
+            priceAdjusted = this.adjustPrice.asBoolean(),
             priceType = this.priceType?.toLocalEntity(),
-            type = this.type?.toLocalEntity(),
+            type = this.type.toLocalEntity(),
             display = this.display?.toLocalEntity(),
             name = this.name,
             description = this.description,
-            required = this.required?.toBooleanOrNull(),
-            position = this.position?.toIntOrNull(),
-            restrictions = this.restrictions?.toBooleanOrNull(),
+            required = this.required.asBoolean(),
+            position = this.position,
             price = this.price,
-            min = this.min?.toInt(),
-            max = this.max?.toInt()
+            min = this.min,
+            max = this.max
     )
 }
 
@@ -45,13 +43,13 @@ private fun AddOnTitleFormat.toLocalEntity(): AddonEntity.TitleFormat {
     }
 }
 
-private fun AddOnRestrictionsType.toLocalEntity(): AddonEntity.RestrictionsType {
+private fun AddOnRestrictionsType.toLocalEntity(): AddonEntity.Restrictions {
     return when (this) {
-        AddOnRestrictionsType.AnyText -> AddonEntity.RestrictionsType.AnyText
-        AddOnRestrictionsType.OnlyLetters -> AddonEntity.RestrictionsType.OnlyLetters
-        AddOnRestrictionsType.OnlyNumbers -> AddonEntity.RestrictionsType.OnlyNumbers
-        AddOnRestrictionsType.OnlyLettersNumbers -> AddonEntity.RestrictionsType.OnlyLettersNumbers
-        AddOnRestrictionsType.Email -> AddonEntity.RestrictionsType.Email
+        AddOnRestrictionsType.AnyText -> AddonEntity.Restrictions.AnyText
+        AddOnRestrictionsType.OnlyLetters -> AddonEntity.Restrictions.OnlyLetters
+        AddOnRestrictionsType.OnlyNumbers -> AddonEntity.Restrictions.OnlyNumbers
+        AddOnRestrictionsType.OnlyLettersNumbers -> AddonEntity.Restrictions.OnlyLettersNumbers
+        AddOnRestrictionsType.Email -> AddonEntity.Restrictions.Email
     }
 }
 
@@ -70,14 +68,16 @@ private fun AddOnType.toLocalEntity(): AddonEntity.Type {
 
 private fun AddOnDisplay.toLocalEntity(): AddonEntity.Display {
     return when (this) {
-        AddOnDisplay.Dropdown -> AddonEntity.Display.Dropdown
+        AddOnDisplay.Select -> AddonEntity.Display.Select
         AddOnDisplay.RadioButton -> AddonEntity.Display.RadioButton
         AddOnDisplay.Images -> AddonEntity.Display.Images
     }
 }
 
-private fun String.toBooleanOrNull() = when (this) {
-    "1" -> true
-    "0" -> false
-    else -> null
+private fun Int.asBoolean(): Boolean {
+    return when (this) {
+        0 -> false
+        1 -> true
+        else -> false
+    }
 }
