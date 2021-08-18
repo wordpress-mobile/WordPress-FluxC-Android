@@ -21,5 +21,5 @@ data class GlobalAddonGroupEntity(
     val remoteId: Long,
     val name: String,
     val restrictedCategoriesIds: List<Long>,
-    val remoteSiteId: Long
+    val siteRemoteId: Long
 )

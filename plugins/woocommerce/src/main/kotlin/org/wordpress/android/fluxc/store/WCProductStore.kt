@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClie
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
+import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
@@ -41,7 +42,8 @@ import javax.inject.Singleton
 class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcProductRestClient: ProductRestClient,
-    private val coroutineEngine: CoroutineEngine? = null
+    private val coroutineEngine: CoroutineEngine? = null,
+    private val addonsDao: AddonsDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -1045,6 +1047,15 @@ class WCProductStore @Inject constructor(
             onProductChanged = OnProductChanged(rowsAffected).also {
                 it.remoteProductId = payload.product.remoteProductId
             }
+
+            // TODO: 18/08/2021 @wzieba add tests
+            coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
+                addonsDao.cacheProductAddons(
+                        productRemoteId = payload.product.remoteProductId,
+                        siteRemoteId = payload.site.siteId,
+                        addons = payload.product.addons?.toList().orEmpty()
+                )
+            }
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
@@ -1095,6 +1106,17 @@ class WCProductStore @Inject constructor(
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
             onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+
+            // TODO: 18/08/2021 @wzieba add tests
+            coroutineEngine?.launch(T.DB, this, "cacheProductsAddons") {
+                payload.products.forEach { product ->
+                    addonsDao.cacheProductAddons(
+                            productRemoteId = product.remoteProductId,
+                            siteRemoteId = payload.site.siteId,
+                            addons = product.addons?.toList().orEmpty()
+                    )
+                }
+            }
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS

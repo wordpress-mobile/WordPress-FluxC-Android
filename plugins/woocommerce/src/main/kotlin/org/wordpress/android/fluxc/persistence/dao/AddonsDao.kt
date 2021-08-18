@@ -9,17 +9,23 @@ import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
+import org.wordpress.android.fluxc.persistence.entity.AddonWithOptions
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
+import org.wordpress.android.fluxc.persistence.mappers.ProductBasedIdentification
 import org.wordpress.android.fluxc.persistence.mappers.toAddonEntity
 import org.wordpress.android.fluxc.persistence.mappers.toAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.mappers.toAddonOptionEntity
 
 @Dao
-internal abstract class AddonsDao {
+abstract class AddonsDao {
     @Transaction
-    @Query("SELECT * FROM GlobalAddonGroupEntity WHERE remoteSiteId = :remoteSiteId")
-    abstract fun getGlobalAddonsForSite(remoteSiteId: Long): Flow<List<GlobalAddonGroupWithAddons>>
+    @Query("SELECT * FROM GlobalAddonGroupEntity WHERE siteRemoteId = :siteRemoteId")
+    abstract fun observeGlobalAddonsForSite(siteRemoteId: Long): Flow<List<GlobalAddonGroupWithAddons>>
+
+    @Transaction
+    @Query("SELECT * FROM AddonEntity WHERE siteRemoteId = :siteRemoteId AND productRemoteId = :productRemoteId")
+    abstract fun observeSingleProductAddons(siteRemoteId: Long, productRemoteId: Long): Flow<List<AddonWithOptions>>
 
     @Insert
     abstract suspend fun insertGroup(globalAddonGroupEntity: GlobalAddonGroupEntity): Long
@@ -30,19 +36,42 @@ internal abstract class AddonsDao {
     @Insert
     abstract suspend fun insertAddonOptions(vararg addonOptions: AddonOptionEntity)
 
-    @Query("DELETE FROM GlobalAddonGroupEntity WHERE remoteSiteId = :remoteSiteId")
-    abstract suspend fun deleteGlobalAddonsForSite(remoteSiteId: Long)
+    @Query("DELETE FROM GlobalAddonGroupEntity WHERE siteRemoteId = :siteRemoteId")
+    abstract suspend fun deleteGlobalAddonsForSite(siteRemoteId: Long)
+
+    @Query("DELETE FROM AddonEntity WHERE productRemoteId = :productRemoteId AND siteRemoteId = :siteRemoteId")
+    abstract suspend fun deleteAddonsForSpecifiedProduct(productRemoteId: Long, siteRemoteId: Long)
 
     @Transaction
     open suspend fun cacheGroups(
         globalAddonGroups: List<AddOnGroupDto>,
-        remoteSiteId: Long
+        siteRemoteId: Long
     ) {
-        deleteGlobalAddonsForSite(remoteSiteId)
+        deleteGlobalAddonsForSite(siteRemoteId)
 
         globalAddonGroups.forEach { group ->
-            val globalAddonGroupEntityId = insertGroup(group.toAddonGroupEntity(remoteSiteId))
+            val globalAddonGroupEntityId = insertGroup(group.toAddonGroupEntity(siteRemoteId))
             insertAddonEntity(group.addons, globalAddonGroupEntityId)
+        }
+    }
+
+    @Transaction
+    open suspend fun cacheProductAddons(
+        productRemoteId: Long,
+        siteRemoteId: Long,
+        addons: List<WCProductAddonModel>
+    ) {
+        deleteAddonsForSpecifiedProduct(productRemoteId = productRemoteId, siteRemoteId = siteRemoteId)
+
+        addons.forEach { addon ->
+            val addonEntity = addon.toAddonEntity(
+                    productBasedIdentification = ProductBasedIdentification(
+                            siteRemoteId = siteRemoteId,
+                            productRemoteId = productRemoteId
+                    )
+            )
+            val addonEntityId = insertAddons(addonEntity)
+            insertAddonOptionEntity(addon.options, addonEntityId)
         }
     }
 
@@ -51,7 +80,7 @@ internal abstract class AddonsDao {
         groupId: Long
     ) {
         addons.forEach { addon ->
-            val addonEntity = addon.toAddonEntity(groupId)
+            val addonEntity = addon.toAddonEntity(globalGroupLocalId = groupId)
             val addonEntityId = insertAddons(addonEntity)
             insertAddonOptionEntity(addon.options, addonEntityId)
         }
