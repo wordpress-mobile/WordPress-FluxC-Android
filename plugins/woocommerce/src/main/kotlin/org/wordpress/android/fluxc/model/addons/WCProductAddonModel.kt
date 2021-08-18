@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class WCProductAddonModel(
     @SerializedName("title_format")
     val titleFormat: AddOnTitleFormat,
+    @SerializedName("description_enable")
+    val descriptionEnabled: Int,
     @SerializedName("restrictions_type")
     val restrictionsType: AddOnRestrictionsType? = null,
     @SerializedName("adjust_price")

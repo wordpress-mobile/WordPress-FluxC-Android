@@ -32,6 +32,7 @@ data class AddonEntity(
     val name: String,
     val titleFormat: TitleFormat,
     val description: String,
+    val descriptionEnabled: Boolean,
     val required: Boolean,
     val position: Int,
     val restrictions: Restrictions? = null,

@@ -19,6 +19,7 @@ internal fun WCProductAddonModel.toAddonEntity(globalGroupLocalId: Long): AddonE
             display = this.display?.toLocalEntity(),
             name = this.name,
             description = this.description,
+            descriptionEnabled = this.descriptionEnabled.asBoolean(),
             required = this.required.asBoolean(),
             position = this.position,
             price = this.price,
