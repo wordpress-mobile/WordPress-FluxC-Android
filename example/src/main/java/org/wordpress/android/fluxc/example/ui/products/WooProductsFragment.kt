@@ -402,10 +402,9 @@ class WooProductsFragment : Fragment() {
         fetch_global_addons_groups.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
-                    addonsStore.fetchAllGlobalAddonsGroups(site).run {
-                        error?.let { prependToLog("${it.type}: ${it.message}") }
-                            prependToLog("Global addons: ${this.model}")
-                    }
+                    addonsStore.fetchAllGlobalAddonsGroups(site).error
+                            ?.let { prependToLog("${it.type}: ${it.message}") }
+                            ?: prependToLog("Global addons fetch successful")
                 }
             }
         }

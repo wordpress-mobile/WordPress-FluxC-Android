@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.usecase
+package org.wordpress.android.fluxc.persistence.dao
 
 import android.app.Application
 import androidx.room.Room
@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnTitleFo
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnType.Checkbox
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
-import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity.Display
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity.PriceType
@@ -32,10 +31,9 @@ import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
 
 @RunWith(RobolectricTestRunner::class)
-internal class CacheGlobalAddonsGroupsTest {
+internal class AddonsDaoTest {
     private lateinit var database: WCAndroidDatabase
-    private lateinit var addonsDao: AddonsDao
-    private lateinit var sut: CacheGlobalAddonsGroups
+    private lateinit var sut: AddonsDao
 
     @Before
     fun setUp() {
@@ -43,21 +41,19 @@ internal class CacheGlobalAddonsGroupsTest {
         database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
                 .allowMainThreadQueries()
                 .build()
-        addonsDao = database.addonsDao()
-
-        sut = CacheGlobalAddonsGroups(addonsDao)
+        sut = database.addonsDao()
     }
 
     @Test
     fun `save and retrieve global add-on`(): Unit = runBlocking {
         val expectedGlobalAddonGroupEntity = getSampleGlobalAddonGroupWithAddons(DB_GENERATED_ID_IN_FIRST_ITERATION)
 
-        sut.invoke(
+        sut.cacheGroups(
                 globalAddonGroups = listOf(TEST_GLOBAL_ADDON_GROUP_DTO),
                 remoteSiteId = TEST_REMOTE_SITE_ID
         )
 
-        val resultFromDatabase = addonsDao.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
+        val resultFromDatabase = sut.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
         assertThat(resultFromDatabase).containsOnly(expectedGlobalAddonGroupEntity)
     }
 
@@ -65,16 +61,16 @@ internal class CacheGlobalAddonsGroupsTest {
     fun `caching global addon groups doesn't duplicate entities`(): Unit = runBlocking {
         val expectedGlobalAddonGroupEntity = getSampleGlobalAddonGroupWithAddons(DB_GENERATED_ID_IN_SECOND_ITERATION)
 
-        sut.invoke(
+        sut.cacheGroups(
                 globalAddonGroups = listOf(TEST_GLOBAL_ADDON_GROUP_DTO),
                 remoteSiteId = TEST_REMOTE_SITE_ID
         )
-        sut.invoke(
+        sut.cacheGroups(
                 globalAddonGroups = listOf(TEST_GLOBAL_ADDON_GROUP_DTO),
                 remoteSiteId = TEST_REMOTE_SITE_ID
         )
 
-        val resultFromDatabase = addonsDao.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
+        val resultFromDatabase = sut.getGlobalAddonsForSite(TEST_REMOTE_SITE_ID).first()
         assertThat(resultFromDatabase).containsOnly(expectedGlobalAddonGroupEntity)
     }
 
