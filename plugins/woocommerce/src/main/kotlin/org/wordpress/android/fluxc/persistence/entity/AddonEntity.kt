@@ -27,21 +27,20 @@ data class AddonWithOptions(
 data class AddonEntity(
     @PrimaryKey(autoGenerate = true) val addonLocalId: Long = 0,
     val globalGroupLocalId: Long,
-    val type: Type?,
-    val display: Display?,
-    val name: String?,
-    val titleFormat: TitleFormat?,
-    val descriptionEnabled: Boolean?,
-    val description: String?,
-    val required: Boolean?,
-    val position: Int?,
-    val restrictions: Boolean?,
-    val restrictionsType: RestrictionsType?,
-    val adjustPrice: Boolean?,
-    val priceType: PriceType?,
-    val price: String?,
-    val min: Int?,
-    val max: Int?
+    val type: Type,
+    val display: Display? = null,
+    val name: String,
+    val titleFormat: TitleFormat,
+    val description: String,
+    val descriptionEnabled: Boolean,
+    val required: Boolean,
+    val position: Int,
+    val restrictions: Restrictions? = null,
+    val priceAdjusted: Boolean? = null,
+    val priceType: PriceType? = null,
+    val price: String? = null,
+    val min: Long? = null,
+    val max: Long? = null
 ) {
     enum class Type {
         MultipleChoice,
@@ -55,7 +54,7 @@ data class AddonEntity(
     }
 
     enum class Display {
-        Dropdown,
+        Select,
         RadioButton,
         Images
     }
@@ -66,7 +65,7 @@ data class AddonEntity(
         Hide
     }
 
-    enum class RestrictionsType {
+    enum class Restrictions {
         AnyText,
         OnlyLetters,
         OnlyNumbers,

@@ -4,33 +4,32 @@ import com.google.gson.annotations.SerializedName
 
 data class WCProductAddonModel(
     @SerializedName("title_format")
-    val titleFormat: AddOnTitleFormat? = null,
+    val titleFormat: AddOnTitleFormat,
     @SerializedName("description_enable")
-    val descriptionEnabled: String? = null,
+    val descriptionEnabled: Int,
     @SerializedName("restrictions_type")
     val restrictionsType: AddOnRestrictionsType? = null,
     @SerializedName("adjust_price")
-    val adjustPrice: String? = null,
+    val adjustPrice: Int,
     @SerializedName("price_type")
     val priceType: AddOnPriceType? = null,
 
-    val type: AddOnType? = null,
+    val type: AddOnType,
     val display: AddOnDisplay? = null,
-    val name: String? = null,
-    val description: String? = null,
-    val required: String? = null,
-    val position: String? = null,
-    val restrictions: String? = null,
+    val name: String,
+    val description: String,
+    val required: Int,
+    val position: Int,
     val price: String? = null,
-    val min: String? = null,
-    val max: String? = null,
+    val min: Long,
+    val max: Long,
     val options: List<ProductAddonOption>? = null
 ) {
     enum class AddOnType {
-        @SerializedName("description_enable") MultipleChoice,
+        @SerializedName("multiple_choice") MultipleChoice,
         @SerializedName("checkbox") Checkbox,
         @SerializedName("custom_text") CustomText,
-        @SerializedName("custom_text_area") CustomTextArea,
+        @SerializedName("custom_textarea") CustomTextArea,
         @SerializedName("file_upload") FileUpload,
         @SerializedName("custom_price") CustomPrice,
         @SerializedName("input_multiplier") InputMultiplier,
@@ -38,7 +37,7 @@ data class WCProductAddonModel(
     }
 
     enum class AddOnDisplay {
-        @SerializedName("dropdown") Dropdown,
+        @SerializedName("select") Select,
         @SerializedName("radiobutton") RadioButton,
         @SerializedName("images") Images
     }
@@ -65,7 +64,7 @@ data class WCProductAddonModel(
 
     data class ProductAddonOption(
         @SerializedName("price_type")
-        val priceType: AddOnPriceType? = null,
+        val priceType: AddOnPriceType,
 
         val label: String? = null,
         val price: String? = null,
