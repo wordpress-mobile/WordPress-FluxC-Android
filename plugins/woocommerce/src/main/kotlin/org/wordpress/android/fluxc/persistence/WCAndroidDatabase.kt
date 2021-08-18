@@ -12,7 +12,7 @@ import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 
 @Database(
-        version = 1,
+        version = 3,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
