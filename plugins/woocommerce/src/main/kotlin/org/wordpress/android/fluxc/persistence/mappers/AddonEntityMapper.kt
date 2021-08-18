@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnRestric
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnTitleFormat
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnType
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
-import java.lang.Exception
 
 data class ProductBasedIdentification(
     val productRemoteId: Long,
@@ -18,7 +17,9 @@ internal fun WCProductAddonModel.toAddonEntity(
     globalGroupLocalId: Long? = null,
     productBasedIdentification: ProductBasedIdentification? = null
 ): AddonEntity {
-    if (globalGroupLocalId == null && productBasedIdentification == null) throw Exception()
+    if (globalGroupLocalId == null && productBasedIdentification == null) {
+        throw IllegalStateException("Addon has to be identified with a Group or a Product")
+    }
 
     return AddonEntity(
             globalGroupLocalId = globalGroupLocalId,
