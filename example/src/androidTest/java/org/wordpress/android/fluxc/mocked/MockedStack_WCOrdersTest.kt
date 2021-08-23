@@ -196,6 +196,24 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
+    fun testFetchSingleOrderOrderKeySuccess() {
+        val remoteOrderId = 88L
+        val orderKey = "wc_order_5a77766b88986"
+        interceptor.respondWith("wc-fetch-order-response-success.json")
+        orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_SINGLE_ORDER, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteOrderPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(orderKey, order.orderKey)
+        }
+    }
+
+    @Test
     fun testFetchSingleOrderError() {
         val remoteOrderId = 88L
 

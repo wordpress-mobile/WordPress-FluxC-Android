@@ -19,6 +19,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var number = "" // The order number to display to the user
     @Column var status = ""
     @Column var currency = ""
+    @Column var orderKey = ""
     @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
     @Column var dateModified = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
     @Column var total = "" // Complete total, including taxes
