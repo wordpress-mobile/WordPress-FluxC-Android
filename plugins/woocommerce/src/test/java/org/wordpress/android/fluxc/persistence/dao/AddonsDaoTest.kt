@@ -103,6 +103,7 @@ internal class AddonsDaoTest {
                                             name = "Test Addon name",
                                             titleFormat = TitleFormat.Heading,
                                             description = "Test",
+                                            descriptionEnabled = true,
                                             required = false,
                                             position = 4,
                                             restrictions = Restrictions.Email,
@@ -136,6 +137,7 @@ internal class AddonsDaoTest {
                         WCProductAddonModel(
                                 titleFormat = Heading,
                                 description = "Test",
+                                descriptionEnabled = 1,
                                 restrictionsType = Email,
                                 adjustPrice = 1,
                                 priceType = FlatFee,
