@@ -26,7 +26,9 @@ data class AddonWithOptions(
 )
 data class AddonEntity(
     @PrimaryKey(autoGenerate = true) val addonLocalId: Long = 0,
-    val globalGroupLocalId: Long,
+    val globalGroupLocalId: Long? = null,
+    val productRemoteId: Long? = null,
+    val siteRemoteId: Long? = null,
     val type: Type,
     val display: Display? = null,
     val name: String,

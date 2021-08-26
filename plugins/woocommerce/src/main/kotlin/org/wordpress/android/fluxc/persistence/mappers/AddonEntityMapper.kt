@@ -8,9 +8,23 @@ import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnTitleFo
 import org.wordpress.android.fluxc.model.addons.WCProductAddonModel.AddOnType
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 
-internal fun WCProductAddonModel.toAddonEntity(globalGroupLocalId: Long): AddonEntity {
+data class ProductBasedIdentification(
+    val productRemoteId: Long,
+    val siteRemoteId: Long
+)
+
+internal fun WCProductAddonModel.toAddonEntity(
+    globalGroupLocalId: Long? = null,
+    productBasedIdentification: ProductBasedIdentification? = null
+): AddonEntity {
+    if (globalGroupLocalId == null && productBasedIdentification == null) {
+        throw IllegalStateException("Addon has to be identified with a Group or a Product")
+    }
+
     return AddonEntity(
             globalGroupLocalId = globalGroupLocalId,
+            productRemoteId = productBasedIdentification?.productRemoteId,
+            siteRemoteId = productBasedIdentification?.siteRemoteId,
             titleFormat = this.titleFormat.toLocalEntity(),
             restrictions = this.restrictionsType?.toLocalEntity(),
             priceAdjusted = this.adjustPrice.asBoolean(),
