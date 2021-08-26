@@ -189,18 +189,11 @@
             android:text="Add Product Tags" />
 
         <Button
-            android:id="@+id/fetch_product_addons"
+            android:id="@+id/test_add_ons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Addons" />
-
-        <Button
-            android:id="@+id/fetch_global_addons_groups"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="Fetch and Cache Global Addons groups" />
+            android:text="Test Add-ons" />
 
         <Button
             android:id="@+id/update_product"
