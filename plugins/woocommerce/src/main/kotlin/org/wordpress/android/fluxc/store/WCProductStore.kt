@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClie
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
+import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
@@ -41,7 +42,8 @@ import javax.inject.Singleton
 class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcProductRestClient: ProductRestClient,
-    private val coroutineEngine: CoroutineEngine? = null
+    private val coroutineEngine: CoroutineEngine? = null,
+    private val addonsDao: AddonsDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -58,7 +60,7 @@ class WCProductStore @Inject constructor(
      * Defines the filter options currently supported in the app
      */
     enum class ProductFilterOption {
-        STOCK_STATUS, STATUS, TYPE;
+        STOCK_STATUS, STATUS, TYPE, CATEGORY;
 
         override fun toString() = name.toLowerCase(Locale.US)
     }
@@ -676,8 +678,9 @@ class WCProductStore @Inject constructor(
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
     /**
-     * returns a list of [WCProductModel] for the give [SiteModel] and [filterOptions]
-     * if it exists in the database
+     * returns a list of [WCProductModel] for the given [SiteModel] and [filterOptions]
+     * if it exists in the database. To filter by category, make sure the [filterOptions] value
+     * is the category ID in String.
      */
     fun getProductsByFilterOptions(
         site: SiteModel,
@@ -1044,6 +1047,15 @@ class WCProductStore @Inject constructor(
             onProductChanged = OnProductChanged(rowsAffected).also {
                 it.remoteProductId = payload.product.remoteProductId
             }
+
+            // TODO: 18/08/2021 @wzieba add tests
+            coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
+                addonsDao.cacheProductAddons(
+                        productRemoteId = payload.product.remoteProductId,
+                        siteRemoteId = payload.site.siteId,
+                        addons = payload.product.addons?.toList().orEmpty()
+                )
+            }
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
@@ -1094,6 +1106,17 @@ class WCProductStore @Inject constructor(
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
             onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+
+            // TODO: 18/08/2021 @wzieba add tests
+            coroutineEngine?.launch(T.DB, this, "cacheProductsAddons") {
+                payload.products.forEach { product ->
+                    addonsDao.cacheProductAddons(
+                            productRemoteId = product.remoteProductId,
+                            siteRemoteId = payload.site.siteId,
+                            addons = product.addons?.toList().orEmpty()
+                    )
+                }
+            }
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS

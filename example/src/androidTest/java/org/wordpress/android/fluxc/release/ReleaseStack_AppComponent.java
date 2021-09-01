@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.wordpress.android.fluxc.di.WCDatabaseModule;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.DatabaseModule;
@@ -21,7 +22,8 @@ import dagger.Component;
         ReleaseNetworkModule.class,
         ReleaseToolsModule.class,
         MockedToolsModule.class,
-        DatabaseModule.class
+        DatabaseModule.class,
+        WCDatabaseModule.class
 })
 public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountTest test);

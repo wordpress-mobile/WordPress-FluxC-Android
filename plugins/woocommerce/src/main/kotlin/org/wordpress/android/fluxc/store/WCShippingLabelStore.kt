@@ -205,7 +205,12 @@ class WCShippingLabelStore @Inject constructor(
                     WooResult(InvalidRequest(response.result.error.message ?: ""))
                 }
             } else if (response.result?.suggestedAddress != null && response.result.isSuccess) {
-                WooResult(Valid(response.result.suggestedAddress))
+                WooResult(
+                        Valid(
+                                suggestedAddress = response.result.suggestedAddress,
+                                isTrivialNormalization = response.result.isTrivialNormalization
+                        )
+                )
             } else {
                 WooResult(WooError(GENERIC_ERROR, UNKNOWN, "Unknown error"))
             }

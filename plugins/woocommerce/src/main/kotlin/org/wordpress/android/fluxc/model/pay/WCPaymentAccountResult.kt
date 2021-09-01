@@ -36,7 +36,19 @@ data class WCPaymentAccountResult(
      * A boolean flag indicating if this Account is eligible for card present payments
      */
     @SerializedName("card_present_eligible")
-    val isCardPresentEligible: Boolean
+    val isCardPresentEligible: Boolean,
+    /**
+     * A boolean flag indicating if this Account is test/live.
+     */
+    @SerializedName("is_live")
+    val isLive: Boolean,
+
+    /**
+     * A boolean flag indicating if the test mode on the site is enabled. When "null" the state is unknown (the most
+     * probable reason is that the site is using outdated version of wcpay plugin).
+     */
+    @SerializedName("test_mode")
+    val testMode: Boolean?
 ) {
     /**
      * Represents all of the possible Site Plugin Statuses in enum form

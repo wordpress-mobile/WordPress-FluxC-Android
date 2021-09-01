@@ -679,6 +679,7 @@ class OrderRestClient @Inject constructor(
             number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
+            orderKey = response.order_key ?: ""
             dateCreated = convertDateToUTCString(response.date_created_gmt)
             dateModified = convertDateToUTCString(response.date_modified_gmt)
             total = response.total ?: ""
@@ -809,6 +810,7 @@ class OrderRestClient @Inject constructor(
                 "billing",
                 "coupon_lines",
                 "currency",
+                "order_key",
                 "customer_note",
                 "date_created_gmt",
                 "date_modified_gmt",

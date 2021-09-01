@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/addons_product_remote_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter product remote id"
+            android:inputType="number" />
+
+        <Button
+            android:id="@+id/addons_product_remote_id_apply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start observing DB" />
+
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/addons_fetch_product"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fetch product" />
+
+    <Button
+        android:id="@+id/addons_fetch_global"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fetch global addons" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="Only brief informations of addons are presented here. For detailed list, please use Database Inspector." />
+
+    <TextView
+        android:id="@+id/addons_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical" />
+
+</LinearLayout>
