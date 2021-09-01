@@ -1,12 +1,14 @@
 pluginManagement {
     gradle.ext.kotlinVersion = '1.4.10'
+    gradle.ext.agpVersion = '4.2.2'
 
     plugins {
-        id "com.github.dcendents.android-maven" version "2.0"
         id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.android.extensions" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.jvm" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
+        id "com.android.application" version gradle.ext.agpVersion
+        id "com.android.library" version gradle.ext.agpVersion
         id "com.automattic.android.publish-to-s3" version "0.6.1"
     }
     repositories {
@@ -23,10 +25,6 @@ pluginManagement {
     }
     resolutionStrategy {
         eachPlugin {
-            // TODO: Remove this as soon as we update to AGP >= 4.2.0
-            if (requested.id.id.contains("com.android")) {
-                useModule("com.android.tools.build:gradle:4.0.2")
-            }
             // TODO: Remove this as soon as fetchstyle starts supporting Plugin Marker Artifacts
             if (requested.id.id == "com.automattic.android.fetchstyle") {
                 useModule("com.automattic.android:fetchstyle:1.1")
