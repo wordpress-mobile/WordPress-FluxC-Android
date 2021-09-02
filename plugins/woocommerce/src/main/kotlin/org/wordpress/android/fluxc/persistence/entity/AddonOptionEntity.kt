@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
-import org.wordpress.android.fluxc.persistence.entity.AddonEntity.PriceType
+import org.wordpress.android.fluxc.persistence.entity.AddonEntity.LocalPriceType
 
 @Entity(
         foreignKeys = [ForeignKey(
@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.persistence.entity.AddonEntity.PriceType
 data class AddonOptionEntity(
     @PrimaryKey(autoGenerate = true) val addonOptionLocalId: Long = 0,
     val addonLocalId: Long,
-    val priceType: PriceType?,
+    val priceType: LocalPriceType,
     val label: String?,
     val price: String?,
     val image: String?
