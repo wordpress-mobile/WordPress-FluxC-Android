@@ -4,7 +4,6 @@ import org.wordpress.android.fluxc.domain.GlobalAddonGroup
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
 
 object RemoteGlobalAddonGroupMapper {
-
     fun toDomain(dto: AddOnGroupDto): GlobalAddonGroup {
         return GlobalAddonGroup(
                 name = dto.name,

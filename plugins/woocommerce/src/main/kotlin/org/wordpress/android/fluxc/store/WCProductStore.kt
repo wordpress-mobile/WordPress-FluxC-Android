@@ -1051,7 +1051,6 @@ class WCProductStore @Inject constructor(
 
             // TODO: 18/08/2021 @wzieba add tests
             coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
-
                 val domainAddons = payload.product.addons?.toList()
                         ?.map { remoteAddonDto -> RemoteAddonMapper.toDomain(remoteAddonDto) }
 
