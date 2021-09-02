@@ -1,16 +1,23 @@
 package org.wordpress.android.fluxc.domain
 
 import org.wordpress.android.fluxc.domain.Addon.HasAdjustablePrice.Price
+import org.wordpress.android.fluxc.domain.Addon.HasOptions.Option
 
 sealed class Addon {
     abstract val name: String
     abstract val titleFormat: TitleFormat
-    abstract val description: String
+    abstract val description: String?
     abstract val required: Boolean
     abstract val position: Int
 
     interface HasOptions {
-        val options: List<AddonOption>
+        val options: List<Option>
+
+        data class Option(
+            val price: Price.Adjusted,
+            val label: String?,
+            val image: String?
+        )
     }
 
     interface HasAdjustablePrice {
@@ -32,7 +39,7 @@ sealed class Addon {
     data class CustomText(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
         override val price: Price,
@@ -51,7 +58,7 @@ sealed class Addon {
     data class CustomTextArea(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
         override val price: Price,
@@ -61,7 +68,7 @@ sealed class Addon {
     data class FileUpload(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
         override val price: Price
@@ -70,7 +77,7 @@ sealed class Addon {
     data class InputMultiplier(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
         override val price: Price,
@@ -80,7 +87,7 @@ sealed class Addon {
     data class CustomPrice(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
         val priceRange: LongRange?
@@ -89,10 +96,10 @@ sealed class Addon {
     data class MultipleChoice(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
-        override val options: List<AddonOption>,
+        override val options: List<Option>,
         val display: Display
     ) : Addon(), HasOptions {
         enum class Display {
@@ -105,16 +112,16 @@ sealed class Addon {
     data class Checkbox(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int,
-        override val options: List<AddonOption>
+        override val options: List<Option>
     ) : Addon(), HasOptions
 
     data class Heading(
         override val name: String,
         override val titleFormat: TitleFormat,
-        override val description: String,
+        override val description: String?,
         override val required: Boolean,
         override val position: Int
     ) : Addon()
