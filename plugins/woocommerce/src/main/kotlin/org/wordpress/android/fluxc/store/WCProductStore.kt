@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
@@ -1050,10 +1051,14 @@ class WCProductStore @Inject constructor(
 
             // TODO: 18/08/2021 @wzieba add tests
             coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
+
+                val domainAddons = payload.product.addons?.toList()
+                        ?.map { remoteAddonDto -> RemoteAddonMapper.toDomain(remoteAddonDto) }
+
                 addonsDao.cacheProductAddons(
                         productRemoteId = payload.product.remoteProductId,
                         siteRemoteId = payload.site.siteId,
-                        addons = payload.product.addons?.toList().orEmpty()
+                        addons = domainAddons.orEmpty()
                 )
             }
         }
@@ -1110,10 +1115,14 @@ class WCProductStore @Inject constructor(
             // TODO: 18/08/2021 @wzieba add tests
             coroutineEngine?.launch(T.DB, this, "cacheProductsAddons") {
                 payload.products.forEach { product ->
+
+                    val domainAddons = product.addons?.toList()
+                            ?.map { remoteAddonDto -> RemoteAddonMapper.toDomain(remoteAddonDto) }
+
                     addonsDao.cacheProductAddons(
                             productRemoteId = product.remoteProductId,
                             siteRemoteId = payload.site.siteId,
-                            addons = product.addons?.toList().orEmpty()
+                            addons = domainAddons.orEmpty()
                     )
                 }
             }
