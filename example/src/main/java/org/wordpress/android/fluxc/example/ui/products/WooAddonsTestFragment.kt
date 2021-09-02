@@ -98,7 +98,7 @@ class WooAddonsTestFragment : DialogFragment() {
                     productModel
             ).collect {
                 addonsResult.text = it.joinToString { addon ->
-                    "\n- \"${addon.addon.name}\" with ${addon.options.size} options"
+                    "\n- \"${addon.name}\" of type ${addon::class.simpleName}"
                 }
             }
         }
