@@ -37,7 +37,9 @@ object FromDatabaseAddonsMapper {
                     required = entity.addon.required,
                     position = entity.addon.position,
                     options = entity.mapOptions(),
-                    display = entity.addon.display?.toDomainModel() ?: throw Exception()
+                    display = entity.addon.display?.toDomainModel() ?: throw MappingDatabaseException(
+                            "Can't map ${entity.addon.name}. MultipleChoice add-on type has to have `display` defined."
+                    )
             )
             Checkbox -> Addon.Checkbox(
                     name = entity.addon.name,
@@ -122,7 +124,7 @@ object FromDatabaseAddonsMapper {
                 Email -> Restrictions.Email
             }
         } else {
-            throw Exception()
+            throw MappingDatabaseException("Can't map $name. CustomText Add-on has to have restrictions defined.")
         }
     }
 

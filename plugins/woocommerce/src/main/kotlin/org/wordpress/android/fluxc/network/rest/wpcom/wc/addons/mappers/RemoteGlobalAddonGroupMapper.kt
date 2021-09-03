@@ -2,8 +2,11 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers
 
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
+import org.wordpress.android.fluxc.utils.AppLogWrapper
+import org.wordpress.android.util.AppLog.T.API
+import javax.inject.Inject
 
-object RemoteGlobalAddonGroupMapper {
+internal class RemoteGlobalAddonGroupMapper @Inject constructor(private val appLogWrapper: AppLogWrapper) {
     fun toDomain(dto: AddOnGroupDto): GlobalAddonGroup {
         return GlobalAddonGroup(
                 name = dto.name,
@@ -12,7 +15,14 @@ object RemoteGlobalAddonGroupMapper {
                 } else {
                     GlobalAddonGroup.CategoriesRestriction.SpecifiedProductCategories(dto.categoryIds)
                 },
-                addons = dto.addons.map { dtoAddon -> RemoteAddonMapper.toDomain(dtoAddon) }
+                addons = dto.addons.mapNotNull { dtoAddon ->
+                    try {
+                        RemoteAddonMapper.toDomain(dtoAddon)
+                    } catch (exception: MappingRemoteException) {
+                        appLogWrapper.e(API, exception.message)
+                        null
+                    }
+                }
         )
     }
 }

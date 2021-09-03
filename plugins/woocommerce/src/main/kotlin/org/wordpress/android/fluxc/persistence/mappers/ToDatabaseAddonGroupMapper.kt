@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.domain.GlobalAddonGroup.CategoriesRestriction
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup.CategoriesRestriction.SpecifiedProductCategories
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 
-object DatabaseAddonGroupMapper {
+object ToDatabaseAddonGroupMapper {
     fun toEntityModel(domain: GlobalAddonGroup, siteRemoteId: Long): GlobalAddonGroupEntity {
         return GlobalAddonGroupEntity(
                 name = domain.name,

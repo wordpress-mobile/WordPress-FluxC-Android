@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.persistence.entity.AddonWithOptions
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
 import org.wordpress.android.fluxc.persistence.mappers.DatabaseAddonOptionMapper
-import org.wordpress.android.fluxc.persistence.mappers.DatabaseAddonGroupMapper
+import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonGroupMapper
 import org.wordpress.android.fluxc.persistence.entity.ProductBasedIdentification
 import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonsMapper
 
@@ -51,7 +51,7 @@ abstract class AddonsDao {
         deleteGlobalAddonsForSite(siteRemoteId)
 
         globalAddonGroups.forEach { group ->
-            val entity = DatabaseAddonGroupMapper.toEntityModel(
+            val entity = ToDatabaseAddonGroupMapper.toEntityModel(
                     domain = group,
                     siteRemoteId = siteRemoteId
             )
