@@ -22,7 +22,6 @@ import org.wordpress.android.fluxc.persistence.mappers.FromDatabaseAddonsMapper
 import org.wordpress.android.fluxc.persistence.mappers.MappingDatabaseException
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.AppLogWrapper
-import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
 import javax.inject.Singleton
