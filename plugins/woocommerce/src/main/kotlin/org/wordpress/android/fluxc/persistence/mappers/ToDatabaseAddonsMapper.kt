@@ -63,19 +63,14 @@ object ToDatabaseAddonsMapper {
     }
 
     private fun Addon.mapPriceType(): AddonEntity.LocalPriceType? {
-        return if (this is HasAdjustablePrice) {
-            val price = this.price
-            if (price is Adjusted) {
-                when (price.priceType) {
-                    PriceType.FlatFee -> AddonEntity.LocalPriceType.FlatFee
-                    PriceType.QuantityBased -> AddonEntity.LocalPriceType.QuantityBased
-                    PriceType.PercentageBased -> AddonEntity.LocalPriceType.PercentageBased
-                }
-            } else {
-                null
+        return (this as? HasAdjustablePrice).let {
+            (it?.price as? Adjusted)?.priceType
+        }?.let { priceType ->
+            when (priceType) {
+                PriceType.FlatFee -> AddonEntity.LocalPriceType.FlatFee
+                PriceType.QuantityBased -> AddonEntity.LocalPriceType.QuantityBased
+                PriceType.PercentageBased -> AddonEntity.LocalPriceType.PercentageBased
             }
-        } else {
-            null
         }
     }
 
@@ -104,18 +99,10 @@ object ToDatabaseAddonsMapper {
         }
     }
 
-    private fun Addon.mapPrice(): String? {
-        return if (this is HasAdjustablePrice) {
-            val price = this.price
-            if (price is Adjusted) {
-                price.value
-            } else {
-                null
-            }
-        } else {
-            null
-        }
-    }
+    private fun Addon.mapPrice(): String? =
+            (this as? HasAdjustablePrice)
+                    ?.let { it.price as? Adjusted }
+                    ?.value
 
     private fun Addon.mapRange(): Pair<Long, Long>? {
         return when (this) {
