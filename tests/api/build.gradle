@@ -2,7 +2,7 @@ apply plugin: 'java'
 dependencies {
     testImplementation 'io.rest-assured:rest-assured:4.2.0' 
     testImplementation 'junit:junit:4.13'
-    testCompile 'org.json:json:20190722'
+    testImplementation 'org.json:json:20190722'
 }
 
 test {
