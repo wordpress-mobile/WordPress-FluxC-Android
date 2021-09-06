@@ -93,7 +93,7 @@ class WooAddonsTestFragment : DialogFragment() {
 
     private fun startObserving(selectedSiteRemoteId: Long, productModel: WCProductModel) {
         coroutineScope.launch {
-            wcAddonsStore.observeAddonsForProduct(
+            wcAddonsStore.observeAllAddonsForProduct(
                     selectedSiteRemoteId,
                     productModel
             ).collect {

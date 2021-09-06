@@ -55,7 +55,16 @@ class WCAddonsStore @Inject internal constructor(
         }
     }
 
-    fun observeAddonsForProduct(siteRemoteId: Long, product: WCProductModel): Flow<List<Addon>> {
+    fun observeProductSpecificAddons(siteRemoteId: Long, productRemoteId: Long): Flow<List<Addon>> {
+        return dao.observeSingleProductAddons(siteRemoteId, productRemoteId)
+                .map {
+                    it.map { entityAddon ->
+                        FromDatabaseAddonsMapper.toDomainModel(entityAddon)
+                    }
+                }
+    }
+
+    fun observeAllAddonsForProduct(siteRemoteId: Long, product: WCProductModel): Flow<List<Addon>> {
         return dao.observeGlobalAddonsForSite(siteRemoteId = siteRemoteId)
                 .map { globalGroupsEntities ->
                     val domainGroup = globalGroupsEntities.map { globalGroupEntity ->
