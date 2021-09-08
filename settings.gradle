@@ -3,6 +3,7 @@ pluginManagement {
     gradle.ext.agpVersion = '4.2.2'
 
     plugins {
+        id "com.gradle.enterprise" version "3.6.4"
         id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.android.extensions" version gradle.ext.kotlinVersion
         id "org.jetbrains.kotlin.jvm" version gradle.ext.kotlinVersion
@@ -53,6 +54,18 @@ if (System.getenv().containsKey("CI")) {
             allowUntrustedServer = true
             allowInsecureProtocol = true
             push = true
+        }
+    }
+
+    // Always run Gradle scan on CI builds
+    gradleEnterprise {
+        buildScan {
+            termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+            termsOfServiceAgree = 'yes'
+            tag 'CI'
+            publishAlways()
+            // Otherwise CI might shut down before it's uploaded
+            uploadInBackground = false
         }
     }
 }
