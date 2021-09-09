@@ -521,7 +521,7 @@ class ProvideAddonsIntegrationTests {
     }
 
     @Test
-    fun name() {
+    fun `should provide only applicable add-on for a given product`() {
         runBlocking {
             // given
             val basicAddon = Addon.Heading(
