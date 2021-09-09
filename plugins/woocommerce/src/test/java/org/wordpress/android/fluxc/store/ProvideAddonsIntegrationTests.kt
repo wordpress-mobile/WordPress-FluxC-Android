@@ -116,7 +116,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.CustomText(
                             name = "CustomText",
                             titleFormat = TitleFormat.Heading,
@@ -160,7 +160,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.CustomTextArea(
                             name = "CustomTextArea",
                             titleFormat = TitleFormat.Hide,
@@ -202,7 +202,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.FileUpload(
                             name = "FileUpload",
                             titleFormat = TitleFormat.Heading,
@@ -240,7 +240,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.InputMultiplier(
                             name = "InputMultiplier",
                             titleFormat = TitleFormat.Label,
@@ -279,7 +279,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.CustomPrice(
                             name = "CustomPrice",
                             titleFormat = TitleFormat.Label,
@@ -325,7 +325,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.MultipleChoice(
                             name = "MultipleChoice",
                             titleFormat = TitleFormat.Label,
@@ -385,7 +385,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.Checkbox(
                             name = "MultipleChoice",
                             titleFormat = TitleFormat.Label,
@@ -439,7 +439,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first().first()).isEqualTo(
                     Addon.Heading(
                             name = "Heading",
                             titleFormat = TitleFormat.Hide,
@@ -483,7 +483,7 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first()).isEmpty()
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first()).isEmpty()
             verify(logger).e(API, "Can't map sample. MultipleChoice add-on type has to have `display` defined.")
         }
     }
@@ -515,13 +515,13 @@ class ProvideAddonsIntegrationTests {
 
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
-            assertThat(sut.observeAddonsForProduct(siteModel.siteId, product).first()).isEmpty()
+            assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first()).isEmpty()
             verify(logger).e(API, "Can't map sample. CustomText Add-on has to have restrictions defined.")
         }
     }
 
     @Test
-    fun name() {
+    fun `should provide only applicable add-on for a given product`() {
         runBlocking {
             // given
             val basicAddon = Addon.Heading(
@@ -570,7 +570,7 @@ class ProvideAddonsIntegrationTests {
             )
 
             // when
-            val addonsForTestProduct = sut.observeAddonsForProduct(siteModel.siteId, product).first()
+            val addonsForTestProduct = sut.observeAllAddonsForProduct(siteModel.siteId, product).first()
 
             // then
             assertThat(addonsForTestProduct).containsExactlyInAnyOrder(
