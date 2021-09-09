@@ -627,6 +627,7 @@ class WooShippingLabelFragment : Fragment() {
                     val packageData = WCShippingLabelPackageData(
                             id = "default",
                             boxId = boxId,
+                            isLetter = box.isLetter,
                             length = length,
                             height = height,
                             width = width,
