@@ -18,7 +18,6 @@ data class GlobalAddonGroupWithAddons(
 @Entity
 data class GlobalAddonGroupEntity(
     @PrimaryKey(autoGenerate = true) val globalGroupLocalId: Long = 0,
-    val remoteId: Long,
     val name: String,
     val restrictedCategoriesIds: List<Long>,
     val siteRemoteId: Long

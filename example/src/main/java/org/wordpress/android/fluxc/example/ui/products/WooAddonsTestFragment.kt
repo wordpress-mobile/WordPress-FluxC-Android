@@ -93,12 +93,12 @@ class WooAddonsTestFragment : DialogFragment() {
 
     private fun startObserving(selectedSiteRemoteId: Long, productModel: WCProductModel) {
         coroutineScope.launch {
-            wcAddonsStore.observeAddonsForProduct(
+            wcAddonsStore.observeAllAddonsForProduct(
                     selectedSiteRemoteId,
                     productModel
             ).collect {
                 addonsResult.text = it.joinToString { addon ->
-                    "\n- \"${addon.addon.name}\" with ${addon.options.size} options"
+                    "\n- \"${addon.name}\" of type ${addon::class.simpleName}"
                 }
             }
         }

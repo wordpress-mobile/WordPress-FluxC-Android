@@ -2,20 +2,20 @@ package org.wordpress.android.fluxc.model.addons
 
 import com.google.gson.annotations.SerializedName
 
-data class WCProductAddonModel(
+data class RemoteAddonDto(
     @SerializedName("title_format")
-    val titleFormat: AddOnTitleFormat,
+    val titleFormat: RemoteTitleFormat,
     @SerializedName("description_enable")
     val descriptionEnabled: Int,
     @SerializedName("restrictions_type")
-    val restrictionsType: AddOnRestrictionsType? = null,
+    val restrictionsType: RemoteRestrictionsType? = null,
     @SerializedName("adjust_price")
     val adjustPrice: Int,
     @SerializedName("price_type")
-    val priceType: AddOnPriceType? = null,
+    val priceType: RemotePriceType? = null,
 
-    val type: AddOnType,
-    val display: AddOnDisplay? = null,
+    val type: RemoteType,
+    val display: RemoteDisplay? = null,
     val name: String,
     val description: String,
     val required: Int,
@@ -23,9 +23,9 @@ data class WCProductAddonModel(
     val price: String? = null,
     val min: Long,
     val max: Long,
-    val options: List<ProductAddonOption>? = null
+    val options: List<RemoteOption>? = null
 ) {
-    enum class AddOnType {
+    enum class RemoteType {
         @SerializedName("multiple_choice") MultipleChoice,
         @SerializedName("checkbox") Checkbox,
         @SerializedName("custom_text") CustomText,
@@ -36,19 +36,19 @@ data class WCProductAddonModel(
         @SerializedName("heading") Heading
     }
 
-    enum class AddOnDisplay {
+    enum class RemoteDisplay {
         @SerializedName("select") Select,
         @SerializedName("radiobutton") RadioButton,
         @SerializedName("images") Images
     }
 
-    enum class AddOnTitleFormat {
+    enum class RemoteTitleFormat {
         @SerializedName("label") Label,
         @SerializedName("heading") Heading,
         @SerializedName("hide") Hide
     }
 
-    enum class AddOnRestrictionsType {
+    enum class RemoteRestrictionsType {
         @SerializedName("any_text") AnyText,
         @SerializedName("only_letters") OnlyLetters,
         @SerializedName("only_numbers") OnlyNumbers,
@@ -56,15 +56,15 @@ data class WCProductAddonModel(
         @SerializedName("email") Email
     }
 
-    enum class AddOnPriceType {
+    enum class RemotePriceType {
         @SerializedName("flat_fee") FlatFee,
         @SerializedName("quantity_based") QuantityBased,
         @SerializedName("percentage_based") PercentageBased
     }
 
-    data class ProductAddonOption(
+    data class RemoteOption(
         @SerializedName("price_type")
-        val priceType: AddOnPriceType,
+        val priceType: RemotePriceType,
 
         val label: String? = null,
         val price: String? = null,

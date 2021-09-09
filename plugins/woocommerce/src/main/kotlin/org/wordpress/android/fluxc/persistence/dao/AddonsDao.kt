@@ -5,17 +5,18 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
-import org.wordpress.android.fluxc.model.addons.WCProductAddonModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.dto.AddOnGroupDto
+import org.wordpress.android.fluxc.domain.Addon
+import org.wordpress.android.fluxc.domain.Addon.HasOptions
+import org.wordpress.android.fluxc.domain.GlobalAddonGroup
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonWithOptions
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
-import org.wordpress.android.fluxc.persistence.mappers.ProductBasedIdentification
-import org.wordpress.android.fluxc.persistence.mappers.toAddonEntity
-import org.wordpress.android.fluxc.persistence.mappers.toAddonGroupEntity
-import org.wordpress.android.fluxc.persistence.mappers.toAddonOptionEntity
+import org.wordpress.android.fluxc.persistence.mappers.DatabaseAddonOptionMapper
+import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonGroupMapper
+import org.wordpress.android.fluxc.persistence.entity.ProductBasedIdentification
+import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonsMapper
 
 @Dao
 abstract class AddonsDao {
@@ -44,13 +45,17 @@ abstract class AddonsDao {
 
     @Transaction
     open suspend fun cacheGroups(
-        globalAddonGroups: List<AddOnGroupDto>,
+        globalAddonGroups: List<GlobalAddonGroup>,
         siteRemoteId: Long
     ) {
         deleteGlobalAddonsForSite(siteRemoteId)
 
         globalAddonGroups.forEach { group ->
-            val globalAddonGroupEntityId = insertGroup(group.toAddonGroupEntity(siteRemoteId))
+            val entity = ToDatabaseAddonGroupMapper.toEntityModel(
+                    domain = group,
+                    siteRemoteId = siteRemoteId
+            )
+            val globalAddonGroupEntityId = insertGroup(entity)
             insertAddonEntity(group.addons, globalAddonGroupEntityId)
         }
     }
@@ -59,39 +64,54 @@ abstract class AddonsDao {
     open suspend fun cacheProductAddons(
         productRemoteId: Long,
         siteRemoteId: Long,
-        addons: List<WCProductAddonModel>
+        addons: List<Addon>
     ) {
         deleteAddonsForSpecifiedProduct(productRemoteId = productRemoteId, siteRemoteId = siteRemoteId)
 
         addons.forEach { addon ->
-            val addonEntity = addon.toAddonEntity(
+
+            val addonEntity = ToDatabaseAddonsMapper.toEntityModel(
+                    domain = addon,
                     productBasedIdentification = ProductBasedIdentification(
                             siteRemoteId = siteRemoteId,
                             productRemoteId = productRemoteId
                     )
             )
             val addonEntityId = insertAddons(addonEntity)
-            insertAddonOptionEntity(addon.options, addonEntityId)
+
+            if (addon is HasOptions) {
+                insertAddonOptionEntity(addon.options, addonEntityId)
+            }
         }
     }
 
     private suspend fun insertAddonEntity(
-        addons: List<WCProductAddonModel>,
+        addons: List<Addon>,
         groupId: Long
     ) {
         addons.forEach { addon ->
-            val addonEntity = addon.toAddonEntity(globalGroupLocalId = groupId)
+            val addonEntity = ToDatabaseAddonsMapper.toEntityModel(
+                    domain = addon,
+                    globalGroupLocalId = groupId
+            )
             val addonEntityId = insertAddons(addonEntity)
-            insertAddonOptionEntity(addon.options, addonEntityId)
+
+            if (addon is HasOptions) {
+                insertAddonOptionEntity(addon.options, addonEntityId)
+            }
         }
     }
 
     private suspend fun insertAddonOptionEntity(
-        options: List<WCProductAddonModel.ProductAddonOption>?,
+        options: List<HasOptions.Option>?,
         addonEntityId: Long
     ) {
         options?.forEach { addonOption ->
-            val addonOptionEntity = addonOption.toAddonOptionEntity(addonLocalId = addonEntityId)
+            DatabaseAddonOptionMapper.toLocalEntity(addonOption, addonEntityId)
+            val addonOptionEntity = DatabaseAddonOptionMapper.toLocalEntity(
+                    addonLocalId = addonEntityId,
+                    domain = addonOption
+            )
             insertAddonOptions(addonOptionEntity)
         }
     }

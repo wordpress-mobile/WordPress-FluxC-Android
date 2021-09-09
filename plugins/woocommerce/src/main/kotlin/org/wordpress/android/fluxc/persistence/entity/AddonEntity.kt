@@ -29,22 +29,20 @@ data class AddonEntity(
     val globalGroupLocalId: Long? = null,
     val productRemoteId: Long? = null,
     val siteRemoteId: Long? = null,
-    val type: Type,
-    val display: Display? = null,
+    val type: LocalType,
+    val display: LocalDisplay? = null,
     val name: String,
-    val titleFormat: TitleFormat,
-    val description: String,
-    val descriptionEnabled: Boolean,
+    val titleFormat: LocalTitleFormat,
+    val description: String?,
     val required: Boolean,
     val position: Int,
-    val restrictions: Restrictions? = null,
-    val priceAdjusted: Boolean? = null,
-    val priceType: PriceType? = null,
+    val restrictions: LocalRestrictions? = null,
+    val priceType: LocalPriceType? = null,
     val price: String? = null,
     val min: Long? = null,
     val max: Long? = null
 ) {
-    enum class Type {
+    enum class LocalType {
         MultipleChoice,
         Checkbox,
         CustomText,
@@ -55,19 +53,19 @@ data class AddonEntity(
         Heading
     }
 
-    enum class Display {
+    enum class LocalDisplay {
         Select,
         RadioButton,
         Images
     }
 
-    enum class TitleFormat {
+    enum class LocalTitleFormat {
         Label,
         Heading,
         Hide
     }
 
-    enum class Restrictions {
+    enum class LocalRestrictions {
         AnyText,
         OnlyLetters,
         OnlyNumbers,
@@ -75,7 +73,7 @@ data class AddonEntity(
         Email
     }
 
-    enum class PriceType {
+    enum class LocalPriceType {
         FlatFee,
         QuantityBased,
         PercentageBased

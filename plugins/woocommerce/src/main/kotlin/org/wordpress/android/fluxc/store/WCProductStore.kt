@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -16,6 +17,7 @@ import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
+import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -23,6 +25,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
@@ -32,8 +36,10 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.N
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.fluxc.utils.AppLogWrapper
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import org.wordpress.android.util.AppLog.T.API
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,7 +49,8 @@ class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcProductRestClient: ProductRestClient,
     private val coroutineEngine: CoroutineEngine? = null,
-    private val addonsDao: AddonsDao
+    private val addonsDao: AddonsDao,
+    private val logger: AppLogWrapper
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -855,7 +862,7 @@ class WCProductStore @Inject constructor(
         productId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductModel> =
-            coroutineEngine?.withDefaultContext(T.API, this, "submitProductAttributes") {
+            coroutineEngine?.withDefaultContext(API, this, "submitProductAttributes") {
                 wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
                         ?.asWooResult()
                         ?.model?.asProductModel()
@@ -872,7 +879,7 @@ class WCProductStore @Inject constructor(
         variationId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(T.API, this, "submitVariationAttributes") {
+            coroutineEngine?.withDefaultContext(API, this, "submitVariationAttributes") {
                 wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
                         ?.asWooResult()
                         ?.model?.asProductVariationModel()
@@ -884,7 +891,7 @@ class WCProductStore @Inject constructor(
         site: SiteModel,
         product: WCProductModel
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(T.API, this, "generateEmptyVariation") {
+            coroutineEngine?.withDefaultContext(API, this, "generateEmptyVariation") {
                 product.attributeList
                         .filter { it.variation }
                         .map { ProductVariantOption(it.id, it.name, "") }
@@ -902,7 +909,7 @@ class WCProductStore @Inject constructor(
         productId: Long,
         variationId: Long
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(T.API, this, "deleteVariation") {
+            coroutineEngine?.withDefaultContext(API, this, "deleteVariation") {
                 wcProductRestClient.deleteVariation(site, productId, variationId)
                         ?.asWooResult()
                         ?.model?.asProductVariationModel()
@@ -911,7 +918,7 @@ class WCProductStore @Inject constructor(
                         ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
             } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
-    override fun onRegister() = AppLog.d(T.API, "WCProductStore onRegister")
+    override fun onRegister() = AppLog.d(API, "WCProductStore onRegister")
 
     private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
         with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
@@ -937,7 +944,7 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>): List<WCProductModel>? {
-        return coroutineEngine?.withDefaultContext(T.API, this, "fetchProductList") {
+        return coroutineEngine?.withDefaultContext(API, this, "fetchProductList") {
             wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
         }?.also {
             ProductSqlUtils.insertOrUpdateProducts(it)
@@ -1050,16 +1057,30 @@ class WCProductStore @Inject constructor(
 
             // TODO: 18/08/2021 @wzieba add tests
             coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
+                val domainAddons = mapProductAddonsToDomain(payload.product.addons)
                 addonsDao.cacheProductAddons(
                         productRemoteId = payload.product.remoteProductId,
                         siteRemoteId = payload.site.siteId,
-                        addons = payload.product.addons?.toList().orEmpty()
+                        addons = domainAddons
                 )
             }
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
         emitChange(onProductChanged)
+    }
+
+    private fun mapProductAddonsToDomain(remoteAddons: Array<RemoteAddonDto>?): List<Addon> {
+        return remoteAddons.orEmpty()
+                .toList()
+                .mapNotNull { remoteAddonDto ->
+                    try {
+                        RemoteAddonMapper.toDomain(remoteAddonDto)
+                    } catch (exception: MappingRemoteException) {
+                        logger.e(API, exception.message)
+                        null
+                    }
+                }
     }
 
     private fun handleFetchSingleVariationCompleted(payload: RemoteVariationPayload) {
@@ -1110,10 +1131,13 @@ class WCProductStore @Inject constructor(
             // TODO: 18/08/2021 @wzieba add tests
             coroutineEngine?.launch(T.DB, this, "cacheProductsAddons") {
                 payload.products.forEach { product ->
+
+                    val domainAddons = mapProductAddonsToDomain(product.addons)
+
                     addonsDao.cacheProductAddons(
                             productRemoteId = product.remoteProductId,
                             siteRemoteId = payload.site.siteId,
-                            addons = product.addons?.toList().orEmpty()
+                            addons = domainAddons
                     )
                 }
             }

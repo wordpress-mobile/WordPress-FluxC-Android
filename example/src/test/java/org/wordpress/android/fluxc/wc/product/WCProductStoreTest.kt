@@ -29,7 +29,7 @@ import kotlin.test.assertTrue
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
-    private val productStore = WCProductStore(Dispatcher(), mock(), addonsDao = mock())
+    private val productStore = WCProductStore(Dispatcher(), mock(), addonsDao = mock(), logger = mock())
 
     @Before
     fun setUp() {
