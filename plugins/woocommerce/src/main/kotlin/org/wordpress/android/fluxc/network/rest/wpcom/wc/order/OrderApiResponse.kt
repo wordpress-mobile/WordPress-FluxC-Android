@@ -42,6 +42,7 @@ class OrderApiResponse : Response {
     val billing: Billing? = null
     val coupon_lines: List<CouponLine>? = null
     val currency: String? = null
+    val order_key: String? = null
     val customer_note: String? = null
     val date_created_gmt: String? = null
     val date_modified_gmt: String? = null

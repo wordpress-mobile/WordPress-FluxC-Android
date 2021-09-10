@@ -22,9 +22,11 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
+import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption.CATEGORY
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption.STATUS
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption.STOCK_STATUS
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption.TYPE
@@ -35,9 +37,11 @@ import javax.inject.Inject
 class WooProductFiltersFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
+    @Inject internal lateinit var wcProductStore: WCProductStore
 
     private var selectedSiteId: Int = -1
     private var filterOptions: MutableMap<ProductFilterOption, String>? = null
+
     companion object {
         const val ARG_SELECTED_SITE_ID = "ARG_SELECTED_SITE_ID"
         const val ARG_SELECTED_FILTER_OPTIONS = "ARG_SELECTED_FILTER_OPTIONS"
@@ -98,6 +102,15 @@ class WooProductFiltersFragment : Fragment() {
             )
         }
 
+        filter_by_category.setOnClickListener {
+            getWCSite()?.let { site ->
+                val randomCategory = wcProductStore.getProductCategoriesForSite(site).random()
+                filterOptions?.clear()
+                filterOptions?.put(CATEGORY, randomCategory.remoteCategoryId.toString())
+                prependToLog("Selected category: ${randomCategory.name} id: ${randomCategory.remoteCategoryId}")
+            }
+        }
+
         filter_products.setOnClickListener {
             getWCSite()?.let { site ->
                 val payload = FetchProductsPayload(site, filterOptions = filterOptions)
@@ -151,6 +164,11 @@ class WooProductFiltersFragment : Fragment() {
 
         if (event.causeOfChange == FETCH_PRODUCTS) {
             prependToLog("Fetched ${event.rowsAffected} products")
+            filterOptions?.let {
+                if (it.containsKey(CATEGORY)) {
+                    prependToLog("From category ID " + it[CATEGORY])
+                }
+            }
         }
     }
 }

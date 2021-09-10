@@ -13,9 +13,11 @@ import javax.inject.Inject
 class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var payStore: WCPayStore
 
+    override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
+
     override fun buildAuthenticatePayload() = AuthenticatePayload(
-            BuildConfig.TEST_WPCOM_USERNAME_WOO_JP_WCPAY,
-            BuildConfig.TEST_WPCOM_PASSWORD_WOO_JP_WCPAY
+            BuildConfig.TEST_WPCOM_USERNAME_WOO_JP,
+            BuildConfig.TEST_WPCOM_PASSWORD_WOO_JP
     )
 
     @Throws(Exception::class)
@@ -37,14 +39,34 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
     fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
         val result = payStore.loadAccount(sSite)
 
-        assertEquals(result.model?.country, "US")
-        assertEquals(result.model?.hasPendingRequirements, false)
-        assertEquals(result.model?.hasOverdueRequirements, false)
-        assertEquals(result.model?.statementDescriptor, "DO.WPMT.CO")
-        assertEquals(result.model?.country, "US")
-        assertEquals(result.model?.isCardPresentEligible, false)
-        assertEquals(result.model?.storeCurrencies?.default, "usd")
-        assertEquals(result.model?.storeCurrencies?.supportedCurrencies, listOf("usd"))
-        assertEquals(result.model?.status, WCPayAccountStatusEnum.COMPLETE)
+        assertEquals("US", result.model?.country)
+        assertEquals(false, result.model?.hasPendingRequirements)
+        assertEquals(false, result.model?.hasOverdueRequirements)
+        assertEquals("DO.WPMT.CO", result.model?.statementDescriptor)
+        assertEquals("US", result.model?.country)
+        assertEquals(false, result.model?.isCardPresentEligible)
+        assertEquals("usd", result.model?.storeCurrencies?.default)
+        assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)
+        assertEquals(WCPayAccountStatusEnum.COMPLETE, result.model?.status)
+    }
+
+    @Test
+    fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
+        val result = payStore.createCustomerByOrderId(
+                sSite,
+                17L
+        )
+
+        assertEquals("cus_JyzaCUE61Qmy8y", result.model?.customerId)
+    }
+
+    @Test
+    fun givenSiteHasWCPayAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
+        val result = payStore.createCustomerByOrderId(
+                sSite,
+                1L
+        )
+
+        assertTrue(result.isError)
     }
 }

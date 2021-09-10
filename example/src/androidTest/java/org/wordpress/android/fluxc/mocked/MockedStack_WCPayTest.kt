@@ -100,4 +100,31 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         assertTrue(result.result?.status == WCPayAccountStatusEnum.NO_ACCOUNT)
     }
+
+    @Test
+    fun whenOverdueRequirementsThenCurrentDeadlineCorrectlyParsed() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-current-deadline.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result?.currentDeadline == 1628258304L)
+    }
+
+    @Test
+    fun whenLoadAccountRestrictedSoonStatusThenRestrictedSoonStatusReturned() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-restricted-soon-status.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result?.status == WCPayAccountStatusEnum.RESTRICTED_SOON)
+    }
+
+    @Test
+    fun whenLoadAccountIsLiveThenIsLiveFlagIsTrue() = runBlocking {
+        interceptor.respondWithError("wc-pay-load-account-response-is-live-account.json", 200)
+
+        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.result!!.isLive)
+    }
 }

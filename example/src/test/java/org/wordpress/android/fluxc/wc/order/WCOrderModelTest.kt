@@ -90,9 +90,6 @@ class WCOrderModelTest {
 
             assertEquals("size", attributes[1].key)
             assertEquals("Medium", attributes[1].value)
-
-            val asList = getAttributesAsString()
-            assertEquals("Red, Medium", asList)
         }
 
         with(renderedLineItems[1]) {
@@ -101,11 +98,6 @@ class WCOrderModelTest {
 
             assertEquals("size", attributes[0].key)
             assertEquals("medium", attributes[0].value)
-        }
-
-        with(renderedLineItems[2]) {
-            val attributes = getAttributesAsString()
-            assertEquals("Blue, Medium", attributes)
         }
     }
 

@@ -61,6 +61,11 @@ android {
             }
         }
     }
+
+    sourceSets {
+        // Adds exported schema location as test app assets.
+        getByName("androidTest").assets.srcDirs += "$projectDir/../fluxc/schemas"
+    }
 }
 
 if (["tests.properties", "tests.properties-extra"].any { file(it).exists() }) {
@@ -115,6 +120,7 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"

@@ -2,54 +2,53 @@ package org.wordpress.android.fluxc.model.addons
 
 import com.google.gson.annotations.SerializedName
 
-class WCProductAddonModel {
+data class RemoteAddonDto(
     @SerializedName("title_format")
-    val titleFormat: AddOnTitleFormat? = null
+    val titleFormat: RemoteTitleFormat,
     @SerializedName("description_enable")
-    val descriptionEnabled: String? = null
+    val descriptionEnabled: Int,
     @SerializedName("restrictions_type")
-    val restrictionsType: AddOnRestrictionsType? = null
+    val restrictionsType: RemoteRestrictionsType? = null,
     @SerializedName("adjust_price")
-    val adjustPrice: String? = null
+    val adjustPrice: Int,
     @SerializedName("price_type")
-    val priceType: AddOnPriceType? = null
+    val priceType: RemotePriceType? = null,
 
-    val type: AddOnType? = null
-    val display: AddOnDisplay? = null
-    val name: String? = null
-    val description: String? = null
-    val required: String? = null
-    val position: String? = null
-    val restrictions: String? = null
-    val price: String? = null
-    val min: String? = null
-    val max: String? = null
-    val options: Array<ProductAddonOption>? = null
-
-    enum class AddOnType {
-        @SerializedName("description_enable") MultipleChoice,
+    val type: RemoteType,
+    val display: RemoteDisplay? = null,
+    val name: String,
+    val description: String,
+    val required: Int,
+    val position: Int,
+    val price: String? = null,
+    val min: Long,
+    val max: Long,
+    val options: List<RemoteOption>? = null
+) {
+    enum class RemoteType {
+        @SerializedName("multiple_choice") MultipleChoice,
         @SerializedName("checkbox") Checkbox,
         @SerializedName("custom_text") CustomText,
-        @SerializedName("custom_text_area") CustomTextArea,
+        @SerializedName("custom_textarea") CustomTextArea,
         @SerializedName("file_upload") FileUpload,
         @SerializedName("custom_price") CustomPrice,
         @SerializedName("input_multiplier") InputMultiplier,
         @SerializedName("heading") Heading
     }
 
-    enum class AddOnDisplay {
-        @SerializedName("dropdown") Dropdown,
+    enum class RemoteDisplay {
+        @SerializedName("select") Select,
         @SerializedName("radiobutton") RadioButton,
         @SerializedName("images") Images
     }
 
-    enum class AddOnTitleFormat {
+    enum class RemoteTitleFormat {
         @SerializedName("label") Label,
         @SerializedName("heading") Heading,
         @SerializedName("hide") Hide
     }
 
-    enum class AddOnRestrictionsType {
+    enum class RemoteRestrictionsType {
         @SerializedName("any_text") AnyText,
         @SerializedName("only_letters") OnlyLetters,
         @SerializedName("only_numbers") OnlyNumbers,
@@ -57,18 +56,18 @@ class WCProductAddonModel {
         @SerializedName("email") Email
     }
 
-    enum class AddOnPriceType {
+    enum class RemotePriceType {
         @SerializedName("flat_fee") FlatFee,
         @SerializedName("quantity_based") QuantityBased,
         @SerializedName("percentage_based") PercentageBased
     }
 
-    class ProductAddonOption {
+    data class RemoteOption(
         @SerializedName("price_type")
-        val priceType: AddOnPriceType? = null
+        val priceType: RemotePriceType,
 
-        val label: String? = null
-        val price: String? = null
+        val label: String? = null,
+        val price: String? = null,
         val image: String? = null
-    }
+    )
 }

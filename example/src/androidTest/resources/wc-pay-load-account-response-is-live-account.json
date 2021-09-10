@@ -1,0 +1,16 @@
+{
+  "data": {
+    "has_pending_requirements": false,
+    "has_overdue_requirements": false,
+    "current_deadline": null,
+    "is_live": true,
+    "status": "restricted_soon",
+    "statement_descriptor": "DO.WPMT.CO",
+    "store_currencies": {
+      "default": "usd",
+      "supported": ["usd"]
+    },
+    "country": "US",
+    "card_present_eligible": false
+  }
+}

@@ -606,7 +606,7 @@ class WooShippingLabelFragment : Fragment() {
                             site,
                             order.remoteOrderId,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
-                            destination,
+                            if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(box),
                             customsData?.let { listOf(it) }
                     )
@@ -627,6 +627,7 @@ class WooShippingLabelFragment : Fragment() {
                     val packageData = WCShippingLabelPackageData(
                             id = "default",
                             boxId = boxId,
+                            isLetter = box.isLetter,
                             length = length,
                             height = height,
                             width = width,
@@ -643,7 +644,7 @@ class WooShippingLabelFragment : Fragment() {
                             site,
                             order.remoteOrderId,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
-                            destination,
+                            if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(packageData),
                             customsData?.let { listOf(it) },
                             emailReceipts = true
@@ -769,6 +770,7 @@ class WooShippingLabelFragment : Fragment() {
 
         val origin = wooCommerceStore.getSiteSettings(site)?.let {
             ShippingLabelAddress(
+                    name = "Test Name",
                     address = it.address,
                     city = it.city,
                     postcode = it.postalCode,
@@ -780,6 +782,7 @@ class WooShippingLabelFragment : Fragment() {
         val order = wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, orderId))
         val destination = order?.getShippingAddress()?.let {
             ShippingLabelAddress(
+                    name = "${it.firstName} ${it.lastName}",
                     address = it.address1,
                     city = it.city,
                     postcode = it.postcode,

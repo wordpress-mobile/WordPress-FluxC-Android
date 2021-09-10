@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class WCShippingLabelPackageData(
     val id: String,
     @SerializedName("box_id") val boxId: String,
+    @SerializedName("is_letter") val isLetter: Boolean,
     val length: Float,
     val width: Float,
     val height: Float,

@@ -142,6 +142,7 @@ class WCShippingLabelStoreTest {
             WCShippingLabelPackageData(
                     id = "id1",
                     boxId = "medium_flat_box_top",
+                    isLetter = false,
                     height = 10f,
                     width = 10f,
                     length = 10f,
@@ -305,7 +306,7 @@ class WCShippingLabelStoreTest {
     @Test
     fun `verify shipping address`() = test {
         val result = verifyAddress(ORIGIN)
-        assertThat(result.model).isEqualTo(Valid(address))
+        assertThat(result.model).isEqualTo(Valid(address, successfulVerifyAddressApiResponse.isTrivialNormalization))
 
         val invalidRequestResult = verifyAddress(DESTINATION)
         assertThat(invalidRequestResult.model).isNull()
