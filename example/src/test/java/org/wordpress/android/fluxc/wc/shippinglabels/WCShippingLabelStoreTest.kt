@@ -142,6 +142,7 @@ class WCShippingLabelStoreTest {
             WCShippingLabelPackageData(
                     id = "id1",
                     boxId = "medium_flat_box_top",
+                    isLetter = false,
                     height = 10f,
                     width = 10f,
                     length = 10f,
