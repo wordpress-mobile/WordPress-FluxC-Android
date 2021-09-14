@@ -13,5 +13,5 @@ abstract class SSRDao {
     abstract suspend fun insertSSR(ssrEntity: SSREntity): Long
 
     @Query("SELECT * FROM SSREntity WHERE localSiteId = :localSiteId LIMIT 1")
-    abstract suspend fun getSSRbySite(localSiteId: Long): WCSSRModel
+    abstract suspend fun getSSRbySite(localSiteId: Int): WCSSRModel
 }
