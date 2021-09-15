@@ -44,8 +44,6 @@ public enum WCOrderAction implements IAction {
     FETCH_ORDERS_BY_IDS,
     @Action(payloadType = FetchOrdersCountPayload.class)
     FETCH_ORDERS_COUNT,
-    @Action(payloadType = FetchSingleOrderPayload.class)
-    FETCH_SINGLE_ORDER,
     @Action(payloadType = UpdateOrderStatusPayload.class)
     UPDATE_ORDER_STATUS,
     @Action(payloadType = FetchOrderNotesPayload.class)
@@ -76,8 +74,6 @@ public enum WCOrderAction implements IAction {
     FETCHED_ORDERS_BY_IDS,
     @Action(payloadType = FetchOrdersCountResponsePayload.class)
     FETCHED_ORDERS_COUNT,
-    @Action(payloadType = RemoteOrderPayload.class)
-    FETCHED_SINGLE_ORDER,
     @Action(payloadType = RemoteOrderPayload.class)
     UPDATED_ORDER_STATUS,
     @Action(payloadType = FetchOrderNotesResponsePayload.class)

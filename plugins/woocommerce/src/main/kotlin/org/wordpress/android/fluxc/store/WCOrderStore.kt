@@ -504,24 +504,8 @@ class WCOrderStore @Inject constructor(
 
             val rowsAffected = if(!result.isError) OrderSqlUtils.insertOrUpdateOrder(result.order) else 0
 
-            emitLegacyOnOrderChangedEvent(result, rowsAffected)
-
             return@withDefaultContext if (!result.isError) result.order else null
         }
-    }
-
-    private fun emitLegacyOnOrderChangedEvent(
-        result: RemoteOrderPayload,
-        rowsAffected: Int,
-    ) {
-        val onOrderChanged: OnOrderChanged
-        if (result.isError) {
-            onOrderChanged = OnOrderChanged(rowsAffected).also { it.error = result.error }
-        } else {
-            onOrderChanged = OnOrderChanged(rowsAffected)
-        }
-        onOrderChanged.causeOfChange = FETCH_SINGLE_ORDER
-        emitChange(onOrderChanged)
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
