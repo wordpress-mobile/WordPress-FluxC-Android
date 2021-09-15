@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
+import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
@@ -26,6 +27,7 @@ import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.SSRDao
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
@@ -43,7 +45,8 @@ open class WooCommerceStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
-    private val siteSqlUtils: SiteSqlUtils
+    private val siteSqlUtils: SiteSqlUtils,
+    private val ssrDao: SSRDao
 ) : Store(dispatcher) {
     enum class WooPlugin(val displayName: String) {
         WOO_SERVICES("WooCommerce Shipping &amp; Tax"),
@@ -179,6 +182,33 @@ open class WooCommerceStore @Inject constructor(
                     val plugins = response.result.plugins.map { WCPluginModel(site, it) }
                     WCPluginSqlUtils.insertOrUpdate(plugins)
                     WooResult(plugins)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun fetchSSR(site: SiteModel): WooResult<WCSSRModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSSR") {
+            val response = systemRestClient.fetchSSR(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val ssr = WCSSRModel(
+                            id = 0,
+                            localSiteId = site.id,
+                            environment = response.result.environment?.toString(),
+                            database = response.result.database?.toString(),
+                            activePlugins = response.result.activePlugins?.toString(),
+                            theme = response.result.theme?.toString(),
+                            settings = response.result.settings?.toString(),
+                            security = response.result.security?.toString(),
+                            pages = response.result.pages?.toString()
+                    )
+                    ssrDao.insertSSR(ssr.mapToEntity())
+                    WooResult(ssr)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
