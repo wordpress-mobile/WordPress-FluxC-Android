@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.model
 
+import org.wordpress.android.fluxc.persistence.entity.SSREntity
+
 data class WCSSRModel(
     val id: Int,
     val localSiteId: Int,
@@ -10,4 +12,18 @@ data class WCSSRModel(
     val settings: String? = null,
     val security: String? = null,
     val pages: String? = null
-)
+) {
+    fun mapToEntity(): SSREntity {
+        return SSREntity(
+                id = id,
+                localSiteId = localSiteId,
+                environment = environment,
+                database = database,
+                activePlugins = activePlugins,
+                theme = theme,
+                settings = settings,
+                security = security,
+                pages = pages
+        )
+    }
+}
