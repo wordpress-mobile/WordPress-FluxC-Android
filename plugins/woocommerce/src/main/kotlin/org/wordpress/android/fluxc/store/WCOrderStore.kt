@@ -38,7 +38,7 @@ class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderRestClient: OrderRestClient,
     private val wcOrderFetcher: WCOrderFetcher,
-    private val coroutineEngine: CoroutineEngine,
+    private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
