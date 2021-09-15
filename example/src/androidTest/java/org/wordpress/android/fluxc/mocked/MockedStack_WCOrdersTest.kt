@@ -204,7 +204,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchSingleOrderError() = runBlocking{
+    fun testFetchSingleOrderError() = runBlocking {
         val remoteOrderId = 88L
 
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
