@@ -24,6 +24,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
@@ -38,6 +41,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePa
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
@@ -57,6 +61,7 @@ class OrderRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -269,37 +274,44 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId
-     *
-     * Dispatches a [WCOrderAction.FETCHED_SINGLE_ORDER] action with the result
+     * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
      *
      * @param [remoteOrderId] Unique server id of the order to fetch
      */
-    fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
+    suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
-        val responseType = object : TypeToken<OrderApiResponse>() {}.type
         val params = mapOf("_fields" to ORDER_FIELDS)
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: OrderApiResponse? ->
-                    response?.let {
-                        val newModel = orderResponseToOrderModel(it).apply {
-                            localSiteId = site.id
-                        }
-                        val payload = RemoteOrderPayload(newModel, site)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = orderResponseToOrderModel(it).apply {
+                        localSiteId = site.id
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
-                    val payload = RemoteOrderPayload(
-                            orderError,
-                            WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
-                            site
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    RemoteOrderPayload(newModel, site)
+                } ?: RemoteOrderPayload(
+                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
+                        site
+                )
+            }
+            is JetpackError -> {
+                val orderError = networkErrorToOrderError(response.error)
+                RemoteOrderPayload(
+                        orderError,
+                        WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
+                        site
+                )
+            }
+        }
     }
 
     /**
