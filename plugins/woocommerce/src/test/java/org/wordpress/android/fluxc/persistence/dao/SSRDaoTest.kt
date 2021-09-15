@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.persistence.dao
 import android.app.Application
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -59,7 +60,7 @@ internal class SSRDaoTest {
     fun `save and retrieve SSR`(): Unit = runBlocking {
         sut.insertSSR(sampleEntity)
 
-        val resultFromDatabase = sut.getSSRbySite(TEST_SITE_LOCAL_ID)
+        val resultFromDatabase = sut.observeSSRForSite(TEST_SITE_LOCAL_ID).first()
         assertEquals(resultFromDatabase, sampleModel)
     }
 
