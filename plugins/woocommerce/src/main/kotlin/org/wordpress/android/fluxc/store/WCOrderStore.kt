@@ -502,9 +502,10 @@ class WCOrderStore @Inject constructor(
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleOrder") {
             val result = wcOrderRestClient.fetchSingleOrder(site, remoteOrderId)
 
-            val rowsAffected = if(!result.isError) OrderSqlUtils.insertOrUpdateOrder(result.order) else 0
-
-            return@withDefaultContext if (!result.isError) result.order else null
+            return@withDefaultContext result.takeUnless { it.isError }?.let {
+                OrderSqlUtils.insertOrUpdateOrder(result.order)
+                result.order
+            }
         }
     }
 
