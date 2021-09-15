@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import org.wordpress.android.fluxc.model.WCSSRModel
 
 @Entity
 data class SSREntity(
