@@ -175,9 +175,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchSingleOrder() = runBlocking {
-        val fetchedOrder = orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId)
-
-        assertTrue(fetchedOrder != null && fetchedOrder.remoteOrderId == orderModel.remoteOrderId)
+        orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId)
 
         val orderFromDb = orderStore.getOrderByIdentifier(
                 OrderIdentifier(

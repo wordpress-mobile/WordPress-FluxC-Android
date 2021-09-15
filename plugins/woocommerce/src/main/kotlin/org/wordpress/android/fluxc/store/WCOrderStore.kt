@@ -498,13 +498,15 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchHasOrders(site, statusFilter) }
     }
 
-    suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): WCOrderModel? {
+    suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): OnOrderChanged {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleOrder") {
             val result = wcOrderRestClient.fetchSingleOrder(site, remoteOrderId)
 
-            return@withDefaultContext result.takeUnless { it.isError }?.let {
-                OrderSqlUtils.insertOrUpdateOrder(result.order)
-                result.order
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(result.order)
+                OnOrderChanged(rowsAffected)
             }
         }
     }
