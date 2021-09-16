@@ -68,7 +68,10 @@ class WooCommerceStoreTest {
             roomDB.ssrDao()
     )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
-    private val site = SiteModel().apply { id = 1 }
+    private val site = SiteModel().apply {
+        id = 1
+        siteId = TEST_SITE_REMOTE_ID
+    }
 
     private val response = ActivePluginsResponse(
             listOf(
