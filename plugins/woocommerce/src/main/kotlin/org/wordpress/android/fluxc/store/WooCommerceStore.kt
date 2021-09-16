@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import android.content.Context
 import com.wellsql.generated.SiteModelTable
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -215,8 +215,8 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
-    suspend fun getSSR(remoteSiteId: Long): WCSSRModel {
-        return ssrDao.observeSSRForSite(remoteSiteId).first()
+    fun observeSSRForSite(remoteSiteId: Long): Flow<WCSSRModel> {
+        return ssrDao.observeSSRForSite(remoteSiteId)
     }
 
     /**
