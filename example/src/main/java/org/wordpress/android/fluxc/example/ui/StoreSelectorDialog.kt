@@ -50,7 +50,7 @@ class StoreSelectorDialog : DialogFragment() {
                     .setSingleChoiceItems(adapter, selectedPos) { dialog, which ->
                         val adapter = (dialog as AlertDialog).listView.adapter as SiteAdapter
                         val site = adapter.getItem(which)
-                        listener?.onSiteSelected(site, which)
+                        site?.let { siteModel -> listener?.onSiteSelected(siteModel, which) }
                         dialog.dismiss()
                     }
             // Create the AlertDialog object and return it
@@ -67,16 +67,16 @@ class StoreSelectorDialog : DialogFragment() {
             addAll(newItems)
         }
 
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val cv = convertView
                     ?: LayoutInflater.from(context)
                             .inflate(android.R.layout.simple_list_item_single_choice, parent, false)
             val site = getItem(position)
-            (cv as TextView).text = site.displayName ?: site.name
+            (cv as TextView).text = site?.displayName ?: site?.name
             return cv
         }
 
-        override fun getItemId(position: Int) = getItem(position).id.toLong()
+        override fun getItemId(position: Int) = getItem(position)!!.id.toLong()
 
         override fun hasStableIds() = true
     }

@@ -24,15 +24,15 @@ class WooCustomersSearchFragment : Fragment() {
     @Inject internal lateinit var customersAdapter: WooCustomersSearchAdapter
 
     private val siteId by lazy { requireArguments().getInt(KEY_SELECTED_SITE_ID) }
-    private val searchParams by lazy { requireArguments().getParcelable(KEY_SEARCH_PARAMS) as SearchParams }
+    private val searchParams by lazy { requireArguments().getParcelable(KEY_SEARCH_PARAMS) as SearchParams? }
     private val pagedListWrapper by lazy {
         val descriptor = SearchCustomerListDescriptor(
                 customerSite = getSelectedSite(),
-                customerSearchQuery = searchParams.searchQuery,
-                customerEmail = searchParams.email,
-                customerRole = searchParams.role,
-                customerRemoteCustomerIds = searchParams.includeIds,
-                customerExcludedCustomerIds = searchParams.excludeIds
+                customerSearchQuery = searchParams?.searchQuery,
+                customerEmail = searchParams?.email,
+                customerRole = searchParams?.role,
+                customerRemoteCustomerIds = searchParams?.includeIds,
+                customerExcludedCustomerIds = searchParams?.excludeIds
         )
         listStore.getList(
                 listDescriptor = descriptor,
