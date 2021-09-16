@@ -21,11 +21,9 @@ internal class SSRDaoTest {
     private lateinit var sut: SSRDao
 
     private companion object {
-        const val TEST_SITE_LOCAL_ID = 1337
-        const val DB_GENERATED_ID = 1
+        const val TEST_SITE_REMOTE_ID = 1337L
         val sampleEntity = SSREntity(
-                id = DB_GENERATED_ID,
-                localSiteId = TEST_SITE_LOCAL_ID,
+                remoteSiteId = TEST_SITE_REMOTE_ID,
                 environment = "",
                 database = "",
                 activePlugins = "",
@@ -35,8 +33,7 @@ internal class SSRDaoTest {
                 pages = ""
         )
         val sampleModel = WCSSRModel(
-                id = DB_GENERATED_ID,
-                localSiteId = TEST_SITE_LOCAL_ID,
+                remoteSiteId = TEST_SITE_REMOTE_ID,
                 environment = "",
                 database = "",
                 activePlugins = "",
@@ -60,7 +57,7 @@ internal class SSRDaoTest {
     fun `save and retrieve SSR`(): Unit = runBlocking {
         sut.insertSSR(sampleEntity)
 
-        val resultFromDatabase = sut.observeSSRForSite(TEST_SITE_LOCAL_ID).first()
+        val resultFromDatabase = sut.observeSSRForSite(TEST_SITE_REMOTE_ID).first()
         assertEquals(resultFromDatabase, sampleModel)
     }
 
