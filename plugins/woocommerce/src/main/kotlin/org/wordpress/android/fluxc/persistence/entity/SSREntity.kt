@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class SSREntity(
-    @PrimaryKey val remoteSiteId: Int,
+    @PrimaryKey val remoteSiteId: Long,
     val environment: String? = null,
     val database: String? = null,
     val activePlugins: String? = null,
