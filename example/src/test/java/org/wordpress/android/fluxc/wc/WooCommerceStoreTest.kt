@@ -51,9 +51,12 @@ class WooCommerceStoreTest {
     private val appContext = RuntimeEnvironment.application.applicationContext
     private val restClient = mock<WooSystemRestClient>()
 
-    private val roomDB = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext<Application>(), WCAndroidDatabase::class.java)
-    .allowMainThreadQueries()
-    .build()
+    private val roomDB = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext<Application>(),
+            WCAndroidDatabase::class.java
+    )
+            .allowMainThreadQueries()
+            .build()
 
     private val wooCommerceStore = WooCommerceStore(
             appContext,
@@ -185,11 +188,11 @@ class WooCommerceStoreTest {
         Assertions.assertThat(result.model).isNotNull
     }
 
-
     @Test
     fun `when fetching ssr succeeds, then data is saved to database`() {
         runBlocking {
-            fetchSSR()
+            whenever(restClient.fetchSSR(any())).thenReturn(WooPayload(ssrResponse))
+            wooCommerceStore.fetchSSR(site)
 
             val result = wooCommerceStore.observeSSRForSite(TEST_SITE_REMOTE_ID).first()
             Assertions.assertThat(result).isEqualTo(ssrModel)
@@ -208,7 +211,7 @@ class WooCommerceStoreTest {
 
     private suspend fun fetchSSR(isError: Boolean = false): WooResult<WCSSRModel> {
         val payload = WooPayload(ssrResponse)
-        if(isError) {
+        if (isError) {
             whenever(restClient.fetchSSR(any())).thenReturn(WooPayload(error))
         } else {
             whenever(restClient.fetchSSR(any())).thenReturn(payload)
