@@ -1,8 +1,7 @@
 package org.wordpress.android.fluxc.model
 
 data class WCSSRModel(
-    val id: Int,
-    val localSiteId: Int,
+    val remoteSiteId: Int,
     val environment: String? = null,
     val database: String? = null,
     val activePlugins: String? = null,
