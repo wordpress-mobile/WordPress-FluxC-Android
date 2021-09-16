@@ -14,5 +14,5 @@ abstract class SSRDao {
     abstract suspend fun insertSSR(ssrEntity: SSREntity)
 
     @Query("SELECT * FROM SSREntity WHERE remoteSiteId = :remoteSiteId LIMIT 1")
-    abstract fun observeSSRForSite(remoteSiteId: Int): Flow<WCSSRModel>
+    abstract fun observeSSRForSite(remoteSiteId: Long): Flow<WCSSRModel>
 }

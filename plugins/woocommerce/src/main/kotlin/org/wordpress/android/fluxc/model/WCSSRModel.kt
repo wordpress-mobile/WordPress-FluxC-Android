@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.model
 import org.wordpress.android.fluxc.persistence.entity.SSREntity
 
 data class WCSSRModel(
-    val remoteSiteId: Int,
+    val remoteSiteId: Long,
     val environment: String? = null,
     val database: String? = null,
     val activePlugins: String? = null,
