@@ -2,12 +2,10 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import org.wordpress.android.fluxc.model.WCSSRModel
 
 @Entity
 data class SSREntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val localSiteId: Int,
+    @PrimaryKey val remoteSiteId: Int,
     val environment: String? = null,
     val database: String? = null,
     val activePlugins: String? = null,

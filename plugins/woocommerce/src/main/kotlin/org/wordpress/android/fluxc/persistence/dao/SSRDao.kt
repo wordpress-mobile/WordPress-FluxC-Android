@@ -13,6 +13,6 @@ abstract class SSRDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertSSR(ssrEntity: SSREntity)
 
-    @Query("SELECT * FROM SSREntity WHERE localSiteId = :localSiteId LIMIT 1")
-    abstract fun observeSSRForSite(localSiteId: Int): Flow<WCSSRModel>
+    @Query("SELECT * FROM SSREntity WHERE remoteSiteId = :remoteSiteId LIMIT 1")
+    abstract fun observeSSRForSite(remoteSiteId: Int): Flow<WCSSRModel>
 }
