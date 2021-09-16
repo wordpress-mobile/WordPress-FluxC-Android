@@ -18,7 +18,7 @@ class WCDatabaseModule {
         return database.addonsDao()
     }
 
-    @Provides internal fun provideSSRDao(database: WCAndroidDatabase): SSRDao {
+    @Provides fun provideSSRDao(database: WCAndroidDatabase): SSRDao {
         return database.ssrDao()
     }
 }
