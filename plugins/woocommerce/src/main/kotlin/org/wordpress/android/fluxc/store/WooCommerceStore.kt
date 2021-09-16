@@ -197,8 +197,7 @@ open class WooCommerceStore @Inject constructor(
                 }
                 response.result != null -> {
                     val ssr = WCSSRModel(
-                            id = 0,
-                            localSiteId = site.id,
+                            remoteSiteId = site.siteId,
                             environment = response.result.environment?.toString(),
                             database = response.result.database?.toString(),
                             activePlugins = response.result.activePlugins?.toString(),

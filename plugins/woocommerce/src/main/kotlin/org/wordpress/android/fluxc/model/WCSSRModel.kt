@@ -14,8 +14,7 @@ data class WCSSRModel(
 ) {
     fun mapToEntity(): SSREntity {
         return SSREntity(
-                id = id,
-                localSiteId = localSiteId,
+                remoteSiteId = remoteSiteId,
                 environment = environment,
                 database = database,
                 activePlugins = activePlugins,
