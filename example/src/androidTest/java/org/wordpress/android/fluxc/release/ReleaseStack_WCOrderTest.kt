@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release
 
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.greenrobot.eventbus.ThreadMode.MAIN
@@ -17,7 +18,6 @@ import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
@@ -42,7 +42,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         FETCHED_ORDERS,
         FETCHED_ORDERS_COUNT,
         FETCHED_SINGLE_ORDER,
-        FETCHED_ORDER_NOTES,
         FETCHED_HAS_ORDERS,
         SEARCHED_ORDERS,
         POST_ORDER_NOTE,
@@ -197,7 +196,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchOrderNotes() {
+    fun testFetchOrderNotes() = runBlocking {
         // Grab a list of orders
         nextEvent = TestEvent.FETCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
@@ -206,12 +205,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        nextEvent = TestEvent.FETCHED_ORDER_NOTES
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(
-                FetchOrderNotesPayload(firstOrder.id, firstOrder.remoteOrderId, sSite)
-        ))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        orderStore.fetchOrderNotes(firstOrder.id, firstOrder.remoteOrderId, sSite)
 
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.id)
@@ -312,10 +306,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_ORDERS_COUNT -> {
                 assertEquals(TestEvent.FETCHED_ORDERS_COUNT, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCOrderAction.FETCH_ORDER_NOTES -> {
-                assertEquals(TestEvent.FETCHED_ORDER_NOTES, nextEvent)
                 mCountDownLatch.countDown()
             }
             WCOrderAction.FETCH_HAS_ORDERS -> {
