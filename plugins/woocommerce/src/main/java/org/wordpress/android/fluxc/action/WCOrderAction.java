@@ -15,8 +15,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload;
