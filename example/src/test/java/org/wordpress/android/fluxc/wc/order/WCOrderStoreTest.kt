@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.util.Calendar
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -49,7 +50,7 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 class WCOrderStoreTest {
     private val orderFetcher: WCOrderFetcher = mock()
-    private val orderStore = WCOrderStore(Dispatcher(), mock(), orderFetcher)
+    private val orderStore = WCOrderStore(Dispatcher(), mock(), orderFetcher, initCoroutineEngine())
 
     @Before
     fun setUp() {
