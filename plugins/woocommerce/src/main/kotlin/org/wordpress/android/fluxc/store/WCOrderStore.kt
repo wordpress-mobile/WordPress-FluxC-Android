@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
@@ -36,7 +37,8 @@ import javax.inject.Singleton
 class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderRestClient: OrderRestClient,
-    private val wcOrderFetcher: WCOrderFetcher
+    private val wcOrderFetcher: WCOrderFetcher,
+    private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
@@ -424,8 +426,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
-            WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS ->
-                fetchOrderShipmentTrackings(action.payload as FetchOrderShipmentTrackingsPayload)
             WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING ->
                 addOrderShipmentTracking(action.payload as AddOrderShipmentTrackingPayload)
             WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING ->
@@ -451,8 +451,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
-            WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS ->
-                handleFetchOrderShipmentTrackingsCompleted(action.payload as FetchOrderShipmentTrackingsResponsePayload)
             WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING ->
                 handleAddOrderShipmentTrackingCompleted(action.payload as AddOrderShipmentTrackingResponsePayload)
             WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING ->
@@ -531,9 +529,34 @@ class WCOrderStore @Inject constructor(
         wcOrderRestClient.fetchOrderStatusOptions(payload.site)
     }
 
-    private fun fetchOrderShipmentTrackings(payload: FetchOrderShipmentTrackingsPayload) {
-        with(payload) {
-            wcOrderRestClient.fetchOrderShipmentTrackings(site, localOrderId, remoteOrderId)
+    suspend fun fetchOrderShipmentTrackings(localOrderId: Int, remoteOrderId: Long, site: SiteModel): OnOrderChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderShipmentTrackings") {
+            val result = wcOrderRestClient.fetchOrderShipmentTrackings(site, localOrderId, remoteOrderId)
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                // Calculate which existing records should be deleted because they no longer exist in the payload
+                val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(
+                        result.site,
+                        result.localOrderId
+                )
+                val deleteTrackings = mutableListOf<WCOrderShipmentTrackingModel>()
+                existingTrackings.iterator().forEach { existing ->
+                    var exists = false
+                    result.trackings.iterator().forEach nti@{ newTracking ->
+                        if (newTracking.remoteTrackingId == existing.remoteTrackingId) {
+                            exists = true
+                            return@nti
+                        }
+                    }
+                    if (!exists) deleteTrackings.add(existing)
+                }
+                var rowsAffected = deleteTrackings.sumBy { OrderSqlUtils.deleteOrderShipmentTrackingById(it) }
+
+                // Save new shipment trackings to the database
+                rowsAffected += result.trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
+                OnOrderChanged(rowsAffected)
+            }
         }
     }
 
@@ -794,39 +817,6 @@ class WCOrderStore @Inject constructor(
         }
 
         emitChange(onOrderStatusLabelsChanged)
-    }
-
-    private fun handleFetchOrderShipmentTrackingsCompleted(payload: FetchOrderShipmentTrackingsResponsePayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
-        } else {
-            // Calculate which existing records should be deleted because they no longer exist in the payload
-            val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(
-                    payload.site,
-                    payload.localOrderId
-            )
-            val deleteTrackings = mutableListOf<WCOrderShipmentTrackingModel>()
-            existingTrackings.iterator().forEach { existing ->
-                var exists = false
-                payload.trackings.iterator().forEach nti@{ newTracking ->
-                    if (newTracking.remoteTrackingId == existing.remoteTrackingId) {
-                        exists = true
-                        return@nti
-                    }
-                }
-                if (!exists) deleteTrackings.add(existing)
-            }
-            var rowsAffected = deleteTrackings.sumBy { OrderSqlUtils.deleteOrderShipmentTrackingById(it) }
-
-            // Save new shipment trackings to the database
-            rowsAffected += payload.trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
-            onOrderChanged = OnOrderChanged(rowsAffected)
-        }
-
-        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
-        emitChange(onOrderChanged)
     }
 
     private fun handleAddOrderShipmentTrackingCompleted(payload: AddOrderShipmentTrackingResponsePayload) {
