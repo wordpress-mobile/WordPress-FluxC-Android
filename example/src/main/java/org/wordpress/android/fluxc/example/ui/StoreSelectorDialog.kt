@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import dagger.android.support.AndroidSupportInjection
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -50,7 +51,11 @@ class StoreSelectorDialog : DialogFragment() {
                     .setSingleChoiceItems(adapter, selectedPos) { dialog, which ->
                         val adapter = (dialog as AlertDialog).listView.adapter as SiteAdapter
                         val site = adapter.getItem(which)
-                        site?.let { siteModel -> listener?.onSiteSelected(siteModel, which) }
+                        if (site != null) {
+                            listener?.onSiteSelected(site, which)
+                        } else {
+                            prependToLog("SiteChanged error: site at position $which was null.")
+                        }
                         dialog.dismiss()
                     }
             // Create the AlertDialog object and return it
