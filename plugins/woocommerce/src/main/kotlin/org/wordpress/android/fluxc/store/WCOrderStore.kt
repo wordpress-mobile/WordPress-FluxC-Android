@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
@@ -36,7 +37,8 @@ import javax.inject.Singleton
 class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderRestClient: OrderRestClient,
-    private val wcOrderFetcher: WCOrderFetcher
+    private val wcOrderFetcher: WCOrderFetcher,
+    private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
@@ -418,7 +420,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.FETCH_SINGLE_ORDER -> fetchSingleOrder(action.payload as FetchSingleOrderPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
-            WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
@@ -443,8 +444,6 @@ class WCOrderStore @Inject constructor(
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
             WCOrderAction.FETCHED_SINGLE_ORDER -> handleFetchSingleOrderCompleted(action.payload as RemoteOrderPayload)
             WCOrderAction.UPDATED_ORDER_STATUS -> handleUpdateOrderStatusCompleted(action.payload as RemoteOrderPayload)
-            WCOrderAction.FETCHED_ORDER_NOTES ->
-                handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
@@ -519,8 +518,17 @@ class WCOrderStore @Inject constructor(
         return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
     }
 
-    private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {
-        with(payload) { wcOrderRestClient.fetchOrderNotes(localOrderId, remoteOrderId, site) }
+    suspend fun fetchOrderNotes(localOrderId: Int, remoteOrderId: Long, site: SiteModel): OnOrderChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderNotes") {
+            val result = wcOrderRestClient.fetchOrderNotes(localOrderId, remoteOrderId, site)
+
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNotes(result.notes)
+                OnOrderChanged(rowsAffected)
+            }
+        }
     }
 
     private fun postOrderNote(payload: PostOrderNotePayload) {
@@ -724,20 +732,6 @@ class WCOrderStore @Inject constructor(
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
         val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.order.status)
         return OnOrderChanged(rowsAffected).also { it.error = payload.error }
-    }
-
-    private fun handleFetchOrderNotesCompleted(payload: FetchOrderNotesResponsePayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNotes(payload.notes)
-            onOrderChanged = OnOrderChanged(rowsAffected)
-        }
-
-        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_NOTES
-        emitChange(onOrderChanged)
     }
 
     private fun handlePostOrderNoteCompleted(payload: RemoteOrderNotePayload) {
