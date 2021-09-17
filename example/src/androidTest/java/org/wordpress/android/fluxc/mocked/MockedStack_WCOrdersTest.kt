@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.mocked
 
 import com.google.gson.JsonObject
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -25,7 +26,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackin
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -450,16 +450,11 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderShipmentTrackingsFetchSuccess() {
+    fun testOrderShipmentTrackingsFetchSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-trackings-success.json")
-        orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel.id, orderModel.remoteOrderId)
+        val payload = orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel.id, orderModel.remoteOrderId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderShipmentTrackingsResponsePayload
         assertNull(payload.error)
         assertEquals(2, payload.trackings.size)
 

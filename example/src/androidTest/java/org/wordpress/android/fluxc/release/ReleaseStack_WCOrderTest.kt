@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release
 
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.greenrobot.eventbus.ThreadMode.MAIN
@@ -18,7 +19,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
@@ -48,8 +48,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         POST_ORDER_NOTE,
         POSTED_ORDER_NOTE,
         ERROR_ORDER_STATUS_NOT_FOUND,
-        FETCHED_ORDER_STATUS_OPTIONS,
-        ERROR_ORDER_SHIPMENT_TRACKINGS_PLUGIN_NOT_ACTIVE
+        FETCHED_ORDER_STATUS_OPTIONS
     }
 
     @Inject internal lateinit var orderStore: WCOrderStore
@@ -270,14 +269,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
      */
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() {
-        nextEvent = TestEvent.ERROR_ORDER_SHIPMENT_TRACKINGS_PLUGIN_NOT_ACTIVE
-        mCountDownLatch = CountDownLatch(1)
-
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
-                FetchOrderShipmentTrackingsPayload(orderModel.id, orderModel.remoteOrderId, sSite)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
+    fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() = runBlocking {
+        val result = orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId, sSite)
+        assertTrue(result.isError)
+        assertEquals(OrderErrorType.PLUGIN_NOT_ACTIVE, result.error.type)
         val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
         assertTrue(trackings.isEmpty())
     }
@@ -289,13 +284,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             when (event.causeOfChange) {
                 WCOrderAction.FETCH_ORDERS_COUNT -> {
                     assertEquals(TestEvent.ERROR_ORDER_STATUS_NOT_FOUND, nextEvent)
-                    mCountDownLatch.countDown()
-                    return
-                }
-                WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS -> {
-                    assertEquals(TestEvent.ERROR_ORDER_SHIPMENT_TRACKINGS_PLUGIN_NOT_ACTIVE, nextEvent)
-                    assertTrue(event.isError)
-                    assertEquals(OrderErrorType.PLUGIN_NOT_ACTIVE, event.error.type)
                     mCountDownLatch.countDown()
                     return
                 }
