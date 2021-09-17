@@ -48,8 +48,6 @@ public enum WCOrderAction implements IAction {
     FETCH_SINGLE_ORDER,
     @Action(payloadType = UpdateOrderStatusPayload.class)
     UPDATE_ORDER_STATUS,
-    @Action(payloadType = FetchOrderNotesPayload.class)
-    FETCH_ORDER_NOTES,
     @Action(payloadType = PostOrderNotePayload.class)
     POST_ORDER_NOTE,
     @Action(payloadType = FetchHasOrdersPayload.class)
@@ -80,8 +78,6 @@ public enum WCOrderAction implements IAction {
     FETCHED_SINGLE_ORDER,
     @Action(payloadType = RemoteOrderPayload.class)
     UPDATED_ORDER_STATUS,
-    @Action(payloadType = FetchOrderNotesResponsePayload.class)
-    FETCHED_ORDER_NOTES,
     @Action(payloadType = RemoteOrderNotePayload.class)
     POSTED_ORDER_NOTE,
     @Action(payloadType = FetchHasOrdersResponsePayload.class)
