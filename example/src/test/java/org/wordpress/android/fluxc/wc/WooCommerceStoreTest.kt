@@ -16,7 +16,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
@@ -48,11 +47,11 @@ class WooCommerceStoreTest {
         const val TEST_SITE_REMOTE_ID = 1337L
     }
 
-    private val appContext = RuntimeEnvironment.application.applicationContext
+    private val appContext = ApplicationProvider.getApplicationContext<Application>()
     private val restClient = mock<WooSystemRestClient>()
 
     private val roomDB = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext<Application>(),
+            appContext,
             WCAndroidDatabase::class.java
     )
             .allowMainThreadQueries()
@@ -184,11 +183,13 @@ class WooCommerceStoreTest {
     }
 
     @Test
-    fun `when fetching ssr succeeds, then success returned`() = test {
-        val result = fetchSSR(isError = false)
+    fun `when fetching ssr succeeds, then success returned`() {
+        runBlocking {
+            val result = fetchSSR(isError = false)
 
-        Assertions.assertThat(result.isError).isFalse
-        Assertions.assertThat(result.model).isNotNull
+            Assertions.assertThat(result.isError).isFalse
+            Assertions.assertThat(result.model).isNotNull
+        }
     }
 
     @Test
