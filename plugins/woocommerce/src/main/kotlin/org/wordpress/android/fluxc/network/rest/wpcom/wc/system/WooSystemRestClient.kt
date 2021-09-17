@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.system
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
@@ -47,6 +48,26 @@ class WooSystemRestClient @Inject constructor(
         }
     }
 
+    suspend fun fetchSSR(site: SiteModel): WooPayload<SSRResponse> {
+        val url = WOOCOMMERCE.system_status.pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            mapOf("_fields" to "environment,database,active_plugins,theme,settings,security,pages"),
+            SSRResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class ActivePluginsResponse(
         @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>?,
         @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>?
@@ -60,4 +81,14 @@ class WooSystemRestClient @Inject constructor(
             val isActive: Boolean = false
         )
     }
+
+    data class SSRResponse(
+        val environment: JsonElement? = null,
+        val database: JsonElement? = null,
+        @SerializedName("active_plugins") val activePlugins: JsonElement? = null,
+        val theme: JsonElement? = null,
+        val settings: JsonElement? = null,
+        val security: JsonElement? = null,
+        val pages: JsonElement? = null
+    )
 }
