@@ -141,14 +141,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                     coroutineScope.launch {
                         enteredRemoteId?.let { id ->
                             prependToLog("Submitting request to fetch order by remoteOrderID: $enteredRemoteId")
-                            wcOrderStore.fetchSingleOrder(site, id)
-                            wcOrderStore.getOrderByIdentifier(
-                                    OrderIdentifier(
-                                            WCOrderModel().apply {
-                                                remoteOrderId = enteredRemoteId
-                                                localSiteId = site.id
-                                            })
-                            )?.let {
+                            wcOrderStore.fetchSingleOrder(site, id).takeUnless {   it.isError }?.let {
                                 prependToLog("Single order fetched successfully!")
                             } ?: prependToLog("WARNING: Fetched order not found in the local database!")
                         } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
