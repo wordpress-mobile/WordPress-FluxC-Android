@@ -135,6 +135,24 @@ class PayRestClient @Inject constructor(
         }
     }
 
+    suspend fun getStoreLocationForSite(site: SiteModel): WooPayload<StoreLocationApiResponse> {
+        val url = WOOCOMMERCE.terminal.locations.store.pathV3
+        val params = mapOf("_fields" to STORE_LOCATION_FIELDS)
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                StoreLocationApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
     private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
         val type = when {
             error == null -> GENERIC_ERROR
@@ -154,5 +172,6 @@ class PayRestClient @Inject constructor(
         private const val ACCOUNT_REQUESTED_FIELDS: String =
                 "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
                         "store_currencies,country,card_present_eligible,is_live,test_mode"
+        private const val STORE_LOCATION_FIELDS: String = "id,address,display_mode,livemode"
     }
 }
