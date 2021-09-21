@@ -7,10 +7,10 @@ data class WCTerminalStoreLocationResult(
     val locationId: String?,
     val displayName: String?,
     val liveMode: Boolean?,
-    val address: StoreAddress?,
+    val address: StoreAddress?
 ) : Payload<WCTerminalStoreLocationError?>() {
     constructor(
-        error: WCTerminalStoreLocationError,
+        error: WCTerminalStoreLocationError
     ) : this(null, null, null, null) {
         this.error = error
     }
@@ -21,7 +21,7 @@ data class WCTerminalStoreLocationResult(
         val line1: String?,
         val line2: String?,
         val postalCode: String?,
-        val state: String?,
+        val state: String?
     )
 }
 

@@ -163,19 +163,19 @@ class PayRestClient @Inject constructor(
                                     line1 = data.address?.line1,
                                     line2 = data.address?.line2,
                                     postalCode = data.address?.postalCode,
-                                    state = data.address?.state,
+                                    state = data.address?.state
                             )
                     )
                 } ?: WCTerminalStoreLocationResult(
                         mapToStoreLocationForSiteError(
                                 error = null,
                                 message = "status field is null, but isError == false"
-                        ),
+                        )
                 )
             }
             is JetpackError -> {
                 WCTerminalStoreLocationResult(
-                        mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error"),
+                        mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
                 )
             }
         }
