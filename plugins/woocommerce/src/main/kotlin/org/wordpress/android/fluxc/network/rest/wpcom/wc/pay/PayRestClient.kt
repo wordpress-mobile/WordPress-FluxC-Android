@@ -15,6 +15,10 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ER
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.pay.WCPaymentCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationError
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationResult.StoreAddress
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -135,21 +139,45 @@ class PayRestClient @Inject constructor(
         }
     }
 
-    suspend fun getStoreLocationForSite(site: SiteModel): WooPayload<StoreLocationApiResponse> {
-        val url = WOOCOMMERCE.terminal.locations.store.pathV3
-        val params = mapOf("_fields" to STORE_LOCATION_FIELDS)
+    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
+        val url = WOOCOMMERCE.payments.terminal.locations.store.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
                 site,
                 url,
-                params,
+                mapOf(),
                 StoreLocationApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> {
+                response.data?.let { data ->
+                    WCTerminalStoreLocationResult(
+                            locationId = data.id,
+                            displayName = data.displayName,
+                            liveMode = data.liveMode,
+                            address = StoreAddress(
+                                    city = data.address?.city,
+                                    country = data.address?.country,
+                                    line1 = data.address?.line1,
+                                    line2 = data.address?.line2,
+                                    postalCode = data.address?.postalCode,
+                                    state = data.address?.state,
+                            )
+                    )
+                } ?: WCTerminalStoreLocationResult(
+                        mapToStoreLocationForSiteError(
+                                error = null,
+                                message = "status field is null, but isError == false"
+                        ),
+                )
+            }
+            is JetpackError -> {
+                WCTerminalStoreLocationResult(
+                        mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error"),
+                )
+            }
         }
     }
 
@@ -168,10 +196,21 @@ class PayRestClient @Inject constructor(
         return WCCapturePaymentError(type, message)
     }
 
+    private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
+            WCTerminalStoreLocationError {
+        val type = when {
+            error == null -> WCTerminalStoreLocationErrorType.GENERIC_ERROR
+            error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
+            error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
+            error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
+            else -> WCTerminalStoreLocationErrorType.GENERIC_ERROR
+        }
+        return WCTerminalStoreLocationError(type, message)
+    }
+
     companion object {
         private const val ACCOUNT_REQUESTED_FIELDS: String =
                 "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
                         "store_currencies,country,card_present_eligible,is_live,test_mode"
-        private const val STORE_LOCATION_FIELDS: String = "id,address,display_mode,livemode"
     }
 }
