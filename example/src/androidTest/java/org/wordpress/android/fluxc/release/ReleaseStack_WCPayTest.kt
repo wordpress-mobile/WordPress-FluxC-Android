@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
@@ -44,7 +45,7 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
         assertEquals(false, result.model?.hasOverdueRequirements)
         assertEquals("DO.WPMT.CO", result.model?.statementDescriptor)
         assertEquals("US", result.model?.country)
-        assertEquals(false, result.model?.isCardPresentEligible)
+        assertEquals(true, result.model?.isCardPresentEligible)
         assertEquals("usd", result.model?.storeCurrencies?.default)
         assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)
         assertEquals(WCPayAccountStatusEnum.COMPLETE, result.model?.status)
@@ -68,5 +69,20 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
         )
 
         assertTrue(result.isError)
+    }
+
+    @Test
+    fun givenSiteHasWCPayAndStripeAddressThenLocationDataReturned() = runBlocking {
+        val result = payStore.getStoreLocationForSite(sSite)
+
+        assertFalse(result.isError)
+        assertEquals("tml_EUZ4bQQTxLWMq2", result.locationId)
+        assertEquals("Woo WCPay", result.displayName)
+        assertEquals("San Francisco", result.address?.city)
+        assertEquals("US", result.address?.country)
+        assertEquals("1230 Lawton St", result.address?.line1)
+        assertEquals("71", result.address?.line2)
+        assertEquals("94122", result.address?.postalCode)
+        assertEquals("CA", result.address?.state)
     }
 }

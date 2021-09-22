@@ -15,6 +15,10 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ER
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.pay.WCPaymentCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationError
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationResult.StoreAddress
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -135,6 +139,48 @@ class PayRestClient @Inject constructor(
         }
     }
 
+    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
+        val url = WOOCOMMERCE.payments.terminal.locations.store.pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                mapOf(),
+                StoreLocationApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let { data ->
+                    WCTerminalStoreLocationResult(
+                            locationId = data.id,
+                            displayName = data.displayName,
+                            liveMode = data.liveMode,
+                            address = StoreAddress(
+                                    city = data.address?.city,
+                                    country = data.address?.country,
+                                    line1 = data.address?.line1,
+                                    line2 = data.address?.line2,
+                                    postalCode = data.address?.postalCode,
+                                    state = data.address?.state
+                            )
+                    )
+                } ?: WCTerminalStoreLocationResult(
+                        mapToStoreLocationForSiteError(
+                                error = null,
+                                message = "status field is null, but isError == false"
+                        )
+                )
+            }
+            is JetpackError -> {
+                WCTerminalStoreLocationResult(
+                        mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
+                )
+            }
+        }
+    }
+
     private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
         val type = when {
             error == null -> GENERIC_ERROR
@@ -148,6 +194,18 @@ class PayRestClient @Inject constructor(
             else -> GENERIC_ERROR
         }
         return WCCapturePaymentError(type, message)
+    }
+
+    private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
+            WCTerminalStoreLocationError {
+        val type = when {
+            error == null -> WCTerminalStoreLocationErrorType.GENERIC_ERROR
+            error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
+            error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
+            error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
+            else -> WCTerminalStoreLocationErrorType.GENERIC_ERROR
+        }
+        return WCTerminalStoreLocationError(type, message)
     }
 
     companion object {
