@@ -9,6 +9,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -17,7 +20,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TR
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
@@ -37,7 +39,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
@@ -59,6 +60,8 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcOrderStore: WCOrderStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
@@ -197,9 +200,15 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         fetch_order_notes.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
-                    pendingNotesOrderModel = order
-                    val payload = FetchOrderNotesPayload(order.id, order.remoteOrderId, site)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
+                    coroutineScope.launch {
+                        wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId, site).takeUnless { it.isError }
+                            ?.let {
+                                prependToLog(
+                                    "Fetched order(${order.remoteOrderId}) notes. " +
+                                        "${it.rowsAffected} notes inserted into database."
+                                )
+                            } ?: prependToLog("Fetching notes failed.")
+                    }
                 }
             }
         }
@@ -407,14 +416,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                     FETCH_HAS_ORDERS -> {
                         val hasOrders = event.rowsAffected > 0
                         prependToLog("Store has orders: $hasOrders")
-                    }
-                    FETCH_ORDER_NOTES -> {
-                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel?.id!!)
-                        prependToLog(
-                                "Fetched ${notes.size} order notes for order " +
-                                        "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
-                                        "notes inserted into database."
-                        )
                     }
                     POST_ORDER_NOTE -> prependToLog(
                             "Posted ${event.rowsAffected} " +

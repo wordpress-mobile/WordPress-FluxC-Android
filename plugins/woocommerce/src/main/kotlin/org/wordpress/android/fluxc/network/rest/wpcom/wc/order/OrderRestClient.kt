@@ -24,6 +24,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
@@ -57,6 +60,7 @@ class OrderRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -416,35 +420,35 @@ class OrderRestClient @Inject constructor(
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
-     *
-     * Dispatches a [WCOrderAction.FETCHED_ORDER_NOTES] action with the resulting list of order notes.
      */
-    fun fetchOrderNotes(
+    suspend fun fetchOrderNotes(
         localOrderId: Int,
         remoteOrderId: Long,
         site: SiteModel
-    ) {
+    ): FetchOrderNotesResponsePayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
-        val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderNoteApiResponse>? ->
-                    val noteModels = response?.map {
-                        orderNoteResponseToOrderNoteModel(it).apply {
-                            localSiteId = site.id
-                            this.localOrderId = localOrderId
-                        }
-                    }.orEmpty()
-                    val payload = FetchOrderNotesResponsePayload(localOrderId, remoteOrderId, site, noteModels)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderNotesResponsePayload(orderError, site, localOrderId, remoteOrderId)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            mapOf(),
+            Array<OrderNoteApiResponse>::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                val noteModels = response.data?.map {
+                    orderNoteResponseToOrderNoteModel(it).apply {
+                        localSiteId = site.id
+                        this.localOrderId = localOrderId
+                    }
+                }.orEmpty()
+                FetchOrderNotesResponsePayload(localOrderId, remoteOrderId, site, noteModels)
+            }
+            is JetpackError -> {
+                val orderError = networkErrorToOrderError(response.error)
+                FetchOrderNotesResponsePayload(orderError, site, localOrderId, remoteOrderId)
+            }
+        }
     }
 
     /**
