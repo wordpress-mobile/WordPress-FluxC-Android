@@ -20,8 +20,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TR
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.example.R.layout
@@ -39,12 +37,10 @@ import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
@@ -66,7 +62,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
-    private var pendingFetchSingleOrderRemoteId: Long? = null
     private var pendingShipmentTrackingOrder: WCOrderModel? = null
     private var pendingDeleteShipmentTracking: WCOrderShipmentTrackingModel? = null
     private var pendingAddShipmentTracking: WCOrderShipmentTrackingModel? = null
@@ -138,13 +133,15 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         fetch_single_order.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(activity, "Enter the remoteOrderId of order to fetch:") { editText ->
-                    pendingFetchSingleOrderRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchSingleOrderRemoteId?.let { id ->
-                        prependToLog("Submitting request to fetch order by remoteOrderID" +
-                                ": $pendingFetchSingleOrderRemoteId")
-                        val payload = FetchSingleOrderPayload(site, id)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchSingleOrderAction(payload))
-                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                    val enteredRemoteId = editText.text.toString().toLongOrNull()
+                    coroutineScope.launch {
+                        enteredRemoteId?.let { id ->
+                            prependToLog("Submitting request to fetch order by remoteOrderID: $enteredRemoteId")
+                            wcOrderStore.fetchSingleOrder(site, id).takeUnless { it.isError }?.let {
+                                prependToLog("Single order fetched successfully!")
+                            } ?: prependToLog("WARNING: Fetched order not found in the local database!")
+                        } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                    }
                 }
             }
         }
@@ -200,9 +197,15 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         fetch_order_notes.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
-                    pendingNotesOrderModel = order
-                    val payload = FetchOrderNotesPayload(order.id, order.remoteOrderId, site)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
+                    coroutineScope.launch {
+                        wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId, site).takeUnless { it.isError }
+                            ?.let {
+                                prependToLog(
+                                    "Fetched order(${order.remoteOrderId}) notes. " +
+                                        "${it.rowsAffected} notes inserted into database."
+                                )
+                            } ?: prependToLog("Fetching notes failed.")
+                    }
                 }
             }
         }
@@ -410,30 +413,9 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                             prependToLog("Count of $it orders: ${event.rowsAffected}$append")
                         } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
                     }
-                    FETCH_SINGLE_ORDER -> {
-                        pendingFetchSingleOrderRemoteId?.let { remoteId ->
-                            pendingFetchSingleOrderRemoteId = null
-                            wcOrderStore.getOrderByIdentifier(OrderIdentifier(
-                                    WCOrderModel().apply {
-                                        remoteOrderId = remoteId
-                                        localSiteId = site.id
-                                    })
-                            )?.let {
-                                prependToLog("Single order fetched successfully!")
-                            } ?: prependToLog("WARNING: Fetched order not found in the local database!")
-                        }
-                    }
                     FETCH_HAS_ORDERS -> {
                         val hasOrders = event.rowsAffected > 0
                         prependToLog("Store has orders: $hasOrders")
-                    }
-                    FETCH_ORDER_NOTES -> {
-                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel?.id!!)
-                        prependToLog(
-                                "Fetched ${notes.size} order notes for order " +
-                                        "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
-                                        "notes inserted into database."
-                        )
                     }
                     POST_ORDER_NOTE -> prependToLog(
                             "Posted ${event.rowsAffected} " +

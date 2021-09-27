@@ -25,7 +25,7 @@ import org.wordpress.android.fluxc.persistence.entity.SSREntity
 @TypeConverters(value = [LongListConverter::class])
 abstract class WCAndroidDatabase : RoomDatabase() {
     internal abstract fun addonsDao(): AddonsDao
-    internal abstract fun ssrDao(): SSRDao
+    abstract fun ssrDao(): SSRDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(

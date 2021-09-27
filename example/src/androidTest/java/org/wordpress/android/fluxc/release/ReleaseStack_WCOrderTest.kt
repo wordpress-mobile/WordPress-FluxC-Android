@@ -18,12 +18,10 @@ import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
@@ -42,7 +40,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         FETCHED_ORDERS,
         FETCHED_ORDERS_COUNT,
         FETCHED_SINGLE_ORDER,
-        FETCHED_ORDER_NOTES,
         FETCHED_HAS_ORDERS,
         SEARCHED_ORDERS,
         POST_ORDER_NOTE,
@@ -173,30 +170,22 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleOrder() {
-        // Fetch a single order
-        nextEvent = TestEvent.FETCHED_SINGLE_ORDER
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCOrderActionBuilder
-                        .newFetchSingleOrderAction(FetchSingleOrderPayload(sSite, orderModel.remoteOrderId))
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+    fun testFetchSingleOrder() = runBlocking {
+        orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId)
 
-        // Verify results
-        val fetchedOrder = orderStore.getOrderByIdentifier(
+        val orderFromDb = orderStore.getOrderByIdentifier(
                 OrderIdentifier(
                         WCOrderModel().apply {
                             remoteOrderId = orderModel.remoteOrderId
                             localSiteId = sSite.id
                         })
         )
-        assertTrue(fetchedOrder != null && fetchedOrder.remoteOrderId == orderModel.remoteOrderId)
+        assertTrue(orderFromDb != null && orderFromDb.remoteOrderId == orderModel.remoteOrderId)
     }
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchOrderNotes() {
+    fun testFetchOrderNotes() = runBlocking {
         // Grab a list of orders
         nextEvent = TestEvent.FETCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
@@ -205,12 +194,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        nextEvent = TestEvent.FETCHED_ORDER_NOTES
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(
-                FetchOrderNotesPayload(firstOrder.id, firstOrder.remoteOrderId, sSite)
-        ))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        orderStore.fetchOrderNotes(firstOrder.id, firstOrder.remoteOrderId, sSite)
 
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.id)
@@ -302,10 +286,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_ORDERS_COUNT, nextEvent)
                 mCountDownLatch.countDown()
             }
-            WCOrderAction.FETCH_ORDER_NOTES -> {
-                assertEquals(TestEvent.FETCHED_ORDER_NOTES, nextEvent)
-                mCountDownLatch.countDown()
-            }
             WCOrderAction.FETCH_HAS_ORDERS -> {
                 assertEquals(TestEvent.FETCHED_HAS_ORDERS, nextEvent)
                 mCountDownLatch.countDown()
@@ -314,11 +294,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.POST_ORDER_NOTE, nextEvent)
                 mCountDownLatch.countDown()
             }
-            WCOrderAction.FETCH_SINGLE_ORDER -> {
-                assertEquals(TestEvent.FETCHED_SINGLE_ORDER, nextEvent)
-                mCountDownLatch.countDown()
-            }
-
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }

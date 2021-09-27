@@ -118,5 +118,11 @@
             android:layout_height="wrap_content"
             android:text="Customers" />
 
+        <Button
+            android:id="@+id/help_support"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Help &amp; Support" />
+
     </LinearLayout>
 </ScrollView>

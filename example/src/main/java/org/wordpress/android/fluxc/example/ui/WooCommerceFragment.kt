@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.customer.WooCustomersFragment
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
+import org.wordpress.android.fluxc.example.ui.helpsupport.WooHelpSupportFragment
 import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductAttributeFragment
@@ -169,6 +170,12 @@ class WooCommerceFragment : Fragment() {
         customers.setOnClickListener {
             getFirstWCSite()?.let {
                 replaceFragment(WooCustomersFragment())
+            } ?: showNoWCSitesToast()
+        }
+
+        help_support.setOnClickListener {
+            getFirstWCSite()?.let {
+                replaceFragment(WooHelpSupportFragment())
             } ?: showNoWCSitesToast()
         }
     }

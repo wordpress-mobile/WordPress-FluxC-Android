@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import android.content.Context
 import com.wellsql.generated.SiteModelTable
+import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -10,6 +11,7 @@ import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
+import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
@@ -26,6 +28,7 @@ import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.SSRDao
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
@@ -43,7 +46,8 @@ open class WooCommerceStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
-    private val siteSqlUtils: SiteSqlUtils
+    private val siteSqlUtils: SiteSqlUtils,
+    private val ssrDao: SSRDao
 ) : Store(dispatcher) {
     enum class WooPlugin(val displayName: String) {
         WOO_SERVICES("WooCommerce Shipping &amp; Tax"),
@@ -183,6 +187,36 @@ open class WooCommerceStore @Inject constructor(
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
+    }
+
+    suspend fun fetchSSR(site: SiteModel): WooResult<WCSSRModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSSR") {
+            val response = systemRestClient.fetchSSR(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val ssr = WCSSRModel(
+                            remoteSiteId = site.siteId,
+                            environment = response.result.environment?.toString(),
+                            database = response.result.database?.toString(),
+                            activePlugins = response.result.activePlugins?.toString(),
+                            theme = response.result.theme?.toString(),
+                            settings = response.result.settings?.toString(),
+                            security = response.result.security?.toString(),
+                            pages = response.result.pages?.toString()
+                    )
+                    ssrDao.insertSSR(ssr.mapToEntity())
+                    WooResult(ssr)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    fun observeSSRForSite(remoteSiteId: Long): Flow<WCSSRModel> {
+        return ssrDao.observeSSRForSite(remoteSiteId)
     }
 
     /**
