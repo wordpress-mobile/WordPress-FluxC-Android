@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TR
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.example.R.layout
@@ -39,7 +38,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPa
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
@@ -248,12 +246,28 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                     editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
                         wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
                             prependToLog("Submitting request to fetch shipment trackings for " +
-                                    "remoteOrderId: ${order.remoteOrderId}")
-                            pendingShipmentTrackingOrder = order
-                            val payload = FetchOrderShipmentTrackingsPayload(order.id, order.remoteOrderId, site)
-                            dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(payload))
-                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
-                                "please fetch orders first.")
+                                    "remoteOrderId: ${order.remoteOrderId}"
+                            )
+                            coroutineScope.launch {
+                                val result = wcOrderStore
+                                        .fetchOrderShipmentTrackings(order.id, order.remoteOrderId, site)
+
+                                result.takeUnless { it.isError }?.let {
+                                    prependToLog("ShipmentTrackings fetched successfuly")
+                                } ?: prependToLog("Fetching ShipmentTrackings failed")
+
+                                val trackings = wcOrderStore.getShipmentTrackingsForOrder(site, it.id)
+                                trackings.forEach { tracking ->
+                                    prependToLog("- shipped:${tracking.dateShipped}: ${tracking.trackingNumber}")
+                                }
+                                prependToLog("[${trackings.size}] shipment trackings retrieved for " +
+                                        "remoteOrderId: ${order.remoteOrderId}, and [${result.rowsAffected}] rows " +
+                                        "changed in the db:")
+                            }
+                        } ?: prependToLog(
+                                "No order found in the db for remoteOrderId: $remoteOrderId, " +
+                                        "please fetch orders first."
+                        )
                     } ?: prependToLog("No valid remoteOrderId submitted for search")
                 }
             }
@@ -409,18 +423,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                     )
                     UPDATE_ORDER_STATUS ->
                         with(orderList[0]) { prependToLog("Updated order status for $number to $status") }
-                    FETCH_ORDER_SHIPMENT_TRACKINGS -> {
-                        pendingShipmentTrackingOrder?.let {
-                            val trackings = wcOrderStore.getShipmentTrackingsForOrder(site, it.id)
-                            trackings.forEach { tracking ->
-                                prependToLog("- shipped:${tracking.dateShipped}: ${tracking.trackingNumber}")
-                            }
-                            prependToLog("[${trackings.size}] shipment trackings retrieved for " +
-                                    "remoteOrderId: ${it.remoteOrderId}, and [${event.rowsAffected}] rows changed in " +
-                                    "the db:")
-                            pendingShipmentTrackingOrder = null
-                        }
-                    }
                     ADD_ORDER_SHIPMENT_TRACKING -> {
                         pendingAddShipmentTracking?.let {
                             getFirstWCOrder()?.let { order ->

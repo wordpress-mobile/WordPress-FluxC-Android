@@ -504,37 +504,39 @@ class OrderRestClient @Inject constructor(
      *
      * Note: This is not currently supported in v3, but will be in the short future.
      *
-     * Dispatches a [WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS] action with the results
      */
-    fun fetchOrderShipmentTrackings(
+    suspend fun fetchOrderShipmentTrackings(
         site: SiteModel,
         localOrderId: Int,
         remoteOrderId: Long
-    ) {
+    ): FetchOrderShipmentTrackingsResponsePayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).shipment_trackings.pathV2
+        val params = mapOf("_fields" to TRACKING_FIELDS)
 
-        val responseType = object : TypeToken<List<OrderShipmentTrackingApiResponse>>() {}.type
-        val params = mapOf(
-                "_fields" to TRACKING_FIELDS)
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderShipmentTrackingApiResponse>? ->
-                    val trackings = response?.map {
-                        orderShipmentTrackingResponseToModel(it).apply {
-                            localSiteId = site.id
-                            this.localOrderId = localOrderId
-                        }
-                    }.orEmpty()
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                Array<OrderShipmentTrackingApiResponse>::class.java
+        )
 
-                    val payload = FetchOrderShipmentTrackingsResponsePayload(site, localOrderId, trackings)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, localOrderId)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+        return when (response) {
+            is JetpackSuccess -> {
+                val trackings = response.data?.map {
+                    orderShipmentTrackingResponseToModel(it).apply {
+                        localSiteId = site.id
+                        this.localOrderId = localOrderId
+                    }
+                }.orEmpty()
+
+                FetchOrderShipmentTrackingsResponsePayload(site, localOrderId, trackings)
+            }
+            is JetpackError -> {
+                val trackingsError = networkErrorToOrderError(response.error)
+                FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, localOrderId)
+            }
+        }
     }
 
     /**
