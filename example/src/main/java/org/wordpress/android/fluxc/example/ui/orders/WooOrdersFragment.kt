@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.example.R.layout
@@ -44,7 +43,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTracking
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
@@ -66,7 +64,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
-    private var pendingFetchSingleOrderRemoteId: Long? = null
     private var pendingShipmentTrackingOrder: WCOrderModel? = null
     private var pendingDeleteShipmentTracking: WCOrderShipmentTrackingModel? = null
     private var pendingAddShipmentTracking: WCOrderShipmentTrackingModel? = null
@@ -138,13 +135,15 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         fetch_single_order.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(activity, "Enter the remoteOrderId of order to fetch:") { editText ->
-                    pendingFetchSingleOrderRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchSingleOrderRemoteId?.let { id ->
-                        prependToLog("Submitting request to fetch order by remoteOrderID" +
-                                ": $pendingFetchSingleOrderRemoteId")
-                        val payload = FetchSingleOrderPayload(site, id)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchSingleOrderAction(payload))
-                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                    val enteredRemoteId = editText.text.toString().toLongOrNull()
+                    coroutineScope.launch {
+                        enteredRemoteId?.let { id ->
+                            prependToLog("Submitting request to fetch order by remoteOrderID: $enteredRemoteId")
+                            wcOrderStore.fetchSingleOrder(site, id).takeUnless { it.isError }?.let {
+                                prependToLog("Single order fetched successfully!")
+                            } ?: prependToLog("WARNING: Fetched order not found in the local database!")
+                        } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                    }
                 }
             }
         }
@@ -399,19 +398,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                         event.statusFilter?.let {
                             prependToLog("Count of $it orders: ${event.rowsAffected}$append")
                         } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
-                    }
-                    FETCH_SINGLE_ORDER -> {
-                        pendingFetchSingleOrderRemoteId?.let { remoteId ->
-                            pendingFetchSingleOrderRemoteId = null
-                            wcOrderStore.getOrderByIdentifier(OrderIdentifier(
-                                    WCOrderModel().apply {
-                                        remoteOrderId = remoteId
-                                        localSiteId = site.id
-                                    })
-                            )?.let {
-                                prependToLog("Single order fetched successfully!")
-                            } ?: prependToLog("WARNING: Fetched order not found in the local database!")
-                        }
                     }
                     FETCH_HAS_ORDERS -> {
                         val hasOrders = event.rowsAffected > 0

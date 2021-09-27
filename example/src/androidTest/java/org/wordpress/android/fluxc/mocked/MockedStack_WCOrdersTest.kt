@@ -178,53 +178,38 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchSingleOrderSuccess() {
+    fun testFetchSingleOrderSuccess() = runBlocking {
         val remoteOrderId = 88L
         interceptor.respondWith("wc-fetch-order-response-success.json")
-        orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+        val response = orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_SINGLE_ORDER, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderPayload
-        with(payload) {
+        with(response) {
             assertNull(error)
             assertEquals(remoteOrderId, order.remoteOrderId)
         }
     }
 
     @Test
-    fun testFetchSingleOrderOrderKeySuccess() {
+    fun testFetchSingleOrderOrderKeySuccess() = runBlocking {
         val remoteOrderId = 88L
         val orderKey = "wc_order_5a77766b88986"
         interceptor.respondWith("wc-fetch-order-response-success.json")
-        orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+        val response = orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_SINGLE_ORDER, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderPayload
-        with(payload) {
+        with(response) {
             assertNull(error)
             assertEquals(orderKey, order.orderKey)
         }
     }
 
     @Test
-    fun testFetchSingleOrderError() {
+    fun testFetchSingleOrderError() = runBlocking {
         val remoteOrderId = 88L
 
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+        val response = orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_SINGLE_ORDER, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderPayload
-        assertNotNull(payload.error)
+        assertNotNull(response.error)
     }
 
     @Test

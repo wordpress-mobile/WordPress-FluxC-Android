@@ -23,7 +23,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPay
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
@@ -173,25 +172,17 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleOrder() {
-        // Fetch a single order
-        nextEvent = TestEvent.FETCHED_SINGLE_ORDER
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCOrderActionBuilder
-                        .newFetchSingleOrderAction(FetchSingleOrderPayload(sSite, orderModel.remoteOrderId))
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+    fun testFetchSingleOrder() = runBlocking {
+        orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId)
 
-        // Verify results
-        val fetchedOrder = orderStore.getOrderByIdentifier(
+        val orderFromDb = orderStore.getOrderByIdentifier(
                 OrderIdentifier(
                         WCOrderModel().apply {
                             remoteOrderId = orderModel.remoteOrderId
                             localSiteId = sSite.id
                         })
         )
-        assertTrue(fetchedOrder != null && fetchedOrder.remoteOrderId == orderModel.remoteOrderId)
+        assertTrue(orderFromDb != null && orderFromDb.remoteOrderId == orderModel.remoteOrderId)
     }
 
     @Throws(InterruptedException::class)
@@ -316,11 +307,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.POST_ORDER_NOTE, nextEvent)
                 mCountDownLatch.countDown()
             }
-            WCOrderAction.FETCH_SINGLE_ORDER -> {
-                assertEquals(TestEvent.FETCHED_SINGLE_ORDER, nextEvent)
-                mCountDownLatch.countDown()
-            }
-
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
