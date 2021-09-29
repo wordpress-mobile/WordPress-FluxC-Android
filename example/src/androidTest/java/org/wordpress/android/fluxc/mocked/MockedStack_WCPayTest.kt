@@ -132,7 +132,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
     @Test
     fun whenGetStoreLocationForSite() = runBlocking {
-        interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-error.json", 400)
+        interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-error.json", 500)
 
         val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
 

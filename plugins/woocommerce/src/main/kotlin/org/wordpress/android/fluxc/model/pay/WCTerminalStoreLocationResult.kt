@@ -32,7 +32,7 @@ data class WCTerminalStoreLocationError(
 
 sealed class WCTerminalStoreLocationErrorType {
     object GenericError : WCTerminalStoreLocationErrorType()
-    data class MissingAddress(val addressEditingUrl: String?) : WCTerminalStoreLocationErrorType()
+    data class MissingAddress(val addressEditingUrl: String) : WCTerminalStoreLocationErrorType()
     object ServerError : WCTerminalStoreLocationErrorType()
     object NetworkError : WCTerminalStoreLocationErrorType()
 }
