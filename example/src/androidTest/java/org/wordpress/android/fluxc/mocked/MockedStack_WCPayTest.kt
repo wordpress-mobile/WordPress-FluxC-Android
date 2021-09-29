@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.mocked
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
@@ -10,6 +11,7 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.MISSING_O
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
 import javax.inject.Inject
@@ -126,5 +128,19 @@ class MockedStack_WCPayTest : MockedStack_Base() {
         val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result!!.isLive)
+    }
+
+    @Test
+    fun whenGetStoreLocationForSite() = runBlocking {
+        interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-error.json", 400)
+
+        val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.isError)
+        assertTrue(result.error?.type is MissingAddress)
+        assertEquals(
+                "https://myusernametestsite2020151673500.wpcomstaging.com/wp-admin/admin.php?page=wc-settings&tab=general",
+                (result.error?.type as MissingAddress).addressEditingUrl
+        )
     }
 }

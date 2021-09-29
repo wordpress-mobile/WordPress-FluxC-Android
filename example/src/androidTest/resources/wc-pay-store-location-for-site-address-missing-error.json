@@ -1,0 +1,7 @@
+{
+  "code": "store_address_is_incomplete",
+  "message": "The store address is incomplete, please actualize settings",
+  "data": {
+    "url": "https://myusernametestsite2020151673500.wpcomstaging.com/wp-admin/admin.php?page=wc-settings&tab=general"
+  }
+}
