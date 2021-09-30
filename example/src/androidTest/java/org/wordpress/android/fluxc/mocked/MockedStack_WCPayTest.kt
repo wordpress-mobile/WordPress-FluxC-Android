@@ -138,9 +138,8 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is MissingAddress)
-        assertEquals(
-                "https://myusernametestsite2020151673500.wpcomstaging.com/wp-admin/admin.php?page=wc-settings&tab=general",
-                (result.error?.type as MissingAddress).addressEditingUrl
-        )
+        val expectedUrl = "https://myusernametestsite2020151673500.wpcomstaging.com/" +
+                "wp-admin/admin.php?page=wc-settings&tab=general"
+        assertEquals(expectedUrl, (result.error?.type as MissingAddress).addressEditingUrl)
     }
 }
