@@ -13,10 +13,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
-import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
-import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
-import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
-import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.*
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -29,12 +26,13 @@ import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.SSRDao
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.LanguageUtils
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.absoluteValue
@@ -219,6 +217,19 @@ open class WooCommerceStore @Inject constructor(
         return ssrDao.observeSSRForSite(remoteSiteId)
     }
 
+    suspend fun fetchWooCommerceAvailability(site: SiteModel): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchWooCommerceAvailability") {
+            val response = systemRestClient.checkIfWooCommerceIsAvailable(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> WooResult(response.result)
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     /**
      * Formats currency amounts for display based on the site's settings and the device locale.
      *
@@ -337,5 +348,20 @@ open class WooCommerceStore @Inject constructor(
         }
 
         emitChange(onApiVersionFetched)
+    }
+
+    @Subscribe
+    fun onSiteChanged(siteChanged: OnSiteChanged) {
+        if (siteChanged.isError || siteChanged.rowsAffected == 0) return
+        coroutineEngine.launch(T.API, this, "Check woocommerce availability") {
+            siteChanged.updatedSites.filter { it.isJetpackCPConnected }
+                .forEach { site ->
+                    val result = fetchWooCommerceAvailability(site)
+                    result.model?.takeIf { it != site.hasWooCommerce }?.let {
+                        site.hasWooCommerce = it
+                        siteSqlUtils.insertOrUpdateSite(site)
+                    }
+                }
+        }
     }
 }
