@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.wc.order
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
