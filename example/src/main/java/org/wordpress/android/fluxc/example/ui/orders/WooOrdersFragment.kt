@@ -11,6 +11,7 @@ import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -230,8 +231,18 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
-                        val payload = UpdateOrderStatusPayload(order, site, status)
-                        dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
+                        coroutineScope.launch {
+                            wcOrderStore.updateOrderStatus(UpdateOrderStatusPayload(order, site, status))
+                                    .collect {
+                                        if (it.event.isError) {
+                                            prependToLog("FAILED: Update order status for ${order.remoteOrderId} " +
+                                                    "to $status - ${it::class.simpleName}")
+                                        } else {
+                                            prependToLog("Updated order status for ${order.remoteOrderId} " +
+                                                    "to $status - ${it::class.simpleName}")
+                                        }
+                                    }
+                        }
                     }
                 } ?: showNoOrdersToast(site)
             }
@@ -421,8 +432,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                             "Posted ${event.rowsAffected} " +
                                     "note to the api for order ${pendingNotesOrderModel!!.remoteOrderId}"
                     )
-                    UPDATE_ORDER_STATUS ->
-                        with(orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     ADD_ORDER_SHIPMENT_TRACKING -> {
                         pendingAddShipmentTracking?.let {
                             getFirstWCOrder()?.let { order ->

@@ -23,7 +23,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload;
