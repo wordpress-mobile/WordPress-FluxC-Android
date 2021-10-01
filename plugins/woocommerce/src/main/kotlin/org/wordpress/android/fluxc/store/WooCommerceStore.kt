@@ -388,9 +388,9 @@ open class WooCommerceStore @Inject constructor(
 
     /**
      * The goal of this is to make sure we update the sites if the fetching was done outside of [WooCommerceStore]
-     * TODO: confirm if this is needed
+     * We specify a higher priority to make sure this is delivered before reaching the final subscribers
      */
-    @Subscribe
+    @Subscribe(priority = 100)
     fun onSiteChanged(siteChanged: OnSiteChanged) {
         if (siteChanged.isError || siteChanged.rowsAffected == 0) return
         coroutineEngine.launch(T.API, this, "Check woocommerce availability") {
