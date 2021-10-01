@@ -13,7 +13,10 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
-import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.*
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -33,7 +36,7 @@ import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.LanguageUtils
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.absoluteValue
