@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePa
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -212,7 +211,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderStatusUpdateSuccess() {
+    fun testOrderStatusUpdateSuccess() = runBlocking {
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
@@ -223,15 +222,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         OrderSqlUtils.insertOrUpdateOrder(originalOrder)
 
         interceptor.respondWith("wc-order-update-response-success.json")
-        orderRestClient.updateOrderStatus(
+        val payload = orderRestClient.updateOrderStatus(
                 originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderPayload
         with(payload) {
             assertNull(error)
             assertEquals(originalOrder.id, order.id)
@@ -242,7 +236,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderStatusUpdateError() {
+    fun testOrderStatusUpdateError() = runBlocking {
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
@@ -258,15 +252,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.updateOrderStatus(
-                originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
+        val payload = orderRestClient.updateOrderStatus(
+            originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderPayload
         with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
