@@ -171,6 +171,41 @@ open class WooCommerceStore @Inject constructor(
         return WooResult(getWooCommerceSites())
     }
 
+    suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
+        val fetchResult = if (!site.isJetpackCPConnected) {
+            siteStore.fetchSite(site)
+        } else {
+            // Individual fetching of sites is broken for Jetpack CP sites, so fallback to fetching all site
+            // TODO remove when the WordPress.com issue is fixed
+            siteStore.fetchSites(FetchSitesPayload())
+        }
+        if (fetchResult.isError) {
+            emitChange(fetchResult)
+
+            return WooResult(
+                    WooError(
+                            type = GENERIC_ERROR,
+                            message = fetchResult.error.message,
+                            original = UNKNOWN
+                    )
+            )
+        }
+
+        return if (!fetchResult.updatedSites.any { it.siteId == site.siteId }) {
+            // Nothing has changed for the site
+            emitChange(OnSiteChanged(0))
+            WooResult(site.takeIf { it.hasWooCommerce })
+        } else {
+            val updatedSite = fetchResult.updatedSites.first { it.siteId == site.siteId }
+            if (updatedSite.isJetpackCPConnected) {
+                fetchAndUpdateWooCommerceAvailability(updatedSite)
+            }
+            // Pass empty updated list to avoid a second fetch for WooCommerce availability
+            emitChange(OnSiteChanged(1, emptyList()))
+            WooResult(updatedSite.takeIf { it.hasWooCommerce })
+        }
+    }
+
     fun getWooCommerceSites(): MutableList<SiteModel> =
             siteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
 
