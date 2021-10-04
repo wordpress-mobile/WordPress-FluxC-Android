@@ -272,6 +272,7 @@ class WCOrderStoreTest {
     fun testUpdateOrderStatusRequestUpdatesLocalDatabase() {
         val orderModel = OrderTestUtils.generateSampleOrder(42, orderStatus = CoreOrderStatus.PROCESSING.value)
         val site = SiteModel().apply { id = orderModel.localSiteId }
+
         OrderSqlUtils.insertOrUpdateOrder(orderModel)
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
