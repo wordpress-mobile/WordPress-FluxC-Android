@@ -397,7 +397,7 @@ open class WooCommerceStore @Inject constructor(
      */
     @Subscribe(priority = 100)
     fun onSiteChanged(siteChanged: OnSiteChanged) {
-        if (siteChanged.isError || siteChanged.rowsAffected == 0) return
+        if (siteChanged.isError || siteChanged.rowsAffected == 0 || siteChanged.updatedSites.isEmpty()) return
         coroutineEngine.launch(T.API, this, "Check woocommerce availability") {
             siteChanged.updatedSites.filter { it.isJetpackCPConnected }
                 .forEach { site -> fetchAndUpdateWooCommerceAvailability(site) }
