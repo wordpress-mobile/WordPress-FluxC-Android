@@ -144,6 +144,8 @@ open class WooCommerceStore @Inject constructor(
     suspend fun fetchWooCommerceSites(): WooResult<List<SiteModel>> {
         val fetchResult = siteStore.fetchSites(FetchSitesPayload())
         if (fetchResult.isError) {
+            emitChange(fetchResult)
+
             return WooResult(
                 WooError(
                     type = GENERIC_ERROR,
