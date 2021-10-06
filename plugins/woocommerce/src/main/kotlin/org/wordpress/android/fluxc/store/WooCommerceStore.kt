@@ -29,6 +29,8 @@ import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.SSRDao
+import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
@@ -44,6 +46,7 @@ open class WooCommerceStore @Inject constructor(
     private val appContext: Context,
     dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
+    private val siteStore: SiteStore,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
     private val siteSqlUtils: SiteSqlUtils,
@@ -138,6 +141,71 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
+    suspend fun fetchWooCommerceSites(): WooResult<List<SiteModel>> {
+        val fetchResult = siteStore.fetchSites(FetchSitesPayload())
+        if (fetchResult.isError) {
+            emitChange(fetchResult)
+
+            return WooResult(
+                WooError(
+                    type = GENERIC_ERROR,
+                    message = fetchResult.error.message,
+                    original = UNKNOWN
+                )
+            )
+        }
+
+        var rowsAffected = fetchResult.rowsAffected
+        // Fetch WooCommerce availability for jetpack cp sites
+        siteStore.sites.filter { it.isJetpackCPConnected }
+            .forEach { site ->
+                val isUpdated = fetchAndUpdateWooCommerceAvailability(site)
+                if (isUpdated && !fetchResult.updatedSites.contains(site)) {
+                    rowsAffected++
+                }
+            }
+
+        // Pass empty updated list to avoid a second fetch for WooCommerce availability
+        emitChange(OnSiteChanged(rowsAffected, emptyList()))
+
+        return WooResult(getWooCommerceSites())
+    }
+
+    suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
+        val fetchResult = if (!site.isJetpackCPConnected) {
+            siteStore.fetchSite(site)
+        } else {
+            // Individual fetching of sites is broken for Jetpack CP sites, so fallback to fetching all site
+            // TODO remove when the WordPress.com issue is fixed
+            siteStore.fetchSites(FetchSitesPayload())
+        }
+        if (fetchResult.isError) {
+            emitChange(fetchResult)
+
+            return WooResult(
+                    WooError(
+                            type = GENERIC_ERROR,
+                            message = fetchResult.error.message,
+                            original = UNKNOWN
+                    )
+            )
+        }
+
+        return if (!fetchResult.updatedSites.any { it.siteId == site.siteId }) {
+            // Nothing has changed for the site
+            emitChange(OnSiteChanged(0))
+            WooResult(site.takeIf { it.hasWooCommerce })
+        } else {
+            val updatedSite = fetchResult.updatedSites.first { it.siteId == site.siteId }
+            if (updatedSite.isJetpackCPConnected) {
+                fetchAndUpdateWooCommerceAvailability(updatedSite)
+            }
+            // Pass empty updated list to avoid a second fetch for WooCommerce availability
+            emitChange(OnSiteChanged(1, emptyList()))
+            WooResult(updatedSite.takeIf { it.hasWooCommerce })
+        }
+    }
+
     fun getWooCommerceSites(): MutableList<SiteModel> =
             siteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
 
@@ -217,6 +285,25 @@ open class WooCommerceStore @Inject constructor(
 
     fun observeSSRForSite(remoteSiteId: Long): Flow<WCSSRModel> {
         return ssrDao.observeSSRForSite(remoteSiteId)
+    }
+
+    private suspend fun fetchAndUpdateWooCommerceAvailability(site: SiteModel): Boolean {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchAndUpdateWooCommerceAvailability") {
+            val response = systemRestClient.checkIfWooCommerceIsAvailable(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(T.API, "Checking WooCommerce availability failed for site ${site.siteId}")
+                    false
+                }
+                else -> {
+                    response.result?.takeIf { it != site.hasWooCommerce }?.let {
+                        site.hasWooCommerce = it
+                        siteSqlUtils.insertOrUpdateSite(site)
+                        true
+                    } ?: false
+                }
+            }
+        }
     }
 
     /**
@@ -337,5 +424,18 @@ open class WooCommerceStore @Inject constructor(
         }
 
         emitChange(onApiVersionFetched)
+    }
+
+    /**
+     * The goal of this is to make sure we update the sites if the fetching was done outside of [WooCommerceStore]
+     * We specify a higher priority to make sure this is delivered before reaching the final subscribers
+     */
+    @Subscribe(priority = 100)
+    fun onSiteChanged(siteChanged: OnSiteChanged) {
+        if (siteChanged.isError || siteChanged.rowsAffected == 0 || siteChanged.updatedSites.isEmpty()) return
+        coroutineEngine.launch(T.API, this, "Check woocommerce availability") {
+            siteChanged.updatedSites.filter { it.isJetpackCPConnected }
+                .forEach { site -> fetchAndUpdateWooCommerceAvailability(site) }
+        }
     }
 }

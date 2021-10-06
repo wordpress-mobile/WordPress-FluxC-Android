@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -64,6 +65,36 @@ class WooSystemRestClient @Inject constructor(
             }
             is JetpackError -> {
                 WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    /**
+     * Test the settings endpoint of WooCommerce to confirm if the plugin is available or not.
+     * We pass an empty _fields just to reduce the response payload size, as we don't care about the contents
+     *
+     * @return JetpackSuccess(true) if WooCommerce is installed, JetpackSuccess(false) is we get a 404,
+     *         and JetpackError otherwise
+     */
+    suspend fun checkIfWooCommerceIsAvailable(site: SiteModel): WooPayload<Boolean> {
+        val url = WOOCOMMERCE.settings.pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            mapOf("_fields" to ""),
+            Any::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(true)
+            is JetpackError -> {
+                if (response.error.type == NOT_FOUND) {
+                    WooPayload(false)
+                } else {
+                    WooPayload(response.error.toWooError())
+                }
             }
         }
     }
