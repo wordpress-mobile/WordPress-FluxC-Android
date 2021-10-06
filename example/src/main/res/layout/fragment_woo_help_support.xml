@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="@dimen/activity_start_end_margin"
-    tools:context="org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment"
+    tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment"
     tools:ignore="HardcodedText">
 
     <LinearLayout
@@ -13,10 +13,10 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/fetch_tax_class"
+            android:id="@+id/fetch_ssr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Tax Classes" />
+            android:text="Fetch System Status Report" />
     </LinearLayout>
 </ScrollView>

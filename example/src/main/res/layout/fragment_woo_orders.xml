@@ -1,13 +1,13 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="@dimen/activity_start_end_margin"
-    tools:ignore="HardcodedText"
-    tools:context="org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment">
+    tools:context="org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment"
+    tools:ignore="HardcodedText">
 
     <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -16,96 +16,113 @@
             android:id="@+id/fetch_orders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Orders"/>
+            android:enabled="false"
+            android:text="Fetch Orders" />
 
         <Button
             android:id="@+id/fetch_order_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Order List"/>
+            android:enabled="false"
+            android:text="Fetch Order List" />
 
         <Button
             android:id="@+id/fetch_orders_count"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Orders Count"/>
+            android:enabled="false"
+            android:text="Fetch Orders Count" />
 
         <Button
             android:id="@+id/fetch_single_order"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Single Order"/>
+            android:enabled="false"
+            android:text="Fetch Single Order" />
 
         <Button
             android:id="@+id/fetch_has_orders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Has Orders"/>
+            android:enabled="false"
+            android:text="Fetch Has Orders" />
 
         <Button
             android:id="@+id/fetch_orders_by_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Load Orders Filtered By Status (DB)"/>
+            android:enabled="false"
+            android:text="Load Orders Filtered By Status (DB)" />
 
         <Button
             android:id="@+id/fetch_orders_by_status_api"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Completed Orders (API)"/>
+            android:enabled="false"
+            android:text="Fetch Completed Orders (API)" />
 
         <Button
             android:id="@+id/fetch_order_status_options"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Order Status Options"/>
+            android:enabled="false"
+            android:text="Fetch Order Status Options" />
 
         <Button
             android:id="@+id/search_orders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Search Orders"/>
+            android:enabled="false"
+
+            android:text="Search Orders" />
 
         <Button
             android:id="@+id/fetch_order_notes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Order Notes"/>
+            android:enabled="false"
+            android:text="Fetch Order Notes" />
 
         <Button
             android:id="@+id/post_order_note"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Post Order Note"/>
+            android:enabled="false"
+            android:text="Post Order Note" />
 
         <Button
             android:id="@+id/fetch_shipment_trackings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Order Shipment Trackings"/>
+            android:enabled="false"
+            android:text="Fetch Order Shipment Trackings" />
 
         <Button
             android:id="@+id/add_shipment_tracking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Shipment Tracking To First Order"/>
+            android:enabled="false"
+            android:text="Add Shipment Tracking To First Order" />
 
         <Button
             android:id="@+id/delete_shipment_tracking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Delete First Shipment Tracking For Order"/>
+            android:enabled="false"
+            android:text="Delete First Shipment Tracking For Order" />
 
         <Button
             android:id="@+id/fetch_shipment_providers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Order Shipment Providers"/>
+            android:enabled="false"
+            android:text="Fetch Order Shipment Providers" />
 
         <Button
             android:id="@+id/update_latest_order_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Update Latest Order Status"/>
+            android:enabled="false"
+            android:text="Update Latest Order Status" />
     </LinearLayout>
 </ScrollView>

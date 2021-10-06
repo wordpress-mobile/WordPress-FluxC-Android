@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
-        minSdkVersion 18
+        minSdkVersion 21
         // Keep the targetSdkVersion 22 so we don't need to grant runtime permissions to the tests and the example app
         // An alternative would be granting the permissions via adb before running the test, like here:
         // https://afterecho.uk/blog/granting-marshmallow-permissions-for-testing-flavoured-builds.html
@@ -24,7 +24,6 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        multiDexEnabled true
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += [
@@ -159,9 +158,6 @@ dependencies {
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
-
-    // Multidex
-    implementation 'androidx.multidex:multidex:2.0.1'
 }
 
 def loadPropertiesOrUseExampleProperties(fileName, warningDetail) {
