@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.flow.first
@@ -35,6 +36,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestCli
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.site.SiteUtils
+import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
@@ -49,6 +53,7 @@ class WooCommerceStoreTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Application>()
     private val restClient = mock<WooSystemRestClient>()
+    private val siteStore = mock<SiteStore>()
 
     private val roomDB = Room.inMemoryDatabaseBuilder(
             appContext,
@@ -58,13 +63,14 @@ class WooCommerceStoreTest {
             .build()
 
     private val wooCommerceStore = WooCommerceStore(
-            appContext,
-            Dispatcher(),
-            initCoroutineEngine(),
-            restClient,
-            mock(),
-            TestSiteSqlUtils.siteSqlUtils,
-            roomDB.ssrDao()
+            appContext = appContext,
+            dispatcher = Dispatcher(),
+            coroutineEngine = initCoroutineEngine(),
+            siteStore = siteStore,
+            systemRestClient = restClient,
+            wcCoreRestClient = mock(),
+            siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
+            ssrDao = roomDB.ssrDao()
     )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply {
@@ -200,6 +206,21 @@ class WooCommerceStoreTest {
 
             val result = wooCommerceStore.observeSSRForSite(TEST_SITE_REMOTE_ID).first()
             Assertions.assertThat(result).isEqualTo(ssrModel)
+        }
+    }
+
+    @Test
+    fun `when fetching a jetpack cp site, then check if woocommerce is installed manually`() {
+        runBlocking {
+            val site = SiteUtils.generateJetpackCPSite()
+            whenever(siteStore.fetchSites(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
+            whenever(siteStore.sites).thenReturn(listOf(site))
+            whenever(restClient.checkIfWooCommerceIsAvailable(site)).thenReturn(WooPayload(true))
+
+            val sites = wooCommerceStore.fetchWooCommerceSites().model!!
+
+            verify(restClient).checkIfWooCommerceIsAvailable(site)
+            Assertions.assertThat(sites.first().hasWooCommerce).isTrue
         }
     }
 

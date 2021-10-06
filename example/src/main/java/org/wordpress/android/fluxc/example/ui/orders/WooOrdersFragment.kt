@@ -1,13 +1,10 @@
 package org.wordpress.android.fluxc.example.ui.orders
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +23,7 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog
 import org.wordpress.android.fluxc.example.WCOrderListActivity
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
@@ -52,7 +50,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener {
+class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcOrderStore: WCOrderStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
@@ -68,11 +66,6 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     private var pendingOpenAddShipmentTracking: Boolean = false
     private var pendingAddShipmentTrackingRemoteOrderID: Long? = null
 
-    override fun onAttach(context: Context) {
-        AndroidSupportInjection.inject(this)
-        super.onAttach(context)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_orders, container, false)
 
@@ -80,21 +73,21 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         super.onViewCreated(view, savedInstanceState)
 
         fetch_orders.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 val payload = FetchOrdersPayload(it, loadMore = false)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }
 
         fetch_order_list.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 val intent = Intent(activity, WCOrderListActivity::class.java)
                 startActivity(intent)
             }
         }
 
         fetch_orders_count.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter a single order status to filter by:"
@@ -114,7 +107,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         search_orders.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter a search query:"
@@ -131,7 +124,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         fetch_single_order.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the remoteOrderId of order to fetch:") { editText ->
                     val enteredRemoteId = editText.text.toString().toLongOrNull()
                     coroutineScope.launch {
@@ -147,14 +140,14 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         fetch_has_orders.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 val payload = FetchHasOrdersPayload(it)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(payload))
             }
         }
 
         fetch_orders_by_status.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter comma-separated list of statuses to filter by:") { editText ->
                     pendingFetchOrdersFilter = editText.text.toString()
                             .takeIf { it.trim().isNotEmpty() }
@@ -179,7 +172,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         fetch_orders_by_status_api.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch only completed orders from the api")
                 pendingFetchCompletedOrders = true
                 val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = "completed")
@@ -188,14 +181,14 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         fetch_order_status_options.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 dispatcher.dispatch(WCOrderActionBuilder
                         .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(site)))
             }
         }
 
         fetch_order_notes.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     coroutineScope.launch {
                         wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId, site).takeUnless { it.isError }
@@ -211,7 +204,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         post_order_note.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     pendingNotesOrderModel = order
                     showSingleLineDialog(activity, "Enter note") { editText ->
@@ -226,7 +219,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         update_latest_order_status.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
@@ -248,7 +241,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         fetch_shipment_trackings.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter the remoteOrderId to fetch shipment trackings:"
@@ -284,7 +277,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         add_shipment_tracking.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     val providers = wcOrderStore.getShipmentProvidersForSite(site)
                     if (providers.isNullOrEmpty()) {
@@ -302,7 +295,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         delete_shipment_tracking.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter the remoteOrderId to delete the first shipment tracking for:"
@@ -328,7 +321,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         }
 
         fetch_shipment_providers.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 // Just use the first order, the shipment trackings api oddly requires an order_id for fetching
                 // a list of providers, even though the providers are not order specific.
                 getFirstWCOrder()?.let { order ->
@@ -357,7 +350,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
         if (event.isError) {
             prependToLog("Error fetching shipment providers - error: " + event.error.type)
         } else {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 if (pendingOpenAddShipmentTracking) {
                     pendingOpenAddShipmentTracking = false
                     getFirstWCOrder()?.let { order ->
@@ -383,7 +376,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
             return
         }
 
-        getFirstWCSite()?.let { site ->
+        selectedSite?.let { site ->
             wcOrderStore.getOrdersForSite(site).let { orderList ->
                 // We check if the rowsAffected value is zero because not all events will causes data to be
                 // saved to the orders table (such as the FETCH-ORDERS-COUNT...so the orderList would always
@@ -396,7 +389,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                 when (event.causeOfChange) {
                     FETCH_ORDERS -> {
                         pendingFetchOrdersFilter?.let { filter ->
-                            getFirstWCSite()?.let { site ->
+                            selectedSite?.let { site ->
                                 // get orders and group by order.status
                                 val orders = wcOrderStore.getOrdersForSite(site, *filter.toTypedArray())
                                         .groupBy { order -> order.status }
@@ -474,22 +467,20 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
             return
         }
 
-        val orderStatusOptions = getFirstWCSite()?.let {
+        val orderStatusOptions = selectedSite?.let {
             wcOrderStore.getOrderStatusOptionsForSite(it)
         }?.map { it.label to it.statusCount }?.toMap()
         prependToLog("Fetched order status options from the api: $orderStatusOptions " +
                 "- updated ${event.rowsAffected} in the db")
     }
 
-    private fun getFirstWCOrder() = getFirstWCSite()?.let {
+    private fun getFirstWCOrder() = selectedSite?.let {
         wcOrderStore.getOrdersForSite(it).getOrNull(0)
     }
 
     private fun showNoOrdersToast(site: SiteModel) {
         ToastUtils.showToast(activity, "No orders found for site: " + site.name)
     }
-
-    private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
 
     private fun showAddTrackingDialog(site: SiteModel, order: WCOrderModel, providers: List<String>) {
         fragmentManager?.let { fm ->

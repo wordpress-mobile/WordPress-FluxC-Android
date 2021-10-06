@@ -36,9 +36,9 @@ class NotificationTypeSubtypeDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         notif_type.adapter =
-                ArrayAdapter<Kind>(activity, android.R.layout.simple_dropdown_item_1line, Kind.values())
+                ArrayAdapter<Kind>(requireActivity(), android.R.layout.simple_dropdown_item_1line, Kind.values())
         notif_subtype.adapter =
-                ArrayAdapter<Subkind>(activity, android.R.layout.simple_dropdown_item_1line, Subkind.values())
+                ArrayAdapter<Subkind>(requireActivity(), android.R.layout.simple_dropdown_item_1line, Subkind.values())
 
         notif_dialog_ok.setOnClickListener {
             listener?.let {

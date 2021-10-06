@@ -63,9 +63,17 @@ class WooCommerceFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         log_sites.setOnClickListener {
-            for (site in wooCommerceStore.getWooCommerceSites()) {
-                prependToLog(site.name + ": " + if (site.isWpComStore) "WP.com store" else "Self-hosted store")
-                AppLog.i(T.API, LogUtils.toString(site))
+            coroutineScope.launch {
+                prependToLog("Fetching WooCommerce sites")
+                val result = wooCommerceStore.fetchWooCommerceSites()
+                if (result.isError) {
+                    prependToLog("Fetching WooCommerce sites failed, error message: ${result.error.message}")
+                } else {
+                    for (site in result.model!!) {
+                        prependToLog(site.name + ": " + if (site.isWpComStore) "WP.com store" else "Self-hosted store")
+                        AppLog.i(T.API, LogUtils.toString(site))
+                    }
+                }
             }
         }
 

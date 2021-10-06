@@ -13,6 +13,7 @@ import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_woo_customers_search.*
 import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -24,15 +25,17 @@ class WooCustomersSearchFragment : Fragment() {
     @Inject internal lateinit var customersAdapter: WooCustomersSearchAdapter
 
     private val siteId by lazy { requireArguments().getInt(KEY_SELECTED_SITE_ID) }
-    private val searchParams by lazy { requireArguments().getParcelable(KEY_SEARCH_PARAMS) as SearchParams }
+    private val searchParams by lazy { requireArguments().getParcelable(KEY_SEARCH_PARAMS) as SearchParams? }
     private val pagedListWrapper by lazy {
+        if (searchParams == null) prependToLog("SearchParams: $searchParams were null.")
+
         val descriptor = SearchCustomerListDescriptor(
                 customerSite = getSelectedSite(),
-                customerSearchQuery = searchParams.searchQuery,
-                customerEmail = searchParams.email,
-                customerRole = searchParams.role,
-                customerRemoteCustomerIds = searchParams.includeIds,
-                customerExcludedCustomerIds = searchParams.excludeIds
+                customerSearchQuery = searchParams!!.searchQuery,
+                customerEmail = searchParams!!.email,
+                customerRole = searchParams!!.role,
+                customerRemoteCustomerIds = searchParams!!.includeIds,
+                customerExcludedCustomerIds = searchParams!!.excludeIds
         )
         listStore.getList(
                 listDescriptor = descriptor,
