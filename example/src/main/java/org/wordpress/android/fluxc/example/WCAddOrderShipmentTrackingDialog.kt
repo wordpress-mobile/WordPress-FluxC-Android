@@ -70,7 +70,8 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
         val allProviders = mutableListOf("Custom")
         allProviders.addAll(1, providers)
 
-        tracking_cboProvider.adapter = ArrayAdapter<String>(activity, layout.simple_dropdown_item_1line, allProviders)
+        tracking_cboProvider.adapter = ArrayAdapter<String>(
+                requireActivity(), layout.simple_dropdown_item_1line, allProviders)
         tracking_cboProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 tracking_cboProvider.setSelection(0)
