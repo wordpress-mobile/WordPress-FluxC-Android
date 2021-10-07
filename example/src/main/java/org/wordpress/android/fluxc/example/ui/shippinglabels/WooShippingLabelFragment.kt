@@ -14,8 +14,6 @@ import android.widget.EditText
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
-import androidx.fragment.app.Fragment
-import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,21 +24,19 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
-import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
-import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
-import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
-import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
 import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
 import org.wordpress.android.fluxc.model.shippinglabels.WCRestrictionType
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingAccountSettings
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
@@ -65,38 +61,19 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.ceil
 
-class WooShippingLabelFragment : Fragment() {
+class WooShippingLabelFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcShippingLabelStore: WCShippingLabelStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
 
-    private var selectedPos: Int = -1
-    private var selectedSite: SiteModel? = null
-
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
-
-    override fun onAttach(context: Context) {
-        AndroidSupportInjection.inject(this)
-        super.onAttach(context)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_shippinglabels, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        shipping_labels_select_site.setOnClickListener {
-            showStoreSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
-                override fun onSiteSelected(site: SiteModel, pos: Int) {
-                    selectedSite = site
-                    selectedPos = pos
-                    buttonContainer.toggleSiteDependentButtons(true)
-                    shipping_labels_selected_site.text = site.name ?: site.displayName
-                }
-            })
-        }
 
         fetch_shipping_labels.setOnClickListener {
             selectedSite?.let { site ->

@@ -83,13 +83,16 @@ class CustomStatsDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         stats_granularity.adapter =
-                ArrayAdapter<StatsGranularity>(activity, layout.simple_dropdown_item_1line, StatsGranularity.values())
+                ArrayAdapter<StatsGranularity>(
+                        requireActivity(), layout.simple_dropdown_item_1line, StatsGranularity.values())
 
         if (savedInstanceState != null) {
             stats_from_date.text = savedInstanceState.getString("start_date")
             stats_to_date.text = savedInstanceState.getString("end_date")
             stats_granularity.setSelection(savedInstanceState.getInt("granularity"))
-            wcOrderStatsAction = WCOrderStatsAction.valueOf(savedInstanceState.getString("action").toUpperCase())
+            wcOrderStatsAction = savedInstanceState.getString("action")?.let {
+                WCOrderStatsAction.valueOf(it.toUpperCase())
+            }
         } else {
             val startDate = startDate?.let { it } ?: DateUtils.getCurrentDateString()
             stats_from_date.text = startDate

@@ -1,13 +1,9 @@
 package org.wordpress.android.fluxc.example.ui.products
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.buttonContainer
 import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,42 +11,25 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
-import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
-import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.attribute.WCGlobalAttributeModel
 import org.wordpress.android.fluxc.model.attribute.terms.WCAttributeTermModel
 import org.wordpress.android.fluxc.store.WCGlobalAttributeStore
 import javax.inject.Inject
 
-class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
+class WooProductAttributeFragment : StoreSelectingFragment() {
     @Inject internal lateinit var wcAttributesStore: WCGlobalAttributeStore
-
-    private var selectedPos: Int = -1
-    private var selectedSite: SiteModel? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    override fun onAttach(context: Context) {
-        AndroidSupportInjection.inject(this)
-        super.onAttach(context)
-    }
-
-    override fun onSiteSelected(site: SiteModel, pos: Int) {
-        selectedSite = site
-        selectedPos = pos
-        buttonContainer.toggleSiteDependentButtons()
-        attributes_selected_site.text = site.name ?: site.displayName
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
             inflater.inflate(R.layout.fragment_woo_product_attribute, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        attributes_select_site.setOnClickListener(::onProductAttributesSelectSiteButtonClicked)
         fetch_product_attributes.setOnClickListener(::onFetchAttributesListClicked)
         fetch_product_attributes_from_db.setOnClickListener(::onFetchCachedAttributesListClicked)
         create_product_attributes.setOnClickListener(::onCreateAttributeButtonClicked)
@@ -59,13 +38,6 @@ class WooProductAttributeFragment : Fragment(), StoreSelectorDialog.Listener {
         fetch_product_single_attribute.setOnClickListener(::onFetchAttributeButtonClicked)
         fetch_term_for_attribute.setOnClickListener(::onFetchAttributeTermsButtonClicked)
         create_term_for_attribute.setOnClickListener(::onCreateAttributeTermButtonClicked)
-    }
-
-    private fun onProductAttributesSelectSiteButtonClicked(view: View) {
-        fragmentManager?.let { fm ->
-            StoreSelectorDialog.newInstance(this, selectedPos)
-                    .show(fm, "StoreSelectorDialog")
-        }
     }
 
     private fun onCreateAttributeButtonClicked(view: View) {
