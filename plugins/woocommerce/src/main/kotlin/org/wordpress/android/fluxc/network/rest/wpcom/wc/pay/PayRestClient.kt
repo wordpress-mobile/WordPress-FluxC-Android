@@ -210,7 +210,8 @@ class PayRestClient @Inject constructor(
                         error.volleyError.networkResponse.data.decodeToString(),
                         JsonElement::class.java
                 ).asJsonObject.getAsJsonObject("data").getString("url")
-                WCTerminalStoreLocationErrorType.MissingAddress(url!!)
+                if (url == null) WCTerminalStoreLocationErrorType.GenericError
+                else WCTerminalStoreLocationErrorType.MissingAddress(url)
             }
             error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NetworkError
             error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NetworkError
