@@ -4,7 +4,6 @@ import org.junit.Test
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 
 class RemoteAddonMapperTest {
-
     val sut = RemoteAddonMapper
 
     @Test
