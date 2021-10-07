@@ -92,6 +92,7 @@ object RemoteAddonMapper {
                     required = dto.required.asBoolean(),
                     position = dto.position
             )
+            else -> throw MappingRemoteException("Add-on has to have type")
         }
     }
 
@@ -109,11 +110,12 @@ object RemoteAddonMapper {
         }.orEmpty()
     }
 
-    private fun RemoteTitleFormat.toDomainModel(): Addon.TitleFormat {
+    private fun RemoteTitleFormat?.toDomainModel(): Addon.TitleFormat {
         return when (this) {
             Label -> Addon.TitleFormat.Label
             RemoteTitleFormat.Heading -> Addon.TitleFormat.Heading
             Hide -> Addon.TitleFormat.Hide
+            null -> throw MappingRemoteException("Add-on has to have title")
         }
     }
 
