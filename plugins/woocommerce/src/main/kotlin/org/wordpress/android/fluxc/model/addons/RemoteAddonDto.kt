@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class RemoteAddonDto(
     @SerializedName("title_format")
-    val titleFormat: RemoteTitleFormat,
+    val titleFormat: RemoteTitleFormat?,
     @SerializedName("description_enable")
     val descriptionEnabled: Int,
     @SerializedName("restrictions_type")
@@ -14,7 +14,7 @@ data class RemoteAddonDto(
     @SerializedName("price_type")
     val priceType: RemotePriceType? = null,
 
-    val type: RemoteType,
+    val type: RemoteType?,
     val display: RemoteDisplay? = null,
     val name: String,
     val description: String,

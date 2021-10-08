@@ -19,7 +19,7 @@ internal class RemoteGlobalAddonGroupMapper @Inject constructor(private val appL
                     try {
                         RemoteAddonMapper.toDomain(dtoAddon)
                     } catch (exception: MappingRemoteException) {
-                        appLogWrapper.e(API, exception.message)
+                        appLogWrapper.e(API, "Exception while parsing $dtoAddon: ${exception.message}")
                         null
                     }
                 }
