@@ -386,27 +386,21 @@ class OrderRestClient @Inject constructor(
 
     /**
      * Makes a PUT call to `/wc/v3/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the status for the given [order] to [status].
-     *
-     *
-     * Possible non-generic errors:
-     * [OrderErrorType.INVALID_PARAM] if the [status] is not a valid order status on the server
-     * [OrderErrorType.INVALID_ID] if an order by this id was not found on the server
+     * updating the order.
      */
-    suspend fun updateOrderStatus(
+    private suspend fun updateOrder(
         orderToUpdate: WCOrderModel,
         site: SiteModel,
-        status: String
+        updatePayload: Map<String, String>
     ): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId).pathV3
-        val params = mapOf("status" to status)
 
         val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this,
-            site,
-            url,
-            params,
-            OrderApiResponse::class.java
+            restClient = this,
+            site = site,
+            url = url,
+            body = updatePayload.plus("_fields" to ORDER_FIELDS),
+            clazz = OrderApiResponse::class.java
         )
 
         return when (response) {
@@ -433,6 +427,12 @@ class OrderRestClient @Inject constructor(
             }
         }
     }
+
+    suspend fun updateOrderStatus(orderToUpdate: WCOrderModel, site: SiteModel, status: String) =
+            updateOrder(orderToUpdate, site, mapOf("status" to status))
+
+    suspend fun updateCustomerOrderNote(orderToUpdate: WCOrderModel, site: SiteModel, newNotes: String) =
+            updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
