@@ -314,7 +314,7 @@ class WCOrderStore @Inject constructor(
     }
 
     // OnChanged events
-    class OnOrderChanged(
+    data class OnOrderChanged(
         var rowsAffected: Int,
         var statusFilter: String? = null,
         var canLoadMore: Boolean = false
