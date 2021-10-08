@@ -26,8 +26,8 @@ import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
-import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusResult.OptimisticUpdateResult
-import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusResult.RemoteUpdateResult
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -169,11 +169,11 @@ class WCOrderStore @Inject constructor(
         constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) { this.error = error }
     }
 
-    sealed class UpdateOrderStatusResult {
+    sealed class UpdateOrderResult {
         abstract val event: OnOrderChanged
 
-        data class OptimisticUpdateResult(override val event: OnOrderChanged) : UpdateOrderStatusResult()
-        data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderStatusResult()
+        data class OptimisticUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
+        data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
     }
 
     class FetchOrderNotesPayload(
@@ -514,7 +514,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(payload: UpdateOrderStatusPayload): Flow<UpdateOrderStatusResult> {
+    suspend fun updateOrderStatus(payload: UpdateOrderStatusPayload): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
             val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.status)
 
