@@ -401,7 +401,7 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId).pathV3
         val params = mapOf("status" to status)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
             this,
             site,
             url,
