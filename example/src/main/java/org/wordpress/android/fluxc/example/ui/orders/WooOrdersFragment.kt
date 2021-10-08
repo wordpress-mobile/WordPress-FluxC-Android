@@ -6,10 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -22,8 +18,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog
 import org.wordpress.android.fluxc.example.WCOrderListActivity
-import org.wordpress.android.fluxc.example.prependToLog
-import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
@@ -49,11 +43,19 @@ import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.store.OrderUpdateStore
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
-    @Inject internal lateinit var dispatcher: Dispatcher
-    @Inject internal lateinit var wcOrderStore: WCOrderStore
-    @Inject internal lateinit var wooCommerceStore: WooCommerceStore
+    @Inject lateinit var dispatcher: Dispatcher
+    @Inject lateinit var wcOrderStore: WCOrderStore
+    @Inject lateinit var wooCommerceStore: WooCommerceStore
+    @Inject lateinit var orderUpdateStore: OrderUpdateStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -234,6 +236,25 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                                     "to $status - ${it::class.simpleName}")
                                         }
                                     }
+                        }
+                    }
+                } ?: showNoOrdersToast(site)
+            }
+        }
+
+        update_latest_order_notes.setOnClickListener {
+            selectedSite?.let { site ->
+                wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
+                    showSingleLineDialog(activity, "Enter new order customer note") { editText ->
+                        val status = editText.text.toString()
+                        coroutineScope.launch {
+                            orderUpdateStore.updateOrderNotes(
+                                    order,
+                                    site,
+                                    status
+                            ).collect {
+                                prependToLog(it::class.simpleName.toString())
+                            }
                         }
                     }
                 } ?: showNoOrdersToast(site)
