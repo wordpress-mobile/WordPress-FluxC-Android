@@ -56,11 +56,12 @@ class OrderUpdateStore @Inject internal constructor(
 //                } else {
 //                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
 //                }
+//                emit(RemoteUpdateResult(remoteUpdateResult))
+                delay(5000)
+
                 val fakeFail = OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
                     error = WCOrderStore.OrderError(message = "This is a fake fail")
                 }
-
-                delay(5000)
 
                 emit(RemoteUpdateResult(fakeFail))
             }
