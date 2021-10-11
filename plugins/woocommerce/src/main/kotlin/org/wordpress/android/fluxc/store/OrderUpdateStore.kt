@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
@@ -7,6 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
 import org.wordpress.android.fluxc.persistence.wrappers.RowAffected
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -42,19 +44,25 @@ class OrderUpdateStore @Inject internal constructor(
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
 
-                val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
-                        initialOrder,
-                        site,
-                        newCustomerNote
-                )
-                val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
-                        error = updateRemoteOrderPayload.error
-                    }
-                } else {
-                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
+//                val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
+//                        initialOrder,
+//                        site,
+//                        newNotes
+//                )
+//                val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
+//                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
+//                        error = updateRemoteOrderPayload.error
+//                    }
+//                } else {
+//                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
+//                }
+                val fakeFail = OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
+                    error = WCOrderStore.OrderError(message = "This is a fake fail")
                 }
-                emit(RemoteUpdateResult(remoteUpdateResult))
+
+                delay(5000)
+
+                emit(RemoteUpdateResult(fakeFail))
             }
         }
     }
