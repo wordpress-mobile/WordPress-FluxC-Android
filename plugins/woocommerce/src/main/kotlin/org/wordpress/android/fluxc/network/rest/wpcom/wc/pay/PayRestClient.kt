@@ -2,8 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.pay
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -31,7 +29,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.fluxc.network.utils.getString
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -45,7 +42,6 @@ class PayRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    private val gson by lazy { Gson() }
 
     suspend fun fetchConnectionToken(site: SiteModel): WooPayload<ConnectionTokenApiResponse> {
         val url = WOOCOMMERCE.payments.connection_tokens.pathV3
@@ -206,12 +202,8 @@ class PayRestClient @Inject constructor(
         val type = when {
             error == null -> WCTerminalStoreLocationErrorType.GenericError
             error.apiError == "store_address_is_incomplete" -> {
-                val url = gson.fromJson(
-                        error.volleyError.networkResponse.data.decodeToString(),
-                        JsonElement::class.java
-                ).asJsonObject.getAsJsonObject("data").getString("url")
-                if (url == null) WCTerminalStoreLocationErrorType.GenericError
-                else WCTerminalStoreLocationErrorType.MissingAddress(url)
+                if (error.message.isNullOrBlank()) WCTerminalStoreLocationErrorType.GenericError
+                else WCTerminalStoreLocationErrorType.MissingAddress(error.message)
             }
             error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NetworkError
             error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NetworkError
