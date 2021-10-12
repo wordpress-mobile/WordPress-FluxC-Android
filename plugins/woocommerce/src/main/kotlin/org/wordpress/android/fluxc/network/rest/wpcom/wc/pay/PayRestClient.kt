@@ -42,7 +42,6 @@ class PayRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-
     suspend fun fetchConnectionToken(site: SiteModel): WooPayload<ConnectionTokenApiResponse> {
         val url = WOOCOMMERCE.payments.connection_tokens.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
