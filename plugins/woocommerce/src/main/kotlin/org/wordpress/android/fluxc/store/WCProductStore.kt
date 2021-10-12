@@ -1077,7 +1077,7 @@ class WCProductStore @Inject constructor(
                     try {
                         RemoteAddonMapper.toDomain(remoteAddonDto)
                     } catch (exception: MappingRemoteException) {
-                        logger.e(API, exception.message)
+                        logger.e(API, "Exception while parsing $remoteAddonDto: ${exception.message}")
                         null
                     }
                 }

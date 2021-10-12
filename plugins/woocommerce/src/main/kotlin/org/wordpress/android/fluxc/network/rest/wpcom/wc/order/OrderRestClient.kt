@@ -386,44 +386,53 @@ class OrderRestClient @Inject constructor(
 
     /**
      * Makes a PUT call to `/wc/v3/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the status for the given [order] to [status].
-     *
-     * Dispatches a [WCOrderAction.UPDATED_ORDER_STATUS] with the updated [WCOrderModel].
-     *
-     * Possible non-generic errors:
-     * [OrderErrorType.INVALID_PARAM] if the [status] is not a valid order status on the server
-     * [OrderErrorType.INVALID_ID] if an order by this id was not found on the server
+     * updating the order.
      */
-    fun updateOrderStatus(
+    private suspend fun updateOrder(
         orderToUpdate: WCOrderModel,
         site: SiteModel,
-        status: String
-    ) {
+        updatePayload: Map<String, String>
+    ): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId).pathV3
-        val params = mapOf("status" to status)
 
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
-                listener = { response: OrderApiResponse? ->
-                    response?.let {
-                        val newModel = orderResponseToOrderModel(it).apply {
-                            id = orderToUpdate.id
-                            localSiteId = orderToUpdate.localSiteId
-                        }
-                        val payload = RemoteOrderPayload(newModel, site)
-                        dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            restClient = this,
+            site = site,
+            url = url,
+            body = updatePayload.plus("_fields" to ORDER_FIELDS),
+            clazz = OrderApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = orderResponseToOrderModel(it).apply {
+                        id = orderToUpdate.id
+                        localSiteId = orderToUpdate.localSiteId
                     }
-                },
-                errorListener = { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
-                    val payload = RemoteOrderPayload(
-                            orderError,
-                            orderToUpdate,
-                            site
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
-                })
-        add(request)
+                    RemoteOrderPayload(newModel, site)
+                } ?: RemoteOrderPayload(
+                    OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                    orderToUpdate,
+                    site
+                )
+            }
+            is JetpackError -> {
+                val orderError = networkErrorToOrderError(response.error)
+                RemoteOrderPayload(
+                    orderError,
+                    orderToUpdate,
+                    site
+                )
+            }
+        }
     }
+
+    suspend fun updateOrderStatus(orderToUpdate: WCOrderModel, site: SiteModel, status: String) =
+            updateOrder(orderToUpdate, site, mapOf("status" to status))
+
+    suspend fun updateCustomerOrderNote(orderToUpdate: WCOrderModel, site: SiteModel, newNotes: String) =
+            updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),

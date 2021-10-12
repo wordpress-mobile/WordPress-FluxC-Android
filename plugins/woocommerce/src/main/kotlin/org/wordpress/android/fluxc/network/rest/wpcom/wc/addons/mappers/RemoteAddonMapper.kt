@@ -29,7 +29,7 @@ object RemoteAddonMapper {
                     position = dto.position,
                     options = dto.mapOptions(),
                     display = dto.display?.toDomainModel() ?: throw MappingRemoteException(
-                                    "Can't map ${dto.name}. MultipleChoice add-on type has to have `display` defined."
+                                    "MultipleChoice add-on type has to have `display` defined."
                             )
             )
             Checkbox -> Addon.Checkbox(
@@ -92,6 +92,7 @@ object RemoteAddonMapper {
                     required = dto.required.asBoolean(),
                     position = dto.position
             )
+            else -> throw MappingRemoteException("Add-on has to have type")
         }
     }
 
@@ -109,11 +110,12 @@ object RemoteAddonMapper {
         }.orEmpty()
     }
 
-    private fun RemoteTitleFormat.toDomainModel(): Addon.TitleFormat {
+    private fun RemoteTitleFormat?.toDomainModel(): Addon.TitleFormat {
         return when (this) {
             Label -> Addon.TitleFormat.Label
             RemoteTitleFormat.Heading -> Addon.TitleFormat.Heading
             Hide -> Addon.TitleFormat.Hide
+            null -> throw MappingRemoteException("Add-on has to have title")
         }
     }
 
@@ -135,7 +137,7 @@ object RemoteAddonMapper {
                 RemoteRestrictionsType.Email -> Addon.CustomText.Restrictions.Email
             }
         } else {
-            throw MappingRemoteException("Can't map $name. CustomText Add-on has to have restrictions defined.")
+            throw MappingRemoteException("CustomText Add-on has to have restrictions defined.")
         }
     }
 

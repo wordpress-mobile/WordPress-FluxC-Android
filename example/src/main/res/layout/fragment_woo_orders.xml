@@ -124,5 +124,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Update Latest Order Status" />
+
+        <Button
+            android:id="@+id/update_latest_order_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Latest Order Customer Notes" />
     </LinearLayout>
 </ScrollView>

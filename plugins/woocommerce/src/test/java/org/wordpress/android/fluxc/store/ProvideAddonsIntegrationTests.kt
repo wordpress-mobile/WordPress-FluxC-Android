@@ -454,29 +454,30 @@ class ProvideAddonsIntegrationTests {
     @Test
     fun `should not allow to map MultipleChoice Add-on without display property`() {
         runBlocking {
+            val testedDto = RemoteAddonDto(
+                titleFormat = Label,
+                descriptionEnabled = 1,
+                adjustPrice = 0,
+                type = MultipleChoice,
+                name = "sample",
+                description = "Description",
+                required = 1,
+                position = 0,
+                min = 0,
+                max = 10,
+                price = "100$",
+                options = listOf(
+                    RemoteAddonDto.RemoteOption(
+                        priceType = FlatFee,
+                        label = "Test option",
+                        price = "10"
+                    )
+                )
+            )
             whenever(restClient.fetchGlobalAddOnGroups(any())).thenReturn(
                     WooPayload(
                             result = groupWith(
-                                    RemoteAddonDto(
-                                            titleFormat = Label,
-                                            descriptionEnabled = 1,
-                                            adjustPrice = 0,
-                                            type = MultipleChoice,
-                                            name = "sample",
-                                            description = "Description",
-                                            required = 1,
-                                            position = 0,
-                                            min = 0,
-                                            max = 10,
-                                            price = "100$",
-                                            options = listOf(
-                                                    RemoteAddonDto.RemoteOption(
-                                                            priceType = FlatFee,
-                                                            label = "Test option",
-                                                            price = "10"
-                                                    )
-                                            )
-                                    )
+                                testedDto
                             )
                     )
             )
@@ -484,31 +485,35 @@ class ProvideAddonsIntegrationTests {
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
             assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first()).isEmpty()
-            verify(logger).e(API, "Can't map sample. MultipleChoice add-on type has to have `display` defined.")
+            verify(logger).e(
+                API,
+                "Exception while parsing $testedDto: MultipleChoice add-on type has to have `display` defined."
+            )
         }
     }
 
     @Test
     fun `should not allow to map CustomText Add-on without restrictions property`() {
         runBlocking {
+            val testedDto = RemoteAddonDto(
+                titleFormat = Heading,
+                descriptionEnabled = 0,
+                restrictionsType = null,
+                adjustPrice = 1,
+                priceType = FlatFee,
+                type = CustomText,
+                name = "sample",
+                description = "",
+                required = 1,
+                position = 5,
+                min = 2,
+                max = 5,
+                price = "100$"
+            )
             whenever(restClient.fetchGlobalAddOnGroups(any())).thenReturn(
                     WooPayload(
                             result = groupWith(
-                                    RemoteAddonDto(
-                                            titleFormat = Heading,
-                                            descriptionEnabled = 0,
-                                            restrictionsType = null,
-                                            adjustPrice = 1,
-                                            priceType = FlatFee,
-                                            type = CustomText,
-                                            name = "sample",
-                                            description = "",
-                                            required = 1,
-                                            position = 5,
-                                            min = 2,
-                                            max = 5,
-                                            price = "100$"
-                                    )
+                                testedDto
                             )
                     )
             )
@@ -516,7 +521,10 @@ class ProvideAddonsIntegrationTests {
             sut.fetchAllGlobalAddonsGroups(siteModel)
 
             assertThat(sut.observeAllAddonsForProduct(siteModel.siteId, product).first()).isEmpty()
-            verify(logger).e(API, "Can't map sample. CustomText Add-on has to have restrictions defined.")
+            verify(logger).e(
+                API,
+                "Exception while parsing $testedDto: CustomText Add-on has to have restrictions defined."
+            )
         }
     }
 

@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -25,6 +26,8 @@ import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -166,6 +169,13 @@ class WCOrderStore @Inject constructor(
         constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) { this.error = error }
     }
 
+    sealed class UpdateOrderResult {
+        abstract val event: OnOrderChanged
+
+        data class OptimisticUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
+        data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
+    }
+
     class FetchOrderNotesPayload(
         var localOrderId: Int,
         var remoteOrderId: Long,
@@ -304,7 +314,7 @@ class WCOrderStore @Inject constructor(
     }
 
     // OnChanged events
-    class OnOrderChanged(
+    data class OnOrderChanged(
         var rowsAffected: Int,
         var statusFilter: String? = null,
         var canLoadMore: Boolean = false
@@ -418,7 +428,8 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.FETCH_ORDER_LIST -> fetchOrderList(action.payload as FetchOrderListPayload)
             WCOrderAction.FETCH_ORDERS_BY_IDS -> fetchOrdersByIds(action.payload as FetchOrdersByIdsPayload)
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
-            WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
+            WCOrderAction.UPDATE_ORDER_STATUS ->
+                throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
@@ -439,7 +450,6 @@ class WCOrderStore @Inject constructor(
                 handleFetchOrderByIdsCompleted(action.payload as FetchOrdersByIdsResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
-            WCOrderAction.UPDATED_ORDER_STATUS -> handleUpdateOrderStatusCompleted(action.payload as RemoteOrderPayload)
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
@@ -504,13 +514,28 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
-        with(payload) {
+    suspend fun updateOrderStatus(payload: UpdateOrderStatusPayload): Flow<UpdateOrderResult> {
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
             val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.status)
 
-            emitChange(OnOrderChanged(rowsAffected).apply { causeOfChange = WCOrderAction.UPDATED_ORDER_STATUS })
+            val optimisticUpdateResult = OnOrderChanged(rowsAffected)
+                    .apply { causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS }
 
-            wcOrderRestClient.updateOrderStatus(payload.order, site, status)
+            emit(OptimisticUpdateResult(optimisticUpdateResult))
+
+            val remotePayload = wcOrderRestClient.updateOrderStatus(payload.order, payload.site, payload.status)
+            val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
+                revertOrderStatus(remotePayload)
+            } else {
+                val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(remotePayload.order)
+                OnOrderChanged(rowsAffected)
+            }
+
+            remoteUpdateResult.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
+
+            emit(RemoteUpdateResult(remoteUpdateResult))
+            // Needs to remain here until all event bus observables are removed from the client code
+            emitChange(remoteUpdateResult)
         }
     }
 
@@ -727,19 +752,6 @@ class WCOrderStore @Inject constructor(
                 OnOrderChanged(rowsAffected, statusFilter)
             }
         }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
-        emitChange(onOrderChanged)
-    }
-
-    private fun handleUpdateOrderStatusCompleted(payload: RemoteOrderPayload) {
-        val onOrderChanged: OnOrderChanged = if (payload.isError) {
-            revertOrderStatus(payload)
-        } else {
-            val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(payload.order)
-            OnOrderChanged(rowsAffected)
-        }
-
-        onOrderChanged.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
-
         emitChange(onOrderChanged)
     }
 
