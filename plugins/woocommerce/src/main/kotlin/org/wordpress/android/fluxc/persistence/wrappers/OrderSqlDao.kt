@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.persistence.wrappers
 
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import javax.inject.Inject
@@ -17,7 +16,7 @@ internal class OrderSqlDao @Inject constructor() {
         return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
     }
 
-    fun getOrder(orderId: RemoteId, siteId: LocalId): WCOrderModel? {
-        return OrderSqlUtils.getOrderForSiteByRemoteId(orderId, siteId)
+    fun getOrderByLocalId(orderLocalId: LocalId): WCOrderModel? {
+        return OrderSqlUtils.getOrderByLocalIdOrNull(orderLocalId)
     }
 }

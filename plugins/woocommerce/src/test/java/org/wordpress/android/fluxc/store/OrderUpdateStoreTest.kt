@@ -14,7 +14,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -64,14 +63,14 @@ class OrderUpdateStoreTest {
                         )
                 )
             }
-            whenever(orderSqlDao.getOrder(RemoteId(TEST_REMOTE_ORDER_ID), LocalId(TEST_LOCAL_SITE_ID))).thenReturn(
+            whenever(orderSqlDao.getOrderByLocalId(LocalId(TEST_LOCAL_ORDER_ID))).thenReturn(
                     initialOrder
             )
         }
 
         // when
         val results = sut.updateCustomerOrderNote(
-                orderId = RemoteId(initialOrder.remoteOrderId),
+                orderLocalId = LocalId(initialOrder.id),
                 site = site,
                 newCustomerNote = UPDATED_NOTE
         ).toList()
@@ -103,14 +102,14 @@ class OrderUpdateStoreTest {
                         )
                 )
             }
-            whenever(orderSqlDao.getOrder(RemoteId(TEST_REMOTE_ORDER_ID), LocalId(TEST_LOCAL_SITE_ID))).thenReturn(
+            whenever(orderSqlDao.getOrderByLocalId(LocalId(TEST_LOCAL_ORDER_ID))).thenReturn(
                     initialOrder
             )
         }
 
         // when
         val results = sut.updateCustomerOrderNote(
-                orderId = RemoteId(initialOrder.remoteOrderId),
+                orderLocalId = LocalId(initialOrder.id),
                 site = site,
                 newCustomerNote = UPDATED_NOTE
         ).toList()
@@ -138,12 +137,12 @@ class OrderUpdateStoreTest {
         // given
         setUp {
             orderRestClient = mock()
-            whenever(orderSqlDao.getOrder(any(), any())).thenReturn(null)
+            whenever(orderSqlDao.getOrderByLocalId(any())).thenReturn(null)
         }
 
         // when
         val results = sut.updateCustomerOrderNote(
-                orderId = RemoteId(initialOrder.remoteOrderId),
+                orderLocalId = LocalId(initialOrder.id),
                 site = site,
                 newCustomerNote = UPDATED_NOTE
         ).toList()
@@ -154,19 +153,19 @@ class OrderUpdateStoreTest {
             it.assertThat(remoteUpdateResult.event.error.type)
                     .isEqualTo(GENERIC_ERROR)
             it.assertThat(remoteUpdateResult.event.error.message)
-                    .isEqualTo("Order with id ${initialOrder.remoteOrderId} not found")
+                    .isEqualTo("Order with id ${initialOrder.id} not found")
         }
     }
 
     private companion object {
         const val ROW_AFFECTED = 1
-        const val TEST_REMOTE_ORDER_ID = 321L
+        const val TEST_LOCAL_ORDER_ID = 321
         const val TEST_LOCAL_SITE_ID = 654
         const val INITIAL_NOTE = "original customer note"
         const val UPDATED_NOTE = "updated customer note"
 
         val initialOrder = WCOrderModel().apply {
-            remoteOrderId = TEST_REMOTE_ORDER_ID
+            id = TEST_LOCAL_ORDER_ID
             customerNote = INITIAL_NOTE
         }
 

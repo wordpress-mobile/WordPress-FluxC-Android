@@ -334,4 +334,12 @@ object OrderSqlUtils {
                     .endWhere()
                     .asModel
                     .first()
+
+    fun getOrderByLocalIdOrNull(localOrderId: LocalId): WCOrderModel? =
+            WellSql.select(WCOrderModel::class.java)
+                    .where()
+                    .equals(WCOrderModelTable.ID, localOrderId.value)
+                    .endWhere()
+                    .asModel
+                    .firstOrNull()
 }

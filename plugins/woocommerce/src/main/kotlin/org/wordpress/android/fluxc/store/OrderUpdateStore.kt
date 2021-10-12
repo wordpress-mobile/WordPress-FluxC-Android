@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
@@ -22,18 +21,18 @@ class OrderUpdateStore @Inject internal constructor(
     private val orderSqlDao: OrderSqlDao
 ) {
     suspend fun updateCustomerOrderNote(
-        orderId: RemoteId,
+        orderLocalId: LocalId,
         site: SiteModel,
         newCustomerNote: String
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
-            val initialOrder = orderSqlDao.getOrder(orderId, LocalId(site.id))
+            val initialOrder = orderSqlDao.getOrderByLocalId(orderLocalId)
 
             if (initialOrder == null) {
                 emit(UpdateOrderResult.OptimisticUpdateResult(
                         OnOrderChanged(NO_ROWS_AFFECTED).apply {
                             error = WCOrderStore.OrderError(
-                                    message = "Order with id ${orderId.value} not found"
+                                    message = "Order with id ${orderLocalId.value} not found"
                             )
                         }
                 ))

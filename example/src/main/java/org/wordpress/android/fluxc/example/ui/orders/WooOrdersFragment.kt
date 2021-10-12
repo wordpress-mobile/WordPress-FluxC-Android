@@ -249,7 +249,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         val status = editText.text.toString()
                         coroutineScope.launch {
                             orderUpdateStore.updateCustomerOrderNote(
-                                    RemoteId(order.remoteOrderId),
+                                    LocalId(order.id),
                                     site,
                                     status
                             ).collect {
