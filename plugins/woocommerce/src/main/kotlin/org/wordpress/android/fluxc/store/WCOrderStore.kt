@@ -47,7 +47,7 @@ class WCOrderStore @Inject constructor(
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
         const val DEFAULT_ORDER_STATUS = "any"
-        const val NO_ROW_AFFECTED = -1
+        const val NO_ROWS_AFFECTED = 0
     }
 
     class FetchOrdersPayload(
@@ -542,7 +542,7 @@ class WCOrderStore @Inject constructor(
                 emitChange(remoteUpdateResult)
             } else {
                 emit(OptimisticUpdateResult(
-                        OnOrderChanged(NO_ROW_AFFECTED).apply {
+                        OnOrderChanged(NO_ROWS_AFFECTED).apply {
                             error = OrderError(message = "Order with id ${orderLocalId.value} not found")
                         }
                 ))
