@@ -83,15 +83,16 @@ object OrderSqlUtils {
         }
     }
 
-    fun getOrderForSiteByRemoteId(orderId: RemoteId, siteId: LocalId): WCOrderModel? = WellSql.select(WCOrderModel::class.java)
-            .where()
-            .beginGroup()
-            .equals(WCOrderModelTable.REMOTE_ORDER_ID, orderId.value)
-            .equals(WCOrderModelTable.LOCAL_SITE_ID, siteId.value)
-            .endGroup()
-            .endWhere()
-            .asModel
-            .firstOrNull()
+    fun getOrderForSiteByRemoteId(orderId: RemoteId, siteId: LocalId): WCOrderModel? =
+            WellSql.select(WCOrderModel::class.java)
+                    .where()
+                    .beginGroup()
+                    .equals(WCOrderModelTable.REMOTE_ORDER_ID, orderId.value)
+                    .equals(WCOrderModelTable.LOCAL_SITE_ID, siteId.value)
+                    .endGroup()
+                    .endWhere()
+                    .asModel
+                    .firstOrNull()
 
     fun getOrderForIdSet(orderIdSet: OrderIdSet): WCOrderModel? {
         val (id, remoteOrderId, localSiteId) = orderIdSet
