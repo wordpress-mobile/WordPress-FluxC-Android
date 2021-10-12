@@ -516,9 +516,9 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(orderId: RemoteId, site: SiteModel, newStatus: String): Flow<UpdateOrderResult> {
+    suspend fun updateOrderStatus(orderLocalId: LocalId, site: SiteModel, newStatus: String): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
-            val orderModel = OrderSqlUtils.getOrderForSiteByRemoteId(orderId, LocalId(site.id))
+            val orderModel = OrderSqlUtils.getOrderByLocalIdOrNull(orderLocalId)
 
             if (orderModel != null) {
                 val rowsAffected = updateOrderStatusLocally(LocalId(orderModel.id), newStatus)
@@ -543,7 +543,7 @@ class WCOrderStore @Inject constructor(
             } else {
                 emit(OptimisticUpdateResult(
                         OnOrderChanged(NO_ROW_AFFECTED).apply {
-                            error = OrderError(message = "Order with id ${orderId.value} not found")
+                            error = OrderError(message = "Order with id ${orderLocalId.value} not found")
                         }
                 ))
             }

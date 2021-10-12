@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -145,7 +146,7 @@ class WCOrderStoreTest {
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
             .thenReturn(result)
 
-        orderStore.updateOrderStatus(RemoteId(orderModel.remoteOrderId), site, CoreOrderStatus.REFUNDED.value)
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.REFUNDED.value)
             .toList()
 
         with(orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
@@ -287,7 +288,7 @@ class WCOrderStoreTest {
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
 
-        orderStore.updateOrderStatus(RemoteId(orderModel.remoteOrderId), site, CoreOrderStatus.COMPLETED.value)
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.COMPLETED.value)
                 .toList()
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
@@ -307,7 +308,7 @@ class WCOrderStoreTest {
             )
         )
 
-        orderStore.updateOrderStatus(RemoteId(orderModel.remoteOrderId), site, CoreOrderStatus.COMPLETED.value)
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.COMPLETED.value)
                 .toList()
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
