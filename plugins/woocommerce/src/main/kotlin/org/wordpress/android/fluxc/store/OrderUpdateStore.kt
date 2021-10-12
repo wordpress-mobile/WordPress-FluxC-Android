@@ -31,7 +31,7 @@ class OrderUpdateStore @Inject internal constructor(
 
             if (initialOrder == null) {
                 emit(UpdateOrderResult.OptimisticUpdateResult(
-                        OnOrderChanged(NO_ROW_AFFECTED).apply {
+                        OnOrderChanged(NO_ROWS_AFFECTED).apply {
                             error = WCOrderStore.OrderError(
                                     message = "Order with id ${orderId.value} not found"
                             )
@@ -61,6 +61,6 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private companion object {
-        const val NO_ROW_AFFECTED = -1
+        const val NO_ROWS_AFFECTED = 0
     }
 }
