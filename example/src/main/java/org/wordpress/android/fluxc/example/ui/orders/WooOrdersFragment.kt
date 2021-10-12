@@ -245,10 +245,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         update_latest_order_notes.setOnClickListener {
             selectedSite?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    showSingleLineDialog(activity, "Enter new order customer note") { editText ->
+                    showSingleLineDialog(activity, "Enter new customer note") { editText ->
                         val status = editText.text.toString()
                         coroutineScope.launch {
-                            orderUpdateStore.updateOrderNotes(
+                            orderUpdateStore.updateCustomerOrderNote(
                                     RemoteId(order.remoteOrderId),
                                     site,
                                     status

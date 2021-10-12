@@ -21,12 +21,12 @@ class OrderUpdateStore @Inject internal constructor(
     private val wcOrderRestClient: OrderRestClient,
     private val orderSqlDao: OrderSqlDao
 ) {
-    suspend fun updateOrderNotes(
+    suspend fun updateCustomerOrderNote(
         orderId: RemoteId,
         site: SiteModel,
-        newNotes: String
+        newCustomerNote: String
     ): Flow<UpdateOrderResult> {
-        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderNotes") {
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
             val initialOrder = orderSqlDao.getOrder(orderId, LocalId(site.id))
 
             if (initialOrder == null) {
@@ -39,14 +39,14 @@ class OrderUpdateStore @Inject internal constructor(
                 ))
             } else {
                 val optimisticUpdateRowsAffected: RowAffected = orderSqlDao.updateLocalOrder(initialOrder.id) {
-                    customerNote = newNotes
+                    customerNote = newCustomerNote
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
 
                 val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
                         initialOrder,
                         site,
-                        newNotes
+                        newCustomerNote
                 )
                 val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
                     OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {

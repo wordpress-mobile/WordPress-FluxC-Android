@@ -70,10 +70,10 @@ class OrderUpdateStoreTest {
         }
 
         // when
-        val results = sut.updateOrderNotes(
+        val results = sut.updateCustomerOrderNote(
                 orderId = RemoteId(initialOrder.remoteOrderId),
                 site = site,
-                newNotes = UPDATED_NOTE
+                newCustomerNote = UPDATED_NOTE
         ).toList()
 
         // then
@@ -109,10 +109,10 @@ class OrderUpdateStoreTest {
         }
 
         // when
-        val results = sut.updateOrderNotes(
+        val results = sut.updateCustomerOrderNote(
                 orderId = RemoteId(initialOrder.remoteOrderId),
                 site = site,
-                newNotes = UPDATED_NOTE
+                newCustomerNote = UPDATED_NOTE
         ).toList()
 
         // then
@@ -142,10 +142,10 @@ class OrderUpdateStoreTest {
         }
 
         // when
-        val results = sut.updateOrderNotes(
+        val results = sut.updateCustomerOrderNote(
                 orderId = RemoteId(initialOrder.remoteOrderId),
                 site = site,
-                newNotes = UPDATED_NOTE
+                newCustomerNote = UPDATED_NOTE
         ).toList()
 
         // then
