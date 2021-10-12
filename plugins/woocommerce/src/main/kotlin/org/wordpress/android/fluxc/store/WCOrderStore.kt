@@ -518,7 +518,7 @@ class WCOrderStore @Inject constructor(
 
     suspend fun updateOrderStatus(orderId: RemoteId, site: SiteModel, newStatus: String): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
-            val orderModel = OrderSqlUtils.getOrderOrNull(orderId, LocalId(site.id))
+            val orderModel = OrderSqlUtils.getOrderForSiteByRemoteId(orderId, LocalId(site.id))
 
             if (orderModel != null) {
                 val rowsAffected = updateOrderStatusLocally(LocalId(orderModel.id), newStatus)

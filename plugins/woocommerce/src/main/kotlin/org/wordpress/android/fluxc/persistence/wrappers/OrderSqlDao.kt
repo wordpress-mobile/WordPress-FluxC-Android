@@ -18,6 +18,6 @@ internal class OrderSqlDao @Inject constructor() {
     }
 
     fun getOrder(orderId: RemoteId, siteId: LocalId): WCOrderModel? {
-        return OrderSqlUtils.getOrderOrNull(orderId, siteId)
+        return OrderSqlUtils.getOrderForSiteByRemoteId(orderId, siteId)
     }
 }

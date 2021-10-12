@@ -83,7 +83,7 @@ object OrderSqlUtils {
         }
     }
 
-    fun getOrderOrNull(orderId: RemoteId, siteId: LocalId): WCOrderModel? = WellSql.select(WCOrderModel::class.java)
+    fun getOrderForSiteByRemoteId(orderId: RemoteId, siteId: LocalId): WCOrderModel? = WellSql.select(WCOrderModel::class.java)
             .where()
             .beginGroup()
             .equals(WCOrderModelTable.REMOTE_ORDER_ID, orderId.value)
