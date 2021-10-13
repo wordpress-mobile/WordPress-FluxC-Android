@@ -8,7 +8,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
-import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -32,7 +31,6 @@ import javax.inject.Inject
 class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
-        ADD_ORDER_SHIPMENT_TRACKING,
         DELETE_ORDER_SHIPMENT_TRACKING,
         FETCHED_ORDER_SHIPMENT_PROVIDERS
     }
@@ -106,13 +104,10 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
      */
     @Throws(InterruptedException::class)
     @Test
-    fun testAddAndDeleteShipmentTrackingForOrder_standardProvider() {
+    fun testAddAndDeleteShipmentTrackingForOrder_standardProvider() = runBlocking {
         /*
          * TEST 1: Add an order shipment tracking for an order
          */
-        nextEvent = TestEvent.ADD_ORDER_SHIPMENT_TRACKING
-        mCountDownLatch = CountDownLatch(1)
-
         val orderModel = WCOrderModel().apply {
             id = 8
             remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
@@ -128,11 +123,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             trackingNumber = testTrackingNumber
             dateShipped = testDateShipped
         }
-        mDispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(
-                AddOrderShipmentTrackingPayload(
-                        sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false))
+        orderStore.addOrderShipmentTracking(AddOrderShipmentTrackingPayload(
+                sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false)
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         var trackings = orderStore.getShipmentTrackingsForOrder(
                 sSite, orderModel.id
@@ -176,13 +169,10 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
      */
     @Throws(InterruptedException::class)
     @Test
-    fun testAddShipmentTrackingForOrder_customProvider() {
+    fun testAddShipmentTrackingForOrder_customProvider() = runBlocking {
         /*
          * TEST 1: Add a tracking record using a custom provider
          */
-        nextEvent = TestEvent.ADD_ORDER_SHIPMENT_TRACKING
-        mCountDownLatch = CountDownLatch(1)
-
         val orderModel = WCOrderModel().apply {
             id = 8
             remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
@@ -200,12 +190,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             dateShipped = testDateShipped
             trackingLink = testTrackingLink
         }
-        mDispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(
+        orderStore.addOrderShipmentTracking(
                 AddOrderShipmentTrackingPayload(
-                        sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true))
+                        sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true
+                )
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
         var trackings = orderStore.getShipmentTrackingsForOrder(
                 sSite, orderModel.id
         )
@@ -280,10 +269,6 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         lastEvent = event
 
         when (event.causeOfChange) {
-            ADD_ORDER_SHIPMENT_TRACKING -> {
-                assertEquals(TestEvent.ADD_ORDER_SHIPMENT_TRACKING, nextEvent)
-                mCountDownLatch.countDown()
-            }
             DELETE_ORDER_SHIPMENT_TRACKING -> {
                 assertEquals(TestEvent.DELETE_ORDER_SHIPMENT_TRACKING, nextEvent)
                 mCountDownLatch.countDown()
