@@ -199,11 +199,15 @@ class PayRestClient @Inject constructor(
     private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
             WCTerminalStoreLocationError {
         val type = when {
-            error == null -> WCTerminalStoreLocationErrorType.GENERIC_ERROR
-            error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
-            error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
-            error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NETWORK_ERROR
-            else -> WCTerminalStoreLocationErrorType.GENERIC_ERROR
+            error == null -> WCTerminalStoreLocationErrorType.GenericError
+            error.apiError == "store_address_is_incomplete" -> {
+                if (error.message.isNullOrBlank()) WCTerminalStoreLocationErrorType.GenericError
+                else WCTerminalStoreLocationErrorType.MissingAddress(error.message)
+            }
+            error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NetworkError
+            error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NetworkError
+            error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NetworkError
+            else -> WCTerminalStoreLocationErrorType.GenericError
         }
         return WCTerminalStoreLocationError(type, message)
     }

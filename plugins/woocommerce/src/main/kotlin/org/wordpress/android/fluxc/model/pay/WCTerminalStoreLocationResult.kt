@@ -26,13 +26,13 @@ data class WCTerminalStoreLocationResult(
 }
 
 data class WCTerminalStoreLocationError(
-    val type: WCTerminalStoreLocationErrorType = WCTerminalStoreLocationErrorType.GENERIC_ERROR,
+    val type: WCTerminalStoreLocationErrorType = WCTerminalStoreLocationErrorType.GenericError,
     val message: String = ""
 ) : FluxCError
 
-enum class WCTerminalStoreLocationErrorType {
-    GENERIC_ERROR,
-    MISSING_ADDRESS,
-    SERVER_ERROR,
-    NETWORK_ERROR
+sealed class WCTerminalStoreLocationErrorType {
+    object GenericError : WCTerminalStoreLocationErrorType()
+    data class MissingAddress(val addressEditingUrl: String) : WCTerminalStoreLocationErrorType()
+    object ServerError : WCTerminalStoreLocationErrorType()
+    object NetworkError : WCTerminalStoreLocationErrorType()
 }
