@@ -585,13 +585,19 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                val trackingResponse = response.data?.let {
-                    orderShipmentTrackingResponseToModel(it).apply {
+                response.data?.let {
+                    val trackingModel = orderShipmentTrackingResponseToModel(it).apply {
                         this.localOrderId = localOrderId
                         localSiteId = site.id
                     }
-                }
-                AddOrderShipmentTrackingResponsePayload(site, localOrderId, remoteOrderId, trackingResponse)
+                    AddOrderShipmentTrackingResponsePayload(site, localOrderId, remoteOrderId, trackingModel)
+                } ?: AddOrderShipmentTrackingResponsePayload(
+                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        site,
+                        localOrderId,
+                        remoteOrderId,
+                        tracking
+                )
             }
             is JetpackError -> {
                 val trackingsError = networkErrorToOrderError(response.error)
