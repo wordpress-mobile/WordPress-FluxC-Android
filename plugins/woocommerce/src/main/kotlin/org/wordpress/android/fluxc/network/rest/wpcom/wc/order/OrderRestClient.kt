@@ -556,19 +556,15 @@ class OrderRestClient @Inject constructor(
      * why there is an if-statement. Either way, the same standard [WCOrderShipmentTrackingModel] is returned.
      *
      * Note: This API does not currently support v3.
-     *
-     * Dispatches [WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING] action with the results.
      */
-    fun addOrderShipmentTrackingForOrder(
+    suspend fun addOrderShipmentTrackingForOrder(
         site: SiteModel,
         localOrderId: Int,
         remoteOrderId: Long,
         tracking: WCOrderShipmentTrackingModel,
         isCustomProvider: Boolean
-    ) {
+    ): AddOrderShipmentTrackingResponsePayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).shipment_trackings.pathV2
-
-        val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
         val params = if (isCustomProvider) {
             mutableMapOf(
                     "custom_tracking_provider" to tracking.trackingProvider,
@@ -578,27 +574,30 @@ class OrderRestClient @Inject constructor(
         }
         params.put("tracking_number", tracking.trackingNumber)
         params.put("date_shipped", tracking.dateShipped)
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
-                { response: OrderShipmentTrackingApiResponse? ->
-                    val trackingResponse = response?.let {
-                        orderShipmentTrackingResponseToModel(it).apply {
-                            this.localOrderId = localOrderId
-                            localSiteId = site.id
-                        }
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderShipmentTrackingApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                val trackingResponse = response.data?.let {
+                    orderShipmentTrackingResponseToModel(it).apply {
+                        this.localOrderId = localOrderId
+                        localSiteId = site.id
                     }
-                    val payload = AddOrderShipmentTrackingResponsePayload(
-                            site, localOrderId, remoteOrderId, trackingResponse
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = AddOrderShipmentTrackingResponsePayload(
-                            trackingsError, site, localOrderId, remoteOrderId, tracking
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
-                })
-        add(request)
+                }
+                AddOrderShipmentTrackingResponsePayload(site, localOrderId, remoteOrderId, trackingResponse)
+            }
+            is JetpackError -> {
+                val trackingsError = networkErrorToOrderError(response.error)
+                AddOrderShipmentTrackingResponsePayload(trackingsError, site, localOrderId, remoteOrderId, tracking)
+            }
+        }
     }
 
     /**
