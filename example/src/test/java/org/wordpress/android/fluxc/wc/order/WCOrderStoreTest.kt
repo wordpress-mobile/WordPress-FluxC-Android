@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -43,7 +44,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsRes
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.util.Calendar
 import kotlin.test.assertEquals
@@ -146,7 +146,7 @@ class WCOrderStoreTest {
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
             .thenReturn(result)
 
-        orderStore.updateOrderStatus(UpdateOrderStatusPayload(orderModel, site, CoreOrderStatus.REFUNDED.value))
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.REFUNDED.value)
             .toList()
 
         with(orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
@@ -288,11 +288,8 @@ class WCOrderStoreTest {
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
 
-        orderStore.updateOrderStatus(UpdateOrderStatusPayload(
-            orderModel,
-            site,
-            CoreOrderStatus.COMPLETED.value
-        )).toList()
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.COMPLETED.value)
+                .toList()
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
         Unit
@@ -311,13 +308,8 @@ class WCOrderStoreTest {
             )
         )
 
-        orderStore.updateOrderStatus(
-            UpdateOrderStatusPayload(
-                orderModel,
-                site,
-                CoreOrderStatus.COMPLETED.value
-            )
-        ).toList()
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.COMPLETED.value)
+                .toList()
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
         Unit

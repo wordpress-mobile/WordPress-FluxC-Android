@@ -8,6 +8,7 @@ import com.wellsql.generated.WCOrderStatusModelTable
 import com.wellsql.generated.WCOrderSummaryModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -322,4 +323,12 @@ object OrderSqlUtils {
                     .endWhere()
                     .asModel
                     .first()
+
+    fun getOrderByLocalIdOrNull(localOrderId: LocalId): WCOrderModel? =
+            WellSql.select(WCOrderModel::class.java)
+                    .where()
+                    .equals(WCOrderModelTable.ID, localOrderId.value)
+                    .endWhere()
+                    .asModel
+                    .firstOrNull()
 }

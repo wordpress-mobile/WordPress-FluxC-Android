@@ -39,7 +39,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChange
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
@@ -49,6 +48,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.store.OrderUpdateStore
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
@@ -226,7 +226,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
                         coroutineScope.launch {
-                            wcOrderStore.updateOrderStatus(UpdateOrderStatusPayload(order, site, status))
+                            wcOrderStore.updateOrderStatus(LocalId(order.id), site, status)
                                     .collect {
                                         if (it.event.isError) {
                                             prependToLog("FAILED: Update order status for ${order.remoteOrderId} " +
@@ -245,11 +245,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         update_latest_order_notes.setOnClickListener {
             selectedSite?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    showSingleLineDialog(activity, "Enter new order customer note") { editText ->
+                    showSingleLineDialog(activity, "Enter new customer note") { editText ->
                         val status = editText.text.toString()
                         coroutineScope.launch {
-                            orderUpdateStore.updateOrderNotes(
-                                    order,
+                            orderUpdateStore.updateCustomerOrderNote(
+                                    LocalId(order.id),
                                     site,
                                     status
                             ).collect {

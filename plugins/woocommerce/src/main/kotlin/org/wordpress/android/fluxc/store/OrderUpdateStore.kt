@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
 import org.wordpress.android.fluxc.persistence.wrappers.RowAffected
@@ -20,30 +20,46 @@ class OrderUpdateStore @Inject internal constructor(
     private val wcOrderRestClient: OrderRestClient,
     private val orderSqlDao: OrderSqlDao
 ) {
-    suspend fun updateOrderNotes(
-        initialOrder: WCOrderModel,
+    suspend fun updateCustomerOrderNote(
+        orderLocalId: LocalId,
         site: SiteModel,
-        newNotes: String
+        newCustomerNote: String
     ): Flow<UpdateOrderResult> {
-        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderNotes") {
-            val optimisticUpdateRowsAffected: RowAffected = orderSqlDao.updateLocalOrder(initialOrder.id) {
-                customerNote = newNotes
-            }
-            emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
+            val initialOrder = orderSqlDao.getOrderByLocalId(orderLocalId)
 
-            val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
-                    initialOrder,
-                    site,
-                    newNotes
-            )
-            val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-                OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
-                    error = updateRemoteOrderPayload.error
-                }
+            if (initialOrder == null) {
+                emit(UpdateOrderResult.OptimisticUpdateResult(
+                        OnOrderChanged(NO_ROWS_AFFECTED).apply {
+                            error = WCOrderStore.OrderError(
+                                    message = "Order with id ${orderLocalId.value} not found"
+                            )
+                        }
+                ))
             } else {
-                OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
+                val optimisticUpdateRowsAffected: RowAffected = orderSqlDao.updateLocalOrder(initialOrder.id) {
+                    customerNote = newCustomerNote
+                }
+                emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
+
+                val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
+                        initialOrder,
+                        site,
+                        newCustomerNote
+                )
+                val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
+                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
+                        error = updateRemoteOrderPayload.error
+                    }
+                } else {
+                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
+                }
+                emit(RemoteUpdateResult(remoteUpdateResult))
             }
-            emit(RemoteUpdateResult(remoteUpdateResult))
         }
+    }
+
+    private companion object {
+        const val NO_ROWS_AFFECTED = 0
     }
 }

@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -46,6 +47,7 @@ class WCOrderStore @Inject constructor(
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
         const val DEFAULT_ORDER_STATUS = "any"
+        const val NO_ROWS_AFFECTED = 0
     }
 
     class FetchOrdersPayload(
@@ -514,33 +516,42 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(payload: UpdateOrderStatusPayload): Flow<UpdateOrderResult> {
+    suspend fun updateOrderStatus(orderLocalId: LocalId, site: SiteModel, newStatus: String): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
-            val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.status)
+            val orderModel = OrderSqlUtils.getOrderByLocalIdOrNull(orderLocalId)
 
-            val optimisticUpdateResult = OnOrderChanged(rowsAffected)
-                    .apply { causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS }
+            if (orderModel != null) {
+                val rowsAffected = updateOrderStatusLocally(LocalId(orderModel.id), newStatus)
 
-            emit(OptimisticUpdateResult(optimisticUpdateResult))
+                val optimisticUpdateResult = OnOrderChanged(rowsAffected)
+                        .apply { causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS }
 
-            val remotePayload = wcOrderRestClient.updateOrderStatus(payload.order, payload.site, payload.status)
-            val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
-                revertOrderStatus(remotePayload)
+                emit(OptimisticUpdateResult(optimisticUpdateResult))
+
+                val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus)
+                val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
+                    revertOrderStatus(remotePayload)
+                } else {
+                    OnOrderChanged(rowsAffected = OrderSqlUtils.insertOrUpdateOrder(remotePayload.order))
+                }
+
+                remoteUpdateResult.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
+
+                emit(RemoteUpdateResult(remoteUpdateResult))
+                // Needs to remain here until all event bus observables are removed from the client code
+                emitChange(remoteUpdateResult)
             } else {
-                val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(remotePayload.order)
-                OnOrderChanged(rowsAffected)
+                emit(OptimisticUpdateResult(
+                        OnOrderChanged(NO_ROWS_AFFECTED).apply {
+                            error = OrderError(message = "Order with id ${orderLocalId.value} not found")
+                        }
+                ))
             }
-
-            remoteUpdateResult.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
-
-            emit(RemoteUpdateResult(remoteUpdateResult))
-            // Needs to remain here until all event bus observables are removed from the client code
-            emitChange(remoteUpdateResult)
         }
     }
 
-    private fun updateOrderStatusLocally(localOrderId: Int, newStatus: String): Int {
-        val updatedOrder = OrderSqlUtils.getOrderByLocalId(localOrderId).apply {
+    private fun updateOrderStatusLocally(orderId: LocalId, newStatus: String): Int {
+        val updatedOrder = OrderSqlUtils.getOrderByLocalId(orderId.value).apply {
             status = newStatus
         }
         return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
@@ -756,7 +767,7 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
-        val rowsAffected = updateOrderStatusLocally(payload.order.id, payload.order.status)
+        val rowsAffected = updateOrderStatusLocally(LocalId(payload.order.id), payload.order.status)
         return OnOrderChanged(rowsAffected).also { it.error = payload.error }
     }
 
