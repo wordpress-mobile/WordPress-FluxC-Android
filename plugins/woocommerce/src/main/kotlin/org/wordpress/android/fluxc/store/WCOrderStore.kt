@@ -437,8 +437,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
-            WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING ->
-                addOrderShipmentTracking(action.payload as AddOrderShipmentTrackingPayload)
             WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING ->
                 deleteOrderShipmentTracking(action.payload as DeleteOrderShipmentTrackingPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_PROVIDERS ->
@@ -458,8 +456,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
-            WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING ->
-                handleAddOrderShipmentTrackingCompleted(action.payload as AddOrderShipmentTrackingResponsePayload)
             WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING ->
                 handleDeleteOrderShipmentTrackingCompleted(action.payload as DeleteOrderShipmentTrackingResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS ->
@@ -609,11 +605,18 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private fun addOrderShipmentTracking(payload: AddOrderShipmentTrackingPayload) {
-        with(payload) {
+    suspend fun addOrderShipmentTracking(payload: AddOrderShipmentTrackingPayload): OnOrderChanged {
+        val result = with(payload) {
             wcOrderRestClient.addOrderShipmentTrackingForOrder(
                     site, localOrderId, remoteOrderId, tracking, isCustomProvider
             )
+        }
+
+        return if (result.isError) {
+            OnOrderChanged(0).also { it.error = result.error }
+        } else {
+            val rowsAffected = result.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
+            OnOrderChanged(rowsAffected)
         }
     }
 
@@ -825,20 +828,6 @@ class WCOrderStore @Inject constructor(
         }
 
         emitChange(onOrderStatusLabelsChanged)
-    }
-
-    private fun handleAddOrderShipmentTrackingCompleted(payload: AddOrderShipmentTrackingResponsePayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = payload.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
-            onOrderChanged = OnOrderChanged(rowsAffected)
-        }
-
-        onOrderChanged.causeOfChange = WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
-        emitChange(onOrderChanged)
     }
 
     private fun handleDeleteOrderShipmentTrackingCompleted(payload: DeleteOrderShipmentTrackingResponsePayload) {
