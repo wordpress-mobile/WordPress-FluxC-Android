@@ -6,10 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
@@ -18,13 +21,17 @@ import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog
 import org.wordpress.android.fluxc.example.WCOrderListActivity
+import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
@@ -42,14 +49,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import org.wordpress.android.fluxc.example.prependToLog
-import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.store.OrderUpdateStore
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject lateinit var dispatcher: Dispatcher
@@ -62,11 +61,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
-    private var pendingShipmentTrackingOrder: WCOrderModel? = null
     private var pendingDeleteShipmentTracking: WCOrderShipmentTrackingModel? = null
-    private var pendingAddShipmentTracking: WCOrderShipmentTrackingModel? = null
     private var pendingOpenAddShipmentTracking: Boolean = false
-    private var pendingAddShipmentTrackingRemoteOrderID: Long? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_orders, container, false)
@@ -445,18 +441,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             "Posted ${event.rowsAffected} " +
                                     "note to the api for order ${pendingNotesOrderModel!!.remoteOrderId}"
                     )
-                    ADD_ORDER_SHIPMENT_TRACKING -> {
-                        pendingAddShipmentTracking?.let {
-                            getFirstWCOrder()?.let { order ->
-                                val trackingCount = wcOrderStore.getShipmentTrackingsForOrder(site, order.id).size
-                                prependToLog("Shipment tracking added successfully to " +
-                                        "remoteOrderId [$pendingAddShipmentTrackingRemoteOrderID]! " +
-                                        "[$trackingCount] tracking records now exist for this order in the db.")
-                            }
-                            pendingAddShipmentTracking = null
-                            pendingAddShipmentTrackingRemoteOrderID = null
-                        }
-                    }
                     DELETE_ORDER_SHIPMENT_TRACKING -> {
                         pendingDeleteShipmentTracking?.let {
                             prependToLog("Shipment tracking deleted successfully! [${event.rowsAffected}] db rows " +
@@ -520,9 +504,27 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         tracking: WCOrderShipmentTrackingModel,
         isCustomProvider: Boolean
     ) {
-        pendingAddShipmentTracking = tracking
-        pendingAddShipmentTrackingRemoteOrderID = order.remoteOrderId
-        val payload = AddOrderShipmentTrackingPayload(site, order.id, order.remoteOrderId, tracking, isCustomProvider)
-        dispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(payload))
+        coroutineScope.launch {
+            val onOrderChanged = wcOrderStore.addOrderShipmentTracking(
+                    AddOrderShipmentTrackingPayload(
+                            site,
+                            order.id,
+                            order.remoteOrderId,
+                            tracking,
+                            isCustomProvider
+                    )
+            )
+            if (!onOrderChanged.isError) {
+                getFirstWCOrder()?.let { order ->
+                    val trackingCount = wcOrderStore.getShipmentTrackingsForOrder(site, order.id).size
+                    prependToLog(
+                            "Shipment tracking added successfully to remoteOrderId [${order.remoteOrderId}]! " +
+                                    "[$trackingCount] tracking records now exist for this order in the db."
+                    )
+                }
+            } else {
+                prependToLog("Adding shipment tracking for remoteOrderId [${order.remoteOrderId}] FAILED!")
+            }
+        }
     }
 }

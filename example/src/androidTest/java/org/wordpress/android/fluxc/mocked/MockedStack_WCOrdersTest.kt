@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
-import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
@@ -433,7 +432,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testAddOrderShipmentTrackingSuccess() {
+    fun testAddOrderShipmentTrackingSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         val trackingModel = WCOrderShipmentTrackingModel().apply {
             trackingProvider = "TNT Express (consignment)"
@@ -441,15 +440,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             dateShipped = "2019-04-18"
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-success.json")
-        orderRestClient.addOrderShipmentTrackingForOrder(
+        val payload = orderRestClient.addOrderShipmentTrackingForOrder(
                 siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING, lastAction!!.type)
-        val payload = lastAction!!.payload as AddOrderShipmentTrackingResponsePayload
         assertNull(payload.error)
         assertNotNull(payload.tracking)
 
@@ -465,7 +459,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testAddOrderShipmentTrackingCustomProviderSuccess() {
+    fun testAddOrderShipmentTrackingCustomProviderSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         val trackingModel = WCOrderShipmentTrackingModel().apply {
             trackingProvider = "Amanda Test Provider"
@@ -474,15 +468,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             dateShipped = "2019-04-19"
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-custom-success.json")
-        orderRestClient.addOrderShipmentTrackingForOrder(
+        val payload = orderRestClient.addOrderShipmentTrackingForOrder(
                 siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING, lastAction!!.type)
-        val payload = lastAction!!.payload as AddOrderShipmentTrackingResponsePayload
         assertNull(payload.error)
         assertNotNull(payload.tracking)
 
