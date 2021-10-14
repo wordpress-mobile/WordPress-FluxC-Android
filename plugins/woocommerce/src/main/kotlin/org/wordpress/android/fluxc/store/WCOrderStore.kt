@@ -432,7 +432,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.UPDATE_ORDER_STATUS ->
                 throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")
-            WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
@@ -450,7 +449,6 @@ class WCOrderStore @Inject constructor(
                 handleFetchOrderByIdsCompleted(action.payload as FetchOrdersByIdsResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
-            WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
@@ -566,8 +564,17 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private fun postOrderNote(payload: PostOrderNotePayload) {
-        with(payload) { wcOrderRestClient.postOrderNote(localOrderId, remoteOrderId, site, note) }
+    suspend fun postOrderNote(payload: PostOrderNotePayload): OnOrderChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "postOrderNote") {
+            val result = with(payload) { wcOrderRestClient.postOrderNote(localOrderId, remoteOrderId, site, note) }
+
+            return@withDefaultContext if (payload.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNote(result.note)
+                OnOrderChanged(rowsAffected)
+            }
+        }
     }
 
     private fun fetchOrderStatusOptions(payload: FetchOrderStatusOptionsPayload) {
@@ -772,20 +779,6 @@ class WCOrderStore @Inject constructor(
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
         val rowsAffected = updateOrderStatusLocally(LocalId(payload.order.id), payload.order.status)
         return OnOrderChanged(rowsAffected).also { it.error = payload.error }
-    }
-
-    private fun handlePostOrderNoteCompleted(payload: RemoteOrderNotePayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNote(payload.note)
-            onOrderChanged = OnOrderChanged(rowsAffected)
-        }
-
-        onOrderChanged.causeOfChange = WCOrderAction.POST_ORDER_NOTE
-        emitChange(onOrderChanged)
     }
 
     private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload) {
