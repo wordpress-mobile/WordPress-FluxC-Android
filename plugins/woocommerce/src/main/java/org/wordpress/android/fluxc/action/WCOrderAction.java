@@ -3,8 +3,6 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload;
