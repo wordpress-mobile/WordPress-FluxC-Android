@@ -69,7 +69,7 @@ class NotificationRestClient @Inject constructor(
                 "version_code" to PackageUtils.getVersionCode(appContext).toString(),
                 "os_version" to Build.VERSION.RELEASE,
                 "device_uuid" to uuid,
-                ("selected_blog_id" to site?.siteId.toString()).takeIf { site != null }
+                ("selected_blog_id" to "")
         ).toMap()
 
         val url = WPCOMREST.devices.new_.urlV1
