@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
-import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -485,22 +484,17 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteOrderShipmentTrackingSuccess() {
+    fun testDeleteOrderShipmentTrackingSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         val trackingModel = WCOrderShipmentTrackingModel().apply {
             remoteTrackingId = "95bb641d79d7c6974001d6a03fbdabc0"
         }
 
         interceptor.respondWith("wc-delete-order-shipment-tracking-success.json")
-        orderRestClient.deleteShipmentTrackingForOrder(
+        val payload = orderRestClient.deleteShipmentTrackingForOrder(
                 siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING, lastAction!!.type)
-        val payload = lastAction!!.payload as DeleteOrderShipmentTrackingResponsePayload
         assertNull(payload.error)
         assertNotNull(payload.tracking)
 
