@@ -613,43 +613,53 @@ class OrderRestClient @Inject constructor(
      * via the Jetpack tunnel (see [JetpackTunnelGsonRequest].
      *
      * Note this is currently not supported in v3, but will be in the future.
-     *
-     * Dispatches a [WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING] action with the results
      */
-    fun deleteShipmentTrackingForOrder(
+    suspend fun deleteShipmentTrackingForOrder(
         site: SiteModel,
         localOrderId: Int,
         remoteOrderId: Long,
         tracking: WCOrderShipmentTrackingModel
-    ) {
+    ): DeleteOrderShipmentTrackingResponsePayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId)
                 .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
-
-        val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
-                { response: OrderShipmentTrackingApiResponse? ->
-                    val trackingResponse = response?.let {
-                        orderShipmentTrackingResponseToModel(it).apply {
-                            localSiteId = site.id
-                            this.localOrderId = localOrderId
-                            id = tracking.id
-                        }
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+                this,
+                site,
+                url,
+                OrderShipmentTrackingApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val model = orderShipmentTrackingResponseToModel(it).apply {
+                        localSiteId = site.id
+                        this.localOrderId = localOrderId
+                        id = tracking.id
                     }
-
-                    val payload = DeleteOrderShipmentTrackingResponsePayload(
-                            site, localOrderId, remoteOrderId, trackingResponse
+                    DeleteOrderShipmentTrackingResponsePayload(
+                            site,
+                            localOrderId,
+                            remoteOrderId,
+                            model
                     )
-                    dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = DeleteOrderShipmentTrackingResponsePayload(
-                            trackingsError, site, localOrderId, remoteOrderId, tracking
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
-                })
-        add(request)
+                } ?: DeleteOrderShipmentTrackingResponsePayload(
+                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        site,
+                        localOrderId,
+                        remoteOrderId,
+                        tracking
+                )
+            }
+            is JetpackError -> {
+                DeleteOrderShipmentTrackingResponsePayload(
+                        networkErrorToOrderError(response.error),
+                        site,
+                        localOrderId,
+                        remoteOrderId,
+                        tracking
+                )
+            }
+        }
     }
 
     /**
