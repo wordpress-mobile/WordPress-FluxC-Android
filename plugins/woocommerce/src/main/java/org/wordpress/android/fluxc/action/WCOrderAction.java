@@ -47,8 +47,6 @@ public enum WCOrderAction implements IAction {
     SEARCH_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsPayload.class)
     FETCH_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = DeleteOrderShipmentTrackingPayload.class)
-    DELETE_ORDER_SHIPMENT_TRACKING,
     @Action(payloadType = FetchOrderShipmentProvidersPayload.class)
     FETCH_ORDER_SHIPMENT_PROVIDERS,
 
@@ -69,8 +67,6 @@ public enum WCOrderAction implements IAction {
     SEARCHED_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsResponsePayload.class)
     FETCHED_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = DeleteOrderShipmentTrackingResponsePayload.class)
-    DELETED_ORDER_SHIPMENT_TRACKING,
     @Action(payloadType = FetchOrderShipmentProvidersResponsePayload.class)
     FETCHED_ORDER_SHIPMENT_PROVIDERS
 }
