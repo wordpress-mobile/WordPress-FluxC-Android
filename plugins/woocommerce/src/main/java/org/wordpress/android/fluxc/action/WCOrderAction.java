@@ -3,8 +3,6 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload;
@@ -43,8 +41,6 @@ public enum WCOrderAction implements IAction {
     SEARCH_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsPayload.class)
     FETCH_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = DeleteOrderShipmentTrackingPayload.class)
-    DELETE_ORDER_SHIPMENT_TRACKING,
     @Action(payloadType = FetchOrderShipmentProvidersPayload.class)
     FETCH_ORDER_SHIPMENT_PROVIDERS,
 
@@ -63,8 +59,6 @@ public enum WCOrderAction implements IAction {
     SEARCHED_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsResponsePayload.class)
     FETCHED_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = DeleteOrderShipmentTrackingResponsePayload.class)
-    DELETED_ORDER_SHIPMENT_TRACKING,
     @Action(payloadType = FetchOrderShipmentProvidersResponsePayload.class)
     FETCHED_ORDER_SHIPMENT_PROVIDERS
 }

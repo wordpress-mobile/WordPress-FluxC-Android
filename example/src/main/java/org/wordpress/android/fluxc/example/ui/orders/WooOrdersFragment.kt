@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
@@ -59,7 +58,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
-    private var pendingDeleteShipmentTracking: WCOrderShipmentTrackingModel? = null
     private var pendingOpenAddShipmentTracking: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -331,11 +329,19 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                     "remoteOrderId: ${order.remoteOrderId}")
 
                             wcOrderStore.getShipmentTrackingsForOrder(site, order.id).firstOrNull()?.let { tracking ->
-                                pendingDeleteShipmentTracking = tracking
-                                val payload = DeleteOrderShipmentTrackingPayload(
-                                        site, order.id, order.remoteOrderId, tracking
-                                )
-                                dispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(payload))
+                                coroutineScope.launch {
+                                    val onOrderChanged = wcOrderStore.deleteOrderShipmentTracking(
+                                            DeleteOrderShipmentTrackingPayload(
+                                                    site, order.id, order.remoteOrderId, tracking
+                                            )
+                                    )
+                                    onOrderChanged.takeUnless { it.isError }?.let {
+                                        prependToLog(
+                                                "Shipment tracking deleted successfully! " +
+                                                        "[${onOrderChanged.rowsAffected}] db rows affected."
+                                        )
+                                    } ?: prependToLog("Shipment tracking deletion FAILED!")
+                                }
                             } ?: prependToLog("No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
                                     "please fetch records first for this order")
                         } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
@@ -444,13 +450,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     FETCH_HAS_ORDERS -> {
                         val hasOrders = event.rowsAffected > 0
                         prependToLog("Store has orders: $hasOrders")
-                    }
-                    DELETE_ORDER_SHIPMENT_TRACKING -> {
-                        pendingDeleteShipmentTracking?.let {
-                            prependToLog("Shipment tracking deleted successfully! [${event.rowsAffected}] db rows " +
-                                    "affected.")
-                            pendingDeleteShipmentTracking = null
-                        }
                     }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }

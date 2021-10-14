@@ -4,11 +4,11 @@ import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
-import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import java.text.SimpleDateFormat
@@ -31,7 +30,6 @@ import javax.inject.Inject
 class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
-        DELETE_ORDER_SHIPMENT_TRACKING,
         FETCHED_ORDER_SHIPMENT_PROVIDERS
     }
 
@@ -149,13 +147,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 2: Delete the previously added shipment tracking record
          */
-        nextEvent = TestEvent.DELETE_ORDER_SHIPMENT_TRACKING
-        mCountDownLatch = CountDownLatch(1)
+        val onOrderChanged = orderStore.deleteOrderShipmentTracking(
+                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)
+        )
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(
-                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
+        assertFalse(onOrderChanged.isError)
         // Verify the tracking record is no longer in the database
         var currentCount = trackings.size
         trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
@@ -218,13 +214,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 2: Delete the previously added shipment tracking record
          */
-        nextEvent = TestEvent.DELETE_ORDER_SHIPMENT_TRACKING
-        mCountDownLatch = CountDownLatch(1)
+        val onOrderChanged = orderStore.deleteOrderShipmentTracking(
+                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)
+        )
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(
-                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
+        assertFalse(onOrderChanged.isError)
         // Verify the tracking record is no longer in the database
         var currentCount = trackings.size
         trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
@@ -257,24 +251,6 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
 
         val providers = orderStore.getShipmentProvidersForSite(sSite)
         assertTrue(providers.isNotEmpty())
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOrderChanged(event: OnOrderChanged) {
-        event.error?.let {
-            throw AssertionError("OnOrderChanged has unexpected error: " + it.type)
-        }
-
-        lastEvent = event
-
-        when (event.causeOfChange) {
-            DELETE_ORDER_SHIPMENT_TRACKING -> {
-                assertEquals(TestEvent.DELETE_ORDER_SHIPMENT_TRACKING, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
-        }
     }
 
     @Suppress("unused")
