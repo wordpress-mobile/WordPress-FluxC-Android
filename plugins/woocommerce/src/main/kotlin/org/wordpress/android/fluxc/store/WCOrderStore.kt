@@ -602,30 +602,35 @@ class WCOrderStore @Inject constructor(
     }
 
     suspend fun addOrderShipmentTracking(payload: AddOrderShipmentTrackingPayload): OnOrderChanged {
-        val result = with(payload) {
-            wcOrderRestClient.addOrderShipmentTrackingForOrder(
-                    site, localOrderId, remoteOrderId, tracking, isCustomProvider
-            )
-        }
+        return coroutineEngine.withDefaultContext(T.API, this, "addOrderShipmentTracking") {
+            val result = with(payload) {
+                wcOrderRestClient.addOrderShipmentTrackingForOrder(
+                        site, localOrderId, remoteOrderId, tracking, isCustomProvider
+                )
+            }
 
-        return if (result.isError) {
-            OnOrderChanged(0).also { it.error = result.error }
-        } else {
-            val rowsAffected = result.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
-            OnOrderChanged(rowsAffected)
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = result.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
+                OnOrderChanged(rowsAffected)
+            }
         }
     }
 
     suspend fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload): OnOrderChanged {
-        val result = with(payload) {
-            wcOrderRestClient.deleteShipmentTrackingForOrder(site, localOrderId, remoteOrderId, tracking)
-        }
-        return if (result.isError) {
-            OnOrderChanged(0).also { it.error = result.error }
-        } else {
-            // Remove the record from the database and send response
-            val rowsAffected = result.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) } ?: 0
-            OnOrderChanged(rowsAffected)
+        return coroutineEngine.withDefaultContext(T.API, this, "addOrderShipmentTracking") {
+            val result = with(payload) {
+                wcOrderRestClient.deleteShipmentTrackingForOrder(site, localOrderId, remoteOrderId, tracking)
+            }
+
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                // Remove the record from the database and send response
+                val rowsAffected = result.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) } ?: 0
+                OnOrderChanged(rowsAffected)
+            }
         }
     }
 
