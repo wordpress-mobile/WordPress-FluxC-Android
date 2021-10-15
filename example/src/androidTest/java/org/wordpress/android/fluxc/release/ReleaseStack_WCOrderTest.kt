@@ -39,11 +39,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         NONE,
         FETCHED_ORDERS,
         FETCHED_ORDERS_COUNT,
-        FETCHED_SINGLE_ORDER,
         FETCHED_HAS_ORDERS,
         SEARCHED_ORDERS,
-        POST_ORDER_NOTE,
-        POSTED_ORDER_NOTE,
         ERROR_ORDER_STATUS_NOT_FOUND,
         FETCHED_ORDER_STATUS_OPTIONS
     }
@@ -203,22 +200,18 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testPostOrderNote() {
+    fun testPostOrderNote() = runBlocking {
         val originalNote = WCOrderNoteModel().apply {
             localOrderId = orderModel.id
             localSiteId = sSite.id
             note = "Test rest note"
             isCustomerNote = true
         }
-        nextEvent = TestEvent.POST_ORDER_NOTE
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCOrderActionBuilder.newPostOrderNoteAction(
-                        PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId, sSite, originalNote)
-                )
+        val onOrderChanged = orderStore.postOrderNote(
+                PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId, sSite, originalNote)
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
+        assertTrue(onOrderChanged.rowsAffected != 0)
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.id)
         assertTrue(fetchedNotes.isNotEmpty())
@@ -288,10 +281,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_HAS_ORDERS -> {
                 assertEquals(TestEvent.FETCHED_HAS_ORDERS, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCOrderAction.POST_ORDER_NOTE -> {
-                assertEquals(TestEvent.POST_ORDER_NOTE, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

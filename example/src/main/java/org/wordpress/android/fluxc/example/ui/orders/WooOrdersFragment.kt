@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
-import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog
 import org.wordpress.android.fluxc.example.WCOrderListActivity
@@ -57,7 +56,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
     private var pendingOpenAddShipmentTracking: Boolean = false
@@ -202,13 +200,23 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         post_order_note.setOnClickListener {
             selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
-                    pendingNotesOrderModel = order
                     showSingleLineDialog(activity, "Enter note") { editText ->
                         val newNote = WCOrderNoteModel().apply {
                             note = editText.text.toString()
                         }
-                        val payload = PostOrderNotePayload(order.id, order.remoteOrderId, site, newNote)
-                        dispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(payload))
+                        coroutineScope.launch {
+                            val payload = PostOrderNotePayload(order.id, order.remoteOrderId, site, newNote)
+                            val onOrderChanged = wcOrderStore.postOrderNote(payload)
+                            if (!onOrderChanged.isError) {
+                                prependToLog(
+                                        "Posted note to the api for order ${order.remoteOrderId}"
+                                )
+                            } else {
+                                prependToLog(
+                                        "Posting note FAILED for order ${order.remoteOrderId}"
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -443,10 +451,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         val hasOrders = event.rowsAffected > 0
                         prependToLog("Store has orders: $hasOrders")
                     }
-                    POST_ORDER_NOTE -> prependToLog(
-                            "Posted ${event.rowsAffected} " +
-                                    "note to the api for order ${pendingNotesOrderModel!!.remoteOrderId}"
-                    )
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }

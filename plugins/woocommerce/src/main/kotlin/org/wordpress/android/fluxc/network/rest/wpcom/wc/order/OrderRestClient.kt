@@ -471,15 +471,13 @@ class OrderRestClient @Inject constructor(
     /**
      * Makes a POST call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * saving the provide4d note for the given WooCommerce [SiteModel] and [WCOrderModel].
-     *
-     * Dispatches a [WCOrderAction.POSTED_ORDER_NOTE] action with the resulting saved version of the order note.
      */
-    fun postOrderNote(
+    suspend fun postOrderNote(
         localOrderId: Int,
         remoteOrderId: Long,
         site: SiteModel,
         note: WCOrderNoteModel
-    ) {
+    ): RemoteOrderNotePayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
 
         val params = mutableMapOf(
@@ -487,24 +485,35 @@ class OrderRestClient @Inject constructor(
                 "customer_note" to note.isCustomerNote,
                 "added_by_user" to true
         )
-        val request = JetpackTunnelGsonRequest.buildPostRequest(
-                url, site.siteId, params, OrderNoteApiResponse::class.java,
-                { response: OrderNoteApiResponse? ->
-                    response?.let {
-                        val newNote = orderNoteResponseToOrderNoteModel(it).apply {
-                            localSiteId = site.id
-                            this.localOrderId = localOrderId
-                        }
-                        val payload = RemoteOrderNotePayload(localOrderId, remoteOrderId, site, note)
-                        dispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderNoteApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newNote = orderNoteResponseToOrderNoteModel(it).apply {
+                        localSiteId = site.id
+                        this.localOrderId = localOrderId
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val noteError = networkErrorToOrderError(networkError)
-                    val payload = RemoteOrderNotePayload(noteError, localOrderId, remoteOrderId, site, note)
-                    dispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
-                })
-        add(request)
+                    return RemoteOrderNotePayload(localOrderId, remoteOrderId, site, newNote)
+                } ?: RemoteOrderNotePayload(
+                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        localOrderId,
+                        remoteOrderId,
+                        site,
+                        note
+                )
+            }
+            is JetpackError -> {
+                val noteError = networkErrorToOrderError(response.error)
+                return RemoteOrderNotePayload(noteError, localOrderId, remoteOrderId, site, note)
+            }
+        }
     }
 
     /**

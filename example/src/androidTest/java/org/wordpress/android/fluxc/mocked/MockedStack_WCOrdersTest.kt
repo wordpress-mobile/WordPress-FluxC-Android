@@ -27,7 +27,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsRes
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
-import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -319,7 +318,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderNotePostSuccess() {
+    fun testOrderNotePostSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         val originalNote = WCOrderNoteModel().apply {
             localOrderId = 5
@@ -329,13 +328,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWith("wc-order-note-post-response-success.json")
-        orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
+        val payload = orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.POSTED_ORDER_NOTE, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderNotePayload
         with(payload) {
             assertNull(error)
             assertEquals(originalNote.note, note.note)
@@ -347,7 +341,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderNotePostError() {
+    fun testOrderNotePostError() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         val originalNote = WCOrderNoteModel().apply {
             localOrderId = 5
@@ -362,13 +356,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
+        val payload = orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.POSTED_ORDER_NOTE, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteOrderNotePayload
         with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
