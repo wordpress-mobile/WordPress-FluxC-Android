@@ -5,7 +5,9 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.persistence.QuickStartSqlUtils
+import org.wordpress.android.fluxc.store.QuickStartStore.QuickStartTaskType.CLAIM_DOMAIN
 import org.wordpress.android.fluxc.store.QuickStartStore.QuickStartTaskType.CUSTOMIZE
+import org.wordpress.android.fluxc.store.QuickStartStore.QuickStartTaskType.GET_DOMAIN
 import org.wordpress.android.fluxc.store.QuickStartStore.QuickStartTaskType.GROW
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -20,17 +22,19 @@ constructor(private val quickStartSqlUtils: QuickStartSqlUtils, dispatcher: Disp
         val order: Int
     ) {
         UNKNOWN("unknown", QuickStartTaskType.UNKNOWN, 0),
-        CREATE_SITE("create_site", CUSTOMIZE, 0),
-        UPDATE_SITE_TITLE("update_site_title", CUSTOMIZE, 1),
-        UPLOAD_SITE_ICON("upload_site_icon", CUSTOMIZE, 2),
-        EDIT_HOMEPAGE("edit_homepage", CUSTOMIZE, 3),
-        REVIEW_PAGES("review_pages", CUSTOMIZE, 4),
-        VIEW_SITE("view_site", CUSTOMIZE, 5),
-        ENABLE_POST_SHARING("enable_post_sharing", GROW, 7),
-        PUBLISH_POST("publish_post", GROW, 8),
-        FOLLOW_SITE("follow_site", GROW, 9),
-        CHECK_STATS("check_stats", GROW, 10),
-        EXPLORE_PLANS("explore_plans", GROW, 11);
+        CLAIM_FREE_DOMAIN("claim_domain", CLAIM_DOMAIN, 0),
+        GET_SITE_DOMAIN("get_domain", GET_DOMAIN, 1),
+        CREATE_SITE("create_site", CUSTOMIZE, 2),
+        UPDATE_SITE_TITLE("update_site_title", CUSTOMIZE, 3),
+        UPLOAD_SITE_ICON("upload_site_icon", CUSTOMIZE, 4),
+        EDIT_HOMEPAGE("edit_homepage", CUSTOMIZE, 5),
+        REVIEW_PAGES("review_pages", CUSTOMIZE, 6),
+        VIEW_SITE("view_site", CUSTOMIZE, 7),
+        ENABLE_POST_SHARING("enable_post_sharing", GROW, 8),
+        PUBLISH_POST("publish_post", GROW, 9),
+        FOLLOW_SITE("follow_site", GROW, 10),
+        CHECK_STATS("check_stats", GROW, 11),
+        EXPLORE_PLANS("explore_plans", GROW, 12);
 
         override fun toString(): String {
             return string
@@ -55,6 +59,8 @@ constructor(private val quickStartSqlUtils: QuickStartSqlUtils, dispatcher: Disp
 
     enum class QuickStartTaskType(private val string: String) {
         CUSTOMIZE("customize"),
+        CLAIM_DOMAIN("claim_domain"),
+        GET_DOMAIN("get_domain"),
         GROW("grow"),
         UNKNOWN("unknown");
 
