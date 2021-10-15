@@ -393,7 +393,7 @@ class OrderRestClient @Inject constructor(
     private suspend fun updateOrder(
         orderToUpdate: WCOrderModel,
         site: SiteModel,
-        updatePayload: Map<String, String>
+        updatePayload: Map<String, Any>
     ): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId).pathV3
 
@@ -435,6 +435,12 @@ class OrderRestClient @Inject constructor(
 
     suspend fun updateCustomerOrderNote(orderToUpdate: WCOrderModel, site: SiteModel, newNotes: String) =
             updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
+
+    suspend fun updateBillingAddress(orderToUpdate: WCOrderModel, site: SiteModel, billing: Billing) =
+            updateOrder(orderToUpdate, site, mapOf("billing" to billing))
+
+    suspend fun updateShippingAddress(orderToUpdate: WCOrderModel, site: SiteModel, shipping: Shipping) =
+            updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
