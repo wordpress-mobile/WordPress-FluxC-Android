@@ -58,6 +58,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var shippingState = ""
     @Column var shippingPostcode = ""
     @Column var shippingCountry = ""
+    @Column var shippingPhone = ""
 
     @Column var lineItems = ""
 

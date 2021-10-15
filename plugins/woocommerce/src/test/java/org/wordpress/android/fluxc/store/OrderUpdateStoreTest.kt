@@ -310,7 +310,7 @@ class OrderUpdateStoreTest {
             id = TEST_LOCAL_SITE_ID
         }
 
-        val emptyShipping = OrderAddress.Shipping("", "", "", "", "", "", "", "", "")
+        val emptyShipping = OrderAddress.Shipping("", "", "", "", "", "", "", "", "", "")
         val emptyShippingDto = Shipping("", "", "", "", "", "", "", "", "")
     }
 }

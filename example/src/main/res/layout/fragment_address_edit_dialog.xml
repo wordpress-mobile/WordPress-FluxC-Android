@@ -84,27 +84,27 @@
 
     <EditText
         android:id="@+id/country"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_row="5"
         android:layout_column="0"
-        android:layout_columnSpan="2"
-        android:hint="Country" />
-
-    <EditText
-        android:id="@+id/email"
-        android:layout_width="0dp"
-        android:layout_row="6"
-        android:layout_column="0"
         android:layout_columnWeight="1"
-        android:hint="Email" />
+        android:hint="Country" />
 
     <EditText
         android:id="@+id/phone"
         android:layout_width="0dp"
-        android:layout_row="6"
+        android:layout_row="5"
         android:layout_column="1"
         android:layout_columnWeight="1"
         android:hint="Phone" />
+
+    <EditText
+        android:id="@+id/email"
+        android:layout_width="match_parent"
+        android:layout_row="6"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:hint="Email" />
 
     <Button
         android:id="@+id/sendUpdate"

@@ -12,6 +12,7 @@ sealed class OrderAddress {
     abstract val state: String
     abstract val postcode: String
     abstract val country: String
+    abstract val phone: String
 
     data class Shipping(
         override val firstName: String,
@@ -22,7 +23,8 @@ sealed class OrderAddress {
         override val city: String,
         override val state: String,
         override val postcode: String,
-        override val country: String
+        override val country: String,
+        override val phone: String
     ) : OrderAddress() {
         constructor(orderModel: WCOrderModel) : this(
                 firstName = orderModel.shippingFirstName,
@@ -33,12 +35,12 @@ sealed class OrderAddress {
                 city = orderModel.shippingCity,
                 state = orderModel.shippingState,
                 postcode = orderModel.shippingPostcode,
-                country = orderModel.shippingCountry
+                country = orderModel.shippingCountry,
+                phone = orderModel.shippingPhone
         )
     }
 
     data class Billing(
-        val phone: String,
         val email: String,
         override val firstName: String,
         override val lastName: String,
@@ -48,10 +50,10 @@ sealed class OrderAddress {
         override val city: String,
         override val state: String,
         override val postcode: String,
-        override val country: String
+        override val country: String,
+        override val phone: String
     ) : OrderAddress() {
         constructor(orderModel: WCOrderModel) : this(
-                phone = orderModel.billingPhone,
                 email = orderModel.billingEmail,
                 firstName = orderModel.billingFirstName,
                 lastName = orderModel.billingLastName,
@@ -61,7 +63,8 @@ sealed class OrderAddress {
                 city = orderModel.billingCity,
                 state = orderModel.billingState,
                 postcode = orderModel.billingPostcode,
-                country = orderModel.billingCountry
+                country = orderModel.billingCountry,
+                phone = orderModel.billingPhone
         )
     }
 }

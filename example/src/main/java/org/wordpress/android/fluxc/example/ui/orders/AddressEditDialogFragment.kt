@@ -61,8 +61,8 @@ class AddressEditDialogFragment : DaggerFragment() {
                         binding.city.setText(order?.shippingCity)
                         binding.state.setText(order?.shippingState)
                         binding.postcode.setText(order?.shippingPostcode)
+                        binding.phone.setText(order?.billingPhone)
                         binding.email.visibility = View.INVISIBLE
-                        binding.phone.visibility = View.INVISIBLE
                     }
                     BILLING -> {
                         binding.addressTypeSwitch.text = "Edit billing address for order ${order?.remoteOrderId}"
@@ -74,13 +74,9 @@ class AddressEditDialogFragment : DaggerFragment() {
                         binding.city.setText(order?.billingCity)
                         binding.state.setText(order?.billingState)
                         binding.postcode.setText(order?.billingPostcode)
-
+                        binding.phone.setText(order?.billingPhone)
                         binding.email.apply {
                             setText(order?.billingEmail)
-                            visibility = View.VISIBLE
-                        }
-                        binding.phone.apply {
-                            setText(order?.billingPhone)
                             visibility = View.VISIBLE
                         }
                     }
@@ -101,7 +97,8 @@ class AddressEditDialogFragment : DaggerFragment() {
                                 city = binding.city.text.toString(),
                                 state = binding.state.text.toString(),
                                 postcode = binding.postcode.text.toString(),
-                                country = binding.country.text.toString()
+                                country = binding.country.text.toString(),
+                                phone = binding.phone.text.toString()
                         )
                         BILLING -> OrderAddress.Billing(
                                 firstName = binding.firstName.text.toString(),
