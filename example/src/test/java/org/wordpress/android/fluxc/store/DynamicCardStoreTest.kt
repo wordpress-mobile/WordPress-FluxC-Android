@@ -10,7 +10,9 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import org.wordpress.android.fluxc.model.DynamicCardType
+import org.wordpress.android.fluxc.model.DynamicCardType.CLAIM_DOMAIN_QUICK_START
 import org.wordpress.android.fluxc.model.DynamicCardType.CUSTOMIZE_QUICK_START
+import org.wordpress.android.fluxc.model.DynamicCardType.GET_DOMAIN_QUICK_START
 import org.wordpress.android.fluxc.model.DynamicCardType.GROW_QUICK_START
 import org.wordpress.android.fluxc.persistence.DynamicCardSqlUtils
 import org.wordpress.android.fluxc.test
@@ -57,7 +59,11 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isNull()
-        assertThat(result.dynamicCardTypes).containsExactly(CUSTOMIZE_QUICK_START, GROW_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                CUSTOMIZE_QUICK_START,
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START,
+                GROW_QUICK_START)
     }
 
     @Test
@@ -68,7 +74,10 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isNull()
-        assertThat(result.dynamicCardTypes).containsExactly(GROW_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START,
+                GROW_QUICK_START)
     }
 
     @Test
@@ -79,7 +88,10 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isNull()
-        assertThat(result.dynamicCardTypes).containsExactly(CUSTOMIZE_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                CUSTOMIZE_QUICK_START,
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START)
     }
 
     @Test
@@ -89,7 +101,10 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isNull()
-        assertThat(result.dynamicCardTypes).containsExactly(GROW_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START,
+                GROW_QUICK_START)
     }
 
     @Test
@@ -99,12 +114,19 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isNull()
-        assertThat(result.dynamicCardTypes).containsExactly(CUSTOMIZE_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                CUSTOMIZE_QUICK_START,
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START)
     }
 
     @Test
     fun `does not return any cards when all are removed`() = test {
-        initDatabase(removedCards = listOf(CUSTOMIZE_QUICK_START, GROW_QUICK_START))
+        initDatabase(removedCards = listOf(
+                CUSTOMIZE_QUICK_START,
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START,
+                GROW_QUICK_START))
 
         val result = dynamicCardStore.getCards(siteId)
 
@@ -119,7 +141,11 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isEqualTo(GROW_QUICK_START)
-        assertThat(result.dynamicCardTypes).containsExactly(GROW_QUICK_START, CUSTOMIZE_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                GROW_QUICK_START,
+                CUSTOMIZE_QUICK_START,
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START)
     }
 
     @Test
@@ -129,7 +155,11 @@ class DynamicCardStoreTest {
         val result = dynamicCardStore.getCards(siteId)
 
         assertThat(result.pinnedItem).isEqualTo(CUSTOMIZE_QUICK_START)
-        assertThat(result.dynamicCardTypes).containsExactly(CUSTOMIZE_QUICK_START, GROW_QUICK_START)
+        assertThat(result.dynamicCardTypes).containsExactly(
+                CUSTOMIZE_QUICK_START,
+                CLAIM_DOMAIN_QUICK_START,
+                GET_DOMAIN_QUICK_START,
+                GROW_QUICK_START)
     }
 
     private fun initEmptyDatabase() {
