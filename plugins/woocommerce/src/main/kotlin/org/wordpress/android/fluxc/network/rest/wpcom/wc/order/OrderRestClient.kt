@@ -27,6 +27,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
@@ -81,14 +83,14 @@ class OrderRestClient @Inject constructor(
         val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() } ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderDto>>() {}.type
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderApiResponse>? ->
+                { response: List<OrderDto>? ->
                     val orderModels = response?.map {
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
@@ -178,13 +180,13 @@ class OrderRestClient @Inject constructor(
      */
     fun fetchOrdersByIds(site: SiteModel, remoteOrderIds: List<RemoteId>) {
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderDto>>() {}.type
         val params = mapOf(
                 "per_page" to remoteOrderIds.size.toString(),
                 "include" to remoteOrderIds.map { it.value }.joinToString(),
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderApiResponse>? ->
+                { response: List<OrderDto>? ->
                     val orderModels = response?.map {
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
@@ -245,7 +247,7 @@ class OrderRestClient @Inject constructor(
      */
     fun searchOrders(site: SiteModel, searchQuery: String, offset: Int) {
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderDto>>() {}.type
         val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
@@ -254,7 +256,7 @@ class OrderRestClient @Inject constructor(
         ).putIfNotEmpty("search" to searchQuery)
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderApiResponse>? ->
+                { response: List<OrderDto>? ->
                     val orderModels = response?.map {
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
@@ -287,7 +289,7 @@ class OrderRestClient @Inject constructor(
                 site,
                 url,
                 params,
-                OrderApiResponse::class.java
+                OrderDto::class.java
         )
 
         return when (response) {
@@ -360,13 +362,13 @@ class OrderRestClient @Inject constructor(
         val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
 
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderDto>>() {}.type
         val params = mapOf(
                 "per_page" to "1",
                 "offset" to "0",
                 "status" to statusFilter)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderApiResponse>? ->
+                { response: List<OrderDto>? ->
                     val orderModels = response?.map {
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
@@ -400,7 +402,7 @@ class OrderRestClient @Inject constructor(
             site = site,
             url = url,
             body = updatePayload.plus("_fields" to ORDER_FIELDS),
-            clazz = OrderApiResponse::class.java
+            clazz = OrderDto::class.java
         )
 
         return when (response) {
@@ -720,7 +722,7 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
+    private fun orderResponseToOrderModel(response: OrderDto): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
             number = response.number ?: remoteOrderId.toString()
