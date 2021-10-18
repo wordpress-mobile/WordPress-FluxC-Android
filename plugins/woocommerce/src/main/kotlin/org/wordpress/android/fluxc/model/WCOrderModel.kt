@@ -1,72 +1,61 @@
 package org.wordpress.android.fluxc.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import com.yarolegovich.wellsql.core.Identifiable
-import com.yarolegovich.wellsql.core.annotation.Column
-import com.yarolegovich.wellsql.core.annotation.PrimaryKey
-import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.AddressType
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
-@Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    @Column var localSiteId = 0
-    @Column var remoteOrderId = 0L // The unique identifier for this order on the server
-    @Column var number = "" // The order number to display to the user
-    @Column var status = ""
-    @Column var currency = ""
-    @Column var orderKey = ""
-    @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column var dateModified = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column var total = "" // Complete total, including taxes
-
-    @Column var totalTax = "" // The total amount of tax (from products, shipping, discounts, etc.)
-    @Column var shippingTotal = "" // The total shipping cost (excluding tax)
-    @Column var paymentMethod = "" // Payment method code, e.g. 'cod', 'stripe'
-    @Column var paymentMethodTitle = "" // Displayable payment method, e.g. 'Cash on delivery', 'Credit Card (Stripe)'
-    @Column var datePaid = ""
-    @Column var pricesIncludeTax = false
-
-    @Column var customerNote = "" // Note left by the customer during order submission
-
-    @Column var discountTotal = ""
-    @Column var discountCodes = ""
-
-    @Column var refundTotal = 0.0 // The total refund value for this order (usually a negative number)
-
-    @Column var billingFirstName = ""
-    @Column var billingLastName = ""
-    @Column var billingCompany = ""
-    @Column var billingAddress1 = ""
-    @Column var billingAddress2 = ""
-    @Column var billingCity = ""
-    @Column var billingState = ""
-    @Column var billingPostcode = ""
-    @Column var billingCountry = ""
-    @Column var billingEmail = ""
-    @Column var billingPhone = ""
-
-    @Column var shippingFirstName = ""
-    @Column var shippingLastName = ""
-    @Column var shippingCompany = ""
-    @Column var shippingAddress1 = ""
-    @Column var shippingAddress2 = ""
-    @Column var shippingCity = ""
-    @Column var shippingState = ""
-    @Column var shippingPostcode = ""
-    @Column var shippingCountry = ""
-
-    @Column var lineItems = ""
-
-    @Column var shippingLines = ""
-
-    @Column var feeLines = ""
-
-    @Column var metaData = ""
+@Entity
+data class WCOrderModel(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val localSiteId: Int = 0,
+    val remoteOrderId: Long = 0L, // The unique identifier for this order on the server
+    val number: String = "", // The, order number to display to the user
+    val status: String = "",
+    val currency: String = "",
+    val orderKey: String = "",
+    val dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    val dateModified: String = "",// ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    val total: String = "", // Complete total, including taxes
+    val totalTax: String = "", // The total amount of tax (from products, shipping, discounts, etc.)
+    val shippingTotal: String = "", // The total shipping cost (excluding tax)
+    val paymentMethod: String = "", // Payment method code e.g. 'cod' 'stripe'
+    val paymentMethodTitle: String = "", // Displayable payment method e.g. 'Cash on delivery' 'Credit Card (Stripe)'
+    val datePaid: String = "",
+    val pricesIncludeTax: Boolean = false,
+    val customerNote: String = "", // Note left by the customer during order submission
+    val discountTotal: String = "",
+    val discountCodes: String = "",
+    val refundTotal: Double = 0.0, // The total refund value for this order (usually a negative number)
+    val billingFirstName: String = "",
+    val billingLastName: String = "",
+    val billingCompany: String = "",
+    val billingAddress1: String = "",
+    val billingAddress2: String = "",
+    val billingCity: String = "",
+    val billingState: String = "",
+    val billingPostcode: String = "",
+    val billingCountry: String = "",
+    val billingEmail: String = "",
+    val billingPhone: String = "",
+    val shippingFirstName: String = "",
+    val shippingLastName: String = "",
+    val shippingCompany: String = "",
+    val shippingAddress1: String = "",
+    val shippingAddress2: String = "",
+    val shippingCity: String = "",
+    val shippingState: String = "",
+    val shippingPostcode: String = "",
+    val shippingCountry: String = "",
+    val lineItems: String = "",
+    val shippingLines: String = "",
+    val feeLines: String = "",
+    val metaData: String = "",
+) {
 
     companion object {
         private val gson by lazy { Gson() }
@@ -75,10 +64,13 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     class ShippingLine {
         val id: Long? = null
         val total: String? = null
+
         @SerializedName("total_tax")
         val totalTax: String? = null
+
         @SerializedName("method_id")
         val methodId: String? = null
+
         @SerializedName("method_title")
         val methodTitle: String? = null
     }
@@ -98,15 +90,19 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     class LineItem {
         val id: Long? = null
         val name: String? = null
+
         @SerializedName("parent_name")
         val parentName: String? = null
+
         @SerializedName("product_id")
         val productId: Long? = null
+
         @SerializedName("variation_id")
         val variationId: Long? = null
         val quantity: Float? = null
         val subtotal: String? = null
         val total: String? = null // Price x quantity
+
         @SerializedName("total_tax")
         val totalTax: String? = null
         val sku: String? = null
@@ -124,12 +120,6 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
                 Attribute(it.displayKey, it.displayValue as String)
             } ?: emptyList()
         }
-    }
-
-    override fun getId() = id
-
-    override fun setId(id: Int) {
-        this.id = id
     }
 
     /**

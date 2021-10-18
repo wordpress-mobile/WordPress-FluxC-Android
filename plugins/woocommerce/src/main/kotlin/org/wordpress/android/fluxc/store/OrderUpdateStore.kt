@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
 import org.wordpress.android.fluxc.persistence.wrappers.RowAffected
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
@@ -18,7 +19,7 @@ import javax.inject.Singleton
 class OrderUpdateStore @Inject internal constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
-    private val orderSqlDao: OrderSqlDao
+    private val ordersDao: OrdersDao
 ) {
     suspend fun updateCustomerOrderNote(
         orderLocalId: LocalId,
@@ -26,7 +27,7 @@ class OrderUpdateStore @Inject internal constructor(
         newCustomerNote: String
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
-            val initialOrder = orderSqlDao.getOrderByLocalId(orderLocalId)
+            val initialOrder = ordersDao.getOrderByLocalId(orderLocalId)
 
             if (initialOrder == null) {
                 emit(UpdateOrderResult.OptimisticUpdateResult(
@@ -37,10 +38,10 @@ class OrderUpdateStore @Inject internal constructor(
                         }
                 ))
             } else {
-                val optimisticUpdateRowsAffected: RowAffected = orderSqlDao.updateLocalOrder(initialOrder.id) {
-                    customerNote = newCustomerNote
+                ordersDao.updateLocalOrder(initialOrder.id) {
+                    copy(customerNote = newCustomerNote)
                 }
-                emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
+                emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(0)))
 
                 val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
                         initialOrder,
@@ -48,11 +49,13 @@ class OrderUpdateStore @Inject internal constructor(
                         newCustomerNote
                 )
                 val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
+                    ordersDao.insertOrUpdateOrder(initialOrder)
+                    OnOrderChanged(0).apply {
                         error = updateRemoteOrderPayload.error
                     }
                 } else {
-                    OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
+                    ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
+                    OnOrderChanged(0)
                 }
                 emit(RemoteUpdateResult(remoteUpdateResult))
             }
