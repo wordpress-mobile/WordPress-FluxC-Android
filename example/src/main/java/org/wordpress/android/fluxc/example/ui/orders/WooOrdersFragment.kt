@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog
 import org.wordpress.android.fluxc.example.WCOrderListActivity
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -361,6 +362,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     val payload = FetchOrderShipmentProvidersPayload(site, order)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
                 } ?: prependToLog("No orders found in db to use as seed. Fetch orders first.")
+            }
+        }
+
+        update_latest_order_billing_address.setOnClickListener {
+            selectedSite?.let { site ->
+                wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
+                    replaceFragment(AddressEditDialogFragment.newInstance(order))
+                } ?: showNoOrdersToast(site)
             }
         }
     }

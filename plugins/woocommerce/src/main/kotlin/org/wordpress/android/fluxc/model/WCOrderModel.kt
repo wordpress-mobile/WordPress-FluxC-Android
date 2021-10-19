@@ -8,7 +8,6 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.order.OrderAddress
-import org.wordpress.android.fluxc.model.order.OrderAddress.AddressType
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
@@ -59,6 +58,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var shippingState = ""
     @Column var shippingPostcode = ""
     @Column var shippingCountry = ""
+    @Column var shippingPhone = ""
 
     @Column var lineItems = ""
 
@@ -149,12 +149,12 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     /**
      * Returns the billing details wrapped in a [OrderAddress].
      */
-    fun getBillingAddress() = OrderAddress(this, AddressType.BILLING)
+    fun getBillingAddress() = OrderAddress.Billing(this)
 
     /**
      * Returns the shipping details wrapped in a [OrderAddress].
      */
-    fun getShippingAddress() = OrderAddress(this, AddressType.SHIPPING)
+    fun getShippingAddress() = OrderAddress.Shipping(this)
 
     /**
      * Deserializes the JSON contained in [lineItems] into a list of [LineItem] objects.
