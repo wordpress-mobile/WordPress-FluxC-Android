@@ -18,8 +18,8 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
@@ -165,46 +165,45 @@ class OrderUpdateStoreTest {
         verifyZeroInteractions(orderRestClient)
     }
 
-//    Updating addresses
-@Test
-fun `should optimistically update shipping and billing addresses`(): Unit = runBlocking {
-    // given
-    val updatedOrder = WCOrderModel().apply {
-        shippingFirstName = UPDATED_SHIPPING_FIRST_NAME
-        billingFirstName = UPDATED_BILLING_FIRST_NAME
-    }
-
-    setUp {
-        orderRestClient = mock {
-            onBlocking {
-                updateBothOrderAddresses(
-                        initialOrder,
-                        site,
-                        emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME),
-                        emptyBillingDto.copy(first_name = UPDATED_BILLING_FIRST_NAME)
-                )
-            } doReturn (RemoteOrderPayload(updatedOrder, site))
+    //    Updating addresses
+    @Test
+    fun `should optimistically update shipping and billing addresses`(): Unit = runBlocking {
+        // given
+        val updatedOrder = WCOrderModel().apply {
+            shippingFirstName = UPDATED_SHIPPING_FIRST_NAME
+            billingFirstName = UPDATED_BILLING_FIRST_NAME
         }
+
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateBothOrderAddresses(
+                            initialOrder,
+                            site,
+                            emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME),
+                            emptyBillingDto.copy(first_name = UPDATED_BILLING_FIRST_NAME)
+                    )
+                } doReturn (RemoteOrderPayload(updatedOrder, site))
+            }
+        }
+
+        // when
+        val results = sut.updateBothOrderAddresses(
+                orderLocalId = LocalId(initialOrder.id),
+                shippingAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME),
+                billingAddress = emptyBilling.copy(firstName = UPDATED_BILLING_FIRST_NAME)
+        ).toList()
+
+        // then
+        assertThat(results).hasSize(2).containsExactly(
+                OptimisticUpdateResult(OnOrderChanged(ROWS_AFFECTED)),
+                RemoteUpdateResult(OnOrderChanged(ROWS_AFFECTED))
+        )
+        verify(orderSqlDao).insertOrUpdateOrder(argThat {
+            shippingFirstName == UPDATED_SHIPPING_FIRST_NAME &&
+                    billingFirstName == UPDATED_BILLING_FIRST_NAME
+        })
     }
-
-    // when
-    val results = sut.updateBothOrderAddresses(
-            orderLocalId = LocalId(initialOrder.id),
-            shippingAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME),
-            billingAddress = emptyBilling.copy(firstName = UPDATED_BILLING_FIRST_NAME)
-    ).toList()
-
-    // then
-    assertThat(results).hasSize(2).containsExactly(
-            OptimisticUpdateResult(OnOrderChanged(ROWS_AFFECTED)),
-            RemoteUpdateResult(OnOrderChanged(ROWS_AFFECTED))
-    )
-    verify(orderSqlDao).insertOrUpdateOrder(argThat {
-        shippingFirstName == UPDATED_SHIPPING_FIRST_NAME &&
-        billingFirstName == UPDATED_BILLING_FIRST_NAME
-    })
-}
-
 
     @Test
     fun `should optimistically update shipping address`(): Unit = runBlocking {
