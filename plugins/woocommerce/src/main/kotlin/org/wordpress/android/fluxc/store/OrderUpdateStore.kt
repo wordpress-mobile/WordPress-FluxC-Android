@@ -62,26 +62,35 @@ class OrderUpdateStore @Inject internal constructor(
         newAddress: OrderAddress
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderAddress") {
-            val initialOrder = orderSqlDao.getOrderByLocalId(orderLocalId)
-            if (initialOrder == null) {
-                emitNoEntityFound("Order with id ${orderLocalId.value} not found")
-            } else {
-                val site = siteSqlUtils.getSiteWithLocalId(LocalId(initialOrder.localSiteId))
-                if (site == null) {
-                    emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
-                } else {
-                    val optimisticUpdateRowsAffected: RowsAffected = updateLocalOrderAddress(initialOrder, newAddress)
-                    emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
-
-                    val updateRemoteOrderPayload = when (newAddress) {
-                        is Billing -> wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
-                        is Shipping -> wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
-                    }
-
-                    emitRemoteUpdateResultOrRevertOnError(updateRemoteOrderPayload, initialOrder)
-                }
-            }
+            orderSqlDao.getOrderByLocalId(orderLocalId)
+                    ?.let { handleInitialOrderSite(it, newAddress) }
+                    ?: emitNoEntityFound("Order with id ${orderLocalId.value} not found")
         }
+    }
+
+    private suspend fun FlowCollector<UpdateOrderResult>.handleInitialOrderSite(
+        initialOrder: WCOrderModel,
+        newAddress: OrderAddress
+    ) {
+        siteSqlUtils.getSiteWithLocalId(LocalId(initialOrder.localSiteId))
+                ?.let { emitUpdateResult(it, initialOrder, newAddress) }
+                ?: emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
+    }
+
+    private suspend fun FlowCollector<UpdateOrderResult>.emitUpdateResult(
+        site: SiteModel,
+        initialOrder: WCOrderModel,
+        newAddress: OrderAddress
+    ) {
+        val optimisticUpdateRowsAffected: RowsAffected = updateLocalOrderAddress(initialOrder, newAddress)
+        emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
+
+        val updateRemoteOrderPayload = when (newAddress) {
+            is Billing -> wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
+            is Shipping -> wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
+        }
+
+        emitRemoteUpdateResultOrRevertOnError(updateRemoteOrderPayload, initialOrder)
     }
 
     private fun updateLocalOrderAddress(
