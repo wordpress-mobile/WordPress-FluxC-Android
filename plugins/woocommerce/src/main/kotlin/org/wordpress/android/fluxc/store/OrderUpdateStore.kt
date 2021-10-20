@@ -61,8 +61,7 @@ class OrderUpdateStore @Inject internal constructor(
 
     suspend fun updateOrderAddress(
         orderLocalId: LocalId,
-        newAddress: OrderAddress,
-        updateBothAddresses: Boolean = false
+        newAddress: OrderAddress
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderAddress") {
             takeWhenOrderDataAcquired(orderLocalId) { initialOrder, site ->
@@ -75,6 +74,29 @@ class OrderUpdateStore @Inject internal constructor(
                 }
 
                 emitRemoteUpdateResultOrRevertOnError(updateRemoteOrderPayload, initialOrder)
+            }
+        }
+    }
+
+    suspend fun updateBothOrderAddresses(
+        orderLocalId: LocalId,
+        shippingAddress: Shipping,
+        billingAddress: Billing
+    ): Flow<UpdateOrderResult> {
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateBothOrderAddresses") {
+            takeWhenOrderDataAcquired(orderLocalId) { initialOrder, site ->
+                updateBothLocalOrderAddresses(
+                        initialOrder,
+                        shippingAddress,
+                        billingAddress
+                ).let { emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(it))) }
+
+                wcOrderRestClient.updateAllAddresses(
+                        initialOrder,
+                        site,
+                        shippingAddress.toDto(),
+                        billingAddress.toDto()
+                ).let { emitRemoteUpdateResultOrRevertOnError(it, initialOrder) }
             }
         }
     }
@@ -95,31 +117,44 @@ class OrderUpdateStore @Inject internal constructor(
         newAddress: OrderAddress
     ) = orderSqlDao.updateLocalOrder(initialOrder.id) {
         when (newAddress) {
-            is Billing -> {
-                this.billingFirstName = newAddress.firstName
-                this.billingLastName = newAddress.lastName
-                this.billingCompany = newAddress.company
-                this.billingAddress1 = newAddress.address1
-                this.billingAddress2 = newAddress.address2
-                this.billingCity = newAddress.city
-                this.billingState = newAddress.state
-                this.billingPostcode = newAddress.postcode
-                this.billingCountry = newAddress.country
-                this.billingEmail = newAddress.email
-                this.billingPhone = newAddress.phone
-            }
-            is Shipping -> {
-                this.shippingFirstName = newAddress.firstName
-                this.shippingLastName = newAddress.lastName
-                this.shippingCompany = newAddress.company
-                this.shippingAddress1 = newAddress.address1
-                this.shippingAddress2 = newAddress.address2
-                this.shippingCity = newAddress.city
-                this.shippingState = newAddress.state
-                this.shippingPostcode = newAddress.postcode
-                this.shippingCountry = newAddress.country
-            }
+            is Billing -> updateLocalBillingAddress(newAddress)
+            is Shipping -> updateLocalShippingAddress(newAddress)
         }
+    }
+
+    private fun updateBothLocalOrderAddresses(
+        initialOrder: WCOrderModel,
+        shippingAddress: Shipping,
+        billingAddress: Billing
+    ) = orderSqlDao.updateLocalOrder(initialOrder.id) {
+        updateLocalShippingAddress(shippingAddress)
+        updateLocalBillingAddress(billingAddress)
+    }
+
+    private fun WCOrderModel.updateLocalShippingAddress(newAddress: OrderAddress) {
+        this.shippingFirstName = newAddress.firstName
+        this.shippingLastName = newAddress.lastName
+        this.shippingCompany = newAddress.company
+        this.shippingAddress1 = newAddress.address1
+        this.shippingAddress2 = newAddress.address2
+        this.shippingCity = newAddress.city
+        this.shippingState = newAddress.state
+        this.shippingPostcode = newAddress.postcode
+        this.shippingCountry = newAddress.country
+    }
+
+    private fun WCOrderModel.updateLocalBillingAddress(newAddress: Billing) {
+        this.billingFirstName = newAddress.firstName
+        this.billingLastName = newAddress.lastName
+        this.billingCompany = newAddress.company
+        this.billingAddress1 = newAddress.address1
+        this.billingAddress2 = newAddress.address2
+        this.billingCity = newAddress.city
+        this.billingState = newAddress.state
+        this.billingPostcode = newAddress.postcode
+        this.billingCountry = newAddress.country
+        this.billingEmail = newAddress.email
+        this.billingPhone = newAddress.phone
     }
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateResultOrRevertOnError(
