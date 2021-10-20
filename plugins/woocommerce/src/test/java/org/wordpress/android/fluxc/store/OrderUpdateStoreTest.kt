@@ -177,7 +177,7 @@ fun `should optimistically update shipping and billing addresses`(): Unit = runB
     setUp {
         orderRestClient = mock {
             onBlocking {
-                updateAllAddresses(
+                updateBothOrderAddresses(
                         initialOrder,
                         site,
                         emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME),

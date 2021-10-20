@@ -91,7 +91,7 @@ class OrderUpdateStore @Inject internal constructor(
                         billingAddress
                 ).let { emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(it))) }
 
-                wcOrderRestClient.updateAllAddresses(
+                wcOrderRestClient.updateBothOrderAddresses(
                         initialOrder,
                         site,
                         shippingAddress.toDto(),

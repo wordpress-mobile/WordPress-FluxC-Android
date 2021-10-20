@@ -442,7 +442,7 @@ class OrderRestClient @Inject constructor(
     suspend fun updateShippingAddress(orderToUpdate: WCOrderModel, site: SiteModel, shipping: Shipping) =
             updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
-    suspend fun updateAllAddresses(
+    suspend fun updateBothOrderAddresses(
         orderToUpdate: WCOrderModel,
         site: SiteModel,
         shipping: Shipping,
