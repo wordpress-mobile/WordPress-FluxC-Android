@@ -18,7 +18,8 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.E
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.EditTypeState.SHIPPING
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
+import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
 import org.wordpress.android.fluxc.store.OrderUpdateStore
 import javax.inject.Inject
 
@@ -88,31 +89,8 @@ class AddressEditDialogFragment : DaggerFragment() {
             selectedOrder.value?.let { order ->
                 CoroutineScope(Dispatchers.IO).launch {
                     val newAddress = when (currentAddressType.value) {
-                        SHIPPING -> OrderAddress.Shipping(
-                                firstName = binding.firstName.text.toString(),
-                                lastName = binding.lastName.text.toString(),
-                                company = binding.company.text.toString(),
-                                address1 = binding.address1.text.toString(),
-                                address2 = binding.address2.text.toString(),
-                                city = binding.city.text.toString(),
-                                state = binding.state.text.toString(),
-                                postcode = binding.postcode.text.toString(),
-                                country = binding.country.text.toString(),
-                                phone = binding.phone.text.toString()
-                        )
-                        BILLING -> OrderAddress.Billing(
-                                firstName = binding.firstName.text.toString(),
-                                lastName = binding.lastName.text.toString(),
-                                company = binding.company.text.toString(),
-                                address1 = binding.address1.text.toString(),
-                                address2 = binding.address2.text.toString(),
-                                city = binding.city.text.toString(),
-                                state = binding.state.text.toString(),
-                                postcode = binding.postcode.text.toString(),
-                                country = binding.country.text.toString(),
-                                phone = binding.phone.text.toString(),
-                                email = binding.email.text.toString()
-                        )
+                        SHIPPING -> generateShippingAddressModel()
+                        BILLING -> generateBillingAddressModel()
                     }
 
                     orderUpdateStore.updateOrderAddress(
@@ -126,7 +104,50 @@ class AddressEditDialogFragment : DaggerFragment() {
                 }
             }
         }
+
+        sendBothAddressesUpdate.setOnClickListener {
+            selectedOrder.value?.let { order ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    orderUpdateStore.updateBothOrderAddresses(
+                            orderLocalId = LocalId(order.id),
+                            shippingAddress = generateShippingAddressModel(),
+                            billingAddress = generateBillingAddressModel()
+                    ).collect {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            prependToLog("${it::class.simpleName} - Error: ${it.event.error?.message}")
+                        }
+                    }
+                }
+            }
+        }
     }
+
+    private fun generateBillingAddressModel() = Billing(
+            firstName = binding.firstName.text.toString(),
+            lastName = binding.lastName.text.toString(),
+            company = binding.company.text.toString(),
+            address1 = binding.address1.text.toString(),
+            address2 = binding.address2.text.toString(),
+            city = binding.city.text.toString(),
+            state = binding.state.text.toString(),
+            postcode = binding.postcode.text.toString(),
+            country = binding.country.text.toString(),
+            phone = binding.phone.text.toString(),
+            email = binding.email.text.toString()
+    )
+
+    private fun generateShippingAddressModel() = Shipping(
+            firstName = binding.firstName.text.toString(),
+            lastName = binding.lastName.text.toString(),
+            company = binding.company.text.toString(),
+            address1 = binding.address1.text.toString(),
+            address2 = binding.address2.text.toString(),
+            city = binding.city.text.toString(),
+            state = binding.state.text.toString(),
+            postcode = binding.postcode.text.toString(),
+            country = binding.country.text.toString(),
+            phone = binding.phone.text.toString()
+    )
 
     companion object {
         @JvmStatic
