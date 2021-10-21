@@ -34,6 +34,7 @@ class AddressEditDialogFragment : DaggerFragment() {
     private lateinit var binding: FragmentAddressEditDialogBinding
 
     var selectedOrder = MutableStateFlow<WCOrderModel?>(null)
+    var originalBillingEmail = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +52,7 @@ class AddressEditDialogFragment : DaggerFragment() {
 
         CoroutineScope(Dispatchers.Main).launch {
             currentAddressType.combine(selectedOrder) { addressType, order ->
+                originalBillingEmail = order?.billingEmail.orEmpty()
                 when (addressType) {
                     SHIPPING -> {
                         binding.addressTypeSwitch.text = "Edit shipping address for order ${order?.remoteOrderId}"
@@ -134,6 +136,8 @@ class AddressEditDialogFragment : DaggerFragment() {
             country = binding.country.text.toString(),
             phone = binding.phone.text.toString(),
             email = binding.email.text.toString()
+                    .takeIf { it.isNotEmpty() }
+                    ?: originalBillingEmail
     )
 
     private fun generateShippingAddressModel() = Shipping(
