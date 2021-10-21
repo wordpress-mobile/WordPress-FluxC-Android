@@ -28,7 +28,8 @@ class OrderDto : Response {
         val city: String? = null,
         val state: String? = null,
         val postcode: String? = null,
-        val country: String? = null
+        val country: String? = null,
+        val phone: String? = null
     )
 
     class CouponLine {
