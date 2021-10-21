@@ -442,6 +442,16 @@ class OrderRestClient @Inject constructor(
     suspend fun updateShippingAddress(orderToUpdate: WCOrderModel, site: SiteModel, shipping: Shipping) =
             updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
+    suspend fun updateBothOrderAddresses(
+        orderToUpdate: WCOrderModel,
+        site: SiteModel,
+        shipping: Shipping,
+        billing: Billing
+    ) = updateOrder(
+            orderToUpdate, site,
+            mapOf("shipping" to shipping, "billing" to billing)
+    )
+
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].

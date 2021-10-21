@@ -22,6 +22,8 @@ import org.wordpress.android.util.AppLog.T
 import javax.inject.Inject
 import javax.inject.Singleton
 
+typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(WCOrderModel, SiteModel) -> Unit
+
 @Singleton
 class OrderUpdateStore @Inject internal constructor(
     private val coroutineEngine: CoroutineEngine,
@@ -62,26 +64,52 @@ class OrderUpdateStore @Inject internal constructor(
         newAddress: OrderAddress
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderAddress") {
-            val initialOrder = orderSqlDao.getOrderByLocalId(orderLocalId)
-            if (initialOrder == null) {
-                emitNoEntityFound("Order with id ${orderLocalId.value} not found")
-            } else {
-                val site = siteSqlUtils.getSiteWithLocalId(LocalId(initialOrder.localSiteId))
-                if (site == null) {
-                    emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
-                } else {
-                    val optimisticUpdateRowsAffected: RowsAffected = updateLocalOrderAddress(initialOrder, newAddress)
-                    emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
+            takeWhenOrderDataAcquired(orderLocalId) { initialOrder, site ->
+                val optimisticUpdateRowsAffected: RowsAffected = updateLocalOrderAddress(initialOrder, newAddress)
+                emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(optimisticUpdateRowsAffected)))
 
-                    val updateRemoteOrderPayload = when (newAddress) {
-                        is Billing -> wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
-                        is Shipping -> wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
-                    }
-
-                    emitRemoteUpdateResultOrRevertOnError(updateRemoteOrderPayload, initialOrder)
+                val updateRemoteOrderPayload = when (newAddress) {
+                    is Billing -> wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
+                    is Shipping -> wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
                 }
+
+                emitRemoteUpdateResultOrRevertOnError(updateRemoteOrderPayload, initialOrder)
             }
         }
+    }
+
+    suspend fun updateBothOrderAddresses(
+        orderLocalId: LocalId,
+        shippingAddress: Shipping,
+        billingAddress: Billing
+    ): Flow<UpdateOrderResult> {
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateBothOrderAddresses") {
+            takeWhenOrderDataAcquired(orderLocalId) { initialOrder, site ->
+                updateBothLocalOrderAddresses(
+                        initialOrder,
+                        shippingAddress,
+                        billingAddress
+                ).let { emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged(it))) }
+
+                wcOrderRestClient.updateBothOrderAddresses(
+                        initialOrder,
+                        site,
+                        shippingAddress.toDto(),
+                        billingAddress.toDto()
+                ).let { emitRemoteUpdateResultOrRevertOnError(it, initialOrder) }
+            }
+        }
+    }
+
+    private suspend fun FlowCollector<UpdateOrderResult>.takeWhenOrderDataAcquired(
+        orderLocalId: LocalId,
+        predicate: UpdateOrderFlowPredicate
+    ) {
+        orderSqlDao.getOrderByLocalId(orderLocalId)?.let { initialOrder ->
+            siteSqlUtils.getSiteWithLocalId(LocalId(initialOrder.localSiteId))
+                    ?.let { predicate(initialOrder, it) }
+                    ?: emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
+        } ?: emitNoEntityFound("Order with id ${orderLocalId.value} not found")
     }
 
     private fun updateLocalOrderAddress(
@@ -89,31 +117,44 @@ class OrderUpdateStore @Inject internal constructor(
         newAddress: OrderAddress
     ) = orderSqlDao.updateLocalOrder(initialOrder.id) {
         when (newAddress) {
-            is Billing -> {
-                this.billingFirstName = newAddress.firstName
-                this.billingLastName = newAddress.lastName
-                this.billingCompany = newAddress.company
-                this.billingAddress1 = newAddress.address1
-                this.billingAddress2 = newAddress.address2
-                this.billingCity = newAddress.city
-                this.billingState = newAddress.state
-                this.billingPostcode = newAddress.postcode
-                this.billingCountry = newAddress.country
-                this.billingEmail = newAddress.email
-                this.billingPhone = newAddress.phone
-            }
-            is Shipping -> {
-                this.shippingFirstName = newAddress.firstName
-                this.shippingLastName = newAddress.lastName
-                this.shippingCompany = newAddress.company
-                this.shippingAddress1 = newAddress.address1
-                this.shippingAddress2 = newAddress.address2
-                this.shippingCity = newAddress.city
-                this.shippingState = newAddress.state
-                this.shippingPostcode = newAddress.postcode
-                this.shippingCountry = newAddress.country
-            }
+            is Billing -> updateLocalBillingAddress(newAddress)
+            is Shipping -> updateLocalShippingAddress(newAddress)
         }
+    }
+
+    private fun updateBothLocalOrderAddresses(
+        initialOrder: WCOrderModel,
+        shippingAddress: Shipping,
+        billingAddress: Billing
+    ) = orderSqlDao.updateLocalOrder(initialOrder.id) {
+        updateLocalShippingAddress(shippingAddress)
+        updateLocalBillingAddress(billingAddress)
+    }
+
+    private fun WCOrderModel.updateLocalShippingAddress(newAddress: OrderAddress) {
+        this.shippingFirstName = newAddress.firstName
+        this.shippingLastName = newAddress.lastName
+        this.shippingCompany = newAddress.company
+        this.shippingAddress1 = newAddress.address1
+        this.shippingAddress2 = newAddress.address2
+        this.shippingCity = newAddress.city
+        this.shippingState = newAddress.state
+        this.shippingPostcode = newAddress.postcode
+        this.shippingCountry = newAddress.country
+    }
+
+    private fun WCOrderModel.updateLocalBillingAddress(newAddress: Billing) {
+        this.billingFirstName = newAddress.firstName
+        this.billingLastName = newAddress.lastName
+        this.billingCompany = newAddress.company
+        this.billingAddress1 = newAddress.address1
+        this.billingAddress2 = newAddress.address2
+        this.billingCity = newAddress.city
+        this.billingState = newAddress.state
+        this.billingPostcode = newAddress.postcode
+        this.billingCountry = newAddress.country
+        this.billingEmail = newAddress.email
+        this.billingPhone = newAddress.phone
     }
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateResultOrRevertOnError(
