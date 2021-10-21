@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.example;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,6 +22,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.action.MediaAction;
+import org.wordpress.android.fluxc.example.ui.common.FragmentExtKt;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -41,8 +44,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import dagger.android.support.AndroidSupportInjection;
-
-import static android.app.Activity.RESULT_OK;
 
 public class MediaFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;
@@ -75,6 +76,11 @@ public class MediaFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_media, container, false);
 
         mMediaList = (Spinner) view.findViewById(R.id.media_list);
+
+        view.findViewById(R.id.media_select_site).setOnClickListener(v -> FragmentExtKt.showSiteSelectorDialog(
+                MediaFragment.this,
+                mSiteStore.getSites().indexOf(mSite),
+                (site, pos) -> mSite = site));
 
         mCancelButton = view.findViewById(R.id.cancel_upload);
         mCancelButton.setOnClickListener(new View.OnClickListener() {
