@@ -791,6 +791,7 @@ class OrderRestClient @Inject constructor(
             shippingState = response.shipping?.state ?: ""
             shippingPostcode = response.shipping?.postcode ?: ""
             shippingCountry = response.shipping?.country ?: ""
+            shippingPhone = response.shipping?.phone.orEmpty()
 
             lineItems = response.line_items.toString()
             shippingLines = response.shipping_lines.toString()

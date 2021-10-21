@@ -141,6 +141,7 @@ class OrderUpdateStore @Inject internal constructor(
         this.shippingState = newAddress.state
         this.shippingPostcode = newAddress.postcode
         this.shippingCountry = newAddress.country
+        this.shippingPhone = newAddress.phone
     }
 
     private fun WCOrderModel.updateLocalBillingAddress(newAddress: Billing) {
