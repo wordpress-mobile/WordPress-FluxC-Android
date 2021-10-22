@@ -64,7 +64,7 @@ class AddressEditDialogFragment : DaggerFragment() {
                         binding.city.setText(order?.shippingCity)
                         binding.state.setText(order?.shippingState)
                         binding.postcode.setText(order?.shippingPostcode)
-                        binding.phone.setText(order?.billingPhone)
+                        binding.phone.setText(order?.shippingPhone)
                         binding.email.visibility = View.INVISIBLE
                     }
                     BILLING -> {

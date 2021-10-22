@@ -26,6 +26,7 @@ object OrderDtoMapper {
             city = this.city,
             state = this.state,
             postcode = this.postcode,
-            country = this.country
+            country = this.country,
+            phone = this.phone
     )
 }
