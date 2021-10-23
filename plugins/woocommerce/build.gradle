@@ -90,8 +90,3 @@ project.afterEvaluate {
         }
    }
 }
-
-publishToS3Plugin {
-    mavenPublishGroupId "org.wordpress.fluxc.plugins"
-    mavenPublishArtifactId "woocommerce"
-}
