@@ -11,6 +11,14 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation": "$projectDir/schemas".toString(),
+                        "room.incremental"   : "true",
+                ]
+            }
+        }
     }
     buildTypes {
         release {
@@ -39,7 +47,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.7'
 
     // WordPress libs
-    implementation ("org.wordpress:utils:$wordPressUtilsVersion") {
+    implementation("org.wordpress:utils:$wordPressUtilsVersion") {
         // Using official volley package
         exclude group: "com.mcxiaoke.volley"
         exclude group: "com.android.support"
@@ -87,7 +95,7 @@ project.afterEvaluate {
                 // version is set by 'publish-to-s3' plugin
             }
         }
-   }
+    }
 }
 
 publishToS3Plugin {
