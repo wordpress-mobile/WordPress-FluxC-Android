@@ -324,10 +324,10 @@ class WCOrderStore @Inject constructor(
         val statusFilter: String? = null,
         val canLoadMore: Boolean = false,
         val causeOfChange: WCOrderAction? = null,
-        private val error: OrderError? = null
+        private val orderError: OrderError? = null
     ) : OnChanged<OrderError>() {
         init {
-            super.error = error
+            super.error = orderError
         }
     }
 
@@ -511,7 +511,7 @@ class WCOrderStore @Inject constructor(
             val result = wcOrderRestClient.fetchSingleOrder(site, remoteOrderId)
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(error = result.error)
+                OnOrderChanged(orderError = result.error)
             } else {
                 ordersDao.insertOrUpdateOrder(order = result.order)
                 OnOrderChanged()
@@ -547,7 +547,9 @@ class WCOrderStore @Inject constructor(
                 emit(
                         OptimisticUpdateResult(
                                 OnOrderChanged(
-                                        error = OrderError(message = "Order with id ${orderLocalId.value} not found")
+                                        orderError = OrderError(
+                                                message = "Order with id ${orderLocalId.value} not found"
+                                        )
                                 )
                         )
                 )
@@ -566,7 +568,7 @@ class WCOrderStore @Inject constructor(
             val result = wcOrderRestClient.fetchOrderNotes(localOrderId, remoteOrderId, site)
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(error = result.error)
+                OnOrderChanged(orderError = result.error)
             } else {
                 OrderSqlUtils.insertOrIgnoreOrderNotes(result.notes)
                 OnOrderChanged()
@@ -579,7 +581,7 @@ class WCOrderStore @Inject constructor(
             val result = with(payload) { wcOrderRestClient.postOrderNote(localOrderId, remoteOrderId, site, note) }
 
             return@withDefaultContext if (payload.isError) {
-                OnOrderChanged(error = result.error)
+                OnOrderChanged(orderError = result.error)
             } else {
                 OrderSqlUtils.insertOrIgnoreOrderNote(result.note)
                 OnOrderChanged()
@@ -595,7 +597,7 @@ class WCOrderStore @Inject constructor(
         return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderShipmentTrackings") {
             val result = wcOrderRestClient.fetchOrderShipmentTrackings(site, localOrderId, remoteOrderId)
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(error = result.error)
+                OnOrderChanged(orderError = result.error)
             } else {
                 // Calculate which existing records should be deleted because they no longer exist in the payload
                 val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(
@@ -631,7 +633,7 @@ class WCOrderStore @Inject constructor(
             }
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(error = result.error)
+                OnOrderChanged(orderError = result.error)
             } else {
                 result.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
                 OnOrderChanged()
@@ -646,7 +648,7 @@ class WCOrderStore @Inject constructor(
             }
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(error = result.error)
+                OnOrderChanged(orderError = result.error)
             } else {
                 // Remove the record from the database and send response
                 result.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) }
@@ -661,7 +663,7 @@ class WCOrderStore @Inject constructor(
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
         val onOrderChanged: OnOrderChanged = if (payload.isError) {
-            OnOrderChanged(error = payload.error)
+            OnOrderChanged(orderError = payload.error)
         } else {
             // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
             // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
@@ -773,7 +775,7 @@ class WCOrderStore @Inject constructor(
      */
     private fun handleFetchOrdersCountCompleted(payload: FetchOrdersCountResponsePayload) {
         val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(error = payload.error)
+            OnOrderChanged(orderError = payload.error)
         } else {
             with(payload) {
                 OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
@@ -787,7 +789,7 @@ class WCOrderStore @Inject constructor(
      */
     private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
         val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(error = payload.error)
+            OnOrderChanged(orderError = payload.error)
         } else {
             with(payload) {
                 OnOrderChanged(
