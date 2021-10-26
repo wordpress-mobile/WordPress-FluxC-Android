@@ -43,7 +43,7 @@ class PluginsFragment : StoreSelectingFragment() {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
-                        "Enter a plugin slug.\n(Note: If testing Jetpack CP sites, don't enter `jetpack`)"
+                        "Enter a plugin slug.\n(Hint: If testing Jetpack CP sites, don't use `jetpack`)"
                 ) { pluginSlugText ->
                     if (pluginSlugText.text.isEmpty()) {
                         prependToLog("Slug is null so doing nothing")
@@ -99,11 +99,11 @@ class PluginsFragment : StoreSelectingFragment() {
         }
     }
 
-    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSitePluginConfigured(event: OnSitePluginConfigured) {
         if (!event.isError) {
-            prependToLog("${event.pluginName} is configured.")
+            // If there is no error, we can assume that the configuration (activating in our case) is successful.
+            prependToLog("${event.pluginName} is activated.")
         }
     }
 }
