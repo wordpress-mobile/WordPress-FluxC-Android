@@ -129,7 +129,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(
                         OnOrderChanged(
-                                error = OrderError(message = specificOrderError)
+                                orderError = OrderError(message = specificOrderError)
                         )
                 )
         )
@@ -158,7 +158,7 @@ class OrderUpdateStoreTest {
         assertThat(results).containsExactly(
                 OptimisticUpdateResult(
                         event = OnOrderChanged(
-                                error = OrderError(
+                                orderError = OrderError(
                                         message = "Order with id ${initialOrder.id} not found"
                                 )
                         )
@@ -273,7 +273,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(
                         OnOrderChanged(
-                                error = WCOrderStore.OrderError(type = GENERIC_ERROR)
+                                orderError = WCOrderStore.OrderError(type = GENERIC_ERROR)
                         )
                 )
         )
@@ -301,7 +301,7 @@ class OrderUpdateStoreTest {
         assertThat(results).containsExactly(
                 OptimisticUpdateResult(
                         OnOrderChanged(
-                                error = OrderError(
+                                orderError = OrderError(
                                         message = "Order with id ${initialOrder.id} not found"
                                 )
                         )
@@ -328,7 +328,7 @@ class OrderUpdateStoreTest {
         assertThat(results).containsExactly(
                 OptimisticUpdateResult(
                         event = OnOrderChanged(
-                                error = OrderError(
+                                orderError = OrderError(
                                         message = "Site with local id ${initialOrder.localSiteId} not found"
                                 )
                         )
