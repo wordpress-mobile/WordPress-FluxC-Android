@@ -43,7 +43,7 @@ class OrderUpdateStore @Inject internal constructor(
                 emit(
                         UpdateOrderResult.OptimisticUpdateResult(
                                 OnOrderChanged(
-                                        error = WCOrderStore.OrderError(
+                                        orderError = WCOrderStore.OrderError(
                                                 message = "Order with id ${orderLocalId.value} not found"
                                         )
                                 )
@@ -63,7 +63,7 @@ class OrderUpdateStore @Inject internal constructor(
                 )
                 val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
                     ordersDao.insertOrUpdateOrder(initialOrder)
-                    OnOrderChanged(error = updateRemoteOrderPayload.error)
+                    OnOrderChanged(orderError = updateRemoteOrderPayload.error)
                 } else {
                     ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
                     OnOrderChanged()
@@ -182,7 +182,7 @@ class OrderUpdateStore @Inject internal constructor(
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
             ordersDao.insertOrUpdateOrder(initialOrder)
-            OnOrderChanged(error = updateRemoteOrderPayload.error)
+            OnOrderChanged(orderError = updateRemoteOrderPayload.error)
         } else {
             ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
             OnOrderChanged()
@@ -193,7 +193,7 @@ class OrderUpdateStore @Inject internal constructor(
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitNoEntityFound(message: String) {
         emit(UpdateOrderResult.OptimisticUpdateResult(
-                OnOrderChanged(error = WCOrderStore.OrderError(message = message))
+                OnOrderChanged(orderError = WCOrderStore.OrderError(message = message))
         ))
     }
 }
