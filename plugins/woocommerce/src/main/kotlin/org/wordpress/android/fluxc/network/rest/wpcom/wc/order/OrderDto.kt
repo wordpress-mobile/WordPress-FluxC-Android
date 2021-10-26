@@ -4,32 +4,33 @@ import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName")
-class OrderApiResponse : Response {
-    class Billing {
-        val first_name: String? = null
-        val last_name: String? = null
-        val company: String? = null
-        val address_1: String? = null
-        val address_2: String? = null
-        val city: String? = null
-        val state: String? = null
-        val postcode: String? = null
-        val country: String? = null
-        val email: String? = null
+class OrderDto : Response {
+    data class Billing(
+        val first_name: String? = null,
+        val last_name: String? = null,
+        val company: String? = null,
+        val address_1: String? = null,
+        val address_2: String? = null,
+        val city: String? = null,
+        val state: String? = null,
+        val postcode: String? = null,
+        val country: String? = null,
+        val email: String? = null,
         val phone: String? = null
-    }
+    )
 
-    class Shipping {
-        val first_name: String? = null
-        val last_name: String? = null
-        val company: String? = null
-        val address_1: String? = null
-        val address_2: String? = null
-        val city: String? = null
-        val state: String? = null
-        val postcode: String? = null
-        val country: String? = null
-    }
+    data class Shipping(
+        val first_name: String? = null,
+        val last_name: String? = null,
+        val company: String? = null,
+        val address_1: String? = null,
+        val address_2: String? = null,
+        val city: String? = null,
+        val state: String? = null,
+        val postcode: String? = null,
+        val country: String? = null,
+        val phone: String? = null
+    )
 
     class CouponLine {
         val code: String? = null

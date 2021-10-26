@@ -5,12 +5,12 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import javax.inject.Inject
 
-typealias RowAffected = Int
+typealias RowsAffected = Int
 
 internal class OrderSqlDao @Inject constructor() {
-    fun insertOrUpdateOrder(order: WCOrderModel): RowAffected = OrderSqlUtils.insertOrUpdateOrder(order)
+    fun insertOrUpdateOrder(order: WCOrderModel): RowsAffected = OrderSqlUtils.insertOrUpdateOrder(order)
 
-    fun updateLocalOrder(localOrderId: Int, updateOrder: WCOrderModel.() -> Unit): RowAffected {
+    fun updateLocalOrder(localOrderId: Int, updateOrder: WCOrderModel.() -> Unit): RowsAffected {
         val updatedOrder = OrderSqlUtils.getOrderByLocalId(localOrderId)
                 .apply(updateOrder)
         return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)

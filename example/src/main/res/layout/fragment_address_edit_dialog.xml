@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="2"
+    android:padding="16dp"
+    android:rowCount="9"
+    android:stretchMode="columnWidth"
+    tools:context=".ui.orders.AddressEditDialogFragment">
+
+    <Switch
+        android:id="@+id/addressTypeSwitch"
+        android:layout_width="match_parent"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:text="Update Shipping Address"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/firstName"
+        android:layout_width="0dp"
+        android:layout_row="1"
+        android:layout_column="0"
+        android:layout_columnWeight="1"
+        android:hint="First name" />
+
+    <EditText
+        android:id="@+id/lastName"
+        android:layout_width="0dp"
+        android:layout_row="1"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
+        android:hint="Last name" />
+
+    <EditText
+        android:id="@+id/company"
+        android:layout_width="0dp"
+        android:layout_row="2"
+        android:layout_column="0"
+        android:layout_columnWeight="1"
+        android:hint="Company" />
+
+    <EditText
+        android:id="@+id/address1"
+        android:layout_width="0dp"
+        android:layout_row="2"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
+        android:hint="Address 1" />
+
+    <EditText
+        android:id="@+id/address2"
+        android:layout_width="0dp"
+        android:layout_row="3"
+        android:layout_column="0"
+        android:layout_columnWeight="1"
+        android:hint="Address 2" />
+
+    <EditText
+        android:id="@+id/city"
+        android:layout_width="0dp"
+        android:layout_row="3"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
+        android:hint="City" />
+
+    <EditText
+        android:id="@+id/state"
+        android:layout_width="0dp"
+        android:layout_row="4"
+        android:layout_column="0"
+        android:layout_columnWeight="1"
+        android:hint="State" />
+
+    <EditText
+        android:id="@+id/postcode"
+        android:layout_width="0dp"
+        android:layout_row="4"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
+        android:hint="Post code" />
+
+    <EditText
+        android:id="@+id/country"
+        android:layout_width="0dp"
+        android:layout_row="5"
+        android:layout_column="0"
+        android:layout_columnWeight="1"
+        android:hint="Country" />
+
+    <EditText
+        android:id="@+id/phone"
+        android:layout_width="0dp"
+        android:layout_row="5"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
+        android:hint="Phone" />
+
+    <EditText
+        android:id="@+id/email"
+        android:layout_width="match_parent"
+        android:layout_row="6"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:hint="Email" />
+
+    <Button
+        android:id="@+id/sendUpdate"
+        android:layout_width="match_parent"
+        android:layout_row="7"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:text="Send update" />
+
+    <Button
+        android:id="@+id/sendBothAddressesUpdate"
+        android:layout_width="match_parent"
+        android:layout_row="8"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:text="Send update replicating both addresses" />
+
+</GridLayout>
