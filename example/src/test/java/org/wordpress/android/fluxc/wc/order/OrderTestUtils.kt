@@ -31,16 +31,16 @@ object OrderTestUtils {
         siteId: Int = 6,
         modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderModel {
-        return WCOrderModel().apply {
-            remoteOrderId = remoteId
-            localSiteId = siteId
-            status = orderStatus
-            dateModified = modified
-            dateCreated = "1955-11-05T14:15:00Z"
-            datePaid = "1956-11-05T14:15:00Z"
-            currency = "USD"
+        return WCOrderModel(
+            remoteOrderId = remoteId,
+            localSiteId = siteId,
+            status = orderStatus,
+            dateModified = modified,
+            dateCreated = "1955-11-05T14:15:00Z",
+            datePaid = "1956-11-05T14:15:00Z",
+            currency = "USD",
             total = "10.0"
-        }
+        )
     }
 
     fun generateSampleOrderSummary(

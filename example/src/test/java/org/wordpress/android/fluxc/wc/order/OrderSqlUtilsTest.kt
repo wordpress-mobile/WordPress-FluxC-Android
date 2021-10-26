@@ -12,13 +12,11 @@ import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
@@ -35,7 +33,6 @@ class OrderSqlUtilsTest {
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
                 listOf(
-                        WCOrderModel::class.java,
                         WCOrderNoteModel::class.java,
                         WCOrderStatusModel::class.java,
                         WCOrderShipmentTrackingModel::class.java,
@@ -45,89 +42,6 @@ class OrderSqlUtilsTest {
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
-    }
-
-    @Test
-    fun testInsertOrUpdateOrder() {
-        val orderModel = OrderTestUtils.generateSampleOrder(42)
-        val site = SiteModel().apply { id = orderModel.localSiteId }
-
-        // Test inserting order
-        OrderSqlUtils.insertOrUpdateOrder(orderModel)
-        val storedOrders = OrderSqlUtils.getOrdersForSite(site)
-        assertEquals(1, storedOrders.size)
-        assertEquals(42, storedOrders[0].remoteOrderId)
-        assertEquals(orderModel, storedOrders[0])
-
-        // Test updating order
-        storedOrders[0].apply {
-            status = "processing"
-            customerNote = "please gift wrap"
-        }.also {
-            OrderSqlUtils.insertOrUpdateOrder(it)
-        }
-        val updatedOrders = OrderSqlUtils.getOrdersForSite(site)
-        assertEquals(1, storedOrders.size)
-        assertEquals(storedOrders[0].id, updatedOrders[0].id)
-        assertEquals(storedOrders[0].customerNote, updatedOrders[0].customerNote)
-        assertEquals(storedOrders[0].status, updatedOrders[0].status)
-    }
-
-    @Test
-    fun testGetOrdersForSite() {
-        val processingOrder = OrderTestUtils.generateSampleOrder(3)
-        val onHoldOrder = OrderTestUtils.generateSampleOrder(4, CoreOrderStatus.ON_HOLD.value)
-        val cancelledOrder = OrderTestUtils.generateSampleOrder(5, CoreOrderStatus.CANCELLED.value)
-        OrderSqlUtils.insertOrUpdateOrder(processingOrder)
-        OrderSqlUtils.insertOrUpdateOrder(onHoldOrder)
-        OrderSqlUtils.insertOrUpdateOrder(cancelledOrder)
-        val site = SiteModel().apply { id = processingOrder.localSiteId }
-
-        // Test getting orders without specifying a status
-        val storedOrders = OrderSqlUtils.getOrdersForSite(site)
-        assertEquals(3, storedOrders.size)
-
-        // Test pulling orders with a single status specified
-        val processingOrders = OrderSqlUtils.getOrdersForSite(site, listOf(CoreOrderStatus.PROCESSING.value))
-        assertEquals(1, processingOrders.size)
-
-        // Test pulling orders with multiple statuses specified
-        val mixStatusOrders = OrderSqlUtils
-                .getOrdersForSite(site, listOf(CoreOrderStatus.ON_HOLD.value, CoreOrderStatus.CANCELLED.value))
-        assertEquals(2, mixStatusOrders.size)
-    }
-
-    @Test
-    fun testGetOrderCountForSite() {
-        val order1 = OrderTestUtils.generateSampleOrder(1)
-        val site = SiteModel().apply { id = order1.localSiteId }
-        OrderSqlUtils.insertOrUpdateOrder(order1)
-        assertEquals(1, OrderSqlUtils.getOrderCountForSite(site))
-
-        val order2 = OrderTestUtils.generateSampleOrder(2)
-        OrderSqlUtils.insertOrUpdateOrder(order2)
-        assertEquals(2, OrderSqlUtils.getOrderCountForSite(site))
-
-        OrderSqlUtils.deleteOrdersForSite(site)
-        assertEquals(0, OrderSqlUtils.getOrderCountForSite(site))
-    }
-
-    @Test
-    fun testDeleteOrdersForSite() {
-        val order1 = OrderTestUtils.generateSampleOrder(1)
-        val order2 = OrderTestUtils.generateSampleOrder(2)
-        OrderSqlUtils.insertOrUpdateOrder(order1)
-        OrderSqlUtils.insertOrUpdateOrder(order2)
-        val site = SiteModel().apply { id = order1.localSiteId }
-
-        val storedOrders = OrderSqlUtils.getOrdersForSite(site)
-        assertEquals(2, storedOrders.size)
-
-        val deletedCount = OrderSqlUtils.deleteOrdersForSite(site)
-        assertEquals(2, deletedCount)
-
-        val deletedOrders = OrderSqlUtils.getOrdersForSite(site)
-        assertEquals(0, deletedOrders.size)
     }
 
     @Test

@@ -40,15 +40,6 @@ class OrderUpdateStore @Inject internal constructor(
             val initialOrder = ordersDao.getOrderByLocalId(orderLocalId)
 
             if (initialOrder == null) {
-                emit(
-                        UpdateOrderResult.OptimisticUpdateResult(
-                                OnOrderChanged(
-                                        error = WCOrderStore.OrderError(
-                                                message = "Order with id ${orderLocalId.value} not found"
-                                        )
-                                )
-                        )
-                )
                 emitNoEntityFound("Order with id ${orderLocalId.value} not found")
             } else {
                 ordersDao.updateLocalOrder(initialOrder.id) {
