@@ -9,7 +9,7 @@ pluginManagement {
         id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
         id "com.android.application" version gradle.ext.agpVersion
         id "com.android.library" version gradle.ext.agpVersion
-        id "com.automattic.android.publish-to-s3" version "0.6.1"
+        id "com.automattic.android.publish-to-s3" version "0.7.0"
     }
     repositories {
         maven {
