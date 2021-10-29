@@ -14,6 +14,8 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
 import org.wordpress.android.fluxc.persistence.wrappers.RowsAffected
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
@@ -163,8 +165,19 @@ class OrderUpdateStore @Inject internal constructor(
         initialOrder: WCOrderModel
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
+            val isLikelyEmptyBillingEmailError =
+                    updateRemoteOrderPayload.error.type == OrderErrorType.INVALID_PARAM &&
+                            updateRemoteOrderPayload.order.billingEmail.isBlank()
+
             OnOrderChanged(orderSqlDao.insertOrUpdateOrder(initialOrder)).apply {
-                error = updateRemoteOrderPayload.error
+                error = if (isLikelyEmptyBillingEmailError) {
+                    OrderError(
+                            type = OrderErrorType.EMPTY_BILLING_EMAIL,
+                            message = "Can't set empty billing email address on WooCommerce <= 5.8.1"
+                    )
+                } else {
+                    updateRemoteOrderPayload.error
+                }
             }
         } else {
             OnOrderChanged(orderSqlDao.insertOrUpdateOrder(updateRemoteOrderPayload.order))
@@ -176,7 +189,7 @@ class OrderUpdateStore @Inject internal constructor(
     private suspend fun FlowCollector<UpdateOrderResult>.emitNoEntityFound(message: String) {
         emit(UpdateOrderResult.OptimisticUpdateResult(
                 OnOrderChanged(NO_ROWS_AFFECTED).apply {
-                    error = WCOrderStore.OrderError(message = message)
+                    error = OrderError(message = message)
                 }
         ))
     }

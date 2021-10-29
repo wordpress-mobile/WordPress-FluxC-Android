@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.wrappers.OrderSqlDao
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_PARAM
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
@@ -327,6 +328,35 @@ class OrderUpdateStoreTest {
                     .isEqualTo("Site with local id ${initialOrder.localSiteId} not found")
         }
         verifyZeroInteractions(orderRestClient)
+    }
+
+    @Test
+    fun `should emit empty billing email address if its likely that that's the error`(): Unit = runBlocking {
+        // given
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateBillingAddress(
+                        initialOrder, site, emptyBillingDto
+                    )
+                }.doReturn(
+                    RemoteOrderPayload(
+                        error = WCOrderStore.OrderError(type = INVALID_PARAM),
+                        initialOrder,
+                        site
+                    )
+                )
+            }
+        }
+
+        // when
+        val results = sut.updateOrderAddress(
+            orderLocalId = LocalId(initialOrder.id),
+            newAddress = emptyBilling
+        ).toList()
+
+        // then
+        assertThat(results[1].event.error.type).isEqualTo(WCOrderStore.OrderErrorType.EMPTY_BILLING_EMAIL)
     }
 
     private companion object {
