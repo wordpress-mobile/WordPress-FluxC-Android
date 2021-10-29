@@ -12,6 +12,29 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/plugins_select_site"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingEnd="@dimen/activity_start_end_half_margin"
+                android:text="Select Site" />
+
+            <TextView
+                android:id="@+id/plugins_selected_site"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="@dimen/activity_start_end_half_margin"
+                android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+                android:textColor="@android:color/holo_blue_bright" />
+        </LinearLayout>
+
         <View
             android:id="@+id/divider1"
             style="@style/Divider" />

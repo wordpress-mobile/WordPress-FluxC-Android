@@ -1,16 +1,21 @@
 package org.wordpress.android.fluxc.example
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import dagger.android.support.AndroidSupportInjection
+import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.fragment_plugins.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.PluginActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PluginStore
 import org.wordpress.android.fluxc.store.PluginStore.FetchSitePluginPayload
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload
@@ -19,9 +24,12 @@ import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginFetched
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled
 import javax.inject.Inject
 
-class PluginsFragment : StoreSelectingFragment() {
+class PluginsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var pluginStore: PluginStore
+
+    private var selectedSite: SiteModel? = null
+    private var selectedPos: Int = -1
 
     override fun onStart() {
         super.onStart()
@@ -33,11 +41,26 @@ class PluginsFragment : StoreSelectingFragment() {
         dispatcher.unregister(this)
     }
 
+    override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_plugins, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        plugins_select_site.setOnClickListener {
+            showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
+                override fun onSiteSelected(site: SiteModel, pos: Int) {
+                    selectedSite = site
+                    selectedPos = pos
+                    plugins_selected_site.text = site.name ?: site.displayName
+                }
+            })
+        }
 
         install_activate_plugin.setOnClickListener {
             selectedSite?.let { site ->
@@ -99,6 +122,7 @@ class PluginsFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSitePluginConfigured(event: OnSitePluginConfigured) {
         if (!event.isError) {
