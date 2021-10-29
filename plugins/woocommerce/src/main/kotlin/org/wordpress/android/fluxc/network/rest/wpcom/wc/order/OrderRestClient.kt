@@ -137,7 +137,11 @@ class OrderRestClient @Inject constructor(
                 "offset" to offset.toString(),
                 "status" to statusFilter,
                 "_fields" to "id,date_created_gmt,date_modified_gmt"
-        ).putIfNotEmpty("search" to listDescriptor.searchQuery)
+        ).putIfNotEmpty(
+            "search" to listDescriptor.searchQuery,
+                "before" to listDescriptor.beforeFilter,
+                "after" to listDescriptor.afterFilter
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderSummaryApiResponse>? ->
