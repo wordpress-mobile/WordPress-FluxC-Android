@@ -17,10 +17,10 @@ import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.PluginActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PluginStore
-import org.wordpress.android.fluxc.store.PluginStore.FetchSitePluginPayload
+import org.wordpress.android.fluxc.store.PluginStore.FetchJetpackSitePluginPayload
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload
+import org.wordpress.android.fluxc.store.PluginStore.OnJetpackSitePluginFetched
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured
-import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginFetched
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled
 import javax.inject.Inject
 
@@ -92,8 +92,8 @@ class PluginsFragment : Fragment() {
                     pluginSlugText.text.toString().apply {
                         prependToLog("Fetching plugin: $this")
 
-                        val payload = FetchSitePluginPayload(site, this)
-                        dispatcher.dispatch(PluginActionBuilder.newFetchSitePluginAction(payload))
+                        val payload = FetchJetpackSitePluginPayload(site, this)
+                        dispatcher.dispatch(PluginActionBuilder.newFetchJetpackSitePluginAction(payload))
                     }
                 }
             } ?: prependToLog("Please select a site first.")
@@ -114,7 +114,7 @@ class PluginsFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSitePluginFetched(event: OnSitePluginFetched) {
+    fun onSitePluginFetched(event: OnJetpackSitePluginFetched) {
         if (!event.isError) {
             prependToLog("${event.plugin.displayName}: ${event.plugin.description}")
         } else {
