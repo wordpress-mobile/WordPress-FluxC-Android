@@ -47,7 +47,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.7'
 
     // WordPress libs
-    implementation("org.wordpress:utils:$wordPressUtilsVersion") {
+    implementation ("org.wordpress:utils:$wordPressUtilsVersion") {
         // Using official volley package
         exclude group: "com.mcxiaoke.volley"
         exclude group: "com.android.support"
@@ -92,13 +92,9 @@ project.afterEvaluate {
 
                 groupId "org.wordpress.fluxc.plugins"
                 artifactId "woocommerce"
+                artifact tasks.named("androidSourcesJar") // This task is added by 'publish-to-s3' plugin
                 // version is set by 'publish-to-s3' plugin
             }
         }
     }
-}
-
-publishToS3Plugin {
-    mavenPublishGroupId "org.wordpress.fluxc.plugins"
-    mavenPublishArtifactId "woocommerce"
 }
