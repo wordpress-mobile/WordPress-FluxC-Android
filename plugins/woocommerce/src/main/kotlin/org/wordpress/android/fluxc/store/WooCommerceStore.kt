@@ -294,7 +294,9 @@ open class WooCommerceStore @Inject constructor(
             if (updateSettingsResult.isError) {
                 return@withDefaultContext updateSettingsResult
             }
-            return@withDefaultContext WooResult(updateSettingsResult.model!! or fetchAndUpdateWooCommerceAvailability(site))
+            return@withDefaultContext WooResult(
+                    updateSettingsResult.model!! or fetchAndUpdateWooCommerceAvailability(site)
+            )
         }
     }
 
