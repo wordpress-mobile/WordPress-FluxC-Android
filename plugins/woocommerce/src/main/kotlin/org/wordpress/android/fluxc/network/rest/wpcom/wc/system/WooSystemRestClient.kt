@@ -142,10 +142,10 @@ class WooSystemRestClient @Inject constructor(
     )
 
     data class WPSiteSettingsResponse(
-        @SerializedName("title") val title: String?,
-        @SerializedName("description") val description: String?,
-        @SerializedName("url") val url: String?,
-        @SerializedName("show_on_front") val showOnFront: String?,
-        @SerializedName("page_on_front") val pageOnFront: Long?
+        @SerializedName("title") val title: String? = null,
+        @SerializedName("description") val description: String? = null,
+        @SerializedName("url") val url: String? = null,
+        @SerializedName("show_on_front") val showOnFront: String? = null,
+        @SerializedName("page_on_front") val pageOnFront: Long? = null
     )
 }
