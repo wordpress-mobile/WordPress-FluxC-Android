@@ -165,8 +165,7 @@ open class WooCommerceStore @Inject constructor(
                 }
             }
 
-        // Pass empty updated list to avoid a second fetch for WooCommerce availability
-        emitChange(OnSiteChanged(rowsAffected, emptyList()))
+        emitChange(OnSiteChanged(rowsAffected, fetchResult.updatedSites))
 
         return WooResult(getWooCommerceSites())
     }
@@ -462,18 +461,5 @@ open class WooCommerceStore @Inject constructor(
         }
 
         emitChange(onApiVersionFetched)
-    }
-
-    /**
-     * The goal of this is to make sure we update the sites if the fetching was done outside of [WooCommerceStore]
-     * We specify a higher priority to make sure this is delivered before reaching the final subscribers
-     */
-    @Subscribe(priority = 100)
-    fun onSiteChanged(siteChanged: OnSiteChanged) {
-        if (siteChanged.isError || siteChanged.rowsAffected == 0 || siteChanged.updatedSites.isEmpty()) return
-        coroutineEngine.launch(T.API, this, "Check woocommerce availability") {
-            siteChanged.updatedSites.filter { it.isJetpackCPConnected }
-                .forEach { site -> fetchAndUpdateWooCommerceAvailability(site) }
-        }
     }
 }
