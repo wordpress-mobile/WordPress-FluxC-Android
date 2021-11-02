@@ -6,7 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
+import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.SSRDao
@@ -25,7 +27,13 @@ import org.wordpress.android.fluxc.persistence.entity.SSREntity
             SSREntity::class
         ]
 )
-@TypeConverters(value = [LongListConverter::class])
+@TypeConverters(
+        value = [
+            LocalIdConverter::class,
+            LongListConverter::class,
+            RemoteIdConverter::class
+        ]
+)
 abstract class WCAndroidDatabase : RoomDatabase() {
     internal abstract fun addonsDao(): AddonsDao
     abstract fun ssrDao(): SSRDao
