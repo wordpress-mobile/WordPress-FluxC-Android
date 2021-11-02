@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -40,9 +41,7 @@ class OrderUpdateStoreTest {
     }
 
     private val ordersDao: OrdersDao = mock {
-//        on { insertOrUpdateOrder(any()) } doReturn ROWS_AFFECTED
-//        on { updateLocalOrder(any(), any()) } doReturn ROWS_AFFECTED
-        on { getOrderByLocalId(LocalId(TEST_LOCAL_ORDER_ID)) } doReturn initialOrder
+        on { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
 
     fun setUp(setMocks: () -> Unit) {
@@ -63,7 +62,7 @@ class OrderUpdateStoreTest {
     @Test
     fun `should optimistically update order customer notes`(): Unit = runBlocking {
         // given
-        val updatedOrder = WCOrderModel().copy(
+        val updatedOrder = initialOrder.copy(
                 customerNote = UPDATED_CUSTOMER_NOTE
         )
 
@@ -76,14 +75,14 @@ class OrderUpdateStoreTest {
                         )
                 )
             }
-            whenever(ordersDao.getOrderByLocalId(LocalId(TEST_LOCAL_ORDER_ID))).thenReturn(
+            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
                     initialOrder
             )
         }
 
         // when
         val results = sut.updateCustomerOrderNote(
-                orderLocalId = LocalId(initialOrder.id),
+                remoteOrderId = TEST_REMOTE_ORDER_ID,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -112,14 +111,14 @@ class OrderUpdateStoreTest {
                         )
                 )
             }
-            whenever(ordersDao.getOrderByLocalId(LocalId(TEST_LOCAL_ORDER_ID))).thenReturn(
+            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
                     initialOrder
             )
         }
 
         // when
         val results = sut.updateCustomerOrderNote(
-                orderLocalId = LocalId(initialOrder.id),
+                remoteOrderId = initialOrder.remoteOrderId,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -144,12 +143,12 @@ class OrderUpdateStoreTest {
         // given
         setUp {
             orderRestClient = mock()
-            whenever(ordersDao.getOrderByLocalId(any<LocalId>())).thenReturn(null)
+            whenever(ordersDao.getOrder(any(), any())).thenReturn(null)
         }
 
         // when
         val results = sut.updateCustomerOrderNote(
-                orderLocalId = LocalId(initialOrder.id),
+                remoteOrderId = initialOrder.remoteOrderId,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -159,7 +158,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(
                         event = OnOrderChanged(
                                 orderError = OrderError(
-                                        message = "Order with id ${initialOrder.id} not found"
+                                        message = "Order with id ${initialOrder.remoteOrderId.value} not found"
                                 )
                         )
                 )
@@ -172,7 +171,7 @@ class OrderUpdateStoreTest {
     @Test
     fun `should optimistically update shipping and billing addresses`(): Unit = runBlocking {
         // given
-        val updatedOrder = WCOrderModel(
+        val updatedOrder = initialOrder.copy(
                 shippingFirstName = UPDATED_SHIPPING_FIRST_NAME,
                 billingFirstName = UPDATED_BILLING_FIRST_NAME
         )
@@ -192,7 +191,8 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateBothOrderAddresses(
-                orderLocalId = LocalId(initialOrder.id),
+                remoteOrderId = initialOrder.remoteOrderId,
+                localSiteId = site.localId(),
                 shippingAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME),
                 billingAddress = emptyBilling.copy(firstName = UPDATED_BILLING_FIRST_NAME)
         ).toList()
@@ -211,7 +211,7 @@ class OrderUpdateStoreTest {
     @Test
     fun `should optimistically update shipping address`(): Unit = runBlocking {
         // given
-        val updatedOrder = WCOrderModel(
+        val updatedOrder = initialOrder.copy(
                 shippingFirstName = UPDATED_SHIPPING_FIRST_NAME
         )
 
@@ -229,7 +229,8 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                orderLocalId = LocalId(initialOrder.id),
+                remoteOrderId = initialOrder.remoteOrderId,
+                localSiteId = site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
 
@@ -254,7 +255,7 @@ class OrderUpdateStoreTest {
                     )
                 }.doReturn(
                         RemoteOrderPayload(
-                                error = WCOrderStore.OrderError(),
+                                error = OrderError(),
                                 initialOrder,
                                 site
                         )
@@ -264,7 +265,8 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                orderLocalId = LocalId(initialOrder.id),
+                initialOrder.remoteOrderId,
+                site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
 
@@ -273,7 +275,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(
                         OnOrderChanged(
-                                orderError = WCOrderStore.OrderError(type = GENERIC_ERROR)
+                                orderError = OrderError(type = GENERIC_ERROR)
                         )
                 )
         )
@@ -288,12 +290,13 @@ class OrderUpdateStoreTest {
         // given
         setUp {
             orderRestClient = mock()
-            whenever(ordersDao.getOrderByLocalId(any<LocalId>())).thenReturn(null)
+            whenever(ordersDao.getOrder(any(), any())).thenReturn(null)
         }
 
         // when
         val results = sut.updateOrderAddress(
-                orderLocalId = LocalId(initialOrder.id),
+                initialOrder.remoteOrderId,
+                site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
 
@@ -302,7 +305,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(
                         OnOrderChanged(
                                 orderError = OrderError(
-                                        message = "Order with id ${initialOrder.id} not found"
+                                        message = "Order with id ${initialOrder.remoteOrderId.value} not found"
                                 )
                         )
                 )
@@ -320,7 +323,8 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                orderLocalId = LocalId(initialOrder.id),
+                initialOrder.remoteOrderId,
+                site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
 
@@ -339,8 +343,8 @@ class OrderUpdateStoreTest {
     }
 
     private companion object {
-        const val TEST_LOCAL_ORDER_ID = 321
-        const val TEST_LOCAL_SITE_ID = 654
+        val TEST_REMOTE_ORDER_ID = RemoteId(321L)
+        val TEST_LOCAL_SITE_ID = LocalId(654)
         const val INITIAL_CUSTOMER_NOTE = "original customer note"
         const val UPDATED_CUSTOMER_NOTE = "updated customer note"
         const val INITIAL_SHIPPING_FIRST_NAME = "original shipping first name"
@@ -348,14 +352,14 @@ class OrderUpdateStoreTest {
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
 
         val initialOrder = WCOrderModel(
-                id = TEST_LOCAL_ORDER_ID,
+                remoteOrderId = TEST_REMOTE_ORDER_ID,
                 localSiteId = TEST_LOCAL_SITE_ID,
                 customerNote = INITIAL_CUSTOMER_NOTE,
                 shippingFirstName = INITIAL_SHIPPING_FIRST_NAME
         )
 
         val site = SiteModel().apply {
-            id = TEST_LOCAL_SITE_ID
+            id = TEST_LOCAL_SITE_ID.value
         }
 
         val emptyShipping = OrderAddress.Shipping("", "", "", "", "", "", "", "", "", "")
