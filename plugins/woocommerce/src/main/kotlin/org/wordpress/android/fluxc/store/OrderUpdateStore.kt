@@ -171,6 +171,10 @@ class OrderUpdateStore @Inject internal constructor(
             updateRemoteOrderPayload,
             initialOrder,
             mapError = { originalOrderError: OrderError? ->
+                /**
+                 * It's *likely* as INVALID_PARAM can be caused by probably other cases too and
+                 * empty billing address email in future releases of WooCommerce will be not relevant.
+                 */
                 val isLikelyEmptyBillingEmailError =
                         updateRemoteOrderPayload.error.type == OrderErrorType.INVALID_PARAM &&
                                 billingAddress.email.isBlank()
