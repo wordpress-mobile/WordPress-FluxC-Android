@@ -72,7 +72,7 @@ class OrderUpdateStore @Inject internal constructor(
                 when (newAddress) {
                     is Billing -> {
                         val payload = wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
-                        emitRemoteUpdateOfUpdateContainingBillingAddress(payload, initialOrder, newAddress)
+                        emitRemoteUpdateContainingBillingAddress(payload, initialOrder, newAddress)
                     }
                     is Shipping -> {
                         val payload = wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
@@ -101,7 +101,7 @@ class OrderUpdateStore @Inject internal constructor(
                         site,
                         shippingAddress.toDto(),
                         billingAddress.toDto()
-                ).let { emitRemoteUpdateOfUpdateContainingBillingAddress(it, initialOrder, billingAddress) }
+                ).let { emitRemoteUpdateContainingBillingAddress(it, initialOrder, billingAddress) }
             }
         }
     }
@@ -163,7 +163,7 @@ class OrderUpdateStore @Inject internal constructor(
         this.billingPhone = newAddress.phone
     }
 
-    private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateOfUpdateContainingBillingAddress(
+    private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateContainingBillingAddress(
         updateRemoteOrderPayload: RemoteOrderPayload,
         initialOrder: WCOrderModel,
         billingAddress: Billing
