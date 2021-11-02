@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.example.databinding.FragmentAddressEditDialog
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.EditTypeState.BILLING
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.EditTypeState.SHIPPING
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
@@ -96,7 +95,8 @@ class AddressEditDialogFragment : DaggerFragment() {
                     }
 
                     orderUpdateStore.updateOrderAddress(
-                            orderLocalId = LocalId(order.id),
+                            order.remoteOrderId,
+                            order.localSiteId,
                             newAddress = newAddress
                     ).collect {
                         CoroutineScope(Dispatchers.Main).launch {
@@ -111,7 +111,8 @@ class AddressEditDialogFragment : DaggerFragment() {
             selectedOrder.value?.let { order ->
                 CoroutineScope(Dispatchers.IO).launch {
                     orderUpdateStore.updateBothOrderAddresses(
-                            orderLocalId = LocalId(order.id),
+                            order.remoteOrderId,
+                            order.localSiteId,
                             shippingAddress = generateShippingAddressModel(),
                             billingAddress = generateBillingAddressModel()
                     ).collect {
