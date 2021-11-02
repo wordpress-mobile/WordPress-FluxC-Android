@@ -1,18 +1,36 @@
 package org.wordpress.android.fluxc.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import kotlin.DeprecationLevel.ERROR
 
-@Entity
+@Entity(
+        tableName = "OrderEntity",
+        indices = [Index(
+                value = ["localSiteId", "remoteOrderId"],
+                unique = true
+        )]
+)
 data class WCOrderModel(
+    @Deprecated(
+            message = "Please do not use local id for order identification. Use tuple of localSiteId x remoteOrderId." +
+                    "See p91TBi-6dF-p2#comment-7013",
+            level = ERROR
+    )
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val localSiteId: Int = 0,
-    val remoteOrderId: Long = 0L, // The unique identifier for this order on the server
+    @ColumnInfo(name = "localSiteId")
+    val localSiteId: LocalId,
+    @ColumnInfo(name = "remoteOrderId")
+    val remoteOrderId: RemoteId, // The unique identifier for this order on the server
     val number: String = "", // The, order number to display to the user
     val status: String = "",
     val currency: String = "",
