@@ -496,7 +496,6 @@ class WCOrderStore @Inject constructor(
             } else {
                 val rowsAffected = if (result.hasOrders) 1 else 0
                 OnOrderChanged(rowsAffected, status)
-                }
             }
         }
     }
