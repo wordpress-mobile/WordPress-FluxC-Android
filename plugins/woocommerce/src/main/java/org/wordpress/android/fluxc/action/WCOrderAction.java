@@ -53,8 +53,6 @@ public enum WCOrderAction implements IAction {
     FETCHED_ORDERS_BY_IDS,
     @Action(payloadType = FetchOrdersCountResponsePayload.class)
     FETCHED_ORDERS_COUNT,
-    @Action(payloadType = FetchHasOrdersResponsePayload.class)
-    FETCHED_HAS_ORDERS,
     @Action(payloadType = SearchOrdersResponsePayload.class)
     SEARCHED_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsResponsePayload.class)
