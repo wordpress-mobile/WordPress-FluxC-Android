@@ -24,7 +24,9 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.EMPTY_BILLING_EMAIL
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_PARAM
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
@@ -40,8 +42,6 @@ class OrderUpdateStoreTest {
     }
 
     private val ordersDao: OrdersDao = mock {
-//        on { insertOrUpdateOrder(any()) } doReturn ROWS_AFFECTED
-//        on { updateLocalOrder(any(), any()) } doReturn ROWS_AFFECTED
         on { getOrderByLocalId(LocalId(TEST_LOCAL_ORDER_ID)) } doReturn initialOrder
     }
 
@@ -336,6 +336,64 @@ class OrderUpdateStoreTest {
         )
 
         verifyZeroInteractions(orderRestClient)
+    }
+
+    @Test
+    fun `should emit empty billing email address if its likely that that's the error`(): Unit = runBlocking {
+        // given
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateBillingAddress(
+                            initialOrder, site, emptyBillingDto
+                    )
+                }.doReturn(
+                        RemoteOrderPayload(
+                                error = WCOrderStore.OrderError(type = INVALID_PARAM),
+                                initialOrder,
+                                site
+                        )
+                )
+            }
+        }
+
+        // when
+        val results = sut.updateOrderAddress(
+                orderLocalId = LocalId(initialOrder.id),
+                newAddress = emptyBilling
+        ).toList()
+
+        // then
+        assertThat(results[1].event.error.type).isEqualTo(EMPTY_BILLING_EMAIL)
+    }
+
+    @Test
+    fun `should not emit empty billing email address if its not likely that that's the error`(): Unit = runBlocking {
+        // given
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateBillingAddress(
+                            initialOrder, site, emptyBillingDto.copy(email = "custom@mail.com")
+                    )
+                }.doReturn(
+                        RemoteOrderPayload(
+                                error = WCOrderStore.OrderError(type = GENERIC_ERROR),
+                                initialOrder,
+                                site
+                        )
+                )
+            }
+        }
+
+        // when
+        val results = sut.updateOrderAddress(
+                orderLocalId = LocalId(initialOrder.id),
+                newAddress = emptyBilling.copy(email = "custom@mail.com")
+        ).toList()
+
+        // then
+        assertThat(results[1].event.error.type).isEqualTo(GENERIC_ERROR)
     }
 
     private companion object {
