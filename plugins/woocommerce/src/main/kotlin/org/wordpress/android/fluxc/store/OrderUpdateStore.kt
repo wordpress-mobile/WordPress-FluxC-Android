@@ -14,6 +14,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
@@ -74,12 +76,16 @@ class OrderUpdateStore @Inject internal constructor(
                 updateLocalOrderAddress(initialOrder, newAddress)
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
 
-                val updateRemoteOrderPayload = when (newAddress) {
-                    is Billing -> wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
-                    is Shipping -> wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
+                when (newAddress) {
+                    is Billing -> {
+                        val payload = wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
+                        emitRemoteUpdateContainingBillingAddress(payload, initialOrder, newAddress)
+                    }
+                    is Shipping -> {
+                        val payload = wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
+                        emitRemoteUpdateResultOrRevertOnError(payload, initialOrder)
+                    }
                 }
-
-                emitRemoteUpdateResultOrRevertOnError(updateRemoteOrderPayload, initialOrder)
             }
         }
     }
@@ -103,7 +109,7 @@ class OrderUpdateStore @Inject internal constructor(
                         site,
                         shippingAddress.toDto(),
                         billingAddress.toDto()
-                ).let { emitRemoteUpdateResultOrRevertOnError(it, initialOrder) }
+                ).let { emitRemoteUpdateContainingBillingAddress(it, initialOrder, billingAddress) }
             }
         }
     }
@@ -170,13 +176,43 @@ class OrderUpdateStore @Inject internal constructor(
         )
     }
 
+    private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateContainingBillingAddress(
+        updateRemoteOrderPayload: RemoteOrderPayload,
+        initialOrder: WCOrderModel,
+        billingAddress: Billing
+    ) = emitRemoteUpdateResultOrRevertOnError(
+            updateRemoteOrderPayload,
+            initialOrder,
+            mapError = { originalOrderError: OrderError? ->
+                /**
+                 * It's *likely* as INVALID_PARAM can be caused by probably other cases too and
+                 * empty billing address email in future releases of WooCommerce will be not relevant.
+                 */
+                val isLikelyEmptyBillingEmailError =
+                        updateRemoteOrderPayload.error.type == OrderErrorType.INVALID_PARAM &&
+                                billingAddress.email.isBlank()
+
+                if (isLikelyEmptyBillingEmailError) {
+                    OrderError(
+                            type = OrderErrorType.EMPTY_BILLING_EMAIL,
+                            message = "Can't set empty billing email address on WooCommerce <= 5.8.1"
+                    )
+                } else {
+                    originalOrderError
+                }
+            }
+    )
+
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateResultOrRevertOnError(
         updateRemoteOrderPayload: RemoteOrderPayload,
-        initialOrder: WCOrderModel
+        initialOrder: WCOrderModel,
+        mapError: (OrderError?) -> OrderError? = {
+            updateRemoteOrderPayload.error
+        }
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
             ordersDao.insertOrUpdateOrder(initialOrder)
-            OnOrderChanged(orderError = updateRemoteOrderPayload.error)
+            OnOrderChanged(orderError = mapError(updateRemoteOrderPayload.error))
         } else {
             ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
             OnOrderChanged()
@@ -187,7 +223,7 @@ class OrderUpdateStore @Inject internal constructor(
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitNoEntityFound(message: String) {
         emit(UpdateOrderResult.OptimisticUpdateResult(
-                OnOrderChanged(orderError = WCOrderStore.OrderError(message = message))
+                OnOrderChanged(orderError = OrderError(message = message))
         ))
     }
 }
