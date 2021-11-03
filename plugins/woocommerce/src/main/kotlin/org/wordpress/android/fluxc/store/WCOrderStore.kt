@@ -6,6 +6,9 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -23,6 +26,7 @@ import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
@@ -42,12 +46,12 @@ class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderRestClient: OrderRestClient,
     private val wcOrderFetcher: WCOrderFetcher,
-    private val coroutineEngine: CoroutineEngine
+    private val coroutineEngine: CoroutineEngine,
+    private val ordersDao: OrdersDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
         const val DEFAULT_ORDER_STATUS = "any"
-        const val NO_ROWS_AFFECTED = 0
     }
 
     class FetchOrdersPayload(
@@ -299,7 +303,7 @@ class WCOrderStore @Inject constructor(
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
-    class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
+    data class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
         INVALID_PARAM,
@@ -317,11 +321,14 @@ class WCOrderStore @Inject constructor(
 
     // OnChanged events
     data class OnOrderChanged(
-        var rowsAffected: Int,
-        var statusFilter: String? = null,
-        var canLoadMore: Boolean = false
+        val statusFilter: String? = null,
+        val canLoadMore: Boolean = false,
+        val causeOfChange: WCOrderAction? = null,
+        private val orderError: OrderError? = null
     ) : OnChanged<OrderError>() {
-        var causeOfChange: WCOrderAction? = null
+        init {
+            super.error = orderError
+        }
     }
 
     /**
@@ -357,14 +364,20 @@ class WCOrderStore @Inject constructor(
     /**
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
      */
-    fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
-            OrderSqlUtils.getOrdersForSite(site, status = status.asList())
+    fun getOrdersForSite(site: SiteModel, vararg status: String) = if (status.isEmpty()) {
+        ordersDao.getOrdersForSite(site.id)
+    } else {
+        ordersDao.getOrdersForSite(site.id, status = status.asList())
+    }
+
+    fun observeOrdersForSite(siteLocalId: LocalId, statuses: List<String>) =
+            ordersDao.observeOrdersForSite(siteLocalId.value, statuses)
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
         remoteOrderIds: List<RemoteId>
     ): Map<RemoteId, WCOrderModel> {
-        val orders = OrderSqlUtils.getOrdersForSiteByRemoteIds(orderListDescriptor.site, remoteOrderIds)
+        val orders = ordersDao.getOrdersForSiteByRemoteIds(orderListDescriptor.site, remoteOrderIds)
         return orders.associateBy { RemoteId(it.remoteOrderId) }
     }
 
@@ -380,7 +393,7 @@ class WCOrderStore @Inject constructor(
      * Given an [OrderIdentifier], returns the corresponding order from the database as a [WCOrderModel].
      */
     fun getOrderByIdentifier(orderIdentifier: OrderIdentifier): WCOrderModel? {
-        return OrderSqlUtils.getOrderForIdSet((orderIdentifier.toIdSet()))
+        return ordersDao.getOrderForIdSet((orderIdentifier.toIdSet()))
     }
 
     /**
@@ -419,7 +432,7 @@ class WCOrderStore @Inject constructor(
     /**
      * @return Returns true if orders for the provided site exist in the DB, else false.
      */
-    fun hasCachedOrdersForSite(site: SiteModel) = OrderSqlUtils.getOrderCountForSite(site) > 0
+    fun hasCachedOrdersForSite(site: SiteModel) = ordersDao.getOrderCountForSite(site.id) > 0
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
@@ -460,7 +473,7 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOrders(payload: FetchOrdersPayload) {
         val offset = if (payload.loadMore) {
-            OrderSqlUtils.getOrderCountForSite(payload.site)
+            ordersDao.getOrderCountForSite(payload.site.id)
         } else {
             0
         }
@@ -498,23 +511,24 @@ class WCOrderStore @Inject constructor(
             val result = wcOrderRestClient.fetchSingleOrder(site, remoteOrderId)
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                OnOrderChanged(orderError = result.error)
             } else {
-                val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(result.order)
-                OnOrderChanged(rowsAffected)
+                ordersDao.insertOrUpdateOrder(order = result.order)
+                OnOrderChanged()
             }
         }
     }
 
     suspend fun updateOrderStatus(orderLocalId: LocalId, site: SiteModel, newStatus: String): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
-            val orderModel = OrderSqlUtils.getOrderByLocalIdOrNull(orderLocalId)
+            val orderModel = ordersDao.getOrderByLocalId(orderLocalId)
 
             if (orderModel != null) {
-                val rowsAffected = updateOrderStatusLocally(LocalId(orderModel.id), newStatus)
+                updateOrderStatusLocally(LocalId(orderModel.id), newStatus)
 
-                val optimisticUpdateResult = OnOrderChanged(rowsAffected)
-                        .apply { causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS }
+                val optimisticUpdateResult = OnOrderChanged(
+                        causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
+                )
 
                 emit(OptimisticUpdateResult(optimisticUpdateResult))
 
@@ -522,29 +536,31 @@ class WCOrderStore @Inject constructor(
                 val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
                     revertOrderStatus(remotePayload)
                 } else {
-                    OnOrderChanged(rowsAffected = OrderSqlUtils.insertOrUpdateOrder(remotePayload.order))
-                }
-
-                remoteUpdateResult.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
+                    ordersDao.insertOrUpdateOrder(remotePayload.order)
+                    OnOrderChanged()
+                }.copy(causeOfChange = UPDATE_ORDER_STATUS)
 
                 emit(RemoteUpdateResult(remoteUpdateResult))
                 // Needs to remain here until all event bus observables are removed from the client code
                 emitChange(remoteUpdateResult)
             } else {
-                emit(OptimisticUpdateResult(
-                        OnOrderChanged(NO_ROWS_AFFECTED).apply {
-                            error = OrderError(message = "Order with id ${orderLocalId.value} not found")
-                        }
-                ))
+                emit(
+                        OptimisticUpdateResult(
+                                OnOrderChanged(
+                                        orderError = OrderError(
+                                                message = "Order with id ${orderLocalId.value} not found"
+                                        )
+                                )
+                        )
+                )
             }
         }
     }
 
-    private fun updateOrderStatusLocally(orderId: LocalId, newStatus: String): Int {
-        val updatedOrder = OrderSqlUtils.getOrderByLocalId(orderId.value).apply {
-            status = newStatus
-        }
-        return OrderSqlUtils.insertOrUpdateOrder(updatedOrder)
+    private fun updateOrderStatusLocally(orderId: LocalId, newStatus: String) {
+        val updatedOrder = ordersDao.getOrderByLocalId(orderId.value)!!
+                .copy(status = newStatus)
+        ordersDao.insertOrUpdateOrder(updatedOrder)
     }
 
     suspend fun fetchOrderNotes(localOrderId: Int, remoteOrderId: Long, site: SiteModel): OnOrderChanged {
@@ -552,10 +568,10 @@ class WCOrderStore @Inject constructor(
             val result = wcOrderRestClient.fetchOrderNotes(localOrderId, remoteOrderId, site)
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                OnOrderChanged(orderError = result.error)
             } else {
-                val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNotes(result.notes)
-                OnOrderChanged(rowsAffected)
+                OrderSqlUtils.insertOrIgnoreOrderNotes(result.notes)
+                OnOrderChanged()
             }
         }
     }
@@ -565,10 +581,10 @@ class WCOrderStore @Inject constructor(
             val result = with(payload) { wcOrderRestClient.postOrderNote(localOrderId, remoteOrderId, site, note) }
 
             return@withDefaultContext if (payload.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                OnOrderChanged(orderError = result.error)
             } else {
-                val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNote(result.note)
-                OnOrderChanged(rowsAffected)
+                OrderSqlUtils.insertOrIgnoreOrderNote(result.note)
+                OnOrderChanged()
             }
         }
     }
@@ -581,7 +597,7 @@ class WCOrderStore @Inject constructor(
         return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderShipmentTrackings") {
             val result = wcOrderRestClient.fetchOrderShipmentTrackings(site, localOrderId, remoteOrderId)
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                OnOrderChanged(orderError = result.error)
             } else {
                 // Calculate which existing records should be deleted because they no longer exist in the payload
                 val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(
@@ -603,7 +619,7 @@ class WCOrderStore @Inject constructor(
 
                 // Save new shipment trackings to the database
                 rowsAffected += result.trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
-                OnOrderChanged(rowsAffected)
+                OnOrderChanged()
             }
         }
     }
@@ -617,10 +633,10 @@ class WCOrderStore @Inject constructor(
             }
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                OnOrderChanged(orderError = result.error)
             } else {
-                val rowsAffected = result.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
-                OnOrderChanged(rowsAffected)
+                result.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
+                OnOrderChanged()
             }
         }
     }
@@ -632,11 +648,11 @@ class WCOrderStore @Inject constructor(
             }
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                OnOrderChanged(orderError = result.error)
             } else {
                 // Remove the record from the database and send response
-                val rowsAffected = result.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) } ?: 0
-                OnOrderChanged(rowsAffected)
+                result.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) }
+                OnOrderChanged()
             }
         }
     }
@@ -646,26 +662,22 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        val onOrderChanged: OnOrderChanged = if (payload.isError) {
+            OnOrderChanged(orderError = payload.error)
         } else {
             // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
             // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
             // or if the user manual changed some order IDs)
             if (!payload.loadedMore) {
-                OrderSqlUtils.deleteOrdersForSite(payload.site)
+                ordersDao.deleteOrdersForSite(payload.site.id)
                 OrderSqlUtils.deleteOrderNotesForSite(payload.site)
                 OrderSqlUtils.deleteOrderShipmentTrackingsForSite(payload.site)
             }
 
-            val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
+            payload.orders.forEach { ordersDao.insertOrUpdateOrder(it) }
 
-            onOrderChanged = OnOrderChanged(rowsAffected, payload.statusFilter, canLoadMore = payload.canLoadMore)
-        }
-
-        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
+            OnOrderChanged(payload.statusFilter, canLoadMore = payload.canLoadMore)
+        }.copy(causeOfChange = FETCHED_ORDERS)
 
         emitChange(onOrderChanged)
     }
@@ -701,7 +713,7 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOutdatedOrMissingOrders(site: SiteModel, fetchedSummaries: List<WCOrderSummaryModel>) {
         val fetchedSummariesIds = fetchedSummaries.map { RemoteId(it.remoteOrderId) }
-        val localOrdersForFetchedSummaries = OrderSqlUtils.getOrdersForSiteByRemoteIds(site, fetchedSummariesIds)
+        val localOrdersForFetchedSummaries = ordersDao.getOrdersForSiteByRemoteIds(site, fetchedSummariesIds)
 
         val idsToFetch = outdatedOrdersIds(fetchedSummaries, localOrdersForFetchedSummaries)
                 .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))
@@ -738,7 +750,7 @@ class WCOrderStore @Inject constructor(
 
         if (!payload.isError) {
             // Save the list of orders to the database
-            payload.fetchedOrders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
+            payload.fetchedOrders.forEach { ordersDao.insertOrUpdateOrder(it) }
 
             // Notify listeners that the list of orders has changed (only call this if there is no error)
             val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = payload.site.id)
@@ -763,10 +775,12 @@ class WCOrderStore @Inject constructor(
      */
     private fun handleFetchOrdersCountCompleted(payload: FetchOrdersCountResponsePayload) {
         val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
+            OnOrderChanged(orderError = payload.error)
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter) }
-        }.also { it.causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT }
+            with(payload) {
+                OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
+            }
+        }
         emitChange(onOrderChanged)
     }
 
@@ -775,20 +789,21 @@ class WCOrderStore @Inject constructor(
      */
     private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
         val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
+            OnOrderChanged(orderError = payload.error)
         } else {
             with(payload) {
-                // set 'rowsAffected' to non-zero if there are orders, otherwise set to zero
-                val rowsAffected = if (payload.hasOrders) 1 else 0
-                OnOrderChanged(rowsAffected, statusFilter)
+                OnOrderChanged(
+                        statusFilter = statusFilter,
+                        causeOfChange = FETCH_HAS_ORDERS
+                )
             }
-        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
+        }
         emitChange(onOrderChanged)
     }
 
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
-        val rowsAffected = updateOrderStatusLocally(LocalId(payload.order.id), payload.order.status)
-        return OnOrderChanged(rowsAffected).also { it.error = payload.error }
+        updateOrderStatusLocally(LocalId(payload.order.id), payload.order.status)
+        return OnOrderChanged().also { it.error = payload.error }
     }
 
     private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload) {
