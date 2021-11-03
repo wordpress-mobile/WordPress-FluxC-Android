@@ -353,6 +353,11 @@ class WCOrderStore @Inject constructor(
         var rowsAffected: Int
     ) : OnChanged<OrderError>()
 
+    class OnOrderCountFetched(
+        val site: SiteModel,
+        val statusFilter: String? = null
+    ) : OnChanged<OrderError>()
+
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
     /**
@@ -433,7 +438,7 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.UPDATE_ORDER_STATUS ->
                 throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")
-            WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
+            //WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
@@ -490,8 +495,16 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
-    private fun fetchHasOrders(payload: FetchHasOrdersPayload) {
-        with(payload) { wcOrderRestClient.fetchHasOrders(site, statusFilter) }
+    suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderCountFetched {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
+            val result = wcOrderRestClient.fetchHasOrders(site, status)
+            return@withDefaultContext if(result.isError) {
+                OnOrderCountFetched(site, status).also { it.error = result.error }
+            } else {
+                OnOrderCountFetched(site, status)
+                }
+            }
+        }
     }
 
     suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): OnOrderChanged {
