@@ -353,11 +353,6 @@ class WCOrderStore @Inject constructor(
         var rowsAffected: Int
     ) : OnChanged<OrderError>()
 
-    class OnOrderCountFetched(
-        val site: SiteModel,
-        val statusFilter: String? = null
-    ) : OnChanged<OrderError>()
-
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
     /**
@@ -453,8 +448,6 @@ class WCOrderStore @Inject constructor(
                 handleFetchOrderByIdsCompleted(action.payload as FetchOrdersByIdsResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
-            WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
-                    action.payload as FetchHasOrdersResponsePayload)
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
@@ -495,13 +488,14 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
-    suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderCountFetched {
+    suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderChanged {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
             val result = wcOrderRestClient.fetchHasOrders(site, status)
             return@withDefaultContext if(result.isError) {
-                OnOrderCountFetched(site, status).also { it.error = result.error }
+                OnOrderChanged(0).also { it.error = result.error }
             } else {
-                OnOrderCountFetched(site, status)
+                val rowsAffected = if (result.hasOrders) 1 else 0
+                OnOrderChanged(rowsAffected, status)
                 }
             }
         }
@@ -784,21 +778,21 @@ class WCOrderStore @Inject constructor(
         emitChange(onOrderChanged)
     }
 
-    /**
-     * This is a response to a request to determine whether any orders matching a filter exist
-     */
-    private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
-        val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
-        } else {
-            with(payload) {
-                // set 'rowsAffected' to non-zero if there are orders, otherwise set to zero
-                val rowsAffected = if (payload.hasOrders) 1 else 0
-                OnOrderChanged(rowsAffected, statusFilter)
-            }
-        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
-        emitChange(onOrderChanged)
-    }
+//    /**
+//     * This is a response to a request to determine whether any orders matching a filter exist
+//     */
+//    private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
+//        val onOrderChanged = if (payload.isError) {
+//            OnOrderChanged(0).also { it.error = payload.error }
+//        } else {
+//            with(payload) {
+//                // set 'rowsAffected' to non-zero if there are orders, otherwise set to zero
+//                val rowsAffected = if (payload.hasOrders) 1 else 0
+//                OnOrderChanged(rowsAffected, statusFilter)
+//            }
+//        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
+//        emitChange(onOrderChanged)
+//    }
 
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
         val rowsAffected = updateOrderStatusLocally(LocalId(payload.order.id), payload.order.status)
