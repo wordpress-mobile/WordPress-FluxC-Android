@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION_ERROR")
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
@@ -413,7 +414,9 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    val newModel = orderResponseToOrderModel(orderDto, orderToUpdate.localSiteId)
+                    val newModel = orderResponseToOrderModel(orderDto, orderToUpdate.localSiteId).copy(
+                            id = orderToUpdate.id
+                    )
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                     OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
@@ -745,6 +748,7 @@ class OrderRestClient @Inject constructor(
         localSiteId: LocalId
     ): WCOrderModel {
         return WCOrderModel(
+                id = 5,
                 remoteOrderId = RemoteId(response.id ?: 0),
                 localSiteId = localSiteId,
                 number = response.number ?: (response.id ?: 0).toString(),
