@@ -748,7 +748,6 @@ class OrderRestClient @Inject constructor(
         localSiteId: LocalId
     ): WCOrderModel {
         return WCOrderModel(
-                id = 5,
                 remoteOrderId = RemoteId(response.id ?: 0),
                 localSiteId = localSiteId,
                 number = response.number ?: (response.id ?: 0).toString(),
