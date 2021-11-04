@@ -697,37 +697,44 @@ class OrderRestClient @Inject constructor(
      * argument is only needed because it is a requirement of the plugins API even though this data is not directly
      * related to shipment providers.
      */
-    fun fetchOrderShipmentProviders(site: SiteModel, order: WCOrderModel) {
+    suspend fun fetchOrderShipmentProviders(
+        site: SiteModel,
+        order: WCOrderModel
+    ): FetchOrderShipmentProvidersResponsePayload {
         val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.providers.pathV2
-
         val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, JsonElement::class.java,
-                { response: JsonElement? ->
-                    response?.let {
-                        try {
-                            val providers = jsonResponseToShipmentProviderList(site, it)
-                            val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
-                            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
-                        } catch (e: IllegalStateException) {
-                            // we have at least once instance of the response being invalid json so we catch the exception
-                            // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
-                            AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
-                            val payload = FetchOrderShipmentProvidersResponsePayload(
-                                    OrderError(INVALID_RESPONSE, it.toString()),
-                                    site,
-                                    order
-                            )
-                            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
-                        }
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                JsonElement::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    try {
+                        val providers = jsonResponseToShipmentProviderList(site, it)
+                        FetchOrderShipmentProvidersResponsePayload(site, order, providers)
+                    } catch (e: IllegalStateException) {
+                        // we have at least once instance of the response being invalid json so we catch the exception
+                        // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
+                        AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
+                        FetchOrderShipmentProvidersResponsePayload(
+                                OrderError(INVALID_RESPONSE, it.toString()),
+                                site,
+                                order
+                        )
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val providersError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderShipmentProvidersResponsePayload(providersError, site, order)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                } ?: FetchOrderShipmentProvidersResponsePayload(site, order)
+            }
+            is JetpackError -> {
+                val trackingError = networkErrorToOrderError(response.error)
+                FetchOrderShipmentProvidersResponsePayload(trackingError, site, order)
+            }
+        }
     }
 
     private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {

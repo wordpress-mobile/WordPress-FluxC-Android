@@ -22,7 +22,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -493,16 +492,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderShipmentProvidersFetchSuccess() {
+    fun testOrderShipmentProvidersFetchSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-providers-success.json")
-        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNull(payload.error)
         assertEquals(54, payload.providers.size)
 
@@ -520,16 +513,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
      * situation and ensures we dispatch an error
      */
     @Test
-    fun testOrderShipmentProvidersFetchFailed() {
+    fun testOrderShipmentProvidersFetchFailed() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-providers-failed.json")
-        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNotNull(payload.error)
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }

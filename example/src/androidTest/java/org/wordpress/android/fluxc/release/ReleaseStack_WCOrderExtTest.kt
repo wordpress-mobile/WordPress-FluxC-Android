@@ -10,7 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.example.BuildConfig
-import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -23,8 +22,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersCh
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 
 class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
@@ -236,18 +233,14 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
      */
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchShipmentProviders() {
-        nextEvent = TestEvent.FETCHED_ORDER_SHIPMENT_PROVIDERS
-        mCountDownLatch = CountDownLatch(1)
-
+    fun testFetchShipmentProviders() = runBlocking {
         val orderModel = WCOrderModel().apply {
             id = 8
             remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
             localSiteId = sSite.id
         }
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(
-                FetchOrderShipmentProvidersPayload(sSite, orderModel)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        orderStore.fetchOrderShipmentProviders(FetchOrderShipmentProvidersPayload(sSite, orderModel))
 
         val providers = orderStore.getShipmentProvidersForSite(sSite)
         assertTrue(providers.isNotEmpty())
