@@ -9,14 +9,22 @@ class WCOrderListDescriptor(
     val site: SiteModel,
     val statusFilter: String? = null,
     val searchQuery: String? = null,
-    val excludeFutureOrders: Boolean = false
+    val excludeFutureOrders: Boolean = false,
+    val beforeFilter: String? = null,
+    val afterFilter: String? = null
 ) : ListDescriptor {
     override val config: ListConfig = ListConfig.default
 
     override val uniqueIdentifier: ListDescriptorUniqueIdentifier by lazy {
         ListDescriptorUniqueIdentifier(
-                ("woo-site-order-list-${site.id}-sf${statusFilter.orEmpty()}-sq${searchQuery.orEmpty()}" +
-                        "-efo$excludeFutureOrders").hashCode())
+                ("woo-site-order-list-${site.id}" +
+                        "-sf${statusFilter.orEmpty()}" +
+                        "-sq${searchQuery.orEmpty()}" +
+                        "-bf${beforeFilter.orEmpty()}" +
+                        "-af${afterFilter.orEmpty()}" +
+                        "-efo$excludeFutureOrders"
+                        ).hashCode()
+        )
     }
 
     override val typeIdentifier: ListDescriptorTypeIdentifier by lazy {
