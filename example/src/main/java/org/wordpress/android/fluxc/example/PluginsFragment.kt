@@ -84,12 +84,12 @@ class PluginsFragment : Fragment() {
         fetch_plugin.setOnClickListener {
             selectedSite?.let { site ->
 
-                showSingleLineDialog(activity, "Enter a plugin slug.") { pluginSlugText ->
-                    if (pluginSlugText.text.isEmpty()) {
-                        prependToLog("Slug is null so doing nothing")
+                showSingleLineDialog(activity, "Enter the plugin name.") { pluginNameText ->
+                    if (pluginNameText.text.isEmpty()) {
+                        prependToLog("Name is null so doing nothing")
                         return@showSingleLineDialog
                     }
-                    pluginSlugText.text.toString().apply {
+                    pluginNameText.text.toString().apply {
                         prependToLog("Fetching plugin: $this")
 
                         val payload = FetchJetpackSitePluginPayload(site, this)
