@@ -6,6 +6,7 @@ import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
+import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
 import org.wordpress.android.fluxc.network.UserAgent
@@ -99,6 +100,23 @@ class WooSystemRestClient @Inject constructor(
         }
     }
 
+    suspend fun fetchSiteSettings(site: SiteModel): WooPayload<WPSiteSettingsResponse> {
+        val url = WPAPI.settings.urlV2
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                WPSiteSettingsResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
     data class ActivePluginsResponse(
         @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>?,
         @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>?
@@ -121,5 +139,13 @@ class WooSystemRestClient @Inject constructor(
         val settings: JsonElement? = null,
         val security: JsonElement? = null,
         val pages: JsonElement? = null
+    )
+
+    data class WPSiteSettingsResponse(
+        @SerializedName("title") val title: String? = null,
+        @SerializedName("description") val description: String? = null,
+        @SerializedName("url") val url: String? = null,
+        @SerializedName("show_on_front") val showOnFront: String? = null,
+        @SerializedName("page_on_front") val pageOnFront: Long? = null
     )
 }
