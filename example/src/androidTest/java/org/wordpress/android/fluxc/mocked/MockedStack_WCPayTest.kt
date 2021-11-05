@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_A
 import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum
 import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.GenericError
+import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.InvalidPostalCode
 import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
@@ -162,5 +163,15 @@ class MockedStack_WCPayTest : MockedStack_Base() {
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
+    }
+
+    @Test
+    fun whenGetStoreLocationForSiteWithInvalidPostalCodeError() = runBlocking {
+        interceptor.respondWithError("wc-pay-store-location-for-site-invalid-postal-code-error.json", 500)
+
+        val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+
+        assertTrue(result.isError)
+        assertTrue(result.error?.type is InvalidPostalCode)
     }
 }
