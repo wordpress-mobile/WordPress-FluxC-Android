@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.example.SitesFragment
 import org.wordpress.android.fluxc.example.TaxonomiesFragment
 import org.wordpress.android.fluxc.example.ThemeFragment
 import org.wordpress.android.fluxc.example.UploadsFragment
+import org.wordpress.android.fluxc.example.PluginsFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.example.ui.customer.WooCustomersFragment
@@ -160,4 +161,7 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideWooAddressEditDialogFragment(): AddressEditDialogFragment
+
+    @ContributesAndroidInjector
+    abstract fun providePluginsFragment(): PluginsFragment
 }
