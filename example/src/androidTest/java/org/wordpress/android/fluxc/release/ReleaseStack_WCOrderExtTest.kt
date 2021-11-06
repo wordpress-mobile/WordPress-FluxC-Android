@@ -1,8 +1,6 @@
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -13,31 +11,20 @@ import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
-import org.wordpress.android.fluxc.store.Store.OnChanged
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
-import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
 
 class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
-    internal enum class TestEvent {
-        NONE,
-        FETCHED_ORDER_SHIPMENT_PROVIDERS
-    }
-
     @Inject internal lateinit var orderStore: WCOrderStore
 
     override fun buildAuthenticatePayload() = AuthenticatePayload(
             BuildConfig.TEST_WPCOM_USERNAME_WOO_JETPACK_EXTENSIONS,
             BuildConfig.TEST_WPCOM_PASSWORD_WOO_JETPACK_EXTENSIONS)
-
-    private var nextEvent: TestEvent = TestEvent.NONE
-    private var lastEvent: OnChanged<OrderError>? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -45,8 +32,6 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         mReleaseStackAppComponent.inject(this)
         // Register
         init()
-        // Reset expected test event
-        nextEvent = TestEvent.NONE
     }
 
     /**
@@ -244,18 +229,5 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
 
         val providers = orderStore.getShipmentProvidersForSite(sSite)
         assertTrue(providers.isNotEmpty())
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOrderShipmentProvidersChanged(event: OnOrderShipmentProvidersChanged) {
-        event.error?.let {
-            throw AssertionError("onOrderShipmentProvidersChanged has unexpected error: " + it.type)
-        }
-
-        lastEvent = event
-
-        assertEquals(TestEvent.FETCHED_ORDER_SHIPMENT_PROVIDERS, nextEvent)
-        mCountDownLatch.countDown()
     }
 }
