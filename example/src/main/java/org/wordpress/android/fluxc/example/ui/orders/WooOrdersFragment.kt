@@ -40,7 +40,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPay
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
-import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
@@ -307,8 +306,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     if (providers.isNullOrEmpty()) {
                         // Fetch providers for order
                         pendingOpenAddShipmentTracking = true
-                        val payload = FetchOrderShipmentProvidersPayload(site, order)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                        fetchOrderShipmentProviders(site, order)
                     } else {
                         val providerNames = mutableListOf<String>()
                         providers.forEach { providerNames.add(it.carrierName) }
@@ -358,9 +356,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 // a list of providers, even though the providers are not order specific.
                 getFirstWCOrder()?.let { order ->
                     prependToLog("Fetching a list of providers from the API")
-
-                    val payload = FetchOrderShipmentProvidersPayload(site, order)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                    fetchOrderShipmentProviders(site, order)
                 } ?: prependToLog("No orders found in db to use as seed. Fetch orders first.")
             }
         }
@@ -374,6 +370,36 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         }
     }
 
+    private fun fetchOrderShipmentProviders(
+        site: SiteModel,
+        order: WCOrderModel
+    ) {
+        coroutineScope.launch {
+            val payload = FetchOrderShipmentProvidersPayload(site, order)
+            val response = wcOrderStore.fetchOrderShipmentProviders(payload)
+            if (response.isError) {
+                prependToLog("Error fetching shipment providers - error: " + response.error.type)
+            } else {
+                selectedSite?.let { site ->
+                    if (pendingOpenAddShipmentTracking) {
+                        pendingOpenAddShipmentTracking = false
+                        getFirstWCOrder()?.let { order ->
+                            val providers = mutableListOf<String>()
+                            wcOrderStore.getShipmentProvidersForSite(site)
+                                    .forEach { providers.add(it.carrierName) }
+                            showAddTrackingDialog(site, order, providers)
+                        }
+                    } else {
+                        wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
+                            prependToLog(" - ${provider.carrierName}")
+                        }
+                        prependToLog("[${response.rowsAffected}] shipment providers fetched successfully!")
+                    }
+                }
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         dispatcher.register(this)
@@ -382,30 +408,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     override fun onStop() {
         super.onStop()
         dispatcher.unregister(this)
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOrderShipmentProviderChanged(event: OnOrderShipmentProvidersChanged) {
-        if (event.isError) {
-            prependToLog("Error fetching shipment providers - error: " + event.error.type)
-        } else {
-            selectedSite?.let { site ->
-                if (pendingOpenAddShipmentTracking) {
-                    pendingOpenAddShipmentTracking = false
-                    getFirstWCOrder()?.let { order ->
-                        val providers = mutableListOf<String>()
-                        wcOrderStore.getShipmentProvidersForSite(site).forEach { providers.add(it.carrierName) }
-                        showAddTrackingDialog(site, order, providers)
-                    }
-                } else {
-                    wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
-                        prependToLog(" - ${provider.carrierName}")
-                    }
-                    prependToLog("[${event.rowsAffected}] shipment providers fetched successfully!")
-                }
-            }
-        }
     }
 
     @Suppress("unused")

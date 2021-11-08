@@ -7,8 +7,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload;
@@ -41,8 +39,6 @@ public enum WCOrderAction implements IAction {
     SEARCH_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsPayload.class)
     FETCH_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = FetchOrderShipmentProvidersPayload.class)
-    FETCH_ORDER_SHIPMENT_PROVIDERS,
 
     // Remote responses
     @Action(payloadType = FetchOrdersResponsePayload.class)
@@ -59,6 +55,4 @@ public enum WCOrderAction implements IAction {
     SEARCHED_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsResponsePayload.class)
     FETCHED_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = FetchOrderShipmentProvidersResponsePayload.class)
-    FETCHED_ORDER_SHIPMENT_PROVIDERS
 }
