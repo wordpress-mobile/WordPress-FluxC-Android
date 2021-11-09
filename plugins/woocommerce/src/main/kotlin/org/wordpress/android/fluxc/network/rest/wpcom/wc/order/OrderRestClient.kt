@@ -52,6 +52,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.math.BigDecimal
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Named
@@ -455,6 +456,45 @@ class OrderRestClient @Inject constructor(
             orderToUpdate, site,
             mapOf("shipping" to shipping, "billing" to billing)
     )
+
+    /**
+     * Ccreates a "quick order," which is assigned the passed amount
+     */
+    suspend fun pushQuickOrder(site: SiteModel, amount: BigDecimal): RemoteOrderPayload {
+        val url = WOOCOMMERCE.orders.pathV3
+        val params = mapOf("fee_lines" to amount)
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderDto::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = orderResponseToOrderModel(it).apply {
+                        localSiteId = site.id
+                    }
+                    RemoteOrderPayload(newModel, site)
+                } ?: RemoteOrderPayload(
+                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        WCOrderModel(),
+                        site
+                )
+            }
+            is JetpackError -> {
+                val orderError = networkErrorToOrderError(response.error)
+                RemoteOrderPayload(
+                        orderError,
+                        WCOrderModel(),
+                        site
+                )
+            }
+        }
+    }
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),

@@ -32,6 +32,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUp
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.math.BigDecimal
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
@@ -497,6 +498,19 @@ class WCOrderStore @Inject constructor(
     suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): OnOrderChanged {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleOrder") {
             val result = wcOrderRestClient.fetchSingleOrder(site, remoteOrderId)
+
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(result.order)
+                OnOrderChanged(rowsAffected)
+            }
+        }
+    }
+
+    suspend fun pushQuickOrder(site: SiteModel, amount: BigDecimal): OnOrderChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleOrder") {
+            val result = wcOrderRestClient.pushQuickOrder(site, amount)
 
             return@withDefaultContext if (result.isError) {
                 OnOrderChanged(0).also { it.error = result.error }
