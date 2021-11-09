@@ -307,7 +307,8 @@ class WCOrderStore @Inject constructor(
         ORDER_STATUS_NOT_FOUND,
         PLUGIN_NOT_ACTIVE,
         INVALID_RESPONSE,
-        GENERIC_ERROR;
+        GENERIC_ERROR,
+        EMPTY_BILLING_EMAIL;
 
         companion object {
             private val reverseMap = values().associateBy(OrderErrorType::name)

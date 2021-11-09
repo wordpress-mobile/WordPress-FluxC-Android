@@ -204,6 +204,7 @@ class PayRestClient @Inject constructor(
                 if (error.message.isNullOrBlank()) WCTerminalStoreLocationErrorType.GenericError
                 else WCTerminalStoreLocationErrorType.MissingAddress(error.message)
             }
+            error.apiError == "postal_code_invalid" -> WCTerminalStoreLocationErrorType.InvalidPostalCode
             error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NetworkError
             error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NetworkError
             error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NetworkError
@@ -215,6 +216,6 @@ class PayRestClient @Inject constructor(
     companion object {
         private const val ACCOUNT_REQUESTED_FIELDS: String =
                 "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
-                        "store_currencies,country,card_present_eligible,is_live,test_mode"
+                        "store_currencies,country,is_live,test_mode"
     }
 }

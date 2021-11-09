@@ -6,6 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.action.ActivityLogAction
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -61,6 +62,7 @@ class ReleaseStack_WPApiPluginTest : ReleaseStack_Base() {
     }
 
     @Test
+    @Ignore
     fun testActivateAndDeactivatePlugins() {
         val site = initSite()
 
@@ -74,6 +76,7 @@ class ReleaseStack_WPApiPluginTest : ReleaseStack_Base() {
     }
 
     @Test
+    @Ignore
     fun testUninstallAndInstallPlugin() {
         val site = initSite()
 
