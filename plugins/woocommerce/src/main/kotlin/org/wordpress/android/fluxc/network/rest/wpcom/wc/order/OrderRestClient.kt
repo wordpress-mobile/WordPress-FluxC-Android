@@ -469,7 +469,10 @@ class OrderRestClient @Inject constructor(
             it.addProperty("tax_class", "")
         }
         val jsonFeeItems = JsonArray().also { it.add(jsonFee) }
-        val params = mapOf( "fee_lines" to jsonFeeItems )
+        val params = mapOf(
+                "fee_lines" to jsonFeeItems,
+                "_fields" to ORDER_FIELDS
+        )
 
         val url = WOOCOMMERCE.orders.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
