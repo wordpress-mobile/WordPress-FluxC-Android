@@ -509,7 +509,7 @@ class WCOrderStore @Inject constructor(
     }
 
     suspend fun pushQuickOrder(site: SiteModel, amount: BigDecimal): OnOrderChanged {
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleOrder") {
+        return coroutineEngine.withDefaultContext(T.API, this, "pushQuickOrder") {
             val result = wcOrderRestClient.pushQuickOrder(site, amount)
 
             return@withDefaultContext if (result.isError) {
