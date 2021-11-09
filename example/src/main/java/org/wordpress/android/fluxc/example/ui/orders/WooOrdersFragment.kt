@@ -47,6 +47,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
+import java.math.BigDecimal
 import javax.inject.Inject
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
@@ -370,6 +371,22 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
                     replaceFragment(AddressEditDialogFragment.newInstance(order))
                 } ?: showNoOrdersToast(site)
+            }
+        }
+
+        create_quick_order.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the amount:"
+                ) { editText ->
+                    coroutineScope.launch {
+                        wcOrderStore.pushQuickOrder(site, BigDecimal(editText.text.toString())).takeUnless { it.isError }
+                                ?.let {
+                                    prependToLog("Created quick order, ${it.rowsAffected} rows inserted")
+                                } ?: prependToLog("Creating quick order failed.")
+                    }
+                }
             }
         }
     }
