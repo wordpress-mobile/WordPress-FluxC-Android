@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
@@ -464,15 +463,15 @@ class OrderRestClient @Inject constructor(
     suspend fun pushQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
         val jsonFee = JsonObject().also {
             it.addProperty("total", amount)
+            it.addProperty("name", "Quick Order")
+            it.addProperty("tax_status", "none")
+            it.addProperty("tax_class", "")
         }
         val jsonFeeItems = JsonObject().also {
             it.addProperty("items", jsonFee.toString())
         }
-        val jsonFeeLines = JsonArray().also {
-            it.add(jsonFeeItems)
-        }
         val params = mapOf(
-                "fee_lines" to jsonFeeLines.toString(),
+                "fee_lines" to jsonFeeItems.toString(),
                 "_fields" to ORDER_FIELDS
         )
 
