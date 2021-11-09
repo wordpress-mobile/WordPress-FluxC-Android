@@ -32,7 +32,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUp
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
-import java.math.BigDecimal
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
