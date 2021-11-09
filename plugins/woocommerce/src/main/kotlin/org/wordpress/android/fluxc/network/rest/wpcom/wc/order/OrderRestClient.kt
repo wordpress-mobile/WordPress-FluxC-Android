@@ -462,14 +462,21 @@ class OrderRestClient @Inject constructor(
      * Creates a "quick order," which is an empty order assigned the passed amount
      */
     suspend fun pushQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
-        val url = WOOCOMMERCE.orders.pathV3
-        val jsonFee = JsonObject().also { it.addProperty("total", amount) }
-        val jsonArray = JsonArray().also { it.add(jsonFee) }
+        val jsonFee = JsonObject().also {
+            it.addProperty("total", amount)
+        }
+        val jsonFeeItems = JsonObject().also {
+            it.addProperty("items", jsonFee.toString())
+        }
+        val jsonFeeLines = JsonArray().also {
+            it.add(jsonFeeItems)
+        }
         val params = mapOf(
-                "fee_lines" to jsonArray.toString(),
+                "fee_lines" to jsonFeeLines.toString(),
                 "_fields" to ORDER_FIELDS
         )
 
+        val url = WOOCOMMERCE.orders.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
                 site,
