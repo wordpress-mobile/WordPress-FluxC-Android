@@ -47,7 +47,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
-import java.math.BigDecimal
 import javax.inject.Inject
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
@@ -381,10 +380,17 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         "Enter the amount:"
                 ) { editText ->
                     coroutineScope.launch {
-                        wcOrderStore.pushQuickOrder(site, BigDecimal(editText.text.toString())).takeUnless { it.isError }
-                                ?.let {
-                                    prependToLog("Created quick order, ${it.rowsAffected} rows inserted")
-                                } ?: prependToLog("Creating quick order failed.")
+                        try {
+                            val amount = editText.text.toString()
+                            val result = wcOrderStore.pushQuickOrder(site, amount)
+                            if (result.isError) {
+                                prependToLog("Creating quick order failed.")
+                            } else {
+                                prependToLog("Created quick order, ${result.rowsAffected} rows inserted.")
+                            }
+                        } catch (e: NumberFormatException) {
+                            prependToLog("Invalid amount.")
+                        }
                     }
                 }
             }

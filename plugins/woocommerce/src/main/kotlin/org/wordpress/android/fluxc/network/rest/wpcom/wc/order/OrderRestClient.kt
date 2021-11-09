@@ -52,7 +52,6 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
-import java.math.BigDecimal
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Named
@@ -458,11 +457,12 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Ccreates a "quick order," which is assigned the passed amount
+     * Creates a "quick order," which is an empty order assigned the passed amount
      */
-    suspend fun pushQuickOrder(site: SiteModel, amount: BigDecimal): RemoteOrderPayload {
+    suspend fun pushQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.pathV3
-        val params = mapOf("fee_lines" to amount)
+        val feeLine = "[{ 'total', '$amount' }]"
+        val params = mapOf("fee_lines" to feeLine)
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
