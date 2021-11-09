@@ -13,7 +13,7 @@ object OrderDtoMapper {
             state = this.state,
             postcode = this.postcode,
             country = this.country,
-            email = this.email,
+            email = this.email.takeIf { it.isNotEmpty() },
             phone = this.phone
     )
 
