@@ -2,7 +2,9 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -461,8 +463,12 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun pushQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.pathV3
-        val feeLine = "[{ 'total', '$amount' }]"
-        val params = mapOf("fee_lines" to feeLine)
+        val jsonFee = JsonObject().also { it.addProperty("total", amount) }
+        val jsonArray = JsonArray().also { it.add(jsonFee) }
+        val params = mapOf(
+                "fee_lines" to jsonArray.toString(),
+                "_fields" to ORDER_FIELDS
+        )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
