@@ -534,6 +534,17 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }
 
+    @Test
+    fun testPushQuickOrder() = runBlocking {
+        interceptor.respondWith("wc-fetch-order-response-success.json")
+        val response = orderRestClient.postQuickOrder(siteModel, "10.00")
+
+        with(response) {
+            assertNull(error)
+            assertNotNull(order)
+        }
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
