@@ -382,7 +382,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     coroutineScope.launch {
                         try {
                             val amount = editText.text.toString()
-                            val result = wcOrderStore.pushQuickOrder(site, amount)
+                            val result = wcOrderStore.postQuickOrder(site, amount)
                             if (result.isError) {
                                 prependToLog("Creating quick order failed.")
                             } else {

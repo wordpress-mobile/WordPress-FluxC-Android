@@ -508,9 +508,9 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun pushQuickOrder(site: SiteModel, amount: String): OnOrderChanged {
+    suspend fun postQuickOrder(site: SiteModel, amount: String): OnOrderChanged {
         return coroutineEngine.withDefaultContext(T.API, this, "pushQuickOrder") {
-            val result = wcOrderRestClient.pushQuickOrder(site, amount)
+            val result = wcOrderRestClient.postQuickOrder(site, amount)
 
             return@withDefaultContext if (result.isError) {
                 OnOrderChanged(0).also { it.error = result.error }

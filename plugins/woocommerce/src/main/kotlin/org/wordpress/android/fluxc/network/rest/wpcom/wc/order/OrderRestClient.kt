@@ -461,7 +461,7 @@ class OrderRestClient @Inject constructor(
     /**
      * Creates a "quick order," which is an empty order assigned the passed amount
      */
-    suspend fun pushQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
+    suspend fun postQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
         val jsonFee = JsonObject().also {
             it.addProperty("name", "Quick Order")
             it.addProperty("total", amount)
