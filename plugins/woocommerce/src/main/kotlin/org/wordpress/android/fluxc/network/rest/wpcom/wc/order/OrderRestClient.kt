@@ -365,7 +365,7 @@ class OrderRestClient @Inject constructor(
         val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
 
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}
+
         val params = mapOf(
                 "per_page" to "1",
                 "offset" to "0",
@@ -376,7 +376,7 @@ class OrderRestClient @Inject constructor(
                 site,
                 url,
                 params,
-                responseType::class.java
+                Array<OrderDto>::class.java
         )
 
         return when (response) {
