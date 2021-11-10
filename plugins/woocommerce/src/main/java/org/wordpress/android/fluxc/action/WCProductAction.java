@@ -9,8 +9,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.DeleteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
