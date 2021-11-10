@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -366,18 +365,14 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testHasAnyOrders() {
+    fun testHasAnyOrders() = runBlocking {
         interceptor.respondWith("wc-has-orders-response-success.json")
-        orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_HAS_ORDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchHasOrdersResponsePayload
-        assertNull(payload.error)
-        assertTrue(payload.hasOrders)
-        assertNull(payload.statusFilter)
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with (payload) {
+            assertNull(payload.error)
+            assertTrue(payload.hasOrders)
+            assertNull(payload.statusFilter)
+        }
     }
 
     @Test
