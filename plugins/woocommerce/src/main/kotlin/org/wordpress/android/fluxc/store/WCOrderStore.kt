@@ -325,6 +325,10 @@ class WCOrderStore @Inject constructor(
         var causeOfChange: WCOrderAction? = null
     }
 
+    data class OnQuickOrderResult(
+        var order: WCOrderModel? = null
+    ) : OnChanged<OrderError>()
+
     /**
      * Emitted after fetching a list of Order summaries from the network.
      */
@@ -503,6 +507,19 @@ class WCOrderStore @Inject constructor(
             } else {
                 val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(result.order)
                 OnOrderChanged(rowsAffected)
+            }
+        }
+    }
+
+    suspend fun postQuickOrder(site: SiteModel, amount: String): OnQuickOrderResult {
+        return coroutineEngine.withDefaultContext(T.API, this, "postQuickOrder") {
+            val result = wcOrderRestClient.postQuickOrder(site, amount)
+
+            return@withDefaultContext if (result.isError) {
+                OnQuickOrderResult().also { it.error = result.error }
+            } else {
+                OrderSqlUtils.insertOrUpdateOrder(result.order)
+                OnQuickOrderResult(result.order)
             }
         }
     }
