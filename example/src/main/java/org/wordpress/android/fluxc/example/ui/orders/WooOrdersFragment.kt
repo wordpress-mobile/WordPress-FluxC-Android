@@ -34,7 +34,6 @@ import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
