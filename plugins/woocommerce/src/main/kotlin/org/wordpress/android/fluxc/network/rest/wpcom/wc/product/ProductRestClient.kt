@@ -959,25 +959,22 @@ class ProductRestClient @Inject constructor(
      * The number of reviews to fetch is defined in [WCProductStore.NUM_REVIEWS_PER_FETCH], and retrieving older
      * reviews is done by passing an [offset].
      *
-     * Dispatches a [WCProductAction.FETCHED_PRODUCT_REVIEWS]
-     *
      * @param [site] The site to fetch product reviews for
      * @param [offset] The offset to use for the fetch
      * @param [reviewIds] Optional. A list of remote product review ID's to fetch
      * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for
      * @param [filterByStatus] Optional. A list of product review statuses to fetch
      */
-    fun fetchProductReviews(
+    suspend fun fetchProductReviews(
         site: SiteModel,
         offset: Int,
         reviewIds: List<Long>? = null,
         productIds: List<Long>? = null,
         filterByStatus: List<String>? = null
-    ) {
+    ): FetchProductReviewsResponsePayload {
         val statusFilter = filterByStatus?.joinToString { it } ?: "all"
 
         val url = WOOCOMMERCE.products.reviews.pathV3
-        val responseType = object : TypeToken<List<ProductReviewApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
@@ -989,27 +986,38 @@ class ProductRestClient @Inject constructor(
         productIds?.let { ids ->
             params.put("product", ids.map { it }.joinToString())
         }
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductReviewApiResponse>? ->
-                    response?.let {
-                        val reviews = it.map { review ->
-                            productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
-                        }
-                        val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
-                        val loadedMore = offset > 0
-                        val payload = FetchProductReviewsResponsePayload(
-                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
-                        )
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                Array<ProductReviewApiResponse>::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val reviews = it.map { review ->
+                        productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val productReviewError = networkErrorToProductError(networkError)
-                    val payload = FetchProductReviewsResponsePayload(productReviewError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                    val loadedMore = offset > 0
+                    return FetchProductReviewsResponsePayload(
+                            site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                    )
+                } ?: FetchProductReviewsResponsePayload(
+                        ProductError(
+                                ProductErrorType.GENERIC_ERROR,
+                                "Success response with empty data"
+                        ), site
+                )
+            }
+            is JetpackError -> {
+                val productReviewError = networkErrorToProductError(response.error)
+                return FetchProductReviewsResponsePayload(productReviewError, site)
+            }
+        }
     }
 
     /**
