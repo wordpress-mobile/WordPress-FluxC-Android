@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_woo_products.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -15,7 +16,6 @@ import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.DELETED_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -200,9 +200,16 @@ class WooProductsFragment : StoreSelectingFragment() {
                 ) { editText ->
                     val remoteProductId = editText.text.toString().toLongOrNull()
                     remoteProductId?.let { id ->
-                        prependToLog("Submitting request to fetch product reviews for remoteProductID $id")
-                        val payload = FetchProductReviewsPayload(site, productIds = listOf(remoteProductId))
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchProductReviewsAction(payload))
+                        coroutineScope.launch {
+                            prependToLog("Submitting request to fetch product reviews for remoteProductID $id")
+                            val result = wcProductStore.fetchProductReviews(
+                                    FetchProductReviewsPayload(
+                                            site,
+                                            productIds = listOf(remoteProductId)
+                                    )
+                            )
+                            prependToLog("Fetched ${result.rowsAffected} product reviews")
+                        }
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
             }
@@ -210,9 +217,12 @@ class WooProductsFragment : StoreSelectingFragment() {
 
         fetch_all_reviews.setOnClickListener {
             selectedSite?.let { site ->
-                prependToLog("Submitting request to fetch product reviews for site ${site.id}")
-                val payload = FetchProductReviewsPayload(site)
-                dispatcher.dispatch(WCProductActionBuilder.newFetchProductReviewsAction(payload))
+                coroutineScope.launch {
+                    prependToLog("Submitting request to fetch product reviews for site ${site.id}")
+                    val payload = FetchProductReviewsPayload(site)
+                    val result = wcProductStore.fetchProductReviews(payload)
+                    prependToLog("Fetched ${result.rowsAffected} product reviews")
+                }
             }
         }
 
@@ -470,9 +480,6 @@ class WooProductsFragment : StoreSelectingFragment() {
                         pendingFetchSingleProductVariationOffset = 0
                         load_more_product_variations.isEnabled = false
                     }
-                }
-                FETCH_PRODUCT_REVIEWS -> {
-                    prependToLog("Fetched ${event.rowsAffected} product reviews")
                 }
                 FETCH_SINGLE_PRODUCT_REVIEW -> {
                     prependToLog("Fetched ${event.rowsAffected} single product review")
