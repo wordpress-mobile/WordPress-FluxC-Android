@@ -85,7 +85,7 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder? = null
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -442,7 +442,7 @@ class ProductRestClient @Inject constructor(
     private suspend fun String.requestTo(
         site: SiteModel,
         params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder?.syncGetRequest(
+    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this@ProductRestClient,
             site,
             this,
@@ -731,7 +731,7 @@ class ProductRestClient @Inject constructor(
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.pathV3
             .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncPostRequest(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
                         this@ProductRestClient,
                         site,
                         url,
@@ -755,7 +755,7 @@ class ProductRestClient @Inject constructor(
         variationId: Long
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
             .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncDeleteRequest(
+                jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
                         this@ProductRestClient,
                         site,
                         url,
@@ -781,7 +781,7 @@ class ProductRestClient @Inject constructor(
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
                 .let { url ->
-                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                    jetpackTunnelGsonRequestBuilder.syncPutRequest(
                             this@ProductRestClient,
                             site,
                             url,
@@ -806,13 +806,13 @@ class ProductRestClient @Inject constructor(
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).pathV3
             .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                jetpackTunnelGsonRequestBuilder.syncPutRequest(
                         this,
                         site,
                         url,
                         mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
                         ProductApiResponse::class.java
-                )?.handleResult()
+                ).handleResult()
             }
 
     /**
