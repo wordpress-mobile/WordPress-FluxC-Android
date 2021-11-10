@@ -488,10 +488,12 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
+
     suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderChanged {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
             val result = wcOrderRestClient.fetchHasOrders(site, status)
-            return@withDefaultContext if(result.isError) {
+
+            return@withDefaultContext if (result.isError) {
                 OnOrderChanged(0).also { it.error = result.error }
             } else {
                 val rowsAffected = if (result.hasOrders) 1 else 0
