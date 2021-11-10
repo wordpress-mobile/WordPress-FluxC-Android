@@ -386,7 +386,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             if (result.isError) {
                                 prependToLog("Creating quick order failed.")
                             } else {
-                                prependToLog("Created quick order, ${result.rowsAffected} rows inserted.")
+                                prependToLog("Created quick order with remote ID ${result.remoteOrderId}.")
                             }
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")
