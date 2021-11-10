@@ -135,13 +135,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         }
 
         fetch_has_orders.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter an order status:") { editText ->
-                    val enteredStatus = editText.text.toString()
-                    coroutineScope.launch {
-                        wcOrderStore.fetchHasOrders(site, enteredStatus).takeUnless { it.isError }?.let {
-                            prependToLog("has orders fetched successfully!")
-                        }
+            selectedSite?.let {
+                coroutineScope.launch {
+                    wcOrderStore.fetchHasOrders(it, null).takeUnless { it.isError }?.let {
+                        prependToLog("has orders fetched successfully!")
                     }
                 }
             }
