@@ -535,7 +535,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testPushQuickOrder() = runBlocking {
+    fun testPostQuickOrder() = runBlocking {
         interceptor.respondWith("wc-fetch-order-response-success.json")
         val response = orderRestClient.postQuickOrder(siteModel, "10.00")
 

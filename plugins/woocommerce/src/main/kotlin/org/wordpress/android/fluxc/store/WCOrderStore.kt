@@ -326,7 +326,7 @@ class WCOrderStore @Inject constructor(
     }
 
     data class OnQuickOrderResult(
-        var remoteOrderId: Long
+        var order: WCOrderModel? = null
     ) : OnChanged<OrderError>()
 
     /**
@@ -516,10 +516,10 @@ class WCOrderStore @Inject constructor(
             val result = wcOrderRestClient.postQuickOrder(site, amount)
 
             return@withDefaultContext if (result.isError) {
-                OnQuickOrderResult(0).also { it.error = result.error }
+                OnQuickOrderResult().also { it.error = result.error }
             } else {
                 OrderSqlUtils.insertOrUpdateOrder(result.order)
-                OnQuickOrderResult(result.order.remoteOrderId)
+                OnQuickOrderResult(result.order)
             }
         }
     }
