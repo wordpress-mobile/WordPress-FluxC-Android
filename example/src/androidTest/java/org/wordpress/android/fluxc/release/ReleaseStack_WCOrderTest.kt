@@ -218,13 +218,9 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchHasOrders() = runBlocking{
+    fun testFetchHasOrders() = runBlocking {
         val onOrderChanged = orderStore.fetchHasOrders(sSite, status = null)
         assertTrue(onOrderChanged.rowsAffected != 0)
-//        nextEvent = TestEvent.FETCHED_HAS_ORDERS
-//        mCountDownLatch = CountDownLatch(1)
-//        mDispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(FetchHasOrdersPayload(sSite)))
-//        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
     @Throws(InterruptedException::class)
