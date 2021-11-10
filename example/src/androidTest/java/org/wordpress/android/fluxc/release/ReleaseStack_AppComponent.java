@@ -5,8 +5,8 @@ import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.DatabaseModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
-import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.OkHttpClientModule;
+import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseToolsModule;
 
 import javax.inject.Singleton;
@@ -73,5 +73,8 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_XPostsTest test);
     void inject(ReleaseStack_NoRedirectsTest test);
     void inject(ReleaseStack_WCPayTest test);
+
     void inject(ReleaseStack_WPApiPluginTest test);
+
+    void inject(ReleaseStack_CardsTest test);
 }
