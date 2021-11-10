@@ -36,6 +36,7 @@ public enum WCOrderAction implements IAction {
     @Deprecated // Use suspendable WCOrderStore.updateOrderStatus(..) directly.
     UPDATE_ORDER_STATUS,
     @Action(payloadType = FetchHasOrdersPayload.class)
+    @Deprecated // Use suspendable WCOrderStore.fetchHasOrders(..) directly.
     FETCH_HAS_ORDERS,
     @Action(payloadType = SearchOrdersPayload.class)
     SEARCH_ORDERS,
