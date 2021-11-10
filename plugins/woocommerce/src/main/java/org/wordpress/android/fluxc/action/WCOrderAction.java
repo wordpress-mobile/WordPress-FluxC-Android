@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload;
@@ -34,9 +33,6 @@ public enum WCOrderAction implements IAction {
     @Action(payloadType = UpdateOrderStatusPayload.class)
     @Deprecated // Use suspendable WCOrderStore.updateOrderStatus(..) directly.
     UPDATE_ORDER_STATUS,
-    @Action(payloadType = FetchHasOrdersPayload.class)
-    @Deprecated // Use suspendable WCOrderStore.fetchHasOrders(..) directly.
-    FETCH_HAS_ORDERS,
     @Action(payloadType = SearchOrdersPayload.class)
     SEARCH_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsPayload.class)

@@ -433,8 +433,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.UPDATE_ORDER_STATUS ->
                 throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")
-            WCOrderAction.FETCH_HAS_ORDERS ->
-                throw IllegalStateException("Invalid action. Use suspendable fetchHasOrders(..) directly")
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
