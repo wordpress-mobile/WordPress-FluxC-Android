@@ -376,6 +376,17 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
+    fun testHasAnyOrdersReturnsFalseWhenThereAreNoOrders() = runBlocking {
+        interceptor.respondWith("wc-has-orders-response-success-no-orders.json")
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNull(error)
+            assertFalse(hasOrders)
+            assertNull(statusFilter)
+        }
+    }
+
+    @Test
     fun testOrderStatusOptionsFetchSuccess() {
         interceptor.respondWith("wc-fetch-order-status-options-success.json")
         orderRestClient.fetchOrderStatusOptions(siteModel)
