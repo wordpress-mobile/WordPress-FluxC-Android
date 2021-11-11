@@ -387,6 +387,16 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
+    fun testHasAnyOrdersReturnsErrorWhenMissingDataKey() = runBlocking {
+        interceptor.respondWith("wc-has-orders-response-success-missing-data-key.json")
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNotNull(error)
+            assertNull(statusFilter)
+        }
+    }
+
+    @Test
     fun testOrderStatusOptionsFetchSuccess() {
         interceptor.respondWith("wc-fetch-order-status-options-success.json")
         orderRestClient.fetchOrderStatusOptions(siteModel)
