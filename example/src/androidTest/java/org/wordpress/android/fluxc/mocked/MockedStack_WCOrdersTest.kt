@@ -369,9 +369,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         interceptor.respondWith("wc-has-orders-response-success.json")
         val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
         with(payload) {
-            assertNull(payload.error)
-            assertTrue(payload.hasOrders)
-            assertNull(payload.statusFilter)
+            assertNull(error)
+            assertTrue(hasOrders)
+            assertNull(statusFilter)
         }
     }
 
