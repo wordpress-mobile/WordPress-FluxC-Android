@@ -2,7 +2,9 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -137,7 +139,11 @@ class OrderRestClient @Inject constructor(
                 "offset" to offset.toString(),
                 "status" to statusFilter,
                 "_fields" to "id,date_created_gmt,date_modified_gmt"
-        ).putIfNotEmpty("search" to listDescriptor.searchQuery)
+        ).putIfNotEmpty(
+            "search" to listDescriptor.searchQuery,
+                "before" to listDescriptor.beforeFilter,
+                "after" to listDescriptor.afterFilter
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderSummaryApiResponse>? ->
@@ -451,6 +457,55 @@ class OrderRestClient @Inject constructor(
             orderToUpdate, site,
             mapOf("shipping" to shipping, "billing" to billing)
     )
+
+    /**
+     * Creates a "quick order," which is an empty order assigned the passed amount
+     */
+    suspend fun postQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
+        val jsonFee = JsonObject().also {
+            it.addProperty("name", "Quick Order")
+            it.addProperty("total", amount)
+            it.addProperty("tax_status", "none")
+            it.addProperty("tax_class", "")
+        }
+        val jsonFeeItems = JsonArray().also { it.add(jsonFee) }
+        val params = mapOf(
+                "fee_lines" to jsonFeeItems,
+                "_fields" to ORDER_FIELDS
+        )
+
+        val url = WOOCOMMERCE.orders.pathV3
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderDto::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = orderResponseToOrderModel(it).apply {
+                        localSiteId = site.id
+                    }
+                    RemoteOrderPayload(newModel, site)
+                } ?: RemoteOrderPayload(
+                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        WCOrderModel(),
+                        site
+                )
+            }
+            is JetpackError -> {
+                val orderError = networkErrorToOrderError(response.error)
+                RemoteOrderPayload(
+                        orderError,
+                        WCOrderModel(),
+                        site
+                )
+            }
+        }
+    }
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),

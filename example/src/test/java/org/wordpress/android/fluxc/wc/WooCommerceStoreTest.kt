@@ -33,6 +33,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestCli
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse.SystemPluginModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.SSRResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.WPSiteSettingsResponse
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -210,17 +211,24 @@ class WooCommerceStoreTest {
     }
 
     @Test
-    fun `when fetching a jetpack cp site, then check if woocommerce is installed manually`() {
+    fun `when fetching a jetpack cp site, then fetch metadata from the remote site manually`() {
         runBlocking {
             val site = SiteUtils.generateJetpackCPSite()
             whenever(siteStore.fetchSites(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
             whenever(siteStore.sites).thenReturn(listOf(site))
+            whenever(restClient.fetchSiteSettings(site)).thenReturn(
+                    WooPayload(
+                            WPSiteSettingsResponse(title = "new title")
+                    )
+            )
             whenever(restClient.checkIfWooCommerceIsAvailable(site)).thenReturn(WooPayload(true))
 
             val sites = wooCommerceStore.fetchWooCommerceSites().model!!
 
+            verify(restClient).fetchSiteSettings(site)
             verify(restClient).checkIfWooCommerceIsAvailable(site)
             Assertions.assertThat(sites.first().hasWooCommerce).isTrue
+            Assertions.assertThat(sites.first().name).isEqualTo("new title")
         }
     }
 

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/activity_start_end_margin"
+    tools:context="org.wordpress.android.fluxc.example.PluginsFragment"
+    tools:ignore="HardcodedText">
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/plugins_select_site"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingEnd="@dimen/activity_start_end_half_margin"
+                android:text="Select Site" />
+
+            <TextView
+                android:id="@+id/plugins_selected_site"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="@dimen/activity_start_end_half_margin"
+                android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+                android:textColor="@android:color/holo_blue_bright" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/divider1"
+            style="@style/Divider" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="PluginStore tests:"
+            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle" />
+
+        <Button
+            android:id="@+id/install_activate_plugin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Install and activate a plugin" />
+
+        <Button
+            android:id="@+id/fetch_plugin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch a plugin from site" />
+
+        <View
+            android:id="@+id/divider2"
+            style="@style/Divider" />
+
+    </LinearLayout>
+</ScrollView>

@@ -45,7 +45,6 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
         assertEquals(false, result.model?.hasOverdueRequirements)
         assertEquals("DO.WPMT.CO", result.model?.statementDescriptor)
         assertEquals("US", result.model?.country)
-        assertEquals(true, result.model?.isCardPresentEligible)
         assertEquals("usd", result.model?.storeCurrencies?.default)
         assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)
         assertEquals(WCPayAccountStatusEnum.COMPLETE, result.model?.status)
