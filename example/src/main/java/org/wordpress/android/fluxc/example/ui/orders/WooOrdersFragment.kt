@@ -372,6 +372,29 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 } ?: showNoOrdersToast(site)
             }
         }
+
+        create_quick_order.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the amount:"
+                ) { editText ->
+                    coroutineScope.launch {
+                        try {
+                            val amount = editText.text.toString()
+                            val result = wcOrderStore.postQuickOrder(site, amount)
+                            if (result.isError) {
+                                prependToLog("Creating quick order failed.")
+                            } else {
+                                prependToLog("Created quick order with remote ID ${result.order?.remoteOrderId}.")
+                            }
+                        } catch (e: NumberFormatException) {
+                            prependToLog("Invalid amount.")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onStart() {
