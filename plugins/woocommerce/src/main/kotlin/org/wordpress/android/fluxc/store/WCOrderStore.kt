@@ -777,22 +777,6 @@ class WCOrderStore @Inject constructor(
         emitChange(onOrderChanged)
     }
 
-//    /**
-//     * This is a response to a request to determine whether any orders matching a filter exist
-//     */
-//    private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
-//        val onOrderChanged = if (payload.isError) {
-//            OnOrderChanged(0).also { it.error = payload.error }
-//        } else {
-//            with(payload) {
-//                // set 'rowsAffected' to non-zero if there are orders, otherwise set to zero
-//                val rowsAffected = if (payload.hasOrders) 1 else 0
-//                OnOrderChanged(rowsAffected, statusFilter)
-//            }
-//        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
-//        emitChange(onOrderChanged)
-//    }
-
     private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
         val rowsAffected = updateOrderStatusLocally(LocalId(payload.order.id), payload.order.status)
         return OnOrderChanged(rowsAffected).also { it.error = payload.error }
