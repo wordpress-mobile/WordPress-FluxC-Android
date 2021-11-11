@@ -137,7 +137,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 coroutineScope.launch {
                     wcOrderStore.fetchHasOrders(it, null).takeUnless { it.isError }?.let {
                         prependToLog("Has orders ${it.rowsAffected != 0}")
-                    }
+                    } ?: prependToLog("Fetching hasOrders failed.")
                 }
             }
         }
