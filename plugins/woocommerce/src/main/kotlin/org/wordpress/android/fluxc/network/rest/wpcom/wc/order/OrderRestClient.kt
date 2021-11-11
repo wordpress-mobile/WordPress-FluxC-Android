@@ -385,7 +385,7 @@ class OrderRestClient @Inject constructor(
                     FetchHasOrdersResponsePayload(
                             site,
                             filterByStatus,
-                            true
+                            it.count() > 0
                     )
                 } ?: FetchHasOrdersResponsePayload(
                     OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
