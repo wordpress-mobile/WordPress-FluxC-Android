@@ -9,8 +9,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.DeleteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
@@ -64,8 +62,6 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchSingleProductShippingClassPayload.class)
     FETCH_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = FetchProductReviewsPayload.class)
-    FETCH_PRODUCT_REVIEWS,
     @Action(payloadType = FetchSingleProductReviewPayload.class)
     FETCH_SINGLE_PRODUCT_REVIEW,
     @Action(payloadType = UpdateProductReviewStatusPayload.class)
@@ -110,8 +106,6 @@ public enum WCProductAction implements IAction {
     FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = RemoteProductShippingClassPayload.class)
     FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = FetchProductReviewsResponsePayload.class)
-    FETCHED_PRODUCT_REVIEWS,
     @Action(payloadType = RemoteProductReviewPayload.class)
     FETCHED_SINGLE_PRODUCT_REVIEW,
     @Action(payloadType = RemoteProductReviewPayload.class)
