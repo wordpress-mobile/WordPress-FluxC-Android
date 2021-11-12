@@ -85,7 +85,7 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder? = null
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -442,7 +442,7 @@ class ProductRestClient @Inject constructor(
     private suspend fun String.requestTo(
         site: SiteModel,
         params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder?.syncGetRequest(
+    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this@ProductRestClient,
             site,
             this,
@@ -731,7 +731,7 @@ class ProductRestClient @Inject constructor(
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.pathV3
             .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncPostRequest(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
                         this@ProductRestClient,
                         site,
                         url,
@@ -755,7 +755,7 @@ class ProductRestClient @Inject constructor(
         variationId: Long
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
             .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncDeleteRequest(
+                jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
                         this@ProductRestClient,
                         site,
                         url,
@@ -781,7 +781,7 @@ class ProductRestClient @Inject constructor(
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
                 .let { url ->
-                    jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                    jetpackTunnelGsonRequestBuilder.syncPutRequest(
                             this@ProductRestClient,
                             site,
                             url,
@@ -806,13 +806,13 @@ class ProductRestClient @Inject constructor(
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).pathV3
             .let { url ->
-                jetpackTunnelGsonRequestBuilder?.syncPutRequest(
+                jetpackTunnelGsonRequestBuilder.syncPutRequest(
                         this,
                         site,
                         url,
                         mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
                         ProductApiResponse::class.java
-                )?.handleResult()
+                ).handleResult()
             }
 
     /**
@@ -959,25 +959,22 @@ class ProductRestClient @Inject constructor(
      * The number of reviews to fetch is defined in [WCProductStore.NUM_REVIEWS_PER_FETCH], and retrieving older
      * reviews is done by passing an [offset].
      *
-     * Dispatches a [WCProductAction.FETCHED_PRODUCT_REVIEWS]
-     *
      * @param [site] The site to fetch product reviews for
      * @param [offset] The offset to use for the fetch
      * @param [reviewIds] Optional. A list of remote product review ID's to fetch
      * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for
      * @param [filterByStatus] Optional. A list of product review statuses to fetch
      */
-    fun fetchProductReviews(
+    suspend fun fetchProductReviews(
         site: SiteModel,
         offset: Int,
         reviewIds: List<Long>? = null,
         productIds: List<Long>? = null,
         filterByStatus: List<String>? = null
-    ) {
+    ): FetchProductReviewsResponsePayload {
         val statusFilter = filterByStatus?.joinToString { it } ?: "all"
 
         val url = WOOCOMMERCE.products.reviews.pathV3
-        val responseType = object : TypeToken<List<ProductReviewApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
@@ -989,27 +986,38 @@ class ProductRestClient @Inject constructor(
         productIds?.let { ids ->
             params.put("product", ids.map { it }.joinToString())
         }
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductReviewApiResponse>? ->
-                    response?.let {
-                        val reviews = it.map { review ->
-                            productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
-                        }
-                        val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
-                        val loadedMore = offset > 0
-                        val payload = FetchProductReviewsResponsePayload(
-                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
-                        )
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                Array<ProductReviewApiResponse>::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val reviews = it.map { review ->
+                        productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val productReviewError = networkErrorToProductError(networkError)
-                    val payload = FetchProductReviewsResponsePayload(productReviewError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                    val loadedMore = offset > 0
+                    return FetchProductReviewsResponsePayload(
+                            site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                    )
+                } ?: FetchProductReviewsResponsePayload(
+                        ProductError(
+                                ProductErrorType.GENERIC_ERROR,
+                                "Success response with empty data"
+                        ), site
+                )
+            }
+            is JetpackError -> {
+                val productReviewError = networkErrorToProductError(response.error)
+                return FetchProductReviewsResponsePayload(productReviewError, site)
+            }
+        }
     }
 
     /**

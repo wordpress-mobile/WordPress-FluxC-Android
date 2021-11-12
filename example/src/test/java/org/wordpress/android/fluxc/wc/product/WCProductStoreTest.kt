@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -29,7 +30,13 @@ import kotlin.test.assertTrue
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
-    private val productStore = WCProductStore(Dispatcher(), mock(), addonsDao = mock(), logger = mock())
+    private val productStore = WCProductStore(
+            Dispatcher(),
+            mock(),
+            addonsDao = mock(),
+            logger = mock(),
+            coroutineEngine = initCoroutineEngine()
+    )
 
     @Before
     fun setUp() {
