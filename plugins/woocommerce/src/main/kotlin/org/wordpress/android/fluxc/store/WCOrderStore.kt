@@ -437,7 +437,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.UPDATE_ORDER_STATUS ->
                 throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")
-            WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
@@ -450,8 +449,6 @@ class WCOrderStore @Inject constructor(
                 handleFetchOrderByIdsCompleted(action.payload as FetchOrdersByIdsResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
-            WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
-                    action.payload as FetchHasOrdersResponsePayload)
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
@@ -489,8 +486,17 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
-    private fun fetchHasOrders(payload: FetchHasOrdersPayload) {
-        with(payload) { wcOrderRestClient.fetchHasOrders(site, statusFilter) }
+    suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
+            val result = wcOrderRestClient.fetchHasOrders(site, status)
+
+            return@withDefaultContext if (result.isError) {
+                OnOrderChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = if (result.hasOrders) 1 else 0
+                OnOrderChanged(rowsAffected, status)
+            }
+        }
     }
 
     suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): OnOrderChanged {
@@ -797,22 +803,6 @@ class WCOrderStore @Inject constructor(
         } else {
             with(payload) { OnOrderChanged(count, statusFilter) }
         }.also { it.causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT }
-        emitChange(onOrderChanged)
-    }
-
-    /**
-     * This is a response to a request to determine whether any orders matching a filter exist
-     */
-    private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
-        val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
-        } else {
-            with(payload) {
-                // set 'rowsAffected' to non-zero if there are orders, otherwise set to zero
-                val rowsAffected = if (payload.hasOrders) 1 else 0
-                OnOrderChanged(rowsAffected, statusFilter)
-            }
-        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
         emitChange(onOrderChanged)
     }
 

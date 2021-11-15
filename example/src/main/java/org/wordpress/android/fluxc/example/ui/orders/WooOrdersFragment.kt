@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.example.R.layout
@@ -34,7 +33,6 @@ import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
@@ -135,8 +133,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         fetch_has_orders.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchHasOrdersPayload(it)
-                dispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(payload))
+                coroutineScope.launch {
+                    wcOrderStore.fetchHasOrders(it, null).takeUnless { it.isError }?.let {
+                        prependToLog("Has orders ${it.rowsAffected != 0}")
+                    } ?: prependToLog("Fetching hasOrders failed.")
+                }
             }
         }
 
@@ -480,10 +481,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         event.statusFilter?.let {
                             prependToLog("Count of $it orders: ${event.rowsAffected}$append")
                         } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
-                    }
-                    FETCH_HAS_ORDERS -> {
-                        val hasOrders = event.rowsAffected > 0
-                        prependToLog("Store has orders: $hasOrders")
                     }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }

@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -365,18 +364,35 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testHasAnyOrders() {
+    fun testHasAnyOrders() = runBlocking {
         interceptor.respondWith("wc-has-orders-response-success.json")
-        orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNull(error)
+            assertTrue(hasOrders)
+            assertNull(statusFilter)
+        }
+    }
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+    @Test
+    fun testHasAnyOrdersReturnsFalseWhenThereAreNoOrders() = runBlocking {
+        interceptor.respondWith("wc-has-orders-response-success-no-orders.json")
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNull(error)
+            assertFalse(hasOrders)
+            assertNull(statusFilter)
+        }
+    }
 
-        assertEquals(WCOrderAction.FETCHED_HAS_ORDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchHasOrdersResponsePayload
-        assertNull(payload.error)
-        assertTrue(payload.hasOrders)
-        assertNull(payload.statusFilter)
+    @Test
+    fun testHasAnyOrdersReturnsErrorWhenMissingDataKey() = runBlocking {
+        interceptor.respondWith("wc-has-orders-response-success-missing-data-key.json")
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNotNull(error)
+            assertNull(statusFilter)
+        }
     }
 
     @Test
