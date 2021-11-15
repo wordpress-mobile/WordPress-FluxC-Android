@@ -795,7 +795,11 @@ class OrderRestClient @Inject constructor(
                                 order
                         )
                     }
-                } ?: FetchOrderShipmentProvidersResponsePayload(site, order)
+                } ?: FetchOrderShipmentProvidersResponsePayload(
+                        OrderError(GENERIC_ERROR, "Success response with empty data"),
+                        site,
+                        order
+                )
             }
             is JetpackError -> {
                 val trackingError = networkErrorToOrderError(response.error)
