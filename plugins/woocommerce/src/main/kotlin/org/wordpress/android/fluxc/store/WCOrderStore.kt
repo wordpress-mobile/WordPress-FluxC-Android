@@ -440,8 +440,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
             WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
-            WCOrderAction.FETCH_ORDER_SHIPMENT_PROVIDERS ->
-                fetchOrderShipmentProviders(action.payload as FetchOrderShipmentProvidersPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -454,9 +452,6 @@ class WCOrderStore @Inject constructor(
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
-            WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS ->
-                handleFetchOrderShipmentProvidersCompleted(
-                        action.payload as FetchOrderShipmentProvidersResponsePayload)
         }
     }
 
@@ -650,7 +645,7 @@ class WCOrderStore @Inject constructor(
     }
 
     suspend fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload): OnOrderChanged {
-        return coroutineEngine.withDefaultContext(T.API, this, "addOrderShipmentTracking") {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteOrderShipmentTracking") {
             val result = with(payload) {
                 wcOrderRestClient.deleteShipmentTrackingForOrder(site, localOrderId, remoteOrderId, tracking)
             }
@@ -665,8 +660,25 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {
-        wcOrderRestClient.fetchOrderShipmentProviders(payload.site, payload.order)
+    suspend fun fetchOrderShipmentProviders(
+        payload: FetchOrderShipmentProvidersPayload
+    ): OnOrderShipmentProvidersChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderShipmentProviders") {
+            val result = with(payload) {
+                wcOrderRestClient.fetchOrderShipmentProviders(site, order)
+            }
+
+            return@withDefaultContext if (result.isError) {
+                OnOrderShipmentProvidersChanged(0).also { it.error = result.error }
+            } else {
+                // Delete all providers from the db
+                OrderSqlUtils.deleteOrderShipmentProvidersForSite(payload.site)
+
+                // Add new list to the database
+                val rowsAffected = result.providers.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentProvider(it) }
+                OnOrderShipmentProvidersChanged(rowsAffected)
+            }
+        }
     }
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
@@ -839,24 +851,5 @@ class WCOrderStore @Inject constructor(
         }
 
         emitChange(onOrderStatusLabelsChanged)
-    }
-
-    private fun handleFetchOrderShipmentProvidersCompleted(
-        payload: FetchOrderShipmentProvidersResponsePayload
-    ) {
-        val onProviderChanged: OnOrderShipmentProvidersChanged
-
-        if (payload.isError) {
-            onProviderChanged = OnOrderShipmentProvidersChanged(0).also { it.error = payload.error }
-        } else {
-            // Delete all providers from the db
-            OrderSqlUtils.deleteOrderShipmentProvidersForSite(payload.site)
-
-            // Add new list to the database
-            val rowsAffected = payload.providers.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentProvider(it) }
-            onProviderChanged = OnOrderShipmentProvidersChanged(rowsAffected)
-        }
-
-        emitChange(onProviderChanged)
     }
 }
