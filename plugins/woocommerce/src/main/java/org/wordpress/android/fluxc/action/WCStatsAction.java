@@ -51,6 +51,7 @@ public enum WCStatsAction implements IAction {
     FETCHED_VISITOR_STATS,
 
     @Action(payloadType = FetchNewVisitorStatsResponsePayload.class)
+    @Deprecated // Use suspendable WCStatsStore.fetchNewVisitorStats(..) directly.
     FETCHED_NEW_VISITOR_STATS,
 
     @Action(payloadType = FetchTopEarnersStatsResponsePayload.class)
