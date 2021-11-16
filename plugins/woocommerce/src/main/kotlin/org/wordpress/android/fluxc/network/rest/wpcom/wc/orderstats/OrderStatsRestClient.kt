@@ -340,7 +340,7 @@ class OrderStatsRestClient @Inject constructor(
                     val model = WCNewVisitorStatsModel().apply {
                         this.localSiteId = site.id
                         this.granularity = granularity.toString()
-                        this.fields = response.fields.toString()
+                        this.fields = it.fields.toString()
                         this.data = it.toString()
                         this.quantity = quantity.toString()
                         this.date = date
@@ -355,7 +355,7 @@ class OrderStatsRestClient @Inject constructor(
                 } ?: FetchNewVisitorStatsResponsePayload(site, granularity)
             }
 
-            is JetpackError {
+            is JetpackError -> {
                 val orderError = networkErrorToOrderError(response.error)
                 FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
             }
