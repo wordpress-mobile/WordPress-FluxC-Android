@@ -22,6 +22,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
@@ -42,6 +45,7 @@ class OrderStatsRestClient @Inject constructor(
     appContext: Context,
     dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -306,7 +310,7 @@ class OrderStatsRestClient @Inject constructor(
         add(request)
     }
 
-    fun fetchNewVisitorStats(
+    suspend fun fetchNewVisitorStats(
         site: SiteModel,
         unit: OrderStatsApiUnit,
         granularity: StatsGranularity,
@@ -315,42 +319,76 @@ class OrderStatsRestClient @Inject constructor(
         force: Boolean = false,
         startDate: String? = null,
         endDate: String? = null
-    ) {
+    ): FetchNewVisitorStatsResponsePayload {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
                 "quantity" to quantity.toString(),
                 "stat_fields" to "visitors")
-        val request = WPComGsonRequest
-                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
-                        { response ->
-                            val model = WCNewVisitorStatsModel().apply {
-                                this.localSiteId = site.id
-                                this.granularity = granularity.toString()
-                                this.fields = response.fields.toString()
-                                this.data = response.data.toString()
-                                this.quantity = quantity.toString()
-                                this.date = date
-                                endDate?.let { this.endDate = it }
-                                startDate?.let {
-                                    this.startDate = startDate
-                                    this.isCustomField = true
-                                }
-                            }
-                            val payload = FetchNewVisitorStatsResponsePayload(site, granularity, model)
-                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
-                        },
-                        { networkError ->
-                            val orderError = networkErrorToOrderError(networkError)
-                            val payload = FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
-                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
-                        })
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                VisitorStatsApiResponse::class.java
+        )
 
-        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-        if (force) request.setShouldForceUpdate()
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val model = WCNewVisitorStatsModel().apply {
+                        this.localSiteId = site.id
+                        this.granularity = granularity.toString()
+                        this.fields = response.fields.toString()
+                        this.data = it.toString()
+                        this.quantity = quantity.toString()
+                        this.date = date
+                        endDate?.let { this.endDate = it }
+                        startDate?.let {
+                            this.startDate = startDate
+                            this.isCustomField = true
+                        }
+                    }
 
-        add(request)
+                    FetchNewVisitorStatsResponsePayload(site, granularity, model)
+                } ?: FetchNewVisitorStatsResponsePayload(site, granularity)
+            }
+
+            is JetpackError {
+                val orderError = networkErrorToOrderError(response.error)
+                FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
+            }
+        }
+//        val request = WPComGsonRequest
+//                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
+//                        { response ->
+//                            val model = WCNewVisitorStatsModel().apply {
+//                                this.localSiteId = site.id
+//                                this.granularity = granularity.toString()
+//                                this.fields = response.fields.toString()
+//                                this.data = response.data.toString()
+//                                this.quantity = quantity.toString()
+//                                this.date = date
+//                                endDate?.let { this.endDate = it }
+//                                startDate?.let {
+//                                    this.startDate = startDate
+//                                    this.isCustomField = true
+//                                }
+//                            }
+//                            val payload = FetchNewVisitorStatsResponsePayload(site, granularity, model)
+//                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
+//                        },
+//                        { networkError ->
+//                            val orderError = networkErrorToOrderError(networkError)
+//                            val payload = FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
+//                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
+//                        })
+//
+//        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+//        if (force) request.setShouldForceUpdate()
+//
+//        add(request)
     }
 
     fun fetchTopEarnersStats(
