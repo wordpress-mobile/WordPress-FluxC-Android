@@ -32,7 +32,6 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
 
 @Singleton
@@ -267,7 +266,6 @@ class WCStatsStore @Inject constructor(
             WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY ->
                 fetchRevenueStatsAvailability(action.payload as FetchRevenueStatsAvailabilityPayload)
             WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
-//            WCStatsAction.FETCH_NEW_VISITOR_STATS -> fetchNewVisitorStats(action.payload as FetchNewVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
@@ -278,8 +276,6 @@ class WCStatsStore @Inject constructor(
             )
             WCStatsAction.FETCHED_VISITOR_STATS ->
                 handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
-//            WCStatsAction.FETCHED_NEW_VISITOR_STATS ->
-//                handleFetchNewVisitorStatsCompleted(action.payload as FetchNewVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
                 handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
@@ -525,18 +521,7 @@ class WCStatsStore @Inject constructor(
                     it.causeOfChange = WCStatsAction.FETCH_NEW_VISITOR_STATS
                 }
             }
-
         }
-//        wcOrderStatsClient.fetchNewVisitorStats(
-//                payload.site,
-//                apiUnit,
-//                payload.granularity,
-//                getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, endDate),
-//                quantity,
-//                payload.forced,
-//                startDate,
-//                endDate
-//        )
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
@@ -576,20 +561,6 @@ class WCStatsStore @Inject constructor(
         }
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_VISITOR_STATS
-        emitChange(onStatsChanged)
-    }
-
-    private fun handleFetchNewVisitorStatsCompleted(payload: FetchNewVisitorStatsResponsePayload) {
-        val onStatsChanged = with(payload) {
-            if (isError || stats == null) {
-                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
-            } else {
-                val rowsAffected = WCVisitorStatsSqlUtils.insertOrUpdateNewVisitorStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
-            }
-        }
-
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_NEW_VISITOR_STATS
         emitChange(onStatsChanged)
     }
 
