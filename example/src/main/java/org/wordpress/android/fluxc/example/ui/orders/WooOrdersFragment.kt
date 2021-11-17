@@ -432,9 +432,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         selectedSite?.let { site ->
             wcOrderStore.getOrdersForSite(site).let { orderList ->
-                // We check if the rowsAffected value is zero because not all events will causes data to be
-                // saved to the orders table (such as the FETCH-ORDERS-COUNT...so the orderList would always
-                // be empty even if there were orders available.
                 if (orderList.isEmpty()) {
                     prependToLog("No orders were stored for site " + site.name + " =(")
                     return
