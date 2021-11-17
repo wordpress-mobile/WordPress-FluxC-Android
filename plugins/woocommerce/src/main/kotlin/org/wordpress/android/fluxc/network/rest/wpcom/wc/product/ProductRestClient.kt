@@ -1027,7 +1027,7 @@ class ProductRestClient @Inject constructor(
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote id of the review to fetch
      */
-    fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long) {
+    suspend fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
