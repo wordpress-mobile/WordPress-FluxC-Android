@@ -45,6 +45,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
@@ -1021,35 +1022,40 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * Makes a GET call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequestBuilder])
      * retrieving a product review by it's remote ID for a given WooCommerce [SiteModel].
      *
-     * Dispatches a [WCProductAction.FETCHED_SINGLE_PRODUCT_REVIEW]
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote id of the review to fetch
      */
     fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long) {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
-        val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: ProductReviewApiResponse? ->
-                    response?.let {
-                        val review = productReviewResponseToProductReviewModel(response).apply {
-                            localSiteId = site.id
-                        }
-                        val payload = RemoteProductReviewPayload(site, review)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                ProductReviewApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val review = productReviewResponseToProductReviewModel(it).apply {
+                        localSiteId = site.id
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val productReviewError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductReviewPayload(error = productReviewError, site = site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    RemoteProductReviewPayload(site, review)
+                } ?: RemoteProductReviewPayload(
+                        error = ProductError(GENERIC_ERROR, "Success response with empty data"),
+                        site = site
+                )
+            }
+            is JetpackError -> {
+                val productReviewError = networkErrorToProductError(response.error)
+                RemoteProductReviewPayload(error = productReviewError, site = site)
+            }
+        }
     }
 
     /**
