@@ -1,7 +1,10 @@
 package org.wordpress.android.fluxc.wc.product
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,17 +14,23 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.AccountModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.wc.utils.SiteTestUtils
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -30,9 +39,10 @@ import kotlin.test.assertTrue
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
+    private val productRestClient: ProductRestClient = mock()
     private val productStore = WCProductStore(
             Dispatcher(),
-            mock(),
+            productRestClient,
             addonsDao = mock(),
             logger = mock(),
             coroutineEngine = initCoroutineEngine()
@@ -43,7 +53,13 @@ class WCProductStoreTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCProductModel::class.java, WCProductVariationModel::class.java),
+                listOf(
+                        WCProductModel::class.java,
+                        WCProductVariationModel::class.java,
+                        WCProductReviewModel::class.java,
+                        SiteModel::class.java,
+                        AccountModel::class.java
+                ),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -249,8 +265,30 @@ class WCProductStoreTest {
         // then
         with(productStore.getProductByRemoteId(site, productModel.remoteProductId)) {
             assertNotNull(this)
-            assertEquals(productModel.description, this?.description)
-            assertEquals(productModel.name, this?.name)
+            assertEquals(productModel.description, this.description)
+            assertEquals(productModel.name, this.name)
         }
+    }
+
+    @Test
+    fun `given product review exists, when fetch product review, then local database updated`() = runBlocking {
+        val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
+        val productModel = ProductTestUtils.generateSampleProduct(remoteId = 1).apply {
+            localSiteId = site.id
+        }
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+
+        val reviewModel = ProductTestUtils.generateSampleProductReview(
+                productModel.remoteProductId,
+                123L,
+                site.id
+        )
+        whenever(productRestClient.fetchProductReviewById(site, reviewModel.remoteProductReviewId))
+                .thenReturn(RemoteProductReviewPayload(site, reviewModel))
+
+        productStore.fetchSingleProductReview(FetchSingleProductReviewPayload(site, reviewModel.remoteProductReviewId))
+
+        assertThat(productStore.getProductReviewByRemoteId(site.id, reviewModel.remoteProductReviewId)).isNotNull
+        Unit
     }
 }
