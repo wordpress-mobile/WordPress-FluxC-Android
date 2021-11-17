@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 
 @RunWith(RobolectricTestRunner::class)
 class OrdersDaoTest {
-
     private lateinit var sut: OrdersDao
     private lateinit var database: WCAndroidDatabase
 
@@ -92,7 +91,6 @@ class OrdersDaoTest {
     }
 
     private companion object {
-
         const val TEST_LOCAL_SITE_ID = 6
 
         fun generateSampleOrder(
