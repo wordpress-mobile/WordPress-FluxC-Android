@@ -186,11 +186,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         fetch_order_notes.setOnClickListener {
             selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
-                    val notesCountBeforeRequest = OrderSqlUtils.getOrderNotesForOrder(order.id).size
+                    val notesCountBeforeRequest = wcOrderStore.getOrderNotesForOrder(order.id).size
                     coroutineScope.launch {
                         wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId, site).takeUnless { it.isError }
                             ?.let {
-                                val notesCountAfterRequest = OrderSqlUtils.getOrderNotesForOrder(order.id).size
+                                val notesCountAfterRequest = wcOrderStore.getOrderNotesForOrder(order.id).size
                                 prependToLog(
                                     "Fetched order(${order.remoteOrderId}) notes. " +
                                             "${notesCountAfterRequest - notesCountBeforeRequest} " +
