@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
@@ -62,8 +61,6 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchSingleProductShippingClassPayload.class)
     FETCH_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = FetchSingleProductReviewPayload.class)
-    FETCH_SINGLE_PRODUCT_REVIEW,
     @Action(payloadType = UpdateProductReviewStatusPayload.class)
     UPDATE_PRODUCT_REVIEW_STATUS,
     @Action(payloadType = UpdateProductImagesPayload.class)
@@ -106,8 +103,6 @@ public enum WCProductAction implements IAction {
     FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = RemoteProductShippingClassPayload.class)
     FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = RemoteProductReviewPayload.class)
-    FETCHED_SINGLE_PRODUCT_REVIEW,
     @Action(payloadType = RemoteProductReviewPayload.class)
     UPDATED_PRODUCT_REVIEW_STATUS,
     @Action(payloadType = RemoteUpdateProductImagesPayload.class)

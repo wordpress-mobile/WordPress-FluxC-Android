@@ -70,6 +70,18 @@ object ProductTestUtils {
         }
     }
 
+    fun generateSampleProductReview(
+        remoteProductId: Long = 1L,
+        remoteProductReviewId: Long = 2L,
+        siteId: Int = 6
+    ): WCProductReviewModel {
+        return WCProductReviewModel(1).apply {
+            this.remoteProductId = remoteProductId
+            this.remoteProductReviewId = remoteProductReviewId
+            this.localSiteId = siteId
+        }
+    }
+
     fun generateProductList(siteId: Int = 6): List<WCProductShippingClassModel> {
         with(ArrayList<WCProductShippingClassModel>()) {
             add(generateSampleProductShippingClass(1, siteId = siteId))
