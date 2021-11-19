@@ -188,13 +188,13 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     @Suppress("DEPRECATION_ERROR")
-                    val notesCountBeforeRequest = OrderSqlUtils.getOrderNotesForOrder(order.id).size
+                    val notesCountBeforeRequest = wcOrderStore.getOrderNotesForOrder(order.id).size
                     coroutineScope.launch {
                         @Suppress("DEPRECATION_ERROR")
                         wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId.value, site)
                                 .takeUnless { it.isError }
                                 ?.let {
-                                    val notesCountAfterRequest = OrderSqlUtils.getOrderNotesForOrder(order.id).size
+                                    val notesCountAfterRequest = wcOrderStore.getOrderNotesForOrder(order.id).size
                                     prependToLog(
                                             "Fetched order(${order.remoteOrderId}) notes. " +
                                                     "${notesCountAfterRequest - notesCountBeforeRequest} " +
@@ -452,9 +452,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         selectedSite?.let { site ->
             wcOrderStore.getOrdersForSite(site).let { orderList ->
-                // We check if the rowsAffected value is zero because not all events will causes data to be
-                // saved to the orders table (such as the FETCH-ORDERS-COUNT...so the orderList would always
-                // be empty even if there were orders available.
                 if (orderList.isEmpty()) {
                     prependToLog("No orders were stored for site " + site.name + " =(")
                     return
