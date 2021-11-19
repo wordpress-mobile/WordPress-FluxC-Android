@@ -50,10 +50,10 @@ abstract class OrdersDao {
     }
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
-    abstract fun getOrdersForSite(localSiteId: Int, status: List<String>): List<WCOrderModel>
+    abstract fun getOrdersForSite(localSiteId: LocalId, status: List<String>): List<WCOrderModel>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId")
-    abstract fun getOrdersForSite(localSiteId: Int): List<WCOrderModel>
+    abstract fun getOrdersForSite(localSiteId: LocalId): List<WCOrderModel>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
     abstract fun observeOrdersForSite(localSiteId: LocalId, status: List<String>): Flow<List<WCOrderModel>>

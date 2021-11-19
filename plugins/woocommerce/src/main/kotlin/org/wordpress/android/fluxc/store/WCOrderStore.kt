@@ -366,9 +366,9 @@ class WCOrderStore @Inject constructor(
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
      */
     fun getOrdersForSite(site: SiteModel, vararg status: String) = if (status.isEmpty()) {
-        ordersDao.getOrdersForSite(site.id)
+        ordersDao.getOrdersForSite(site.localId())
     } else {
-        ordersDao.getOrdersForSite(site.id, status = status.asList())
+        ordersDao.getOrdersForSite(site.localId(), status = status.asList())
     }
 
     fun observeOrdersForSite(siteLocalId: LocalId, statuses: List<String>) =

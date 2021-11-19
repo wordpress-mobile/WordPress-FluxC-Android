@@ -90,7 +90,7 @@ class WCOrderStoreTest {
         }
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
 
-        val storedOrders = ordersDao.getOrdersForSite(site.id)
+        val storedOrders = ordersDao.getOrdersForSite(site.localId())
         assertEquals(1, storedOrders.size)
         assertEquals(42, storedOrders[0].remoteOrderId.value)
         assertEquals(orderModel, storedOrders[0])
@@ -270,14 +270,14 @@ class WCOrderStoreTest {
 
         val upToDate = setupUpToDateOrders(site)
         upToDate.orders.filterNotNull().forEach(ordersDao::insertOrUpdateOrder)
-        assertThat(ordersDao.getOrdersForSite(site.id)).hasSize(10)
+        assertThat(ordersDao.getOrdersForSite(site.localId())).hasSize(10)
 
         val outdated = setupOutdatedOrders(site)
         outdated.orders.filterNotNull().forEach(ordersDao::insertOrUpdateOrder)
-        assertThat(ordersDao.getOrdersForSite(site.id)).hasSize(20)
+        assertThat(ordersDao.getOrdersForSite(site.localId())).hasSize(20)
 
         val missing = setupMissingOrders()
-        assertThat(ordersDao.getOrdersForSite(site.id)).hasSize(20)
+        assertThat(ordersDao.getOrdersForSite(site.localId())).hasSize(20)
 
         orderStore.onAction(
                 newFetchedOrderListAction(
