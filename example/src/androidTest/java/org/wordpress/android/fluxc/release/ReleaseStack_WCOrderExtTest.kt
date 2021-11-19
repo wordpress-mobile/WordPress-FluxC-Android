@@ -60,11 +60,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_hasTrackings() = runBlocking {
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.id
-        }
+        )
         orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId, sSite)
 
         val trackings = orderStore.getShipmentTrackingsForOrder(
@@ -81,11 +81,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_noTrackings() = runBlocking {
-        val orderModel = WCOrderModel().apply {
-            id = 9
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toLong()
+        val orderModel = WCOrderModel(
+            id = 9,
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.id
-        }
+        )
 
         orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId, sSite)
 
@@ -106,11 +106,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 1: Add an order shipment tracking for an order
          */
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.id
-        }
+        )
 
         val testProvider = "TNT Express (consignment)"
         val testTrackingNumber = TestUtils.randomString(15)
@@ -169,11 +169,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 1: Add a tracking record using a custom provider
          */
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.id
-        }
+        )
 
         val testProvider = "Amanda Test Provider"
         val testTrackingNumber = TestUtils.randomString(15)
@@ -240,11 +240,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_ORDER_SHIPMENT_PROVIDERS
         mCountDownLatch = CountDownLatch(1)
 
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.id
-        }
+        )
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(
                 FetchOrderShipmentProvidersPayload(sSite, orderModel)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))

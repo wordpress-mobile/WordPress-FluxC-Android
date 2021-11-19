@@ -219,7 +219,7 @@ class OrderUpdateStore @Inject internal constructor(
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitNoEntityFound(message: String) {
         emit(UpdateOrderResult.OptimisticUpdateResult(
-                OnOrderChanged(orderError = WCOrderStore.OrderError(message = message))
+                OnOrderChanged(orderError = OrderError(message = message))
         ))
     }
 }

@@ -48,11 +48,12 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var orderStore: WCOrderStore
 
     private var nextEvent: TestEvent = TestEvent.NONE
-    private val orderModel = WCOrderModel(8).apply {
-        remoteOrderId = 1125
-        number = "1125"
-        dateCreated = "2018-04-20T15:45:14Z"
-    }
+    private val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = 1125,
+            number = "1125",
+            dateCreated = "2018-04-20T15:45:14Z"
+    )
     private var lastEvent: OnOrderChanged? = null
     private val orderSearchQuery = "bogus query"
 
@@ -147,7 +148,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         this.lastEvent?.let {
-            assertTrue(it.rowsAffected > 0)
             assertEquals(it.statusFilter, statusFilter)
         } ?: fail()
     }
@@ -172,10 +172,11 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         val orderFromDb = orderStore.getOrderByIdentifier(
                 OrderIdentifier(
-                        WCOrderModel().apply {
-                            remoteOrderId = orderModel.remoteOrderId
+                        WCOrderModel(
+                            remoteOrderId = orderModel.remoteOrderId,
                             localSiteId = sSite.id
-                        })
+                        )
+                )
         )
         assertTrue(orderFromDb != null && orderFromDb.remoteOrderId == orderModel.remoteOrderId)
     }
@@ -207,11 +208,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             note = "Test rest note"
             isCustomerNote = true
         }
-        val onOrderChanged = orderStore.postOrderNote(
+        orderStore.postOrderNote(
                 PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId, sSite, originalNote)
         )
 
-        assertTrue(onOrderChanged.rowsAffected != 0)
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.id)
         assertTrue(fetchedNotes.isNotEmpty())
@@ -232,8 +232,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_ORDER_STATUS_OPTIONS
         mCountDownLatch = CountDownLatch(1)
 
-        mDispatcher.dispatch(WCOrderActionBuilder
-                .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite)))
+        mDispatcher.dispatch(
+                WCOrderActionBuilder
+                        .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         val orderStatusOptions = orderStore.getOrderStatusOptionsForSite(sSite)
