@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORI
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_VARIATION
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
@@ -234,9 +233,16 @@ class WooProductsFragment : StoreSelectingFragment() {
                 ) { editText ->
                     val reviewId = editText.text.toString().toLongOrNull()
                     reviewId?.let { id ->
-                        prependToLog("Submitting request to fetch product review for ID $id")
-                        val payload = FetchSingleProductReviewPayload(site, id)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductReviewAction(payload))
+                        coroutineScope.launch {
+                            prependToLog("Submitting request to fetch product review for ID $id")
+                            val payload = FetchSingleProductReviewPayload(site, id)
+                            val result = wcProductStore.fetchSingleProductReview(payload)
+                            if (!result.isError) {
+                                prependToLog("Fetched ${result.rowsAffected} single product review")
+                            } else {
+                                prependToLog("Fetching single product review FAILED")
+                            }
+                        }
                     } ?: prependToLog("No valid remoteReviewId defined...doing nothing")
                 }
             }
@@ -480,9 +486,6 @@ class WooProductsFragment : StoreSelectingFragment() {
                         pendingFetchSingleProductVariationOffset = 0
                         load_more_product_variations.isEnabled = false
                     }
-                }
-                FETCH_SINGLE_PRODUCT_REVIEW -> {
-                    prependToLog("Fetched ${event.rowsAffected} single product review")
                 }
                 UPDATE_PRODUCT_REVIEW_STATUS -> {
                     prependToLog("${event.rowsAffected} product reviews updated")

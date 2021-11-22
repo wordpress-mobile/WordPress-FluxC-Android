@@ -776,8 +776,6 @@ class WCProductStore @Inject constructor(
                 searchProducts(action.payload as SearchProductsPayload)
             WCProductAction.FETCH_PRODUCT_VARIATIONS ->
                 fetchProductVariations(action.payload as FetchProductVariationsPayload)
-            WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW ->
-                fetchSingleProductReview(action.payload as FetchSingleProductReviewPayload)
             WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS ->
                 updateProductReviewStatus(action.payload as UpdateProductReviewStatusPayload)
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
@@ -820,8 +818,6 @@ class WCProductStore @Inject constructor(
                 handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
             WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
                 handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
-            WCProductAction.FETCHED_SINGLE_PRODUCT_REVIEW ->
-                handleFetchSingleProductReview(action.payload as RemoteProductReviewPayload)
             WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS ->
                 handleUpdateProductReviewStatus(action.payload as RemoteProductReviewPayload)
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
@@ -968,7 +964,7 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductReviews(payload: FetchProductReviewsPayload): OnProductReviewChanged {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchProductReviews") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductReviews") {
             val response = with(payload) {
                 wcProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus)
             }
@@ -990,8 +986,19 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun fetchSingleProductReview(payload: FetchSingleProductReviewPayload) {
-        with(payload) { wcProductRestClient.fetchProductReviewById(site, remoteReviewId) }
+    suspend fun fetchSingleProductReview(payload: FetchSingleProductReviewPayload): OnProductReviewChanged {
+        return coroutineEngine.withDefaultContext(API, this, "fetchSingleProductReview") {
+            val result = wcProductRestClient.fetchProductReviewById(payload.site, payload.remoteReviewId)
+
+            return@withDefaultContext if (result.isError) {
+                OnProductReviewChanged(0).also { it.error = result.error }
+            } else {
+                val rowsAffected = result.productReview?.let {
+                    ProductSqlUtils.insertOrUpdateProductReview(it)
+                } ?: 0
+                OnProductReviewChanged(rowsAffected)
+            }
+        }
     }
 
     private fun fetchProductPassword(payload: FetchProductPasswordPayload) {
@@ -1237,22 +1244,6 @@ class WCProductStore @Inject constructor(
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_VARIATIONS
         emitChange(onProductChanged)
-    }
-
-    private fun handleFetchSingleProductReview(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductReviewChanged
-
-        if (payload.isError) {
-            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = payload.productReview?.let {
-                ProductSqlUtils.insertOrUpdateProductReview(it)
-            } ?: 0
-            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
-        }
-
-        onProductReviewChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
-        emitChange(onProductReviewChanged)
     }
 
     private fun handleUpdateProductReviewStatus(payload: RemoteProductReviewPayload) {
