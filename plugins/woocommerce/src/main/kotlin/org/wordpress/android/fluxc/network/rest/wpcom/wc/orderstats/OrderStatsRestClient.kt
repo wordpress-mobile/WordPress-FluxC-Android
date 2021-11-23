@@ -25,9 +25,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
@@ -45,12 +42,12 @@ import javax.inject.Singleton
 
 @Singleton
 class OrderStatsRestClient @Inject constructor(
-        appContext: Context,
-        dispatcher: Dispatcher,
-        @Named("regular") requestQueue: RequestQueue,
-        private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
-        accessToken: AccessToken,
-        userAgent: UserAgent
+    appContext: Context,
+    dispatcher: Dispatcher,
+    @Named("regular") requestQueue: RequestQueue,
+    private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
+    accessToken: AccessToken,
+    userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     enum class OrderStatsApiUnit {
         HOUR, DAY, WEEK, MONTH, YEAR;
