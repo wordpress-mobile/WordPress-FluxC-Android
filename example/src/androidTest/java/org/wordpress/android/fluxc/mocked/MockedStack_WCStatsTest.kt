@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.mocked
 
 import com.android.volley.RequestQueue
 import com.google.gson.JsonObject
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -286,17 +287,12 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testNewVisitorStatsSuccess() {
+    fun testNewVisitorStatsSuccess() = runBlocking {
         interceptor.respondWith("wc-visitor-stats-response-success.json")
-        orderStatsRestClient.fetchNewVisitorStats(
+        val payload = orderStatsRestClient.fetchNewVisitorStats(
                 siteModel, OrderStatsApiUnit.MONTH, StatsGranularity.YEARS, "2019-08-06", 8, true
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_NEW_VISITOR_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchNewVisitorStatsResponsePayload
         with(payload) {
             assertNull(error)
             assertEquals(siteModel, site)
@@ -308,22 +304,18 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testNewVisitorStatsError() {
+    fun testNewVisitorStatsError() = runBlocking {
         val errorJson = JsonObject().apply {
             addProperty("error", "rest_invalid_param")
             addProperty("message", "Invalid parameter(s): date")
         }
 
         interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchNewVisitorStats(
+
+        val payload = orderStatsRestClient.fetchNewVisitorStats(
                 siteModel, OrderStatsApiUnit.MONTH, StatsGranularity.YEARS, "2019-08-06", 8, true
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_NEW_VISITOR_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchNewVisitorStatsResponsePayload
         with(payload) {
             assertNotNull(error)
             assertEquals(siteModel, site)
