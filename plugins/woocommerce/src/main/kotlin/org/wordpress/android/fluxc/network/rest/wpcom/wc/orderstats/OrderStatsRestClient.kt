@@ -363,35 +363,6 @@ class OrderStatsRestClient @Inject constructor(
                 FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
             }
         }
-//        val request = WPComGsonRequest
-//                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
-//                        { response ->
-//                            val model = WCNewVisitorStatsModel().apply {
-//                                this.localSiteId = site.id
-//                                this.granularity = granularity.toString()
-//                                this.fields = response.fields.toString()
-//                                this.data = response.data.toString()
-//                                this.quantity = quantity.toString()
-//                                this.date = date
-//                                endDate?.let { this.endDate = it }
-//                                startDate?.let {
-//                                    this.startDate = startDate
-//                                    this.isCustomField = true
-//                                }
-//                            }
-//                            val payload = FetchNewVisitorStatsResponsePayload(site, granularity, model)
-//                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
-//                        },
-//                        { networkError ->
-//                            val orderError = networkErrorToOrderError(networkError)
-//                            val payload = FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
-//                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
-//                        })
-//
-//        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-//        if (force) request.setShouldForceUpdate()
-//
-//        add(request)
     }
 
     fun fetchTopEarnersStats(
