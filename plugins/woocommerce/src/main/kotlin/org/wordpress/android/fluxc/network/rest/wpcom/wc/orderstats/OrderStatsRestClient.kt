@@ -344,7 +344,7 @@ class OrderStatsRestClient @Inject constructor(
                         this.localSiteId = site.id
                         this.granularity = granularity.toString()
                         this.fields = it.fields.toString()
-                        this.data = it.toString()
+                        this.data = it.data.toString()
                         this.quantity = quantity.toString()
                         this.date = date
                         endDate?.let { this.endDate = it }
