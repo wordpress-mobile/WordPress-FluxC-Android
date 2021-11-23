@@ -17,6 +17,9 @@ import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
@@ -42,12 +45,12 @@ import javax.inject.Singleton
 
 @Singleton
 class OrderStatsRestClient @Inject constructor(
-    appContext: Context,
-    dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    accessToken: AccessToken,
-    userAgent: UserAgent
+        appContext: Context,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
+        accessToken: AccessToken,
+        userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     enum class OrderStatsApiUnit {
         HOUR, DAY, WEEK, MONTH, YEAR;
@@ -326,16 +329,16 @@ class OrderStatsRestClient @Inject constructor(
                 "date" to date,
                 "quantity" to quantity.toString(),
                 "stat_fields" to "visitors")
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        println("URL $url")
+        val response = wpComGsonRequestBuilder.syncGetRequest(
                 this,
-                site,
                 url,
                 params,
                 VisitorStatsApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is Success -> {
                 response.data?.let {
                     val model = WCNewVisitorStatsModel().apply {
                         this.localSiteId = site.id
@@ -355,7 +358,7 @@ class OrderStatsRestClient @Inject constructor(
                 } ?: FetchNewVisitorStatsResponsePayload(site, granularity)
             }
 
-            is JetpackError -> {
+            is Error -> {
                 val orderError = networkErrorToOrderError(response.error)
                 FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
             }
