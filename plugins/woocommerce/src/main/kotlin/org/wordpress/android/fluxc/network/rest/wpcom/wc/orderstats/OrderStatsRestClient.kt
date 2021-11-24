@@ -352,7 +352,7 @@ class OrderStatsRestClient @Inject constructor(
                     }
 
                     FetchNewVisitorStatsResponsePayload(site, granularity, model)
-                } ?: FetchNewVisitorStatsResponsePayload(site, granularity)
+                }
             }
 
             is Error -> {
