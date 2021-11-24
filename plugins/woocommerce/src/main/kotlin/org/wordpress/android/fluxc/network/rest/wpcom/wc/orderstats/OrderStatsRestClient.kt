@@ -332,7 +332,8 @@ class OrderStatsRestClient @Inject constructor(
                 this,
                 url,
                 params,
-                VisitorStatsApiResponse::class.java
+                VisitorStatsApiResponse::class.java,
+                forced = force
         )
 
         return when (response) {
