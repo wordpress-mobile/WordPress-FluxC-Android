@@ -354,11 +354,7 @@ class OrderStatsRestClient @Inject constructor(
                     }
 
                     FetchNewVisitorStatsResponsePayload(site, granularity, model)
-                } ?: FetchNewVisitorStatsResponsePayload (
-                        OrderStatsError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        site,
-                        granularity
-                )
+                }
             }
 
             is Error -> {
