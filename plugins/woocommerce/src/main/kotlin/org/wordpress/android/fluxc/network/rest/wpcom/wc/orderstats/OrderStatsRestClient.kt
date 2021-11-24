@@ -326,7 +326,7 @@ class OrderStatsRestClient @Inject constructor(
                 "date" to date,
                 "quantity" to quantity.toString(),
                 "stat_fields" to "visitors")
-        println("URL $url")
+
         val response = wpComGsonRequestBuilder.syncGetRequest(
                 this,
                 url,
