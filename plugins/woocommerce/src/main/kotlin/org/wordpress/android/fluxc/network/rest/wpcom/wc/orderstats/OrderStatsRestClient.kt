@@ -33,6 +33,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsRespon
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
+import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -352,7 +353,11 @@ class OrderStatsRestClient @Inject constructor(
                     }
 
                     FetchNewVisitorStatsResponsePayload(site, granularity, model)
-                }
+                } ?: FetchNewVisitorStatsResponsePayload (
+                        OrderStatsError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                        site,
+                        granularity
+                )
             }
 
             is Error -> {
