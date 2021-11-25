@@ -140,8 +140,16 @@ class NotificationsFragment : Fragment() {
                 notificationStore.getNotificationsForSite(site).filter { note -> !note.read }
                         .takeIf { list -> list.isNotEmpty() }?.let { notes ->
                             prependToLog("Marking [${notes.size}] unread notifications as read...\n")
-                            dispatcher.dispatch(NotificationActionBuilder
-                                    .newMarkNotificationsReadAction(MarkNotificationsReadPayload(notes)))
+                            coroutineScope.launch {
+                                val result = notificationStore.markNotificationsRead(
+                                        MarkNotificationsReadPayload(notes)
+                                )
+                                result.changedNotificationLocalIds.forEach {
+                                    notificationStore.getNotificationByLocalId(it)?.let { notif ->
+                                        prependToLog("SUCCESS! ${notif.toLogString()}")
+                                    }
+                                }
+                            }
                         } ?: prependToLog("No unread notifications found!\n")
             } ?: prependToLog("No site selected!")
         }
