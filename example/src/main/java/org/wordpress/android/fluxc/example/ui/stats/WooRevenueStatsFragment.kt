@@ -87,7 +87,10 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_week_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.WEEKS, forced = true)
+                    val payload = FetchRevenueStatsPayload(site = it,
+                            granularity = StatsGranularity.WEEKS,
+                            forced = true
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
                         prependToLog("Revenue stats forced with granularity ${StatsGranularity.WEEKS} " +
                                 ": ${it.rowsAffected != 0}")
