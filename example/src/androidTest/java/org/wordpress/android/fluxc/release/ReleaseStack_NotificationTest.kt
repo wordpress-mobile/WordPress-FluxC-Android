@@ -257,9 +257,6 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
                 assertEquals(TestEvent.MARKED_NOTIFS_SEEN, nextEvent)
                 mCountDownLatch.countDown()
             }
-            NotificationAction.MARK_NOTIFICATIONS_READ -> {
-                // noop
-            }
             else -> throw AssertionError("Unexpected cause of change: ${event.causeOfChange}")
         }
     }
