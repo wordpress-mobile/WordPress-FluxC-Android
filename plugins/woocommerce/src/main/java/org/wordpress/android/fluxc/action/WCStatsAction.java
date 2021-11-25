@@ -8,7 +8,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload;
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload;
@@ -20,9 +19,6 @@ public enum WCStatsAction implements IAction {
     // Remote actions
     @Action(payloadType = FetchOrderStatsPayload.class)
     FETCH_ORDER_STATS,
-
-    @Action(payloadType = FetchRevenueStatsPayload.class)
-    FETCH_REVENUE_STATS,
 
     @Action(payloadType = FetchRevenueStatsAvailabilityPayload.class)
     FETCH_REVENUE_STATS_AVAILABILITY,
