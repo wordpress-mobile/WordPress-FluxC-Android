@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
@@ -555,8 +554,13 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     @Test
     fun testFetchRevenueStatsAvailabilitySuccess() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        val payload = orderStatsRestClient.fetchRevenueStatsAvailability(siteModel, "2019-07-30T00:00:00")
+        orderStatsRestClient.fetchRevenueStatsAvailability(siteModel, "2019-07-30T00:00:00")
 
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsAvailabilityResponsePayload
         with(payload) {
             assertNull(error)
             assertEquals(siteModel, site)
@@ -572,8 +576,13 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson)
-        val payload = orderStatsRestClient.fetchRevenueStatsAvailability(siteModel, "2019-07-30T00:00:00")
+        orderStatsRestClient.fetchRevenueStatsAvailability(siteModel, "2019-07-30T00:00:00")
 
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsAvailabilityResponsePayload
         with(payload) {
             assertNotNull(error)
             assertEquals(siteModel, site)
