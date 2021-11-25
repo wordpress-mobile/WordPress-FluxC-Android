@@ -45,13 +45,13 @@ import javax.inject.Singleton
 
 @Singleton
 class OrderStatsRestClient @Inject constructor(
-        appContext: Context,
-        dispatcher: Dispatcher,
-        @Named("regular") requestQueue: RequestQueue,
-        private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
-        private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-        accessToken: AccessToken,
-        userAgent: UserAgent
+    appContext: Context,
+    dispatcher: Dispatcher,
+    @Named("regular") requestQueue: RequestQueue,
+    private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
+    accessToken: AccessToken,
+    userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     enum class OrderStatsApiUnit {
         HOUR, DAY, WEEK, MONTH, YEAR;
@@ -222,7 +222,9 @@ class OrderStatsRestClient @Inject constructor(
 
                     FetchRevenueStatsResponsePayload(site, granularity, model)
                 } ?: FetchRevenueStatsResponsePayload(
-                        OrderStatsError(type = OrderStatsErrorType.GENERIC_ERROR, message = "Success response with empty data"),
+                        OrderStatsError(type = OrderStatsErrorType.GENERIC_ERROR,
+                                message = "Success response with empty data"
+                        ),
                         site,
                         granularity
                 )
