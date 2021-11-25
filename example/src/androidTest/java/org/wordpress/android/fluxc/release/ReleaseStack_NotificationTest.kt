@@ -23,7 +23,6 @@ import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsSeen
 import org.wordpress.android.fluxc.store.NotificationStore.OnNotificationChanged
 import java.util.Date
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.properties.Delegates
