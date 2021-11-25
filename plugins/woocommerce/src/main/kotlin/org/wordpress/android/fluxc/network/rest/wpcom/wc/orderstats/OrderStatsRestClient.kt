@@ -25,6 +25,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
@@ -42,12 +45,13 @@ import javax.inject.Singleton
 
 @Singleton
 class OrderStatsRestClient @Inject constructor(
-    appContext: Context,
-    dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
-    accessToken: AccessToken,
-    userAgent: UserAgent
+        appContext: Context,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
+        private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
+        accessToken: AccessToken,
+        userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     enum class OrderStatsApiUnit {
         HOUR, DAY, WEEK, MONTH, YEAR;
@@ -195,8 +199,9 @@ class OrderStatsRestClient @Inject constructor(
                 "per_page" to perPage.toString(),
                 "order" to STATS_DEFAULT_ORDER)
 
-        val response = wpComGsonRequestBuilder.syncGetRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
+                site,
                 url,
                 params,
                 RevenueStatsApiResponse::class.java,
@@ -204,7 +209,7 @@ class OrderStatsRestClient @Inject constructor(
         )
 
         return when (response) {
-            is Success -> {
+            is JetpackSuccess -> {
                 response.data?.let {
                         val model = WCRevenueStatsModel().apply {
                             this.localSiteId = site.id
@@ -216,10 +221,14 @@ class OrderStatsRestClient @Inject constructor(
                         }
 
                     FetchRevenueStatsResponsePayload(site, granularity, model)
-                }
+                } ?: FetchRevenueStatsResponsePayload(
+                        OrderStatsError(type = OrderStatsErrorType.GENERIC_ERROR, message = "Success response with empty data"),
+                        site,
+                        granularity
+                )
             }
 
-            is Error -> {
+            is JetpackError -> {
                 val orderError = networkErrorToOrderError(response.error)
                 FetchRevenueStatsResponsePayload(orderError, site, granularity)
             }
