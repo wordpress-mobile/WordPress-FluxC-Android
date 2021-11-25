@@ -653,7 +653,7 @@ class WCStatsStore @Inject constructor(
         val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity)
         val perPage = getRandomPageIntForRevenueStats(payload.forced)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchRevenueStats") {
-            var result = wcOrderStatsClient.fetchRevenueStats(
+            val result = wcOrderStatsClient.fetchRevenueStats(
                 site = payload.site,
                 granularity = payload.granularity,
                 startDate = startDate,
