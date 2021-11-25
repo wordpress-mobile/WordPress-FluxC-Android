@@ -63,7 +63,8 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
                 coroutineScope.launch {
                     val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, forced = true)
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.DAYS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats with granularity ${StatsGranularity.DAYS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -75,7 +76,8 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
                 coroutineScope.launch {
                     val payload = FetchRevenueStatsPayload(it, StatsGranularity.WEEKS)
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.WEEKS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats with granularity ${StatsGranularity.WEEKS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -87,7 +89,8 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
                 coroutineScope.launch {
                     val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.WEEKS, forced = true)
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.WEEKS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.WEEKS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -99,7 +102,8 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
                 coroutineScope.launch {
                     val payload = FetchRevenueStatsPayload(it, StatsGranularity.MONTHS)
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.MONTHS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats with granularity ${StatsGranularity.MONTHS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -109,9 +113,13 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_month_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.MONTHS, forced = true)
+                    val payload = FetchRevenueStatsPayload(site = it,
+                            granularity = StatsGranularity.MONTHS,
+                            forced = true
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.MONTHS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.MONTHS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -123,7 +131,8 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
                 coroutineScope.launch {
                     val payload = FetchRevenueStatsPayload(it, StatsGranularity.YEARS)
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.YEARS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats with granularity ${StatsGranularity.YEARS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -133,9 +142,13 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_year_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.YEARS, forced = true)
+                    val payload = FetchRevenueStatsPayload(site = it,
+                            granularity = StatsGranularity.YEARS,
+                            forced = true
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.YEARS} : ${it.rowsAffected != 0}")
+                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.YEARS} "
+                                + ": ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }

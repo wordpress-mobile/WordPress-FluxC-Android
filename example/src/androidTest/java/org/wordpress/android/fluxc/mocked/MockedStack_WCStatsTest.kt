@@ -409,7 +409,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         assertEquals(StatsGranularity.DAYS, payload.granularity)
         assertNotNull(payload.stats)
 
-        with (payload.stats!!) {
+        with(payload.stats!!) {
             assertEquals(siteModel.id, localSiteId)
             assertEquals(StatsGranularity.DAYS.toString(), interval)
 
