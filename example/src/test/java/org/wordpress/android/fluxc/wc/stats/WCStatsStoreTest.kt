@@ -36,6 +36,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponseP
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.MONTHS
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
 import java.text.SimpleDateFormat
@@ -51,7 +52,7 @@ import org.hamcrest.CoreMatchers.`is` as isEqual
 class WCStatsStoreTest {
     private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
     private val appContext = RuntimeEnvironment.application.applicationContext
-    private val wcStatsStore = WCStatsStore(Dispatcher(), appContext, mockOrderStatsRestClient)
+    private val wcStatsStore = WCStatsStore(Dispatcher(), appContext, mockOrderStatsRestClient, initCoroutineEngine())
 
     @Before
     fun setUp() {

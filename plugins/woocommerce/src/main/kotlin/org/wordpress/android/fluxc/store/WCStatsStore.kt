@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.PreferenceUtils
@@ -37,7 +38,8 @@ import kotlin.random.Random
 class WCStatsStore @Inject constructor(
     dispatcher: Dispatcher,
     private val context: Context,
-    private val wcOrderStatsClient: OrderStatsRestClient
+    private val wcOrderStatsClient: OrderStatsRestClient,
+    private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
         const val STATS_QUANTITY_DAYS = 30
@@ -264,7 +266,6 @@ class WCStatsStore @Inject constructor(
             WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY ->
                 fetchRevenueStatsAvailability(action.payload as FetchRevenueStatsAvailabilityPayload)
             WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
-            WCStatsAction.FETCH_NEW_VISITOR_STATS -> fetchNewVisitorStats(action.payload as FetchNewVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
@@ -275,8 +276,6 @@ class WCStatsStore @Inject constructor(
             )
             WCStatsAction.FETCHED_VISITOR_STATS ->
                 handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
-            WCStatsAction.FETCHED_NEW_VISITOR_STATS ->
-                handleFetchNewVisitorStatsCompleted(action.payload as FetchNewVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
                 handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
@@ -484,7 +483,7 @@ class WCStatsStore @Inject constructor(
         )
     }
 
-    private fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload) {
+    suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
         val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
         val startDate = payload.startDate ?: when (payload.granularity) {
             StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
@@ -494,16 +493,35 @@ class WCStatsStore @Inject constructor(
         }
         val endDate = payload.endDate ?: DateUtils.getStartOfCurrentDay()
         val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, startDate, endDate)
-        wcOrderStatsClient.fetchNewVisitorStats(
-                payload.site,
-                apiUnit,
-                payload.granularity,
-                getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, endDate),
-                quantity,
-                payload.forced,
-                startDate,
-                endDate
-        )
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchNewVisitorStats") {
+            val result = wcOrderStatsClient.fetchNewVisitorStats(
+                    site = payload.site,
+                    unit = apiUnit,
+                    granularity = payload.granularity,
+                    date = getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, endDate),
+                    quantity = quantity,
+                    force = payload.forced,
+                    startDate = startDate,
+                    endDate = endDate
+            )
+            return@withDefaultContext if (result.isError || result.stats == null) {
+                OnWCStatsChanged(0, payload.granularity).also {
+                    it.error = result.error
+                    it.causeOfChange = WCStatsAction.FETCH_NEW_VISITOR_STATS
+                }
+            } else {
+                val rowsAffected = WCVisitorStatsSqlUtils.insertOrUpdateNewVisitorStats(result.stats)
+                OnWCStatsChanged(
+                        rowsAffected,
+                        payload.granularity,
+                        result.stats.quantity,
+                        result.stats.date,
+                        result.stats.isCustomField
+                ).also {
+                    it.causeOfChange = WCStatsAction.FETCH_NEW_VISITOR_STATS
+                }
+            }
+        }
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
@@ -543,20 +561,6 @@ class WCStatsStore @Inject constructor(
         }
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_VISITOR_STATS
-        emitChange(onStatsChanged)
-    }
-
-    private fun handleFetchNewVisitorStatsCompleted(payload: FetchNewVisitorStatsResponsePayload) {
-        val onStatsChanged = with(payload) {
-            if (isError || stats == null) {
-                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
-            } else {
-                val rowsAffected = WCVisitorStatsSqlUtils.insertOrUpdateNewVisitorStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
-            }
-        }
-
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_NEW_VISITOR_STATS
         emitChange(onStatsChanged)
     }
 
