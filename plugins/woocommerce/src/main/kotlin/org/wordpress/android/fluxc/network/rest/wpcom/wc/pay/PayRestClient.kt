@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.PAYMEN
 import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.CapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
-import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.CreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationError
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationResult
@@ -122,7 +122,7 @@ class PayRestClient @Inject constructor(
     suspend fun createCustomerByOrderId(
         site: SiteModel,
         orderId: Long
-    ): WooPayload<WCPaymentCreateCustomerByOrderIdResult> {
+    ): WooPayload<CreateCustomerByOrderIdResult> {
         val url = WOOCOMMERCE.payments.orders.order(orderId).create_customer.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -130,7 +130,7 @@ class PayRestClient @Inject constructor(
                 site = site,
                 url = url,
                 body = emptyMap(),
-                clazz = WCPaymentCreateCustomerByOrderIdResult::class.java
+                clazz = CreateCustomerByOrderIdResult::class.java
         )
 
         return when (response) {

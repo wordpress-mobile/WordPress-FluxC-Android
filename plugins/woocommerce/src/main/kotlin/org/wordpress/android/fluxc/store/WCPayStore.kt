@@ -4,7 +4,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.payments.CapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.ConnectionTokenResult
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
-import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.CreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -51,7 +51,7 @@ class WCPayStore @Inject constructor(
     suspend fun createCustomerByOrderId(
         site: SiteModel,
         orderId: Long
-    ): WooResult<WCPaymentCreateCustomerByOrderIdResult> {
+    ): WooResult<CreateCustomerByOrderIdResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomerByOrderId") {
             restClient.createCustomerByOrderId(site, orderId).asWooResult()
         }
