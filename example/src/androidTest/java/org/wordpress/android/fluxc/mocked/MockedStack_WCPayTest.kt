@@ -11,9 +11,9 @@ import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.MISSIN
 import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType.GenericError
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType.InvalidPostalCode
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType.MissingAddress
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationErrorType.GenericError
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationErrorType.InvalidPostalCode
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
 import javax.inject.Inject

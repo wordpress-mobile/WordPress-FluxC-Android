@@ -15,10 +15,10 @@ import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.SERVER
 import org.wordpress.android.fluxc.model.payments.CapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.CreateCustomerByOrderIdResult
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationError
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationResult
-import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationResult.StoreAddress
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationError
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationErrorType
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.payments.TerminalStoreLocationResult.StoreAddress
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -139,7 +139,7 @@ class PayRestClient @Inject constructor(
         }
     }
 
-    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
+    suspend fun getStoreLocationForSite(site: SiteModel): TerminalStoreLocationResult {
         val url = WOOCOMMERCE.payments.terminal.locations.store.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -153,7 +153,7 @@ class PayRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { data ->
-                    WCTerminalStoreLocationResult(
+                    TerminalStoreLocationResult(
                             locationId = data.id,
                             displayName = data.displayName,
                             liveMode = data.liveMode,
@@ -166,7 +166,7 @@ class PayRestClient @Inject constructor(
                                     state = data.address?.state
                             )
                     )
-                } ?: WCTerminalStoreLocationResult(
+                } ?: TerminalStoreLocationResult(
                         mapToStoreLocationForSiteError(
                                 error = null,
                                 message = "status field is null, but isError == false"
@@ -174,7 +174,7 @@ class PayRestClient @Inject constructor(
                 )
             }
             is JetpackError -> {
-                WCTerminalStoreLocationResult(
+                TerminalStoreLocationResult(
                         mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
                 )
             }
@@ -197,20 +197,20 @@ class PayRestClient @Inject constructor(
     }
 
     private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
-            WCTerminalStoreLocationError {
+            TerminalStoreLocationError {
         val type = when {
-            error == null -> WCTerminalStoreLocationErrorType.GenericError
+            error == null -> TerminalStoreLocationErrorType.GenericError
             error.apiError == "store_address_is_incomplete" -> {
-                if (error.message.isNullOrBlank()) WCTerminalStoreLocationErrorType.GenericError
-                else WCTerminalStoreLocationErrorType.MissingAddress(error.message)
+                if (error.message.isNullOrBlank()) TerminalStoreLocationErrorType.GenericError
+                else TerminalStoreLocationErrorType.MissingAddress(error.message)
             }
-            error.apiError == "postal_code_invalid" -> WCTerminalStoreLocationErrorType.InvalidPostalCode
-            error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NetworkError
-            error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NetworkError
-            error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NetworkError
-            else -> WCTerminalStoreLocationErrorType.GenericError
+            error.apiError == "postal_code_invalid" -> TerminalStoreLocationErrorType.InvalidPostalCode
+            error.type == GenericErrorType.TIMEOUT -> TerminalStoreLocationErrorType.NetworkError
+            error.type == GenericErrorType.NO_CONNECTION -> TerminalStoreLocationErrorType.NetworkError
+            error.type == GenericErrorType.NETWORK_ERROR -> TerminalStoreLocationErrorType.NetworkError
+            else -> TerminalStoreLocationErrorType.GenericError
         }
-        return WCTerminalStoreLocationError(type, message)
+        return TerminalStoreLocationError(type, message)
     }
 
     companion object {
