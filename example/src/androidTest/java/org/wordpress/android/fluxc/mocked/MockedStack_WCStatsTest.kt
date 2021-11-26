@@ -451,65 +451,65 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         }
     }
 
-//    @Test
-//    fun testRevenueStatsFetchCaching() = runBlocking {
-//        requestQueue.cache.clear()
-//
-//        // Make initial stats request
-//        interceptor.respondWith("wc-revenue-stats-response-success.json")
-//        orderStatsRestClient.fetchRevenueStats(
-//                site = siteModel, granularity = StatsGranularity.DAYS,
-//                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
-//                perPage = 35
-//        )
-//
-//        val firstRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
-//
-//        assertNotNull(firstRequestCacheEntry)
-//
-//        // Make the same stats request - this should hit the cache
-//        interceptor.respondWith("wc-revenue-stats-response-success.json")
-//        orderStatsRestClient.fetchRevenueStats(
-//                site = siteModel, granularity = StatsGranularity.DAYS,
-//                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
-//                perPage = 35
-//        )
-//
-//        val secondRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
-//
-//        assertNotNull(secondRequestCacheEntry)
-//        // Verify that the cache has not been renewed,
-//        // which should mean that we read from it instead of making a network call
-//        assertEquals(firstRequestCacheEntry.ttl, secondRequestCacheEntry.ttl)
-//
-//        // Make the same stats request, but this time pass force=true to force a network request
-//        interceptor.respondWith("wc-revenue-stats-response-success.json")
-//        orderStatsRestClient.fetchRevenueStats(
-//                site = siteModel, granularity = StatsGranularity.DAYS,
-//                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
-//                perPage = 35, force = true
-//        )
-//
-//        val thirdRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
-//
-//        assertNotNull(thirdRequestCacheEntry)
-//        // The cache should have been renewed, since we ignored it and updated it with the results of a forced request
-//        assertNotEquals(secondRequestCacheEntry.ttl, thirdRequestCacheEntry.ttl)
-//
-//        // New day, cache should be ignored
-//        interceptor.respondWith("wc-revenue-stats-response-success.json")
-//        orderStatsRestClient.fetchRevenueStats(
-//                site = siteModel, granularity = StatsGranularity.DAYS,
-//                startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59",
-//                perPage = 35
-//        )
-//
-//        val newDayCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
-//
-//        assertNotNull(newDayCacheEntry)
-//        // This should be a separate cache entry from the previous day's
-//        assertNotEquals(thirdRequestCacheEntry.ttl, newDayCacheEntry.ttl)
-//    }
+    @Test
+    fun testRevenueStatsFetchCaching() = runBlocking {
+        requestQueue.cache.clear()
+
+        // Make initial stats request
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, granularity = StatsGranularity.DAYS,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                perPage = 35
+        )
+
+        val firstRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(firstRequestCacheEntry)
+
+        // Make the same stats request - this should hit the cache
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, granularity = StatsGranularity.DAYS,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                perPage = 35
+        )
+
+        val secondRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(secondRequestCacheEntry)
+        // Verify that the cache has not been renewed,
+        // which should mean that we read from it instead of making a network call
+        assertEquals(firstRequestCacheEntry.ttl, secondRequestCacheEntry.ttl)
+
+        // Make the same stats request, but this time pass force=true to force a network request
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, granularity = StatsGranularity.DAYS,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                perPage = 35, force = true
+        )
+
+        val thirdRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(thirdRequestCacheEntry)
+        // The cache should have been renewed, since we ignored it and updated it with the results of a forced request
+        assertNotEquals(secondRequestCacheEntry.ttl, thirdRequestCacheEntry.ttl)
+
+        // New day, cache should be ignored
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, granularity = StatsGranularity.DAYS,
+                startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59",
+                perPage = 35
+        )
+
+        val newDayCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(newDayCacheEntry)
+        // This should be a separate cache entry from the previous day's
+        assertNotEquals(thirdRequestCacheEntry.ttl, newDayCacheEntry.ttl)
+    }
 
     @Test
     fun testRevenueStatsFetchInvalidParamError() = runBlocking {
