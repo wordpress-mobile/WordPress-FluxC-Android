@@ -6,10 +6,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.CAPTURE_ERROR
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.MISSING_ORDER
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.SERVER_ERROR
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.CAPTURE_ERROR
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.MISSING_ORDER
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType.GenericError
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType.InvalidPostalCode

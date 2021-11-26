@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentResponsePayload
+import org.wordpress.android.fluxc.model.payments.CapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.WCConnectionTokenResult
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
@@ -36,7 +36,7 @@ class WCPayStore @Inject constructor(
         }
     }
 
-    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WCCapturePaymentResponsePayload {
+    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): CapturePaymentResponsePayload {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
             restClient.capturePayment(site, paymentId, orderId)
         }

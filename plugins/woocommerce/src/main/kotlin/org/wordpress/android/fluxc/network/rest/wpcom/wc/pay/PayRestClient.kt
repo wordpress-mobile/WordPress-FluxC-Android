@@ -5,14 +5,14 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentError
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.CAPTURE_ERROR
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.GENERIC_ERROR
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.MISSING_ORDER
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.NETWORK_ERROR
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.SERVER_ERROR
-import org.wordpress.android.fluxc.model.payments.WCCapturePaymentResponsePayload
+import org.wordpress.android.fluxc.model.payments.CapturePaymentError
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.CAPTURE_ERROR
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.MISSING_ORDER
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.NETWORK_ERROR
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
+import org.wordpress.android.fluxc.model.payments.CapturePaymentErrorType.SERVER_ERROR
+import org.wordpress.android.fluxc.model.payments.CapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationError
@@ -66,7 +66,7 @@ class PayRestClient @Inject constructor(
         site: SiteModel,
         paymentId: String,
         orderId: Long
-    ): WCCapturePaymentResponsePayload {
+    ): CapturePaymentResponsePayload {
         val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
         val params = mapOf(
                 "payment_intent_id" to paymentId
@@ -82,8 +82,8 @@ class PayRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { data ->
-                    WCCapturePaymentResponsePayload(site, paymentId, orderId, data.status)
-                } ?: WCCapturePaymentResponsePayload(
+                    CapturePaymentResponsePayload(site, paymentId, orderId, data.status)
+                } ?: CapturePaymentResponsePayload(
                         mapToCapturePaymentError(error = null, message = "status field is null, but isError == false"),
                         site,
                         paymentId,
@@ -91,7 +91,7 @@ class PayRestClient @Inject constructor(
                 )
             }
             is JetpackError -> {
-                WCCapturePaymentResponsePayload(
+                CapturePaymentResponsePayload(
                         mapToCapturePaymentError(response.error, response.error.message ?: "Unexpected error"),
                         site,
                         paymentId,
@@ -181,7 +181,7 @@ class PayRestClient @Inject constructor(
         }
     }
 
-    private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
+    private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): CapturePaymentError {
         val type = when {
             error == null -> GENERIC_ERROR
             error.apiError == "wcpay_missing_order" -> MISSING_ORDER
@@ -193,7 +193,7 @@ class PayRestClient @Inject constructor(
             error.type == GenericErrorType.NETWORK_ERROR -> NETWORK_ERROR
             else -> GENERIC_ERROR
         }
-        return WCCapturePaymentError(type, message)
+        return CapturePaymentError(type, message)
     }
 
     private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
