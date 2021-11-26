@@ -40,7 +40,7 @@ data class PaymentAccountResult(
 
     /**
      * A boolean flag indicating if the test mode on the site is enabled. When "null" the state is unknown (the most
-     * probable reason is that the site is using outdated version of wcpay plugin).
+     * probable reason is that the site is using outdated version of WCPay or Stripe Extension plugin).
      */
     @SerializedName("test_mode")
     val testMode: Boolean?
@@ -51,8 +51,8 @@ data class PaymentAccountResult(
     @JsonAdapter(PaymentAccountStatusEnum.Deserializer::class)
     enum class PaymentAccountStatusEnum {
         /**
-         * This is the normal state for a fully functioning WCPay account. The merchant should be able to collect
-         * card present payments.
+         * This is the normal state for a fully functioning WCPay or Stripe Extension account. The merchant should be
+         * able to collect card present payments.
          */
         COMPLETE,
 
