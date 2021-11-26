@@ -54,7 +54,8 @@ open class WooCommerceStore @Inject constructor(
 ) : Store(dispatcher) {
     enum class WooPlugin(val displayName: String) {
         WOO_SERVICES("WooCommerce Shipping &amp; Tax"),
-        WOO_PAYMENTS("WooCommerce Payments");
+        WOO_PAYMENTS("WooCommerce Payments"),
+        WOO_STRIPE_GATEWAY("WooCommerce Stripe Gateway"),
     }
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
