@@ -5,10 +5,10 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.payments.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
 
-data class WCPaymentAccountResult(
+data class PaymentAccountResult(
     @SerializedName("status")
     val status: WCPayAccountStatusEnum,
     @SerializedName("has_pending_requirements")

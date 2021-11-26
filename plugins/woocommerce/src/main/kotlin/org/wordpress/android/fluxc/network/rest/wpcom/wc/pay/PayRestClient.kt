@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.NETW
 import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.WCCapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.payments.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationError
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationErrorType
@@ -101,7 +101,7 @@ class PayRestClient @Inject constructor(
         }
     }
 
-    suspend fun loadAccount(site: SiteModel): WooPayload<WCPaymentAccountResult> {
+    suspend fun loadAccount(site: SiteModel): WooPayload<PaymentAccountResult> {
         val url = WOOCOMMERCE.payments.accounts.pathV3
         val params = mapOf("_fields" to ACCOUNT_REQUESTED_FIELDS)
 
@@ -110,7 +110,7 @@ class PayRestClient @Inject constructor(
                 site,
                 url,
                 params,
-                WCPaymentAccountResult::class.java
+                PaymentAccountResult::class.java
         )
 
         return when (response) {
