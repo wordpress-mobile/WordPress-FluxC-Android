@@ -5,12 +5,12 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
 
 data class PaymentAccountResult(
     @SerializedName("status")
-    val status: WCPayAccountStatusEnum,
+    val status: PaymentAccountStatusEnum,
     @SerializedName("has_pending_requirements")
     val hasPendingRequirements: Boolean,
     @SerializedName("has_overdue_requirements")
@@ -48,8 +48,8 @@ data class PaymentAccountResult(
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
      */
-    @JsonAdapter(WCPayAccountStatusEnum.Deserializer::class)
-    enum class WCPayAccountStatusEnum {
+    @JsonAdapter(PaymentAccountStatusEnum.Deserializer::class)
+    enum class PaymentAccountStatusEnum {
         /**
          * This is the normal state for a fully functioning WCPay account. The merchant should be able to collect
          * card present payments.
@@ -110,12 +110,12 @@ data class PaymentAccountResult(
          */
         UNKNOWN;
 
-        class Deserializer : JsonDeserializer<WCPayAccountStatusEnum> {
+        class Deserializer : JsonDeserializer<PaymentAccountStatusEnum> {
             override fun deserialize(
                 json: JsonElement,
                 typeOfT: Type?,
                 context: JsonDeserializationContext?
-            ): WCPayAccountStatusEnum =
+            ): PaymentAccountStatusEnum =
                     when (json.asString) {
                         "complete" -> COMPLETE
                         "restricted" -> RESTRICTED

@@ -6,7 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
-import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.WCPayAccountStatusEnum
+import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCPayStore
 import javax.inject.Inject
@@ -47,7 +47,7 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
         assertEquals("US", result.model?.country)
         assertEquals("usd", result.model?.storeCurrencies?.default)
         assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)
-        assertEquals(WCPayAccountStatusEnum.COMPLETE, result.model?.status)
+        assertEquals(PaymentAccountStatusEnum.COMPLETE, result.model?.status)
     }
 
     @Test
