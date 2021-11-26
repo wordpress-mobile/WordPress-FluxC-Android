@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.payments.CapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.payments.WCConnectionTokenResult
+import org.wordpress.android.fluxc.model.payments.ConnectionTokenResult
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationResult
@@ -21,7 +21,7 @@ class WCPayStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: PayRestClient
 ) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult> {
+    suspend fun fetchConnectionToken(site: SiteModel): WooResult<ConnectionTokenResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
             val response = restClient.fetchConnectionToken(site)
             return@withDefaultContext when {
@@ -29,7 +29,7 @@ class WCPayStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    WooResult(WCConnectionTokenResult(response.result.token, response.result.isTestMode))
+                    WooResult(ConnectionTokenResult(response.result.token, response.result.isTestMode))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
