@@ -201,10 +201,11 @@ class OrderStatsRestClient @Inject constructor(
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
-                site,
-                url,
-                params,
-                RevenueStatsApiResponse::class.java,
+                site = site,
+                url = url,
+                params = params,
+                clazz = RevenueStatsApiResponse::class.java,
+                enableCaching = !force,
                 forced = force
         )
 
