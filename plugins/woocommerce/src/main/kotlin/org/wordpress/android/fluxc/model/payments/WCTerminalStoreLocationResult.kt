@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.model.pay
+package org.wordpress.android.fluxc.model.payments
 
 import org.wordpress.android.fluxc.FluxCError
 import org.wordpress.android.fluxc.Payload

@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.pay.WCConnectionTokenResult
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
-import org.wordpress.android.fluxc.model.pay.WCPaymentCreateCustomerByOrderIdResult
-import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.payments.WCCapturePaymentResponsePayload
+import org.wordpress.android.fluxc.model.payments.WCConnectionTokenResult
+import org.wordpress.android.fluxc.model.payments.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.WCPaymentCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.WCTerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR

@@ -1,11 +1,11 @@
-package org.wordpress.android.fluxc.model.pay
+package org.wordpress.android.fluxc.model.payments
 
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.model.payments.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
 
 data class WCPaymentAccountResult(
