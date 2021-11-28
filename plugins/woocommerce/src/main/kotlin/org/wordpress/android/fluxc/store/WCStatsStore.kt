@@ -704,7 +704,7 @@ class WCStatsStore @Inject constructor(
                 StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
             }
         } else {
-            DateUtils.getStartDateForSite(site, endDate)
+            DateUtils.getEndDateForSite(site, endDate)
         }
     }
 
