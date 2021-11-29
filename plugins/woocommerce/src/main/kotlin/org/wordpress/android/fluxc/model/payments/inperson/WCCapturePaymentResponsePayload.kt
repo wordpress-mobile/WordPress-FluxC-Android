@@ -2,17 +2,17 @@ package org.wordpress.android.fluxc.model.payments.inperson
 
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 
-class CapturePaymentResponsePayload(
+class WCCapturePaymentResponsePayload(
     val site: SiteModel,
     val paymentId: String,
     val orderId: Long,
     val status: String?
-) : Payload<CapturePaymentError?>() {
+) : Payload<WCCapturePaymentError?>() {
     constructor(
-        error: CapturePaymentError,
+        error: WCCapturePaymentError,
         site: SiteModel,
         paymentId: String,
         orderId: Long
@@ -21,12 +21,12 @@ class CapturePaymentResponsePayload(
     }
 }
 
-class CapturePaymentError(
-    val type: CapturePaymentErrorType = GENERIC_ERROR,
+class WCCapturePaymentError(
+    val type: WCCapturePaymentErrorType = GENERIC_ERROR,
     val message: String = ""
 ) : OnChangedError
 
-enum class CapturePaymentErrorType {
+enum class WCCapturePaymentErrorType {
     GENERIC_ERROR,
     PAYMENT_ALREADY_CAPTURED,
     MISSING_ORDER,
