@@ -11,7 +11,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import javax.inject.Inject
 
-class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
+class ReleaseStack_InPersonPaymentsTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
 
     override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
