@@ -1,11 +1,12 @@
-package org.wordpress.android.fluxc.model.payments
+package org.wordpress.android.fluxc.model.payments.inperson
 
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.model.payments.inperson.PaymentAccountResult.PaymentAccountStatusEnum.Deserializer
+import org.wordpress.android.fluxc.model.payments.inperson.PaymentAccountResult.PaymentAccountStatusEnum.StoreCurrencies
 import java.lang.reflect.Type
 
 data class PaymentAccountResult(
@@ -48,7 +49,7 @@ data class PaymentAccountResult(
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
      */
-    @JsonAdapter(PaymentAccountStatusEnum.Deserializer::class)
+    @JsonAdapter(Deserializer::class)
     enum class PaymentAccountStatusEnum {
         /**
          * This is the normal state for a fully functioning WCPay or Stripe Extension account. The merchant should be

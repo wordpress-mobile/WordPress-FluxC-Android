@@ -1,7 +1,8 @@
-package org.wordpress.android.fluxc.model.payments
+package org.wordpress.android.fluxc.model.payments.inperson
 
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 
 class CapturePaymentResponsePayload(
@@ -21,7 +22,7 @@ class CapturePaymentResponsePayload(
 }
 
 class CapturePaymentError(
-    val type: CapturePaymentErrorType = CapturePaymentErrorType.GENERIC_ERROR,
+    val type: CapturePaymentErrorType = GENERIC_ERROR,
     val message: String = ""
 ) : OnChangedError
 

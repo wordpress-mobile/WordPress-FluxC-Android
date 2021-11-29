@@ -6,7 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
-import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum
+import org.wordpress.android.fluxc.model.payments.inperson.PaymentAccountResult.PaymentAccountStatusEnum
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.InPersonPaymentsStore
 import javax.inject.Inject
