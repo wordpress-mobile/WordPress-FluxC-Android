@@ -25,6 +25,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
@@ -46,6 +49,7 @@ class OrderStatsRestClient @Inject constructor(
     dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,
     private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -179,16 +183,15 @@ class OrderStatsRestClient @Inject constructor(
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [granularity], [startDate], or [endDate] are invalid or incompatible
      */
-    fun fetchRevenueStats(
+    suspend fun fetchRevenueStats(
         site: SiteModel,
         granularity: StatsGranularity,
         startDate: String,
         endDate: String,
         perPage: Int,
         force: Boolean = false
-    ) {
+    ): FetchRevenueStatsResponsePayload {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
-        val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
         val params = mapOf(
                 "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
                 "after" to startDate,
@@ -196,37 +199,43 @@ class OrderStatsRestClient @Inject constructor(
                 "per_page" to perPage.toString(),
                 "order" to STATS_DEFAULT_ORDER)
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: RevenueStatsApiResponse? ->
-                    response?.let {
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site = site,
+                url = url,
+                params = params,
+                clazz = RevenueStatsApiResponse::class.java,
+                enableCaching = true,
+                forced = force
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
                         val model = WCRevenueStatsModel().apply {
                             this.localSiteId = site.id
                             this.interval = granularity.toString()
-                            this.data = response.intervals.toString()
-                            this.total = response.totals.toString()
+                            this.data = it.intervals.toString()
+                            this.total = it.totals.toString()
                             this.startDate = startDate
                             this.endDate = endDate
                         }
-                        val payload = FetchRevenueStatsResponsePayload(site, granularity, model)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
-                    } ?: run {
-                        AppLog.e(T.API, "Response for url $url with param $params is null: $response")
-                        val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
-                        val payload = FetchRevenueStatsResponsePayload(orderError, site, granularity)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
-                    }
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchRevenueStatsResponsePayload(orderError, site, granularity)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
 
-        request?.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-        if (force) request?.setShouldForceUpdate()
+                    FetchRevenueStatsResponsePayload(site, granularity, model)
+                } ?: FetchRevenueStatsResponsePayload(
+                        OrderStatsError(type = OrderStatsErrorType.GENERIC_ERROR,
+                                message = "Success response with empty data"
+                        ),
+                        site,
+                        granularity
+                )
+            }
 
-        add(request)
+            is JetpackError -> {
+                val orderError = networkErrorToOrderError(response.error)
+                FetchRevenueStatsResponsePayload(orderError, site, granularity)
+            }
+        }
     }
 
     /**
