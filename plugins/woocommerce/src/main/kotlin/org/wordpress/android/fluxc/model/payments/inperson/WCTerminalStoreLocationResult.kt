@@ -2,16 +2,16 @@ package org.wordpress.android.fluxc.model.payments.inperson
 
 import org.wordpress.android.fluxc.FluxCError
 import org.wordpress.android.fluxc.Payload
-import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationErrorType.GenericError
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.GenericError
 
-data class TerminalStoreLocationResult(
+data class WCTerminalStoreLocationResult(
     val locationId: String?,
     val displayName: String?,
     val liveMode: Boolean?,
     val address: StoreAddress?
-) : Payload<TerminalStoreLocationError?>() {
+) : Payload<WCTerminalStoreLocationError?>() {
     constructor(
-        error: TerminalStoreLocationError
+        error: WCTerminalStoreLocationError
     ) : this(null, null, null, null) {
         this.error = error
     }
@@ -26,15 +26,15 @@ data class TerminalStoreLocationResult(
     )
 }
 
-data class TerminalStoreLocationError(
-    val type: TerminalStoreLocationErrorType = GenericError,
+data class WCTerminalStoreLocationError(
+    val type: WCTerminalStoreLocationErrorType = GenericError,
     val message: String = ""
 ) : FluxCError
 
-sealed class TerminalStoreLocationErrorType {
-    object GenericError : TerminalStoreLocationErrorType()
-    data class MissingAddress(val addressEditingUrl: String) : TerminalStoreLocationErrorType()
-    object InvalidPostalCode : TerminalStoreLocationErrorType()
-    object ServerError : TerminalStoreLocationErrorType()
-    object NetworkError : TerminalStoreLocationErrorType()
+sealed class WCTerminalStoreLocationErrorType {
+    object GenericError : WCTerminalStoreLocationErrorType()
+    data class MissingAddress(val addressEditingUrl: String) : WCTerminalStoreLocationErrorType()
+    object InvalidPostalCode : WCTerminalStoreLocationErrorType()
+    object ServerError : WCTerminalStoreLocationErrorType()
+    object NetworkError : WCTerminalStoreLocationErrorType()
 }

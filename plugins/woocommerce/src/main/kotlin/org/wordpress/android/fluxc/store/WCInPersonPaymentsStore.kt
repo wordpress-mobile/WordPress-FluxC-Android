@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentRespons
 import org.wordpress.android.fluxc.model.payments.inperson.WCConnectionTokenResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
-import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -57,7 +57,7 @@ class WCInPersonPaymentsStore @Inject constructor(
         }
     }
 
-    suspend fun getStoreLocationForSite(site: SiteModel): TerminalStoreLocationResult {
+    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getStoreLocationForSite") {
             restClient.getStoreLocationForSite(site)
         }
