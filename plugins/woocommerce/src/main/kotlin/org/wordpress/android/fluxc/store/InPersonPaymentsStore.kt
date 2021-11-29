@@ -2,9 +2,9 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.payments.inperson.ConnectionTokenResult
-import org.wordpress.android.fluxc.model.payments.inperson.PaymentAccountResult
-import org.wordpress.android.fluxc.model.payments.inperson.CreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCConnectionTokenResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -21,7 +21,7 @@ class InPersonPaymentsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: InPersonPaymentsRestClient
 ) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooResult<ConnectionTokenResult> {
+    suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
             val response = restClient.fetchConnectionToken(site)
             return@withDefaultContext when {
@@ -29,7 +29,7 @@ class InPersonPaymentsStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    WooResult(ConnectionTokenResult(response.result.token, response.result.isTestMode))
+                    WooResult(WCConnectionTokenResult(response.result.token, response.result.isTestMode))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
@@ -42,7 +42,7 @@ class InPersonPaymentsStore @Inject constructor(
         }
     }
 
-    suspend fun loadAccount(site: SiteModel): WooResult<PaymentAccountResult> {
+    suspend fun loadAccount(site: SiteModel): WooResult<WCPaymentAccountResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "loadAccount") {
             restClient.loadAccount(site).asWooResult()
         }
@@ -51,7 +51,7 @@ class InPersonPaymentsStore @Inject constructor(
     suspend fun createCustomerByOrderId(
         site: SiteModel,
         orderId: Long
-    ): WooResult<CreateCustomerByOrderIdResult> {
+    ): WooResult<WCCreateCustomerByOrderIdResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomerByOrderId") {
             restClient.createCustomerByOrderId(site, orderId).asWooResult()
         }

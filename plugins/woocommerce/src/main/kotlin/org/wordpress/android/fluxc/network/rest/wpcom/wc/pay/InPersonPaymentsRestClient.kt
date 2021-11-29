@@ -13,8 +13,8 @@ import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentErrorTy
 import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.CapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.payments.inperson.PaymentAccountResult
-import org.wordpress.android.fluxc.model.payments.inperson.CreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationError
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationErrorType
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationResult
@@ -101,7 +101,7 @@ class InPersonPaymentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun loadAccount(site: SiteModel): WooPayload<PaymentAccountResult> {
+    suspend fun loadAccount(site: SiteModel): WooPayload<WCPaymentAccountResult> {
         val url = WOOCOMMERCE.payments.accounts.pathV3
         val params = mapOf("_fields" to ACCOUNT_REQUESTED_FIELDS)
 
@@ -110,7 +110,7 @@ class InPersonPaymentsRestClient @Inject constructor(
                 site,
                 url,
                 params,
-                PaymentAccountResult::class.java
+                WCPaymentAccountResult::class.java
         )
 
         return when (response) {
@@ -122,7 +122,7 @@ class InPersonPaymentsRestClient @Inject constructor(
     suspend fun createCustomerByOrderId(
         site: SiteModel,
         orderId: Long
-    ): WooPayload<CreateCustomerByOrderIdResult> {
+    ): WooPayload<WCCreateCustomerByOrderIdResult> {
         val url = WOOCOMMERCE.payments.orders.order(orderId).create_customer.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -130,7 +130,7 @@ class InPersonPaymentsRestClient @Inject constructor(
                 site = site,
                 url = url,
                 body = emptyMap(),
-                clazz = CreateCustomerByOrderIdResult::class.java
+                clazz = WCCreateCustomerByOrderIdResult::class.java
         )
 
         return when (response) {
