@@ -8,11 +8,11 @@ import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
 import org.wordpress.android.fluxc.model.payments.PaymentAccountResult.PaymentAccountStatusEnum
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
-import org.wordpress.android.fluxc.store.WCPayStore
+import org.wordpress.android.fluxc.store.InPersonPaymentsStore
 import javax.inject.Inject
 
 class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
-    @Inject internal lateinit var payStore: WCPayStore
+    @Inject internal lateinit var store: InPersonPaymentsStore
 
     override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
 
@@ -31,14 +31,14 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
-        val result = payStore.fetchConnectionToken(sSite)
+        val result = store.fetchConnectionToken(sSite)
 
         assertTrue(result.model?.token?.isNotEmpty() == true)
     }
 
     @Test
     fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
-        val result = payStore.loadAccount(sSite)
+        val result = store.loadAccount(sSite)
 
         assertEquals("US", result.model?.country)
         assertEquals(false, result.model?.hasPendingRequirements)
@@ -52,7 +52,7 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = payStore.createCustomerByOrderId(
+        val result = store.createCustomerByOrderId(
                 sSite,
                 17L
         )
@@ -62,7 +62,7 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = payStore.createCustomerByOrderId(
+        val result = store.createCustomerByOrderId(
                 sSite,
                 1L
         )
@@ -72,7 +72,7 @@ class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayAndStripeAddressThenLocationDataReturned() = runBlocking {
-        val result = payStore.getStoreLocationForSite(sSite)
+        val result = store.getStoreLocationForSite(sSite)
 
         assertFalse(result.isError)
         assertEquals("tml_EUZ4bQQTxLWMq2", result.locationId)
