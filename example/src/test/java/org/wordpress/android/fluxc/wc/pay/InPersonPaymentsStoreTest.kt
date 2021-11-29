@@ -10,14 +10,14 @@ import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.ConnectionTokenApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.InPersonPaymentsRestClient
 import org.wordpress.android.fluxc.store.InPersonPaymentsStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 @RunWith(MockitoJUnitRunner::class)
 class InPersonPaymentsStoreTest {
-    private val restClient = mock<PayRestClient>()
+    private val restClient = mock<InPersonPaymentsRestClient>()
 
     private lateinit var store: InPersonPaymentsStore
 

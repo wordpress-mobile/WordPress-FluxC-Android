@@ -34,7 +34,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class PayRestClient @Inject constructor(
+class InPersonPaymentsRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     appContext: Context?,

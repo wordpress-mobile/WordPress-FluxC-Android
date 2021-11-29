@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.InPersonPaymentsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class InPersonPaymentsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
-    private val restClient: PayRestClient
+    private val restClient: InPersonPaymentsRestClient
 ) {
     suspend fun fetchConnectionToken(site: SiteModel): WooResult<ConnectionTokenResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
