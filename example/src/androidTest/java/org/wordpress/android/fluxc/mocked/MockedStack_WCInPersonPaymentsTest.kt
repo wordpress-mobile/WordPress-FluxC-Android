@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 private const val DUMMY_PAYMENT_ID = "dummy payment id"
 
-class MockedStack_WCInPersonPaymentsTest : MockedStack_Base() {
+class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     @Inject internal lateinit var restClient: InPersonPaymentsRestClient
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
