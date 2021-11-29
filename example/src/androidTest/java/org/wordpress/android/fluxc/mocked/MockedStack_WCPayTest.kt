@@ -15,13 +15,13 @@ import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocation
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationErrorType.InvalidPostalCode
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.InPersonPaymentsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.WCInPersonPaymentsRestClient
 import javax.inject.Inject
 
 private const val DUMMY_PAYMENT_ID = "dummy payment id"
 
 class MockedStack_WCPayTest : MockedStack_Base() {
-    @Inject internal lateinit var restClient: InPersonPaymentsRestClient
+    @Inject internal lateinit var restClient: WCInPersonPaymentsRestClient
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
