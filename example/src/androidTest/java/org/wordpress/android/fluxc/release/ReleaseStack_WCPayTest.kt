@@ -8,11 +8,11 @@ import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.PaymentAccountStatusEnum
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
-import org.wordpress.android.fluxc.store.InPersonPaymentsStore
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import javax.inject.Inject
 
 class ReleaseStack_WCPayTest : ReleaseStack_WCBase() {
-    @Inject internal lateinit var store: InPersonPaymentsStore
+    @Inject internal lateinit var store: WCInPersonPaymentsStore
 
     override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
 

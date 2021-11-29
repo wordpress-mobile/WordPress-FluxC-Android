@@ -17,7 +17,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class InPersonPaymentsStore @Inject constructor(
+class WCInPersonPaymentsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: InPersonPaymentsRestClient
 ) {
