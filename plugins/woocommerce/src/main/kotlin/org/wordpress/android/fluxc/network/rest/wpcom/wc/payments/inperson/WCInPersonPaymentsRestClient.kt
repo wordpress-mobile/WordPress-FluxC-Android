@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.pay
+package org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson
 
 import android.content.Context
 import com.android.volley.RequestQueue

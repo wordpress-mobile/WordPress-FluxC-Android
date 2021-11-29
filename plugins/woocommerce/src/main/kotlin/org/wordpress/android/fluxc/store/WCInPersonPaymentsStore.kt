@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.WCInPersonPaymentsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.WCInPersonPaymentsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject

@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocation
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationErrorType.InvalidPostalCode
 import org.wordpress.android.fluxc.model.payments.inperson.TerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.WCInPersonPaymentsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.WCInPersonPaymentsRestClient
 import javax.inject.Inject
 
 private const val DUMMY_PAYMENT_ID = "dummy payment id"
