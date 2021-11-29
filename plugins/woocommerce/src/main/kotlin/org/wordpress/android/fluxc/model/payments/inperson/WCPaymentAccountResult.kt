@@ -5,13 +5,13 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.PaymentAccountStatusEnum.Deserializer
-import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.PaymentAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus.Deserializer
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus.StoreCurrencies
 import java.lang.reflect.Type
 
 data class WCPaymentAccountResult(
     @SerializedName("status")
-    val status: PaymentAccountStatusEnum,
+    val status: WCPaymentAccountStatus,
     @SerializedName("has_pending_requirements")
     val hasPendingRequirements: Boolean,
     @SerializedName("has_overdue_requirements")
@@ -50,7 +50,7 @@ data class WCPaymentAccountResult(
      * Represents all of the possible Site Plugin Statuses in enum form
      */
     @JsonAdapter(Deserializer::class)
-    enum class PaymentAccountStatusEnum {
+    enum class WCPaymentAccountStatus {
         /**
          * This is the normal state for a fully functioning WCPay or Stripe Extension account. The merchant should be
          * able to collect card present payments.
@@ -111,12 +111,12 @@ data class WCPaymentAccountResult(
          */
         UNKNOWN;
 
-        class Deserializer : JsonDeserializer<PaymentAccountStatusEnum> {
+        class Deserializer : JsonDeserializer<WCPaymentAccountStatus> {
             override fun deserialize(
                 json: JsonElement,
                 typeOfT: Type?,
                 context: JsonDeserializationContext?
-            ): PaymentAccountStatusEnum =
+            ): WCPaymentAccountStatus =
                     when (json.asString) {
                         "complete" -> COMPLETE
                         "restricted" -> RESTRICTED

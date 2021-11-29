@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentError
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.MISSING_ORDER
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
-import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.PaymentAccountStatusEnum
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.GenericError
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.InvalidPostalCode
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.MissingAddress
@@ -93,7 +93,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
 
-        assertTrue(result.result?.status == PaymentAccountStatusEnum.UNKNOWN)
+        assertTrue(result.result?.status == WCPaymentAccountStatus.UNKNOWN)
     }
 
     @Test
@@ -102,7 +102,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
 
-        assertTrue(result.result?.status == PaymentAccountStatusEnum.NO_ACCOUNT)
+        assertTrue(result.result?.status == WCPaymentAccountStatus.NO_ACCOUNT)
     }
 
     @Test
@@ -120,7 +120,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
 
-        assertTrue(result.result?.status == PaymentAccountStatusEnum.RESTRICTED_SOON)
+        assertTrue(result.result?.status == WCPaymentAccountStatus.RESTRICTED_SOON)
     }
 
     @Test
