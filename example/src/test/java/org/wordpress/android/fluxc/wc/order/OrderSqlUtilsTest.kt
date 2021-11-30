@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION_ERROR")
 package org.wordpress.android.fluxc.wc.order
 
 import com.yarolegovich.wellsql.WellSql
@@ -98,7 +99,7 @@ class OrderSqlUtilsTest {
         val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, order.id)
         val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, order.id)
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
-        val site = SiteModel().apply { id = order.localSiteId }
+        val site = SiteModel().apply { id = order.localSiteId.value }
 
         val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
         assertEquals(2, storedNotes.size)

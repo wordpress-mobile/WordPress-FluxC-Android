@@ -9,6 +9,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -35,10 +37,10 @@ class OrdersDaoTest {
             val generatedId = sut.insertOrUpdateOrder(it).toInt()
             it.copy(id = generatedId)
         }
-        val site = SiteModel().apply { id = initialOrder.localSiteId }
+        val site = SiteModel().apply { id = initialOrder.localSiteId.value }
 
         // then
-        assertThat(sut.getOrdersForSite(site.id)).containsExactly(initialOrder)
+        assertThat(sut.getOrdersForSite(site.localId())).containsExactly(initialOrder)
 
         // when
         val updatedOrder = initialOrder
@@ -46,7 +48,7 @@ class OrdersDaoTest {
                 .also { sut.insertOrUpdateOrder(it) }
 
         // then
-        assertThat(sut.getOrdersForSite(site.id)).containsExactly(updatedOrder)
+        assertThat(sut.getOrdersForSite(site.localId())).containsExactly(updatedOrder)
     }
 
     @Test
@@ -57,16 +59,18 @@ class OrdersDaoTest {
         val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
 
         // Test getting orders without specifying a status
-        val storedOrders = sut.getOrdersForSite(site.id)
+        val storedOrders = sut.getOrdersForSite(site.localId())
         assertThat(storedOrders).hasSize(3)
 
         // Test pulling orders with a single status specified
-        val processingOrders = sut.getOrdersForSite(site.id, listOf(CoreOrderStatus.PROCESSING.value))
+        val processingOrders = sut.getOrdersForSite(site.localId(), listOf(CoreOrderStatus.PROCESSING.value))
         assertThat(processingOrders).hasSize(1)
 
         // Test pulling orders with multiple statuses specified
-        val mixStatusOrders = sut
-                .getOrdersForSite(site.id, listOf(CoreOrderStatus.ON_HOLD.value, CoreOrderStatus.CANCELLED.value))
+        val mixStatusOrders = sut.getOrdersForSite(
+                site.localId(),
+                listOf(CoreOrderStatus.ON_HOLD.value, CoreOrderStatus.CANCELLED.value)
+        )
         assertThat(mixStatusOrders).hasSize(2)
     }
 
@@ -76,12 +80,12 @@ class OrdersDaoTest {
         generateSampleOrder(2).let { sut.insertOrUpdateOrder(it) }
         val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
 
-        val storedOrders = sut.getOrdersForSite(site.id)
+        val storedOrders = sut.getOrdersForSite(site.localId())
         assertThat(storedOrders).hasSize(2)
 
-        sut.deleteOrdersForSite(site.id)
+        sut.deleteOrdersForSite(site.localId())
 
-        val deletedOrders = sut.getOrdersForSite(site.id)
+        val deletedOrders = sut.getOrdersForSite(site.localId())
         assertThat(deletedOrders).isEmpty()
     }
 
@@ -97,8 +101,8 @@ class OrdersDaoTest {
             remoteId: Long,
             orderStatus: String = CoreOrderStatus.PROCESSING.value
         ) = WCOrderModel(
-                remoteOrderId = remoteId,
-                localSiteId = TEST_LOCAL_SITE_ID,
+                remoteOrderId = RemoteId(remoteId),
+                localSiteId = LocalId(TEST_LOCAL_SITE_ID),
                 status = orderStatus
         )
     }
