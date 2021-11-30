@@ -1291,12 +1291,15 @@ class WCStatsStoreTest {
     }
 
     @Test
-    fun testFetchCurrentDayRevenueStatsDateSpecificEndDate() {
+    fun testFetchCurrentDayRevenueStatsDateSpecificEndDate() = runBlocking {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
             val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
-            wcStatsStore.onAction(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+            wcStatsStore.fetchRevenueStats(payload)
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
 
@@ -1312,11 +1315,11 @@ class WCStatsStoreTest {
         reset(mockOrderStatsRestClient)
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-            val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
-
-            wcStatsStore.onAction(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
+            wcStatsStore.fetchRevenueStats(payload)
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
 
