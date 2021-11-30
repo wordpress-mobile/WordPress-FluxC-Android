@@ -214,7 +214,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             note = editText.text.toString()
                         }
                         coroutineScope.launch {
-                            val payload = PostOrderNotePayload(123, order.remoteOrderId.value, site, newNote)
+                            @Suppress("DEPRECATION_ERROR")
+                            val payload = PostOrderNotePayload(order.id, order.remoteOrderId.value, site, newNote)
                             val onOrderChanged = wcOrderStore.postOrderNote(payload)
                             if (!onOrderChanged.isError) {
                                 prependToLog(
