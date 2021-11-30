@@ -26,9 +26,6 @@ import org.wordpress.android.fluxc.persistence.entity.SSREntity
             GlobalAddonGroupEntity::class,
             WCOrderModel::class,
             SSREntity::class
-        ],
-        autoMigrations = [
-            AutoMigration(from = 3, to = 4)
         ]
 )
 @TypeConverters(
