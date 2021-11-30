@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
@@ -397,19 +396,14 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testRevenueStatsDayFetchSuccess() {
+    fun testRevenueStatsDayFetchSuccess() = runBlocking {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        orderStatsRestClient.fetchRevenueStats(
+        val payload = orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)
@@ -433,19 +427,14 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testRevenueStatsDayFetchJsonError() {
+    fun testRevenueStatsDayFetchJsonError() = runBlocking {
         interceptor.respondWith("wc-revenue-stats-response-empty.json")
-        orderStatsRestClient.fetchRevenueStats(
+        val payload = orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-07T00:00:00", endDate = "2019-07-01T23:59:59",
                 perPage = 35
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)
@@ -463,7 +452,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testRevenueStatsFetchCaching() {
+    fun testRevenueStatsFetchCaching() = runBlocking {
         requestQueue.cache.clear()
 
         // Make initial stats request
@@ -473,9 +462,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
         )
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         val firstRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
 
@@ -488,9 +474,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
         )
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         val secondRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
 
@@ -507,9 +490,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
                 perPage = 35, force = true
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
         val thirdRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
 
         assertNotNull(thirdRequestCacheEntry)
@@ -524,9 +504,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
                 perPage = 35
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
         val newDayCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
 
         assertNotNull(newDayCacheEntry)
@@ -535,23 +512,18 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testRevenueStatsFetchInvalidParamError() {
+    fun testRevenueStatsFetchInvalidParamError() = runBlocking {
         val errorJson = JsonObject().apply {
             addProperty("error", "rest_invalid_param")
             addProperty("message", "Invalid parameter(s): after")
         }
 
         interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchRevenueStats(
+        val payload = orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNotNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)
@@ -560,23 +532,18 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testRevenueStatsFetchResponseNullError() {
+    fun testRevenueStatsFetchResponseNullError() = runBlocking {
         val errorJson = JsonObject().apply {
             addProperty("error", OrderStatsErrorType.RESPONSE_NULL.name)
             addProperty("message", "Response object is null")
         }
 
         interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchRevenueStats(
+        val payload = orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNotNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)
