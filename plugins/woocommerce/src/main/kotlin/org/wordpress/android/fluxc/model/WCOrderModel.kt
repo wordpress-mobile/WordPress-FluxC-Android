@@ -101,10 +101,10 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         @SerializedName("parent_name")
         val parentName: String? = null
         @SerializedName("product_id")
-        val productId: Long? = null
+        var productId: Long? = null
         @SerializedName("variation_id")
         val variationId: Long? = null
-        val quantity: Float? = null
+        var quantity: Float? = null
         val subtotal: String? = null
         val total: String? = null // Price x quantity
         @SerializedName("total_tax")
