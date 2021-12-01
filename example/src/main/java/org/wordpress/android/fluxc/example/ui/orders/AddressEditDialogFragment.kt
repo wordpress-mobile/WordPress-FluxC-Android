@@ -26,6 +26,8 @@ import javax.inject.Inject
 
 class AddressEditDialogFragment : DaggerFragment() {
     companion object {
+        // These instantiations won't work with screen rotation or process death scenarios.
+        // They are just for the sake of simplification of the example
         @JvmStatic
         fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
                 AddressEditDialogFragment().apply {
