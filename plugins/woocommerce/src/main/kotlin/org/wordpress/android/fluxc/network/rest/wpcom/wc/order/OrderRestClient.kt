@@ -832,7 +832,7 @@ class OrderRestClient @Inject constructor(
                 OrderDto::class.java
         )
 
-        return when(response) {
+        return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> WooPayload(response.data)
         }

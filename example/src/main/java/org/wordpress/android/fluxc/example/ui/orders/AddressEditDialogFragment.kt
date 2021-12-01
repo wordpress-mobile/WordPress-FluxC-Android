@@ -36,7 +36,8 @@ class AddressEditDialogFragment : DaggerFragment() {
                 }
 
         @JvmStatic
-        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit): AddressEditDialogFragment =
+        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
+                AddressEditDialogFragment =
                 AddressEditDialogFragment().apply {
                     this.selectedOrder = WCOrderModel()
                     this.mode = Add
@@ -93,7 +94,8 @@ class AddressEditDialogFragment : DaggerFragment() {
                 originalBillingEmail = selectedOrder.billingEmail
                 when (addressType) {
                     SHIPPING -> {
-                        binding.addressTypeSwitch.text = "Edit shipping address for order ${selectedOrder.remoteOrderId}"
+                        binding.addressTypeSwitch.text =
+                                "Edit shipping address for order ${selectedOrder.remoteOrderId}"
                         binding.firstName.setText(selectedOrder.shippingFirstName)
                         binding.lastName.setText(selectedOrder.shippingLastName)
                         binding.company.setText(selectedOrder.shippingCompany)
@@ -131,7 +133,7 @@ class AddressEditDialogFragment : DaggerFragment() {
                 BILLING -> generateBillingAddressModel(binding)
             }
 
-            when(mode) {
+            when (mode) {
                 Edit -> {
                     lifecycleScope.launch {
                         orderUpdateStore.updateOrderAddress(
