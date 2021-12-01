@@ -34,9 +34,11 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.CreateOrderRequest
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
@@ -419,9 +421,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
                     val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
 
+                    val status = WCOrderStatusModel().apply {
+                        statusKey = CoreOrderStatus.PROCESSING.value
+                    }
+
                     val result = wcOrderStore.createOrder(
                             site,
                             CreateOrderRequest(
+                                    status = status,
                                     lineItems = products.map {
                                         LineItem(productId = it, quantity = 1f)
                                     },

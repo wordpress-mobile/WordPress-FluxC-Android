@@ -818,6 +818,7 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<OrderDto> {
         val url = WOOCOMMERCE.orders.pathV3
         val params = mapOf(
+                "status" to request.status.statusKey,
                 "line_items" to request.lineItems,
                 "shipping" to request.shippingAddress.toDto(),
                 "billing" to request.billingAddress.toDto()
