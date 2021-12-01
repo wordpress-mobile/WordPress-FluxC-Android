@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
 import android.content.Context
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -17,6 +16,7 @@ import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.SSREntity
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 
 @Database(
         version = 4,
@@ -47,6 +47,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 "wc-android-database"
         ).allowMainThreadQueries()
                 .fallbackToDestructiveMigrationOnDowngrade()
+                .addMigrations(MIGRATION_3_4)
                 .build()
     }
 }
