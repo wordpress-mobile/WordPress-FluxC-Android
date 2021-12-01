@@ -522,7 +522,7 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                val model = result.result!!.toDomainModel()
+                val model = result.result!!.toDomainModel(site.id)
                 OrderSqlUtils.insertOrUpdateOrder(model)
                 WooResult(model)
             }

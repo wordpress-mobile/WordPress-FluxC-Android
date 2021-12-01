@@ -73,11 +73,12 @@ class OrderDto : Response {
     val meta_data: JsonElement? = null
 }
 
-fun OrderDto.toDomainModel(): WCOrderModel {
+fun OrderDto.toDomainModel(localSiteId: Int): WCOrderModel {
     fun convertDateToUTCString(date: String?): String =
             date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     return WCOrderModel().apply {
+        this.localSiteId = localSiteId
         remoteOrderId = this@toDomainModel.id ?: 0
         number = this@toDomainModel.number ?: remoteOrderId.toString()
         status = this@toDomainModel.status ?: ""
