@@ -846,6 +846,10 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    @Deprecated(
+            message = "Use OrderDto#toDomainModel() instead",
+            replaceWith = ReplaceWith("OrderDto.toDomainModel()")
+    )
     private fun orderResponseToOrderModel(response: OrderDto): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
