@@ -423,10 +423,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             site,
                             CreateOrderRequest(
                                     lineItems = products.map {
-                                        LineItem().apply {
-                                            productId = it
-                                            quantity = 1f
-                                        }
+                                        LineItem(productId = it, quantity = 1f)
                                     },
                                     shippingAddress = shippingAddress,
                                     billingAddress = billingAddress
