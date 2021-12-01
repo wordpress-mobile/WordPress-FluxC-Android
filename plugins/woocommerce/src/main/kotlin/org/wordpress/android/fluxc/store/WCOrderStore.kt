@@ -18,10 +18,13 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.order.CreateOrderRequest
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDomainModel
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
@@ -508,6 +511,20 @@ class WCOrderStore @Inject constructor(
             } else {
                 val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(result.order)
                 OnOrderChanged(rowsAffected)
+            }
+        }
+    }
+
+    suspend fun createOrder(site: SiteModel, createOrderRequest: CreateOrderRequest): WooResult<WCOrderModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                val model = result.result!!.toDomainModel()
+                OrderSqlUtils.insertOrUpdateOrder(model)
+                WooResult(model)
             }
         }
     }
