@@ -107,6 +107,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.0.2'
     implementation "androidx.arch.core:core-common:$arch_core_version"
     implementation "androidx.arch.core:core-runtime:$arch_core_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
     implementation 'org.apache.commons:commons-lang3:3.7'
 
     // WordPress libs

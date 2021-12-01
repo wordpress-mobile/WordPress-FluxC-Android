@@ -365,7 +365,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         update_latest_order_billing_address.setOnClickListener {
             selectedSite?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    replaceFragment(AddressEditDialogFragment.newInstance(order))
+                    replaceFragment(AddressEditDialogFragment.newInstanceForEditing(order))
                 } ?: showNoOrdersToast(site)
             }
         }
