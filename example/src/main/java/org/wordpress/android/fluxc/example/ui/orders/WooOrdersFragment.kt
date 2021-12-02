@@ -136,7 +136,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         fetch_has_orders.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    when(val result = wcOrderStore.fetchHasOrders(it, null)) {
+                    when (val result = wcOrderStore.fetchHasOrders(it, null)) {
                         is Failure -> {
                             prependToLog("Fetching hasOrders failed.")
                         }

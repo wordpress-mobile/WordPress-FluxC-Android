@@ -321,8 +321,8 @@ class WCOrderStore @Inject constructor(
     }
 
     sealed class HasOrdersResult {
-        data class Success(val hasOrders: Boolean): HasOrdersResult()
-        data class Failure(val error: FluxCError): HasOrdersResult()
+        data class Success(val hasOrders: Boolean) : HasOrdersResult()
+        data class Failure(val error: FluxCError) : HasOrdersResult()
     }
 
     // OnChanged events
