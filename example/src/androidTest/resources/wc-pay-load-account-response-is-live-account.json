@@ -10,7 +10,6 @@
       "default": "usd",
       "supported": ["usd"]
     },
-    "country": "US",
-    "card_present_eligible": false
+    "country": "US"
   }
 }

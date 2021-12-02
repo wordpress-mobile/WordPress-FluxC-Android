@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.example.R.layout
@@ -34,13 +33,11 @@ import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
-import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
@@ -136,8 +133,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         fetch_has_orders.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchHasOrdersPayload(it)
-                dispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(payload))
+                coroutineScope.launch {
+                    wcOrderStore.fetchHasOrders(it, null).takeUnless { it.isError }?.let {
+                        prependToLog("Has orders ${it.rowsAffected != 0}")
+                    } ?: prependToLog("Fetching hasOrders failed.")
+                }
             }
         }
 
@@ -336,8 +336,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     if (providers.isNullOrEmpty()) {
                         // Fetch providers for order
                         pendingOpenAddShipmentTracking = true
-                        val payload = FetchOrderShipmentProvidersPayload(site, order)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                        fetchOrderShipmentProviders(site, order)
                     } else {
                         val providerNames = mutableListOf<String>()
                         providers.forEach { providerNames.add(it.carrierName) }
@@ -393,9 +392,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 // a list of providers, even though the providers are not order specific.
                 getFirstWCOrder()?.let { order ->
                     prependToLog("Fetching a list of providers from the API")
-
-                    val payload = FetchOrderShipmentProvidersPayload(site, order)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                    fetchOrderShipmentProviders(site, order)
                 } ?: prependToLog("No orders found in db to use as seed. Fetch orders first.")
             }
         }
@@ -405,6 +402,59 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
                     replaceFragment(AddressEditDialogFragment.newInstance(order))
                 } ?: showNoOrdersToast(site)
+            }
+        }
+
+        create_quick_order.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the amount:"
+                ) { editText ->
+                    coroutineScope.launch {
+                        try {
+                            val amount = editText.text.toString()
+                            val result = wcOrderStore.postQuickOrder(site, amount)
+                            if (result.isError) {
+                                prependToLog("Creating quick order failed.")
+                            } else {
+                                prependToLog("Created quick order with remote ID ${result.order?.remoteOrderId}.")
+                            }
+                        } catch (e: NumberFormatException) {
+                            prependToLog("Invalid amount.")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun fetchOrderShipmentProviders(
+        site: SiteModel,
+        order: WCOrderModel
+    ) {
+        coroutineScope.launch {
+            val payload = FetchOrderShipmentProvidersPayload(site, order)
+            val response = wcOrderStore.fetchOrderShipmentProviders(payload)
+            if (response.isError) {
+                prependToLog("Error fetching shipment providers - error: " + response.error.type)
+            } else {
+                selectedSite?.let { site ->
+                    if (pendingOpenAddShipmentTracking) {
+                        pendingOpenAddShipmentTracking = false
+                        getFirstWCOrder()?.let { order ->
+                            val providers = mutableListOf<String>()
+                            wcOrderStore.getShipmentProvidersForSite(site)
+                                    .forEach { providers.add(it.carrierName) }
+                            showAddTrackingDialog(site, order, providers)
+                        }
+                    } else {
+                        wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
+                            prependToLog(" - ${provider.carrierName}")
+                        }
+                        prependToLog("[${response.rowsAffected}] shipment providers fetched successfully!")
+                    }
+                }
             }
         }
     }
@@ -417,30 +467,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     override fun onStop() {
         super.onStop()
         dispatcher.unregister(this)
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOrderShipmentProviderChanged(event: OnOrderShipmentProvidersChanged) {
-        if (event.isError) {
-            prependToLog("Error fetching shipment providers - error: " + event.error.type)
-        } else {
-            selectedSite?.let { site ->
-                if (pendingOpenAddShipmentTracking) {
-                    pendingOpenAddShipmentTracking = false
-                    getFirstWCOrder()?.let { order ->
-                        val providers = mutableListOf<String>()
-                        wcOrderStore.getShipmentProvidersForSite(site).forEach { providers.add(it.carrierName) }
-                        showAddTrackingDialog(site, order, providers)
-                    }
-                } else {
-                    wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
-                        prependToLog(" - ${provider.carrierName}")
-                    }
-                    prependToLog("[${event.rowsAffected}] shipment providers fetched successfully!")
-                }
-            }
-        }
     }
 
     @Suppress("unused")
@@ -492,10 +518,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             val ordersCount = wcOrderStore.getOrdersForSite(site).count()
                             prependToLog("Count of all orders: $ordersCount$append")
                         }
-                    }
-                    FETCH_HAS_ORDERS -> {
-                        val hasOrders = wcOrderStore.getOrdersForSite(site).isNotEmpty()
-                        prependToLog("Store has orders: $hasOrders")
                     }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }

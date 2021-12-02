@@ -159,51 +159,51 @@ open class WooCommerceStore @Inject constructor(
         // Fetch WooCommerce availability for jetpack cp sites
         siteStore.sites.filter { it.isJetpackCPConnected }
             .forEach { site ->
-                val isUpdated = fetchAndUpdateWooCommerceAvailability(site)
-                if (isUpdated && !fetchResult.updatedSites.contains(site)) {
+                val isUpdated = fetchUpdatedSiteMetaData(site)
+                if (isUpdated.model == true && !fetchResult.updatedSites.contains(site)) {
                     rowsAffected++
                 }
             }
 
-        // Pass empty updated list to avoid a second fetch for WooCommerce availability
-        emitChange(OnSiteChanged(rowsAffected, emptyList()))
+        emitChange(OnSiteChanged(rowsAffected, fetchResult.updatedSites))
 
         return WooResult(getWooCommerceSites())
     }
 
     suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
-        val fetchResult = if (!site.isJetpackCPConnected) {
-            siteStore.fetchSite(site)
-        } else {
-            // Individual fetching of sites is broken for Jetpack CP sites, so fallback to fetching all site
-            // TODO remove when the WordPress.com issue is fixed
-            siteStore.fetchSites(FetchSitesPayload())
-        }
-        if (fetchResult.isError) {
-            emitChange(fetchResult)
-
-            return WooResult(
-                    WooError(
-                            type = GENERIC_ERROR,
-                            message = fetchResult.error.message,
-                            original = UNKNOWN
+        if (!site.isJetpackCPConnected) {
+            siteStore.fetchSite(site).let {
+                if (it.isError) {
+                    return WooResult(
+                            WooError(
+                                    type = GENERIC_ERROR,
+                                    message = it.error.message,
+                                    original = UNKNOWN
+                            )
                     )
-            )
+                }
+            }
+        } else {
+            // The endpoint used by siteStore to fetch a single site is broken, so we'll update the metadata
+            // manually using the remote site directly
+            val isUpdated = fetchAndUpdateMetaDataFromSiteSettings(site).let {
+                if (it.isError) {
+                    return WooResult(
+                            WooError(
+                                    type = GENERIC_ERROR,
+                                    message = it.error.message,
+                                    original = UNKNOWN
+                            )
+                    )
+                }
+                it.model!!
+            }
+            if (isUpdated) {
+                emitChange(OnSiteChanged(1, listOf(site)))
+            }
         }
 
-        return if (!fetchResult.updatedSites.any { it.siteId == site.siteId }) {
-            // Nothing has changed for the site
-            emitChange(OnSiteChanged(0))
-            WooResult(site.takeIf { it.hasWooCommerce })
-        } else {
-            val updatedSite = fetchResult.updatedSites.first { it.siteId == site.siteId }
-            if (updatedSite.isJetpackCPConnected) {
-                fetchAndUpdateWooCommerceAvailability(updatedSite)
-            }
-            // Pass empty updated list to avoid a second fetch for WooCommerce availability
-            emitChange(OnSiteChanged(1, emptyList()))
-            WooResult(updatedSite.takeIf { it.hasWooCommerce })
-        }
+        return WooResult(siteStore.getSiteBySiteId(site.siteId))
     }
 
     fun getWooCommerceSites(): MutableList<SiteModel> =
@@ -285,6 +285,43 @@ open class WooCommerceStore @Inject constructor(
 
     fun observeSSRForSite(remoteSiteId: Long): Flow<WCSSRModel> {
         return ssrDao.observeSSRForSite(remoteSiteId)
+    }
+
+    private suspend fun fetchUpdatedSiteMetaData(site: SiteModel): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchUpdatedSiteMetaData") {
+            val updateSettingsResult = fetchAndUpdateMetaDataFromSiteSettings(site)
+            if (updateSettingsResult.isError) {
+                return@withDefaultContext updateSettingsResult
+            }
+            return@withDefaultContext WooResult(
+                    updateSettingsResult.model!! or fetchAndUpdateWooCommerceAvailability(site)
+            )
+        }
+    }
+
+    private suspend fun fetchAndUpdateMetaDataFromSiteSettings(site: SiteModel): WooResult<Boolean> {
+        fun SiteModel.updateFromSiteSettings(response: WooSystemRestClient.WPSiteSettingsResponse) = apply {
+            name = response.title ?: name
+            description = response.description ?: description
+            url = response.url ?: url
+            showOnFront = response.showOnFront ?: showOnFront
+            pageOnFront = response.pageOnFront ?: pageOnFront
+        }
+
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchAndUpdateMetaDataFromSiteSettings") {
+            val response = systemRestClient.fetchSiteSettings(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(T.API, "fetching site settings  site ${site.siteId}")
+                    WooResult(response.error)
+                }
+                else -> {
+                    WooResult(response.result?.let {
+                        siteSqlUtils.insertOrUpdateSite(site.updateFromSiteSettings(it)) == 1
+                    } ?: false)
+                }
+            }
+        }
     }
 
     private suspend fun fetchAndUpdateWooCommerceAvailability(site: SiteModel): Boolean {
@@ -424,18 +461,5 @@ open class WooCommerceStore @Inject constructor(
         }
 
         emitChange(onApiVersionFetched)
-    }
-
-    /**
-     * The goal of this is to make sure we update the sites if the fetching was done outside of [WooCommerceStore]
-     * We specify a higher priority to make sure this is delivered before reaching the final subscribers
-     */
-    @Subscribe(priority = 100)
-    fun onSiteChanged(siteChanged: OnSiteChanged) {
-        if (siteChanged.isError || siteChanged.rowsAffected == 0 || siteChanged.updatedSites.isEmpty()) return
-        coroutineEngine.launch(T.API, this, "Check woocommerce availability") {
-            siteChanged.updatedSites.filter { it.isJetpackCPConnected }
-                .forEach { site -> fetchAndUpdateWooCommerceAvailability(site) }
-        }
     }
 }
