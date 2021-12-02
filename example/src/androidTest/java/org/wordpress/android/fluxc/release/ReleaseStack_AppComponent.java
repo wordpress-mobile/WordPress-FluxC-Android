@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.jetbrains.annotations.NotNull;
 import org.wordpress.android.fluxc.di.WCDatabaseModule;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
@@ -73,6 +74,7 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_XPostsTest test);
     void inject(ReleaseStack_NoRedirectsTest test);
     void inject(ReleaseStack_InPersonPaymentsWCPayTest test);
+    void inject(ReleaseStack_InPersonPaymentsStripeExtensionTest test);
 
     void inject(ReleaseStack_WPApiPluginTest test);
 
