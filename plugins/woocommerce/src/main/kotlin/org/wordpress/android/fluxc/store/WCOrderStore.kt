@@ -536,7 +536,7 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 OnQuickOrderResult().also { it.error = result.error }
             } else {
-                OrderSqlUtils.insertOrUpdateOrder(result.order)
+                ordersDao.insertOrUpdateOrder(result.order)
                 OnQuickOrderResult(result.order)
             }
         }
