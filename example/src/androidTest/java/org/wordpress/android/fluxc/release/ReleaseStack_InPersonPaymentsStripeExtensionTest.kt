@@ -13,7 +13,9 @@ import javax.inject.Inject
 class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
 
-    override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_STRIPE_EXTENSION.toLong())
+    override val testSite: TestSite = TestSite.Specified(
+            siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_STRIPE_EXTENSION.toLong()
+    )
 
     override fun buildAuthenticatePayload() = AuthenticatePayload(
             BuildConfig.TEST_WPCOM_USERNAME_WOO_JP,

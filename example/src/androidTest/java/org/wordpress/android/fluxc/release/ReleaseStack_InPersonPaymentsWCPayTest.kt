@@ -39,7 +39,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
-        val result = store.loadAccount(WOOCOMMERCE_PAYMENTS ,sSite)
+        val result = store.loadAccount(WOOCOMMERCE_PAYMENTS, sSite)
 
         assertEquals("US", result.model?.country)
         assertEquals(false, result.model?.hasPendingRequirements)
