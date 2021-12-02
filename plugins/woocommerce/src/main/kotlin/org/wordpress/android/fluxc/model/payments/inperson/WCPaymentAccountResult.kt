@@ -1,16 +1,17 @@
-package org.wordpress.android.fluxc.model.pay
+package org.wordpress.android.fluxc.model.payments.inperson
 
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum.StoreCurrencies
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus.Deserializer
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus.StoreCurrencies
 import java.lang.reflect.Type
 
 data class WCPaymentAccountResult(
     @SerializedName("status")
-    val status: WCPayAccountStatusEnum,
+    val status: WCPaymentAccountStatus,
     @SerializedName("has_pending_requirements")
     val hasPendingRequirements: Boolean,
     @SerializedName("has_overdue_requirements")
@@ -40,7 +41,7 @@ data class WCPaymentAccountResult(
 
     /**
      * A boolean flag indicating if the test mode on the site is enabled. When "null" the state is unknown (the most
-     * probable reason is that the site is using outdated version of wcpay plugin).
+     * probable reason is that the site is using outdated version of WCPay or Stripe Extension plugin).
      */
     @SerializedName("test_mode")
     val testMode: Boolean?
@@ -48,11 +49,11 @@ data class WCPaymentAccountResult(
     /**
      * Represents all of the possible Site Plugin Statuses in enum form
      */
-    @JsonAdapter(WCPayAccountStatusEnum.Deserializer::class)
-    enum class WCPayAccountStatusEnum {
+    @JsonAdapter(Deserializer::class)
+    enum class WCPaymentAccountStatus {
         /**
-         * This is the normal state for a fully functioning WCPay account. The merchant should be able to collect
-         * card present payments.
+         * This is the normal state for a fully functioning WCPay or Stripe Extension account. The merchant should be
+         * able to collect card present payments.
          */
         COMPLETE,
 
@@ -110,12 +111,12 @@ data class WCPaymentAccountResult(
          */
         UNKNOWN;
 
-        class Deserializer : JsonDeserializer<WCPayAccountStatusEnum> {
+        class Deserializer : JsonDeserializer<WCPaymentAccountStatus> {
             override fun deserialize(
                 json: JsonElement,
                 typeOfT: Type?,
                 context: JsonDeserializationContext?
-            ): WCPayAccountStatusEnum =
+            ): WCPaymentAccountStatus =
                     when (json.asString) {
                         "complete" -> COMPLETE
                         "restricted" -> RESTRICTED

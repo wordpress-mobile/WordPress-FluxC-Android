@@ -1,25 +1,25 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.pay.WCCapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.pay.WCConnectionTokenResult
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult
-import org.wordpress.android.fluxc.model.pay.WCPaymentCreateCustomerByOrderIdResult
-import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentResponsePayload
+import org.wordpress.android.fluxc.model.payments.inperson.WCConnectionTokenResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.InPersonPaymentsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCPayStore @Inject constructor(
+class WCInPersonPaymentsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
-    private val restClient: PayRestClient
+    private val restClient: InPersonPaymentsRestClient
 ) {
     suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
@@ -51,7 +51,7 @@ class WCPayStore @Inject constructor(
     suspend fun createCustomerByOrderId(
         site: SiteModel,
         orderId: Long
-    ): WooResult<WCPaymentCreateCustomerByOrderIdResult> {
+    ): WooResult<WCCreateCustomerByOrderIdResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomerByOrderId") {
             restClient.createCustomerByOrderId(site, orderId).asWooResult()
         }

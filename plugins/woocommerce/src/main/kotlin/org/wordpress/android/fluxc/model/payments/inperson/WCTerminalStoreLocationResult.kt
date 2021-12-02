@@ -1,7 +1,8 @@
-package org.wordpress.android.fluxc.model.pay
+package org.wordpress.android.fluxc.model.payments.inperson
 
 import org.wordpress.android.fluxc.FluxCError
 import org.wordpress.android.fluxc.Payload
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.GenericError
 
 data class WCTerminalStoreLocationResult(
     val locationId: String?,
@@ -26,7 +27,7 @@ data class WCTerminalStoreLocationResult(
 }
 
 data class WCTerminalStoreLocationError(
-    val type: WCTerminalStoreLocationErrorType = WCTerminalStoreLocationErrorType.GenericError,
+    val type: WCTerminalStoreLocationErrorType = GenericError,
     val message: String = ""
 ) : FluxCError
 
