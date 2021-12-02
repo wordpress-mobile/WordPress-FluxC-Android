@@ -240,9 +240,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
                         coroutineScope.launch {
-                            wcOrderStore.updateOrderStatus(LocalId(order.id), site, WCOrderStatusModel().apply {
-                                statusKey = status
-                            })
+                            wcOrderStore.updateOrderStatus(LocalId(order.id), site, WCOrderStatusModel(status))
                                     .collect {
                                         if (it.event.isError) {
                                             prependToLog("FAILED: Update order status for ${order.remoteOrderId} " +
@@ -423,9 +421,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
                     val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
 
-                    val status = WCOrderStatusModel().apply {
-                        statusKey = CoreOrderStatus.PROCESSING.value
-                    }
+                    val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
 
                     val result = wcOrderStore.createOrder(
                             site,
