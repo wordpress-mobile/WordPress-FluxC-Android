@@ -542,19 +542,23 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(orderLocalId: LocalId, site: SiteModel, newStatus: String): Flow<UpdateOrderResult> {
+    suspend fun updateOrderStatus(
+        orderLocalId: LocalId,
+        site: SiteModel,
+        newStatus: WCOrderStatusModel
+    ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
             val orderModel = OrderSqlUtils.getOrderByLocalIdOrNull(orderLocalId)
 
             if (orderModel != null) {
-                val rowsAffected = updateOrderStatusLocally(LocalId(orderModel.id), newStatus)
+                val rowsAffected = updateOrderStatusLocally(LocalId(orderModel.id), newStatus.statusKey)
 
                 val optimisticUpdateResult = OnOrderChanged(rowsAffected)
                         .apply { causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS }
 
                 emit(OptimisticUpdateResult(optimisticUpdateResult))
 
-                val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus)
+                val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus.statusKey)
                 val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
                     revertOrderStatus(remotePayload)
                 } else {
