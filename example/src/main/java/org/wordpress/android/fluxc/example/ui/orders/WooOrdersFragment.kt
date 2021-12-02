@@ -37,6 +37,8 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvider
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Failure
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Success
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
@@ -134,9 +136,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         fetch_has_orders.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    wcOrderStore.fetchHasOrders(it, null).takeUnless { it.isError }?.let {
-                        prependToLog("Has orders ${it.rowsAffected != 0}")
-                    } ?: prependToLog("Fetching hasOrders failed.")
+                    when(val result = wcOrderStore.fetchHasOrders(it, null)) {
+                        is Failure -> {
+                            prependToLog("Fetching hasOrders failed.")
+                        }
+                        is Success -> {
+                            prependToLog("Has orders: ${result.hasOrders}")
+                        }
+                    }
                 }
             }
         }

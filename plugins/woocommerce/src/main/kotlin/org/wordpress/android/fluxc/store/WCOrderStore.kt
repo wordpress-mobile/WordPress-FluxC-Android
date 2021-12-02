@@ -4,10 +4,10 @@ import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.FluxCError
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
@@ -320,6 +320,11 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    sealed class HasOrdersResult {
+        data class Success(val hasOrders: Boolean): HasOrdersResult()
+        data class Failure(val error: FluxCError): HasOrdersResult()
+    }
+
     // OnChanged events
     data class OnOrderChanged(
         val statusFilter: String? = null,
@@ -499,15 +504,14 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
-    suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderChanged {
+    suspend fun fetchHasOrders(site: SiteModel, status: String?): HasOrdersResult {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
             val result = wcOrderRestClient.fetchHasOrders(site, status)
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                HasOrdersResult.Failure(result.error)
             } else {
-                val rowsAffected = if (result.hasOrders) 1 else 0
-                OnOrderChanged(rowsAffected, status)
+                HasOrdersResult.Success(result.hasOrders)
             }
         }
     }
