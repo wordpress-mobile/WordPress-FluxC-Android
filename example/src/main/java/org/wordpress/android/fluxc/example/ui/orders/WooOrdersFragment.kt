@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -21,14 +23,22 @@ import org.wordpress.android.fluxc.example.WCOrderListActivity
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.BILLING
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.SHIPPING
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.order.CreateOrderRequest
+import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
@@ -45,6 +55,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject lateinit var dispatcher: Dispatcher
@@ -229,7 +240,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
                         coroutineScope.launch {
-                            wcOrderStore.updateOrderStatus(LocalId(order.id), site, status)
+                            wcOrderStore.updateOrderStatus(LocalId(order.id), site, WCOrderStatusModel(status))
                                     .collect {
                                         if (it.event.isError) {
                                             prependToLog("FAILED: Update order status for ${order.remoteOrderId} " +
@@ -365,7 +376,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         update_latest_order_billing_address.setOnClickListener {
             selectedSite?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    replaceFragment(AddressEditDialogFragment.newInstance(order))
+                    replaceFragment(AddressEditDialogFragment.newInstanceForEditing(order))
                 } ?: showNoOrdersToast(site)
             }
         }
@@ -388,6 +399,45 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")
                         }
+                    }
+                }
+            }
+        }
+
+        create_order.setOnClickListener {
+            selectedSite?.let { site ->
+                lifecycleScope.launch {
+                    val products = showSingleLineDialog(
+                            activity = requireActivity(),
+                            message = "Please type a comma separated list of product IDs",
+                            isNumeric = false
+                    )?.split(",")?.map { it.toLongOrNull() }
+
+                    if (products == null || products.any { it == null }) {
+                        prependToLog("Error while parsing the entered product IDs")
+                        return@launch
+                    }
+
+                    val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
+                    val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
+
+                    val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
+
+                    val result = wcOrderStore.createOrder(
+                            site,
+                            CreateOrderRequest(
+                                    status = status,
+                                    lineItems = products.map {
+                                        LineItem(productId = it, quantity = 1f)
+                                    },
+                                    shippingAddress = shippingAddress,
+                                    billingAddress = billingAddress
+                            )
+                    )
+                    if (result.isError) {
+                        prependToLog("Order creation failed, error ${result.error.type}")
+                    } else {
+                        prependToLog("Created order with id ${result.model!!.remoteOrderId}")
                     }
                 }
             }
@@ -559,6 +609,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             } else {
                 prependToLog("Adding shipment tracking for remoteOrderId [${order.remoteOrderId}] FAILED!")
             }
+        }
+    }
+
+    private suspend fun showAddressDialog(addressType: AddressType): OrderAddress? {
+        return suspendCancellableCoroutine { continuation ->
+            replaceFragment(AddressEditDialogFragment.newInstanceForCreation(addressType) {
+                continuation.resume(it)
+            })
         }
     }
 }
