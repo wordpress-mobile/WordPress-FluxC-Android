@@ -552,15 +552,15 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                val model = result.result!!.toDomainModel(site.id)
-                OrderSqlUtils.insertOrUpdateOrder(model)
+                val model = result.result!!.toDomainModel(site.localId())
+                ordersDao.insertOrUpdateOrder(model)
                 WooResult(model)
             }
         }
     }
 
     suspend fun updateOrderStatus(
-        orderLocalId: LocalId,
+        remoteOrderId: RemoteId,
         site: SiteModel,
         newStatus: WCOrderStatusModel
     ): Flow<UpdateOrderResult> {
@@ -568,7 +568,7 @@ class WCOrderStore @Inject constructor(
             val orderModel = ordersDao.getOrder(remoteOrderId, site.localId())
 
             if (orderModel != null) {
-                updateOrderStatusLocally(remoteOrderId, site.localId(), newStatus)
+                updateOrderStatusLocally(remoteOrderId, site.localId(), newStatus.statusKey)
 
                 val optimisticUpdateResult = OnOrderChanged(
                         causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS

@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Add
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Edit
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
@@ -25,27 +26,6 @@ import org.wordpress.android.fluxc.store.OrderUpdateStore
 import javax.inject.Inject
 
 class AddressEditDialogFragment : DaggerFragment() {
-    companion object {
-        // These instantiations won't work with screen rotation or process death scenarios.
-        // They are just for the sake of simplification of the example
-        @JvmStatic
-        fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
-                AddressEditDialogFragment().apply {
-                    this.selectedOrder = order
-                    this.mode = Edit
-                }
-
-        @JvmStatic
-        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
-                AddressEditDialogFragment =
-                AddressEditDialogFragment().apply {
-                    this.selectedOrder = WCOrderModel()
-                    this.mode = Add
-                    this.addressListener = listener
-                    this.currentAddressType.value = addressType
-                }
-    }
-
     @Inject lateinit var orderUpdateStore: OrderUpdateStore
 
     enum class AddressType {
@@ -59,7 +39,7 @@ class AddressEditDialogFragment : DaggerFragment() {
     private var currentAddressType = MutableStateFlow(SHIPPING)
 
     private lateinit var selectedOrder: WCOrderModel
-    var originalBillingEmail = ""
+    private var originalBillingEmail = ""
 
     private var addressListener: ((OrderAddress) -> Unit)? = null
 
@@ -137,7 +117,8 @@ class AddressEditDialogFragment : DaggerFragment() {
                 Edit -> {
                     lifecycleScope.launch {
                         orderUpdateStore.updateOrderAddress(
-                                orderLocalId = LocalId(selectedOrder.id),
+                                remoteOrderId = selectedOrder.remoteOrderId,
+                                localSiteId = selectedOrder.localSiteId,
                                 newAddress = newAddress
                         ).collect {
                             prependToLog("${it::class.simpleName} - Error: ${it.event.error?.message}")
@@ -154,7 +135,8 @@ class AddressEditDialogFragment : DaggerFragment() {
         sendBothAddressesUpdate.setOnClickListener {
             lifecycleScope.launch {
                 orderUpdateStore.updateBothOrderAddresses(
-                        orderLocalId = LocalId(selectedOrder.id),
+                        remoteOrderId = selectedOrder.remoteOrderId,
+                        localSiteId = selectedOrder.localSiteId,
                         shippingAddress = generateShippingAddressModel(binding),
                         billingAddress = generateBillingAddressModel(binding)
                 ).collect {
@@ -192,4 +174,24 @@ class AddressEditDialogFragment : DaggerFragment() {
             country = binding.country.text.toString(),
             phone = binding.phone.text.toString()
     )
+
+    companion object {
+        // These instantiations won't work with screen rotation or process death scenarios.
+        // They are just for the sake of simplification of the example
+        @JvmStatic
+        fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
+                AddressEditDialogFragment().apply {
+                    this.selectedOrder = order
+                    this.mode = Edit
+                }
+
+        @JvmStatic
+        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
+                AddressEditDialogFragment = AddressEditDialogFragment().apply {
+            this.selectedOrder = WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1))
+            this.mode = Add
+            this.addressListener = listener
+            this.currentAddressType.value = addressType
+        }
+    }
 }
