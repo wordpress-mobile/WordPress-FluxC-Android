@@ -42,9 +42,12 @@ class WCInPersonPaymentsStore @Inject constructor(
         }
     }
 
-    suspend fun loadAccount(site: SiteModel): WooResult<WCPaymentAccountResult> {
+    suspend fun loadAccount(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WooResult<WCPaymentAccountResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "loadAccount") {
-            restClient.loadAccount(site).asWooResult()
+            restClient.loadAccount(activePlugin, site).asWooResult()
         }
     }
 
@@ -61,5 +64,10 @@ class WCInPersonPaymentsStore @Inject constructor(
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getStoreLocationForSite") {
             restClient.getStoreLocationForSite(site)
         }
+    }
+
+    enum class InPersonPaymentsPluginType {
+        WOOCOMMERCE_PAYMENTS,
+        STRIPE
     }
 }

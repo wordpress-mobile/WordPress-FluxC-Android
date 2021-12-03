@@ -9,9 +9,10 @@ import org.wordpress.android.fluxc.example.test.BuildConfig
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
 import javax.inject.Inject
 
-class ReleaseStack_InPersonPaymentsTest : ReleaseStack_WCBase() {
+class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
 
     override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
@@ -38,7 +39,7 @@ class ReleaseStack_InPersonPaymentsTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
-        val result = store.loadAccount(sSite)
+        val result = store.loadAccount(WOOCOMMERCE_PAYMENTS, sSite)
 
         assertEquals("US", result.model?.country)
         assertEquals(false, result.model?.hasPendingRequirements)

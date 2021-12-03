@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocati
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.InPersonPaymentsRestClient
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
 import javax.inject.Inject
 
 private const val DUMMY_PAYMENT_ID = "dummy payment id"
@@ -91,7 +92,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountInvalidStatusThenFallbacksToUnknown() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-new-status.json", 200)
 
-        val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.status == WCPaymentAccountStatus.UNKNOWN)
     }
@@ -100,7 +101,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountEmptyStatusThenFallbackToNoAccount() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-empty-status.json", 200)
 
-        val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.status == WCPaymentAccountStatus.NO_ACCOUNT)
     }
@@ -109,7 +110,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenOverdueRequirementsThenCurrentDeadlineCorrectlyParsed() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-current-deadline.json", 200)
 
-        val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.currentDeadline == 1628258304L)
     }
@@ -118,7 +119,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountRestrictedSoonStatusThenRestrictedSoonStatusReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-restricted-soon-status.json", 200)
 
-        val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.status == WCPaymentAccountStatus.RESTRICTED_SOON)
     }
@@ -127,7 +128,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountIsLiveThenIsLiveFlagIsTrue() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-is-live-account.json", 200)
 
-        val result = restClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result!!.isLive)
     }

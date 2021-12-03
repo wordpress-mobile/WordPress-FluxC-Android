@@ -29,6 +29,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.STRIPE
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -101,8 +104,14 @@ class InPersonPaymentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun loadAccount(site: SiteModel): WooPayload<WCPaymentAccountResult> {
-        val url = WOOCOMMERCE.payments.accounts.pathV3
+    suspend fun loadAccount(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WooPayload<WCPaymentAccountResult> {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.accounts.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.account.summary.pathV3
+        }
         val params = mapOf("_fields" to ACCOUNT_REQUESTED_FIELDS)
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
