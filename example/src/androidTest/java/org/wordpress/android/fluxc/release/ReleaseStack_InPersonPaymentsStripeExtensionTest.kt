@@ -39,7 +39,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasWCPayWhenLoadAccountThenTestAccountReturned() = runBlocking {
+    fun givenSiteHasStripeExtensionWhenLoadAccountThenTestAccountReturned() = runBlocking {
         val result = store.loadAccount(STRIPE, sSite)
 
         assertEquals("US", result.model?.country)
@@ -53,7 +53,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
+    fun givenSiteHasStripeExtensionAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
         // TODO cardreader Update when we add support for Stripe Extension endpoint
 //        val result = store.createCustomerByOrderId(
 //                sSite,
@@ -64,7 +64,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasWCPayAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
+    fun givenSiteHasStripeExtensionAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
         // TODO cardreader Update when we add support for Stripe Extension endpoint
 //        val result = store.createCustomerByOrderId(
 //                sSite,
@@ -75,7 +75,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasWCPayAndStripeAddressThenLocationDataReturned() = runBlocking {
+    fun givenSiteHasStripeExtensionAndStripeAddressThenLocationDataReturned() = runBlocking {
         // TODO cardreader Update when we add support for Stripe Extension endpoint
 //        val result = store.getStoreLocationForSite(sSite)
 //
