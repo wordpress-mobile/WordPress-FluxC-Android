@@ -836,10 +836,12 @@ class WCOrderStore @Inject constructor(
      */
     private fun handleFetchOrdersCountCompleted(payload: FetchOrdersCountResponsePayload) {
         val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
+            OnOrderChanged(orderError = payload.error)
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter) }
-        }.also { it.causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT }
+            with(payload) {
+                OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
+            }
+        }
         emitChange(onOrderChanged)
     }
 
