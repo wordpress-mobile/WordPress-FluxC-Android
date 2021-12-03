@@ -1,7 +1,7 @@
 {
   "project_name": "FluxC-Android",
   "branch": "trunk",
-  "pinned_hash": "5d559f285fd1932caa9f850f81a4eb2c999b09e5",
+  "pinned_hash": "1fd362b1ba0efe65ea87fbc055ace73cc838dc70",
   "files_to_copy": [
     {
       "file": "android/FluxC/tests.properties",
