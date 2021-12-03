@@ -26,6 +26,26 @@ import org.wordpress.android.fluxc.store.OrderUpdateStore
 import javax.inject.Inject
 
 class AddressEditDialogFragment : DaggerFragment() {
+    companion object {
+        // These instantiations won't work with screen rotation or process death scenarios.
+        // They are just for the sake of simplification of the example
+        @JvmStatic
+        fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
+                AddressEditDialogFragment().apply {
+                    this.selectedOrder = order
+                    this.mode = Edit
+                }
+
+        @JvmStatic
+        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
+                AddressEditDialogFragment = AddressEditDialogFragment().apply {
+            this.selectedOrder = WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1))
+            this.mode = Add
+            this.addressListener = listener
+            this.currentAddressType.value = addressType
+        }
+    }
+
     @Inject lateinit var orderUpdateStore: OrderUpdateStore
 
     enum class AddressType {
@@ -174,24 +194,4 @@ class AddressEditDialogFragment : DaggerFragment() {
             country = binding.country.text.toString(),
             phone = binding.phone.text.toString()
     )
-
-    companion object {
-        // These instantiations won't work with screen rotation or process death scenarios.
-        // They are just for the sake of simplification of the example
-        @JvmStatic
-        fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
-                AddressEditDialogFragment().apply {
-                    this.selectedOrder = order
-                    this.mode = Edit
-                }
-
-        @JvmStatic
-        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
-                AddressEditDialogFragment = AddressEditDialogFragment().apply {
-            this.selectedOrder = WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1))
-            this.mode = Add
-            this.addressListener = listener
-            this.currentAddressType.value = addressType
-        }
-    }
 }
