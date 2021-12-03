@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.junit.Test
 import org.wordpress.android.fluxc.UnitTestUtils
-import org.wordpress.android.fluxc.model.WCOrderModel.ShippingLine
+import org.wordpress.android.fluxc.model.order.ShippingLine
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue

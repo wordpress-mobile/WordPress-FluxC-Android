@@ -146,7 +146,7 @@ class WCOrderStoreTest {
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
             .thenReturn(result)
 
-        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.REFUNDED.value)
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, WCOrderStatusModel(CoreOrderStatus.REFUNDED.value))
             .toList()
 
         with(orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
@@ -288,7 +288,7 @@ class WCOrderStoreTest {
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)
 
-        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.COMPLETED.value)
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, WCOrderStatusModel(CoreOrderStatus.COMPLETED.value))
                 .toList()
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.COMPLETED.value)
@@ -308,7 +308,7 @@ class WCOrderStoreTest {
             )
         )
 
-        orderStore.updateOrderStatus(LocalId(orderModel.id), site, CoreOrderStatus.COMPLETED.value)
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, WCOrderStatusModel(CoreOrderStatus.COMPLETED.value))
                 .toList()
 
         assertThat(OrderSqlUtils.getOrderByLocalId(orderModel.id).status).isEqualTo(CoreOrderStatus.PROCESSING.value)

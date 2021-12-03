@@ -8,6 +8,10 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCOrderStatusModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+    constructor(statusKey: String) : this() {
+        this.statusKey = statusKey
+    }
+
     @Column var localSiteId = 0
     @Column var statusKey = ""
     @Column var label = ""
