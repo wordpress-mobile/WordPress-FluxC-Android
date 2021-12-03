@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel.LineItem
+import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
 import org.wordpress.android.fluxc.network.UserAgent

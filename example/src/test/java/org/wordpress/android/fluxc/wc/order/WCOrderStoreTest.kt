@@ -167,8 +167,8 @@ class WCOrderStoreTest {
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
                 .thenReturn(result)
 
-        orderStore.updateOrderStatus(orderModel.remoteOrderId, site, CoreOrderStatus.REFUNDED.value)
-                .toList()
+        orderStore.updateOrderStatus(LocalId(orderModel.id), site, WCOrderStatusModel(CoreOrderStatus.REFUNDED.value))
+            .toList()
 
         with(orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
             // The version of the order model in the database should have the updated status
@@ -308,7 +308,7 @@ class WCOrderStoreTest {
         assertThat(ordersDao.getOrder(orderModel.remoteOrderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)
 
-        orderStore.updateOrderStatus(orderModel.remoteOrderId, site, CoreOrderStatus.COMPLETED.value)
+        orderStore.updateOrderStatus(orderModel.remoteOrderId, site, WCOrderStatusModel(CoreOrderStatus.COMPLETED.value))
                 .toList()
 
         assertThat(ordersDao.getOrder(orderModel.remoteOrderId, orderModel.localSiteId)?.status)
@@ -329,7 +329,7 @@ class WCOrderStoreTest {
                 )
         )
 
-        orderStore.updateOrderStatus(orderModel.remoteOrderId, site, CoreOrderStatus.COMPLETED.value)
+        orderStore.updateOrderStatus(orderModel.remoteOrderId, site, WCOrderStatusModel(CoreOrderStatus.COMPLETED.value))
                 .toList()
 
         assertThat(ordersDao.getOrder(orderModel.remoteOrderId, orderModel.localSiteId)?.status)
