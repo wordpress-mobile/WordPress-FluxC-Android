@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
@@ -323,6 +322,11 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    sealed class HasOrdersResult {
+        data class Success(val hasOrders: Boolean) : HasOrdersResult()
+        data class Failure(val error: OrderError) : HasOrdersResult()
+    }
+
     // OnChanged events
     data class OnOrderChanged(
         val statusFilter: String? = null,
@@ -334,10 +338,6 @@ class WCOrderStore @Inject constructor(
             super.error = orderError
         }
     }
-
-    data class OnQuickOrderResult(
-        var order: WCOrderModel? = null
-    ) : OnChanged<OrderError>()
 
     data class OnQuickOrderResult(
         var order: WCOrderModel? = null
@@ -506,15 +506,14 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
-    suspend fun fetchHasOrders(site: SiteModel, status: String?): OnOrderChanged {
+    suspend fun fetchHasOrders(site: SiteModel, status: String?): HasOrdersResult {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
             val result = wcOrderRestClient.fetchHasOrders(site, status)
 
             return@withDefaultContext if (result.isError) {
-                OnOrderChanged(0).also { it.error = result.error }
+                HasOrdersResult.Failure(result.error)
             } else {
-                val rowsAffected = if (result.hasOrders) 1 else 0
-                OnOrderChanged(rowsAffected, status)
+                HasOrdersResult.Success(result.hasOrders)
             }
         }
     }
@@ -539,7 +538,7 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 OnQuickOrderResult().also { it.error = result.error }
             } else {
-                OrderSqlUtils.insertOrUpdateOrder(result.order)
+                ordersDao.insertOrUpdateOrder(result.order)
                 OnQuickOrderResult(result.order)
             }
         }
@@ -552,28 +551,15 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                val model = result.result!!.toDomainModel(site.id)
-                OrderSqlUtils.insertOrUpdateOrder(model)
+                val model = result.result!!.toDomainModel(site.localId())
+                ordersDao.insertOrUpdateOrder(model)
                 WooResult(model)
             }
         }
     }
 
-    suspend fun postQuickOrder(site: SiteModel, amount: String): OnQuickOrderResult {
-        return coroutineEngine.withDefaultContext(T.API, this, "postQuickOrder") {
-            val result = wcOrderRestClient.postQuickOrder(site, amount)
-
-            return@withDefaultContext if (result.isError) {
-                OnQuickOrderResult().also { it.error = result.error }
-            } else {
-                OrderSqlUtils.insertOrUpdateOrder(result.order)
-                OnQuickOrderResult(result.order)
-            }
-        }
-    }
-
     suspend fun updateOrderStatus(
-        orderLocalId: LocalId,
+        remoteOrderId: RemoteId,
         site: SiteModel,
         newStatus: WCOrderStatusModel
     ): Flow<UpdateOrderResult> {
@@ -581,7 +567,7 @@ class WCOrderStore @Inject constructor(
             val orderModel = ordersDao.getOrder(remoteOrderId, site.localId())
 
             if (orderModel != null) {
-                updateOrderStatusLocally(remoteOrderId, site.localId(), newStatus)
+                updateOrderStatusLocally(remoteOrderId, site.localId(), newStatus.statusKey)
 
                 val optimisticUpdateResult = OnOrderChanged(
                         causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
@@ -722,14 +708,6 @@ class WCOrderStore @Inject constructor(
                 wcOrderRestClient.fetchOrderShipmentProviders(site, order)
             }
 
-    suspend fun fetchOrderShipmentProviders(
-        payload: FetchOrderShipmentProvidersPayload
-    ): OnOrderShipmentProvidersChanged {
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderShipmentProviders") {
-            val result = with(payload) {
-                wcOrderRestClient.fetchOrderShipmentProviders(site, order)
-            }
-
             return@withDefaultContext if (result.isError) {
                 OnOrderShipmentProvidersChanged(0).also { it.error = result.error }
             } else {
@@ -857,10 +835,12 @@ class WCOrderStore @Inject constructor(
      */
     private fun handleFetchOrdersCountCompleted(payload: FetchOrdersCountResponsePayload) {
         val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
+            OnOrderChanged(orderError = payload.error)
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter) }
-        }.also { it.causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT }
+            with(payload) {
+                OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
+            }
+        }
         emitChange(onOrderChanged)
     }
 

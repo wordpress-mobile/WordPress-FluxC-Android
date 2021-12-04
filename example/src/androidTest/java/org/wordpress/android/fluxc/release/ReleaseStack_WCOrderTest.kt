@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPay
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Success
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
@@ -221,8 +222,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchHasOrders() = runBlocking {
-        val onOrderChanged = orderStore.fetchHasOrders(sSite, status = null)
-        assertTrue(onOrderChanged.rowsAffected != 0)
+        val result = orderStore.fetchHasOrders(sSite, status = null)
+        assertTrue((result as Success).hasOrders)
     }
 
     @Throws(InterruptedException::class)

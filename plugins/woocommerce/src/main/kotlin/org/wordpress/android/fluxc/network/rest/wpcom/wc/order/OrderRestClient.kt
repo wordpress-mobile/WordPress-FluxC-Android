@@ -507,13 +507,13 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newModel = orderResponseToOrderModel(it).apply {
-                        localSiteId = site.id
-                    }
+                    val newModel = orderResponseToOrderModel(it, localSiteId = site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        WCOrderModel(),
+                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
+                        // added for successful merge
+                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
                         site
                 )
             }
@@ -521,7 +521,9 @@ class OrderRestClient @Inject constructor(
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
                         orderError,
-                        WCOrderModel(),
+                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
+                        // added for successful merge
+                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
                         site
                 )
             }
