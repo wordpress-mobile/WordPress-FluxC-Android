@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.order.CreateOrderRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -29,8 +30,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
@@ -808,6 +812,32 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun createOrder(
+        site: SiteModel,
+        request: CreateOrderRequest
+    ): WooPayload<OrderDto> {
+        val url = WOOCOMMERCE.orders.pathV3
+        val params = mapOf(
+                "status" to request.status.statusKey,
+                "line_items" to request.lineItems,
+                "shipping" to request.shippingAddress.toDto(),
+                "billing" to request.billingAddress.toDto()
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderDto::class.java
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(response.data)
+        }
+    }
+
     private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
         return WCOrderSummaryModel().apply {
             remoteOrderId = response.id ?: 0
@@ -816,6 +846,10 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    @Deprecated(
+            message = "Use OrderDto#toDomainModel() instead",
+            replaceWith = ReplaceWith("OrderDto.toDomainModel()")
+    )
     private fun orderResponseToOrderModel(response: OrderDto): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0

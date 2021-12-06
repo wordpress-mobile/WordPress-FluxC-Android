@@ -145,5 +145,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Create quick order" />
+
+        <Button
+            android:id="@+id/create_order"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Create Order" />
     </LinearLayout>
 </ScrollView>

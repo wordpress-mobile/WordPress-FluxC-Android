@@ -4,127 +4,167 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.DaggerFragment
 import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.databinding.FragmentAddressEditDialogBinding
 import org.wordpress.android.fluxc.example.prependToLog
-import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.EditTypeState.BILLING
-import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.EditTypeState.SHIPPING
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.BILLING
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.SHIPPING
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Add
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Edit
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
 import org.wordpress.android.fluxc.store.OrderUpdateStore
 import javax.inject.Inject
 
 class AddressEditDialogFragment : DaggerFragment() {
-    @Inject lateinit var orderUpdateStore: OrderUpdateStore
+    companion object {
+        // These instantiations won't work with screen rotation or process death scenarios.
+        // They are just for the sake of simplification of the example
+        @JvmStatic
+        fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
+                AddressEditDialogFragment().apply {
+                    this.selectedOrder = order
+                    this.mode = Edit
+                }
 
-    enum class EditTypeState {
-        SHIPPING, BILLING
+        @JvmStatic
+        fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
+                AddressEditDialogFragment =
+                AddressEditDialogFragment().apply {
+                    this.selectedOrder = WCOrderModel()
+                    this.mode = Add
+                    this.addressListener = listener
+                    this.currentAddressType.value = addressType
+                }
     }
 
-    private var currentAddressType = MutableStateFlow(SHIPPING)
-    private lateinit var binding: FragmentAddressEditDialogBinding
+    @Inject lateinit var orderUpdateStore: OrderUpdateStore
 
-    var selectedOrder = MutableStateFlow<WCOrderModel?>(null)
+    enum class AddressType {
+        SHIPPING, BILLING
+    }
+    enum class Mode {
+        Edit, Add
+    }
+
+    private lateinit var mode: Mode
+    private var currentAddressType = MutableStateFlow(SHIPPING)
+
+    private lateinit var selectedOrder: WCOrderModel
     var originalBillingEmail = ""
+
+    private var addressListener: ((OrderAddress) -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View = FragmentAddressEditDialogBinding.inflate(inflater).apply {
-        binding = this
-        addressTypeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            currentAddressType.value = if (isChecked) BILLING else SHIPPING
-        }
-    }.root
+    ): View = FragmentAddressEditDialogBinding.inflate(inflater).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentAddressEditDialogBinding.bind(view)
 
-        CoroutineScope(Dispatchers.Main).launch {
-            currentAddressType.combine(selectedOrder) { addressType, order ->
-                originalBillingEmail = order?.billingEmail.orEmpty()
+        if (mode == Add) {
+            binding.addressTypeSwitch.visibility = View.GONE
+            binding.sendBothAddressesUpdate.visibility = View.GONE
+            binding.sendUpdate.text = "Save"
+            binding.addressTypeTitle.visibility = View.VISIBLE
+            binding.addressTypeTitle.text = if (currentAddressType.value == BILLING) {
+                "Enter a billing address"
+            } else {
+                "Enter a shipping address"
+            }
+        }
+
+        binding.addressTypeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            currentAddressType.value = if (isChecked) BILLING else SHIPPING
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            currentAddressType.collect { addressType ->
+                originalBillingEmail = selectedOrder.billingEmail
                 when (addressType) {
                     SHIPPING -> {
-                        binding.addressTypeSwitch.text = "Edit shipping address for order ${order?.remoteOrderId}"
-                        binding.firstName.setText(order?.shippingFirstName)
-                        binding.lastName.setText(order?.shippingLastName)
-                        binding.company.setText(order?.shippingCompany)
-                        binding.address1.setText(order?.shippingAddress1)
-                        binding.address2.setText(order?.shippingAddress2)
-                        binding.city.setText(order?.shippingCity)
-                        binding.state.setText(order?.shippingState)
-                        binding.postcode.setText(order?.shippingPostcode)
-                        binding.phone.setText(order?.shippingPhone)
+                        binding.addressTypeSwitch.text =
+                                "Edit shipping address for order ${selectedOrder.remoteOrderId}"
+                        binding.firstName.setText(selectedOrder.shippingFirstName)
+                        binding.lastName.setText(selectedOrder.shippingLastName)
+                        binding.company.setText(selectedOrder.shippingCompany)
+                        binding.address1.setText(selectedOrder.shippingAddress1)
+                        binding.address2.setText(selectedOrder.shippingAddress2)
+                        binding.city.setText(selectedOrder.shippingCity)
+                        binding.state.setText(selectedOrder.shippingState)
+                        binding.postcode.setText(selectedOrder.shippingPostcode)
+                        binding.phone.setText(selectedOrder.shippingPhone)
                         binding.email.visibility = View.INVISIBLE
                     }
                     BILLING -> {
-                        binding.addressTypeSwitch.text = "Edit billing address for order ${order?.remoteOrderId}"
-                        binding.firstName.setText(order?.billingFirstName)
-                        binding.lastName.setText(order?.billingLastName)
-                        binding.company.setText(order?.billingCompany)
-                        binding.address1.setText(order?.billingAddress1)
-                        binding.address2.setText(order?.billingAddress2)
-                        binding.city.setText(order?.billingCity)
-                        binding.state.setText(order?.billingState)
-                        binding.postcode.setText(order?.billingPostcode)
-                        binding.phone.setText(order?.billingPhone)
+                        binding.addressTypeSwitch.text = "Edit billing address for order ${selectedOrder.remoteOrderId}"
+                        binding.firstName.setText(selectedOrder.billingFirstName)
+                        binding.lastName.setText(selectedOrder.billingLastName)
+                        binding.company.setText(selectedOrder.billingCompany)
+                        binding.address1.setText(selectedOrder.billingAddress1)
+                        binding.address2.setText(selectedOrder.billingAddress2)
+                        binding.city.setText(selectedOrder.billingCity)
+                        binding.state.setText(selectedOrder.billingState)
+                        binding.postcode.setText(selectedOrder.billingPostcode)
+                        binding.phone.setText(selectedOrder.billingPhone)
                         binding.email.apply {
-                            setText(order?.billingEmail)
+                            setText(selectedOrder.billingEmail)
                             visibility = View.VISIBLE
                         }
                     }
                 }
-            }.collect()
+            }
         }
 
         sendUpdate.setOnClickListener {
-            selectedOrder.value?.let { order ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    val newAddress = when (currentAddressType.value) {
-                        SHIPPING -> generateShippingAddressModel()
-                        BILLING -> generateBillingAddressModel()
-                    }
+            val newAddress = when (currentAddressType.value) {
+                SHIPPING -> generateShippingAddressModel(binding)
+                BILLING -> generateBillingAddressModel(binding)
+            }
 
-                    orderUpdateStore.updateOrderAddress(
-                            orderLocalId = LocalId(order.id),
-                            newAddress = newAddress
-                    ).collect {
-                        CoroutineScope(Dispatchers.Main).launch {
+            when (mode) {
+                Edit -> {
+                    lifecycleScope.launch {
+                        orderUpdateStore.updateOrderAddress(
+                                orderLocalId = LocalId(selectedOrder.id),
+                                newAddress = newAddress
+                        ).collect {
                             prependToLog("${it::class.simpleName} - Error: ${it.event.error?.message}")
                         }
                     }
+                }
+                Add -> {
+                    parentFragmentManager.popBackStack()
+                    addressListener?.invoke(newAddress)
                 }
             }
         }
 
         sendBothAddressesUpdate.setOnClickListener {
-            selectedOrder.value?.let { order ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    orderUpdateStore.updateBothOrderAddresses(
-                            orderLocalId = LocalId(order.id),
-                            shippingAddress = generateShippingAddressModel(),
-                            billingAddress = generateBillingAddressModel()
-                    ).collect {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            prependToLog("${it::class.simpleName} - Error: ${it.event.error?.message}")
-                        }
-                    }
+            lifecycleScope.launch {
+                orderUpdateStore.updateBothOrderAddresses(
+                        orderLocalId = LocalId(selectedOrder.id),
+                        shippingAddress = generateShippingAddressModel(binding),
+                        billingAddress = generateBillingAddressModel(binding)
+                ).collect {
+                    prependToLog("${it::class.simpleName} - Error: ${it.event.error?.message}")
                 }
             }
         }
     }
 
-    private fun generateBillingAddressModel() = Billing(
+    private fun generateBillingAddressModel(binding: FragmentAddressEditDialogBinding) = Billing(
             firstName = binding.firstName.text.toString(),
             lastName = binding.lastName.text.toString(),
             company = binding.company.text.toString(),
@@ -140,7 +180,7 @@ class AddressEditDialogFragment : DaggerFragment() {
                     ?: originalBillingEmail
     )
 
-    private fun generateShippingAddressModel() = Shipping(
+    private fun generateShippingAddressModel(binding: FragmentAddressEditDialogBinding) = Shipping(
             firstName = binding.firstName.text.toString(),
             lastName = binding.lastName.text.toString(),
             company = binding.company.text.toString(),
@@ -152,13 +192,4 @@ class AddressEditDialogFragment : DaggerFragment() {
             country = binding.country.text.toString(),
             phone = binding.phone.text.toString()
     )
-
-    companion object {
-        @JvmStatic
-        fun newInstance(order: WCOrderModel) = AddressEditDialogFragment().also { fragment ->
-            CoroutineScope(Dispatchers.IO).launch {
-                fragment.selectedOrder.value = order
-            }
-        }
-    }
 }
