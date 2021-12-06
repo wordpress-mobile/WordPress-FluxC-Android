@@ -6,22 +6,23 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.CAPTURE_ERROR
-import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.MISSING_ORDER
-import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
-import org.wordpress.android.fluxc.model.pay.WCCapturePaymentErrorType.SERVER_ERROR
-import org.wordpress.android.fluxc.model.pay.WCPaymentAccountResult.WCPayAccountStatusEnum
-import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.GenericError
-import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.InvalidPostalCode
-import org.wordpress.android.fluxc.model.pay.WCTerminalStoreLocationErrorType.MissingAddress
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.CAPTURE_ERROR
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.MISSING_ORDER
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
+import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.GenericError
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.InvalidPostalCode
+import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.pay.PayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.InPersonPaymentsRestClient
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
 import javax.inject.Inject
 
 private const val DUMMY_PAYMENT_ID = "dummy payment id"
 
-class MockedStack_WCPayTest : MockedStack_Base() {
-    @Inject internal lateinit var payRestClient: PayRestClient
+class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
+    @Inject internal lateinit var restClient: InPersonPaymentsRestClient
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
@@ -35,7 +36,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun givenSiteHasWCPayWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
         interceptor.respondWith("wc-pay-fetch-connection-token-response-success.json")
 
-        val result = payRestClient.fetchConnectionToken(SiteModel().apply { siteId = 123L })
+        val result = restClient.fetchConnectionToken(SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.token?.isNotEmpty() == true)
         assertTrue(result.result?.isTestMode == true)
@@ -45,7 +46,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenValidDataProvidedForCapturePaymentThenSuccessReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-success.json", 200)
 
-        val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
         Assert.assertFalse(result.isError)
         assertTrue(result.status != null)
@@ -55,7 +56,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenInvalidOrderIdProvidedForCapturePaymentThenInvalidIdIsReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-missing-order.json", 404)
 
-        val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
         assertTrue(result.error?.type == MISSING_ORDER)
     }
@@ -64,7 +65,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenPaymentAlreadyCapturedThenUncapturableErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-uncapturable.json", 409)
 
-        val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
         assertTrue(result.error?.type == PAYMENT_ALREADY_CAPTURED)
     }
@@ -73,7 +74,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenPaymentCaptureFailsThenCaptureFailedErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-capture-error.json", 502)
 
-        val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
         assertTrue(result.error?.type == CAPTURE_ERROR)
     }
@@ -82,7 +83,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenUnexpectedErrorOccursDuringCaptureThenWCPayServerErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-unexpected-error.json", 500)
 
-        val result = payRestClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
 
         assertTrue(result.error?.type == SERVER_ERROR)
     }
@@ -91,25 +92,25 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenLoadAccountInvalidStatusThenFallbacksToUnknown() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-new-status.json", 200)
 
-        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
-        assertTrue(result.result?.status == WCPayAccountStatusEnum.UNKNOWN)
+        assertTrue(result.result?.status == WCPaymentAccountStatus.UNKNOWN)
     }
 
     @Test
     fun whenLoadAccountEmptyStatusThenFallbackToNoAccount() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-empty-status.json", 200)
 
-        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
-        assertTrue(result.result?.status == WCPayAccountStatusEnum.NO_ACCOUNT)
+        assertTrue(result.result?.status == WCPaymentAccountStatus.NO_ACCOUNT)
     }
 
     @Test
     fun whenOverdueRequirementsThenCurrentDeadlineCorrectlyParsed() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-current-deadline.json", 200)
 
-        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.currentDeadline == 1628258304L)
     }
@@ -118,16 +119,16 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenLoadAccountRestrictedSoonStatusThenRestrictedSoonStatusReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-restricted-soon-status.json", 200)
 
-        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
-        assertTrue(result.result?.status == WCPayAccountStatusEnum.RESTRICTED_SOON)
+        assertTrue(result.result?.status == WCPaymentAccountStatus.RESTRICTED_SOON)
     }
 
     @Test
     fun whenLoadAccountIsLiveThenIsLiveFlagIsTrue() = runBlocking {
         interceptor.respondWithError("wc-pay-load-account-response-is-live-account.json", 200)
 
-        val result = payRestClient.loadAccount(SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result!!.isLive)
     }
@@ -136,7 +137,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-with-url-error.json", 500)
 
-        val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is MissingAddress)
@@ -149,7 +150,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithEmptyUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-with-empty-url-error.json", 500)
 
-        val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
@@ -159,7 +160,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithoutUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-without-url-error.json", 500)
 
-        val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
@@ -169,7 +170,7 @@ class MockedStack_WCPayTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteWithInvalidPostalCodeError() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-invalid-postal-code-error.json", 500)
 
-        val result = payRestClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is InvalidPostalCode)
