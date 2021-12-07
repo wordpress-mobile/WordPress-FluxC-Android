@@ -701,9 +701,9 @@ class WCStatsStore @Inject constructor(
      * If the end date is empty, fetches the date based on the [granularity]
      */
     private fun getEndDateForRevenueStatsGranularity(
-            site: SiteModel,
-            granularity: StatsGranularity,
-            endDate: String?
+        site: SiteModel,
+        granularity: StatsGranularity,
+        endDate: String?
     ): String {
         return if (endDate.isNullOrEmpty()) {
             when (granularity) {
