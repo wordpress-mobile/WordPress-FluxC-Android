@@ -1007,7 +1007,7 @@ class SiteRestClient @Inject constructor(
                     ?.let { TextUtils.join(",", from.zendesk_site_meta.addon) } ?: ""
         }
         // Only set the isWPCom flag for "pure" WPCom sites
-        if (!from.jetpack_connection) {
+        if (!from.jetpack_connection && !site.isJetpackCPConnected) {
             site.setIsWPCom(true)
         }
         site.origin = SiteModel.ORIGIN_WPCOM_REST
