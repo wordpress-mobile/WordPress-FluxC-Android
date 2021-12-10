@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
@@ -219,11 +218,9 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchHasOrders() {
-        nextEvent = TestEvent.FETCHED_HAS_ORDERS
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(FetchHasOrdersPayload(sSite)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+    fun testFetchHasOrders() = runBlocking {
+        val onOrderChanged = orderStore.fetchHasOrders(sSite, status = null)
+        assertTrue(onOrderChanged.rowsAffected != 0)
     }
 
     @Throws(InterruptedException::class)
@@ -277,10 +274,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_ORDERS_COUNT -> {
                 assertEquals(TestEvent.FETCHED_ORDERS_COUNT, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCOrderAction.FETCH_HAS_ORDERS -> {
-                assertEquals(TestEvent.FETCHED_HAS_ORDERS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

@@ -8,15 +8,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_notifications.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.NotificationAction.FETCH_NOTIFICATION
 import org.wordpress.android.fluxc.action.NotificationAction.FETCH_NOTIFICATIONS
-import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_READ
 import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_SEEN
 import org.wordpress.android.fluxc.action.NotificationAction.UPDATE_NOTIFICATION
-import org.wordpress.android.fluxc.example.NotificationTypeSubtypeDialog.Listener
 import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
 import org.wordpress.android.fluxc.generated.NotificationActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
@@ -43,6 +44,8 @@ class NotificationsFragment : Fragment() {
     private var selectedSite: SiteModel? = null
     private var selectedPos: Int = -1
 
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
@@ -68,7 +71,7 @@ class NotificationsFragment : Fragment() {
         }
 
         notifs_by_type_subtype.setOnClickListener {
-            showNotificationTypeSubtypeDialog(object : Listener {
+            showNotificationTypeSubtypeDialog(object : NotificationTypeSubtypeDialog.Listener {
                 override fun onSubmitted(type: String, subtype: String) {
                     prependToLog("Fetching notifications matching $type or $subtype...\n")
                     val notifs = notificationStore.getNotifications(listOf(type), listOf(subtype))
@@ -85,7 +88,7 @@ class NotificationsFragment : Fragment() {
             if (selectedSite == null) {
                 prependToLog("No site selected")
             } else {
-                showNotificationTypeSubtypeDialog(object : Listener {
+                showNotificationTypeSubtypeDialog(object : NotificationTypeSubtypeDialog.Listener {
                     override fun onSubmitted(type: String, subtype: String) {
                         prependToLog("Checking unread notifications matching $type or $subtype...\n")
                         val hasUnread = notificationStore.hasUnreadNotificationsForSite(
@@ -119,8 +122,14 @@ class NotificationsFragment : Fragment() {
             selectedSite?.let { site ->
                 notificationStore.getNotificationsForSite(site).firstOrNull()?.let { note ->
                     prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
-                    dispatcher.dispatch(NotificationActionBuilder
-                            .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
+                    coroutineScope.launch {
+                        val result = notificationStore.markNotificationsRead(MarkNotificationsReadPayload(listOf(note)))
+                        result.changedNotificationLocalIds.forEach {
+                            notificationStore.getNotificationByLocalId(it)?.let { notif ->
+                                prependToLog("SUCCESS! ${notif.toLogString()}")
+                            }
+                        }
+                    }
                 } ?: prependToLog("No notifications found for selected site!")
             } ?: prependToLog("No site selected!")
         }
@@ -131,8 +140,16 @@ class NotificationsFragment : Fragment() {
                 notificationStore.getNotificationsForSite(site).filter { note -> !note.read }
                         .takeIf { list -> list.isNotEmpty() }?.let { notes ->
                             prependToLog("Marking [${notes.size}] unread notifications as read...\n")
-                            dispatcher.dispatch(NotificationActionBuilder
-                                    .newMarkNotificationsReadAction(MarkNotificationsReadPayload(notes)))
+                            coroutineScope.launch {
+                                val result = notificationStore.markNotificationsRead(
+                                        MarkNotificationsReadPayload(notes)
+                                )
+                                result.changedNotificationLocalIds.forEach {
+                                    notificationStore.getNotificationByLocalId(it)?.let { notif ->
+                                        prependToLog("SUCCESS! ${notif.toLogString()}")
+                                    }
+                                }
+                            }
                         } ?: prependToLog("No unread notifications found!\n")
             } ?: prependToLog("No site selected!")
         }
@@ -208,13 +225,6 @@ class NotificationsFragment : Fragment() {
                 val localNoteId = event.changedNotificationLocalIds[0]
                 notificationStore.getNotificationByLocalId(localNoteId)?.let {
                     prependToLog("SUCCESS! ${it.toLogString()}")
-                }
-            }
-            MARK_NOTIFICATIONS_READ -> {
-                event.changedNotificationLocalIds.forEach {
-                    notificationStore.getNotificationByLocalId(it)?.let { notif ->
-                        prependToLog("SUCCESS! ${notif.toLogString()}")
-                    }
                 }
             }
             MARK_NOTIFICATIONS_SEEN -> {

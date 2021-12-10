@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import com.google.gson.JsonArray
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
@@ -69,8 +70,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_SINGLE_PRODUCT,
         FETCHED_PRODUCTS,
         FETCHED_PRODUCT_VARIATIONS,
-        FETCHED_PRODUCT_REVIEWS,
-        FETCHED_SINGLE_PRODUCT_REVIEW,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
         FETCHED_PRODUCT_PASSWORD,
@@ -339,7 +338,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchProductReviews() {
+    fun testFetchProductReviews() = runBlocking {
         /*
          * TEST 1: Fetch product reviews for site
          */
@@ -347,12 +346,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductReviewsAction(FetchProductReviewsPayload(sSite, offset = 0))
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        productStore.fetchProductReviews(FetchProductReviewsPayload(sSite, offset = 0))
 
         // Verify results
         val fetchedReviewsAll = productStore.getProductReviewsForSite(sSite)
@@ -368,14 +362,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductReviewsAction(
-                        FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0)
-                )
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        productStore.fetchProductReviews(FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0))
 
         // Verify results
         val fetchReviewsId = productStore.getProductReviewsForSite(sSite)
@@ -395,14 +382,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductReviewsAction(
-                        FetchProductReviewsPayload(sSite, productIds = productIdsToFetch, offset = 0)
-                )
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        productStore.fetchProductReviews(FetchProductReviewsPayload(sSite, productIds = productIdsToFetch, offset = 0))
 
         // Verify results
         val fetchedReviewsForProduct = productStore.getProductReviewsForSite(sSite)
@@ -439,23 +419,15 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleProductAndUpdateReview() {
+    fun testFetchSingleProductAndUpdateReview() = runBlocking {
         // Remove all product reviews from the database
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT_REVIEW
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchSingleProductReviewAction(
-                        FetchSingleProductReviewPayload(sSite, remoteProductReviewId)
-                )
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        productStore.fetchSingleProductReview(FetchSingleProductReviewPayload(sSite, remoteProductReviewId))
 
         // Verify results
-        val review = productStore
-                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+        val review = productStore.getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
         assertNotNull(review)
 
         // Update review status to spam - should get deleted from db
@@ -531,6 +503,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             assertNotNull(savedReview)
             assertEquals(newStatus, savedReview!!.status)
         }
+        Unit
     }
 
     @Throws(InterruptedException::class)
@@ -861,14 +834,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         lastReviewEvent = event
 
         when (event.causeOfChange) {
-            WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW -> {
-                assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT_REVIEW, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCProductAction.FETCH_PRODUCT_REVIEWS -> {
-                assertEquals(TestEvent.FETCHED_PRODUCT_REVIEWS, nextEvent)
-                mCountDownLatch.countDown()
-            }
             WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS -> {
                 assertEquals(TestEvent.UPDATED_PRODUCT_REVIEW_STATUS, nextEvent)
                 mCountDownLatch.countDown()

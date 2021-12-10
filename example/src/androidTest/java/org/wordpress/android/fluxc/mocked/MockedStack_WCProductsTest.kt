@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.mocked
 
 import com.google.gson.JsonArray
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -22,7 +23,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
@@ -452,15 +452,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchProductReviewsSuccess() {
+    fun testFetchProductReviewsSuccess() = runBlocking {
         interceptor.respondWith("wc-fetch-product-reviews-response-success.json")
-        productRestClient.fetchProductReviews(siteModel, 0)
+        val payload = productRestClient.fetchProductReviews(siteModel, 0)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_PRODUCT_REVIEWS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchProductReviewsResponsePayload
         assertFalse(payload.isError)
         assertEquals(siteModel.id, payload.site.id)
         assertEquals(25, payload.reviews.size)
@@ -478,34 +473,23 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchProductReviewsFailed() {
+    fun testFetchProductReviewsFailed() = runBlocking {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        productRestClient.fetchProductReviews(siteModel, 0)
+        val payload = productRestClient.fetchProductReviews(siteModel, 0)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_PRODUCT_REVIEWS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchProductReviewsResponsePayload
         assertTrue(payload.isError)
         assertEquals(ProductErrorType.GENERIC_ERROR, payload.error.type)
     }
 
     @Test
-    fun testFetchProductReviewByReviewIdSuccess() {
+    fun testFetchProductReviewByReviewIdSuccess() = runBlocking {
         interceptor.respondWith("wc-fetch-product-review-response-success.json")
-        productRestClient.fetchProductReviewById(siteModel, 5499)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT_REVIEW, lastAction!!.type)
+        val result = productRestClient.fetchProductReviewById(siteModel, 5499)
 
         // Verify payload and product review properties
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertFalse(payload.isError)
-        assertEquals(siteModel.id, payload.site.id)
-        payload.productReview?.let {
+        assertFalse(result.isError)
+        assertEquals(siteModel.id, result.site.id)
+        result.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
                 assertEquals("2019-07-09T15:48:07Z", dateCreated)
@@ -519,20 +503,16 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
                 assertEquals(3, reviewerAvatarUrlBySize.size)
             }
         }
+        Unit
     }
 
     @Test
-    fun testFetchProductReviewByReviewIdFailed() {
+    fun testFetchProductReviewByReviewIdFailed() = runBlocking {
         interceptor.respondWithError("wc-product-review-response-failure-invalid-id.json")
-        productRestClient.fetchProductReviewById(siteModel, 5499)
+        val result = productRestClient.fetchProductReviewById(siteModel, 5499)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT_REVIEW, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertTrue(payload.isError)
-        assertEquals(ProductErrorType.INVALID_REVIEW_ID, payload.error.type)
+        assertTrue(result.isError)
+        assertEquals(ProductErrorType.INVALID_REVIEW_ID, result.error.type)
     }
 
     @Test

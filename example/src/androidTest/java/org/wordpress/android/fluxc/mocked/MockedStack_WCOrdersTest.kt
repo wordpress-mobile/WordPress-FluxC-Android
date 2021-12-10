@@ -21,8 +21,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -366,18 +364,35 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testHasAnyOrders() {
+    fun testHasAnyOrders() = runBlocking {
         interceptor.respondWith("wc-has-orders-response-success.json")
-        orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNull(error)
+            assertTrue(hasOrders)
+            assertNull(statusFilter)
+        }
+    }
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+    @Test
+    fun testHasAnyOrdersReturnsFalseWhenThereAreNoOrders() = runBlocking {
+        interceptor.respondWith("wc-has-orders-response-success-no-orders.json")
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNull(error)
+            assertFalse(hasOrders)
+            assertNull(statusFilter)
+        }
+    }
 
-        assertEquals(WCOrderAction.FETCHED_HAS_ORDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchHasOrdersResponsePayload
-        assertNull(payload.error)
-        assertTrue(payload.hasOrders)
-        assertNull(payload.statusFilter)
+    @Test
+    fun testHasAnyOrdersReturnsErrorWhenMissingDataKey() = runBlocking {
+        interceptor.respondWith("wc-has-orders-response-success-missing-data-key.json")
+        val payload = orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+        with(payload) {
+            assertNotNull(error)
+            assertNull(statusFilter)
+        }
     }
 
     @Test
@@ -493,16 +508,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderShipmentProvidersFetchSuccess() {
+    fun testOrderShipmentProvidersFetchSuccess() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-providers-success.json")
-        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNull(payload.error)
         assertEquals(54, payload.providers.size)
 
@@ -520,18 +529,23 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
      * situation and ensures we dispatch an error
      */
     @Test
-    fun testOrderShipmentProvidersFetchFailed() {
+    fun testOrderShipmentProvidersFetchFailed() = runBlocking {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-providers-failed.json")
-        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNotNull(payload.error)
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
+    }
+
+    @Test
+    fun testPostQuickOrder() = runBlocking {
+        interceptor.respondWith("wc-fetch-order-response-success.json")
+        val response = orderRestClient.postQuickOrder(siteModel, "10.00")
+
+        with(response) {
+            assertNull(error)
+            assertNotNull(order)
+        }
     }
 
     @Suppress("unused")

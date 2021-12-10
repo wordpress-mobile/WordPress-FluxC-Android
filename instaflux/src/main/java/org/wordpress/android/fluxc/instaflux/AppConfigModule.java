@@ -35,7 +35,8 @@ public class AppConfigModule {
         String appId = getStringBuildConfigValue("OAUTH_APP_ID");
         String appSecret = getStringBuildConfigValue("OAUTH_APP_SECRET");
         if (TextUtils.isEmpty(appId) || TextUtils.isEmpty(appSecret)) {
-            AppLog.e(T.API, "OAUTH_APP_ID or OAUTH_APP_SECRET is empty, check your gradle.properties");
+            AppLog.e(T.API, "OAUTH_APP_ID or OAUTH_APP_SECRET is empty, check your api.properties");
+            throw new RuntimeException("OAUTH_APP_ID or OAUTH_APP_SECRET is empty, check your api.properties");
         }
         return new AppSecrets(appId, appSecret);
     }

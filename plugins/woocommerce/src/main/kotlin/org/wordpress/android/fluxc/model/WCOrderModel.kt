@@ -1,14 +1,16 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.order.FeeLine
+import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.order.ShippingLine
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
@@ -70,60 +72,6 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
 
     companion object {
         private val gson by lazy { Gson() }
-    }
-
-    class ShippingLine {
-        val id: Long? = null
-        val total: String? = null
-        @SerializedName("total_tax")
-        val totalTax: String? = null
-        @SerializedName("method_id")
-        val methodId: String? = null
-        @SerializedName("method_title")
-        val methodTitle: String? = null
-    }
-
-    /**
-     * Represents a fee line
-     * We are reading only the name and the total, as the tax is already included in the order totalTax
-     */
-    class FeeLine {
-        @SerializedName("name")
-        val name: String? = null
-
-        @SerializedName("total")
-        val total: String? = null
-    }
-
-    class LineItem {
-        val id: Long? = null
-        val name: String? = null
-        @SerializedName("parent_name")
-        val parentName: String? = null
-        @SerializedName("product_id")
-        val productId: Long? = null
-        @SerializedName("variation_id")
-        val variationId: Long? = null
-        val quantity: Float? = null
-        val subtotal: String? = null
-        val total: String? = null // Price x quantity
-        @SerializedName("total_tax")
-        val totalTax: String? = null
-        val sku: String? = null
-        val price: String? = null // The per-item price
-
-        @SerializedName("meta_data")
-        val metaData: List<WCMetaData>? = null
-
-        class Attribute(val key: String?, val value: String?)
-
-        fun getAttributeList(): List<Attribute> {
-            return metaData?.filter {
-                it.displayKey is String && it.displayValue is String
-            }?.map {
-                Attribute(it.displayKey, it.displayValue as String)
-            } ?: emptyList()
-        }
     }
 
     override fun getId() = id

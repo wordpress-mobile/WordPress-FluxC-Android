@@ -1,0 +1,30 @@
+{
+  "posts": {
+    "has_published": true,
+    "draft": [
+      {
+        "id": 708,
+        "title": "",
+        "content": "Draft Content 2",
+        "featured_image": "https:\/\/test.blog\/wp-content\/uploads\/2021\/11\/draft-featured-image-2.jpeg?w=200",
+        "date": "2021-11-02 15:47:42"
+      },
+      {
+        "id": 659,
+        "title": "Draft Title 1",
+        "content": "Draft Content 1",
+        "featured_image": null,
+        "date": "2021-10-27 12:25:57"
+      }
+    ],
+    "scheduled": [
+      {
+        "id": 762,
+        "title": "Scheduled Title 1",
+        "content": "",
+        "featured_image": "https:\/\/test.blog\/wp-content\/uploads\/2021\/11\/scheduled-featured-image-1.jpeg?w=200",
+        "date": "2021-12-26 23:00:33"
+      }
+    ]
+  }
+}
