@@ -6,6 +6,8 @@ import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
@@ -31,16 +33,16 @@ object OrderTestUtils {
         siteId: Int = 6,
         modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderModel {
-        return WCOrderModel().apply {
-            remoteOrderId = remoteId
-            localSiteId = siteId
-            status = orderStatus
-            dateModified = modified
-            dateCreated = "1955-11-05T14:15:00Z"
-            datePaid = "1956-11-05T14:15:00Z"
-            currency = "USD"
+        return WCOrderModel(
+            remoteOrderId = RemoteId(remoteId),
+            localSiteId = LocalId(siteId),
+            status = orderStatus,
+            dateModified = modified,
+            dateCreated = "1955-11-05T14:15:00Z",
+            datePaid = "1956-11-05T14:15:00Z",
+            currency = "USD",
             total = "10.0"
-        }
+        )
     }
 
     fun generateSampleOrderSummary(
@@ -69,9 +71,9 @@ object OrderTestUtils {
         }
     }
 
-    fun generateSampleNote(remoteId: Long, siteId: Int, orderId: Int): WCOrderNoteModel {
+    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Int): WCOrderNoteModel {
         return WCOrderNoteModel().apply {
-            localSiteId = siteId
+            localSiteId = siteId.value
             localOrderId = orderId
             remoteNoteId = remoteId
             dateCreated = "1955-11-05T14:15:00Z"

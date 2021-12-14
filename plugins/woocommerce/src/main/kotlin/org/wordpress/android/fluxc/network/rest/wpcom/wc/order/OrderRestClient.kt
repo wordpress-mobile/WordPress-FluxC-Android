@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION_ERROR")
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
@@ -10,6 +11,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -97,8 +99,8 @@ class OrderRestClient @Inject constructor(
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
-                    val orderModels = response?.map {
-                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    val orderModels = response?.map { orderDto ->
+                        orderResponseToOrderModel(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
@@ -197,8 +199,8 @@ class OrderRestClient @Inject constructor(
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
-                    val orderModels = response?.map {
-                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    val orderModels = response?.map { orderDto ->
+                        orderResponseToOrderModel(orderDto, site.localId()).copy(localSiteId = site.localId())
                     }.orEmpty()
 
                     val payload = FetchOrdersByIdsResponsePayload(
@@ -267,8 +269,8 @@ class OrderRestClient @Inject constructor(
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
-                    val orderModels = response?.map {
-                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    val orderModels = response?.map { orderDto ->
+                        orderResponseToOrderModel(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
@@ -304,14 +306,15 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = orderResponseToOrderModel(it).apply {
-                        localSiteId = site.id
-                    }
+                response.data?.let { orderDto ->
+                    val newModel = orderResponseToOrderModel(orderDto, site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
+                        WCOrderModel(
+                                remoteOrderId = RemoteId(remoteOrderId),
+                                localSiteId = site.localId()
+                        ),
                         site
                 )
             }
@@ -319,7 +322,10 @@ class OrderRestClient @Inject constructor(
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
                         orderError,
-                        WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
+                        WCOrderModel(
+                                remoteOrderId = RemoteId(remoteOrderId),
+                                localSiteId = site.localId()
+                        ),
                         site
                 )
             }
@@ -417,7 +423,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         updatePayload: Map<String, Any>
     ): RemoteOrderPayload {
-        val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId).pathV3
+        val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId.value).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
             restClient = this,
@@ -429,11 +435,10 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = orderResponseToOrderModel(it).apply {
-                        id = orderToUpdate.id
-                        localSiteId = orderToUpdate.localSiteId
-                    }
+                response.data?.let { orderDto ->
+                    val newModel = orderResponseToOrderModel(orderDto, orderToUpdate.localSiteId).copy(
+                            id = orderToUpdate.id
+                    )
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                     OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
@@ -502,13 +507,13 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newModel = orderResponseToOrderModel(it).apply {
-                        localSiteId = site.id
-                    }
+                    val newModel = orderResponseToOrderModel(it, localSiteId = site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        WCOrderModel(),
+                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
+                        // added for successful merge
+                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
                         site
                 )
             }
@@ -516,7 +521,9 @@ class OrderRestClient @Inject constructor(
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
                         orderError,
-                        WCOrderModel(),
+                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
+                        // added for successful merge
+                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
                         site
                 )
             }
@@ -772,7 +779,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         order: WCOrderModel
     ): FetchOrderShipmentProvidersResponsePayload {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.providers.pathV2
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId.value).shipment_trackings.providers.pathV2
         val params = emptyMap<String, String>()
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -850,66 +857,63 @@ class OrderRestClient @Inject constructor(
             message = "Use OrderDto#toDomainModel() instead",
             replaceWith = ReplaceWith("OrderDto.toDomainModel()")
     )
-    private fun orderResponseToOrderModel(response: OrderDto): WCOrderModel {
-        return WCOrderModel().apply {
-            remoteOrderId = response.id ?: 0
-            number = response.number ?: remoteOrderId.toString()
-            status = response.status ?: ""
-            currency = response.currency ?: ""
-            orderKey = response.order_key ?: ""
-            dateCreated = convertDateToUTCString(response.date_created_gmt)
-            dateModified = convertDateToUTCString(response.date_modified_gmt)
-            total = response.total ?: ""
-            totalTax = response.total_tax ?: ""
-            shippingTotal = response.shipping_total ?: ""
-            paymentMethod = response.payment_method ?: ""
-            paymentMethodTitle = response.payment_method_title ?: ""
-            datePaid = response.date_paid_gmt?.let { "${it}Z" } ?: ""
-            pricesIncludeTax = response.prices_include_tax
-
-            customerNote = response.customer_note ?: ""
-
-            discountTotal = response.discount_total ?: ""
-            response.coupon_lines?.let { couponLines ->
-                // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
-                discountCodes = couponLines
-                        .filter { !it.code.isNullOrEmpty() }
-                        .joinToString { it.code!! }
-            }
-
-            response.refunds?.let { refunds ->
-                // Extract the individual refund totals from the refunds list and store their sum as a Double
-                refundTotal = refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
-            }
-
-            billingFirstName = response.billing?.first_name ?: ""
-            billingLastName = response.billing?.last_name ?: ""
-            billingCompany = response.billing?.company ?: ""
-            billingAddress1 = response.billing?.address_1 ?: ""
-            billingAddress2 = response.billing?.address_2 ?: ""
-            billingCity = response.billing?.city ?: ""
-            billingState = response.billing?.state ?: ""
-            billingPostcode = response.billing?.postcode ?: ""
-            billingCountry = response.billing?.country ?: ""
-            billingEmail = response.billing?.email ?: ""
-            billingPhone = response.billing?.phone ?: ""
-
-            shippingFirstName = response.shipping?.first_name ?: ""
-            shippingLastName = response.shipping?.last_name ?: ""
-            shippingCompany = response.shipping?.company ?: ""
-            shippingAddress1 = response.shipping?.address_1 ?: ""
-            shippingAddress2 = response.shipping?.address_2 ?: ""
-            shippingCity = response.shipping?.city ?: ""
-            shippingState = response.shipping?.state ?: ""
-            shippingPostcode = response.shipping?.postcode ?: ""
-            shippingCountry = response.shipping?.country ?: ""
-            shippingPhone = response.shipping?.phone.orEmpty()
-
-            lineItems = response.line_items.toString()
-            shippingLines = response.shipping_lines.toString()
-            feeLines = response.fee_lines.toString()
-            metaData = response.meta_data.toString()
-        }
+    private fun orderResponseToOrderModel(
+        response: OrderDto,
+        localSiteId: LocalId
+    ): WCOrderModel {
+        return WCOrderModel(
+                remoteOrderId = RemoteId(response.id ?: 0),
+                localSiteId = localSiteId,
+                number = response.number ?: (response.id ?: 0).toString(),
+                status = response.status ?: "",
+                currency = response.currency ?: "",
+                orderKey = response.order_key ?: "",
+                dateCreated = convertDateToUTCString(response.date_created_gmt),
+                dateModified = convertDateToUTCString(response.date_modified_gmt),
+                total = response.total ?: "",
+                totalTax = response.total_tax ?: "",
+                shippingTotal = response.shipping_total ?: "",
+                paymentMethod = response.payment_method ?: "",
+                paymentMethodTitle = response.payment_method_title ?: "",
+                datePaid = response.date_paid_gmt?.let { "${it}Z" } ?: "",
+                pricesIncludeTax = response.prices_include_tax,
+                customerNote = response.customer_note ?: "",
+                discountTotal = response.discount_total ?: "",
+                discountCodes = response.coupon_lines?.let { couponLines ->
+                    // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
+                    couponLines
+                            .filter { !it.code.isNullOrEmpty() }
+                            .joinToString { it.code!! }
+                }.orEmpty(),
+                refundTotal = response.refunds?.let { refunds ->
+                    // Extract the individual refund totals from the refunds list and store their sum as a Double,
+                    refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
+                } ?: 0.0,
+                billingFirstName = response.billing?.first_name ?: "",
+                billingLastName = response.billing?.last_name ?: "",
+                billingCompany = response.billing?.company ?: "",
+                billingAddress1 = response.billing?.address_1 ?: "",
+                billingAddress2 = response.billing?.address_2 ?: "",
+                billingCity = response.billing?.city ?: "",
+                billingState = response.billing?.state ?: "",
+                billingPostcode = response.billing?.postcode ?: "",
+                billingCountry = response.billing?.country ?: "",
+                billingEmail = response.billing?.email ?: "",
+                billingPhone = response.billing?.phone ?: "",
+                shippingFirstName = response.shipping?.first_name ?: "",
+                shippingLastName = response.shipping?.last_name ?: "",
+                shippingCompany = response.shipping?.company ?: "",
+                shippingAddress1 = response.shipping?.address_1 ?: "",
+                shippingAddress2 = response.shipping?.address_2 ?: "",
+                shippingCity = response.shipping?.city ?: "",
+                shippingState = response.shipping?.state ?: "",
+                shippingPostcode = response.shipping?.postcode ?: "",
+                shippingCountry = response.shipping?.country ?: "",
+                lineItems = response.line_items.toString(),
+                shippingLines = response.shipping_lines.toString(),
+                feeLines = response.fee_lines.toString(),
+                metaData = response.meta_data.toString()
+        )
     }
 
     private fun orderNoteResponseToOrderNoteModel(response: OrderNoteApiResponse): WCOrderNoteModel {

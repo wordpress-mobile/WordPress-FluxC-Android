@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION_ERROR")
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
@@ -8,6 +9,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.example.BuildConfig
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -42,12 +44,12 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_hasTrackings() = runBlocking {
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
-            localSiteId = sSite.id
-        }
-        orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId, sSite)
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = RemoteId(BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()),
+            localSiteId = sSite.localId()
+        )
+        orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId.value, sSite)
 
         val trackings = orderStore.getShipmentTrackingsForOrder(
                 sSite, orderModel.id
@@ -63,13 +65,13 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_noTrackings() = runBlocking {
-        val orderModel = WCOrderModel().apply {
-            id = 9
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toLong()
-            localSiteId = sSite.id
-        }
+        val orderModel = WCOrderModel(
+            id = 9,
+            remoteOrderId = RemoteId(BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toLong()),
+            localSiteId = sSite.localId()
+        )
 
-        orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId, sSite)
+        orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId.value, sSite)
 
         val trackings = orderStore.getShipmentTrackingsForOrder(
                 sSite, orderModel.id
@@ -88,11 +90,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 1: Add an order shipment tracking for an order
          */
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
-            localSiteId = sSite.id
-        }
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = RemoteId(BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()),
+            localSiteId = sSite.localId()
+        )
 
         val testProvider = "TNT Express (consignment)"
         val testTrackingNumber = TestUtils.randomString(15)
@@ -104,7 +106,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             dateShipped = testDateShipped
         }
         orderStore.addOrderShipmentTracking(AddOrderShipmentTrackingPayload(
-                sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false)
+                sSite, orderModel.id, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = false)
         )
 
         var trackings = orderStore.getShipmentTrackingsForOrder(
@@ -130,7 +132,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
          * TEST 2: Delete the previously added shipment tracking record
          */
         val onOrderChanged = orderStore.deleteOrderShipmentTracking(
-                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)
+                DeleteOrderShipmentTrackingPayload(
+                        sSite, orderModel.id, orderModel.remoteOrderId.value, trackingResult!!
+                )
         )
 
         assertFalse(onOrderChanged.isError)
@@ -151,11 +155,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 1: Add a tracking record using a custom provider
          */
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
-            localSiteId = sSite.id
-        }
+        val orderModel = WCOrderModel(
+            id = 8,
+            remoteOrderId = RemoteId(BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()),
+            localSiteId = sSite.localId()
+        )
 
         val testProvider = "Amanda Test Provider"
         val testTrackingNumber = TestUtils.randomString(15)
@@ -170,7 +174,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         }
         orderStore.addOrderShipmentTracking(
                 AddOrderShipmentTrackingPayload(
-                        sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true
+                        sSite, orderModel.id, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = true
                 )
         )
         var trackings = orderStore.getShipmentTrackingsForOrder(
@@ -197,7 +201,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
          * TEST 2: Delete the previously added shipment tracking record
          */
         val onOrderChanged = orderStore.deleteOrderShipmentTracking(
-                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)
+                DeleteOrderShipmentTrackingPayload(
+                        sSite, orderModel.id, orderModel.remoteOrderId.value, trackingResult!!
+                )
         )
 
         assertFalse(onOrderChanged.isError)
@@ -219,11 +225,11 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentProviders() = runBlocking {
-        val orderModel = WCOrderModel().apply {
-            id = 8
-            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
-            localSiteId = sSite.id
-        }
+        val orderModel = WCOrderModel(
+                id = 8,
+                remoteOrderId = RemoteId(BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()),
+                localSiteId = sSite.localId()
+        )
 
         orderStore.fetchOrderShipmentProviders(FetchOrderShipmentProvidersPayload(sSite, orderModel))
 
