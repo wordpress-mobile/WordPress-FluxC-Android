@@ -96,7 +96,7 @@ class OrderRestClient @Inject constructor(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to ORDER_FIELDS)
+                "_fields" to ORDER_LIST_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
@@ -196,7 +196,7 @@ class OrderRestClient @Inject constructor(
         val params = mapOf(
                 "per_page" to remoteOrderIds.size.toString(),
                 "include" to remoteOrderIds.map { it.value }.joinToString(),
-                "_fields" to ORDER_FIELDS)
+                "_fields" to ORDER_LIST_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
@@ -264,7 +264,7 @@ class OrderRestClient @Inject constructor(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
-                "_fields" to ORDER_FIELDS
+                "_fields" to ORDER_LIST_FIELDS
         ).putIfNotEmpty("search" to searchQuery)
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -1021,6 +1021,23 @@ class OrderRestClient @Inject constructor(
                 "tracking_link",
                 "tracking_number",
                 "tracking_provider"
+        ).joinToString(separator = ",")
+
+        private val ORDER_LIST_FIELDS = arrayOf(
+            "currency",
+            "order_key",
+            "date_created_gmt",
+            "date_modified_gmt",
+            "date_paid_gmt",
+            "discount_total",
+            "fee_lines",
+            "id",
+            "line_items",
+            "number",
+            "prices_include_tax",
+            "status",
+            "total",
+            "total_tax"
         ).joinToString(separator = ",")
     }
 }
