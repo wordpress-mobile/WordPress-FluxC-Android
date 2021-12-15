@@ -42,7 +42,6 @@ include ':fluxc',
         ':fluxc-annotations',
         ':plugins:woocommerce',
         ':example',
-        ':instaflux',
         ':tests:api'
 
 // Build cache is only enabled for CI, at least for now

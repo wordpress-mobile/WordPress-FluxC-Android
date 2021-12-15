@@ -6,9 +6,9 @@ typealias OrderIdentifier = String
 
 data class OrderIdSet(val id: Int, val remoteOrderId: Long, val localSiteId: Int)
 
-@Suppress("FunctionName")
+@Suppress("FunctionName", "DEPRECATION_ERROR")
 fun OrderIdentifier(orderModel: WCOrderModel): OrderIdentifier {
-    return with(orderModel) { "$id-$remoteOrderId-$localSiteId" }
+    return with(orderModel) { "$id-${remoteOrderId.value}-${localSiteId.value}" }
 }
 
 @Suppress("FunctionName")
