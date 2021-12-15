@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.RawConstraints;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -133,6 +134,7 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
 
     @Column private String mActiveModules;
     @Column private boolean mIsPublicizePermanentlyDisabled;
+    @Column private String mActiveJetpackConnectionPlugins;
 
     // Zendesk meta
     @Column private String mZendeskPlan;
@@ -146,6 +148,10 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
     @Override
     public void setId(int id) {
         mId = id;
+    }
+
+    public LocalId localId() {
+        return new LocalOrRemoteId.LocalId(mId);
     }
 
     public SiteModel() {
@@ -744,6 +750,14 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
 
     public void setActiveModules(String activeModules) {
         mActiveModules = activeModules;
+    }
+
+    public String getActiveJetpackConnectionPlugins() {
+        return mActiveJetpackConnectionPlugins;
+    }
+
+    public void setActiveJetpackConnectionPlugins(String activeJetpackConnectionPlugins) {
+        mActiveJetpackConnectionPlugins = activeJetpackConnectionPlugins;
     }
 
     public boolean isActiveModuleEnabled(String moduleName) {

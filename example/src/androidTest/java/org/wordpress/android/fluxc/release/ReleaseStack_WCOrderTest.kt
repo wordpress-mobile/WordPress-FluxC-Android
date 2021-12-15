@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION_ERROR")
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
@@ -17,11 +18,11 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Success
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
@@ -48,11 +49,13 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var orderStore: WCOrderStore
 
     private var nextEvent: TestEvent = TestEvent.NONE
-    private val orderModel = WCOrderModel(8).apply {
-        remoteOrderId = 1125
-        number = "1125"
-        dateCreated = "2018-04-20T15:45:14Z"
-    }
+    private val orderModel = WCOrderModel(
+            id = 8,
+            localSiteId = sSite.localId(),
+            remoteOrderId = RemoteId(1125),
+            number = "1125",
+            dateCreated = "2018-04-20T15:45:14Z"
+    )
     private var lastEvent: OnOrderChanged? = null
     private val orderSearchQuery = "bogus query"
 
@@ -147,7 +150,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         this.lastEvent?.let {
-            assertTrue(it.rowsAffected > 0)
             assertEquals(it.statusFilter, statusFilter)
         } ?: fail()
     }
@@ -168,14 +170,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchSingleOrder() = runBlocking {
-        orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId)
+        orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId.value)
 
         val orderFromDb = orderStore.getOrderByIdentifier(
                 OrderIdentifier(
-                        WCOrderModel().apply {
-                            remoteOrderId = orderModel.remoteOrderId
-                            localSiteId = sSite.id
-                        })
+                        WCOrderModel(
+                            remoteOrderId = orderModel.remoteOrderId,
+                            localSiteId = sSite.localId()
+                        )
+                )
         )
         assertTrue(orderFromDb != null && orderFromDb.remoteOrderId == orderModel.remoteOrderId)
     }
@@ -191,7 +194,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        orderStore.fetchOrderNotes(firstOrder.id, firstOrder.remoteOrderId, sSite)
+        orderStore.fetchOrderNotes(firstOrder.id, firstOrder.remoteOrderId.value, sSite)
 
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.id)
@@ -207,11 +210,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             note = "Test rest note"
             isCustomerNote = true
         }
-        val onOrderChanged = orderStore.postOrderNote(
-                PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId, sSite, originalNote)
+        orderStore.postOrderNote(
+                PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId.value, sSite, originalNote)
         )
 
-        assertTrue(onOrderChanged.rowsAffected != 0)
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.id)
         assertTrue(fetchedNotes.isNotEmpty())
@@ -219,11 +221,9 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchHasOrders() {
-        nextEvent = TestEvent.FETCHED_HAS_ORDERS
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(FetchHasOrdersPayload(sSite)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+    fun testFetchHasOrders() = runBlocking {
+        val result = orderStore.fetchHasOrders(sSite, status = null)
+        assertTrue((result as Success).hasOrders)
     }
 
     @Throws(InterruptedException::class)
@@ -232,8 +232,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_ORDER_STATUS_OPTIONS
         mCountDownLatch = CountDownLatch(1)
 
-        mDispatcher.dispatch(WCOrderActionBuilder
-                .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite)))
+        mDispatcher.dispatch(
+                WCOrderActionBuilder
+                        .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         val orderStatusOptions = orderStore.getOrderStatusOptionsForSite(sSite)
@@ -247,7 +249,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() = runBlocking {
-        val result = orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId, sSite)
+        val result = orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId.value, sSite)
         assertTrue(result.isError)
         assertEquals(OrderErrorType.PLUGIN_NOT_ACTIVE, result.error.type)
         val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
@@ -277,10 +279,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_ORDERS_COUNT -> {
                 assertEquals(TestEvent.FETCHED_ORDERS_COUNT, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCOrderAction.FETCH_HAS_ORDERS -> {
-                assertEquals(TestEvent.FETCHED_HAS_ORDERS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

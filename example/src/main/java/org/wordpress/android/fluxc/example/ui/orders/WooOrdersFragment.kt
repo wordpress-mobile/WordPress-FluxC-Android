@@ -5,15 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_woo_orders.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.example.R.layout
@@ -22,25 +23,33 @@ import org.wordpress.android.fluxc.example.WCOrderListActivity
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.BILLING
+import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.SHIPPING
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.order.CreateOrderRequest
+import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
+import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.OrderUpdateStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Failure
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Success
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
-import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
@@ -48,6 +57,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject lateinit var dispatcher: Dispatcher
@@ -136,8 +146,16 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         fetch_has_orders.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchHasOrdersPayload(it)
-                dispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(payload))
+                coroutineScope.launch {
+                    when (val result = wcOrderStore.fetchHasOrders(it, null)) {
+                        is Failure -> {
+                            prependToLog("Fetching hasOrders failed.")
+                        }
+                        is Success -> {
+                            prependToLog("Has orders: ${result.hasOrders}")
+                        }
+                    }
+                }
             }
         }
 
@@ -177,22 +195,30 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         fetch_order_status_options.setOnClickListener {
             selectedSite?.let { site ->
-                dispatcher.dispatch(WCOrderActionBuilder
-                        .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(site)))
+                dispatcher.dispatch(
+                        WCOrderActionBuilder
+                                .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(site))
+                )
             }
         }
 
         fetch_order_notes.setOnClickListener {
             selectedSite?.let { site ->
                 getFirstWCOrder()?.let { order ->
+                    @Suppress("DEPRECATION_ERROR")
+                    val notesCountBeforeRequest = wcOrderStore.getOrderNotesForOrder(order.id).size
                     coroutineScope.launch {
-                        wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId, site).takeUnless { it.isError }
-                            ?.let {
-                                prependToLog(
-                                    "Fetched order(${order.remoteOrderId}) notes. " +
-                                        "${it.rowsAffected} notes inserted into database."
-                                )
-                            } ?: prependToLog("Fetching notes failed.")
+                        @Suppress("DEPRECATION_ERROR")
+                        wcOrderStore.fetchOrderNotes(order.id, order.remoteOrderId.value, site)
+                                .takeUnless { it.isError }
+                                ?.let {
+                                    val notesCountAfterRequest = wcOrderStore.getOrderNotesForOrder(order.id).size
+                                    prependToLog(
+                                            "Fetched order(${order.remoteOrderId}) notes. " +
+                                                    "${notesCountAfterRequest - notesCountBeforeRequest} " +
+                                                    "notes inserted into database."
+                                    )
+                                } ?: prependToLog("Fetching notes failed.")
                     }
                 }
             }
@@ -206,7 +232,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             note = editText.text.toString()
                         }
                         coroutineScope.launch {
-                            val payload = PostOrderNotePayload(order.id, order.remoteOrderId, site, newNote)
+                            @Suppress("DEPRECATION_ERROR")
+                            val payload = PostOrderNotePayload(order.id, order.remoteOrderId.value, site, newNote)
                             val onOrderChanged = wcOrderStore.postOrderNote(payload)
                             if (!onOrderChanged.isError) {
                                 prependToLog(
@@ -229,14 +256,18 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
                         coroutineScope.launch {
-                            wcOrderStore.updateOrderStatus(LocalId(order.id), site, status)
+                            wcOrderStore.updateOrderStatus(order.remoteOrderId, site, WCOrderStatusModel(status))
                                     .collect {
                                         if (it.event.isError) {
-                                            prependToLog("FAILED: Update order status for ${order.remoteOrderId} " +
-                                                    "to $status - ${it::class.simpleName}")
+                                            prependToLog(
+                                                    "FAILED: Update order status for ${order.remoteOrderId} " +
+                                                            "to $status - ${it::class.simpleName}"
+                                            )
                                         } else {
-                                            prependToLog("Updated order status for ${order.remoteOrderId} " +
-                                                    "to $status - ${it::class.simpleName}")
+                                            prependToLog(
+                                                    "Updated order status for ${order.remoteOrderId} " +
+                                                            "to $status - ${it::class.simpleName}"
+                                            )
                                         }
                                     }
                         }
@@ -252,7 +283,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         val status = editText.text.toString()
                         coroutineScope.launch {
                             orderUpdateStore.updateCustomerOrderNote(
-                                    LocalId(order.id),
+                                    order.remoteOrderId,
                                     site,
                                     status
                             ).collect {
@@ -271,13 +302,23 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         "Enter the remoteOrderId to fetch shipment trackings:"
                 ) { editText ->
                     editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
+                        @Suppress("DEPRECATION_ERROR")
+                        val localOrderId = wcOrderStore.getOrderByIdentifier(
+                                OrderIdentifier(site.id, remoteOrderId)
+                        )!!.id
+                        val trackingsCountBeforeRequest =
+                                OrderSqlUtils.getShipmentTrackingsForOrder(site, localOrderId).size
                         wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
-                            prependToLog("Submitting request to fetch shipment trackings for " +
-                                    "remoteOrderId: ${order.remoteOrderId}"
+                            prependToLog(
+                                    "Submitting request to fetch shipment trackings for " +
+                                            "remoteOrderId: ${order.remoteOrderId}"
                             )
                             coroutineScope.launch {
                                 val result = wcOrderStore
-                                        .fetchOrderShipmentTrackings(order.id, order.remoteOrderId, site)
+                                        .fetchOrderShipmentTrackings(
+                                                @Suppress("DEPRECATION_ERROR")
+                                                order.id, order.remoteOrderId.value, site
+                                        )
 
                                 result.takeUnless { it.isError }?.let {
                                     prependToLog("ShipmentTrackings fetched successfuly")
@@ -287,9 +328,15 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                 trackings.forEach { tracking ->
                                     prependToLog("- shipped:${tracking.dateShipped}: ${tracking.trackingNumber}")
                                 }
-                                prependToLog("[${trackings.size}] shipment trackings retrieved for " +
-                                        "remoteOrderId: ${order.remoteOrderId}, and [${result.rowsAffected}] rows " +
-                                        "changed in the db:")
+                                val trackingsCountAfterRequest =
+                                        OrderSqlUtils.getShipmentTrackingsForOrder(site, localOrderId).size
+
+                                prependToLog(
+                                        "[${trackings.size}] shipment trackings retrieved for " +
+                                                "remoteOrderId: ${order.remoteOrderId}, and " +
+                                                "[${trackingsCountAfterRequest - trackingsCountBeforeRequest}] rows " +
+                                                "changed in the db:"
+                                )
                             }
                         } ?: prependToLog(
                                 "No order found in the db for remoteOrderId: $remoteOrderId, " +
@@ -307,8 +354,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     if (providers.isNullOrEmpty()) {
                         // Fetch providers for order
                         pendingOpenAddShipmentTracking = true
-                        val payload = FetchOrderShipmentProvidersPayload(site, order)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                        fetchOrderShipmentProviders(site, order)
                     } else {
                         val providerNames = mutableListOf<String>()
                         providers.forEach { providerNames.add(it.carrierName) }
@@ -326,27 +372,33 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 ) { editText ->
                     editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
                         wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
-                            prependToLog("Submitting request to fetch shipment trackings for " +
-                                    "remoteOrderId: ${order.remoteOrderId}")
+                            prependToLog(
+                                    "Submitting request to fetch shipment trackings for " +
+                                            "remoteOrderId: ${order.remoteOrderId}"
+                            )
 
+                            @Suppress("DEPRECATION_ERROR")
                             wcOrderStore.getShipmentTrackingsForOrder(site, order.id).firstOrNull()?.let { tracking ->
                                 coroutineScope.launch {
                                     val onOrderChanged = wcOrderStore.deleteOrderShipmentTracking(
                                             DeleteOrderShipmentTrackingPayload(
-                                                    site, order.id, order.remoteOrderId, tracking
+                                                    site, order.id, order.remoteOrderId.value, tracking
                                             )
                                     )
                                     onOrderChanged.takeUnless { it.isError }?.let {
                                         prependToLog(
-                                                "Shipment tracking deleted successfully! " +
-                                                        "[${onOrderChanged.rowsAffected}] db rows affected."
+                                                "Shipment tracking deleted successfully! "
                                         )
                                     } ?: prependToLog("Shipment tracking deletion FAILED!")
                                 }
-                            } ?: prependToLog("No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
-                                    "please fetch records first for this order")
-                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
-                                "please fetch orders first.")
+                            } ?: prependToLog(
+                                    "No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
+                                            "please fetch records first for this order"
+                            )
+                        } ?: prependToLog(
+                                "No order found in the db for remoteOrderId: $remoteOrderId, " +
+                                        "please fetch orders first."
+                        )
                     }
                 }
             }
@@ -358,9 +410,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 // a list of providers, even though the providers are not order specific.
                 getFirstWCOrder()?.let { order ->
                     prependToLog("Fetching a list of providers from the API")
-
-                    val payload = FetchOrderShipmentProvidersPayload(site, order)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                    fetchOrderShipmentProviders(site, order)
                 } ?: prependToLog("No orders found in db to use as seed. Fetch orders first.")
             }
         }
@@ -368,7 +418,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         update_latest_order_billing_address.setOnClickListener {
             selectedSite?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    replaceFragment(AddressEditDialogFragment.newInstance(order))
+                    replaceFragment(AddressEditDialogFragment.newInstanceForEditing(order))
                 } ?: showNoOrdersToast(site)
             }
         }
@@ -395,6 +445,75 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 }
             }
         }
+
+        create_order.setOnClickListener {
+            selectedSite?.let { site ->
+                lifecycleScope.launch {
+                    val products = showSingleLineDialog(
+                            activity = requireActivity(),
+                            message = "Please type a comma separated list of product IDs",
+                            isNumeric = false
+                    )?.split(",")?.map { it.toLongOrNull() }
+
+                    if (products == null || products.any { it == null }) {
+                        prependToLog("Error while parsing the entered product IDs")
+                        return@launch
+                    }
+
+                    val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
+                    val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
+
+                    val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
+
+                    val result = wcOrderStore.createOrder(
+                            site,
+                            CreateOrderRequest(
+                                    status = status,
+                                    lineItems = products.map {
+                                        LineItem(productId = it, quantity = 1f)
+                                    },
+                                    shippingAddress = shippingAddress,
+                                    billingAddress = billingAddress
+                            )
+                    )
+                    if (result.isError) {
+                        prependToLog("Order creation failed, error ${result.error.type}")
+                    } else {
+                        prependToLog("Created order with id ${result.model!!.remoteOrderId}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun fetchOrderShipmentProviders(
+        site: SiteModel,
+        order: WCOrderModel
+    ) {
+        coroutineScope.launch {
+            val payload = FetchOrderShipmentProvidersPayload(site, order)
+            val response = wcOrderStore.fetchOrderShipmentProviders(payload)
+            if (response.isError) {
+                prependToLog("Error fetching shipment providers - error: " + response.error.type)
+            } else {
+                selectedSite?.let { site ->
+                    if (pendingOpenAddShipmentTracking) {
+                        pendingOpenAddShipmentTracking = false
+                        getFirstWCOrder()?.let { order ->
+                            val providers = mutableListOf<String>()
+                            wcOrderStore.getShipmentProvidersForSite(site)
+                                    .forEach { providers.add(it.carrierName) }
+                            showAddTrackingDialog(site, order, providers)
+                        }
+                    } else {
+                        wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
+                            prependToLog(" - ${provider.carrierName}")
+                        }
+                        prependToLog("[${response.rowsAffected}] shipment providers fetched successfully!")
+                    }
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -409,30 +528,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOrderShipmentProviderChanged(event: OnOrderShipmentProvidersChanged) {
-        if (event.isError) {
-            prependToLog("Error fetching shipment providers - error: " + event.error.type)
-        } else {
-            selectedSite?.let { site ->
-                if (pendingOpenAddShipmentTracking) {
-                    pendingOpenAddShipmentTracking = false
-                    getFirstWCOrder()?.let { order ->
-                        val providers = mutableListOf<String>()
-                        wcOrderStore.getShipmentProvidersForSite(site).forEach { providers.add(it.carrierName) }
-                        showAddTrackingDialog(site, order, providers)
-                    }
-                } else {
-                    wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
-                        prependToLog(" - ${provider.carrierName}")
-                    }
-                    prependToLog("[${event.rowsAffected}] shipment providers fetched successfully!")
-                }
-            }
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         if (event.isError) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
@@ -441,10 +536,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
         selectedSite?.let { site ->
             wcOrderStore.getOrdersForSite(site).let { orderList ->
-                // We check if the rowsAffected value is zero because not all events will causes data to be
-                // saved to the orders table (such as the FETCH-ORDERS-COUNT...so the orderList would always
-                // be empty even if there were orders available.
-                if (orderList.isEmpty() && event.rowsAffected == 0) {
+                if (orderList.isEmpty()) {
                     prependToLog("No orders were stored for site " + site.name + " =(")
                     return
                 }
@@ -467,7 +559,6 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             val completedOrders = wcOrderStore.getOrdersForSite(site, "completed")
                             prependToLog("Fetched ${completedOrders.size} completed orders from ${site.name}")
                         } else {
-                            prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
                             prependToLog("printing the first 5 remoteOrderId's from result:")
                             val orders = wcOrderStore.getOrdersForSite(site)
                             orders.take(5).forEach { prependToLog("- remoteOrderId [${it.remoteOrderId}]") }
@@ -475,13 +566,15 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     }
                     FETCH_ORDERS_COUNT -> {
                         val append = if (event.canLoadMore) "+" else ""
-                        event.statusFilter?.let {
-                            prependToLog("Count of $it orders: ${event.rowsAffected}$append")
-                        } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
-                    }
-                    FETCH_HAS_ORDERS -> {
-                        val hasOrders = event.rowsAffected > 0
-                        prependToLog("Store has orders: $hasOrders")
+
+                        val statusFilter = event.statusFilter
+                        if (statusFilter != null) {
+                            val ordersCount = wcOrderStore.getOrdersForSite(site, statusFilter).count()
+                            prependToLog("Count of ${event.statusFilter} orders: $ordersCount$append")
+                        } else {
+                            val ordersCount = wcOrderStore.getOrdersForSite(site).count()
+                            prependToLog("Count of all orders: $ordersCount$append")
+                        }
                     }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
@@ -510,8 +603,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         val orderStatusOptions = selectedSite?.let {
             wcOrderStore.getOrderStatusOptionsForSite(it)
         }?.map { it.label to it.statusCount }?.toMap()
-        prependToLog("Fetched order status options from the api: $orderStatusOptions " +
-                "- updated ${event.rowsAffected} in the db")
+        prependToLog(
+                "Fetched order status options from the api: $orderStatusOptions " +
+                        "- updated ${event.rowsAffected} in the db"
+        )
     }
 
     private fun getFirstWCOrder() = selectedSite?.let {
@@ -528,7 +623,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     this,
                     site,
                     order,
-                    providers)
+                    providers
+            )
             dialog.show(fm, "WCAddOrderShipmentTrackingDialog")
         }
     }
@@ -541,16 +637,18 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     ) {
         coroutineScope.launch {
             val onOrderChanged = wcOrderStore.addOrderShipmentTracking(
+                    @Suppress("DEPRECATION_ERROR")
                     AddOrderShipmentTrackingPayload(
                             site,
                             order.id,
-                            order.remoteOrderId,
+                            order.remoteOrderId.value,
                             tracking,
                             isCustomProvider
                     )
             )
             if (!onOrderChanged.isError) {
                 getFirstWCOrder()?.let { order ->
+                    @Suppress("DEPRECATION_ERROR")
                     val trackingCount = wcOrderStore.getShipmentTrackingsForOrder(site, order.id).size
                     prependToLog(
                             "Shipment tracking added successfully to remoteOrderId [${order.remoteOrderId}]! " +
@@ -560,6 +658,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             } else {
                 prependToLog("Adding shipment tracking for remoteOrderId [${order.remoteOrderId}] FAILED!")
             }
+        }
+    }
+
+    private suspend fun showAddressDialog(addressType: AddressType): OrderAddress? {
+        return suspendCancellableCoroutine { continuation ->
+            replaceFragment(AddressEditDialogFragment.newInstanceForCreation(addressType) {
+                continuation.resume(it)
+            })
         }
     }
 }

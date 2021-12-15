@@ -3,12 +3,8 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload;
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload;
@@ -35,14 +31,10 @@ public enum WCOrderAction implements IAction {
     @Action(payloadType = UpdateOrderStatusPayload.class)
     @Deprecated // Use suspendable WCOrderStore.updateOrderStatus(..) directly.
     UPDATE_ORDER_STATUS,
-    @Action(payloadType = FetchHasOrdersPayload.class)
-    FETCH_HAS_ORDERS,
     @Action(payloadType = SearchOrdersPayload.class)
     SEARCH_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsPayload.class)
     FETCH_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = FetchOrderShipmentProvidersPayload.class)
-    FETCH_ORDER_SHIPMENT_PROVIDERS,
 
     // Remote responses
     @Action(payloadType = FetchOrdersResponsePayload.class)
@@ -53,12 +45,8 @@ public enum WCOrderAction implements IAction {
     FETCHED_ORDERS_BY_IDS,
     @Action(payloadType = FetchOrdersCountResponsePayload.class)
     FETCHED_ORDERS_COUNT,
-    @Action(payloadType = FetchHasOrdersResponsePayload.class)
-    FETCHED_HAS_ORDERS,
     @Action(payloadType = SearchOrdersResponsePayload.class)
     SEARCHED_ORDERS,
     @Action(payloadType = FetchOrderStatusOptionsResponsePayload.class)
     FETCHED_ORDER_STATUS_OPTIONS,
-    @Action(payloadType = FetchOrderShipmentProvidersResponsePayload.class)
-    FETCHED_ORDER_SHIPMENT_PROVIDERS
 }

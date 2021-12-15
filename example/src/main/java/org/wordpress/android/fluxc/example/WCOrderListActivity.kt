@@ -253,7 +253,7 @@ private class WCOrderListItemDataSource(
                     LoadingItem(remoteOrderId)
                 } else {
                     WCOrderListUIItem(
-                            remoteOrderId = RemoteId(order.remoteOrderId),
+                            remoteOrderId = order.remoteOrderId,
                             orderNumber = order.number,
                             status = order.status,
                             orderName = "${order.billingFirstName} ${order.billingLastName}",

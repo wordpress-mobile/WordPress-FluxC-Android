@@ -476,7 +476,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                                             coroutineScope.launch {
                                                 val result = wcShippingLabelStore.getShippingRates(
                                                         site,
-                                                        order.remoteOrderId,
+                                                        order.remoteOrderId.value,
                                                         origin,
                                                         destination,
                                                         listOf(box),
@@ -581,7 +581,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
 
                     val ratesResult = wcShippingLabelStore.getShippingRates(
                             site,
-                            order.remoteOrderId,
+                            order.remoteOrderId.value,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(box),
@@ -619,7 +619,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                     prependToLog("Purchasing label")
                     val result = wcShippingLabelStore.purchaseShippingLabels(
                             site,
-                            order.remoteOrderId,
+                            order.remoteOrderId.value,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(packageData),
