@@ -1029,12 +1029,8 @@ class OrderRestClient @Inject constructor(
             "date_created_gmt",
             "date_modified_gmt",
             "date_paid_gmt",
-            "discount_total",
-            "fee_lines",
             "id",
-            "line_items",
             "number",
-            "prices_include_tax",
             "status",
             "total",
             "total_tax"
