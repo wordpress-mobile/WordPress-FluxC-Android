@@ -1024,6 +1024,7 @@ class OrderRestClient @Inject constructor(
         ).joinToString(separator = ",")
 
         private val ORDER_LIST_FIELDS = arrayOf(
+            "billing",
             "currency",
             "order_key",
             "date_created_gmt",
