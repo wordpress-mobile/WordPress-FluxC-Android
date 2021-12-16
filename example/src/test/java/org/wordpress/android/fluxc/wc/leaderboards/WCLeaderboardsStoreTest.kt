@@ -67,7 +67,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), any()))
+        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), eq(null)))
             .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
@@ -80,7 +80,7 @@ class WCLeaderboardsStoreTest {
         createStoreUnderTest()
         val response = generateSampleLeaderboardsApiResponse()
 
-        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), any()))
+        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), eq(null)))
             .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
@@ -92,7 +92,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), any()))
+        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), eq(null)))
             .thenReturn(WooPayload(response))
 
         whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(stubbedTopPerformersList)
@@ -108,7 +108,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), any()))
+        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), eq(null)))
             .thenReturn(WooPayload(response))
 
         whenever(
@@ -131,7 +131,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), any()))
+        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), eq(null)))
             .thenReturn(WooPayload(response))
 
         whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(duplicatedTopPerformersList)
