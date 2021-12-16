@@ -52,7 +52,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch product leaderboards with empty result should return WooError`() = test {
-        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), null))
+        whenever(restClient.fetchLeaderboards(eq(stubSite), eq(DAYS), any(), any(), eq(null)))
             .thenReturn(WooPayload(emptyArray()))
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)

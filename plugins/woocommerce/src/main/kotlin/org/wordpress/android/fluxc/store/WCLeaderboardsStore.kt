@@ -72,7 +72,7 @@ class WCLeaderboardsStore @Inject constructor(
     ): WooResult<List<LeaderboardsApiResponse>> =
         with(restClient.fetchLeaderboards(site, unit, startDate, endDate, quantity)) {
             return when {
-                isError && error != null -> WooResult(error)
+                isError -> WooResult(error)
                 result != null -> WooResult(result.toList())
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
