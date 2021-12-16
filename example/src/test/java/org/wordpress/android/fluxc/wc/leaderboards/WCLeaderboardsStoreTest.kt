@@ -57,7 +57,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch product leaderboards with empty result should return WooError`() = test {
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, any(), any(), any()))
             .thenReturn(WooPayload(emptyArray()))
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
@@ -72,7 +72,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, any(), any(), any()))
             .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
@@ -85,7 +85,7 @@ class WCLeaderboardsStoreTest {
         createStoreUnderTest()
         val response = generateSampleLeaderboardsApiResponse()
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, any(), any(), any()))
             .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
@@ -97,7 +97,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, any(), any(), any()))
             .thenReturn(WooPayload(response))
 
         whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(stubbedTopPerformersList)
@@ -113,7 +113,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, any(), any(), any()))
             .thenReturn(WooPayload(response))
 
         whenever(
@@ -136,7 +136,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, any(), any(), any()))
             .thenReturn(WooPayload(response))
 
         whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(duplicatedTopPerformersList)
