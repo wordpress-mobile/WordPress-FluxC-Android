@@ -48,14 +48,14 @@ class LeaderboardsRestClientTest {
         val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
 
-        val response = restClientUnderTest.fetchLeaderboards(stubSite, DAYS, 1L..22L, 5)
+        val response = restClientUnderTest.fetchLeaderboards(stubSite, DAYS, "10-10-2022", "22-10-2022", 5)
         verify(requestBuilder, times(1)).syncGetRequest(
                 restClientUnderTest,
                 stubSite,
                 WOOCOMMERCE.leaderboards.pathV4Analytics,
                 mapOf(
-                        "before" to "22",
-                        "after" to "1",
+                        "before" to "22-10-2022",
+                        "after" to "10-10-2022",
                         "per_page" to "5",
                         "interval" to "day"
                 ),
@@ -73,7 +73,8 @@ class LeaderboardsRestClientTest {
         val response = restClientUnderTest.fetchLeaderboards(
                 stubSite,
                 DAYS,
-                1L..22L,
+                "10-10-2022",
+                "22-10-2022",
                 5
         )
 
@@ -91,8 +92,8 @@ class LeaderboardsRestClientTest {
                         stubSite,
                         WOOCOMMERCE.leaderboards.pathV4Analytics,
                         mapOf(
-                                "after" to "1",
-                                "before" to "22",
+                                "after" to "10-1-2022",
+                                "before" to "22-10-2022",
                                 "per_page" to "5",
                                 "interval" to "day"
                         ),
@@ -109,8 +110,8 @@ class LeaderboardsRestClientTest {
                         stubSite,
                         WOOCOMMERCE.leaderboards.pathV4Analytics,
                         mapOf(
-                                "after" to "1",
-                                "before" to "22",
+                                "after" to "10-1-2022",
+                                "before" to "22-10-2022",
                                 "per_page" to "5",
                                 "interval" to "day"
                         ),
