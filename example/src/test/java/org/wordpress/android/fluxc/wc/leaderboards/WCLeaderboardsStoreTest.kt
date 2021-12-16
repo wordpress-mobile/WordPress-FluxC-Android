@@ -45,9 +45,9 @@ class WCLeaderboardsStoreTest {
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
-                appContext,
-                listOf(SiteModel::class.java, WCTopPerformerProductModel::class.java, WCProductModel::class.java),
-                WellSqlConfig.ADDON_WOOCOMMERCE
+            appContext,
+            listOf(SiteModel::class.java, WCTopPerformerProductModel::class.java, WCProductModel::class.java),
+            WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
         config.reset()
@@ -58,7 +58,7 @@ class WCLeaderboardsStoreTest {
     @Test
     fun `fetch product leaderboards with empty result should return WooError`() = test {
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
-                .thenReturn(WooPayload(emptyArray()))
+            .thenReturn(WooPayload(emptyArray()))
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNull()
@@ -73,7 +73,7 @@ class WCLeaderboardsStoreTest {
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
-                .thenReturn(WooPayload(response))
+            .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
         verify(mapper).map(filteredResponse!!, stubSite, productStore, DAYS)
@@ -86,7 +86,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
-                .thenReturn(WooPayload(response))
+            .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
         verify(mapper, times(1)).map(any(), any(), any(), any())
@@ -98,7 +98,7 @@ class WCLeaderboardsStoreTest {
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
-                .thenReturn(WooPayload(response))
+            .thenReturn(WooPayload(response))
 
         whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(stubbedTopPerformersList)
 
@@ -114,14 +114,17 @@ class WCLeaderboardsStoreTest {
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
-                .thenReturn(WooPayload(response))
+            .thenReturn(WooPayload(response))
 
-        whenever(mapper.map(
+        whenever(
+            mapper.map(
                 filteredResponse!!,
                 SiteModel().apply { id = 100 },
                 productStore,
-                DAYS))
-                .thenReturn(stubbedTopPerformersList)
+                DAYS
+            )
+        )
+            .thenReturn(stubbedTopPerformersList)
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNull()
@@ -134,7 +137,7 @@ class WCLeaderboardsStoreTest {
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, null))
-                .thenReturn(WooPayload(response))
+            .thenReturn(WooPayload(response))
 
         whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(duplicatedTopPerformersList)
 
@@ -152,10 +155,10 @@ class WCLeaderboardsStoreTest {
     }
 
     private fun createStoreUnderTest() =
-            WCLeaderboardsStore(
-                    restClient,
-                    productStore,
-                    mapper,
-                    initCoroutineEngine()
-            ).apply { storeUnderTest = this }
+        WCLeaderboardsStore(
+            restClient,
+            productStore,
+            mapper,
+            initCoroutineEngine()
+        ).apply { storeUnderTest = this }
 }

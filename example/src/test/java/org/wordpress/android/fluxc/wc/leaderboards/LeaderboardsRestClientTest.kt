@@ -34,12 +34,12 @@ class LeaderboardsRestClientTest {
         jetpackSuccessResponse = mock()
         jetpackErrorResponse = mock()
         restClientUnderTest = LeaderboardsRestClient(
-                mock(),
-                mock(),
-                mock(),
-                mock(),
-                mock(),
-                requestBuilder
+            mock(),
+            mock(),
+            mock(),
+            mock(),
+            mock(),
+            requestBuilder
         )
     }
 
@@ -50,16 +50,16 @@ class LeaderboardsRestClientTest {
 
         val response = restClientUnderTest.fetchLeaderboards(stubSite, DAYS, "10-10-2022", "22-10-2022", 5)
         verify(requestBuilder, times(1)).syncGetRequest(
-                restClientUnderTest,
-                stubSite,
-                WOOCOMMERCE.leaderboards.pathV4Analytics,
-                mapOf(
-                        "before" to "22-10-2022",
-                        "after" to "10-10-2022",
-                        "per_page" to "5",
-                        "interval" to "day"
-                ),
-                Array<LeaderboardsApiResponse>::class.java
+            restClientUnderTest,
+            stubSite,
+            WOOCOMMERCE.leaderboards.pathV4Analytics,
+            mapOf(
+                "before" to "22-10-2022",
+                "after" to "10-10-2022",
+                "per_page" to "5",
+                "interval" to "day"
+            ),
+            Array<LeaderboardsApiResponse>::class.java
         )
         assertThat(response).isNotNull
         assertThat(response.result).isNotNull
@@ -71,11 +71,11 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should correctly return failure as WooError`() = test {
         configureErrorRequest()
         val response = restClientUnderTest.fetchLeaderboards(
-                stubSite,
-                DAYS,
-                "10-10-2022",
-                "22-10-2022",
-                5
+            stubSite,
+            DAYS,
+            "10-10-2022",
+            "22-10-2022",
+            5
         )
 
         assertThat(response).isNotNull
@@ -87,36 +87,36 @@ class LeaderboardsRestClientTest {
     private suspend fun configureSuccessRequest(expectedResult: Array<LeaderboardsApiResponse>) {
         whenever(jetpackSuccessResponse.data).thenReturn(expectedResult)
         whenever(
-                requestBuilder.syncGetRequest(
-                        restClientUnderTest,
-                        stubSite,
-                        WOOCOMMERCE.leaderboards.pathV4Analytics,
-                        mapOf(
-                                "after" to "10-1-2022",
-                                "before" to "22-10-2022",
-                                "per_page" to "5",
-                                "interval" to "day"
-                        ),
-                        Array<LeaderboardsApiResponse>::class.java
-                )
+            requestBuilder.syncGetRequest(
+                restClientUnderTest,
+                stubSite,
+                WOOCOMMERCE.leaderboards.pathV4Analytics,
+                mapOf(
+                    "after" to "10-10-2022",
+                    "before" to "22-10-2022",
+                    "per_page" to "5",
+                    "interval" to "day"
+                ),
+                Array<LeaderboardsApiResponse>::class.java
+            )
         ).thenReturn(jetpackSuccessResponse)
     }
 
     private suspend fun configureErrorRequest() {
         whenever(jetpackErrorResponse.error).thenReturn(WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR)))
         whenever(
-                requestBuilder.syncGetRequest(
-                        restClientUnderTest,
-                        stubSite,
-                        WOOCOMMERCE.leaderboards.pathV4Analytics,
-                        mapOf(
-                                "after" to "10-10-2022",
-                                "before" to "22-10-2022",
-                                "per_page" to "5",
-                                "interval" to "day"
-                        ),
-                        Array<LeaderboardsApiResponse>::class.java
-                )
+            requestBuilder.syncGetRequest(
+                restClientUnderTest,
+                stubSite,
+                WOOCOMMERCE.leaderboards.pathV4Analytics,
+                mapOf(
+                    "after" to "10-10-2022",
+                    "before" to "22-10-2022",
+                    "per_page" to "5",
+                    "interval" to "day"
+                ),
+                Array<LeaderboardsApiResponse>::class.java
+            )
         ).thenReturn(jetpackErrorResponse)
     }
 }
