@@ -110,7 +110,7 @@ class LeaderboardsRestClientTest {
                         stubSite,
                         WOOCOMMERCE.leaderboards.pathV4Analytics,
                         mapOf(
-                                "after" to "10-1-2022",
+                                "after" to "10-10-2022",
                                 "before" to "22-10-2022",
                                 "per_page" to "5",
                                 "interval" to "day"
