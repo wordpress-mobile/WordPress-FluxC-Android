@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 
 @Database(
@@ -43,6 +44,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 "wc-android-database"
         ).allowMainThreadQueries()
                 .fallbackToDestructiveMigrationOnDowngrade()
+                .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
                 .build()
     }
