@@ -11,21 +11,19 @@ import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
-import org.wordpress.android.fluxc.persistence.dao.SSRDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
-import org.wordpress.android.fluxc.persistence.entity.SSREntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 
 @Database(
-        version = 4,
+        version = 5,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
             GlobalAddonGroupEntity::class,
-            WCOrderModel::class,
-            SSREntity::class
+            WCOrderModel::class
         ]
 )
 @TypeConverters(
@@ -37,7 +35,6 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 )
 abstract class WCAndroidDatabase : RoomDatabase() {
     internal abstract fun addonsDao(): AddonsDao
-    abstract fun ssrDao(): SSRDao
     abstract fun ordersDao(): OrdersDao
 
     companion object {
@@ -48,6 +45,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
         ).allowMainThreadQueries()
                 .fallbackToDestructiveMigrationOnDowngrade()
                 .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_4_5)
                 .build()
     }
 }

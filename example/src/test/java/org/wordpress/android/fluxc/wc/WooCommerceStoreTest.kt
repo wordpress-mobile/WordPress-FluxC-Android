@@ -10,7 +10,6 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions
 import org.junit.Before
@@ -70,8 +69,7 @@ class WooCommerceStoreTest {
             siteStore = siteStore,
             systemRestClient = restClient,
             wcCoreRestClient = mock(),
-            siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
-            ssrDao = roomDB.ssrDao()
+            siteSqlUtils = TestSiteSqlUtils.siteSqlUtils
     )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply {
@@ -196,17 +194,6 @@ class WooCommerceStoreTest {
 
             Assertions.assertThat(result.isError).isFalse
             Assertions.assertThat(result.model).isNotNull
-        }
-    }
-
-    @Test
-    fun `when fetching ssr succeeds, then data is saved to database`() {
-        runBlocking {
-            whenever(restClient.fetchSSR(any())).thenReturn(WooPayload(ssrResponse))
-            wooCommerceStore.fetchSSR(site)
-
-            val result = wooCommerceStore.observeSSRForSite(TEST_SITE_REMOTE_ID).first()
-            Assertions.assertThat(result).isEqualTo(ssrModel)
         }
     }
 

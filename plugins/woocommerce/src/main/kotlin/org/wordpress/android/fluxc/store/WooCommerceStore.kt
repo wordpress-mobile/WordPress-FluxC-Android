@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.store
 
 import android.content.Context
 import com.wellsql.generated.SiteModelTable
-import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -28,7 +27,6 @@ import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
-import org.wordpress.android.fluxc.persistence.dao.SSRDao
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -49,8 +47,7 @@ open class WooCommerceStore @Inject constructor(
     private val siteStore: SiteStore,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
-    private val siteSqlUtils: SiteSqlUtils,
-    private val ssrDao: SSRDao
+    private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
     enum class WooPlugin(val displayName: String) {
         WOO_SERVICES("WooCommerce Shipping &amp; Tax"),
@@ -276,16 +273,11 @@ open class WooCommerceStore @Inject constructor(
                             security = response.result.security?.toString(),
                             pages = response.result.pages?.toString()
                     )
-                    ssrDao.insertSSR(ssr.mapToEntity())
                     WooResult(ssr)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
-    }
-
-    fun observeSSRForSite(remoteSiteId: Long): Flow<WCSSRModel> {
-        return ssrDao.observeSSRForSite(remoteSiteId)
     }
 
     private suspend fun fetchUpdatedSiteMetaData(site: SiteModel): WooResult<Boolean> {
