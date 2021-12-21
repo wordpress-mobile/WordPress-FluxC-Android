@@ -480,15 +480,24 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "quick order," which is an empty order assigned the passed amount
+     * @deprecated This function can be dropped once the client is updated to use postSimplePayment
      */
+    @Deprecated("Use postSimplePayment instead")
     suspend fun postQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
+        return postSimplePayment(site, amount, false)
+    }
+
+    /**
+     * Creates a "simple payment," which is an empty order assigned the passed amount
+     */
+    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
+        val taxStatus = if (isTaxable) "taxable" else "none"
         val jsonFee = JsonObject().also {
             it.addProperty("name", "Quick Order")
             it.addProperty("total", amount)
-            it.addProperty("tax_status", "none")
-            it.addProperty("tax_class", "")
+            it.addProperty("tax_status", taxStatus)
         }
+
         val jsonFeeItems = JsonArray().also { it.add(jsonFee) }
         val params = mapOf(
                 "fee_lines" to jsonFeeItems,
