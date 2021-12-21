@@ -485,7 +485,7 @@ class OrderRestClient @Inject constructor(
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val taxStatus = if (isTaxable) "taxable" else "none"
         val jsonFee = JsonObject().also {
-            it.addProperty("name", "Quick Order")
+            it.addProperty("name", "Simple Payment")
             it.addProperty("total", amount)
             it.addProperty("tax_status", taxStatus)
         }
