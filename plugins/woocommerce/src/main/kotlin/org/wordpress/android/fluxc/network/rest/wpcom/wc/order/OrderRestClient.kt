@@ -508,7 +508,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newModel = orderResponseToOrderModel(it, localSiteId = site.localId())
+                    val newModel = it.toDomainModel(localSiteId = site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),

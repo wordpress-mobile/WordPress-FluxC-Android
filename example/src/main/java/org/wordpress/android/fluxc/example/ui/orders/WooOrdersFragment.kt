@@ -432,7 +432,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     coroutineScope.launch {
                         try {
                             val amount = editText.text.toString()
-                            val result = wcOrderStore.postSimplePayment(site, amount, false)
+                            val result = wcOrderStore.postSimplePayment(site, amount, true)
                             if (result.isError) {
                                 prependToLog("Creating simple payment failed.")
                             } else {
