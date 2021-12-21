@@ -543,11 +543,12 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testPostQuickOrder() = runBlocking {
+    fun testPostSimplePayment() = runBlocking {
         interceptor.respondWith("wc-fetch-order-response-success.json")
-        val response = orderRestClient.postQuickOrder(siteModel, "10.00")
+        val response1 = orderRestClient.postSimplePayment(siteModel, "10.00", isTaxable = false)
 
-        with(response) {
+        // TODO nbradbury - verify tax status, test with isTaxable = true
+        with(response1) {
             assertNull(error)
             assertNotNull(order)
         }

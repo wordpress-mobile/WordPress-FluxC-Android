@@ -480,14 +480,6 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * @deprecated This function can be dropped once the client is updated to use postSimplePayment
-     */
-    @Deprecated("Use postSimplePayment instead")
-    suspend fun postQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
-        return postSimplePayment(site, amount, false)
-    }
-
-    /**
      * Creates a "simple payment," which is an empty order assigned the passed amount
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {

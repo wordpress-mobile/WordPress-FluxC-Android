@@ -531,9 +531,17 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    /**
+     * @deprecated This function can be removed once the client is updated to use postSimplePayment
+     */
+    @Deprecated("Use postSimplePayment instead")
     suspend fun postQuickOrder(site: SiteModel, amount: String): OnQuickOrderResult {
+        return postSimplePayment(site, amount, false)
+    }
+
+    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): OnQuickOrderResult {
         return coroutineEngine.withDefaultContext(T.API, this, "postQuickOrder") {
-            val result = wcOrderRestClient.postQuickOrder(site, amount)
+            val result = wcOrderRestClient.postSimplePayment(site, amount, isTaxable)
 
             return@withDefaultContext if (result.isError) {
                 OnQuickOrderResult().also { it.error = result.error }

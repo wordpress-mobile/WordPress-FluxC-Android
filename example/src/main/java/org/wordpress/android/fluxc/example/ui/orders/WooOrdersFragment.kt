@@ -423,7 +423,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             }
         }
 
-        create_quick_order.setOnClickListener {
+        create_simple_payment.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
@@ -432,11 +432,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     coroutineScope.launch {
                         try {
                             val amount = editText.text.toString()
-                            val result = wcOrderStore.postQuickOrder(site, amount)
+                            val result = wcOrderStore.postSimplePayment(site, amount, false)
                             if (result.isError) {
-                                prependToLog("Creating quick order failed.")
+                                prependToLog("Creating simple payment failed.")
                             } else {
-                                prependToLog("Created quick order with remote ID ${result.order?.remoteOrderId}.")
+                                prependToLog("Created simple payment with remote ID ${result.order?.remoteOrderId}.")
                             }
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")
