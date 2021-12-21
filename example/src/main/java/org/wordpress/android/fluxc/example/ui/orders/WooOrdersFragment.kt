@@ -460,6 +460,12 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         return@launch
                     }
 
+                    val customerNote = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please enter a customer note?",
+                        isNumeric = false
+                    )
+
                     val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
                     val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
 
@@ -473,7 +479,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                         LineItem(productId = it, quantity = 1f)
                                     },
                                     shippingAddress = shippingAddress,
-                                    billingAddress = billingAddress
+                                    billingAddress = billingAddress,
+                                    customerNote = customerNote
                             )
                     )
                     if (result.isError) {
