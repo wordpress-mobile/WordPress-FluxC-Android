@@ -828,7 +828,8 @@ class OrderRestClient @Inject constructor(
                 "status" to request.status.statusKey,
                 "line_items" to request.lineItems,
                 "shipping" to request.shippingAddress.toDto(),
-                "billing" to request.billingAddress.toDto()
+                "billing" to request.billingAddress.toDto(),
+                "customer_note" to request.customerNote.orEmpty()
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
