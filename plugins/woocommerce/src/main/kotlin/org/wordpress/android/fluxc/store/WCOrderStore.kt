@@ -540,7 +540,7 @@ class WCOrderStore @Inject constructor(
     }
 
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): OnQuickOrderResult {
-        return coroutineEngine.withDefaultContext(T.API, this, "postQuickOrder") {
+        return coroutineEngine.withDefaultContext(T.API, this, "postSimplePayment") {
             val result = wcOrderRestClient.postSimplePayment(site, amount, isTaxable)
 
             return@withDefaultContext if (result.isError) {
