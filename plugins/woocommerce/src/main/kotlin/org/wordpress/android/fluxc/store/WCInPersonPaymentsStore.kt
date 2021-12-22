@@ -60,9 +60,12 @@ class WCInPersonPaymentsStore @Inject constructor(
         }
     }
 
-    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
+    suspend fun getStoreLocationForSite(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WCTerminalStoreLocationResult {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getStoreLocationForSite") {
-            restClient.getStoreLocationForSite(site)
+            restClient.getStoreLocationForSite(activePlugin, site)
         }
     }
 

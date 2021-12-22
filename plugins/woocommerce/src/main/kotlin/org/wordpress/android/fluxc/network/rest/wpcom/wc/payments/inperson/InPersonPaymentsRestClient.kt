@@ -148,8 +148,14 @@ class InPersonPaymentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
-        val url = WOOCOMMERCE.payments.terminal.locations.store.pathV3
+    suspend fun getStoreLocationForSite(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WCTerminalStoreLocationResult {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.terminal.locations.store.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.terminal.locations.store.pathV3
+        }
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
