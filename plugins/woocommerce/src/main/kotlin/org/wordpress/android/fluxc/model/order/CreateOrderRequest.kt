@@ -6,5 +6,6 @@ data class CreateOrderRequest(
     val status: WCOrderStatusModel,
     val lineItems: List<LineItem>,
     val shippingAddress: OrderAddress.Shipping,
-    val billingAddress: OrderAddress.Billing
+    val billingAddress: OrderAddress.Billing,
+    val customerNote: String?
 )
