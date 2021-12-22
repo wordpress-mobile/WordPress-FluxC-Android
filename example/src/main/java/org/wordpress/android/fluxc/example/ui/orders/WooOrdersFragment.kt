@@ -423,7 +423,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             }
         }
 
-        create_quick_order.setOnClickListener {
+        create_simple_payment.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
@@ -432,11 +432,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     coroutineScope.launch {
                         try {
                             val amount = editText.text.toString()
-                            val result = wcOrderStore.postQuickOrder(site, amount)
+                            val result = wcOrderStore.postSimplePayment(site, amount, true)
                             if (result.isError) {
-                                prependToLog("Creating quick order failed.")
+                                prependToLog("Creating simple payment failed.")
                             } else {
-                                prependToLog("Created quick order with remote ID ${result.order?.remoteOrderId}.")
+                                prependToLog("Created simple payment with remote ID ${result.order?.remoteOrderId}.")
                             }
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")
@@ -460,6 +460,12 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         return@launch
                     }
 
+                    val customerNote = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please enter a customer note?",
+                        isNumeric = false
+                    )
+
                     val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
                     val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
 
@@ -473,7 +479,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                         LineItem(productId = it, quantity = 1f)
                                     },
                                     shippingAddress = shippingAddress,
-                                    billingAddress = billingAddress
+                                    billingAddress = billingAddress,
+                                    customerNote = customerNote
                             )
                     )
                     if (result.isError) {
