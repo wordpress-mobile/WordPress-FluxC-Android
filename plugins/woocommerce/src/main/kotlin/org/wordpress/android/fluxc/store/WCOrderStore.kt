@@ -409,11 +409,11 @@ class WCOrderStore @Inject constructor(
     }
 
     /**
-     * Given an [RemoteId] and [SiteModel],
+     * Given an order id and [SiteModel],
      * returns the corresponding order from the database as a [WCOrderModel].
      */
-    fun getOrderByRemoteIdAndSite(orderRemoteId: RemoteId, site: SiteModel): WCOrderModel? {
-        return ordersDao.getOrder(orderRemoteId, site.localId())
+    fun getOrderByIdAndSite(orderId: Long, site: SiteModel): WCOrderModel? {
+        return ordersDao.getOrder(RemoteId(orderId), site.localId())
     }
 
     /**
