@@ -480,15 +480,16 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "quick order," which is an empty order assigned the passed amount
+     * Creates a "simple payment," which is an empty order assigned the passed amount
      */
-    suspend fun postQuickOrder(site: SiteModel, amount: String): RemoteOrderPayload {
+    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
+        val taxStatus = if (isTaxable) "taxable" else "none"
         val jsonFee = JsonObject().also {
-            it.addProperty("name", "Quick Order")
+            it.addProperty("name", "Simple Payment")
             it.addProperty("total", amount)
-            it.addProperty("tax_status", "none")
-            it.addProperty("tax_class", "")
+            it.addProperty("tax_status", taxStatus)
         }
+
         val jsonFeeItems = JsonArray().also { it.add(jsonFee) }
         val params = mapOf(
                 "fee_lines" to jsonFeeItems,
@@ -507,7 +508,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newModel = orderResponseToOrderModel(it, localSiteId = site.localId())
+                    val newModel = it.toDomainModel(localSiteId = site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
@@ -828,7 +829,8 @@ class OrderRestClient @Inject constructor(
                 "status" to request.status.statusKey,
                 "line_items" to request.lineItems,
                 "shipping" to request.shippingAddress.toDto(),
-                "billing" to request.billingAddress.toDto()
+                "billing" to request.billingAddress.toDto(),
+                "customer_note" to request.customerNote.orEmpty()
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
