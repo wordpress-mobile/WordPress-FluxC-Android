@@ -148,6 +148,6 @@ class RefundRestClient @Inject constructor(
         @SerializedName("refunded_payment") val refundedPayment: Boolean?,
         @SerializedName("line_items") val items: List<LineItem>?,
         @SerializedName("shipping_lines") val shippingLineItems: List<WCRefundShippingLine>?,
-        @SerializedName("fee_lines") val feeLineItems: List<WCRefundFeeLine>?,
+        @SerializedName("fee_lines") val feeLineItems: List<WCRefundFeeLine>?
     )
 }

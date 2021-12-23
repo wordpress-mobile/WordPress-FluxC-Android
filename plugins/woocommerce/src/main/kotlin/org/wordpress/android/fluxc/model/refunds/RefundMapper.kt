@@ -33,7 +33,7 @@ class RefundMapper @Inject constructor() {
                     )
                 } ?: emptyList(),
                 shippingLineItems = response.shippingLineItems ?: emptyList(),
-                feeLineItems = response.feeLineItems ?: emptyList(),
+                feeLineItems = response.feeLineItems ?: emptyList()
         )
     }
 

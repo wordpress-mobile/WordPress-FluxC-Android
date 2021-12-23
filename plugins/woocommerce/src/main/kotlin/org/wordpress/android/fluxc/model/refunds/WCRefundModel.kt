@@ -22,7 +22,7 @@ data class WCRefundModel(
     val automaticGatewayRefund: Boolean,
     val items: List<WCRefundItem>,
     val shippingLineItems: List<WCRefundShippingLine>,
-    val feeLineItems: List<WCRefundFeeLine>,
+    val feeLineItems: List<WCRefundFeeLine>
 ) {
     data class WCRefundItem(
         val itemId: Long,
@@ -39,7 +39,7 @@ data class WCRefundModel(
         val sku: String? = null,
         val price: BigDecimal? = null,
         @SerializedName("meta_data")
-        val metaData: List<WCMetaData>? = null,
+        val metaData: List<WCMetaData>? = null
     )
 
     data class WCRefundShippingLine(
@@ -52,7 +52,7 @@ data class WCRefundModel(
         @SerializedName("method_title")
         val methodTitle: String? = null,
         @SerializedName("meta_data")
-        val metaData: List<WCMetaData>? = null,
+        val metaData: List<WCMetaData>? = null
     )
 
     data class WCRefundFeeLine(
@@ -65,6 +65,6 @@ data class WCRefundModel(
         @SerializedName("total_tax")
         val totalTax: BigDecimal,
         @SerializedName("meta_data")
-        val metaData: List<WCMetaData>? = null,
+        val metaData: List<WCMetaData>? = null
     )
 }
