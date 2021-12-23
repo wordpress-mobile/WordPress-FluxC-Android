@@ -15,4 +15,7 @@ class FeeLine {
 
     @SerializedName("total")
     val total: String? = null
+
+    @SerializedName("total_tax")
+    val totalTax: String? = null
 }
