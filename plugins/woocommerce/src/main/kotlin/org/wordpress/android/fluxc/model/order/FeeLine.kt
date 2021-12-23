@@ -3,8 +3,7 @@ package org.wordpress.android.fluxc.model.order
 import com.google.gson.annotations.SerializedName
 
 /**
- * Represents a fee line
- * We are reading only the id, the name and the total, as the tax is already included in the order totalTax
+ * Represents a fee line.
  */
 class FeeLine {
     @SerializedName("id")
