@@ -14,36 +14,34 @@ class WCOrderModelTest {
 
     @Test
     fun testGetShippingAddress() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
-            shippingAddress1 = "Some place"
-        }
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
+                shippingAddress1 = "Some place"
+        )
 
         assertEquals("Some place", model.getShippingAddress().address1)
-        model.shippingAddress1 = "something else"
-        assertEquals("something else", model.getShippingAddress().address1)
+        assertEquals("something else", model.copy(shippingAddress1 = "something else").getShippingAddress().address1)
     }
 
     @Test
     fun testGetShippingVSBillingAddress() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
-            billingAddress1 = "Some place"
-            billingCountry = "Canada"
-            shippingAddress1 = "A different place"
-            shippingCountry = "Canada"
-        }
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
+                billingAddress1 = "Some place",
+                billingCountry = "Canada",
+                shippingAddress1 = "A different place",
+                shippingCountry = "Canada"
+        )
 
         assertTrue(model.hasSeparateShippingDetails())
         assertEquals("Some place", model.getBillingAddress().address1)
         assertEquals("A different place", model.getShippingAddress().address1)
-        model.billingAddress1 = "something else"
-        assertEquals("something else", model.getBillingAddress().address1)
+        assertEquals("something else", model.copy(billingAddress1 = "something else").getBillingAddress().address1)
     }
 
     @Test
     fun testGetLineItems() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
-            lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
-        }
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
+                lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
+        )
         val renderedLineItems = model.getLineItemList()
         assertEquals(3, renderedLineItems.size)
 
@@ -75,9 +73,9 @@ class WCOrderModelTest {
 
     @Test
     fun testGetLineItemAttributes() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
-            lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
-        }
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
+                lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
+        )
         val renderedLineItems = model.getLineItemList()
         assertEquals(3, renderedLineItems.size)
 
@@ -103,22 +101,21 @@ class WCOrderModelTest {
 
     @Test
     fun testGetSubtotal() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
-            lineItems = "[{\"subtotal\": \"12.26\"},{\"subtotal\": \"15.39\"}]"
-        }
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
+                lineItems = "[{\"subtotal\": \"12.26\"},{\"subtotal\": \"15.39\"}]"
+        )
 
         assertEquals(27.65, model.getOrderSubtotal())
-
-        model.lineItems = "[{\"total\": \"12.26\"},{\"total\": \"15.39\"}]"
-        assertEquals(0.0, model.getOrderSubtotal())
+        assertEquals(0.0, model.copy(lineItems = "[{\"total\": \"12.26\"},{\"total\": \"15.39\"}]").getOrderSubtotal())
     }
 
     @Test
     fun testGetShippingLines() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
             shippingLines = UnitTestUtils.getStringFromResourceFile(
-                    this.javaClass, "wc/order-shipping-lines.json")
-        }
+                    this.javaClass, "wc/order-shipping-lines.json"
+            )
+        )
 
         val listShippingLineType = object : TypeToken<List<ShippingLine>>() {}.type
         val shippingLinesList: List<ShippingLine> = gson.fromJson(model.shippingLines, listShippingLineType)
@@ -128,10 +125,11 @@ class WCOrderModelTest {
 
     @Test
     fun testGetShippingLinesAttributes() {
-        val model = OrderTestUtils.generateSampleOrder(61).apply {
+        val model = OrderTestUtils.generateSampleOrder(61).copy(
             shippingLines = UnitTestUtils.getStringFromResourceFile(
-                    this.javaClass, "wc/order-shipping-lines.json")
-        }
+                    this.javaClass, "wc/order-shipping-lines.json"
+            )
+        )
 
         val listShippingLineType = object : TypeToken<List<ShippingLine>>() {}.type
         val shippingLinesList: List<ShippingLine> = gson.fromJson(model.shippingLines, listShippingLineType)

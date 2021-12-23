@@ -12,6 +12,15 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         consumerProguardFiles 'proguard-rules.pro'
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation": "$projectDir/schemas".toString(),
+                        "room.incremental"   : "true",
+                ]
+            }
+        }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -22,6 +31,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
 
     compileOptions {
@@ -75,6 +85,11 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation "org.assertj:assertj-core:$assertJVersion"
 }
 
 project.afterEvaluate {
@@ -89,5 +104,5 @@ project.afterEvaluate {
                 // version is set by 'publish-to-s3' plugin
             }
         }
-   }
+    }
 }

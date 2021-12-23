@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.persistence
 
-import com.wellsql.generated.WCOrderModelTable
 import com.wellsql.generated.WCOrderNoteModelTable
 import com.wellsql.generated.WCOrderShipmentProviderModelTable
 import com.wellsql.generated.WCOrderShipmentTrackingModelTable
@@ -8,16 +7,13 @@ import com.wellsql.generated.WCOrderStatusModelTable
 import com.wellsql.generated.WCOrderSummaryModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
     private const val CHUNK_SIZE = 200
@@ -57,88 +53,6 @@ object OrderSqlUtils {
                 .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .execute()
-    }
-
-    fun insertOrUpdateOrder(order: WCOrderModel): Int {
-        val orderResult = WellSql.select(WCOrderModel::class.java)
-                .where().beginGroup()
-                .equals(WCOrderModelTable.ID, order.id)
-                .or()
-                .beginGroup()
-                .equals(WCOrderModelTable.REMOTE_ORDER_ID, order.remoteOrderId)
-                .equals(WCOrderModelTable.LOCAL_SITE_ID, order.localSiteId)
-                .endGroup()
-                .endGroup().endWhere()
-                .asModel
-
-        if (orderResult.isEmpty()) {
-            // Insert
-            WellSql.insert(order).asSingleTransaction(true).execute()
-            return 1
-        } else {
-            // Update
-            val oldId = orderResult[0].id
-            return WellSql.update(WCOrderModel::class.java).whereId(oldId)
-                    .put(order, UpdateAllExceptId(WCOrderModel::class.java)).execute()
-        }
-    }
-
-    fun getOrderForIdSet(orderIdSet: OrderIdSet): WCOrderModel? {
-        val (id, remoteOrderId, localSiteId) = orderIdSet
-        return WellSql.select(WCOrderModel::class.java)
-                .where().beginGroup()
-                .equals(WCOrderModelTable.ID, id)
-                .or()
-                .beginGroup()
-                .equals(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderId)
-                .equals(WCOrderModelTable.LOCAL_SITE_ID, localSiteId)
-                .endGroup()
-                .endGroup().endWhere()
-                .asModel.firstOrNull()
-    }
-
-    fun getOrdersForSite(site: SiteModel, status: List<String> = emptyList()): List<WCOrderModel> {
-        val conditionClauseBuilder = WellSql.select(WCOrderModel::class.java)
-                .where()
-                .beginGroup()
-                .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
-
-        if (status.isNotEmpty()) {
-            conditionClauseBuilder.isIn(WCOrderModelTable.STATUS, status)
-        }
-
-        return conditionClauseBuilder.endGroup().endWhere()
-                .orderBy(WCOrderModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
-                .asModel
-    }
-
-    fun getOrdersForSiteByRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderModel> {
-        if (remoteOrderIds.isEmpty()) {
-            return emptyList()
-        }
-        return WellSql.select(WCOrderModel::class.java)
-                .where()
-                .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
-                .isIn(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
-                .endWhere()
-                .asModel
-    }
-
-    fun deleteOrdersForSite(site: SiteModel): Int {
-        return WellSql.delete(WCOrderModel::class.java)
-                .where().beginGroup()
-                .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
-                .endGroup()
-                .endWhere()
-                .execute()
-    }
-
-    fun getOrderCountForSite(site: SiteModel): Int {
-        return WellSql.select(WCOrderModel::class.java)
-                .where()
-                .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
-                .count().toInt()
     }
 
     fun insertOrIgnoreOrderNotes(notes: List<WCOrderNoteModel>): Int {
@@ -315,20 +229,4 @@ object OrderSqlUtils {
                     .endWhere()
                     .orderBy(WCOrderShipmentProviderModelTable.COUNTRY, SelectQuery.ORDER_ASCENDING)
                     .asModel
-
-    fun getOrderByLocalId(localOrderId: Int): WCOrderModel =
-            WellSql.select(WCOrderModel::class.java)
-                    .where()
-                    .equals(WCOrderModelTable.ID, localOrderId)
-                    .endWhere()
-                    .asModel
-                    .first()
-
-    fun getOrderByLocalIdOrNull(localOrderId: LocalId): WCOrderModel? =
-            WellSql.select(WCOrderModel::class.java)
-                    .where()
-                    .equals(WCOrderModelTable.ID, localOrderId.value)
-                    .endWhere()
-                    .asModel
-                    .firstOrNull()
 }

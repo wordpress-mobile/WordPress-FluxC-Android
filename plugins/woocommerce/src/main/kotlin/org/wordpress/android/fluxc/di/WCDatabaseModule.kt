@@ -5,7 +5,7 @@ import dagger.Module
 import dagger.Provides
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
-import org.wordpress.android.fluxc.persistence.dao.SSRDao
+import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import javax.inject.Singleton
 
 @Module
@@ -18,7 +18,7 @@ class WCDatabaseModule {
         return database.addonsDao()
     }
 
-    @Provides fun provideSSRDao(database: WCAndroidDatabase): SSRDao {
-        return database.ssrDao()
+    @Provides fun provideOrdersDao(database: WCAndroidDatabase): OrdersDao {
+        return database.ordersDao()
     }
 }

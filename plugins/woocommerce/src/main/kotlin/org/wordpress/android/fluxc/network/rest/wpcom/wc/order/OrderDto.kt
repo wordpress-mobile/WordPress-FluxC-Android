@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.JsonElement
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -73,68 +75,61 @@ class OrderDto : Response {
     val meta_data: JsonElement? = null
 }
 
-fun OrderDto.toDomainModel(localSiteId: Int): WCOrderModel {
+fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
     fun convertDateToUTCString(date: String?): String =
             date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
-    return WCOrderModel().apply {
-        this.localSiteId = localSiteId
-        remoteOrderId = this@toDomainModel.id ?: 0
-        number = this@toDomainModel.number ?: remoteOrderId.toString()
-        status = this@toDomainModel.status ?: ""
-        currency = this@toDomainModel.currency ?: ""
-        orderKey = this@toDomainModel.order_key ?: ""
-        dateCreated = convertDateToUTCString(this@toDomainModel.date_created_gmt)
-        dateModified = convertDateToUTCString(this@toDomainModel.date_modified_gmt)
-        total = this@toDomainModel.total ?: ""
-        totalTax = this@toDomainModel.total_tax ?: ""
-        shippingTotal = this@toDomainModel.shipping_total ?: ""
-        paymentMethod = this@toDomainModel.payment_method ?: ""
-        paymentMethodTitle = this@toDomainModel.payment_method_title ?: ""
-        datePaid = this@toDomainModel.date_paid_gmt?.let { "${it}Z" } ?: ""
-        pricesIncludeTax = this@toDomainModel.prices_include_tax
-
-        customerNote = this@toDomainModel.customer_note ?: ""
-
-        discountTotal = this@toDomainModel.discount_total ?: ""
-        this@toDomainModel.coupon_lines?.let { couponLines ->
-            // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
-            discountCodes = couponLines
-                    .filter { !it.code.isNullOrEmpty() }
-                    .joinToString { it.code!! }
-        }
-
-        this@toDomainModel.refunds?.let { refunds ->
-            // Extract the individual refund totals from the refunds list and store their sum as a Double
-            refundTotal = refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
-        }
-
-        billingFirstName = this@toDomainModel.billing?.first_name ?: ""
-        billingLastName = this@toDomainModel.billing?.last_name ?: ""
-        billingCompany = this@toDomainModel.billing?.company ?: ""
-        billingAddress1 = this@toDomainModel.billing?.address_1 ?: ""
-        billingAddress2 = this@toDomainModel.billing?.address_2 ?: ""
-        billingCity = this@toDomainModel.billing?.city ?: ""
-        billingState = this@toDomainModel.billing?.state ?: ""
-        billingPostcode = this@toDomainModel.billing?.postcode ?: ""
-        billingCountry = this@toDomainModel.billing?.country ?: ""
-        billingEmail = this@toDomainModel.billing?.email ?: ""
-        billingPhone = this@toDomainModel.billing?.phone ?: ""
-
-        shippingFirstName = this@toDomainModel.shipping?.first_name ?: ""
-        shippingLastName = this@toDomainModel.shipping?.last_name ?: ""
-        shippingCompany = this@toDomainModel.shipping?.company ?: ""
-        shippingAddress1 = this@toDomainModel.shipping?.address_1 ?: ""
-        shippingAddress2 = this@toDomainModel.shipping?.address_2 ?: ""
-        shippingCity = this@toDomainModel.shipping?.city ?: ""
-        shippingState = this@toDomainModel.shipping?.state ?: ""
-        shippingPostcode = this@toDomainModel.shipping?.postcode ?: ""
-        shippingCountry = this@toDomainModel.shipping?.country ?: ""
-        shippingPhone = this@toDomainModel.shipping?.phone.orEmpty()
-
-        lineItems = this@toDomainModel.line_items.toString()
-        shippingLines = this@toDomainModel.shipping_lines.toString()
-        feeLines = this@toDomainModel.fee_lines.toString()
-        metaData = this@toDomainModel.meta_data.toString()
-    }
+    return WCOrderModel(
+            remoteOrderId = RemoteId(this.id ?: 0),
+            localSiteId = localSiteId,
+            number = this.number ?: (this.id ?: 0).toString(),
+            status = this.status ?: "",
+            currency = this.currency ?: "",
+            orderKey = this.order_key ?: "",
+            dateCreated = convertDateToUTCString(this.date_created_gmt),
+            dateModified = convertDateToUTCString(this.date_modified_gmt),
+            total = this.total ?: "",
+            totalTax = this.total_tax ?: "",
+            shippingTotal = this.shipping_total ?: "",
+            paymentMethod = this.payment_method ?: "",
+            paymentMethodTitle = this.payment_method_title ?: "",
+            datePaid = this.date_paid_gmt?.let { "${it}Z" } ?: "",
+            pricesIncludeTax = this.prices_include_tax,
+            customerNote = this.customer_note ?: "",
+            discountTotal = this.discount_total ?: "",
+            discountCodes = this.coupon_lines?.let { couponLines ->
+                // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
+                couponLines
+                        .filter { !it.code.isNullOrEmpty() }
+                        .joinToString { it.code!! }
+            }.orEmpty(),
+            refundTotal = this.refunds?.let { refunds ->
+                // Extract the individual refund totals from the refunds list and store their sum as a Double,
+                refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
+            } ?: 0.0,
+            billingFirstName = this.billing?.first_name ?: "",
+            billingLastName = this.billing?.last_name ?: "",
+            billingCompany = this.billing?.company ?: "",
+            billingAddress1 = this.billing?.address_1 ?: "",
+            billingAddress2 = this.billing?.address_2 ?: "",
+            billingCity = this.billing?.city ?: "",
+            billingState = this.billing?.state ?: "",
+            billingPostcode = this.billing?.postcode ?: "",
+            billingCountry = this.billing?.country ?: "",
+            billingEmail = this.billing?.email ?: "",
+            billingPhone = this.billing?.phone ?: "",
+            shippingFirstName = this.shipping?.first_name ?: "",
+            shippingLastName = this.shipping?.last_name ?: "",
+            shippingCompany = this.shipping?.company ?: "",
+            shippingAddress1 = this.shipping?.address_1 ?: "",
+            shippingAddress2 = this.shipping?.address_2 ?: "",
+            shippingCity = this.shipping?.city ?: "",
+            shippingState = this.shipping?.state ?: "",
+            shippingPostcode = this.shipping?.postcode ?: "",
+            shippingCountry = this.shipping?.country ?: "",
+            lineItems = this.line_items.toString(),
+            shippingLines = this.shipping_lines.toString(),
+            feeLines = this.fee_lines.toString(),
+            metaData = this.meta_data.toString()
+    )
 }
