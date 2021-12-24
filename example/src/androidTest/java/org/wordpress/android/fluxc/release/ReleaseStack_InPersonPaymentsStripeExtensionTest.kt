@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.STRIPE
 import javax.inject.Inject
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 
 class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
@@ -55,24 +56,24 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasStripeExtensionAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.createCustomerByOrderId(
-//                sSite,
-//                17L
-//        )
-//
-//        assertEquals("cus_JyzaCUE61Qmy8y", result.model?.customerId)
+        val result = store.createCustomerByOrderId(
+            STRIPE,
+                sSite,
+                17L
+        )
+
+        assertEquals("cus_KpWfupr71lMX0W", result.model?.customerId)
     }
 
     @Test
     fun givenSiteHasStripeExtensionAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.createCustomerByOrderId(
-//                sSite,
-//                1L
-//        )
-//
-//        assertTrue(result.isError)
+        val result = store.createCustomerByOrderId(
+            STRIPE,
+                sSite,
+                1L
+        )
+
+        assertTrue(result.isError)
     }
 
     @Test
