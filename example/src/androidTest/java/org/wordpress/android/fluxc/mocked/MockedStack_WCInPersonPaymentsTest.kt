@@ -46,7 +46,12 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenValidDataProvidedForCapturePaymentThenSuccessReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-success.json", 200)
 
-        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(
+            WOOCOMMERCE_PAYMENTS,
+            SiteModel().apply { siteId = 123L },
+            DUMMY_PAYMENT_ID,
+            -10L
+        )
 
         Assert.assertFalse(result.isError)
         assertTrue(result.status != null)
@@ -56,7 +61,12 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenInvalidOrderIdProvidedForCapturePaymentThenInvalidIdIsReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-missing-order.json", 404)
 
-        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(
+            WOOCOMMERCE_PAYMENTS,
+            SiteModel().apply { siteId = 123L },
+            DUMMY_PAYMENT_ID,
+            -10L
+        )
 
         assertTrue(result.error?.type == MISSING_ORDER)
     }
@@ -65,7 +75,12 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenPaymentAlreadyCapturedThenUncapturableErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-uncapturable.json", 409)
 
-        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(
+            WOOCOMMERCE_PAYMENTS,
+            SiteModel().apply { siteId = 123L },
+            DUMMY_PAYMENT_ID,
+            -10L
+        )
 
         assertTrue(result.error?.type == PAYMENT_ALREADY_CAPTURED)
     }
@@ -74,7 +89,12 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenPaymentCaptureFailsThenCaptureFailedErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-capture-error.json", 502)
 
-        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(
+            WOOCOMMERCE_PAYMENTS,
+            SiteModel().apply { siteId = 123L },
+            DUMMY_PAYMENT_ID,
+            -10L
+        )
 
         assertTrue(result.error?.type == CAPTURE_ERROR)
     }
@@ -83,7 +103,12 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenUnexpectedErrorOccursDuringCaptureThenWCPayServerErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-capture-terminal-payment-response-unexpected-error.json", 500)
 
-        val result = restClient.capturePayment(SiteModel().apply { siteId = 123L }, DUMMY_PAYMENT_ID, -10L)
+        val result = restClient.capturePayment(
+            WOOCOMMERCE_PAYMENTS,
+            SiteModel().apply { siteId = 123L },
+            DUMMY_PAYMENT_ID,
+            -10L
+        )
 
         assertTrue(result.error?.type == SERVER_ERROR)
     }
