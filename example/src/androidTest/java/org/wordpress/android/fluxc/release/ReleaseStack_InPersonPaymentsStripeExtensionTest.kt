@@ -34,10 +34,9 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasStripeExtensionWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.fetchConnectionToken(sSite)
-//
-//        assertTrue(result.model?.token?.isNotEmpty() == true)
+        val result = store.fetchConnectionToken(STRIPE, sSite)
+
+        assertTrue(result.model?.token?.isNotEmpty() == true)
     }
 
     @Test

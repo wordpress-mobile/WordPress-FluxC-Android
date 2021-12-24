@@ -36,7 +36,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun givenSiteHasWCPayWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
         interceptor.respondWith("wc-pay-fetch-connection-token-response-success.json")
 
-        val result = restClient.fetchConnectionToken(SiteModel().apply { siteId = 123L })
+        val result = restClient.fetchConnectionToken(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result?.token?.isNotEmpty() == true)
         assertTrue(result.result?.isTestMode == true)
