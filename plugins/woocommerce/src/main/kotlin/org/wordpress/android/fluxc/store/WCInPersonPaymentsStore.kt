@@ -39,9 +39,13 @@ class WCInPersonPaymentsStore @Inject constructor(
         }
     }
 
-    suspend fun capturePayment(site: SiteModel, paymentId: String, orderId: Long): WCCapturePaymentResponsePayload {
+    suspend fun capturePayment(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel,
+        paymentId: String,
+        orderId: Long): WCCapturePaymentResponsePayload {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
-            restClient.capturePayment(site, paymentId, orderId)
+            restClient.capturePayment(activePlugin, site, paymentId, orderId)
         }
     }
 
