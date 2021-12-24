@@ -45,8 +45,14 @@ class InPersonPaymentsRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooPayload<ConnectionTokenApiResponse> {
-        val url = WOOCOMMERCE.payments.connection_tokens.pathV3
+    suspend fun fetchConnectionToken(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WooPayload<ConnectionTokenApiResponse> {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.connection_tokens.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.connection_tokens.pathV3
+        }
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
                 site,
