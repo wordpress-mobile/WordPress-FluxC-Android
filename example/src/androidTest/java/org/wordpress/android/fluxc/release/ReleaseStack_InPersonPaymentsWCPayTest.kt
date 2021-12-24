@@ -73,7 +73,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayAndStripeAddressThenLocationDataReturned() = runBlocking {
-        val result = store.getStoreLocationForSite(sSite)
+        val result = store.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, sSite)
 
         assertFalse(result.isError)
         assertEquals("tml_EUZ4bQQTxLWMq2", result.locationId)

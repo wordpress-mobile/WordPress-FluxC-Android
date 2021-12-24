@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.STRIPE
 import javax.inject.Inject
+import org.junit.Assert.assertFalse
 
 class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
@@ -76,17 +77,16 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasStripeExtensionAndStripeAddressThenLocationDataReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.getStoreLocationForSite(sSite)
-//
-//        assertFalse(result.isError)
-//        assertEquals("tml_EUZ4bQQTxLWMq2", result.locationId)
-//        assertEquals("Woo WCPay", result.displayName)
-//        assertEquals("San Francisco", result.address?.city)
-//        assertEquals("US", result.address?.country)
-//        assertEquals("1230 Lawton St", result.address?.line1)
-//        assertEquals("71", result.address?.line2)
-//        assertEquals("94122", result.address?.postalCode)
-//        assertEquals("CA", result.address?.state)
+        val result = store.getStoreLocationForSite(STRIPE, sSite)
+
+        assertFalse(result.isError)
+        assertEquals("tml_EbIYQbo6EsyAee", result.locationId)
+        assertEquals("Woo Jetpack Stripe Extension", result.displayName)
+        assertEquals("San Francisco", result.address?.city)
+        assertEquals("US", result.address?.country)
+        assertEquals("1230 Lawton St", result.address?.line1)
+        assertEquals("", result.address?.line2)
+        assertEquals("94122", result.address?.postalCode)
+        assertEquals("CA", result.address?.state)
     }
 }

@@ -137,7 +137,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-with-url-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is MissingAddress)
@@ -150,7 +150,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithEmptyUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-with-empty-url-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
@@ -160,7 +160,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithoutUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-without-url-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
@@ -170,7 +170,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteWithInvalidPostalCodeError() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-invalid-postal-code-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is InvalidPostalCode)
