@@ -52,11 +52,12 @@ class WCInPersonPaymentsStore @Inject constructor(
     }
 
     suspend fun createCustomerByOrderId(
+        activePlugin: InPersonPaymentsPluginType,
         site: SiteModel,
         orderId: Long
     ): WooResult<WCCreateCustomerByOrderIdResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomerByOrderId") {
-            restClient.createCustomerByOrderId(site, orderId).asWooResult()
+            restClient.createCustomerByOrderId(activePlugin, site, orderId).asWooResult()
         }
     }
 

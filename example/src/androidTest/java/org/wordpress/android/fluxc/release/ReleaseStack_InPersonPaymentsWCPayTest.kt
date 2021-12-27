@@ -54,6 +54,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     @Test
     fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
         val result = store.createCustomerByOrderId(
+            WOOCOMMERCE_PAYMENTS,
                 sSite,
                 17L
         )
@@ -64,6 +65,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     @Test
     fun givenSiteHasWCPayAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
         val result = store.createCustomerByOrderId(
+            WOOCOMMERCE_PAYMENTS,
                 sSite,
                 1L
         )

@@ -129,10 +129,14 @@ class InPersonPaymentsRestClient @Inject constructor(
     }
 
     suspend fun createCustomerByOrderId(
+        activePlugin: InPersonPaymentsPluginType,
         site: SiteModel,
         orderId: Long
     ): WooPayload<WCCreateCustomerByOrderIdResult> {
-        val url = WOOCOMMERCE.payments.orders.order(orderId).create_customer.pathV3
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.orders.order(orderId).create_customer.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.orders.order(orderId).create_customer.pathV3
+        }
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 restClient = this,
