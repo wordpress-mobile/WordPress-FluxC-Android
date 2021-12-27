@@ -29,11 +29,11 @@ class WCInPersonPaymentsStoreTest {
     @Test
     fun `given server returns valid token, when fetchConnectionToken, then result contains the token`() = test {
         val token = "valid token"
-        whenever(restClient.fetchConnectionToken(any())).thenReturn(
+        whenever(restClient.fetchConnectionToken(any(), any())).thenReturn(
                 WooPayload(ConnectionTokenApiResponse(token, false))
         )
 
-        val result = store.fetchConnectionToken(mock())
+        val result = store.fetchConnectionToken(mock(), mock())
 
         assertThat(result.model?.token).isEqualTo(token)
     }
@@ -41,22 +41,22 @@ class WCInPersonPaymentsStoreTest {
     @Test
     fun `given server response is testMode=true, when fetchConnectionToken, then testMode=true returned`() = test {
         val isTestMode = true
-        whenever(restClient.fetchConnectionToken(any())).thenReturn(
+        whenever(restClient.fetchConnectionToken(any(), any())).thenReturn(
                 WooPayload(ConnectionTokenApiResponse("", isTestMode))
         )
 
-        val result = store.fetchConnectionToken(mock())
+        val result = store.fetchConnectionToken(mock(), mock())
 
         assertThat(result.model?.isTestMode).isEqualTo(isTestMode)
     }
 
     @Test
     fun `given server response is error, when fetchConnectionToken, then WooError returned`() = test {
-        whenever(restClient.fetchConnectionToken(any())).thenReturn(
+        whenever(restClient.fetchConnectionToken(any(), any())).thenReturn(
                 WooPayload(mock())
         )
 
-        val result = store.fetchConnectionToken(mock())
+        val result = store.fetchConnectionToken(mock(), mock())
 
         assertThat(result.error).isNotNull
     }
