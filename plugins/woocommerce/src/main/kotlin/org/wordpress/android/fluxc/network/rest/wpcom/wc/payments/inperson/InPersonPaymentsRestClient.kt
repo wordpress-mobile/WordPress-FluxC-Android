@@ -72,11 +72,15 @@ class InPersonPaymentsRestClient @Inject constructor(
     }
 
     suspend fun capturePayment(
+        activePlugin: InPersonPaymentsPluginType,
         site: SiteModel,
         paymentId: String,
         orderId: Long
     ): WCCapturePaymentResponsePayload {
-        val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.orders.order(orderId).capture_terminal_payment.pathV3
+        }
         val params = mapOf(
                 "payment_intent_id" to paymentId
         )
