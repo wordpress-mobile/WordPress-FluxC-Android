@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
@@ -172,14 +171,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     fun testFetchSingleOrder() = runBlocking {
         orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId.value)
 
-        val orderFromDb = orderStore.getOrderByIdentifier(
-                OrderIdentifier(
-                        WCOrderModel(
-                            remoteOrderId = orderModel.remoteOrderId,
-                            localSiteId = sSite.localId()
-                        )
-                )
-        )
+        val orderFromDb = orderStore.getOrderByIdAndSite(orderModel.remoteOrderId.value, sSite)
         assertTrue(orderFromDb != null && orderFromDb.remoteOrderId == orderModel.remoteOrderId)
     }
 
