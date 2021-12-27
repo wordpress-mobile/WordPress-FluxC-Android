@@ -6,8 +6,6 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -374,7 +372,7 @@ class WCOrderStore @Inject constructor(
     /**
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
      */
-    fun getOrdersForSite(site: SiteModel, vararg status: String) = if (status.isEmpty()) {
+    suspend fun getOrdersForSite(site: SiteModel, vararg status: String) = if (status.isEmpty()) {
         ordersDao.getOrdersForSite(site.localId())
     } else {
         ordersDao.getOrdersForSite(site.localId(), status = status.asList())
@@ -403,7 +401,7 @@ class WCOrderStore @Inject constructor(
      * Given an order id and [SiteModel],
      * returns the corresponding order from the database as a [WCOrderModel].
      */
-    fun getOrderByIdAndSite(orderId: Long, site: SiteModel): WCOrderModel? {
+    suspend fun getOrderByIdAndSite(orderId: Long, site: SiteModel): WCOrderModel? {
         return ordersDao.getOrder(RemoteId(orderId), site.localId())
     }
 
@@ -439,11 +437,6 @@ class WCOrderStore @Inject constructor(
      */
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
             OrderSqlUtils.getOrderShipmentProvidersForSite(site)
-
-    /**
-     * @return Returns true if orders for the provided site exist in the DB, else false.
-     */
-    fun hasCachedOrdersForSite(site: SiteModel) = ordersDao.getOrderCountForSite(site.localId()) > 0
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
@@ -588,7 +581,7 @@ class WCOrderStore @Inject constructor(
                 } else {
                     ordersDao.insertOrUpdateOrder(remotePayload.order)
                     OnOrderChanged()
-                }.copy(causeOfChange = UPDATE_ORDER_STATUS)
+                }.copy(causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS)
 
                 emit(RemoteUpdateResult(remoteUpdateResult))
                 // Needs to remain here until all event bus observables are removed from the client code
@@ -607,7 +600,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private fun updateOrderStatusLocally(remoteOrderId: RemoteId, localSiteId: LocalId, newStatus: String) {
+    private suspend fun updateOrderStatusLocally(remoteOrderId: RemoteId, localSiteId: LocalId, newStatus: String) {
         val updatedOrder = ordersDao.getOrder(remoteOrderId, localSiteId)!!
                 .copy(status = newStatus)
         ordersDao.insertOrUpdateOrder(updatedOrder)
@@ -744,7 +737,7 @@ class WCOrderStore @Inject constructor(
             payload.orders.forEach { ordersDao.insertOrUpdateOrder(it) }
 
             OnOrderChanged(payload.statusFilter, canLoadMore = payload.canLoadMore)
-        }.copy(causeOfChange = FETCHED_ORDERS)
+        }.copy(causeOfChange = WCOrderAction.FETCHED_ORDERS)
 
         emitChange(onOrderChanged)
     }
@@ -851,7 +844,7 @@ class WCOrderStore @Inject constructor(
         emitChange(onOrderChanged)
     }
 
-    private fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
+    private suspend fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
         updateOrderStatusLocally(payload.order.remoteOrderId, payload.order.localSiteId, payload.order.status)
         return OnOrderChanged().also { it.error = payload.error }
     }

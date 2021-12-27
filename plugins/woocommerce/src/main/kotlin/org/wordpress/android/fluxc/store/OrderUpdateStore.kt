@@ -126,7 +126,7 @@ class OrderUpdateStore @Inject internal constructor(
         } ?: emitNoEntityFound("Order with id ${remoteOrderId.value} not found")
     }
 
-    private fun updateLocalOrderAddress(
+    private suspend fun updateLocalOrderAddress(
         initialOrder: WCOrderModel,
         newAddress: OrderAddress
     ) = ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
@@ -136,7 +136,7 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
-    private fun updateBothLocalOrderAddresses(
+    private suspend fun updateBothLocalOrderAddresses(
         initialOrder: WCOrderModel,
         shippingAddress: Shipping,
         billingAddress: Billing
