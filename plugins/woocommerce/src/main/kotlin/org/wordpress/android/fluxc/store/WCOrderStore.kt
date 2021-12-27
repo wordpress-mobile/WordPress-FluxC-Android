@@ -409,6 +409,14 @@ class WCOrderStore @Inject constructor(
     }
 
     /**
+     * Given an order id and [SiteModel],
+     * returns the corresponding order from the database as a [WCOrderModel].
+     */
+    fun getOrderByIdAndSite(orderId: Long, site: SiteModel): WCOrderModel? {
+        return ordersDao.getOrder(RemoteId(orderId), site.localId())
+    }
+
+    /**
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
      */
     fun getOrderNotesForOrder(orderId: Int): List<WCOrderNoteModel> =
