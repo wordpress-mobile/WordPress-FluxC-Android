@@ -43,7 +43,8 @@ class WCInPersonPaymentsStore @Inject constructor(
         activePlugin: InPersonPaymentsPluginType,
         site: SiteModel,
         paymentId: String,
-        orderId: Long): WCCapturePaymentResponsePayload {
+        orderId: Long
+    ): WCCapturePaymentResponsePayload {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "capturePayment") {
             restClient.capturePayment(activePlugin, site, paymentId, orderId)
         }
