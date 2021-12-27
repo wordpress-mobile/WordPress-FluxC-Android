@@ -32,7 +32,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
-        val result = store.fetchConnectionToken(sSite)
+        val result = store.fetchConnectionToken(WOOCOMMERCE_PAYMENTS, sSite)
 
         assertTrue(result.model?.token?.isNotEmpty() == true)
     }

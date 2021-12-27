@@ -21,9 +21,12 @@ class WCInPersonPaymentsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: InPersonPaymentsRestClient
 ) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooResult<WCConnectionTokenResult> {
+    suspend fun fetchConnectionToken(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WooResult<WCConnectionTokenResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchConnectionToken") {
-            val response = restClient.fetchConnectionToken(site)
+            val response = restClient.fetchConnectionToken(activePlugin, site)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
