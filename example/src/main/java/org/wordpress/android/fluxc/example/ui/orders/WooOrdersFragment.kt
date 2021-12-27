@@ -36,7 +36,6 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.CreateOrderRequest
 import org.wordpress.android.fluxc.model.order.OrderAddress
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.OrderUpdateStore
@@ -303,12 +302,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 ) { editText ->
                     editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
                         @Suppress("DEPRECATION_ERROR")
-                        val localOrderId = wcOrderStore.getOrderByIdentifier(
-                                OrderIdentifier(site.id, remoteOrderId)
-                        )!!.id
+                        val localOrderId = wcOrderStore.getOrderByIdAndSite(remoteOrderId, site)!!.id
                         val trackingsCountBeforeRequest =
                                 OrderSqlUtils.getShipmentTrackingsForOrder(site, localOrderId).size
-                        wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
+                        wcOrderStore.getOrderByIdAndSite(remoteOrderId, site)?.let { order ->
                             prependToLog(
                                     "Submitting request to fetch shipment trackings for " +
                                             "remoteOrderId: ${order.remoteOrderId}"
@@ -371,7 +368,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         "Enter the remoteOrderId to delete the first shipment tracking for:"
                 ) { editText ->
                     editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
-                        wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
+                        wcOrderStore.getOrderByIdAndSite(remoteOrderId, site)?.let { order ->
                             prependToLog(
                                     "Submitting request to fetch shipment trackings for " +
                                             "remoteOrderId: ${order.remoteOrderId}"
