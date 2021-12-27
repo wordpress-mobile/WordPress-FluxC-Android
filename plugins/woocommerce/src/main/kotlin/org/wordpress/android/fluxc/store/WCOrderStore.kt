@@ -21,8 +21,6 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.CreateOrderRequest
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -399,13 +397,6 @@ class WCOrderStore @Inject constructor(
     ): Map<RemoteId, WCOrderSummaryModel> {
         val orderSummaries = OrderSqlUtils.getOrderSummariesForRemoteIds(site, remoteOrderIds)
         return orderSummaries.associateBy { RemoteId(it.remoteOrderId) }
-    }
-
-    /**
-     * Given an [OrderIdentifier], returns the corresponding order from the database as a [WCOrderModel].
-     */
-    fun getOrderByIdentifier(orderIdentifier: OrderIdentifier): WCOrderModel? {
-        return ordersDao.getOrderForIdSet((orderIdentifier.toIdSet()))
     }
 
     /**

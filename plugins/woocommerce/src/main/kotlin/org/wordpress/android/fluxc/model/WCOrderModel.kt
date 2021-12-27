@@ -11,7 +11,6 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.ShippingLine
 import kotlin.DeprecationLevel.ERROR
 
@@ -79,11 +78,6 @@ data class WCOrderModel(
     companion object {
         private val gson by lazy { Gson() }
     }
-
-    /**
-     * Returns an [OrderIdentifier], representing a unique identifier for this [WCOrderModel].
-     */
-    fun getIdentifier() = OrderIdentifier(this)
 
     /**
      * Returns true if there are shipping details defined for this order,
