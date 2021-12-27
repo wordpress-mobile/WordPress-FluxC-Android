@@ -574,7 +574,9 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                         .groupBy { order -> order.status }
                                     // print count of orders fetched by filtered status
                                     filter.forEach { status ->
-                                        prependToLog("Fetched ${orders[status]?.count() ?: 0} orders for status [$status]")
+                                        prependToLog(
+                                            "Fetched ${orders[status]?.count() ?: 0} orders for status [$status]"
+                                        )
                                     }
                                     pendingFetchOrdersFilter = null
                                 }
