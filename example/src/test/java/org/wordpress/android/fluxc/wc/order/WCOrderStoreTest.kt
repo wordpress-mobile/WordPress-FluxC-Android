@@ -127,7 +127,9 @@ class WCOrderStoreTest {
             it.copy(id = generatedId.toInt())
         }
 
-        val retrievedOrder = orderStore.getOrderByIdentifier(sampleOrder.getIdentifier())
+        val site = SiteModel().apply { this.id = sampleOrder.localSiteId.value }
+
+        val retrievedOrder = orderStore.getOrderByIdAndSite(sampleOrder.remoteOrderId.value, site)
         assertEquals(sampleOrder, retrievedOrder)
 
         // Non-existent ID should return null
@@ -170,7 +172,7 @@ class WCOrderStoreTest {
         orderStore.updateOrderStatus(orderModel.remoteOrderId, site, WCOrderStatusModel(CoreOrderStatus.REFUNDED.value))
             .toList()
 
-        with(orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
+        with(orderStore.getOrderByIdAndSite(orderModel.remoteOrderId.value, site)!!) {
             // The version of the order model in the database should have the updated status
             assertEquals(CoreOrderStatus.REFUNDED.value, status)
             // Other fields should not be altered by the update
@@ -229,38 +231,25 @@ class WCOrderStoreTest {
 
     @Test
     fun testOrderToIdentifierToOrder() {
+        val site = SiteModel().apply { id = 6 }
         // Convert an order to identifier and restore it from the database
         OrderTestUtils.generateSampleOrder(3).saveToDb().let { sampleOrder ->
-
-            val packagedOrder = sampleOrder.getIdentifier()
-            assertEquals("1-3-6", packagedOrder)
-
-            assertEquals(sampleOrder, orderStore.getOrderByIdentifier(packagedOrder))
+            assertEquals(sampleOrder, orderStore.getOrderByIdAndSite(3, site))
         }
 
         // Attempt to restore an order that doesn't exist in the database
-        OrderTestUtils.generateSampleOrder(4).let { unpersistedOrder ->
-            val packagedOrder = unpersistedOrder.getIdentifier()
-            assertEquals("0-4-6", packagedOrder)
-
-            assertNull(orderStore.getOrderByIdentifier(packagedOrder))
+        OrderTestUtils.generateSampleOrder(4).let {
+            assertNull(orderStore.getOrderByIdAndSite(4, site))
         }
 
         // Restore an order that doesn't have a remote ID
         OrderTestUtils.generateSampleOrder(0).saveToDb().let { draftOrder ->
-
-            val packagedOrder = draftOrder.getIdentifier()
-            assertEquals("2-0-6", packagedOrder)
-
-            assertEquals(draftOrder, orderStore.getOrderByIdentifier(packagedOrder))
+            assertEquals(draftOrder, orderStore.getOrderByIdAndSite(0, site))
         }
 
         // Restore an order without a local ID by matching site and remote order IDs
         OrderTestUtils.generateSampleOrder(3).let { duplicateRemoteOrder ->
-            val packagedOrder = duplicateRemoteOrder.getIdentifier()
-            assertEquals("0-3-6", packagedOrder)
-
-            assertEquals(duplicateRemoteOrder.copy(id = 1), orderStore.getOrderByIdentifier(packagedOrder))
+            assertEquals(duplicateRemoteOrder.copy(id = 1), orderStore.getOrderByIdAndSite(3, site))
         }
     }
 

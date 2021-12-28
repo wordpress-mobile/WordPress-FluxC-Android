@@ -31,7 +31,6 @@ import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
 import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
@@ -756,7 +755,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
             )
         }
 
-        val order = wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, orderId))
+        val order = wcOrderStore.getOrderByIdAndSite(orderId, site)
         val destination = order?.getShippingAddress()?.let {
             ShippingLabelAddress(
                     name = "${it.firstName} ${it.lastName}",
