@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResp
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
@@ -81,7 +80,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchSingleProductSuccess()  = runBlocking {
+    fun testFetchSingleProductSuccess() = runBlocking {
         interceptor.respondWith("wc-fetch-product-response-success.json")
         val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
