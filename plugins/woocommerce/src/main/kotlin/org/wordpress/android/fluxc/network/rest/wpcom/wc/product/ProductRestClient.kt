@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
@@ -40,6 +41,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUC
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_TAGS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
@@ -250,31 +252,39 @@ class ProductRestClient @Inject constructor(
      *
      * @param [remoteProductId] Unique server id of the product to fetch
      */
-    fun fetchSingleProduct(site: SiteModel, remoteProductId: Long) {
+    suspend fun fetchSingleProduct(site: SiteModel, remoteProductId: Long): RemoteProductPayload {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
-                        val newModel = it.asProductModel().apply {
-                            localSiteId = site.id
-                        }
-                        val payload = RemoteProductPayload(newModel, site)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                ProductApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = it.asProductModel().apply {
+                        localSiteId = site.id
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductPayload(
-                            productError,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId },
-                            site
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    RemoteProductPayload(newModel, site)
+                } ?: RemoteProductPayload(
+                        error = ProductError(GENERIC_ERROR, "Success response with empty data"),
+                        WCProductModel().apply { this.remoteProductId = remoteProductId },
+                        site = site
+                )
+            }
+            is JetpackError -> {
+                val productError = networkErrorToProductError(response.error)
+                RemoteProductPayload(
+                        productError,
+                        WCProductModel().apply { this.remoteProductId = remoteProductId },
+                        site
+                )
+            }
+        }
     }
 
     /**
