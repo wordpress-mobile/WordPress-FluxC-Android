@@ -74,14 +74,14 @@ class WooAddonsTestFragment : DialogFragment() {
         }
 
         addons_fetch_product.setOnClickListener {
-            dispatcher.dispatch(
-                    WCProductActionBuilder.newFetchSingleProductAction(
-                            FetchSingleProductPayload(
-                                    selectedSite,
-                                    selectedProduct.remoteProductId
-                            )
-                    )
-            )
+            coroutineScope.launch {
+                wcProductStore.fetchSingleProduct(
+                        FetchSingleProductPayload(
+                                selectedSite,
+                                selectedProduct.remoteProductId
+                        )
+                )
+            }
         }
 
         addons_fetch_global.setOnClickListener {
