@@ -48,13 +48,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var orderStore: WCOrderStore
 
     private var nextEvent: TestEvent = TestEvent.NONE
-    private val orderModel = WCOrderModel(
-            id = 8,
-            localSiteId = sSite.localId(),
-            remoteOrderId = RemoteId(1125),
-            number = "1125",
-            dateCreated = "2018-04-20T15:45:14Z"
-    )
+    private val orderModel by lazy {
+        WCOrderModel(
+                id = 8,
+                localSiteId = sSite.localId(),
+                remoteOrderId = RemoteId(1125),
+                number = "1125",
+                dateCreated = "2018-04-20T15:45:14Z"
+        )
+    }
     private var lastEvent: OnOrderChanged? = null
     private val orderSearchQuery = "bogus query"
 
