@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabil
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
@@ -24,7 +23,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload;
