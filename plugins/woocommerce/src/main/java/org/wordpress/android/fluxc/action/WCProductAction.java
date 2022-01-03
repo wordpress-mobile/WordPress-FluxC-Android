@@ -47,8 +47,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload;
 @ActionEnum
 public enum WCProductAction implements IAction {
     // Remote actions
-    @Action(payloadType = FetchSingleProductPayload.class)
-    FETCH_SINGLE_PRODUCT,
     @Action(payloadType = FetchSingleVariationPayload.class)
     FETCH_SINGLE_VARIATION,
     @Action(payloadType = FetchProductsPayload.class)
@@ -89,8 +87,6 @@ public enum WCProductAction implements IAction {
     DELETE_PRODUCT,
 
     // Remote responses
-    @Action(payloadType = RemoteProductPayload.class)
-    FETCHED_SINGLE_PRODUCT,
     @Action(payloadType = RemoteVariationPayload.class)
     FETCHED_SINGLE_VARIATION,
     @Action(payloadType = RemoteProductListPayload.class)

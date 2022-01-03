@@ -764,8 +764,6 @@ class WCProductStore @Inject constructor(
         val actionType = action.type as? WCProductAction ?: return
         when (actionType) {
             // remote actions
-            WCProductAction.FETCH_SINGLE_PRODUCT ->
-                fetchSingleProduct(action.payload as FetchSingleProductPayload)
             WCProductAction.FETCH_SINGLE_VARIATION ->
                 fetchSingleVariation(action.payload as FetchSingleVariationPayload)
             WCProductAction.FETCH_PRODUCT_SKU_AVAILABILITY ->
@@ -806,8 +804,6 @@ class WCProductStore @Inject constructor(
                 deleteProduct(action.payload as DeleteProductPayload)
 
             // remote responses
-            WCProductAction.FETCHED_SINGLE_PRODUCT ->
-                handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
             WCProductAction.FETCHED_SINGLE_VARIATION ->
                 handleFetchSingleVariationCompleted(action.payload as RemoteVariationPayload)
             WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY ->
@@ -912,8 +908,33 @@ class WCProductStore @Inject constructor(
 
     override fun onRegister() = AppLog.d(API, "WCProductStore onRegister")
 
-    private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
-        with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
+    suspend fun fetchSingleProduct(payload: FetchSingleProductPayload): OnProductChanged {
+        return coroutineEngine?.withDefaultContext(API, this, "fetchSingleProduct") {
+            val result = with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
+
+            return@withDefaultContext if (result.isError) {
+                OnProductChanged(0).also {
+                    it.error = result.error
+                    it.remoteProductId = result.product.remoteProductId
+                }
+            } else {
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(result.product)
+
+                // TODO: 18/08/2021 @wzieba add tests
+                coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
+                    val domainAddons = mapProductAddonsToDomain(result.product.addons)
+                    addonsDao.cacheProductAddons(
+                            productRemoteId = result.product.remoteProductId,
+                            siteRemoteId = result.site.siteId,
+                            addons = domainAddons
+                    )
+                }
+
+                OnProductChanged(rowsAffected).also {
+                    it.remoteProductId = result.product.remoteProductId
+                }
+            }
+        }
     }
 
     private fun fetchSingleVariation(payload: FetchSingleVariationPayload) {
@@ -1061,35 +1082,6 @@ class WCProductStore @Inject constructor(
         with(payload) {
             wcProductRestClient.deleteProduct(site, remoteProductId, forceDelete)
         }
-    }
-
-    private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
-        val onProductChanged: OnProductChanged
-
-        if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also {
-                it.error = payload.error
-                it.remoteProductId = payload.product.remoteProductId
-            }
-        } else {
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductChanged = OnProductChanged(rowsAffected).also {
-                it.remoteProductId = payload.product.remoteProductId
-            }
-
-            // TODO: 18/08/2021 @wzieba add tests
-            coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
-                val domainAddons = mapProductAddonsToDomain(payload.product.addons)
-                addonsDao.cacheProductAddons(
-                        productRemoteId = payload.product.remoteProductId,
-                        siteRemoteId = payload.site.siteId,
-                        addons = domainAddons
-                )
-            }
-        }
-
-        onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
-        emitChange(onProductChanged)
     }
 
     private fun mapProductAddonsToDomain(remoteAddons: Array<RemoteAddonDto>?): List<Addon> {
