@@ -200,7 +200,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        orderStore.fetchOrderNotes(firstOrder.id, firstOrder.remoteOrderId.value, sSite)
+        orderStore.fetchOrderNotes(firstOrder.remoteOrderId.value, sSite)
 
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.id)
@@ -211,13 +211,13 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Test
     fun testPostOrderNote() = runBlocking {
         val originalNote = WCOrderNoteModel().apply {
-            localOrderId = orderModel.id
+            orderId = orderModel.remoteOrderId.value
             localSiteId = sSite.id
             note = "Test rest note"
             isCustomerNote = true
         }
         orderStore.postOrderNote(
-                PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId.value, sSite, originalNote)
+                PostOrderNotePayload(orderModel.remoteOrderId.value, sSite, originalNote)
         )
 
         // Verify results
@@ -255,10 +255,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() = runBlocking {
-        val result = orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId.value, sSite)
+        val result = orderStore.fetchOrderShipmentTrackings(orderModel.remoteOrderId.value, sSite)
         assertTrue(result.isError)
         assertEquals(OrderErrorType.PLUGIN_NOT_ACTIVE, result.error.type)
-        val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
+        val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
         assertTrue(trackings.isEmpty())
     }
 

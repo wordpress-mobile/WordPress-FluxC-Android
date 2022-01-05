@@ -49,10 +49,10 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             remoteOrderId = RemoteId(BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()),
             localSiteId = sSite.localId()
         )
-        orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId.value, sSite)
+        orderStore.fetchOrderShipmentTrackings(orderModel.remoteOrderId.value, sSite)
 
         val trackings = orderStore.getShipmentTrackingsForOrder(
-                sSite, orderModel.id
+                sSite, orderModel.remoteOrderId.value
         )
         assertTrue(trackings.isNotEmpty())
     }
@@ -71,11 +71,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             localSiteId = sSite.localId()
         )
 
-        orderStore.fetchOrderShipmentTrackings(orderModel.id, orderModel.remoteOrderId.value, sSite)
+        orderStore.fetchOrderShipmentTrackings(orderModel.remoteOrderId.value, sSite)
 
-        val trackings = orderStore.getShipmentTrackingsForOrder(
-                sSite, orderModel.id
-        )
+        val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
         assertTrue(trackings.isEmpty())
     }
 
@@ -106,12 +104,10 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             dateShipped = testDateShipped
         }
         orderStore.addOrderShipmentTracking(AddOrderShipmentTrackingPayload(
-                sSite, orderModel.id, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = false)
+                sSite, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = false)
         )
 
-        var trackings = orderStore.getShipmentTrackingsForOrder(
-                sSite, orderModel.id
-        )
+        var trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
         assertTrue(trackings.isNotEmpty())
 
         var trackingResult: WCOrderShipmentTrackingModel? = null
@@ -132,15 +128,13 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
          * TEST 2: Delete the previously added shipment tracking record
          */
         val onOrderChanged = orderStore.deleteOrderShipmentTracking(
-                DeleteOrderShipmentTrackingPayload(
-                        sSite, orderModel.id, orderModel.remoteOrderId.value, trackingResult!!
-                )
+                DeleteOrderShipmentTrackingPayload(sSite, orderModel.remoteOrderId.value, trackingResult!!)
         )
 
         assertFalse(onOrderChanged.isError)
         // Verify the tracking record is no longer in the database
         var currentCount = trackings.size
-        trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
+        trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
         assertTrue(trackings.size == --currentCount)
     }
 
@@ -174,12 +168,10 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         }
         orderStore.addOrderShipmentTracking(
                 AddOrderShipmentTrackingPayload(
-                        sSite, orderModel.id, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = true
+                        sSite, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = true
                 )
         )
-        var trackings = orderStore.getShipmentTrackingsForOrder(
-                sSite, orderModel.id
-        )
+        var trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
         assertTrue(trackings.isNotEmpty())
 
         var trackingResult: WCOrderShipmentTrackingModel? = null
@@ -202,14 +194,14 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
          */
         val onOrderChanged = orderStore.deleteOrderShipmentTracking(
                 DeleteOrderShipmentTrackingPayload(
-                        sSite, orderModel.id, orderModel.remoteOrderId.value, trackingResult!!
+                        sSite, orderModel.remoteOrderId.value, trackingResult!!
                 )
         )
 
         assertFalse(onOrderChanged.isError)
         // Verify the tracking record is no longer in the database
         var currentCount = trackings.size
-        trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
+        trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
         assertTrue(trackings.size == --currentCount)
     }
 

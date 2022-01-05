@@ -371,7 +371,7 @@ class WCOrderStoreTest {
                             ),
                             OrderTestUtils.generateSampleOrder(
                                     siteId = site.id,
-                                    remoteId = index,
+                                    orderId = index,
                                     modified = baselineDate
                             )
                     )
@@ -390,7 +390,7 @@ class WCOrderStoreTest {
                             ),
                             OrderTestUtils.generateSampleOrder(
                                     siteId = site.id,
-                                    remoteId = index,
+                                    orderId = index,
                                     modified = baselineDate
                             )
                     )

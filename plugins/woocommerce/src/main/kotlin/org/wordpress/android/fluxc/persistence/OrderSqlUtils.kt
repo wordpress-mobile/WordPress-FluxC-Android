@@ -69,7 +69,7 @@ object OrderSqlUtils {
                 .beginGroup()
                 .equals(WCOrderNoteModelTable.REMOTE_NOTE_ID, note.remoteNoteId)
                 .equals(WCOrderNoteModelTable.LOCAL_SITE_ID, note.localSiteId)
-                .equals(WCOrderNoteModelTable.LOCAL_ORDER_ID, note.localOrderId)
+                .equals(WCOrderNoteModelTable.LOCAL_ORDER_ID, note.orderId)
                 .endGroup()
                 .endGroup().endWhere()
                 .asModel
@@ -143,7 +143,7 @@ object OrderSqlUtils {
                 .or()
                 .beginGroup()
                 .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, tracking.localSiteId)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, tracking.localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, tracking.orderId)
                 .equals(WCOrderShipmentTrackingModelTable.REMOTE_TRACKING_ID, tracking.remoteTrackingId)
                 .endGroup().endGroup().endWhere().asModel
 
@@ -157,27 +157,27 @@ object OrderSqlUtils {
 
     fun getShipmentTrackingsForOrder(
         site: SiteModel,
-        localOrderId: Int
+        orderId: Long
     ): List<WCOrderShipmentTrackingModel> {
         return WellSql.select(WCOrderShipmentTrackingModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, orderId)
                 .endGroup().endWhere()
                 .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
     }
 
     fun getShipmentTrackingByTrackingNumber(
         site: SiteModel,
-        localOrderId: Int,
+        orderId: Long,
         trackingNumber: String
     ): WCOrderShipmentTrackingModel? {
         return WellSql.select(WCOrderShipmentTrackingModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, orderId)
                 .equals(WCOrderShipmentTrackingModelTable.TRACKING_NUMBER, trackingNumber)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
