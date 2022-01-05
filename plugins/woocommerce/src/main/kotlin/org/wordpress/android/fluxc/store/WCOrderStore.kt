@@ -392,7 +392,7 @@ class WCOrderStore @Inject constructor(
     /**
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
      */
-    fun getOrderNotesForOrder(orderId: Int): List<WCOrderNoteModel> =
+    fun getOrderNotesForOrder(orderId: Long): List<WCOrderNoteModel> =
             OrderSqlUtils.getOrderNotesForOrder(orderId)
 
     /**

@@ -54,13 +54,13 @@ class OrderSqlUtilsTest {
 
         // Test inserting notes
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
 
         // Test ignoring notes already saved to db
         val inserted = OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1))
         assertEquals(0, inserted)
-        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes2.size)
     }
 
@@ -74,13 +74,13 @@ class OrderSqlUtilsTest {
         // Test inserting notes
         OrderSqlUtils.insertOrIgnoreOrderNote(note1)
         OrderSqlUtils.insertOrIgnoreOrderNote(note2)
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
 
         // Test ignoring notes already saved to db
         val inserted = OrderSqlUtils.insertOrIgnoreOrderNote(note1)
         assertEquals(0, inserted)
-        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes2.size)
     }
 
@@ -92,7 +92,7 @@ class OrderSqlUtilsTest {
         val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
 
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
     }
 
@@ -105,12 +105,12 @@ class OrderSqlUtilsTest {
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
         val site = SiteModel().apply { id = order.localSiteId.value }
 
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
 
         val deletedCount = OrderSqlUtils.deleteOrderNotesForSite(site)
         assertEquals(2, deletedCount)
-        val verify = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val verify = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(0, verify.size)
     }
 
@@ -216,7 +216,6 @@ class OrderSqlUtilsTest {
     fun testGetOrderShipmentTrackingsForOrder() {
         val siteModel = SiteModel().apply { id = 1 }
         val orderId = 3L
-        val orderModel = OrderTestUtils.generateSampleOrder(orderId, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
@@ -250,7 +249,6 @@ class OrderSqlUtilsTest {
         val orderId = 3L
         // Insert shipment trackings into the database
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
@@ -274,7 +272,6 @@ class OrderSqlUtilsTest {
         val orderId = 3L
         // Insert shipment trackings into the database
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils

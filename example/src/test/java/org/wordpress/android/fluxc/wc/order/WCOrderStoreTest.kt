@@ -227,12 +227,13 @@ class WCOrderStoreTest {
     @Test
     fun testGetOrderNotesForOrder() {
         val notesJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_notes.json")
-        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, 6, 949)
-        val orderModel = OrderTestUtils.generateSampleOrder(1).copy(id = 949)
+        val orderId = 949L
+        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, 6, orderId)
+        val orderModel = OrderTestUtils.generateSampleOrder(1).copy(remoteOrderId = RemoteId(orderId))
         assertEquals(6, noteModels.size)
         OrderSqlUtils.insertOrIgnoreOrderNote(noteModels[0])
 
-        val retrievedNotes = orderStore.getOrderNotesForOrder(orderModel.id)
+        val retrievedNotes = orderStore.getOrderNotesForOrder(orderModel.remoteOrderId.value)
         assertEquals(1, retrievedNotes.size)
         assertEquals(noteModels[0], retrievedNotes[0])
     }
