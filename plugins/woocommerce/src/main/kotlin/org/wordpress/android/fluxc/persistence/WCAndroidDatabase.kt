@@ -1,10 +1,7 @@
 package org.wordpress.android.fluxc.persistence
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import androidx.room.*
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
@@ -16,9 +13,10 @@ import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
 
 @Database(
-        version = 5,
+        version = 6,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -46,6 +44,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .fallbackToDestructiveMigrationOnDowngrade()
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_5_6)
                 .build()
     }
 }

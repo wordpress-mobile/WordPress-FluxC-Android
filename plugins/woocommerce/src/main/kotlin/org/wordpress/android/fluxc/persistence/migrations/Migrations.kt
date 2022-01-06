@@ -74,3 +74,9 @@ internal val MIGRATION_4_5 = object : Migration(4, 5) {
         database.execSQL("DROP TABLE SSREntity")
     }
 }
+
+internal val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("DROP TABLE OrderEntity")
+    }
+}

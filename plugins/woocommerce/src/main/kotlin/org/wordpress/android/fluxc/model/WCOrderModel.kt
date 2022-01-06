@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
