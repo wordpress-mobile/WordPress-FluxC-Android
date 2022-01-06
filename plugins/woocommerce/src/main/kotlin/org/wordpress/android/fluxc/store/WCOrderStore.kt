@@ -846,9 +846,9 @@ class WCOrderStore @Inject constructor(
             OnOrderChanged(orderError = payload.error)
         } else {
             with(payload) {
-                OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
+                OnOrderChanged(statusFilter = statusFilter)
             }
-        }
+        }.copy(causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
         emitChange(onOrderChanged)
     }
 
