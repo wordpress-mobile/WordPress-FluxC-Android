@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.ShippingLine
-import kotlin.DeprecationLevel.ERROR
 
 @Entity(
         tableName = "OrderEntity",
@@ -22,58 +21,53 @@ import kotlin.DeprecationLevel.ERROR
         )]
 )
 data class WCOrderModel(
-    @Deprecated(
-            message = "Please do not use local id for order identification. Use tuple of localSiteId x remoteOrderId." +
-                    "See p91TBi-6dF-p2#comment-7013",
-            level = ERROR
-    )
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "localSiteId")
-    val localSiteId: LocalId,
-    @ColumnInfo(name = "remoteOrderId")
-    val remoteOrderId: RemoteId, // The unique identifier for this order on the server
-    val number: String = "", // The, order number to display to the user
-    val status: String = "",
-    val currency: String = "",
-    val orderKey: String = "",
-    val dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    val dateModified: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    val total: String = "", // Complete total, including taxes
-    val totalTax: String = "", // The total amount of tax (from products, shipping, discounts, etc.)
-    val shippingTotal: String = "", // The total shipping cost (excluding tax)
-    val paymentMethod: String = "", // Payment method code e.g. 'cod' 'stripe'
-    val paymentMethodTitle: String = "", // Displayable payment method e.g. 'Cash on delivery' 'Credit Card (Stripe)'
-    val datePaid: String = "",
-    val pricesIncludeTax: Boolean = false,
-    val customerNote: String = "", // Note left by the customer during order submission
-    val discountTotal: String = "",
-    val discountCodes: String = "",
-    val refundTotal: Double = 0.0, // The total refund value for this order (usually a negative number)
-    val billingFirstName: String = "",
-    val billingLastName: String = "",
-    val billingCompany: String = "",
-    val billingAddress1: String = "",
-    val billingAddress2: String = "",
-    val billingCity: String = "",
-    val billingState: String = "",
-    val billingPostcode: String = "",
-    val billingCountry: String = "",
-    val billingEmail: String = "",
-    val billingPhone: String = "",
-    val shippingFirstName: String = "",
-    val shippingLastName: String = "",
-    val shippingCompany: String = "",
-    val shippingAddress1: String = "",
-    val shippingAddress2: String = "",
-    val shippingCity: String = "",
-    val shippingState: String = "",
-    val shippingPostcode: String = "",
-    val shippingCountry: String = "",
-    val shippingPhone: String = "",
-    val lineItems: String = "",
-    val shippingLines: String = "",
-    val feeLines: String = "",
-    val metaData: String = ""
+        @ColumnInfo(name = "localSiteId")
+        val localSiteId: LocalId,
+        @ColumnInfo(name = "remoteOrderId")
+        @PrimaryKey(autoGenerate = false)
+        val orderId: Long,
+        val number: String = "", // The, order number to display to the user
+        val status: String = "",
+        val currency: String = "",
+        val orderKey: String = "",
+        val dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+        val dateModified: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+        val total: String = "", // Complete total, including taxes
+        val totalTax: String = "", // The total amount of tax (from products, shipping, discounts, etc.)
+        val shippingTotal: String = "", // The total shipping cost (excluding tax)
+        val paymentMethod: String = "", // Payment method code e.g. 'cod' 'stripe'
+        val paymentMethodTitle: String = "", // Displayable payment method e.g. 'Cash on delivery' 'Credit Card (Stripe)'
+        val datePaid: String = "",
+        val pricesIncludeTax: Boolean = false,
+        val customerNote: String = "", // Note left by the customer during order submission
+        val discountTotal: String = "",
+        val discountCodes: String = "",
+        val refundTotal: Double = 0.0, // The total refund value for this order (usually a negative number)
+        val billingFirstName: String = "",
+        val billingLastName: String = "",
+        val billingCompany: String = "",
+        val billingAddress1: String = "",
+        val billingAddress2: String = "",
+        val billingCity: String = "",
+        val billingState: String = "",
+        val billingPostcode: String = "",
+        val billingCountry: String = "",
+        val billingEmail: String = "",
+        val billingPhone: String = "",
+        val shippingFirstName: String = "",
+        val shippingLastName: String = "",
+        val shippingCompany: String = "",
+        val shippingAddress1: String = "",
+        val shippingAddress2: String = "",
+        val shippingCity: String = "",
+        val shippingState: String = "",
+        val shippingPostcode: String = "",
+        val shippingCountry: String = "",
+        val shippingPhone: String = "",
+        val lineItems: String = "",
+        val shippingLines: String = "",
+        val feeLines: String = "",
+        val metaData: String = ""
 ) {
     companion object {
         private val gson by lazy { Gson() }

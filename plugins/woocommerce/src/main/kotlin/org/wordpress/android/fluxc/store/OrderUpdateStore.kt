@@ -34,17 +34,17 @@ class OrderUpdateStore @Inject internal constructor(
     private val siteSqlUtils: SiteSqlUtils
 ) {
     suspend fun updateCustomerOrderNote(
-        remoteOrderId: RemoteId,
-        site: SiteModel,
-        newCustomerNote: String
+            orderId: Long,
+            site: SiteModel,
+            newCustomerNote: String
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
-            val initialOrder = ordersDao.getOrder(remoteOrderId, site.localId())
+            val initialOrder = ordersDao.getOrder(orderId, site.localId())
 
             if (initialOrder == null) {
-                emitNoEntityFound("Order with id ${remoteOrderId.value} not found")
+                emitNoEntityFound("Order with id $orderId not found")
             } else {
-                ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
+                ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
                     copy(customerNote = newCustomerNote)
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
@@ -67,12 +67,12 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     suspend fun updateOrderAddress(
-        remoteOrderId: RemoteId,
+        orderId: Long,
         localSiteId: LocalId,
         newAddress: OrderAddress
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderAddress") {
-            takeWhenOrderDataAcquired(remoteOrderId, localSiteId) { initialOrder, site ->
+            takeWhenOrderDataAcquired(orderId, localSiteId) { initialOrder, site ->
                 updateLocalOrderAddress(initialOrder, newAddress)
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
 
@@ -91,13 +91,13 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     suspend fun updateBothOrderAddresses(
-        remoteOrderId: RemoteId,
+        orderId: Long,
         localSiteId: LocalId,
         shippingAddress: Shipping,
         billingAddress: Billing
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateBothOrderAddresses") {
-            takeWhenOrderDataAcquired(remoteOrderId, localSiteId) { initialOrder, site ->
+            takeWhenOrderDataAcquired(orderId, localSiteId) { initialOrder, site ->
                 updateBothLocalOrderAddresses(
                         initialOrder,
                         shippingAddress,
@@ -115,21 +115,21 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun FlowCollector<UpdateOrderResult>.takeWhenOrderDataAcquired(
-        remoteOrderId: RemoteId,
+        orderId: Long,
         localSiteId: LocalId,
         predicate: UpdateOrderFlowPredicate
     ) {
-        ordersDao.getOrder(remoteOrderId, localSiteId)?.let { initialOrder ->
+        ordersDao.getOrder(orderId, localSiteId)?.let { initialOrder ->
             siteSqlUtils.getSiteWithLocalId(initialOrder.localSiteId)
                     ?.let { predicate(initialOrder, it) }
                     ?: emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
-        } ?: emitNoEntityFound("Order with id ${remoteOrderId.value} not found")
+        } ?: emitNoEntityFound("Order with id $orderId not found")
     }
 
     private suspend fun updateLocalOrderAddress(
         initialOrder: WCOrderModel,
         newAddress: OrderAddress
-    ) = ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
+    ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         when (newAddress) {
             is Billing -> updateLocalBillingAddress(newAddress)
             is Shipping -> updateLocalShippingAddress(newAddress)
@@ -140,7 +140,7 @@ class OrderUpdateStore @Inject internal constructor(
         initialOrder: WCOrderModel,
         shippingAddress: Shipping,
         billingAddress: Billing
-    ) = ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
+    ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         updateLocalShippingAddress(shippingAddress)
         updateLocalBillingAddress(billingAddress)
     }

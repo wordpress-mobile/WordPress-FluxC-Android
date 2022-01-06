@@ -48,9 +48,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     private var nextEvent: TestEvent = TestEvent.NONE
     private val orderModel by lazy {
         WCOrderModel(
-                id = 8,
                 localSiteId = sSite.localId(),
-                remoteOrderId = RemoteId(1125),
+                orderId = RemoteId(1125),
                 number = "1125",
                 dateCreated = "2018-04-20T15:45:14Z"
         )
@@ -183,10 +182,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchSingleOrder() = runBlocking {
-        orderStore.fetchSingleOrder(sSite, orderModel.remoteOrderId.value)
+        orderStore.fetchSingleOrder(sSite, orderModel.orderId.value)
 
-        val orderFromDb = orderStore.getOrderByIdAndSite(orderModel.remoteOrderId.value, sSite)
-        assertTrue(orderFromDb != null && orderFromDb.remoteOrderId == orderModel.remoteOrderId)
+        val orderFromDb = orderStore.getOrderByIdAndSite(orderModel.orderId.value, sSite)
+        assertTrue(orderFromDb != null && orderFromDb.orderId == orderModel.orderId)
     }
 
     @Throws(InterruptedException::class)
@@ -200,10 +199,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        orderStore.fetchOrderNotes(firstOrder.remoteOrderId.value, sSite)
+        orderStore.fetchOrderNotes(firstOrder.orderId.value, sSite)
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.remoteOrderId.value)
+        val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.orderId.value)
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
@@ -211,17 +210,17 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Test
     fun testPostOrderNote() = runBlocking {
         val originalNote = WCOrderNoteModel().apply {
-            orderId = orderModel.remoteOrderId.value
+            orderId = orderModel.orderId.value
             localSiteId = sSite.id
             note = "Test rest note"
             isCustomerNote = true
         }
         orderStore.postOrderNote(
-                PostOrderNotePayload(orderModel.remoteOrderId.value, sSite, originalNote)
+                PostOrderNotePayload(orderModel.orderId.value, sSite, originalNote)
         )
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.remoteOrderId.value)
+        val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.orderId.value)
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
@@ -255,10 +254,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() = runBlocking {
-        val result = orderStore.fetchOrderShipmentTrackings(orderModel.remoteOrderId.value, sSite)
+        val result = orderStore.fetchOrderShipmentTrackings(orderModel.orderId.value, sSite)
         assertTrue(result.isError)
         assertEquals(OrderErrorType.PLUGIN_NOT_ACTIVE, result.error.type)
-        val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.remoteOrderId.value)
+        val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.orderId.value)
         assertTrue(trackings.isEmpty())
     }
 

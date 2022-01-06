@@ -72,7 +72,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         with(payload.orders[0]) {
             assertEquals(siteModel.id, localSiteId.value)
-            assertEquals(949, remoteOrderId.value)
+            assertEquals(949, orderId.value)
             assertEquals("949", number)
             assertEquals(CoreOrderStatus.PROCESSING.value, status)
             assertEquals("USD", currency)
@@ -181,7 +181,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         with(response) {
             assertNull(error)
-            assertEquals(remoteOrderId, order.remoteOrderId.value)
+            assertEquals(remoteOrderId, order.orderId.value)
         }
     }
 
@@ -211,10 +211,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderStatusUpdateSuccess() = runBlocking {
         val originalOrder = WCOrderModel(
-            id = 8,
             localSiteId = siteModel.localId(),
             status = CoreOrderStatus.PROCESSING.value,
-            remoteOrderId = RemoteId(88),
+            orderId = RemoteId(88),
             total = "15.00"
         )
 
@@ -226,7 +225,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(siteModel.id, order.localSiteId.value)
-            assertEquals(originalOrder.remoteOrderId, order.remoteOrderId)
+            assertEquals(originalOrder.orderId, order.orderId)
             assertEquals(CoreOrderStatus.REFUNDED.value, order.status)
         }
     }
@@ -234,10 +233,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderStatusUpdateError() = runBlocking {
         val originalOrder = WCOrderModel(
-            id = 8,
             localSiteId = siteModel.localId(),
             status = CoreOrderStatus.PROCESSING.value,
-            remoteOrderId = RemoteId(88),
+            orderId = RemoteId(88),
             total = "15.00"
         )
 
@@ -338,7 +336,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderNotePostError() = runBlocking {
-        val orderModel = WCOrderModel(5, siteModel.localId(), remoteOrderId = RemoteId(0))
+        val orderModel = WCOrderModel(siteModel.localId(), orderId = RemoteId(0))
         val originalNote = WCOrderNoteModel().apply {
             orderId = 5
             localSiteId = siteModel.id
@@ -353,7 +351,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         interceptor.respondWithError(errorJson, 400)
         val payload = orderRestClient.postOrderNote(
-                orderModel.remoteOrderId.value, siteModel, originalNote
+                orderModel.orderId.value, siteModel, originalNote
         )
 
         with(payload) {
@@ -416,10 +414,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderShipmentTrackingsFetchSuccess() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), RemoteId(0))
+        val orderModel = WCOrderModel(localSiteId = siteModel.localId(), RemoteId(0))
         interceptor.respondWith("wc-order-shipment-trackings-success.json")
         val payload = orderRestClient.fetchOrderShipmentTrackings(
-                siteModel, orderModel.remoteOrderId.value
+                siteModel, orderModel.orderId.value
         )
 
         assertNull(payload.error)
@@ -438,7 +436,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testAddOrderShipmentTrackingSuccess() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
+        val orderModel = WCOrderModel(localSiteId = siteModel.localId(), orderId = RemoteId(0))
         val trackingModel = WCOrderShipmentTrackingModel().apply {
             trackingProvider = "TNT Express (consignment)"
             trackingNumber = "123456"
@@ -446,7 +444,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-success.json")
         val payload = orderRestClient.addOrderShipmentTrackingForOrder(
-                siteModel, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = false
+                siteModel, orderModel.orderId.value, trackingModel, isCustomProvider = false
         )
 
         assertNull(payload.error)
@@ -465,7 +463,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testAddOrderShipmentTrackingCustomProviderSuccess() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
+        val orderModel = WCOrderModel(localSiteId = siteModel.localId(), orderId = RemoteId(0))
         val trackingModel = WCOrderShipmentTrackingModel().apply {
             trackingProvider = "Amanda Test Provider"
             trackingNumber = "123456"
@@ -474,7 +472,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-custom-success.json")
         val payload = orderRestClient.addOrderShipmentTrackingForOrder(
-                siteModel, orderModel.remoteOrderId.value, trackingModel, isCustomProvider = true
+                siteModel, orderModel.orderId.value, trackingModel, isCustomProvider = true
         )
 
         assertNull(payload.error)
@@ -491,14 +489,14 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testDeleteOrderShipmentTrackingSuccess() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
+        val orderModel = WCOrderModel(localSiteId = siteModel.localId(), orderId = RemoteId(0))
         val trackingModel = WCOrderShipmentTrackingModel().apply {
             remoteTrackingId = "95bb641d79d7c6974001d6a03fbdabc0"
         }
 
         interceptor.respondWith("wc-delete-order-shipment-tracking-success.json")
         val payload = orderRestClient.deleteShipmentTrackingForOrder(
-                siteModel, orderModel.remoteOrderId.value, trackingModel
+                siteModel, orderModel.orderId.value, trackingModel
         )
 
         assertNull(payload.error)
@@ -511,7 +509,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderShipmentProvidersFetchSuccess() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
+        val orderModel = WCOrderModel(localSiteId = siteModel.localId(), orderId = RemoteId(0))
         interceptor.respondWith("wc-order-shipment-providers-success.json")
         val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNull(payload.error)
@@ -532,7 +530,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
      */
     @Test
     fun testOrderShipmentProvidersFetchFailed() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
+        val orderModel = WCOrderModel(localSiteId = siteModel.localId(), orderId = RemoteId(0))
         interceptor.respondWith("wc-order-shipment-providers-failed.json")
         val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNotNull(payload.error)

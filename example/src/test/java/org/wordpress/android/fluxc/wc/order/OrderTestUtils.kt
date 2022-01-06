@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
@@ -34,7 +33,7 @@ object OrderTestUtils {
         modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderModel {
         return WCOrderModel(
-            remoteOrderId = RemoteId(orderId),
+            orderId = orderId,
             localSiteId = LocalId(siteId),
             status = orderStatus,
             dateModified = modified,
@@ -51,7 +50,7 @@ object OrderTestUtils {
         modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderSummaryModel {
         return WCOrderSummaryModel(id.toInt()).apply {
-            remoteOrderId = remoteId.toLong()
+            orderId = remoteId.toLong()
             dateModified = modified
         }
     }
@@ -161,7 +160,7 @@ object OrderTestUtils {
         return converted.map { response ->
             WCOrderSummaryModel().apply {
                 localSiteId = siteId
-                remoteOrderId = response.id ?: 0
+                orderId = response.id ?: 0
                 dateCreated = response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
                 dateModified = response.dateModifiedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
             }

@@ -80,7 +80,7 @@ fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
             date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     return WCOrderModel(
-            remoteOrderId = RemoteId(this.id ?: 0),
+            orderId = this.id ?: 0,
             localSiteId = localSiteId,
             number = this.number ?: (this.id ?: 0).toString(),
             status = this.status ?: "",

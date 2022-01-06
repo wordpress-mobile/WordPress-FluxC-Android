@@ -66,7 +66,7 @@ class WCOrderStore @Inject constructor(
 
     class FetchOrdersByIdsPayload(
         val site: SiteModel,
-        val remoteIds: List<RemoteId>
+        val orderIds: List<Long>
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersResponsePayload(
@@ -97,14 +97,14 @@ class WCOrderStore @Inject constructor(
 
     class FetchOrdersByIdsResponsePayload(
         val site: SiteModel,
-        var remoteOrderIds: List<RemoteId>,
+        var orderIds: List<Long>,
         var fetchedOrders: List<WCOrderModel> = emptyList()
     ) : Payload<OrderError>() {
         constructor(
             error: OrderError,
             site: SiteModel,
-            remoteOrderIds: List<RemoteId>
-        ) : this(site = site, remoteOrderIds = remoteOrderIds) {
+            orderIds: List<Long>
+        ) : this(site = site, orderIds = orderIds) {
             this.error = error
         }
     }
@@ -142,16 +142,6 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    class FetchSingleOrderPayload(
-        var site: SiteModel,
-        var remoteOrderId: Long
-    ) : Payload<BaseNetworkError>()
-
-    class FetchHasOrdersPayload(
-        var site: SiteModel,
-        var statusFilter: String? = null
-    ) : Payload<BaseNetworkError>()
-
     class FetchHasOrdersResponsePayload(
         var site: SiteModel,
         var statusFilter: String? = null,
@@ -179,12 +169,6 @@ class WCOrderStore @Inject constructor(
         data class OptimisticUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
         data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
     }
-
-    class FetchOrderNotesPayload(
-        var localOrderId: Int,
-        var remoteOrderId: Long,
-        var site: SiteModel
-    ) : Payload<BaseNetworkError>()
 
     class FetchOrderNotesResponsePayload(
         var orderId: Long,
@@ -333,7 +317,7 @@ class WCOrderStore @Inject constructor(
 
     class OnOrdersFetchedByIds(
         val site: SiteModel,
-        val orderIds: List<RemoteId>
+        val orderIds: List<Long>
     ) : OnChanged<OrderError>()
 
     class OnOrdersSearched(
@@ -367,18 +351,18 @@ class WCOrderStore @Inject constructor(
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
-        remoteOrderIds: List<RemoteId>
-    ): Map<RemoteId, WCOrderModel> {
+        remoteOrderIds: List<Long>
+    ): Map<Long, WCOrderModel> {
         val orders = ordersDao.getOrdersForSiteByRemoteIds(orderListDescriptor.site.localId(), remoteOrderIds)
-        return orders.associateBy { it.remoteOrderId }
+        return orders.associateBy { it.orderId }
     }
 
     fun getOrderSummariesByRemoteOrderIds(
-        site: SiteModel,
-        remoteOrderIds: List<RemoteId>
+            site: SiteModel,
+            orderIds: List<Long>
     ): Map<RemoteId, WCOrderSummaryModel> {
-        val orderSummaries = OrderSqlUtils.getOrderSummariesForRemoteIds(site, remoteOrderIds)
-        return orderSummaries.associateBy { RemoteId(it.remoteOrderId) }
+        val orderSummaries = OrderSqlUtils.getOrderSummariesForRemoteIds(site, orderIds)
+        return orderSummaries.associateBy { RemoteId(it.orderId) }
     }
 
     /**
@@ -386,7 +370,7 @@ class WCOrderStore @Inject constructor(
      * returns the corresponding order from the database as a [WCOrderModel].
      */
     suspend fun getOrderByIdAndSite(orderId: Long, site: SiteModel): WCOrderModel? {
-        return ordersDao.getOrder(RemoteId(orderId), site.localId())
+        return ordersDao.getOrder(orderId, site.localId())
     }
 
     /**
@@ -469,7 +453,7 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
-        payload.remoteIds.chunked(NUM_ORDERS_PER_FETCH).forEach { idsToFetch ->
+        payload.orderIds.chunked(NUM_ORDERS_PER_FETCH).forEach { idsToFetch ->
             wcOrderRestClient.fetchOrdersByIds(payload.site, idsToFetch)
         }
     }
@@ -543,15 +527,15 @@ class WCOrderStore @Inject constructor(
     }
 
     suspend fun updateOrderStatus(
-        remoteOrderId: RemoteId,
+        orderId: Long,
         site: SiteModel,
         newStatus: WCOrderStatusModel
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateOrderStatus") {
-            val orderModel = ordersDao.getOrder(remoteOrderId, site.localId())
+            val orderModel = ordersDao.getOrder(orderId, site.localId())
 
             if (orderModel != null) {
-                updateOrderStatusLocally(remoteOrderId, site.localId(), newStatus.statusKey)
+                updateOrderStatusLocally(orderId, site.localId(), newStatus.statusKey)
 
                 val optimisticUpdateResult = OnOrderChanged(
                         causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
@@ -575,7 +559,7 @@ class WCOrderStore @Inject constructor(
                         OptimisticUpdateResult(
                                 OnOrderChanged(
                                         orderError = OrderError(
-                                                message = "Order with id ${remoteOrderId.value} not found"
+                                                message = "Order with id $orderId not found"
                                         )
                                 )
                         )
@@ -584,8 +568,8 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    private suspend fun updateOrderStatusLocally(remoteOrderId: RemoteId, localSiteId: LocalId, newStatus: String) {
-        val updatedOrder = ordersDao.getOrder(remoteOrderId, localSiteId)!!
+    private suspend fun updateOrderStatusLocally(orderId: Long, localSiteId: LocalId, newStatus: String) {
+        val updatedOrder = ordersDao.getOrder(orderId, localSiteId)!!
                 .copy(status = newStatus)
         ordersDao.insertOrUpdateOrder(updatedOrder)
     }
@@ -745,7 +729,7 @@ class WCOrderStore @Inject constructor(
 
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
-                remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
+                remoteItemIds = payload.orderSummaries.map { it.orderId },
                 loadedMore = payload.loadedMore,
                 canLoadMore = payload.canLoadMore,
                 error = payload.error?.let { fetchError ->
@@ -756,40 +740,40 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun fetchOutdatedOrMissingOrders(site: SiteModel, fetchedSummaries: List<WCOrderSummaryModel>) {
-        val fetchedSummariesIds = fetchedSummaries.map { RemoteId(it.remoteOrderId) }
+        val fetchedSummariesIds = fetchedSummaries.map { it.orderId }
         val localOrdersForFetchedSummaries = ordersDao.getOrdersForSiteByRemoteIds(site.localId(), fetchedSummariesIds)
 
         val idsToFetch = outdatedOrdersIds(fetchedSummaries, localOrdersForFetchedSummaries)
                 .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))
 
-        wcOrderFetcher.fetchOrders(site = site, remoteItemIds = idsToFetch)
+        wcOrderFetcher.fetchOrders(site = site, orderIds = idsToFetch)
     }
 
     private fun outdatedOrdersIds(
         fetchedSummaries: List<WCOrderSummaryModel>,
         localOrdersForSiteByRemoteIds: List<WCOrderModel>
-    ): List<RemoteId> {
-        val summaryModifiedDates = fetchedSummaries.associate { it.remoteOrderId to it.dateModified }
+    ): List<Long> {
+        val summaryModifiedDates = fetchedSummaries.associate { it.orderId to it.dateModified }
 
         return localOrdersForSiteByRemoteIds.filter { order ->
-            order.dateModified != summaryModifiedDates[order.remoteOrderId.value]
-        }.map(WCOrderModel::remoteOrderId)
+            order.dateModified != summaryModifiedDates[order.orderId]
+        }.map(WCOrderModel::orderId)
     }
 
     private fun missingOrdersIds(
-        fetchedSummariesIds: List<RemoteId>,
+        fetchedSummariesIds: List<Long>,
         localOrdersForSiteByRemoteIds: List<WCOrderModel>
-    ): List<RemoteId> {
+    ): List<Long> {
         return fetchedSummariesIds.minus(
-                localOrdersForSiteByRemoteIds.map(WCOrderModel::remoteOrderId)
+                localOrdersForSiteByRemoteIds.map(WCOrderModel::orderId)
         )
     }
 
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
         val onOrdersFetchedByIds = if (payload.isError) {
-            OnOrdersFetchedByIds(payload.site, payload.remoteOrderIds).apply { error = payload.error }
+            OnOrdersFetchedByIds(payload.site, payload.orderIds).apply { error = payload.error }
         } else {
-            OnOrdersFetchedByIds(payload.site, payload.fetchedOrders.map { it.remoteOrderId })
+            OnOrdersFetchedByIds(payload.site, payload.fetchedOrders.map { it.orderId })
         }
 
         if (!payload.isError) {
@@ -829,7 +813,7 @@ class WCOrderStore @Inject constructor(
     }
 
     private suspend fun revertOrderStatus(payload: RemoteOrderPayload): OnOrderChanged {
-        updateOrderStatusLocally(payload.order.remoteOrderId, payload.order.localSiteId, payload.order.status)
+        updateOrderStatusLocally(payload.order.orderId, payload.order.localSiteId, payload.order.status)
         return OnOrderChanged().also { it.error = payload.error }
     }
 

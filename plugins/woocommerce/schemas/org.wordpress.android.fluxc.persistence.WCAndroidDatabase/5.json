@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "34052cc9296465672d13b43d276b7ec2",
+    "identityHash": "b7431d13a2bb1432ead2ee6a3b7d34d5",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -228,14 +228,8 @@
       },
       {
         "tableName": "OrderEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `localSiteId` INTEGER NOT NULL, `remoteOrderId` INTEGER NOT NULL, `number` TEXT NOT NULL, `status` TEXT NOT NULL, `currency` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `dateModified` TEXT NOT NULL, `total` TEXT NOT NULL, `totalTax` TEXT NOT NULL, `shippingTotal` TEXT NOT NULL, `paymentMethod` TEXT NOT NULL, `paymentMethodTitle` TEXT NOT NULL, `datePaid` TEXT NOT NULL, `pricesIncludeTax` INTEGER NOT NULL, `customerNote` TEXT NOT NULL, `discountTotal` TEXT NOT NULL, `discountCodes` TEXT NOT NULL, `refundTotal` REAL NOT NULL, `billingFirstName` TEXT NOT NULL, `billingLastName` TEXT NOT NULL, `billingCompany` TEXT NOT NULL, `billingAddress1` TEXT NOT NULL, `billingAddress2` TEXT NOT NULL, `billingCity` TEXT NOT NULL, `billingState` TEXT NOT NULL, `billingPostcode` TEXT NOT NULL, `billingCountry` TEXT NOT NULL, `billingEmail` TEXT NOT NULL, `billingPhone` TEXT NOT NULL, `shippingFirstName` TEXT NOT NULL, `shippingLastName` TEXT NOT NULL, `shippingCompany` TEXT NOT NULL, `shippingAddress1` TEXT NOT NULL, `shippingAddress2` TEXT NOT NULL, `shippingCity` TEXT NOT NULL, `shippingState` TEXT NOT NULL, `shippingPostcode` TEXT NOT NULL, `shippingCountry` TEXT NOT NULL, `shippingPhone` TEXT NOT NULL, `lineItems` TEXT NOT NULL, `shippingLines` TEXT NOT NULL, `feeLines` TEXT NOT NULL, `metaData` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `remoteOrderId` INTEGER NOT NULL, `number` TEXT NOT NULL, `status` TEXT NOT NULL, `currency` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `dateModified` TEXT NOT NULL, `total` TEXT NOT NULL, `totalTax` TEXT NOT NULL, `shippingTotal` TEXT NOT NULL, `paymentMethod` TEXT NOT NULL, `paymentMethodTitle` TEXT NOT NULL, `datePaid` TEXT NOT NULL, `pricesIncludeTax` INTEGER NOT NULL, `customerNote` TEXT NOT NULL, `discountTotal` TEXT NOT NULL, `discountCodes` TEXT NOT NULL, `refundTotal` REAL NOT NULL, `billingFirstName` TEXT NOT NULL, `billingLastName` TEXT NOT NULL, `billingCompany` TEXT NOT NULL, `billingAddress1` TEXT NOT NULL, `billingAddress2` TEXT NOT NULL, `billingCity` TEXT NOT NULL, `billingState` TEXT NOT NULL, `billingPostcode` TEXT NOT NULL, `billingCountry` TEXT NOT NULL, `billingEmail` TEXT NOT NULL, `billingPhone` TEXT NOT NULL, `shippingFirstName` TEXT NOT NULL, `shippingLastName` TEXT NOT NULL, `shippingCompany` TEXT NOT NULL, `shippingAddress1` TEXT NOT NULL, `shippingAddress2` TEXT NOT NULL, `shippingCity` TEXT NOT NULL, `shippingState` TEXT NOT NULL, `shippingPostcode` TEXT NOT NULL, `shippingCountry` TEXT NOT NULL, `shippingPhone` TEXT NOT NULL, `lineItems` TEXT NOT NULL, `shippingLines` TEXT NOT NULL, `feeLines` TEXT NOT NULL, `metaData` TEXT NOT NULL, PRIMARY KEY(`remoteOrderId`))",
         "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "localSiteId",
             "columnName": "localSiteId",
@@ -243,7 +237,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "remoteOrderId",
+            "fieldPath": "orderId",
             "columnName": "remoteOrderId",
             "affinity": "INTEGER",
             "notNull": true
@@ -503,9 +497,9 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "id"
+            "remoteOrderId"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
         "indices": [
           {
@@ -524,7 +518,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '34052cc9296465672d13b43d276b7ec2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b7431d13a2bb1432ead2ee6a3b7d34d5')"
     ]
   }
 }
