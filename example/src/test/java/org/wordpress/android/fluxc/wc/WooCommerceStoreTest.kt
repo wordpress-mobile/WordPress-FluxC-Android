@@ -55,13 +55,6 @@ class WooCommerceStoreTest {
     private val restClient = mock<WooSystemRestClient>()
     private val siteStore = mock<SiteStore>()
 
-    private val roomDB = Room.inMemoryDatabaseBuilder(
-            appContext,
-            WCAndroidDatabase::class.java
-    )
-            .allowMainThreadQueries()
-            .build()
-
     private val wooCommerceStore = WooCommerceStore(
             appContext = appContext,
             dispatcher = Dispatcher(),
