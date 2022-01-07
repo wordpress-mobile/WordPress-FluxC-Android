@@ -909,7 +909,7 @@ class WCProductStore @Inject constructor(
     override fun onRegister() = AppLog.d(API, "WCProductStore onRegister")
 
     suspend fun fetchSingleProduct(payload: FetchSingleProductPayload): OnProductChanged {
-        return coroutineEngine?.withDefaultContext(API, this, "fetchSingleProduct") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchSingleProduct") {
             val result = with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
 
             return@withDefaultContext if (result.isError) {
