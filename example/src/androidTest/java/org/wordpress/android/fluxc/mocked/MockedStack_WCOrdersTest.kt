@@ -104,7 +104,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(85.0, getOrderSubtotal(), 0.01)
             assertEquals("7.00", shippingTotal)
             assertEquals("92.00", total)
-            assertEquals(-92.0, refundTotal, 0.01)
+            assertEquals("-92.0".toBigDecimal().stripTrailingZeros(), refundTotal.stripTrailingZeros())
         }
 
         // Order with coupons
