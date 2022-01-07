@@ -269,9 +269,9 @@ class ProductRestClient @Inject constructor(
                     }
                     RemoteProductPayload(newModel, site)
                 } ?: RemoteProductPayload(
-                        error = ProductError(GENERIC_ERROR, "Success response with empty data"),
+                        ProductError(GENERIC_ERROR, "Success response with empty data"),
                         WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site = site
+                        site
                 )
             }
             is JetpackError -> {
