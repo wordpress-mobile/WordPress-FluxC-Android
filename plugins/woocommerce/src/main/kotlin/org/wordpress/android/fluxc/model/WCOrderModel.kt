@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.ShippingLine
+import java.math.BigDecimal
 import kotlin.DeprecationLevel.ERROR
 
 @Entity(
@@ -48,7 +49,7 @@ data class WCOrderModel(
     val customerNote: String = "", // Note left by the customer during order submission
     val discountTotal: String = "",
     val discountCodes: String = "",
-    val refundTotal: Double = 0.0, // The total refund value for this order (usually a negative number)
+    val refundTotal: BigDecimal = BigDecimal.ZERO, // The total refund value for this order (usually a negative number)
     val billingFirstName: String = "",
     val billingLastName: String = "",
     val billingCompany: String = "",

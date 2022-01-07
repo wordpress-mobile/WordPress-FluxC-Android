@@ -60,6 +60,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.math.BigDecimal
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Named
@@ -889,8 +890,8 @@ class OrderRestClient @Inject constructor(
                 }.orEmpty(),
                 refundTotal = response.refunds?.let { refunds ->
                     // Extract the individual refund totals from the refunds list and store their sum as a Double,
-                    refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
-                } ?: 0.0,
+                    refunds.sumOf { it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+                } ?: BigDecimal.ZERO,
                 billingFirstName = response.billing?.first_name ?: "",
                 billingLastName = response.billing?.last_name ?: "",
                 billingCompany = response.billing?.company ?: "",
