@@ -921,7 +921,7 @@ class WCProductStore @Inject constructor(
                 val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(result.product)
 
                 // TODO: 18/08/2021 @wzieba add tests
-                coroutineEngine?.launch(T.DB, this, "cacheProductAddons") {
+                coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
                     val domainAddons = mapProductAddonsToDomain(result.product.addons)
                     addonsDao.cacheProductAddons(
                             productRemoteId = result.product.remoteProductId,
