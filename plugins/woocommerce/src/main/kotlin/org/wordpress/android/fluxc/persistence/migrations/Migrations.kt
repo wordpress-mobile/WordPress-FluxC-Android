@@ -77,9 +77,11 @@ internal val MIGRATION_4_5 = object : Migration(4, 5) {
 
 internal val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("DROP TABLE OrderEntity")
-        database.execSQL(
-                """ CREATE TABLE IF NOT EXISTS OrderEntity (
+        database.apply {
+            execSQL("DROP TABLE OrderEntity")
+            execSQL(
+                    // language=RoomSql
+                    """ CREATE TABLE IF NOT EXISTS OrderEntity (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `localSiteId` INTEGER NOT NULL,
                         `remoteOrderId` INTEGER NOT NULL,
@@ -125,7 +127,15 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
                         `shippingLines` TEXT NOT NULL,
                         `feeLines` TEXT NOT NULL,
                         `metaData` TEXT NOT NULL)
-        """.trimIndent()
-        )
+                    """.trimIndent()
+            )
+            execSQL(
+                    // language=RoomSql
+                    """
+                            CREATE UNIQUE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_remoteOrderId` 
+                            ON `OrderEntity` (`localSiteId`, `remoteOrderId`);
+                    """.trimIndent()
+            )
+        }
     }
 }
