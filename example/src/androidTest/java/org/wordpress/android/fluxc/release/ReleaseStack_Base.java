@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.release;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
-
 import android.content.Context;
+
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 import com.android.volley.RequestQueue;
 import com.yarolegovich.wellsql.WellSql;
