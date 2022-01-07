@@ -76,7 +76,9 @@ class WCOrderStore @Inject constructor(
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+        constructor(error: OrderError, site: SiteModel) : this(site) {
+            this.error = error
+        }
     }
 
     class FetchOrderListResponsePayload(
@@ -147,7 +149,9 @@ class WCOrderStore @Inject constructor(
         var statusFilter: String? = null,
         var hasOrders: Boolean = false
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+        constructor(error: OrderError, site: SiteModel) : this(site) {
+            this.error = error
+        }
     }
 
     class UpdateOrderStatusPayload(
@@ -160,7 +164,9 @@ class WCOrderStore @Inject constructor(
         val order: WCOrderModel,
         val site: SiteModel
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) { this.error = error }
+        constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) {
+            this.error = error
+        }
     }
 
     sealed class UpdateOrderResult {
@@ -196,7 +202,9 @@ class WCOrderStore @Inject constructor(
             orderId: Long,
             site: SiteModel,
             note: WCOrderNoteModel
-        ) : this(orderId, site, note) { this.error = error }
+        ) : this(orderId, site, note) {
+            this.error = error
+        }
     }
 
     class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
@@ -205,7 +213,9 @@ class WCOrderStore @Inject constructor(
         val site: SiteModel,
         val labels: List<WCOrderStatusModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+        constructor(error: OrderError, site: SiteModel) : this(site) {
+            this.error = error
+        }
     }
 
     class FetchOrderShipmentTrackingsResponsePayload(
@@ -214,7 +224,9 @@ class WCOrderStore @Inject constructor(
         var trackings: List<WCOrderShipmentTrackingModel> = emptyList()
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel, orderId: Long) :
-                this(site, orderId) { this.error = error }
+            this(site, orderId) {
+            this.error = error
+        }
     }
 
     class AddOrderShipmentTrackingPayload(
@@ -234,7 +246,9 @@ class WCOrderStore @Inject constructor(
             site: SiteModel,
             orderId: Long,
             tracking: WCOrderShipmentTrackingModel
-        ) : this(site, orderId, tracking) { this.error = error }
+        ) : this(site, orderId, tracking) {
+            this.error = error
+        }
     }
 
     class DeleteOrderShipmentTrackingPayload(
@@ -253,7 +267,9 @@ class WCOrderStore @Inject constructor(
             site: SiteModel,
             orderId: Long,
             tracking: WCOrderShipmentTrackingModel?
-        ) : this(site, orderId, tracking) { this.error = error }
+        ) : this(site, orderId, tracking) {
+            this.error = error
+        }
     }
 
     class FetchOrderShipmentProvidersPayload(
@@ -266,7 +282,9 @@ class WCOrderStore @Inject constructor(
         val order: WCOrderModel,
         val providers: List<WCOrderShipmentProviderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
+        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) {
+            this.error = error
+        }
     }
 
     data class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
@@ -347,7 +365,7 @@ class WCOrderStore @Inject constructor(
     }
 
     fun observeOrdersForSite(siteLocalId: LocalId, statuses: List<String>) =
-            ordersDao.observeOrdersForSite(siteLocalId, statuses)
+        ordersDao.observeOrdersForSite(siteLocalId, statuses)
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
@@ -358,8 +376,8 @@ class WCOrderStore @Inject constructor(
     }
 
     fun getOrderSummariesByRemoteOrderIds(
-            site: SiteModel,
-            orderIds: List<Long>
+        site: SiteModel,
+        orderIds: List<Long>
     ): Map<RemoteId, WCOrderSummaryModel> {
         val orderSummaries = OrderSqlUtils.getOrderSummariesForRemoteIds(site, orderIds)
         return orderSummaries.associateBy { RemoteId(it.orderId) }
@@ -377,34 +395,34 @@ class WCOrderStore @Inject constructor(
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
      */
     fun getOrderNotesForOrder(orderId: Long): List<WCOrderNoteModel> =
-            OrderSqlUtils.getOrderNotesForOrder(orderId)
+        OrderSqlUtils.getOrderNotesForOrder(orderId)
 
     /**
      * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
      */
     fun getOrderStatusOptionsForSite(site: SiteModel): List<WCOrderStatusModel> =
-            OrderSqlUtils.getOrderStatusOptionsForSite(site)
+        OrderSqlUtils.getOrderStatusOptionsForSite(site)
 
     /**
      * Returns the order status as a [WCOrderStatusModel] that matches the provided order status key.
      */
     fun getOrderStatusForSiteAndKey(site: SiteModel, key: String): WCOrderStatusModel? =
-            OrderSqlUtils.getOrderStatusOptionForSiteByKey(site, key)
+        OrderSqlUtils.getOrderStatusOptionForSiteByKey(site, key)
 
     /**
      * Returns shipment trackings as list of [WCOrderShipmentTrackingModel] for a single [WCOrderModel]
      */
     fun getShipmentTrackingsForOrder(site: SiteModel, orderId: Long): List<WCOrderShipmentTrackingModel> =
-            OrderSqlUtils.getShipmentTrackingsForOrder(site, orderId)
+        OrderSqlUtils.getShipmentTrackingsForOrder(site, orderId)
 
     fun getShipmentTrackingByTrackingNumber(site: SiteModel, orderId: Long, trackingNumber: String) =
-            OrderSqlUtils.getShipmentTrackingByTrackingNumber(site, orderId, trackingNumber)
+        OrderSqlUtils.getShipmentTrackingByTrackingNumber(site, orderId, trackingNumber)
 
     /**
      * Returns the shipment providers as a list of [WCOrderShipmentProviderModel]
      */
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
-            OrderSqlUtils.getOrderShipmentProvidersForSite(site)
+        OrderSqlUtils.getOrderShipmentProvidersForSite(site)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
@@ -446,9 +464,9 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
         wcOrderRestClient.fetchOrderListSummaries(
-                listDescriptor = payload.listDescriptor,
-                offset = payload.offset,
-                requestStartTime = payload.requestStartTime
+            listDescriptor = payload.listDescriptor,
+            offset = payload.offset,
+            requestStartTime = payload.requestStartTime
         )
     }
 
@@ -538,7 +556,7 @@ class WCOrderStore @Inject constructor(
                 updateOrderStatusLocally(orderId, site.localId(), newStatus.statusKey)
 
                 val optimisticUpdateResult = OnOrderChanged(
-                        causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
+                    causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
                 )
 
                 emit(OptimisticUpdateResult(optimisticUpdateResult))
@@ -556,13 +574,13 @@ class WCOrderStore @Inject constructor(
                 emitChange(remoteUpdateResult)
             } else {
                 emit(
-                        OptimisticUpdateResult(
-                                OnOrderChanged(
-                                        orderError = OrderError(
-                                                message = "Order with id $orderId not found"
-                                        )
-                                )
+                    OptimisticUpdateResult(
+                        OnOrderChanged(
+                            orderError = OrderError(
+                                message = "Order with id $orderId not found"
+                            )
                         )
+                    )
                 )
             }
         }
@@ -570,7 +588,7 @@ class WCOrderStore @Inject constructor(
 
     private suspend fun updateOrderStatusLocally(orderId: Long, localSiteId: LocalId, newStatus: String) {
         val updatedOrder = ordersDao.getOrder(orderId, localSiteId)!!
-                .copy(status = newStatus)
+            .copy(status = newStatus)
         ordersDao.insertOrUpdateOrder(updatedOrder)
     }
 
@@ -612,8 +630,8 @@ class WCOrderStore @Inject constructor(
             } else {
                 // Calculate which existing records should be deleted because they no longer exist in the payload
                 val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(
-                        result.site,
-                        result.orderId
+                    result.site,
+                    result.orderId
                 )
                 val deleteTrackings = mutableListOf<WCOrderShipmentTrackingModel>()
                 existingTrackings.iterator().forEach { existing ->
@@ -639,7 +657,7 @@ class WCOrderStore @Inject constructor(
         return coroutineEngine.withDefaultContext(T.API, this, "addOrderShipmentTracking") {
             val result = with(payload) {
                 wcOrderRestClient.addOrderShipmentTrackingForOrder(
-                        site, orderId, tracking, isCustomProvider
+                    site, orderId, tracking, isCustomProvider
                 )
             }
 
@@ -728,14 +746,14 @@ class WCOrderStore @Inject constructor(
         emitChange(OnOrderSummariesFetched(listDescriptor = payload.listDescriptor, duration = duration))
 
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
-                listDescriptor = payload.listDescriptor,
-                remoteItemIds = payload.orderSummaries.map { it.orderId },
-                loadedMore = payload.loadedMore,
-                canLoadMore = payload.canLoadMore,
-                error = payload.error?.let { fetchError ->
-                    // TODO: Use the actual error type
-                    ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
-                }
+            listDescriptor = payload.listDescriptor,
+            remoteItemIds = payload.orderSummaries.map { it.orderId },
+            loadedMore = payload.loadedMore,
+            canLoadMore = payload.canLoadMore,
+            error = payload.error?.let { fetchError ->
+                // TODO: Use the actual error type
+                ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
+            }
         )))
     }
 
@@ -744,7 +762,7 @@ class WCOrderStore @Inject constructor(
         val localOrdersForFetchedSummaries = ordersDao.getOrdersForSiteByRemoteIds(site.localId(), fetchedSummariesIds)
 
         val idsToFetch = outdatedOrdersIds(fetchedSummaries, localOrdersForFetchedSummaries)
-                .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))
+            .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))
 
         wcOrderFetcher.fetchOrders(site = site, orderIds = idsToFetch)
     }
@@ -765,7 +783,7 @@ class WCOrderStore @Inject constructor(
         localOrdersForSiteByRemoteIds: List<WCOrderModel>
     ): List<Long> {
         return fetchedSummariesIds.minus(
-                localOrdersForSiteByRemoteIds.map(WCOrderModel::orderId)
+            localOrdersForSiteByRemoteIds.map(WCOrderModel::orderId)
         )
     }
 
@@ -842,7 +860,7 @@ class WCOrderStore @Inject constructor(
                     if (newOption.statusKey == existingOption.statusKey) {
                         exists = true
                         if (newOption.label != existingOption.label ||
-                                newOption.statusCount != existingOption.statusCount) {
+                            newOption.statusCount != existingOption.statusCount) {
                             addOrUpdateOptions.add(newOption)
                         }
                         return@eoi

@@ -17,10 +17,17 @@ import org.apache.commons.lang3.time.DateUtils
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.TimeGroup.*
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_FUTURE
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_MONTH
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_TWO_DAYS
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_WEEK
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_TODAY
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_YESTERDAY
 import org.wordpress.android.fluxc.example.WCOrderListItemIdentifier.OrderIdentifier
 import org.wordpress.android.fluxc.example.WCOrderListItemIdentifier.SectionHeaderIdentifier
-import org.wordpress.android.fluxc.example.WCOrderListItemUIType.*
+import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
+import org.wordpress.android.fluxc.example.WCOrderListItemUIType.SectionHeader
+import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -36,7 +43,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.DateTimeUtils
-import java.util.*
+import java.util.Date
 import javax.inject.Inject
 
 class WCOrderListActivity : AppCompatActivity() {

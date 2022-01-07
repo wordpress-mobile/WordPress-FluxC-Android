@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Add
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Edit
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing

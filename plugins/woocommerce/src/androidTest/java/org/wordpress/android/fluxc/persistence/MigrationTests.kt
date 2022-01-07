@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
 
 @RunWith(AndroidJUnit4::class)
 class MigrationTests {
@@ -33,6 +34,14 @@ class MigrationTests {
         helper.apply {
             createDatabase(TEST_DB, 4).close()
             runMigrationsAndValidate(TEST_DB, 5, true, MIGRATION_4_5)
+        }
+    }
+
+    @Test
+    fun testMigrate5to6() {
+        helper.apply {
+            createDatabase(TEST_DB, 5).close()
+            runMigrationsAndValidate(TEST_DB, 6, true, MIGRATION_5_6)
         }
     }
 

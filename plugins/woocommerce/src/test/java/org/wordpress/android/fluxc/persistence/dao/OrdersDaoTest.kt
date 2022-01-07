@@ -34,10 +34,8 @@ class OrdersDaoTest {
     fun testInsertAndUpdateOrder() {
         runBlocking {
             // when
-            val initialOrder = generateSampleOrder(42).let {
-                val generatedId = sut.insertOrUpdateOrder(it)
-                it.copy(orderId = generatedId)
-            }
+            val initialOrder = generateSampleOrder(42)
+            sut.insertOrUpdateOrder(initialOrder)
             val site = SiteModel().apply { id = initialOrder.localSiteId.value }
 
             // then

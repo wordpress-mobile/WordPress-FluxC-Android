@@ -26,7 +26,6 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -85,10 +84,8 @@ class WCOrderStoreTest {
     @Test
     fun testSimpleInsertionAndRetrieval() {
         runBlocking {
-            val orderModel = OrderTestUtils.generateSampleOrder(42).let {
-                val generatedId = ordersDao.insertOrUpdateOrder(it)
-                it.copy(orderId = generatedId)
-            }
+            val orderModel = OrderTestUtils.generateSampleOrder(42)
+            ordersDao.insertOrUpdateOrder(orderModel)
             val site = SiteModel().apply { id = orderModel.localSiteId.value }
 
             val storedOrders = ordersDao.getOrdersForSite(site.localId())
@@ -120,17 +117,15 @@ class WCOrderStoreTest {
     }
 
     private fun WCOrderModel.saveToDb(): WCOrderModel {
-        val generatedId = ordersDao.insertOrUpdateOrder(this)
-        return copy(orderId = generatedId)
+        ordersDao.insertOrUpdateOrder(this)
+        return copy()
     }
 
     @Test
     fun testGetOrderByLocalId() {
         runBlocking {
-            val sampleOrder = OrderTestUtils.generateSampleOrder(3).let {
-                val generatedId = ordersDao.insertOrUpdateOrder(it)
-                it.copy(orderId = generatedId)
-            }
+            val sampleOrder = OrderTestUtils.generateSampleOrder(3)
+            ordersDao.insertOrUpdateOrder(sampleOrder)
 
             val site = SiteModel().apply { this.id = sampleOrder.localSiteId.value }
 
@@ -146,10 +141,8 @@ class WCOrderStoreTest {
     fun testCustomOrderStatus() {
         runBlocking {
             val customStatus = "chronologically-incongruous"
-            val customStatusOrder = OrderTestUtils.generateSampleOrder(3, customStatus).let {
-                val generatedId = ordersDao.insertOrUpdateOrder(it)
-                it.copy(orderId = generatedId)
-            }
+            val customStatusOrder = OrderTestUtils.generateSampleOrder(3, customStatus)
+            ordersDao.insertOrUpdateOrder(customStatusOrder)
 
             val site = SiteModel().apply { id = customStatusOrder.localSiteId.value }
 
@@ -168,10 +161,8 @@ class WCOrderStoreTest {
 
     @Test
     fun testUpdateOrderStatus() = runBlocking {
-        val orderModel = OrderTestUtils.generateSampleOrder(42).let {
-            val generatedId = ordersDao.insertOrUpdateOrder(it)
-            it.copy(orderId = generatedId)
-        }
+        val orderModel = OrderTestUtils.generateSampleOrder(42)
+        ordersDao.insertOrUpdateOrder(orderModel)
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
         val result = RemoteOrderPayload(orderModel.copy(status = CoreOrderStatus.REFUNDED.value), site)
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))

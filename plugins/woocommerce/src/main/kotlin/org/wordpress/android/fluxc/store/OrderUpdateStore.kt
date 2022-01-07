@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.store
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -34,9 +33,9 @@ class OrderUpdateStore @Inject internal constructor(
     private val siteSqlUtils: SiteSqlUtils
 ) {
     suspend fun updateCustomerOrderNote(
-            orderId: Long,
-            site: SiteModel,
-            newCustomerNote: String
+        orderId: Long,
+        site: SiteModel,
+        newCustomerNote: String
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
             val initialOrder = ordersDao.getOrder(orderId, site.localId())
@@ -50,9 +49,9 @@ class OrderUpdateStore @Inject internal constructor(
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
 
                 val updateRemoteOrderPayload = wcOrderRestClient.updateCustomerOrderNote(
-                        initialOrder,
-                        site,
-                        newCustomerNote
+                    initialOrder,
+                    site,
+                    newCustomerNote
                 )
                 val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
                     ordersDao.insertOrUpdateOrder(initialOrder)
@@ -99,16 +98,16 @@ class OrderUpdateStore @Inject internal constructor(
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateBothOrderAddresses") {
             takeWhenOrderDataAcquired(orderId, localSiteId) { initialOrder, site ->
                 updateBothLocalOrderAddresses(
-                        initialOrder,
-                        shippingAddress,
-                        billingAddress
+                    initialOrder,
+                    shippingAddress,
+                    billingAddress
                 ).let { emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged())) }
 
                 wcOrderRestClient.updateBothOrderAddresses(
-                        initialOrder,
-                        site,
-                        shippingAddress.toDto(),
-                        billingAddress.toDto()
+                    initialOrder,
+                    site,
+                    shippingAddress.toDto(),
+                    billingAddress.toDto()
                 ).let { emitRemoteUpdateContainingBillingAddress(it, initialOrder, billingAddress) }
             }
         }
@@ -121,8 +120,8 @@ class OrderUpdateStore @Inject internal constructor(
     ) {
         ordersDao.getOrder(orderId, localSiteId)?.let { initialOrder ->
             siteSqlUtils.getSiteWithLocalId(initialOrder.localSiteId)
-                    ?.let { predicate(initialOrder, it) }
-                    ?: emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
+                ?.let { predicate(initialOrder, it) }
+                ?: emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
         } ?: emitNoEntityFound("Order with id $orderId not found")
     }
 
@@ -147,32 +146,32 @@ class OrderUpdateStore @Inject internal constructor(
 
     private fun WCOrderModel.updateLocalShippingAddress(newAddress: OrderAddress): WCOrderModel {
         return copy(
-                shippingFirstName = newAddress.firstName,
-                shippingLastName = newAddress.lastName,
-                shippingCompany = newAddress.company,
-                shippingAddress1 = newAddress.address1,
-                shippingAddress2 = newAddress.address2,
-                shippingCity = newAddress.city,
-                shippingState = newAddress.state,
-                shippingPostcode = newAddress.postcode,
-                shippingCountry = newAddress.country,
-                shippingPhone = newAddress.phone
+            shippingFirstName = newAddress.firstName,
+            shippingLastName = newAddress.lastName,
+            shippingCompany = newAddress.company,
+            shippingAddress1 = newAddress.address1,
+            shippingAddress2 = newAddress.address2,
+            shippingCity = newAddress.city,
+            shippingState = newAddress.state,
+            shippingPostcode = newAddress.postcode,
+            shippingCountry = newAddress.country,
+            shippingPhone = newAddress.phone
         )
     }
 
     private fun WCOrderModel.updateLocalBillingAddress(newAddress: Billing): WCOrderModel {
         return copy(
-                billingFirstName = newAddress.firstName,
-                billingLastName = newAddress.lastName,
-                billingCompany = newAddress.company,
-                billingAddress1 = newAddress.address1,
-                billingAddress2 = newAddress.address2,
-                billingCity = newAddress.city,
-                billingState = newAddress.state,
-                billingPostcode = newAddress.postcode,
-                billingCountry = newAddress.country,
-                billingEmail = newAddress.email,
-                billingPhone = newAddress.phone
+            billingFirstName = newAddress.firstName,
+            billingLastName = newAddress.lastName,
+            billingCompany = newAddress.company,
+            billingAddress1 = newAddress.address1,
+            billingAddress2 = newAddress.address2,
+            billingCity = newAddress.city,
+            billingState = newAddress.state,
+            billingPostcode = newAddress.postcode,
+            billingCountry = newAddress.country,
+            billingEmail = newAddress.email,
+            billingPhone = newAddress.phone
         )
     }
 
@@ -181,26 +180,26 @@ class OrderUpdateStore @Inject internal constructor(
         initialOrder: WCOrderModel,
         billingAddress: Billing
     ) = emitRemoteUpdateResultOrRevertOnError(
-            updateRemoteOrderPayload,
-            initialOrder,
-            mapError = { originalOrderError: OrderError? ->
-                /**
-                 * It's *likely* as INVALID_PARAM can be caused by probably other cases too and
-                 * empty billing address email in future releases of WooCommerce will be not relevant.
-                 */
-                val isLikelyEmptyBillingEmailError =
-                        updateRemoteOrderPayload.error.type == OrderErrorType.INVALID_PARAM &&
-                                billingAddress.email.isBlank()
+        updateRemoteOrderPayload,
+        initialOrder,
+        mapError = { originalOrderError: OrderError? ->
+            /**
+             * It's *likely* as INVALID_PARAM can be caused by probably other cases too and
+             * empty billing address email in future releases of WooCommerce will be not relevant.
+             */
+            val isLikelyEmptyBillingEmailError =
+                updateRemoteOrderPayload.error.type == OrderErrorType.INVALID_PARAM &&
+                    billingAddress.email.isBlank()
 
-                if (isLikelyEmptyBillingEmailError) {
-                    OrderError(
-                            type = OrderErrorType.EMPTY_BILLING_EMAIL,
-                            message = "Can't set empty billing email address on WooCommerce <= 5.8.1"
-                    )
-                } else {
-                    originalOrderError
-                }
+            if (isLikelyEmptyBillingEmailError) {
+                OrderError(
+                    type = OrderErrorType.EMPTY_BILLING_EMAIL,
+                    message = "Can't set empty billing email address on WooCommerce <= 5.8.1"
+                )
+            } else {
+                originalOrderError
             }
+        }
     )
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateResultOrRevertOnError(
@@ -223,7 +222,7 @@ class OrderUpdateStore @Inject internal constructor(
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitNoEntityFound(message: String) {
         emit(UpdateOrderResult.OptimisticUpdateResult(
-                OnOrderChanged(orderError = OrderError(message = message))
+            OnOrderChanged(orderError = OrderError(message = message))
         ))
     }
 }

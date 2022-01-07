@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 
 @Dao
@@ -16,13 +15,13 @@ abstract class OrdersDao {
     abstract suspend fun getAllOrders(): List<WCOrderModel>
 
     @Insert(onConflict = REPLACE)
-    abstract fun insertOrUpdateOrder(order: WCOrderModel): Long
+    abstract fun insertOrUpdateOrder(order: WCOrderModel)
 
-    @Query("SELECT * FROM OrderEntity WHERE remoteOrderId = :orderId AND localSiteId = :localSiteId")
+    @Query("SELECT * FROM OrderEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
     abstract suspend fun getOrder(orderId: Long, localSiteId: LocalId): WCOrderModel?
 
-    @Query("SELECT * FROM OrderEntity WHERE remoteOrderId = :remoteOrderId AND localSiteId = :localSiteId")
-    abstract fun observeOrder(remoteOrderId: RemoteId, localSiteId: LocalId): Flow<WCOrderModel?>
+    @Query("SELECT * FROM OrderEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
+    abstract fun observeOrder(orderId: Long, localSiteId: LocalId): Flow<WCOrderModel?>
 
     @Transaction
     open suspend fun updateLocalOrder(
@@ -44,10 +43,10 @@ abstract class OrdersDao {
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
     abstract fun observeOrdersForSite(localSiteId: LocalId, status: List<String>): Flow<List<WCOrderModel>>
 
-    @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND remoteOrderId IN (:remoteOrderIds)")
+    @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND orderId IN (:orderIds)")
     abstract fun getOrdersForSiteByRemoteIds(
         localSiteId: LocalId,
-        remoteOrderIds: List<Long>
+        orderIds: List<Long>
     ): List<WCOrderModel>
 
     @Query("DELETE FROM OrderEntity WHERE localSiteId = :localSiteId")
