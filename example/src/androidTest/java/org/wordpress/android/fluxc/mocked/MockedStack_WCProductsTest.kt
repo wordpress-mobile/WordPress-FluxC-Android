@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResp
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
@@ -80,10 +81,15 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchSingleProductSuccess() = runBlocking {
+    fun testFetchSingleProductSuccess() {
         interceptor.respondWith("wc-fetch-product-response-success.json")
-        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductPayload
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
@@ -120,43 +126,61 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
         }
-        Unit
     }
 
     @Test
-    fun testFetchSingleProductError() = runBlocking {
+    fun testFetchSingleProductError() {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductPayload
         assertNotNull(payload.error)
     }
 
     @Test
-    fun testFetchInvalidProductIdError() = runBlocking {
+    fun testFetchInvalidProductIdError() {
         interceptor.respondWithError("wc-fetch-invalid-product-id.json")
-        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductPayload
         assertNotNull(payload.error)
         assertEquals(payload.error.type, ProductErrorType.INVALID_PRODUCT_ID)
     }
 
     @Test
-    fun testFetchSingleProductManageStock() = runBlocking {
+    fun testFetchSingleProductManageStock() {
         // check that a product's manage stock field is correctly set to true
         interceptor.respondWith("wc-fetch-product-response-manage-stock-true.json")
-        val payloadTrue = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val payloadTrue = lastAction!!.payload as RemoteProductPayload
         assertTrue(payloadTrue.product.manageStock)
 
         // check that a product's manage stock field is correctly set to false
         interceptor.respondWith("wc-fetch-product-response-manage-stock-false.json")
-        val payloadFalse = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val payloadFalse = lastAction!!.payload as RemoteProductPayload
         assertFalse(payloadFalse.product.manageStock)
 
         // check that a product's manage stock field is correctly set to true when response contains
         // "parent" rather than true/false (this is for product variations who inherit the parent's
         // manage stock)
         interceptor.respondWith("wc-fetch-product-response-manage-stock-parent.json")
-        val payloadParent = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val payloadParent = lastAction!!.payload as RemoteProductPayload
         assertTrue(payloadParent.product.manageStock)
     }
 

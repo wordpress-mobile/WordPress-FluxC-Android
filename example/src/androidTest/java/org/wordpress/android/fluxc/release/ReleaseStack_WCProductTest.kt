@@ -67,6 +67,7 @@ import kotlin.random.Random
 class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
+        FETCHED_SINGLE_PRODUCT,
         FETCHED_PRODUCTS,
         FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
@@ -134,12 +135,18 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleProduct() = runBlocking {
+    fun testFetchSingleProduct() {
         // remove all products for this site and verify there are none
         ProductSqlUtils.deleteProductsForSite(sSite)
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 0)
 
-        productStore.fetchSingleProduct(FetchSingleProductPayload(sSite, productModel.remoteProductId))
+        nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newFetchSingleProductAction(FetchSingleProductPayload(sSite, productModel.remoteProductId))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
         val fetchedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
@@ -148,7 +155,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify there's only one product for this site
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
-        Unit
     }
 
     @Throws(InterruptedException::class)
@@ -781,6 +787,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         lastEvent = event
 
         when (event.causeOfChange) {
+            WCProductAction.FETCH_SINGLE_PRODUCT -> {
+                assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
+                assertEquals(event.remoteProductId, productModel.remoteProductId)
+                mCountDownLatch.countDown()
+            }
             WCProductAction.FETCH_PRODUCTS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCTS, nextEvent)
                 mCountDownLatch.countDown()

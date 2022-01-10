@@ -250,39 +250,31 @@ class ProductRestClient @Inject constructor(
      *
      * @param [remoteProductId] Unique server id of the product to fetch
      */
-    suspend fun fetchSingleProduct(site: SiteModel, remoteProductId: Long): RemoteProductPayload {
+    fun fetchSingleProduct(site: SiteModel, remoteProductId: Long) {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ProductApiResponse::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = it.asProductModel().apply {
-                        localSiteId = site.id
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: ProductApiResponse? ->
+                    response?.let {
+                        val newModel = it.asProductModel().apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteProductPayload(newModel, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
                     }
-                    RemoteProductPayload(newModel, site)
-                } ?: RemoteProductPayload(
-                        ProductError(GENERIC_ERROR, "Success response with empty data"),
-                        WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site
-                )
-            }
-            is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
-                RemoteProductPayload(
-                        productError,
-                        WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site
-                )
-            }
-        }
+                },
+                { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductPayload(
+                            productError,
+                            WCProductModel().apply { this.remoteProductId = remoteProductId },
+                            site
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
     }
 
     /**
