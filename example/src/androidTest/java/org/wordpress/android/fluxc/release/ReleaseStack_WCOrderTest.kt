@@ -1,9 +1,9 @@
 @file:Suppress("DEPRECATION_ERROR")
+
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 
@@ -39,7 +38,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         NONE,
         FETCHED_ORDERS,
         FETCHED_ORDERS_COUNT,
-        FETCHED_HAS_ORDERS,
         SEARCHED_ORDERS,
         ERROR_ORDER_STATUS_NOT_FOUND,
         FETCHED_ORDER_STATUS_OPTIONS
@@ -48,13 +46,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var orderStore: WCOrderStore
 
     private var nextEvent: TestEvent = TestEvent.NONE
-    private val orderModel = WCOrderModel(
+    private val orderModel by lazy {
+        WCOrderModel(
             id = 8,
             localSiteId = sSite.localId(),
             remoteOrderId = RemoteId(1125),
             number = "1125",
             dateCreated = "2018-04-20T15:45:14Z"
-    )
+        )
+    }
     private var lastEvent: OnOrderChanged? = null
     private val orderSearchQuery = "bogus query"
 
@@ -76,7 +76,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, loadMore = false)))
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         val firstFetchOrders = orderStore.getOrdersForSite(sSite).size
 
@@ -91,13 +91,13 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = "completed"
 
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, statusFilter, false)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         val firstFetchOrders = orderStore.getOrdersForSite(sSite)
         val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
         assertTrue(
-                firstFetchOrders.isNotEmpty() &&
-                        firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
+            firstFetchOrders.isNotEmpty() &&
+                firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
         )
     }
 
@@ -106,16 +106,16 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val idsToRequest = listOf(RemoteId(1128), RemoteId(1129))
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersByIdsAction(
-                        FetchOrdersByIdsPayload(
-                                sSite,
-                                idsToRequest
-                        )
+            WCOrderActionBuilder.newFetchOrdersByIdsAction(
+                FetchOrdersByIdsPayload(
+                    sSite,
+                    idsToRequest
                 )
+            )
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        assertTrue(orderStore.getOrdersForSite(sSite).count() == idsToRequest.size)
+        assertEquals(idsToRequest.size, orderStore.getOrdersForSite(sSite).count())
     }
 
     @Throws(InterruptedException::class)
@@ -125,15 +125,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newSearchOrdersAction(
-                        SearchOrdersPayload(
-                                sSite,
-                                orderSearchQuery,
-                                0
-                        )
+            WCOrderActionBuilder.newSearchOrdersAction(
+                SearchOrdersPayload(
+                    sSite,
+                    orderSearchQuery,
+                    0
                 )
+            )
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
     @Throws(InterruptedException::class)
@@ -144,7 +144,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = CoreOrderStatus.COMPLETED.value
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
+            WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -161,7 +161,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = ""
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
+            WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
@@ -182,7 +182,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, loadMore = false)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
@@ -203,7 +203,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             isCustomerNote = true
         }
         orderStore.postOrderNote(
-                PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId.value, sSite, originalNote)
+            PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId.value, sSite, originalNote)
         )
 
         // Verify results
@@ -225,10 +225,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder
-                        .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite))
+            WCOrderActionBuilder
+                .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite))
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         val orderStatusOptions = orderStore.getOrderStatusOptionsForSite(sSite)
         assertTrue(orderStatusOptions.isNotEmpty())
@@ -249,7 +249,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     }
 
     @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         event.error?.let {
             when (event.causeOfChange) {
@@ -278,7 +278,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     }
 
     @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = MAIN)
     fun onOrdersSearched(event: OnOrdersSearched) {
         event.error?.let {
             throw AssertionError("OnOrdersSearched has error: " + it.type)
@@ -290,7 +290,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     }
 
     @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = MAIN)
     fun onOrderStatusOptionsChanged(event: OnOrderStatusOptionsChanged) {
         event.error?.let {
             throw AssertionError("OnOrderStatusOptionsChanged has error: " + it.type)
