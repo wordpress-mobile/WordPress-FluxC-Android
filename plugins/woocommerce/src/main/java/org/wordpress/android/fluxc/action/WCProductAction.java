@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabil
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload;
@@ -45,6 +47,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload;
 @ActionEnum
 public enum WCProductAction implements IAction {
     // Remote actions
+    @Action(payloadType = FetchSingleProductPayload.class)
+    FETCH_SINGLE_PRODUCT,
     @Action(payloadType = FetchSingleVariationPayload.class)
     FETCH_SINGLE_VARIATION,
     @Action(payloadType = FetchProductsPayload.class)
@@ -85,6 +89,8 @@ public enum WCProductAction implements IAction {
     DELETE_PRODUCT,
 
     // Remote responses
+    @Action(payloadType = RemoteProductPayload.class)
+    FETCHED_SINGLE_PRODUCT,
     @Action(payloadType = RemoteVariationPayload.class)
     FETCHED_SINGLE_VARIATION,
     @Action(payloadType = RemoteProductListPayload.class)
