@@ -6,6 +6,9 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -737,7 +740,7 @@ class WCOrderStore @Inject constructor(
             payload.orders.forEach { ordersDao.insertOrUpdateOrder(it) }
 
             OnOrderChanged(payload.statusFilter, canLoadMore = payload.canLoadMore)
-        }.copy(causeOfChange = WCOrderAction.FETCHED_ORDERS)
+        }.copy(causeOfChange = FETCH_ORDERS)
 
         emitChange(onOrderChanged)
     }
@@ -838,9 +841,9 @@ class WCOrderStore @Inject constructor(
             OnOrderChanged(orderError = payload.error)
         } else {
             with(payload) {
-                OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
+                OnOrderChanged(statusFilter = statusFilter)
             }
-        }
+        }.copy(causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
         emitChange(onOrderChanged)
     }
 
