@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.release;
 
 import android.content.Context;
 
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
+
 import com.android.volley.RequestQueue;
 import com.yarolegovich.wellsql.WellSql;
 
@@ -10,14 +12,13 @@ import org.junit.Before;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.module.AppContextModule;
+import org.wordpress.android.fluxc.persistence.WCAndroidDatabase;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 /**
  * NOTE:
@@ -34,6 +35,7 @@ public class ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject @Named("regular") RequestQueue mRequestQueueRegular;
     @Inject @Named("custom-ssl") RequestQueue mRequestQueueCustomSsl;
+    @Inject WCAndroidDatabase mRoomDatabase;
 
     Context mAppContext;
     ReleaseStack_AppComponent mReleaseStackAppComponent;
@@ -69,6 +71,8 @@ public class ReleaseStack_Base {
         if (mRequestQueueCustomSsl != null) {
             mRequestQueueCustomSsl.stop();
         }
+
+        mRoomDatabase.clearAllTables();
     }
 
     protected void init() throws Exception {
