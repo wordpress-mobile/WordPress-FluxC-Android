@@ -43,10 +43,10 @@ class OrderUpdateStoreTest {
     }
 
     private val ordersDao: OrdersDao = mock {
-        on { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
+        onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
 
-    fun setUp(setMocks: () -> Unit) {
+    fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
         sut = OrderUpdateStore(
                 coroutineEngine = CoroutineEngine(
@@ -355,7 +355,7 @@ class OrderUpdateStoreTest {
                     )
                 }.doReturn(
                         RemoteOrderPayload(
-                                error = WCOrderStore.OrderError(type = INVALID_PARAM),
+                                error = OrderError(type = INVALID_PARAM),
                                 initialOrder,
                                 site
                         )
@@ -385,7 +385,7 @@ class OrderUpdateStoreTest {
                     )
                 }.doReturn(
                         RemoteOrderPayload(
-                                error = WCOrderStore.OrderError(type = GENERIC_ERROR),
+                                error = OrderError(type = GENERIC_ERROR),
                                 initialOrder,
                                 site
                         )
