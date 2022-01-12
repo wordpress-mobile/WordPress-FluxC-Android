@@ -71,51 +71,65 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchOrders() {
-        nextEvent = TestEvent.FETCHED_ORDERS
-        mCountDownLatch = CountDownLatch(1)
+        runBlocking {
+            nextEvent = TestEvent.FETCHED_ORDERS
+            mCountDownLatch = CountDownLatch(1)
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, loadMore = false)))
+            mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, loadMore = false)))
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val firstFetchOrders = orderStore.getOrdersForSite(sSite).size
+            val firstFetchOrders = orderStore.getOrdersForSite(sSite).size
 
-        assertTrue(firstFetchOrders > 0 && firstFetchOrders <= WCOrderStore.NUM_ORDERS_PER_FETCH)
+            assertTrue(firstFetchOrders > 0 && firstFetchOrders <= WCOrderStore.NUM_ORDERS_PER_FETCH)
+        }
     }
 
     @Throws(InterruptedException::class)
     @Test
     fun testFetchOrdersByStatus() {
-        nextEvent = TestEvent.FETCHED_ORDERS
-        mCountDownLatch = CountDownLatch(1)
-        val statusFilter = "completed"
+        runBlocking {
+            nextEvent = TestEvent.FETCHED_ORDERS
+            mCountDownLatch = CountDownLatch(1)
+            val statusFilter = "completed"
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, statusFilter, false)))
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            mDispatcher.dispatch(
+                WCOrderActionBuilder.newFetchOrdersAction(
+                    FetchOrdersPayload(
+                        sSite,
+                        statusFilter,
+                        false
+                    )
+                )
+            )
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val firstFetchOrders = orderStore.getOrdersForSite(sSite)
-        val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
-        assertTrue(
+            val firstFetchOrders = orderStore.getOrdersForSite(sSite)
+            val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
+            assertTrue(
             firstFetchOrders.isNotEmpty() &&
                 firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
-        )
+            )
+        }
     }
 
     @Test
     fun testFetchOrdersById() {
-        val idsToRequest = listOf(RemoteId(1128), RemoteId(1129))
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-            WCOrderActionBuilder.newFetchOrdersByIdsAction(
-                FetchOrdersByIdsPayload(
-                    sSite,
-                    idsToRequest
+        runBlocking {
+            val idsToRequest = listOf(RemoteId(1128), RemoteId(1129))
+            mCountDownLatch = CountDownLatch(1)
+            mDispatcher.dispatch(
+                WCOrderActionBuilder.newFetchOrdersByIdsAction(
+                    FetchOrdersByIdsPayload(
+                        sSite,
+                        idsToRequest
+                    )
                 )
             )
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        assertEquals(idsToRequest.size, orderStore.getOrdersForSite(sSite).count())
+            assertEquals(idsToRequest.size, orderStore.getOrdersForSite(sSite).count())
+        }
     }
 
     @Throws(InterruptedException::class)
