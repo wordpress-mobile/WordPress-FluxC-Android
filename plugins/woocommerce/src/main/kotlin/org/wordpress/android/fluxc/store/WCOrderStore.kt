@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.CreateOrderRequest
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -557,7 +557,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun createOrder(site: SiteModel, createOrderRequest: CreateOrderRequest): WooResult<WCOrderModel> {
+    suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<WCOrderModel> {
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
             val result = wcOrderRestClient.createOrder(site, createOrderRequest)
 

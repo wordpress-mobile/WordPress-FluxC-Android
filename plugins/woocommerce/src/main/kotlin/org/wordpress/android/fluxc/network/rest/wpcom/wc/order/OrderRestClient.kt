@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.CreateOrderRequest
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -822,7 +822,7 @@ class OrderRestClient @Inject constructor(
 
     suspend fun createOrder(
         site: SiteModel,
-        request: CreateOrderRequest
+        request: UpdateOrderRequest
     ): WooPayload<OrderDto> {
         val url = WOOCOMMERCE.orders.pathV3
         val params = mapOf(

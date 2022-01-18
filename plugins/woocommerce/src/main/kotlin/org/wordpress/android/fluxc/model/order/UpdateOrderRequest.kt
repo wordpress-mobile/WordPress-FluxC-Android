@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.model.order
 
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 
-data class CreateOrderRequest(
+data class UpdateOrderRequest(
     val status: WCOrderStatusModel,
     val lineItems: List<LineItem>,
     val shippingAddress: OrderAddress.Shipping,
