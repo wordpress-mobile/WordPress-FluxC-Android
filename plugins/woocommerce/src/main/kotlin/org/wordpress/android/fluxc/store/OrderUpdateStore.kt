@@ -13,7 +13,6 @@ import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDomainModel
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
@@ -124,7 +123,7 @@ class OrderUpdateStore @Inject internal constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                val model = result.result!!.toDomainModel(site.localId())
+                val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
                 WooResult(model)
             }
@@ -138,7 +137,7 @@ class OrderUpdateStore @Inject internal constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                val model = result.result!!.toDomainModel(site.localId())
+                val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
                 WooResult(model)
             }
