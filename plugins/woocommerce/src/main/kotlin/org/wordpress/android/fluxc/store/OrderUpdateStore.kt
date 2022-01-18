@@ -9,8 +9,11 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDomainModel
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
@@ -110,6 +113,34 @@ class OrderUpdateStore @Inject internal constructor(
                         shippingAddress.toDto(),
                         billingAddress.toDto()
                 ).let { emitRemoteUpdateContainingBillingAddress(it, initialOrder, billingAddress) }
+            }
+        }
+    }
+
+    suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<WCOrderModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                val model = result.result!!.toDomainModel(site.localId())
+                ordersDao.insertOrUpdateOrder(model)
+                WooResult(model)
+            }
+        }
+    }
+
+    suspend fun updateOrder(site: SiteModel, orderId: Long, updateRequest: UpdateOrderRequest): WooResult<WCOrderModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+            val result = wcOrderRestClient.updateOrder(site, orderId, updateRequest)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                val model = result.result!!.toDomainModel(site.localId())
+                ordersDao.insertOrUpdateOrder(model)
+                WooResult(model)
             }
         }
     }

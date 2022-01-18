@@ -32,6 +32,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
@@ -823,17 +825,17 @@ class OrderRestClient @Inject constructor(
     suspend fun createOrder(
         site: SiteModel,
         request: UpdateOrderRequest
-    ): WooPayload<OrderDto> {
+    ): WooPayload<WCOrderModel> {
         val url = WOOCOMMERCE.orders.pathV3
-        val params = mapOf(
-                "status" to request.status.statusKey,
-                "line_items" to request.lineItems,
-                "shipping" to request.shippingAddress.toDto(),
-                "billing" to request.billingAddress.toDto(),
-                "customer_note" to request.customerNote.orEmpty()
-        )
+        val params = mutableMapOf<String, Any>().apply {
+            request.status?.let { put("status", it) }
+            request.lineItems?.let { put("line_items", it) }
+            request.shippingAddress?.toDto()?.let { put("shipping", it) }
+            request.billingAddress?.toDto()?.let { put("billing", it) }
+            request.customerNote?.let { put("customer_note", it) }
+        }
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
                 this,
                 site,
                 url,
@@ -843,7 +845,9 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackSuccess -> response.data?.let { orderDto ->
+                WooPayload(orderDto.toDomainModel(site.localId()))
+            } ?: WooPayload(error = WooError(WooErrorType.GENERIC_ERROR, message = "Success response with empty data"))
         }
     }
 

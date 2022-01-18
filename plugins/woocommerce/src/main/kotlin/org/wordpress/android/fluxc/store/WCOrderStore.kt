@@ -557,20 +557,6 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<WCOrderModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
-            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
-
-            return@withDefaultContext if (result.isError) {
-                WooResult(result.error)
-            } else {
-                val model = result.result!!.toDomainModel(site.localId())
-                ordersDao.insertOrUpdateOrder(model)
-                WooResult(model)
-            }
-        }
-    }
-
     suspend fun updateOrderStatus(
         remoteOrderId: RemoteId,
         site: SiteModel,
