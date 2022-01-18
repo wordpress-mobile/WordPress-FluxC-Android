@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -847,7 +848,13 @@ class OrderRestClient @Inject constructor(
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
                 WooPayload(orderDto.toDomainModel(site.localId()))
-            } ?: WooPayload(error = WooError(WooErrorType.GENERIC_ERROR, message = "Success response with empty data"))
+            } ?: WooPayload(
+                    error = WooError(
+                            type = WooErrorType.GENERIC_ERROR,
+                            original = GenericErrorType.UNKNOWN,
+                            message = "Success response with empty data"
+                    )
+            )
         }
     }
 
@@ -877,7 +884,13 @@ class OrderRestClient @Inject constructor(
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
                 WooPayload(orderDto.toDomainModel(site.localId()))
-            } ?: WooPayload(error = WooError(WooErrorType.GENERIC_ERROR, message = "Success response with empty data"))
+            } ?: WooPayload(
+                    error = WooError(
+                            type = WooErrorType.GENERIC_ERROR,
+                            original = GenericErrorType.UNKNOWN,
+                            message = "Success response with empty data"
+                    )
+            )
         }
     }
 

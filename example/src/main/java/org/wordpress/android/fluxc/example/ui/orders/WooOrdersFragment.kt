@@ -487,7 +487,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
                     val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
 
-                    val result = wcOrderStore.createOrder(
+                    val result = orderUpdateStore.createOrder(
                             site,
                             UpdateOrderRequest(
                                     status = status,
