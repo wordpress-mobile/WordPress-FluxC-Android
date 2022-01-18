@@ -829,14 +829,14 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<WCOrderModel> {
         val url = WOOCOMMERCE.orders.pathV3
         val params = mutableMapOf<String, Any>().apply {
-            request.status?.let { put("status", it) }
+            request.status?.let { put("status", it.statusKey) }
             request.lineItems?.let { put("line_items", it) }
             request.shippingAddress?.toDto()?.let { put("shipping", it) }
             request.billingAddress?.toDto()?.let { put("billing", it) }
             request.customerNote?.let { put("customer_note", it) }
         }
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
                 site,
                 url,
@@ -865,14 +865,14 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<WCOrderModel> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = mutableMapOf<String, Any>().apply {
-            request.status?.let { put("status", it) }
+            request.status?.let { put("status", it.statusKey) }
             request.lineItems?.let { put("line_items", it) }
             request.shippingAddress?.toDto()?.let { put("shipping", it) }
             request.billingAddress?.toDto()?.let { put("billing", it) }
             request.customerNote?.let { put("customer_note", it) }
         }
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
                 this,
                 site,
                 url,

@@ -500,7 +500,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             )
                     )
                     if (result.isError) {
-                        prependToLog("Order creation failed, error ${result.error.type}")
+                        prependToLog("Order creation failed, error ${result.error.type} ${result.error.message}")
                     } else {
                         prependToLog("Created order with id ${result.model!!.remoteOrderId}")
                     }
