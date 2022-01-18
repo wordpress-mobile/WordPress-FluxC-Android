@@ -851,6 +851,36 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun updateOrder(
+        site: SiteModel,
+        orderId: Long,
+        request: UpdateOrderRequest
+    ): WooPayload<WCOrderModel> {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
+        val params = mutableMapOf<String, Any>().apply {
+            request.status?.let { put("status", it) }
+            request.lineItems?.let { put("line_items", it) }
+            request.shippingAddress?.toDto()?.let { put("shipping", it) }
+            request.billingAddress?.toDto()?.let { put("billing", it) }
+            request.customerNote?.let { put("customer_note", it) }
+        }
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderDto::class.java
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> response.data?.let { orderDto ->
+                WooPayload(orderDto.toDomainModel(site.localId()))
+            } ?: WooPayload(error = WooError(WooErrorType.GENERIC_ERROR, message = "Success response with empty data"))
+        }
+    }
+
     private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
         return WCOrderSummaryModel().apply {
             remoteOrderId = response.id ?: 0
