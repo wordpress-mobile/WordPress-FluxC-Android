@@ -59,7 +59,7 @@ Once installed, you can configure the plugin here:
 
 `Android Studio > Preferences... > Tools > Checkstyle`
 
-From there, add and enable the configuration file for FluxC, located at [config/checkstyle.xml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/develop/config/checkstyle.xml).
+From there, add and enable the configuration file for FluxC, located at [config/checkstyle.xml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/trunk/config/checkstyle.xml).
 
 ## Using ktlint
 
