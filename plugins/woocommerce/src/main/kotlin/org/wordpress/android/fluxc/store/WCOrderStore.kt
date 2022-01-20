@@ -6,9 +6,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -381,8 +379,20 @@ class WCOrderStore @Inject constructor(
         ordersDao.getOrdersForSite(site.localId(), status = status.asList())
     }
 
-    fun observeOrdersForSite(siteLocalId: LocalId, statuses: List<String>) =
-            ordersDao.observeOrdersForSite(siteLocalId, statuses)
+    /**
+     * Observe the changes to orders for a given [SiteModel]
+     *
+     * @param site the current site
+     * @param statuses an optional list of statuses to filter the list of orders, pass an empty list to include all
+     *                 orders
+     */
+    fun observeOrdersForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<List<WCOrderModel>> {
+        return if (statuses.isEmpty()) {
+            ordersDao.observeOrdersForSite(site.localId())
+        } else {
+            ordersDao.observeOrdersForSite(site.localId(), statuses)
+        }
+    }
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
