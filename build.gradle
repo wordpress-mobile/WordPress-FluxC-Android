@@ -31,6 +31,8 @@ allprojects {
                 includeVersion "org.wordpress", "wellsql", "1.6.0"
                 includeVersion "org.wordpress", "wellsql-core", "1.6.0"
                 includeVersion "org.wordpress", "wellsql-processor", "1.6.0"
+                includeVersion "com.facebook.flipper", "flipper", "0.51.0"
+                includeVersion "com.facebook.flipper", "flipper-network-plugin", "0.51.0"
             }
         }
     }
