@@ -23,8 +23,16 @@ allprojects {
             }
         }
         google()
-        jcenter()
         mavenCentral()
+        maven {
+            url "https://a8c-libs.s3.amazonaws.com/android/jcenter-mirror"
+            content {
+                includeVersion "com.android.volley", "volley", "1.1.1"
+                includeVersion "org.wordpress", "wellsql", "1.6.0"
+                includeVersion "org.wordpress", "wellsql-core", "1.6.0"
+                includeVersion "org.wordpress", "wellsql-processor", "1.6.0"
+            }
+        }
     }
 
     task checkstyle(type: Checkstyle) {
