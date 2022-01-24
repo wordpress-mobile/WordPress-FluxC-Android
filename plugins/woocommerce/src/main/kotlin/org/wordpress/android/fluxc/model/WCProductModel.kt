@@ -51,6 +51,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var salePrice = ""
     @Column var onSale = false
     @Column var totalSales = 0L
+    @Column var purchasable = false
 
     @Column var dateOnSaleFrom = ""
     @Column var dateOnSaleTo = ""
