@@ -8,5 +8,6 @@ data class UpdateOrderRequest(
     val shippingAddress: OrderAddress.Shipping? = null,
     val billingAddress: OrderAddress.Billing? = null,
     val feeLines: List<FeeLine>? = null,
+    val shippingLines: List<ShippingLine>? = null,
     val customerNote: String? = null
 )
