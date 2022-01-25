@@ -7,5 +7,6 @@ data class UpdateOrderRequest(
     val lineItems: List<LineItem>? = null,
     val shippingAddress: OrderAddress.Shipping? = null,
     val billingAddress: OrderAddress.Billing? = null,
+    val feeLines: List<FeeLine>? = null,
     val customerNote: String? = null
 )
