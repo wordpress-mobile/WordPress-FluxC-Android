@@ -1,4 +1,5 @@
 @file:Suppress("DEPRECATION_ERROR")
+
 package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
@@ -36,7 +37,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         NONE,
         FETCHED_ORDERS,
         FETCHED_ORDERS_COUNT,
-        FETCHED_HAS_ORDERS,
         SEARCHED_ORDERS,
         ERROR_ORDER_STATUS_NOT_FOUND,
         FETCHED_ORDER_STATUS_OPTIONS
@@ -105,8 +105,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             val firstFetchOrders = orderStore.getOrdersForSite(sSite)
             val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
             assertTrue(
-                firstFetchOrders.isNotEmpty() &&
-                        firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
+            firstFetchOrders.isNotEmpty() &&
+                firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
             )
         }
     }
@@ -126,7 +126,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             )
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-            assertTrue(orderStore.getOrdersForSite(sSite).count() == idsToRequest.size)
+            assertEquals(idsToRequest.size, orderStore.getOrdersForSite(sSite).count())
         }
     }
 
@@ -137,13 +137,13 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newSearchOrdersAction(
-                        SearchOrdersPayload(
-                                sSite,
-                                orderSearchQuery,
-                                0
-                        )
+            WCOrderActionBuilder.newSearchOrdersAction(
+                SearchOrdersPayload(
+                    sSite,
+                    orderSearchQuery,
+                    0
                 )
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
@@ -156,7 +156,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = CoreOrderStatus.COMPLETED.value
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
+            WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -173,7 +173,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = ""
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
+            WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
@@ -215,7 +215,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             isCustomerNote = true
         }
         orderStore.postOrderNote(
-                PostOrderNotePayload(orderModel.orderId, sSite, originalNote)
+            PostOrderNotePayload(orderModel.orderId, sSite, originalNote)
         )
 
         // Verify results
@@ -237,8 +237,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder
-                        .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite))
+            WCOrderActionBuilder
+                .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 

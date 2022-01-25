@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.utils.DateUtils
+import java.math.BigDecimal
 
 @Suppress("PropertyName")
 class OrderDto : Response {
@@ -104,8 +105,8 @@ fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
             }.orEmpty(),
             refundTotal = this.refunds?.let { refunds ->
                 // Extract the individual refund totals from the refunds list and store their sum as a Double,
-                refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
-            } ?: 0.0,
+                refunds.sumOf { it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+            } ?: BigDecimal.ZERO,
             billingFirstName = this.billing?.first_name ?: "",
             billingLastName = this.billing?.last_name ?: "",
             billingCompany = this.billing?.company ?: "",

@@ -147,7 +147,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - develop
+                - trunk
                 - /^release.*/
       - Firebase Test:
           requires: [Optional Tests]
@@ -165,7 +165,7 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - trunk
     jobs:
       - Firebase Test:
           name: Connected Tests
@@ -182,6 +182,6 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - trunk
     jobs:
       - WooCommerce API Tests

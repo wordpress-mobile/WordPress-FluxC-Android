@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
@@ -31,7 +32,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
     value = [
         LocalIdConverter::class,
         LongListConverter::class,
-        RemoteIdConverter::class
+        RemoteIdConverter::class,
+        BigDecimalConverter::class
     ]
 )
 abstract class WCAndroidDatabase : RoomDatabase() {

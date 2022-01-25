@@ -6,6 +6,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -364,8 +365,20 @@ class WCOrderStore @Inject constructor(
         ordersDao.getOrdersForSite(site.localId(), status = status.asList())
     }
 
-    fun observeOrdersForSite(siteLocalId: LocalId, statuses: List<String>) =
-        ordersDao.observeOrdersForSite(siteLocalId, statuses)
+    /**
+     * Observe the changes to orders for a given [SiteModel]
+     *
+     * @param site the current site
+     * @param statuses an optional list of statuses to filter the list of orders, pass an empty list to include all
+     *                 orders
+     */
+    fun observeOrdersForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<List<WCOrderModel>> {
+        return if (statuses.isEmpty()) {
+        ordersDao.observeOrdersForSite(site.localId())
+        } else {
+            ordersDao.observeOrdersForSite(site.localId(), statuses)
+        }
+    }
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
@@ -723,7 +736,7 @@ class WCOrderStore @Inject constructor(
             payload.orders.forEach { ordersDao.insertOrUpdateOrder(it) }
 
             OnOrderChanged(payload.statusFilter, canLoadMore = payload.canLoadMore)
-        }.copy(causeOfChange = WCOrderAction.FETCHED_ORDERS)
+        }.copy(causeOfChange = FETCH_ORDERS)
 
         emitChange(onOrderChanged)
     }
@@ -824,9 +837,9 @@ class WCOrderStore @Inject constructor(
             OnOrderChanged(orderError = payload.error)
         } else {
             with(payload) {
-                OnOrderChanged(statusFilter = statusFilter, causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
+                OnOrderChanged(statusFilter = statusFilter)
             }
-        }
+        }.copy(causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT)
         emitChange(onOrderChanged)
     }
 

@@ -100,7 +100,7 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
                             `customerNote` TEXT NOT NULL, 
                             `discountTotal` TEXT NOT NULL, 
                             `discountCodes` TEXT NOT NULL, 
-                            `refundTotal` REAL NOT NULL, 
+                            `refundTotal` TEXT NOT NULL, 
                             `billingFirstName` TEXT NOT NULL, 
                             `billingLastName` TEXT NOT NULL, 
                             `billingCompany` TEXT NOT NULL, 

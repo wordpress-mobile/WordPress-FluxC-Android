@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.wc
 
 import android.app.Application
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -33,7 +32,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestCli
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.ActivePluginsResponse.SystemPluginModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.SSRResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.WPSiteSettingsResponse
-import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WCPluginSqlUtils.WCPluginModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.site.SiteUtils
@@ -54,13 +52,6 @@ class WooCommerceStoreTest {
     private val appContext = ApplicationProvider.getApplicationContext<Application>()
     private val restClient = mock<WooSystemRestClient>()
     private val siteStore = mock<SiteStore>()
-
-    private val roomDB = Room.inMemoryDatabaseBuilder(
-            appContext,
-            WCAndroidDatabase::class.java
-    )
-            .allowMainThreadQueries()
-            .build()
 
     private val wooCommerceStore = WooCommerceStore(
             appContext = appContext,
