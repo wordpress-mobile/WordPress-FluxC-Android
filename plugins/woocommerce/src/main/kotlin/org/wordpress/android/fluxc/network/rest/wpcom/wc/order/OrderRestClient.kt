@@ -828,13 +828,7 @@ class OrderRestClient @Inject constructor(
         request: UpdateOrderRequest
     ): WooPayload<WCOrderModel> {
         val url = WOOCOMMERCE.orders.pathV3
-        val params = mutableMapOf<String, Any>().apply {
-            request.status?.let { put("status", it.statusKey) }
-            request.lineItems?.let { put("line_items", it) }
-            request.shippingAddress?.toDto()?.let { put("shipping", it) }
-            request.billingAddress?.toDto()?.let { put("billing", it) }
-            request.customerNote?.let { put("customer_note", it) }
-        }
+        val params = request.toNetworkRequest()
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
@@ -864,13 +858,7 @@ class OrderRestClient @Inject constructor(
         request: UpdateOrderRequest
     ): WooPayload<WCOrderModel> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
-        val params = mutableMapOf<String, Any>().apply {
-            request.status?.let { put("status", it.statusKey) }
-            request.lineItems?.let { put("line_items", it) }
-            request.shippingAddress?.toDto()?.let { put("shipping", it) }
-            request.billingAddress?.toDto()?.let { put("billing", it) }
-            request.customerNote?.let { put("customer_note", it) }
-        }
+        val params = request.toNetworkRequest()
 
         val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
                 this,
@@ -891,6 +879,18 @@ class OrderRestClient @Inject constructor(
                             message = "Success response with empty data"
                     )
             )
+        }
+    }
+
+    private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
+        return mutableMapOf<String, Any>().apply {
+            status?.let { put("status", it.statusKey) }
+            lineItems?.let { put("line_items", it) }
+            shippingAddress?.toDto()?.let { put("shipping", it) }
+            billingAddress?.toDto()?.let { put("billing", it) }
+            feeLines?.let { put("fee_lines", it) }
+            shippingLines?.let { put("shipping_lines", it) }
+            customerNote?.let { put("customer_note", it) }
         }
     }
 
