@@ -382,9 +382,9 @@ class WCOrderStore @Inject constructor(
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
-        remoteOrderIds: List<Long>
+        orderIds: List<Long>
     ): Map<Long, WCOrderModel> {
-        val orders = ordersDao.getOrdersForSiteByRemoteIds(orderListDescriptor.site.localId(), remoteOrderIds)
+        val orders = ordersDao.getOrdersForSiteByRemoteIds(orderListDescriptor.site.localId(), orderIds)
         return orders.associateBy { it.orderId }
     }
 
