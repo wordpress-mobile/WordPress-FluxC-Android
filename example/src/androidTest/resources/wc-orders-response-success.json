@@ -74,6 +74,18 @@
           "price": 30
         }
       ],
+      "tax_lines": [
+        {
+          "id": 318,
+          "rate_code": "US-CA-STATE TAX",
+          "rate_id": 75,
+          "label": "State Tax",
+          "compound": false,
+          "tax_total": "1.35",
+          "shipping_tax_total": "0.00",
+          "meta_data": []
+        }
+      ],
       "fee_lines": [
         {
           "id": 28,
@@ -242,18 +254,6 @@
           "meta_data": [],
           "sku": "111-111-111",
           "price": 30
-        }
-      ],
-      "tax_lines": [
-        {
-          "id": 318,
-          "rate_code": "US-CA-STATE TAX",
-          "rate_id": 75,
-          "label": "State Tax",
-          "compound": false,
-          "tax_total": "1.35",
-          "shipping_tax_total": "0.00",
-          "meta_data": []
         }
       ],
       "refunds": [
