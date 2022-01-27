@@ -21,7 +21,8 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.CreateOrderRequest
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -32,6 +33,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
@@ -822,16 +825,10 @@ class OrderRestClient @Inject constructor(
 
     suspend fun createOrder(
         site: SiteModel,
-        request: CreateOrderRequest
-    ): WooPayload<OrderDto> {
+        request: UpdateOrderRequest
+    ): WooPayload<WCOrderModel> {
         val url = WOOCOMMERCE.orders.pathV3
-        val params = mapOf(
-                "status" to request.status.statusKey,
-                "line_items" to request.lineItems,
-                "shipping" to request.shippingAddress.toDto(),
-                "billing" to request.billingAddress.toDto(),
-                "customer_note" to request.customerNote.orEmpty()
-        )
+        val params = request.toNetworkRequest()
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
@@ -843,7 +840,57 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackSuccess -> response.data?.let { orderDto ->
+                WooPayload(orderDto.toDomainModel(site.localId()))
+            } ?: WooPayload(
+                    error = WooError(
+                            type = WooErrorType.GENERIC_ERROR,
+                            original = GenericErrorType.UNKNOWN,
+                            message = "Success response with empty data"
+                    )
+            )
+        }
+    }
+
+    suspend fun updateOrder(
+        site: SiteModel,
+        orderId: Long,
+        request: UpdateOrderRequest
+    ): WooPayload<WCOrderModel> {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
+        val params = request.toNetworkRequest()
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+                this,
+                site,
+                url,
+                params,
+                OrderDto::class.java
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> response.data?.let { orderDto ->
+                WooPayload(orderDto.toDomainModel(site.localId()))
+            } ?: WooPayload(
+                    error = WooError(
+                            type = WooErrorType.GENERIC_ERROR,
+                            original = GenericErrorType.UNKNOWN,
+                            message = "Success response with empty data"
+                    )
+            )
+        }
+    }
+
+    private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
+        return mutableMapOf<String, Any>().apply {
+            status?.let { put("status", it.statusKey) }
+            lineItems?.let { put("line_items", it) }
+            shippingAddress?.toDto()?.let { put("shipping", it) }
+            billingAddress?.toDto()?.let { put("billing", it) }
+            feeLines?.let { put("fee_lines", it) }
+            shippingLines?.let { put("shipping_lines", it) }
+            customerNote?.let { put("customer_note", it) }
         }
     }
 

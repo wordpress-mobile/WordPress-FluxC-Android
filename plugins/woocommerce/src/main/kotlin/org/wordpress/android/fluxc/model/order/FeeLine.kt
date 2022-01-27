@@ -17,4 +17,14 @@ class FeeLine {
 
     @SerializedName("total_tax")
     val totalTax: String? = null
+
+    @SerializedName("tax_status")
+    val taxStatus: FeeLineTaxStatus? = null
+}
+
+enum class FeeLineTaxStatus {
+    @SerializedName("taxable")
+    Taxable,
+    @SerializedName("none")
+    None
 }

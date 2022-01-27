@@ -33,7 +33,7 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
-import org.wordpress.android.fluxc.model.order.CreateOrderRequest
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -487,9 +487,9 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
                     val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
 
-                    val result = wcOrderStore.createOrder(
+                    val result = orderUpdateStore.createOrder(
                             site,
-                            CreateOrderRequest(
+                            UpdateOrderRequest(
                                     status = status,
                                     lineItems = products.map {
                                         LineItem(productId = it, quantity = 1f)
@@ -500,7 +500,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             )
                     )
                     if (result.isError) {
-                        prependToLog("Order creation failed, error ${result.error.type}")
+                        prependToLog("Order creation failed, error ${result.error.type} ${result.error.message}")
                     } else {
                         prependToLog("Created order with id ${result.model!!.remoteOrderId}")
                     }
