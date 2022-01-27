@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class WCOrderModelTest {
+class OrderEntityTest {
     private val gson = Gson()
 
     @Test

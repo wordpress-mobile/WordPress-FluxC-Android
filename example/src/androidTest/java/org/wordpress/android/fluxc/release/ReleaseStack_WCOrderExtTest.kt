@@ -9,7 +9,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.example.BuildConfig
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCOrderStore
@@ -43,7 +43,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_hasTrackings() = runBlocking {
-        val orderModel = WCOrderModel(
+        val orderModel = OrderEntity(
             orderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.localId()
         )
@@ -63,7 +63,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentTrackingsForOrder_noTrackings() = runBlocking {
-        val orderModel = WCOrderModel(
+        val orderModel = OrderEntity(
             orderId = BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.localId()
         )
@@ -85,7 +85,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 1: Add an order shipment tracking for an order
          */
-        val orderModel = WCOrderModel(
+        val orderModel = OrderEntity(
             orderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.localId()
         )
@@ -145,7 +145,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         /*
          * TEST 1: Add a tracking record using a custom provider
          */
-        val orderModel = WCOrderModel(
+        val orderModel = OrderEntity(
             orderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
             localSiteId = sSite.localId()
         )
@@ -212,7 +212,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchShipmentProviders() = runBlocking {
-        val orderModel = WCOrderModel(
+        val orderModel = OrderEntity(
                 orderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong(),
                 localSiteId = sSite.localId()
         )

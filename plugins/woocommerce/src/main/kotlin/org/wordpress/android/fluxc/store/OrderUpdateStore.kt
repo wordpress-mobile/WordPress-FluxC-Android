@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
@@ -23,7 +23,7 @@ import org.wordpress.android.util.AppLog.T
 import javax.inject.Inject
 import javax.inject.Singleton
 
-typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(WCOrderModel, SiteModel) -> Unit
+typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(OrderEntity, SiteModel) -> Unit
 
 @Singleton
 class OrderUpdateStore @Inject internal constructor(
@@ -126,8 +126,8 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun updateLocalOrderAddress(
-        initialOrder: WCOrderModel,
-        newAddress: OrderAddress
+            initialOrder: OrderEntity,
+            newAddress: OrderAddress
     ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         when (newAddress) {
             is Billing -> updateLocalBillingAddress(newAddress)
@@ -136,15 +136,15 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun updateBothLocalOrderAddresses(
-        initialOrder: WCOrderModel,
-        shippingAddress: Shipping,
-        billingAddress: Billing
+            initialOrder: OrderEntity,
+            shippingAddress: Shipping,
+            billingAddress: Billing
     ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         updateLocalShippingAddress(shippingAddress)
         updateLocalBillingAddress(billingAddress)
     }
 
-    private fun WCOrderModel.updateLocalShippingAddress(newAddress: OrderAddress): WCOrderModel {
+    private fun OrderEntity.updateLocalShippingAddress(newAddress: OrderAddress): OrderEntity {
         return copy(
             shippingFirstName = newAddress.firstName,
             shippingLastName = newAddress.lastName,
@@ -159,7 +159,7 @@ class OrderUpdateStore @Inject internal constructor(
         )
     }
 
-    private fun WCOrderModel.updateLocalBillingAddress(newAddress: Billing): WCOrderModel {
+    private fun OrderEntity.updateLocalBillingAddress(newAddress: Billing): OrderEntity {
         return copy(
             billingFirstName = newAddress.firstName,
             billingLastName = newAddress.lastName,
@@ -176,9 +176,9 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateContainingBillingAddress(
-        updateRemoteOrderPayload: RemoteOrderPayload,
-        initialOrder: WCOrderModel,
-        billingAddress: Billing
+            updateRemoteOrderPayload: RemoteOrderPayload,
+            initialOrder: OrderEntity,
+            billingAddress: Billing
     ) = emitRemoteUpdateResultOrRevertOnError(
         updateRemoteOrderPayload,
         initialOrder,
@@ -203,9 +203,9 @@ class OrderUpdateStore @Inject internal constructor(
     )
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateResultOrRevertOnError(
-        updateRemoteOrderPayload: RemoteOrderPayload,
-        initialOrder: WCOrderModel,
-        mapError: (OrderError?) -> OrderError? = {
+            updateRemoteOrderPayload: RemoteOrderPayload,
+            initialOrder: OrderEntity,
+            mapError: (OrderError?) -> OrderError? = {
             updateRemoteOrderPayload.error
         }
     ) {

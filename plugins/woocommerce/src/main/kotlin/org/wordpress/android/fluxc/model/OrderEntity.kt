@@ -20,7 +20,7 @@ import java.math.BigDecimal
     )],
     primaryKeys = ["localSiteId", "orderId"]
 )
-data class WCOrderModel(
+data class OrderEntity(
     @ColumnInfo(name = "localSiteId")
     val localSiteId: LocalId,
     val orderId: Long,

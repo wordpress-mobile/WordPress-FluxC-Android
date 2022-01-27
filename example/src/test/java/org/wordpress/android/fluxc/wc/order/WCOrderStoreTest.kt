@@ -28,7 +28,7 @@ import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
@@ -116,7 +116,7 @@ class WCOrderStoreTest {
         }
     }
 
-    private fun WCOrderModel.saveToDb(): WCOrderModel {
+    private fun OrderEntity.saveToDb(): OrderEntity {
         ordersDao.insertOrUpdateOrder(this)
         return copy()
     }
@@ -335,8 +335,8 @@ class WCOrderStoreTest {
         Unit
     }
 
-    private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, WCOrderModel?> {
-        return mutableMapOf<WCOrderSummaryModel, WCOrderModel?>().apply {
+    private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, OrderEntity?> {
+        return mutableMapOf<WCOrderSummaryModel, OrderEntity?>().apply {
             (21L..30L).forEach { index ->
                 put(
                         OrderTestUtils.generateSampleOrderSummary(
@@ -350,7 +350,7 @@ class WCOrderStoreTest {
     }
 
     private fun setupOutdatedOrders(site: SiteModel) =
-            mutableMapOf<WCOrderSummaryModel, WCOrderModel>().apply {
+            mutableMapOf<WCOrderSummaryModel, OrderEntity>().apply {
                 val baselineDate = "2021-01-05T12:00:00Z"
                 val oneDayAfterBaselineDate = "2021-01-06T12:00:00Z"
                 (11L..20L).forEach { index ->
@@ -370,7 +370,7 @@ class WCOrderStoreTest {
             }.toImmutableMap()
 
     private fun setupUpToDateOrders(site: SiteModel) =
-            mutableMapOf<WCOrderSummaryModel, WCOrderModel>().apply {
+            mutableMapOf<WCOrderSummaryModel, OrderEntity>().apply {
                 val baselineDate = "2021-01-05T12:00:00Z"
                 (1L..10L).forEach { index ->
                     put(
@@ -388,9 +388,9 @@ class WCOrderStoreTest {
                 }
             }.toImmutableMap()
 
-    private val Map<WCOrderSummaryModel, WCOrderModel?>.summaries
+    private val Map<WCOrderSummaryModel, OrderEntity?>.summaries
         get() = keys.toList()
 
-    private val Map<WCOrderSummaryModel, WCOrderModel?>.orders
+    private val Map<WCOrderSummaryModel, OrderEntity?>.orders
         get() = values.toList()
 }

@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -71,11 +71,11 @@ class WCOrderStore @Inject constructor(
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersResponsePayload(
-        var site: SiteModel,
-        var orders: List<WCOrderModel> = emptyList(),
-        var statusFilter: String? = null,
-        var loadedMore: Boolean = false,
-        var canLoadMore: Boolean = false
+            var site: SiteModel,
+            var orders: List<OrderEntity> = emptyList(),
+            var statusFilter: String? = null,
+            var loadedMore: Boolean = false,
+            var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) {
             this.error = error
@@ -101,7 +101,7 @@ class WCOrderStore @Inject constructor(
     class FetchOrdersByIdsResponsePayload(
         val site: SiteModel,
         var orderIds: List<Long>,
-        var fetchedOrders: List<WCOrderModel> = emptyList()
+        var fetchedOrders: List<OrderEntity> = emptyList()
     ) : Payload<OrderError>() {
         constructor(
             error: OrderError,
@@ -123,7 +123,7 @@ class WCOrderStore @Inject constructor(
         var searchQuery: String,
         var canLoadMore: Boolean = false,
         var offset: Int = 0,
-        var orders: List<WCOrderModel> = emptyList()
+        var orders: List<OrderEntity> = emptyList()
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel, query: String) : this(site, query) {
             this.error = error
@@ -156,16 +156,16 @@ class WCOrderStore @Inject constructor(
     }
 
     class UpdateOrderStatusPayload(
-        val order: WCOrderModel,
-        val site: SiteModel,
-        val status: String
+            val order: OrderEntity,
+            val site: SiteModel,
+            val status: String
     ) : Payload<BaseNetworkError>()
 
     class RemoteOrderPayload(
-        val order: WCOrderModel,
-        val site: SiteModel
+            val order: OrderEntity,
+            val site: SiteModel
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) {
+        constructor(error: OrderError, order: OrderEntity, site: SiteModel) : this(order, site) {
             this.error = error
         }
     }
@@ -275,15 +275,15 @@ class WCOrderStore @Inject constructor(
 
     class FetchOrderShipmentProvidersPayload(
         val site: SiteModel,
-        val order: WCOrderModel
+        val order: OrderEntity
     ) : Payload<BaseNetworkError>()
 
     class FetchOrderShipmentProvidersResponsePayload(
-        val site: SiteModel,
-        val order: WCOrderModel,
-        val providers: List<WCOrderShipmentProviderModel> = emptyList()
+            val site: SiteModel,
+            val order: OrderEntity,
+            val providers: List<WCOrderShipmentProviderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) {
+        constructor(error: OrderError, site: SiteModel, order: OrderEntity) : this(site, order) {
             this.error = error
         }
     }
@@ -323,7 +323,7 @@ class WCOrderStore @Inject constructor(
     }
 
     data class OnQuickOrderResult(
-        var order: WCOrderModel? = null
+        var order: OrderEntity? = null
     ) : OnChanged<OrderError>()
 
     /**
@@ -343,7 +343,7 @@ class WCOrderStore @Inject constructor(
         var searchQuery: String = "",
         var canLoadMore: Boolean = false,
         var nextOffset: Int = 0,
-        var searchResults: List<WCOrderModel> = emptyList()
+        var searchResults: List<OrderEntity> = emptyList()
     ) : OnChanged<OrderError>()
 
     class OnOrderStatusOptionsChanged(
@@ -372,7 +372,7 @@ class WCOrderStore @Inject constructor(
      * @param statuses an optional list of statuses to filter the list of orders, pass an empty list to include all
      *                 orders
      */
-    fun observeOrdersForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<List<WCOrderModel>> {
+    fun observeOrdersForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<List<OrderEntity>> {
         return if (statuses.isEmpty()) {
         ordersDao.observeOrdersForSite(site.localId())
         } else {
@@ -383,7 +383,7 @@ class WCOrderStore @Inject constructor(
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
         remoteOrderIds: List<Long>
-    ): Map<Long, WCOrderModel> {
+    ): Map<Long, OrderEntity> {
         val orders = ordersDao.getOrdersForSiteByRemoteIds(orderListDescriptor.site.localId(), remoteOrderIds)
         return orders.associateBy { it.orderId }
     }
@@ -398,14 +398,14 @@ class WCOrderStore @Inject constructor(
 
     /**
      * Given an order id and [SiteModel],
-     * returns the corresponding order from the database as a [WCOrderModel].
+     * returns the corresponding order from the database as a [OrderEntity].
      */
-    suspend fun getOrderByIdAndSite(orderId: Long, site: SiteModel): WCOrderModel? {
+    suspend fun getOrderByIdAndSite(orderId: Long, site: SiteModel): OrderEntity? {
         return ordersDao.getOrder(orderId, site.localId())
     }
 
     /**
-     * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
+     * Returns the notes belonging to supplied [OrderEntity] as a list of [WCOrderNoteModel].
      */
     fun getOrderNotesForOrder(orderId: Long): List<WCOrderNoteModel> =
         OrderSqlUtils.getOrderNotesForOrder(orderId)
@@ -423,7 +423,7 @@ class WCOrderStore @Inject constructor(
         OrderSqlUtils.getOrderStatusOptionForSiteByKey(site, key)
 
     /**
-     * Returns shipment trackings as list of [WCOrderShipmentTrackingModel] for a single [WCOrderModel]
+     * Returns shipment trackings as list of [WCOrderShipmentTrackingModel] for a single [OrderEntity]
      */
     fun getShipmentTrackingsForOrder(site: SiteModel, orderId: Long): List<WCOrderShipmentTrackingModel> =
         OrderSqlUtils.getShipmentTrackingsForOrder(site, orderId)
@@ -543,7 +543,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    suspend fun createOrder(site: SiteModel, createOrderRequest: CreateOrderRequest): WooResult<WCOrderModel> {
+    suspend fun createOrder(site: SiteModel, createOrderRequest: CreateOrderRequest): WooResult<OrderEntity> {
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
             val result = wcOrderRestClient.createOrder(site, createOrderRequest)
 
@@ -782,21 +782,21 @@ class WCOrderStore @Inject constructor(
 
     private fun outdatedOrdersIds(
         fetchedSummaries: List<WCOrderSummaryModel>,
-        localOrdersForSiteByRemoteIds: List<WCOrderModel>
+        localOrdersForSiteByRemoteIds: List<OrderEntity>
     ): List<Long> {
         val summaryModifiedDates = fetchedSummaries.associate { it.orderId to it.dateModified }
 
         return localOrdersForSiteByRemoteIds.filter { order ->
             order.dateModified != summaryModifiedDates[order.orderId]
-        }.map(WCOrderModel::orderId)
+        }.map(OrderEntity::orderId)
     }
 
     private fun missingOrdersIds(
         fetchedSummariesIds: List<Long>,
-        localOrdersForSiteByRemoteIds: List<WCOrderModel>
+        localOrdersForSiteByRemoteIds: List<OrderEntity>
     ): List<Long> {
         return fetchedSummariesIds.minus(
-            localOrdersForSiteByRemoteIds.map(WCOrderModel::orderId)
+            localOrdersForSiteByRemoteIds.map(OrderEntity::orderId)
         )
     }
 

@@ -8,7 +8,7 @@ import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -31,8 +31,8 @@ object OrderTestUtils {
         orderStatus: String = CoreOrderStatus.PROCESSING.value,
         siteId: Int = 6,
         modified: String = "1955-11-05T14:15:00Z"
-    ): WCOrderModel {
-        return WCOrderModel(
+    ): OrderEntity {
+        return OrderEntity(
             orderId = orderId,
             localSiteId = LocalId(siteId),
             status = orderStatus,

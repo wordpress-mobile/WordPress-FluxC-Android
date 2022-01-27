@@ -15,7 +15,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
@@ -412,7 +412,7 @@ class OrderUpdateStoreTest {
         const val UPDATED_SHIPPING_FIRST_NAME = "updated shipping first name"
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
 
-        val initialOrder = WCOrderModel(
+        val initialOrder = OrderEntity(
                 orderId = TEST_REMOTE_ORDER_ID,
                 localSiteId = TEST_LOCAL_SITE_ID,
                 customerNote = INITIAL_CUSTOMER_NOTE,

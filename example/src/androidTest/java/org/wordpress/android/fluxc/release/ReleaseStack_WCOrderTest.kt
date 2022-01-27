@@ -12,7 +12,7 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
@@ -46,7 +46,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     private var nextEvent: TestEvent = TestEvent.NONE
     private val orderModel by lazy {
-        WCOrderModel(
+        OrderEntity(
                 localSiteId = sSite.localId(),
                 orderId = 1125,
                 number = "1125",

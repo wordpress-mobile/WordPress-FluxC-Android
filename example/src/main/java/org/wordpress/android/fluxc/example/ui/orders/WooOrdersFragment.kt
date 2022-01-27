@@ -29,7 +29,7 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -509,7 +509,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
     private fun fetchOrderShipmentProviders(
         site: SiteModel,
-        order: WCOrderModel
+        order: OrderEntity
     ) {
         coroutineScope.launch {
             val payload = FetchOrderShipmentProvidersPayload(site, order)
@@ -642,7 +642,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         ToastUtils.showToast(activity, "No orders found for site: " + site.name)
     }
 
-    private fun showAddTrackingDialog(site: SiteModel, order: WCOrderModel, providers: List<String>) {
+    private fun showAddTrackingDialog(site: SiteModel, order: OrderEntity, providers: List<String>) {
         fragmentManager?.let { fm ->
             val dialog = WCAddOrderShipmentTrackingDialog.newInstance(
                     this,
@@ -655,10 +655,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     }
 
     override fun onTrackingSubmitted(
-        site: SiteModel,
-        order: WCOrderModel,
-        tracking: WCOrderShipmentTrackingModel,
-        isCustomProvider: Boolean
+            site: SiteModel,
+            order: OrderEntity,
+            tracking: WCOrderShipmentTrackingModel,
+            isCustomProvider: Boolean
     ) {
         coroutineScope.launch {
             val onOrderChanged = wcOrderStore.addOrderShipmentTracking(
