@@ -126,8 +126,8 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun updateLocalOrderAddress(
-            initialOrder: OrderEntity,
-            newAddress: OrderAddress
+        initialOrder: OrderEntity,
+        newAddress: OrderAddress
     ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         when (newAddress) {
             is Billing -> updateLocalBillingAddress(newAddress)
@@ -136,9 +136,9 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun updateBothLocalOrderAddresses(
-            initialOrder: OrderEntity,
-            shippingAddress: Shipping,
-            billingAddress: Billing
+        initialOrder: OrderEntity,
+        shippingAddress: Shipping,
+        billingAddress: Billing
     ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         updateLocalShippingAddress(shippingAddress)
         updateLocalBillingAddress(billingAddress)
@@ -176,9 +176,9 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateContainingBillingAddress(
-            updateRemoteOrderPayload: RemoteOrderPayload,
-            initialOrder: OrderEntity,
-            billingAddress: Billing
+        updateRemoteOrderPayload: RemoteOrderPayload,
+        initialOrder: OrderEntity,
+        billingAddress: Billing
     ) = emitRemoteUpdateResultOrRevertOnError(
         updateRemoteOrderPayload,
         initialOrder,
@@ -203,10 +203,10 @@ class OrderUpdateStore @Inject internal constructor(
     )
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitRemoteUpdateResultOrRevertOnError(
-            updateRemoteOrderPayload: RemoteOrderPayload,
-            initialOrder: OrderEntity,
-            mapError: (OrderError?) -> OrderError? = {
-            updateRemoteOrderPayload.error
+        updateRemoteOrderPayload: RemoteOrderPayload,
+        initialOrder: OrderEntity,
+        mapError: (OrderError?) -> OrderError? = {
+        updateRemoteOrderPayload.error
         }
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {

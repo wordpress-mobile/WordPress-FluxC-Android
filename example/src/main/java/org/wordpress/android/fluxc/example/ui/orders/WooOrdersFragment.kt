@@ -655,10 +655,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     }
 
     override fun onTrackingSubmitted(
-            site: SiteModel,
-            order: OrderEntity,
-            tracking: WCOrderShipmentTrackingModel,
-            isCustomProvider: Boolean
+        site: SiteModel,
+        order: OrderEntity,
+        tracking: WCOrderShipmentTrackingModel,
+        isCustomProvider: Boolean
     ) {
         coroutineScope.launch {
             val onOrderChanged = wcOrderStore.addOrderShipmentTracking(

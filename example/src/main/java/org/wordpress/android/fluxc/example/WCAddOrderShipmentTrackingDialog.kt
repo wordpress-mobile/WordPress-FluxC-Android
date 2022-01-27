@@ -24,10 +24,10 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
     companion object {
         @JvmStatic
         fun newInstance(
-                fragment: Fragment,
-                site: SiteModel,
-                order: OrderEntity,
-                providers: List<String>
+            fragment: Fragment,
+            site: SiteModel,
+            order: OrderEntity,
+            providers: List<String>
         ) = WCAddOrderShipmentTrackingDialog().apply {
             setTargetFragment(fragment, 200)
             this.site = site
@@ -38,10 +38,10 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
 
     interface Listener {
         fun onTrackingSubmitted(
-                site: SiteModel,
-                order: OrderEntity,
-                tracking: WCOrderShipmentTrackingModel,
-                isCustomProvider: Boolean
+            site: SiteModel,
+            order: OrderEntity,
+            tracking: WCOrderShipmentTrackingModel,
+            isCustomProvider: Boolean
         )
     }
 

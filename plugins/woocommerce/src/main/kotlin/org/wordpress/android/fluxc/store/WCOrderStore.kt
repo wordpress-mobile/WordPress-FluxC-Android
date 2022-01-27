@@ -71,11 +71,11 @@ class WCOrderStore @Inject constructor(
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersResponsePayload(
-            var site: SiteModel,
-            var orders: List<OrderEntity> = emptyList(),
-            var statusFilter: String? = null,
-            var loadedMore: Boolean = false,
-            var canLoadMore: Boolean = false
+        var site: SiteModel,
+        var orders: List<OrderEntity> = emptyList(),
+        var statusFilter: String? = null,
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) {
             this.error = error
@@ -156,14 +156,14 @@ class WCOrderStore @Inject constructor(
     }
 
     class UpdateOrderStatusPayload(
-            val order: OrderEntity,
-            val site: SiteModel,
-            val status: String
+        val order: OrderEntity,
+        val site: SiteModel,
+        val status: String
     ) : Payload<BaseNetworkError>()
 
     class RemoteOrderPayload(
-            val order: OrderEntity,
-            val site: SiteModel
+        val order: OrderEntity,
+        val site: SiteModel
     ) : Payload<OrderError>() {
         constructor(error: OrderError, order: OrderEntity, site: SiteModel) : this(order, site) {
             this.error = error
@@ -279,9 +279,9 @@ class WCOrderStore @Inject constructor(
     ) : Payload<BaseNetworkError>()
 
     class FetchOrderShipmentProvidersResponsePayload(
-            val site: SiteModel,
-            val order: OrderEntity,
-            val providers: List<WCOrderShipmentProviderModel> = emptyList()
+        val site: SiteModel,
+        val order: OrderEntity,
+        val providers: List<WCOrderShipmentProviderModel> = emptyList()
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel, order: OrderEntity) : this(site, order) {
             this.error = error

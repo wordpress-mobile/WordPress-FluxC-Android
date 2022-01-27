@@ -418,9 +418,9 @@ class OrderRestClient @Inject constructor(
      * updating the order.
      */
     private suspend fun updateOrder(
-            orderToUpdate: OrderEntity,
-            site: SiteModel,
-            updatePayload: Map<String, Any>
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        updatePayload: Map<String, Any>
     ): RemoteOrderPayload {
         val url = WOOCOMMERCE.orders.id(orderToUpdate.orderId).pathV3
 
@@ -467,10 +467,10 @@ class OrderRestClient @Inject constructor(
             updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
     suspend fun updateBothOrderAddresses(
-            orderToUpdate: OrderEntity,
-            site: SiteModel,
-            shipping: Shipping,
-            billing: Billing
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        shipping: Shipping,
+        billing: Billing
     ) = updateOrder(
             orderToUpdate, site,
             mapOf("shipping" to shipping, "billing" to billing)
