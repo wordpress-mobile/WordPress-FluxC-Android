@@ -12,6 +12,9 @@ class TaxLine {
     @SerializedName("rate_code")
     val rateCode: String? = null
 
+    @SerializedName("label")
+    val label: String? = null
+
     @SerializedName("rate_id")
     val rateId: Long? = null
 
@@ -20,4 +23,7 @@ class TaxLine {
 
     @SerializedName("tax_total")
     val taxTotal: String? = null
+
+    @SerializedName("shipping_tax_total")
+    val shippingTaxTotal: String? = null
 }
