@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
-import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
 
 @Database(
         version = 7,
@@ -51,7 +50,6 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
-                .addMigrations(MIGRATION_6_7)
                 .build()
     }
 }
