@@ -142,6 +142,6 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
 
 internal val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE WCOrderModel ADD TAX_LINES TEXT")
+        database.execSQL("ALTER TABLE OrderEntity ADD TAX_LINES TEXT")
     }
 }
