@@ -98,6 +98,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("1.35", getTaxLineList()[0].taxTotal)
             assertEquals("State Tax", getTaxLineList()[0].label)
             assertEquals("0.00", getTaxLineList()[0].shippingTaxTotal)
+            assertEquals(5.25f, getTaxLineList()[0].ratePercent)
         }
 
         // Customer note
