@@ -1,13 +1,11 @@
 package org.wordpress.android.fluxc.release
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
-import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
