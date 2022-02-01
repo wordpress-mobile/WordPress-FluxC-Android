@@ -1,19 +1,23 @@
 package org.wordpress.android.fluxc.release
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
+import org.wordpress.android.fluxc.store.WCOrderStore
 import javax.inject.Inject
 
 class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
+    @Inject internal lateinit var orderStore: WCOrderStore
 
     override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
 
@@ -86,5 +90,15 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
         assertEquals("71", result.address?.line2)
         assertEquals("94122", result.address?.postalCode)
         assertEquals("CA", result.address?.state)
+    }
+
+    @Test
+    fun givenSiteHasWCPayFetchingChargeByIdThenChargeReturned() = runBlocking {
+        val chargeId = "ch_3KOLxm2HswaZkMX319bDtsay"
+        val result = store.fetchPaymentCharge(WOOCOMMERCE_PAYMENTS, sSite, chargeId)
+
+        assertFalse(result.isError)
+        assertEquals("9969", result.asWooResult().model?.paymentMethodDetails?.cardPresent?.last4)
+        assertEquals(4500, result.asWooResult().model?.amount)
     }
 }

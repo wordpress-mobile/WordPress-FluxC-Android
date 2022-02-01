@@ -77,8 +77,8 @@ class WCInPersonPaymentsStore @Inject constructor(
 
     suspend fun fetchPaymentCharge(
         activePlugin: InPersonPaymentsPluginType,
-        chargeId: String,
-        site: SiteModel
+        site: SiteModel,
+        chargeId: String
     ): WooPayload<WCPaymentChargeApiResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchPaymentCharge") {
             restClient.fetchPaymentCharge(activePlugin, chargeId, site)
