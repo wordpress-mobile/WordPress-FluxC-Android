@@ -3,6 +3,83 @@ package org.wordpress.android.fluxc.persistence.migrations
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+internal val MIGRATION_1_3 = object : Migration(1, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            // language=RoomSql
+            execSQL("DROP TABLE AddonOptionEntity")
+            execSQL("DROP TABLE AddonEntity")
+            execSQL("DROP TABLE GlobalAddonGroupEntity")
+
+            execSQL(
+                    """
+                        CREATE TABLE IF NOT EXISTS `GlobalAddonGroupEntity` (
+                        `globalGroupLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                         `name` TEXT NOT NULL,
+                         `restrictedCategoriesIds` TEXT NOT NULL,
+                         `siteRemoteId` INTEGER NOT NULL
+                    );
+                    """.trimIndent()
+            )
+            execSQL(
+                    """
+                       CREATE TABLE IF NOT EXISTS `AddonEntity` (
+                        `addonLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `globalGroupLocalId` INTEGER,
+                        `productRemoteId` INTEGER,
+                        `siteRemoteId` INTEGER,
+                        `type` TEXT NOT NULL,
+                        `display` TEXT, 
+                        `name` TEXT NOT NULL,
+                        `titleFormat` TEXT NOT NULL,
+                        `description` TEXT, 
+                        `required` INTEGER NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `restrictions` TEXT,
+                        `priceType` TEXT,
+                        `price` TEXT,
+                        `min` INTEGER,
+                        `max` INTEGER,
+                        FOREIGN KEY(`globalGroupLocalId`) REFERENCES `GlobalAddonGroupEntity`(`globalGroupLocalId`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    );     
+                    """.trimIndent()
+            )
+
+            // language=RoomSql
+            execSQL(
+                    """
+                        CREATE TABLE IF NOT EXISTS `AddonOptionEntity` (
+                        `addonOptionLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `addonLocalId` INTEGER NOT NULL,
+                        `priceType` TEXT NOT NULL,
+                        `label` TEXT,
+                        `price` TEXT,
+                        `image` TEXT,
+                        FOREIGN KEY(`addonLocalId`) REFERENCES `AddonEntity`(`addonLocalId`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    );
+                    """.trimIndent()
+            )
+
+            // language=RoomSql
+            execSQL(
+                    """
+                        CREATE TABLE IF NOT EXISTS `SSREntity` (
+                        `remoteSiteId` INTEGER NOT NULL,
+                        `environment` TEXT,
+                        `database` TEXT,
+                        `activePlugins` TEXT,
+                        `theme` TEXT,
+                        `settings` TEXT,
+                        `security` TEXT,
+                        `pages` TEXT,
+                         PRIMARY KEY(`remoteSiteId`)
+                    );
+                    """.trimIndent()
+            )
+        }
+    }
+}
+
 internal val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
