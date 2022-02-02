@@ -483,40 +483,14 @@ class OrderRestClient @Inject constructor(
             mapOf("shipping" to shipping, "billing" to billing)
     )
 
-    suspend fun updateSimplePayment(
-        orderToUpdate: WCOrderModel,
-        site: SiteModel,
-        customerNote: String,
-        amount: String,
-        email: String,
-        isTaxable: Boolean
-    ): RemoteOrderPayload {
-        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
-        val jsonFee = JsonObject().also {
-            it.addProperty("name", "Simple Payment")
-            it.addProperty("total", amount)
-            it.addProperty("tax_status", taxStatus)
-        }
-        val feeLines = JsonArray().also { it.add(jsonFee) }.toString()
-
-        val billing = Billing(email = email)
-
-        val payload = mapOf(
-                "customer_note" to customerNote,
-                "fee_lines" to feeLines,
-                "billing" to billing,
-                "_fields" to ORDER_FIELDS
-        )
-        return updateOrder(orderToUpdate, site, payload)
-    }
-
     /**
-     * Creates a "simple payment," which is an empty order assigned the passed amount
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
         val jsonFee = JsonObject().also {
-            it.addProperty("name", "Simple Payment")
+            it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
             it.addProperty("total", amount)
             it.addProperty("tax_status", taxStatus)
         }
@@ -560,6 +534,33 @@ class OrderRestClient @Inject constructor(
                 )
             }
         }
+    }
+
+    suspend fun updateSimplePayment(
+        orderToUpdate: WCOrderModel,
+        site: SiteModel,
+        customerNote: String,
+        amount: String,
+        email: String,
+        isTaxable: Boolean
+    ): RemoteOrderPayload {
+        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
+        val jsonFee = JsonObject().also {
+            it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
+            it.addProperty("total", amount)
+            it.addProperty("tax_status", taxStatus)
+        }
+        val feeLines = JsonArray().also { it.add(jsonFee) }.toString()
+
+        val billing = Billing(email = email)
+
+        val payload = mapOf(
+                "customer_note" to customerNote,
+                "fee_lines" to feeLines,
+                "billing" to billing,
+                "_fields" to ORDER_FIELDS
+        )
+        return updateOrder(orderToUpdate, site, payload)
     }
 
     /**
@@ -1037,5 +1038,7 @@ class OrderRestClient @Inject constructor(
                 "tracking_number",
                 "tracking_provider"
         ).joinToString(separator = ",")
+
+        private const val SIMPLE_PAYMENT_FEE_NAME = "Simple Payment"
     }
 }
