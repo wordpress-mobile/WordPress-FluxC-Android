@@ -219,11 +219,11 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderStatusUpdateSuccess() = runBlocking {
         val originalOrder = WCOrderModel(
-            id = 8,
-            localSiteId = siteModel.localId(),
-            status = CoreOrderStatus.PROCESSING.value,
-            remoteOrderId = RemoteId(88),
-            total = "15.00"
+                id = 8,
+                localSiteId = siteModel.localId(),
+                status = CoreOrderStatus.PROCESSING.value,
+                remoteOrderId = RemoteId(88),
+                total = "15.00"
         )
 
         interceptor.respondWith("wc-order-update-response-success.json")
@@ -243,11 +243,11 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderStatusUpdateError() = runBlocking {
         val originalOrder = WCOrderModel(
-            id = 8,
-            localSiteId = siteModel.localId(),
-            status = CoreOrderStatus.PROCESSING.value,
-            remoteOrderId = RemoteId(88),
-            total = "15.00"
+                id = 8,
+                localSiteId = siteModel.localId(),
+                status = CoreOrderStatus.PROCESSING.value,
+                remoteOrderId = RemoteId(88),
+                total = "15.00"
         )
 
         val errorJson = JsonObject().apply {
@@ -257,7 +257,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         interceptor.respondWithError(errorJson, 400)
         val payload = orderRestClient.updateOrderStatus(
-            originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
+                originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 
         with(payload) {
@@ -443,7 +443,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(trackingProvider, "USPS")
             assertEquals(
                     trackingLink,
-                    "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=11122233344466666")
+                    "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=11122233344466666"
+            )
             assertEquals(trackingNumber, "11122233344466666")
             assertEquals(dateShipped, "2019-02-19")
         }
@@ -469,9 +470,11 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(remoteTrackingId, "95bb641d79d7c6974001d6a03fbdabc0")
             assertEquals(trackingNumber, "123456")
             assertEquals(trackingProvider, "TNT Express (consignment)")
-            assertEquals(trackingLink, "http://www.tnt.com/webtracker/tracking.do?requestType=GEN&searchType=" +
+            assertEquals(
+                    trackingLink, "http://www.tnt.com/webtracker/tracking.do?requestType=GEN&searchType=" +
                     "CON&respLang=en&respCountry=GENERIC&sourceID=1&sourceCountry=ww&cons=123456&navigation=1&g" +
-                    "\nenericSiteIdent=")
+                    "\nenericSiteIdent="
+            )
             assertEquals(dateShipped, "2019-04-18")
         }
     }
@@ -556,6 +559,25 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testPostSimplePayment() = runBlocking {
         interceptor.respondWith("wc-fetch-order-response-success.json")
         val response = orderRestClient.postSimplePayment(siteModel, "10.00", isTaxable = true)
+
+        with(response) {
+            assertNull(error)
+            assertNotNull(order)
+        }
+    }
+
+    @Test
+    fun testUpdateSimplePayment() = runBlocking {
+        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
+        interceptor.respondWith("wc-fetch-order-response-success.json")
+        val response = orderRestClient.updateSimplePayment(
+                orderToUpdate = orderModel,
+                site = siteModel,
+                customerNote = "",
+                amount = "10.00",
+                email = "",
+                isTaxable = true
+        )
 
         with(response) {
             assertNull(error)
