@@ -218,6 +218,47 @@ class WCOrderStoreTest {
     }
 
     @Test
+    fun testUpdateSimplePayment() = runBlocking {
+        val testEmail = "example@example.com"
+        val testCustomerNote = "Customer note"
+        val testAmount = "10.00"
+
+        val orderModel = OrderTestUtils.generateSampleOrder(42).let {
+            val generatedId = ordersDao.insertOrUpdateOrder(it).toInt()
+            it.copy(id = generatedId)
+        }
+        val site = SiteModel().apply { id = orderModel.localSiteId.value }
+        val result = RemoteOrderPayload(orderModel, site
+        )
+        whenever(
+                orderRestClient.updateSimplePayment(
+                        orderToUpdate = orderModel,
+                        site = site,
+                        customerNote = testCustomerNote,
+                        amount = testAmount,
+                        email = testEmail,
+                        isTaxable = true
+                )
+        ).thenReturn(result)
+
+        orderRestClient.updateSimplePayment(
+                orderToUpdate = orderModel,
+                site = site,
+                customerNote = testCustomerNote,
+                amount = testAmount,
+                email = testEmail,
+                isTaxable = true
+        )
+
+        with(orderStore.getOrderByIdAndSite(orderModel.remoteOrderId.value, site)!!) {
+            assertEquals(1, getFeeLineList().size)
+            assertEquals(testAmount, getFeeLineList()[0].total)
+            assertEquals(testCustomerNote, customerNote)
+            assertEquals(testEmail, getBillingAddress().email)
+        }
+    }
+
+    @Test
     fun testOrderErrorType() {
         assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("invalid_param"))
         assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("INVALID_PARAM"))
