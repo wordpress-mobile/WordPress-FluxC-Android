@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
@@ -482,11 +483,38 @@ class OrderRestClient @Inject constructor(
             mapOf("shipping" to shipping, "billing" to billing)
     )
 
+    suspend fun updateSimplePayment(
+        orderToUpdate: WCOrderModel,
+        site: SiteModel,
+        customerNote: String,
+        amount: String,
+        email: String,
+        isTaxable: Boolean
+    ): RemoteOrderPayload {
+        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
+        val jsonFee = JsonObject().also {
+            it.addProperty("name", "Simple Payment")
+            it.addProperty("total", amount)
+            it.addProperty("tax_status", taxStatus)
+        }
+        val feeLines = JsonArray().also { it.add(jsonFee) }.toString()
+
+        val billing = Billing(email = email)
+
+        val payload = mapOf(
+                "customer_note" to customerNote,
+                "fee_lines" to feeLines,
+                "billing" to billing,
+                "_fields" to ORDER_FIELDS
+        )
+        return updateOrder(orderToUpdate, site, payload)
+    }
+
     /**
      * Creates a "simple payment," which is an empty order assigned the passed amount
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
-        val taxStatus = if (isTaxable) "taxable" else "none"
+        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
         val jsonFee = JsonObject().also {
             it.addProperty("name", "Simple Payment")
             it.addProperty("total", amount)
