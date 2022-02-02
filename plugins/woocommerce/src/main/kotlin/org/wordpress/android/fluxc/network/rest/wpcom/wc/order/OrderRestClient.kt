@@ -484,20 +484,26 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
-     * return a new order with the tax already calculated.
+     * Generates the feeLines for an order containing a single fee item based on
+     * the passed information
      */
-    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
+    private fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean): String {
         val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
         val jsonFee = JsonObject().also {
             it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
             it.addProperty("total", amount)
             it.addProperty("tax_status", taxStatus)
         }
+        return JsonArray().also { it.add(jsonFee) }.toString()
+    }
 
-        val jsonFeeItems = JsonArray().also { it.add(jsonFee) }
+    /**
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
+     */
+    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val params = mapOf(
-                "fee_lines" to jsonFeeItems,
+                "fee_lines" to generateSimplePaymentFeeLines(amount, isTaxable),
                 "_fields" to ORDER_FIELDS
         )
 
@@ -544,20 +550,10 @@ class OrderRestClient @Inject constructor(
         email: String,
         isTaxable: Boolean
     ): RemoteOrderPayload {
-        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
-        val jsonFee = JsonObject().also {
-            it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
-            it.addProperty("total", amount)
-            it.addProperty("tax_status", taxStatus)
-        }
-        val feeLines = JsonArray().also { it.add(jsonFee) }.toString()
-
-        val billing = Billing(email = email)
-
         val payload = mapOf(
                 "customer_note" to customerNote,
-                "fee_lines" to feeLines,
-                "billing" to billing,
+                "fee_lines" to generateSimplePaymentFeeLines(amount, isTaxable),
+                "billing" to Billing(email = email),
                 "_fields" to ORDER_FIELDS
         )
         return updateOrder(orderToUpdate, site, payload)
