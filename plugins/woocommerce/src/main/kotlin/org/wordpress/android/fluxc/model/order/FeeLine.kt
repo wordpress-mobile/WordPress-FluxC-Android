@@ -19,7 +19,7 @@ class FeeLine {
     val totalTax: String? = null
 
     @SerializedName("tax_status")
-    val taxStatus: String? = null
+    val taxStatus: FeeLineTaxStatus? = null
 }
 
 enum class FeeLineTaxStatus {
