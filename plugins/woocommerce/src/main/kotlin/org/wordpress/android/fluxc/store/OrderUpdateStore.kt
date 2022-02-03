@@ -127,12 +127,12 @@ class OrderUpdateStore @Inject internal constructor(
         billingEmail: String,
         isTaxable: Boolean
     ): Flow<UpdateOrderResult> {
-        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
             val initialOrder = ordersDao.getOrder(remoteOrderId, site.localId())
             if (initialOrder == null) {
                 emitNoEntityFound("Order with id ${remoteOrderId.value} not found")
             } else {
-                val feeLines = wcOrderRestClient.generateSimplePaymentFeeLines(amount, isTaxable)
+                val feeLines = OrderRestClient.generateSimplePaymentFeeLines(amount, isTaxable)
                 ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
                     copy(
                         customerNote = customerNote,
@@ -163,12 +163,12 @@ class OrderUpdateStore @Inject internal constructor(
                     billingAddress = billing,
                     feeLines = feeLineList
                 )
-                val result = updateOrder(site, remoteOrderId.value, updateRequest)
+                val result = wcOrderRestClient.updateOrder(site, remoteOrderId.value, updateRequest)
+                // val result = updateOrder(site, remoteOrderId.value, updateRequest)
                 val remoteUpdateResult = if (result.isError) {
                     ordersDao.insertOrUpdateOrder(initialOrder)
                     OnOrderChanged(orderError = OrderError(message = result.error.message ?: ""))
                 } else {
-                    ordersDao.insertOrUpdateOrder(result.model!!)
                     OnOrderChanged()
                 }
                 emit(RemoteUpdateResult(remoteUpdateResult))

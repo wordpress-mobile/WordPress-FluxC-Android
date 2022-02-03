@@ -147,6 +147,13 @@
             android:text="Create simple payment" />
 
         <Button
+            android:id="@+id/update_simple_payment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update simple payment" />
+
+        <Button
             android:id="@+id/create_order"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

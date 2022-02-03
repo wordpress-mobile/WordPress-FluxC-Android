@@ -529,20 +529,6 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Generates the feeLines for an simple payment order containing a single fee line item with
-     * the passed information
-     */
-    fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean): String {
-        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
-        val jsonFee = JsonObject().also {
-            it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
-            it.addProperty("total", amount)
-            it.addProperty("tax_status", taxStatus)
-        }
-        return JsonArray().also { it.add(jsonFee) }.toString()
-    }
-
-    /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
      */
@@ -1018,6 +1004,18 @@ class OrderRestClient @Inject constructor(
                 "tracking_provider"
         ).joinToString(separator = ",")
 
-        const val SIMPLE_PAYMENT_FEE_NAME = "Simple Payment"
+        /**
+         * Generates the feeLines for an simple payment order containing a single fee line item with
+         * the passed information
+         */
+        fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean): String {
+            val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
+            val jsonFee = JsonObject().also {
+                it.addProperty("name", "Simple Payment")
+                it.addProperty("total", amount)
+                it.addProperty("tax_status", taxStatus)
+            }
+            return JsonArray().also { it.add(jsonFee) }.toString()
+        }
     }
 }
