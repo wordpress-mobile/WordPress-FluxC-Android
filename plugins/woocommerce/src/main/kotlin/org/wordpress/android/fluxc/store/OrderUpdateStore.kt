@@ -130,7 +130,7 @@ class OrderUpdateStore @Inject internal constructor(
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
             val initialOrder = ordersDao.getOrder(RemoteId(orderId), site.localId())
             if (initialOrder == null) {
-                emitNoEntityFound("Order with id ${orderId} not found")
+                emitNoEntityFound("Order with id $orderId not found")
             } else {
                 // simple payment is assigned a single fee list item upon creation and we must re-use the
                 // existing fee id or else a new fee will be added
@@ -161,7 +161,7 @@ class OrderUpdateStore @Inject internal constructor(
                     state = "",
                     postcode = "",
                     country = "",
-                    phone = "",
+                    phone = ""
                 )
                 val responseType = object : TypeToken<List<FeeLine>>() {}.type
                 val feeLineList = gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
