@@ -1035,6 +1035,6 @@ class OrderRestClient @Inject constructor(
                 "tracking_provider"
         ).joinToString(separator = ",")
 
-        private const val SIMPLE_PAYMENT_FEE_NAME = "Simple Payment"
+        const val SIMPLE_PAYMENT_FEE_NAME = "Simple Payment"
     }
 }
