@@ -16,7 +16,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import org.wordpress.android.fluxc.*
+import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.TestSiteSqlUtils
+import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
@@ -36,6 +39,7 @@ import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import kotlin.test.assertEquals
 
@@ -71,13 +75,13 @@ class WooCommerceStoreTest {
                 plugin = "woocommerce-services/woocommerce-services",
                 name = "WooCommerce Shipping &amp; Tax",
                 version = "1.0",
-                url = "url",
+                url = "url"
             ),
             SystemPluginModel(
                 plugin = "other-plugin/other-plugin",
                 name = "Other Plugin",
                 version = "2.0",
-                url = "url",
+                url = "url"
             )
         ),
         listOf(
@@ -178,7 +182,7 @@ class WooCommerceStoreTest {
         Assertions.assertThat(result)
             .hasSameSizeAs(expectedModel)
             .allMatch { model ->
-                expectedModel.any { model.id == it.id && model.name == it.name && model.isActive == it.isActive}
+                expectedModel.any { model.id == it.id && model.name == it.name && model.isActive == it.isActive }
             }
     }
 
