@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import com.google.gson.Gson
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.doReturn
@@ -8,7 +9,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -18,7 +18,9 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -419,47 +421,39 @@ class OrderUpdateStoreTest {
         )
 
         setUp {
-            orderRestClient = mock { }
-            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
-                initialOrder
-            )
+            orderRestClient = mock {
+                onBlocking {
+                    updateOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(updatedOrder)
+                )
+            }
         }
 
         // when
-        sut.updateSimplePayment(
+        val results = sut.updateSimplePayment(
                 site = site,
                 orderId = TEST_REMOTE_ORDER_ID.value,
                 amount = SIMPLE_PAYMENT_AMOUNT,
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
                 isTaxable = SIMPLE_PAYMENT_IS_TAXABLE
-        ).collect { result ->
-            when (result) {
-                is OptimisticUpdateResult -> {
-                    assertThat(result.event.isError).isFalse()
-                }
-                is RemoteUpdateResult -> {
-                    assertThat(result.event.isError).isFalse()
-                    val order = ordersDao.getOrder(initialOrder.remoteOrderId, site.localId())
-                    assertThat(order).isEqualTo(updatedOrder)
-                }
-            }
-        }
-    }
+        ).toList()
 
         // then
-        /*assertThat(results).hasSize(2).containsExactly(
+        assertThat(results).hasSize(2).containsExactly(
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(OnOrderChanged())
         )
 
-        verify(ordersDao).insertOrUpdateOrder(argThat {
-            billingEmail == SIMPLE_PAYMENT_BILLING_EMAIL &&
-                    customerNote == SIMPLE_PAYMENT_CUSTOMER_NOTE &&
-                    getFeeLineList().size == 1 &&
-                    getFeeLineList()[0].total == SIMPLE_PAYMENT_AMOUNT &&
-                    getFeeLineList()[0].taxStatus == Taxable
-        })*/
+        ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)?.let { order ->
+            assertThat(order.billingEmail).isEqualTo(SIMPLE_PAYMENT_BILLING_EMAIL)
+            assertThat(order.customerNote).isEqualTo(SIMPLE_PAYMENT_CUSTOMER_NOTE)
+            assertThat(order.getFeeLineList()).hasSize(1)
+            assertThat(order.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
+            assertThat(order.getFeeLineList()[0].taxStatus).isEqualTo(FeeLineTaxStatus.Taxable)
+        }
+    }
 
     private companion object {
         val TEST_REMOTE_ORDER_ID = RemoteId(321L)
@@ -470,11 +464,11 @@ class OrderUpdateStoreTest {
         const val UPDATED_SHIPPING_FIRST_NAME = "updated shipping first name"
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
 
+        const val SIMPLE_PAYMENT_FEE_ID = 1L
         const val SIMPLE_PAYMENT_AMOUNT = "10.00"
         const val SIMPLE_PAYMENT_CUSTOMER_NOTE = "Simple payment customer note"
         const val SIMPLE_PAYMENT_BILLING_EMAIL = "example@example.com"
         const val SIMPLE_PAYMENT_IS_TAXABLE = true
-        const val SIMPLE_PAYMENT_FEE_ID = 1L
 
         val initialOrder = WCOrderModel(
                 remoteOrderId = TEST_REMOTE_ORDER_ID,
@@ -491,5 +485,7 @@ class OrderUpdateStoreTest {
         val emptyBilling = OrderAddress.Billing("", "", "", "", "", "", "", "", "", "", "")
         val emptyShippingDto = Shipping("", "", "", "", "", "", "", "", "", "")
         val emptyBillingDto = Billing("", "", "", "", "", "", "", "", "", "", "")
+
+        private val gson by lazy { Gson() }
     }
 }
