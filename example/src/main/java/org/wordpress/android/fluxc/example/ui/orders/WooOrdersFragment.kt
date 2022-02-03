@@ -471,34 +471,41 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         activity,
                         "Enter the remote order id (order must already be fetched):"
                 ) { remoteIdEditText ->
-                    val remoteId = remoteIdEditText.text.toString().toLong()
                     showSingleLineDialog(
                             activity,
-                            "Enter the amount"
+                            "Enter the amount:"
                     ) { amountEditText ->
-                        val amount = amountEditText.text.toString()
-                        coroutineScope.launch {
-                            orderUpdateStore.updateSimplePayment(
-                                    site,
-                                    RemoteId(remoteId),
-                                    amount,
-                                    customerNote = "",
-                                    billingEmail = "",
-                                    isTaxable = true
-                            ).collect { result ->
-                                when (result) {
-                                    is OptimisticUpdateResult -> {
-                                        if (result.event.isError) {
-                                            prependToLog("Optimistic simple payment update failed.")
-                                        } else {
-                                            prependToLog("Optimistic simple payment update succeeded.")
+                        showSingleLineDialog(
+                                activity,
+                                "Enter the customer note:"
+                        ) { customerNoteEditText ->
+                            val remoteId = remoteIdEditText.text.toString().toLong()
+                            val amount = amountEditText.text.toString()
+                            val customerNote = customerNoteEditText.text.toString()
+                            coroutineScope.launch {
+                                // pre-5.9 versions of WooCommerce fail w/o billing email so we pass one here
+                                orderUpdateStore.updateSimplePayment(
+                                        site,
+                                        RemoteId(remoteId),
+                                        amount,
+                                        customerNote = customerNote,
+                                        billingEmail = "example@example.com",
+                                        isTaxable = true
+                                ).collect { result ->
+                                    when (result) {
+                                        is OptimisticUpdateResult -> {
+                                            if (result.event.isError) {
+                                                prependToLog("Optimistic simple payment update failed.")
+                                            } else {
+                                                prependToLog("Optimistic simple payment update succeeded.")
+                                            }
                                         }
-                                    }
-                                    is RemoteUpdateResult -> {
-                                        if (result.event.isError) {
-                                            prependToLog("Remote simple payment update failed.")
-                                        } else {
-                                            prependToLog("Remote simple payment update succeeded.")
+                                        is RemoteUpdateResult -> {
+                                            if (result.event.isError) {
+                                                prependToLog("Remote simple payment update failed.")
+                                            } else {
+                                                prependToLog("Remote simple payment update succeeded.")
+                                            }
                                         }
                                     }
                                 }
