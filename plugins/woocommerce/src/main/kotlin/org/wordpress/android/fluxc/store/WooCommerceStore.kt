@@ -48,6 +48,7 @@ open class WooCommerceStore @Inject constructor(
     private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
     enum class WooPlugin(val pluginName: String) {
+        WOO_CORE("woocommerce/woocommerce"),
         WOO_SERVICES("woocommerce-services/woocommerce-services"),
         WOO_PAYMENTS("woocommerce-payments/woocommerce-payments"),
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
