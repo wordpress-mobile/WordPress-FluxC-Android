@@ -486,7 +486,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                 // pre-5.9 versions of WooCommerce fail w/o billing email so we pass one here
                                 orderUpdateStore.updateSimplePayment(
                                         site,
-                                        RemoteId(remoteId),
+                                        remoteId,
                                         amount,
                                         customerNote = customerNote,
                                         billingEmail = "example@example.com",

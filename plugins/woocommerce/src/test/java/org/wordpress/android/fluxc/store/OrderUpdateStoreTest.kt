@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus.Taxable
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
@@ -413,6 +412,7 @@ class OrderUpdateStoreTest {
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
                 feeLines = OrderRestClient.generateSimplePaymentFeeLines(
+                        SIMPLE_PAYMENT_FEE_ID,
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE
                 )
@@ -421,14 +421,14 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock { }
             whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
-                    initialOrder
+                initialOrder
             )
         }
 
         // when
         sut.updateSimplePayment(
                 site = site,
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = TEST_REMOTE_ORDER_ID.value,
                 amount = SIMPLE_PAYMENT_AMOUNT,
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
@@ -471,9 +471,10 @@ class OrderUpdateStoreTest {
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
 
         const val SIMPLE_PAYMENT_AMOUNT = "10.00"
-        const val SIMPLE_PAYMENT_CUSTOMER_NOTE = UPDATED_CUSTOMER_NOTE
+        const val SIMPLE_PAYMENT_CUSTOMER_NOTE = "Simple payment customer note"
         const val SIMPLE_PAYMENT_BILLING_EMAIL = "example@example.com"
         const val SIMPLE_PAYMENT_IS_TAXABLE = true
+        const val SIMPLE_PAYMENT_FEE_ID = 1L
 
         val initialOrder = WCOrderModel(
                 remoteOrderId = TEST_REMOTE_ORDER_ID,

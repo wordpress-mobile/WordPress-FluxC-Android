@@ -121,18 +121,26 @@ class OrderUpdateStore @Inject internal constructor(
 
     suspend fun updateSimplePayment(
         site: SiteModel,
-        remoteOrderId: RemoteId,
+        orderId: Long,
         amount: String,
         customerNote: String,
         billingEmail: String,
         isTaxable: Boolean
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
-            val initialOrder = ordersDao.getOrder(remoteOrderId, site.localId())
+            val initialOrder = ordersDao.getOrder(RemoteId(orderId), site.localId())
             if (initialOrder == null) {
-                emitNoEntityFound("Order with id ${remoteOrderId.value} not found")
+                emitNoEntityFound("Order with id ${orderId} not found")
             } else {
-                val feeLines = OrderRestClient.generateSimplePaymentFeeLines(amount, isTaxable)
+                // simple payment is assigned a single fee list item upon creation and we must re-use the
+                // existing fee id or else a new fee will be added
+                val feeId = if (initialOrder.getFeeLineList().isNotEmpty()) {
+                    initialOrder.getFeeLineList()[0].id ?: 0L
+                } else {
+                    0L
+                }
+                val feeLines = OrderRestClient.generateSimplePaymentFeeLines(feeId, amount, isTaxable)
+
                 ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
                     copy(
                         customerNote = customerNote,
@@ -163,8 +171,7 @@ class OrderUpdateStore @Inject internal constructor(
                     billingAddress = billing,
                     feeLines = feeLineList
                 )
-                val result = wcOrderRestClient.updateOrder(site, remoteOrderId.value, updateRequest)
-                // val result = updateOrder(site, remoteOrderId.value, updateRequest)
+                val result = updateOrder(site, orderId, updateRequest)
                 val remoteUpdateResult = if (result.isError) {
                     ordersDao.insertOrUpdateOrder(initialOrder)
                     OnOrderChanged(orderError = OrderError(message = result.error.message ?: ""))

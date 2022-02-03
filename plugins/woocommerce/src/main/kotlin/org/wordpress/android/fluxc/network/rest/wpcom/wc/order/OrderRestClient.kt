@@ -489,7 +489,7 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val params = mapOf(
-                "fee_lines" to generateSimplePaymentFeeLines(amount, isTaxable),
+                "fee_lines" to generateSimplePaymentFeeLines(0, amount, isTaxable),
                 "_fields" to ORDER_FIELDS
         )
 
@@ -1008,9 +1008,10 @@ class OrderRestClient @Inject constructor(
          * Generates the feeLines for an simple payment order containing a single fee line item with
          * the passed information
          */
-        fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean): String {
+        fun generateSimplePaymentFeeLines(feeId: Long, amount: String, isTaxable: Boolean): String {
             val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
             val jsonFee = JsonObject().also {
+                it.addProperty("id", feeId)
                 it.addProperty("name", "Simple Payment")
                 it.addProperty("total", amount)
                 it.addProperty("tax_status", taxStatus)
