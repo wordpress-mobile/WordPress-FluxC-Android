@@ -125,8 +125,13 @@ class WooSystemRestClient @Inject constructor(
             get() = activePlugins.orEmpty().map { it.copy(isActive = true) } + inactivePlugins.orEmpty()
 
         data class SystemPluginModel(
+            val plugin: String,
             val name: String,
-            val version: String,
+            val version: String?,
+            val versionLatest: String?,
+            val url: String?,
+            @SerializedName("author_name") val authorName: String?,
+            @SerializedName("author_url") val authorUrl: String?,
             val isActive: Boolean = false
         )
     }
