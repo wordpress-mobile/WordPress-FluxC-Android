@@ -15,10 +15,10 @@ data class WCSystemPluginResponse(
         val plugin: String,
         val name: String,
         val version: String?,
-        val versionLatest: String?,
         val url: String?,
-        @SerializedName("author_name") val authorName: String?,
-        @SerializedName("author_url") val authorUrl: String?,
+        val versionLatest: String? = null,
+        @SerializedName("author_name") val authorName: String? = null,
+        @SerializedName("author_url") val authorUrl: String? = null,
         val isActive: Boolean = false
     )
 }
