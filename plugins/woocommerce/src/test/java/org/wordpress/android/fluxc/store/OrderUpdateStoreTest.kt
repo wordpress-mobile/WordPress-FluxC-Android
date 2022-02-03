@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import com.google.gson.Gson
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.doReturn
@@ -493,7 +492,5 @@ class OrderUpdateStoreTest {
         val emptyBilling = OrderAddress.Billing("", "", "", "", "", "", "", "", "", "", "")
         val emptyShippingDto = Shipping("", "", "", "", "", "", "", "", "", "")
         val emptyBillingDto = Billing("", "", "", "", "", "", "", "", "", "", "")
-
-        private val gson by lazy { Gson() }
     }
 }
