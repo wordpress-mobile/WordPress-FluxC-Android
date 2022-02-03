@@ -222,14 +222,20 @@ class WCOrderStoreTest {
         val testEmail = "example@example.com"
         val testCustomerNote = "Customer note"
         val testAmount = "10.00"
+        val testIsTaxable = true
 
         val orderModel = OrderTestUtils.generateSampleOrder(42).let {
             val generatedId = ordersDao.insertOrUpdateOrder(it).toInt()
-            it.copy(id = generatedId)
+            it.copy(
+                    id = generatedId,
+                    customerNote = testCustomerNote,
+                    feeLines = orderRestClient.generateSimplePaymentFeeLines(testAmount, testIsTaxable),
+                    billingEmail = testEmail
+            )
         }
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
-        val result = RemoteOrderPayload(orderModel, site
-        )
+        val result = RemoteOrderPayload(orderModel, site)
+
         whenever(
                 orderRestClient.updateSimplePayment(
                         orderToUpdate = orderModel,
@@ -237,7 +243,7 @@ class WCOrderStoreTest {
                         customerNote = testCustomerNote,
                         amount = testAmount,
                         email = testEmail,
-                        isTaxable = true
+                        isTaxable = testIsTaxable
                 )
         ).thenReturn(result)
 
@@ -247,7 +253,7 @@ class WCOrderStoreTest {
                 customerNote = testCustomerNote,
                 amount = testAmount,
                 email = testEmail,
-                isTaxable = true
+                isTaxable = testIsTaxable
         )
 
         with(orderStore.getOrderByIdAndSite(orderModel.remoteOrderId.value, site)!!) {

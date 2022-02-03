@@ -484,20 +484,6 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Generates the feeLines for an order containing a single fee item based on
-     * the passed information
-     */
-    private fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean): String {
-        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
-        val jsonFee = JsonObject().also {
-            it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
-            it.addProperty("total", amount)
-            it.addProperty("tax_status", taxStatus)
-        }
-        return JsonArray().also { it.add(jsonFee) }.toString()
-    }
-
-    /**
      * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
      * return a new order with the tax already calculated.
      */
@@ -557,6 +543,20 @@ class OrderRestClient @Inject constructor(
                 "_fields" to ORDER_FIELDS
         )
         return updateOrder(orderToUpdate, site, payload)
+    }
+
+    /**
+     * Generates the feeLines for an simple payment order containing a single fee line item with
+     * the passed information
+     */
+    fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean): String {
+        val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
+        val jsonFee = JsonObject().also {
+            it.addProperty("name", SIMPLE_PAYMENT_FEE_NAME)
+            it.addProperty("total", amount)
+            it.addProperty("tax_status", taxStatus)
+        }
+        return JsonArray().also { it.add(jsonFee) }.toString()
     }
 
     /**
