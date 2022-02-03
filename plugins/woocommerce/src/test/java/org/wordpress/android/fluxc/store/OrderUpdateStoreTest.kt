@@ -97,7 +97,9 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(OnOrderChanged())
         )
-
+        verify(ordersDao).insertOrUpdateOrder(argThat {
+            customerNote == UPDATED_CUSTOMER_NOTE
+        })
     }
 
     @Test
