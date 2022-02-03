@@ -528,23 +528,6 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    suspend fun updateSimplePayment(
-        orderToUpdate: WCOrderModel,
-        site: SiteModel,
-        customerNote: String,
-        amount: String,
-        email: String,
-        isTaxable: Boolean
-    ): RemoteOrderPayload {
-        val payload = mapOf(
-                "customer_note" to customerNote,
-                "fee_lines" to generateSimplePaymentFeeLines(amount, isTaxable),
-                "billing" to Billing(email = email),
-                "_fields" to ORDER_FIELDS
-        )
-        return updateOrder(orderToUpdate, site, payload)
-    }
-
     /**
      * Generates the feeLines for an simple payment order containing a single fee line item with
      * the passed information

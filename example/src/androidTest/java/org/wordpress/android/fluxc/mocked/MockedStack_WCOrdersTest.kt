@@ -566,25 +566,6 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
     }
 
-    @Test
-    fun testUpdateSimplePayment() = runBlocking {
-        val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
-        interceptor.respondWith("wc-fetch-order-response-success.json")
-        val response = orderRestClient.updateSimplePayment(
-                orderToUpdate = orderModel,
-                site = siteModel,
-                customerNote = "",
-                amount = "10.00",
-                email = "",
-                isTaxable = true
-        )
-
-        with(response) {
-            assertNull(error)
-            assertNotNull(order)
-        }
-    }
-
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {

@@ -1,8 +1,6 @@
 package org.wordpress.android.fluxc.store
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -11,7 +9,6 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.FeeLine
-import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
@@ -135,21 +132,12 @@ class OrderUpdateStore @Inject internal constructor(
             if (initialOrder == null) {
                 emitNoEntityFound("Order with id ${remoteOrderId.value} not found")
             } else {
-                val jsonFee = JsonObject().also {
-                    it.addProperty("name", OrderRestClient.SIMPLE_PAYMENT_FEE_NAME)
-                    it.addProperty("total", amount)
-                    it.addProperty(
-                        "tax_status",
-                        if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
-                    )
-                }
-                val feeLines = JsonArray().also { it.add(jsonFee) }.toString()
-
+                val feeLines = wcOrderRestClient.generateSimplePaymentFeeLines(amount, isTaxable)
                 ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
                     copy(
                         customerNote = customerNote,
-                        feeLines = feeLines,
-                        billingEmail = billingEmail
+                        billingEmail = billingEmail,
+                        feeLines = feeLines
                     )
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
