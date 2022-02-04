@@ -22,9 +22,9 @@ class FeeLine {
     val taxStatus: FeeLineTaxStatus? = null
 }
 
-enum class FeeLineTaxStatus {
+enum class FeeLineTaxStatus(val value: String) {
     @SerializedName("taxable")
-    Taxable,
+    Taxable("taxable"),
     @SerializedName("none")
-    None
+    None("none")
 }

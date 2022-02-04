@@ -1010,7 +1010,7 @@ class OrderRestClient @Inject constructor(
          * pass the id of an existing fee line item to replace it.
          */
         fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean, feeId: Long? = null): String {
-            val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
+            val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
             val jsonFee = JsonObject().also { json ->
                 feeId?.let {
                     json.addProperty("id", it)
