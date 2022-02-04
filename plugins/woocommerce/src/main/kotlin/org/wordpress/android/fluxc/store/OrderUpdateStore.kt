@@ -1,14 +1,12 @@
 package org.wordpress.android.fluxc.store
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
@@ -145,7 +143,7 @@ class OrderUpdateStore @Inject internal constructor(
                     copy(
                         customerNote = customerNote,
                         billingEmail = billingEmail,
-                        feeLines = feeLines
+                        feeLines = feeLines.toString()
                     )
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
@@ -163,13 +161,11 @@ class OrderUpdateStore @Inject internal constructor(
                     country = "",
                     phone = ""
                 )
-                val responseType = object : TypeToken<List<FeeLine>>() {}.type
-                val feeLineList = gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
 
                 val updateRequest = UpdateOrderRequest(
                     customerNote = customerNote,
                     billingAddress = billing,
-                    feeLines = feeLineList
+                    feeLines = feeLines
                 )
                 val result = updateOrder(site, orderId, updateRequest)
                 val remoteUpdateResult = if (result.isError) {

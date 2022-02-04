@@ -3,9 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -21,6 +19,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
@@ -1009,9 +1008,17 @@ class OrderRestClient @Inject constructor(
          * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
          * pass the id of an existing fee line item to replace it.
          */
-        fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean, feeId: Long? = null): String {
-            val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
-            val jsonFee = JsonObject().also { json ->
+        fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean, feeId: Long? = null): List<FeeLine> {
+            FeeLine().also { feeLine ->
+                feeId?.let {
+                    feeLine.id = it
+                }
+                feeLine.name = "Simple Payment"
+                feeLine.total = amount
+                feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
+                return ArrayList<FeeLine>().also { it.add(feeLine) }
+            }
+            /*val jsonFee = JsonObject().also { json ->
                 feeId?.let {
                     json.addProperty("id", it)
                 }
@@ -1019,7 +1026,7 @@ class OrderRestClient @Inject constructor(
                 json.addProperty("total", amount)
                 json.addProperty("tax_status", taxStatus)
             }
-            return JsonArray().also { it.add(jsonFee) }.toString()
+            return JsonArray().also { it.add(jsonFee) }.toString()*/
         }
     }
 }

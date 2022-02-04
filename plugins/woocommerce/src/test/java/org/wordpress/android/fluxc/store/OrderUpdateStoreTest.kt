@@ -415,7 +415,7 @@ class OrderUpdateStoreTest {
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE,
                         SIMPLE_PAYMENT_FEE_ID
-                )
+                ).toString()
         )
 
         setUp {
