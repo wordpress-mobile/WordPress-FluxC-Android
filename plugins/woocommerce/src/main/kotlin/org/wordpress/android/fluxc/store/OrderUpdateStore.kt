@@ -135,11 +135,11 @@ class OrderUpdateStore @Inject internal constructor(
                 // simple payment is assigned a single fee list item upon creation and we must re-use the
                 // existing fee id or else a new fee will be added
                 val feeId = if (initialOrder.getFeeLineList().isNotEmpty()) {
-                    initialOrder.getFeeLineList()[0].id ?: 0L
+                    initialOrder.getFeeLineList()[0].id
                 } else {
-                    0L
+                    null
                 }
-                val feeLines = OrderRestClient.generateSimplePaymentFeeLines(feeId, amount, isTaxable)
+                val feeLines = OrderRestClient.generateSimplePaymentFeeLines(amount, isTaxable, feeId)
 
                 ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
                     copy(

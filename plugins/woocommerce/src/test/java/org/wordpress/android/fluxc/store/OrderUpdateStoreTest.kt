@@ -412,9 +412,9 @@ class OrderUpdateStoreTest {
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
                 feeLines = OrderRestClient.generateSimplePaymentFeeLines(
-                        SIMPLE_PAYMENT_FEE_ID,
                         SIMPLE_PAYMENT_AMOUNT,
-                        SIMPLE_PAYMENT_IS_TAXABLE
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
                 )
         )
 

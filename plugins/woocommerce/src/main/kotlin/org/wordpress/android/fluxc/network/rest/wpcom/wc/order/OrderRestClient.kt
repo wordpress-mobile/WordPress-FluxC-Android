@@ -489,7 +489,7 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val params = mapOf(
-                "fee_lines" to generateSimplePaymentFeeLines(0, amount, isTaxable),
+                "fee_lines" to generateSimplePaymentFeeLines(amount, isTaxable),
                 "_fields" to ORDER_FIELDS
         )
 
@@ -1005,16 +1005,19 @@ class OrderRestClient @Inject constructor(
         ).joinToString(separator = ",")
 
         /**
-         * Generates the feeLines for an simple payment order containing a single fee line item with
-         * the passed information
+         * Generates the feeLines for a simple payment order containing a single fee line item with
+         * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
+         * pass the id of an existing fee line item to replace it.
          */
-        fun generateSimplePaymentFeeLines(feeId: Long, amount: String, isTaxable: Boolean): String {
+        fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean, feeId: Long? = null): String {
             val taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable.name else FeeLineTaxStatus.None.name
-            val jsonFee = JsonObject().also {
-                it.addProperty("id", feeId)
-                it.addProperty("name", "Simple Payment")
-                it.addProperty("total", amount)
-                it.addProperty("tax_status", taxStatus)
+            val jsonFee = JsonObject().also { json ->
+                feeId?.let {
+                    json.addProperty("id", it)
+                }
+                json.addProperty("name", "Simple Payment")
+                json.addProperty("total", amount)
+                json.addProperty("tax_status", taxStatus)
             }
             return JsonArray().also { it.add(jsonFee) }.toString()
         }
