@@ -411,7 +411,7 @@ class OrderUpdateStoreTest {
         val updatedOrder = initialOrder.copy(
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
-                feeLines = OrderRestClient.generateSimplePaymentFeeLines(
+                feeLines = OrderRestClient.generateSimplePaymentFeeLineJson(
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE,
                         SIMPLE_PAYMENT_FEE_ID

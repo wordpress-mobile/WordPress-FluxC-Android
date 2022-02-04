@@ -137,13 +137,12 @@ class OrderUpdateStore @Inject internal constructor(
                 } else {
                     null
                 }
-                val feeLines = OrderRestClient.generateSimplePaymentFeeLines(amount, isTaxable, feeId)
 
                 ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
                     copy(
                         customerNote = customerNote,
                         billingEmail = billingEmail,
-                        feeLines = feeLines.toString()
+                        feeLines = OrderRestClient.generateSimplePaymentFeeLineJson(amount, isTaxable, feeId).toString()
                     )
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
@@ -165,7 +164,7 @@ class OrderUpdateStore @Inject internal constructor(
                 val updateRequest = UpdateOrderRequest(
                     customerNote = customerNote,
                     billingAddress = billing,
-                    feeLines = feeLines
+                    feeLines = OrderRestClient.generateSimplePaymentFeeLineList(amount, isTaxable, feeId)
                 )
                 val result = updateOrder(site, orderId, updateRequest)
                 val remoteUpdateResult = if (result.isError) {

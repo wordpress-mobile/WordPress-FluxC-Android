@@ -3,7 +3,9 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -488,7 +490,7 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val params = mapOf(
-                "fee_lines" to generateSimplePaymentFeeLines(amount, isTaxable),
+                "fee_lines" to generateSimplePaymentFeeLineJson(amount, isTaxable),
                 "_fields" to ORDER_FIELDS
         )
 
@@ -1008,7 +1010,7 @@ class OrderRestClient @Inject constructor(
          * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
          * pass the id of an existing fee line item to replace it.
          */
-        fun generateSimplePaymentFeeLines(amount: String, isTaxable: Boolean, feeId: Long? = null): List<FeeLine> {
+        fun generateSimplePaymentFeeLineList(amount: String, isTaxable: Boolean, feeId: Long? = null): List<FeeLine> {
             FeeLine().also { feeLine ->
                 feeId?.let {
                     feeLine.id = it
@@ -1018,15 +1020,21 @@ class OrderRestClient @Inject constructor(
                 feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
                 return ArrayList<FeeLine>().also { it.add(feeLine) }
             }
-            /*val jsonFee = JsonObject().also { json ->
+        }
+
+        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
+            val jsonFee = JsonObject().also { json ->
                 feeId?.let {
                     json.addProperty("id", it)
                 }
                 json.addProperty("name", "Simple Payment")
                 json.addProperty("total", amount)
-                json.addProperty("tax_status", taxStatus)
+                json.addProperty(
+                        "tax_status",
+                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
+                )
             }
-            return JsonArray().also { it.add(jsonFee) }.toString()*/
+            return JsonArray().also { it.add(jsonFee) }
         }
     }
 }
