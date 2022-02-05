@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxClassApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
@@ -1094,6 +1095,42 @@ class ProductRestClient @Inject constructor(
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
                 })
         add(request)
+    }
+    /**
+     * Makes a PUT call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * updating the status for the given product review to [newStatus].
+     *
+     * returns  a [WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS]
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [remoteReviewId] The remote ID of the product review to be updated
+     * @param [newStatus] The new status to update the product review to
+     */
+    suspend fun updateProductReviewStatusSuspend(site: SiteModel, remoteReviewId: Long, newStatus: String):RemoteProductReviewPayload{
+        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
+        val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
+        val params = mapOf("status" to newStatus)
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+                this,
+                site,
+                url,
+                params,
+                ProductReviewApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                val review = response.data?.let{
+                    productReviewResponseToProductReviewModel(it).apply {
+                        localSiteId = site.id
+                    }
+                }
+                RemoteProductReviewPayload(site,review)
+            }
+            is JetpackError -> {
+                val productError = networkErrorToProductError(response.error)
+                RemoteProductReviewPayload(productError, site)
+            }
+        }
     }
 
     /**
