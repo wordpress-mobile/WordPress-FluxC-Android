@@ -1018,7 +1018,7 @@ class OrderRestClient @Inject constructor(
                 feeLine.name = "Simple Payment"
                 feeLine.total = amount
                 feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
-                return ArrayList<FeeLine>().also { it.add(feeLine) }
+                return listOf(feeLine)
             }
         }
 
