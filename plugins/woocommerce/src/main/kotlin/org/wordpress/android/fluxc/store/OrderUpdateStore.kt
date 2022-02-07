@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -340,9 +339,5 @@ class OrderUpdateStore @Inject internal constructor(
         emit(UpdateOrderResult.OptimisticUpdateResult(
                 OnOrderChanged(orderError = OrderError(message = message))
         ))
-    }
-
-    companion object {
-        private val gson by lazy { Gson() }
     }
 }
