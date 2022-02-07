@@ -33,9 +33,9 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
-import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.OrderUpdateStore
@@ -53,6 +53,8 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChange
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
@@ -456,6 +458,57 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             }
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")
+                        }
+                    }
+                }
+            }
+        }
+
+        update_simple_payment.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remote order id (order must already be fetched):"
+                ) { remoteIdEditText ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter the amount:"
+                    ) { amountEditText ->
+                        showSingleLineDialog(
+                                activity,
+                                "Enter the customer note:"
+                        ) { customerNoteEditText ->
+                            val remoteId = remoteIdEditText.text.toString().toLong()
+                            val amount = amountEditText.text.toString()
+                            val customerNote = customerNoteEditText.text.toString()
+                            coroutineScope.launch {
+                                // pre-5.9 versions of WooCommerce fail w/o billing email so we pass one here
+                                orderUpdateStore.updateSimplePayment(
+                                        site,
+                                        remoteId,
+                                        amount,
+                                        customerNote = customerNote,
+                                        billingEmail = "example@example.com",
+                                        isTaxable = true
+                                ).collect { result ->
+                                    when (result) {
+                                        is OptimisticUpdateResult -> {
+                                            if (result.event.isError) {
+                                                prependToLog("Optimistic simple payment update failed.")
+                                            } else {
+                                                prependToLog("Optimistic simple payment update succeeded.")
+                                            }
+                                        }
+                                        is RemoteUpdateResult -> {
+                                            if (result.event.isError) {
+                                                prependToLog("Remote simple payment update failed.")
+                                            } else {
+                                                prependToLog("Remote simple payment update succeeded.")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
