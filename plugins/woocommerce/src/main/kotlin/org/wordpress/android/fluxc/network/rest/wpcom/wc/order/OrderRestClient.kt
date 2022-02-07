@@ -1005,29 +1005,14 @@ class OrderRestClient @Inject constructor(
                 "tracking_provider"
         ).joinToString(separator = ",")
 
-        /**
-         * Generates the feeLines for a simple payment order containing a single fee line item with
-         * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
-         * pass the id of an existing fee line item to replace it.
-         */
-        fun generateSimplePaymentFeeLineList(amount: String, isTaxable: Boolean, feeId: Long? = null): List<FeeLine> {
-            FeeLine().also { feeLine ->
-                feeId?.let {
-                    feeLine.id = it
-                }
-                feeLine.name = "Simple Payment"
-                feeLine.total = amount
-                feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
-                return listOf(feeLine)
-            }
-        }
+        const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
 
         fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
             val jsonFee = JsonObject().also { json ->
                 feeId?.let {
                     json.addProperty("id", it)
                 }
-                json.addProperty("name", "Simple Payment")
+                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
                 json.addProperty("total", amount)
                 json.addProperty(
                         "tax_status",

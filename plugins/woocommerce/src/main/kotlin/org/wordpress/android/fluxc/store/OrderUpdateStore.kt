@@ -7,6 +7,8 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.FeeLine
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
@@ -164,7 +166,7 @@ class OrderUpdateStore @Inject internal constructor(
                 val updateRequest = UpdateOrderRequest(
                     customerNote = customerNote,
                     billingAddress = billing,
-                    feeLines = OrderRestClient.generateSimplePaymentFeeLineList(amount, isTaxable, feeId)
+                    feeLines = generateSimplePaymentFeeLineList(amount, isTaxable, feeId)
                 )
                 val result = updateOrder(site, orderId, updateRequest)
                 val remoteUpdateResult = if (result.isError) {
@@ -175,6 +177,23 @@ class OrderUpdateStore @Inject internal constructor(
                 }
                 emit(RemoteUpdateResult(remoteUpdateResult))
             }
+        }
+    }
+
+    /**
+     * Generates the feeLines for a simple payment order containing a single fee line item with
+     * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
+     * pass the id of an existing fee line item to replace it.
+     */
+    private fun generateSimplePaymentFeeLineList(amount: String, isTaxable: Boolean, feeId: Long? = null): List<FeeLine> {
+        FeeLine().also { feeLine ->
+            feeId?.let {
+                feeLine.id = it
+            }
+            feeLine.name = OrderRestClient.SIMPLE_PAYMENT_FEELINE_NAME
+            feeLine.total = amount
+            feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
+            return listOf(feeLine)
         }
     }
 
