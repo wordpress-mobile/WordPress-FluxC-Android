@@ -90,6 +90,13 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("\$10.00 fee", getFeeLineList()[0].name)
             assertEquals("2.00", getFeeLineList()[0].totalTax)
             assertEquals(28L, getFeeLineList()[0].id)
+            assertEquals(1, getTaxLineList().size)
+            assertEquals(318L, getTaxLineList()[0].id)
+            assertEquals(false, getTaxLineList()[0].compound)
+            assertEquals("1.35", getTaxLineList()[0].taxTotal)
+            assertEquals("State Tax", getTaxLineList()[0].label)
+            assertEquals("0.00", getTaxLineList()[0].shippingTaxTotal)
+            assertEquals(5.25f, getTaxLineList()[0].ratePercent)
         }
 
         // Customer note

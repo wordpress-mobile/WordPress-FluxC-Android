@@ -19,11 +19,8 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.CreateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDomainModel
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
@@ -539,20 +536,6 @@ class WCOrderStore @Inject constructor(
             } else {
                 ordersDao.insertOrUpdateOrder(result.order)
                 OnQuickOrderResult(result.order)
-            }
-        }
-    }
-
-    suspend fun createOrder(site: SiteModel, createOrderRequest: CreateOrderRequest): WooResult<WCOrderModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
-            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
-
-            return@withDefaultContext if (result.isError) {
-                WooResult(result.error)
-            } else {
-                val model = result.result!!.toDomainModel(site.localId())
-                ordersDao.insertOrUpdateOrder(model)
-                WooResult(model)
             }
         }
     }
