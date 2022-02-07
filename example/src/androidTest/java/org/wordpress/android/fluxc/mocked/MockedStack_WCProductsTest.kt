@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResp
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
@@ -492,20 +491,15 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testUpdateProductReviewStatusSuccess() {
+    fun testUpdateProductReviewStatusSuccess() = runBlocking{
         interceptor.respondWith("wc-update-product-review-response-success.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        assertEquals(WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS, lastAction!!.type)
 
-        // Verify payload and product review properties
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertFalse(payload.isError)
-        assertEquals(siteModel.id, payload.site.id)
-        payload.productReview?.let {
+        assertFalse(result.isError)
+        assertEquals(siteModel.id, result.site.id)
+        result.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
                 assertEquals("2019-07-09T15:48:07Z", dateCreated)
@@ -522,17 +516,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testUpdateProductReviewStatusFailed() {
+    fun testUpdateProductReviewStatusFailed() = runBlocking {
         interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        assertEquals(WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertTrue(payload.isError)
-        assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
+        assertTrue(result.isError)
+        assertEquals(ProductErrorType.INVALID_PARAM, result.error.type)
     }
 
     private fun generateTestImageList(): List<WCProductImageModel> {

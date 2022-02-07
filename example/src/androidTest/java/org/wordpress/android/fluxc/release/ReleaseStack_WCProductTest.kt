@@ -426,15 +426,13 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Update review status to spam - should get deleted from db
         review?.let {
-            val newStatus = "spam"
-            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
+            val payload = WCProductStore.UpdateProductReviewStatusPayload(
+                    sSite,
+                    remoteProductReviewId,
+                    newStatus = "spam"
             )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            productStore.updateProductReviewStatus(payload)
 
             // Verify results - review should be deleted from db
             val savedReview = productStore
@@ -442,17 +440,20 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             assertNull(savedReview)
         }
 
+
+
+
+
         // Update review status to approved - should get added to db
         review?.let {
             val newStatus = "approved"
-            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
+            val payload = WCProductStore.UpdateProductReviewStatusPayload(
+                    sSite,
+                    remoteProductReviewId,
+                    newStatus = newStatus
             )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            productStore.updateProductReviewStatus(payload)
 
             // Verify results
             val savedReview = productStore
@@ -464,14 +465,13 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Update review status to trash - should get deleted from db
         review?.let {
             val newStatus = "trash"
-            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
+            val payload = WCProductStore.UpdateProductReviewStatusPayload(
+                    sSite,
+                    remoteProductReviewId,
+                    newStatus = newStatus
             )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            productStore.updateProductReviewStatus(payload)
 
             // Verify results - review should be deleted from db
             val savedReview = productStore

@@ -774,8 +774,6 @@ class WCProductStore @Inject constructor(
                 searchProducts(action.payload as SearchProductsPayload)
             WCProductAction.FETCH_PRODUCT_VARIATIONS ->
                 fetchProductVariations(action.payload as FetchProductVariationsPayload)
-            WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS ->
-                updateProductReviewStatus(action.payload as UpdateProductReviewStatusPayload)
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
             WCProductAction.UPDATE_PRODUCT ->
@@ -814,8 +812,6 @@ class WCProductStore @Inject constructor(
                 handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
             WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
                 handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
-            WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS ->
-                handleUpdateProductReviewStatus(action.payload as RemoteProductReviewPayload)
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
             WCProductAction.UPDATED_PRODUCT ->
@@ -1030,10 +1026,6 @@ class WCProductStore @Inject constructor(
         with(payload) { wcProductRestClient.updateProductPassword(site, remoteProductId, password) }
     }
 
-    private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {
-        with(payload) { wcProductRestClient.updateProductReviewStatus(site, remoteReviewId, newStatus) }
-    }
-
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
         with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
     }
@@ -1238,32 +1230,10 @@ class WCProductStore @Inject constructor(
         emitChange(onProductChanged)
     }
 
-    private fun handleUpdateProductReviewStatus(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductReviewChanged
-
-        if (payload.isError) {
-            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = payload.productReview?.let { review ->
-                if (review.status == "spam" || review.status == "trash") {
-                    // Delete this review from the database
-                    ProductSqlUtils.deleteProductReview(review)
-                } else {
-                    // Insert or update in the database
-                    ProductSqlUtils.insertOrUpdateProductReview(review)
-                }
-            } ?: 0
-            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
-        }
-
-        onProductReviewChanged.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
-        emitChange(onProductReviewChanged)
-    }
-
-    suspend fun updateProductReviewStatusSuspend(payload: UpdateProductReviewStatusPayload) : OnProductReviewChanged{
+    suspend fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) : OnProductReviewChanged{
         return coroutineEngine.withDefaultContext(API,this,"updateProductReviewStatus"){
             val result = with(payload){
-                wcProductRestClient.updateProductReviewStatusSuspend(site,remoteReviewId,newStatus)
+                wcProductRestClient.updateProductReviewStatus(site,remoteReviewId,newStatus)
             }
             return@withDefaultContext if (result.isError) {
                 OnProductReviewChanged(0).also { it.error = result.error
