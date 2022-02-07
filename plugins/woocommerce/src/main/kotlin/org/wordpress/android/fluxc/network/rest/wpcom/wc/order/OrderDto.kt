@@ -74,6 +74,7 @@ class OrderDto : Response {
     val total: String? = null
     val total_tax: String? = null
     val meta_data: JsonElement? = null
+    val tax_lines: JsonElement? = null
 }
 
 fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
@@ -131,6 +132,7 @@ fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
             lineItems = this.line_items.toString(),
             shippingLines = this.shipping_lines.toString(),
             feeLines = this.fee_lines.toString(),
+            taxLines = this.tax_lines.toString(),
             metaData = this.meta_data.toString()
     )
 }
