@@ -491,11 +491,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testUpdateProductReviewStatusSuccess() = runBlocking{
+    fun testUpdateProductReviewStatusSuccess() = runBlocking {
         interceptor.respondWith("wc-update-product-review-response-success.json")
 
         val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
-
 
         assertFalse(result.isError)
         assertEquals(siteModel.id, result.site.id)

@@ -440,10 +440,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             assertNull(savedReview)
         }
 
-
-
-
-
         // Update review status to approved - should get added to db
         review?.let {
             val newStatus = "approved"

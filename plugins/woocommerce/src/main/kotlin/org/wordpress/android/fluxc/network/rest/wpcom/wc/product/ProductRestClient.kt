@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxClassApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
@@ -1075,7 +1074,11 @@ class ProductRestClient @Inject constructor(
      * @param [remoteReviewId] The remote ID of the product review to be updated
      * @param [newStatus] The new status to update the product review to
      */
-    suspend fun updateProductReviewStatus(site: SiteModel, remoteReviewId: Long, newStatus: String):RemoteProductReviewPayload{
+    suspend fun updateProductReviewStatus(
+        site: SiteModel,
+        remoteReviewId: Long,
+        newStatus: String
+    ): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
         val params = mapOf("status" to newStatus)

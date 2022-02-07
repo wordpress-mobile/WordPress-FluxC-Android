@@ -1230,25 +1230,25 @@ class WCProductStore @Inject constructor(
         emitChange(onProductChanged)
     }
 
-    suspend fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) : OnProductReviewChanged{
-        return coroutineEngine.withDefaultContext(API,this,"updateProductReviewStatus"){
-            val result = with(payload){
-                wcProductRestClient.updateProductReviewStatus(site,remoteReviewId,newStatus)
+    suspend fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload): OnProductReviewChanged {
+        return coroutineEngine.withDefaultContext(API, this, "updateProductReviewStatus") {
+            val result = with(payload) {
+                wcProductRestClient.updateProductReviewStatus(site, remoteReviewId, newStatus)
             }
             return@withDefaultContext if (result.isError) {
                 OnProductReviewChanged(0).also { it.error = result.error
                     it.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
                 }
-            }else {
-                val rowsAffected = result.productReview?.let{review->
-                    if(review.status == "spam" || review.status == "trash"){
+            } else {
+                val rowsAffected = result.productReview?.let { review ->
+                    if (review.status == "spam" || review.status == "trash") {
                         // Delete this review from the database
                         ProductSqlUtils.deleteProductReview(review)
-                    }else {
+                    } else {
                         // Insert or update in the database
                         ProductSqlUtils.insertOrUpdateProductReview(review)
                     }
-                }?:0
+                } ?: 0
                 OnProductReviewChanged(rowsAffected).also {
                     it.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
                 }
