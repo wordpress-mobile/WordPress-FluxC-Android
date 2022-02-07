@@ -1119,16 +1119,19 @@ class ProductRestClient @Inject constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                val review = response.data?.let{
-                    productReviewResponseToProductReviewModel(it).apply {
+                response.data?.let {
+                    val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
                     }
-                }
-                RemoteProductReviewPayload(site,review)
+                    RemoteProductReviewPayload(site, review)
+                } ?: RemoteProductReviewPayload(
+                        error = ProductError(GENERIC_ERROR, "Success response with empty data"),
+                        site = site
+                )
             }
             is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
-                RemoteProductReviewPayload(productError, site)
+                val productReviewError = networkErrorToProductError(response.error)
+                RemoteProductReviewPayload(error = productReviewError, site = site)
             }
         }
     }
