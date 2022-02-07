@@ -26,14 +26,14 @@ class OrdersDaoAndroidTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Application>()
-        database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
+        database = Room.databaseBuilder(context, WCAndroidDatabase::class.java, "test-db")
                 .allowMainThreadQueries()
                 .build()
         sut = database.ordersDao()
     }
 
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    private val randString = (1..(100000))
+    private val randString = (1..(10000))
             .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
