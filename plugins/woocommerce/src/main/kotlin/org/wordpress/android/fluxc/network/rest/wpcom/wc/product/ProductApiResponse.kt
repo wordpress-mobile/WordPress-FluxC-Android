@@ -31,6 +31,7 @@ class ProductApiResponse : Response {
     var sale_price: String? = null
     var on_sale = false
     var total_sales = 0L
+    var purchasable = false
 
     var virtual = false
     var downloadable = false
@@ -115,6 +116,7 @@ class ProductApiResponse : Response {
             salePrice = response.sale_price ?: ""
             onSale = response.on_sale
             totalSales = response.total_sales
+            purchasable = response.purchasable
 
             virtual = response.virtual
             downloadable = response.downloadable

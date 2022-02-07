@@ -57,7 +57,7 @@ dependencies {
     }
 
     api "org.wordpress:wellsql:$wellSqlVersion"
-    kapt "org.wordpress:wellsql-processor:$wellSqlVersion"
+    kapt "org.wordpress.wellsql:wellsql-processor:$wellSqlVersion"
 
     // FluxC annotations
     api fluxcAnnotationsProjectDependency

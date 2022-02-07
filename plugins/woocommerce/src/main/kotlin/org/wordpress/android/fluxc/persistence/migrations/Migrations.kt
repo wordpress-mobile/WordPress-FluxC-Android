@@ -142,6 +142,12 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
 
 internal val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL")
+    }
+}
+
+internal val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL("DROP TABLE OrderEntity")
             execSQL(
@@ -192,6 +198,7 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
                         `shippingLines` TEXT NOT NULL,
                         `feeLines` TEXT NOT NULL,
                         `metaData` TEXT NOT NULL,
+                        `taxLines` TEXT NOT NULL,
                          PRIMARY KEY(`localSiteId`, `orderId`)
                         )
                     """.trimIndent()
