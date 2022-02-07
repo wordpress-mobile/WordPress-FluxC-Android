@@ -237,6 +237,23 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        force: Boolean = false
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteOrder") {
+            val result = wcOrderRestClient.deleteOrder(site, orderId, force)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                ordersDao.deleteOrder(site.localId(), orderId)
+                WooResult(Unit)
+            }
+        }
+    }
+
     private suspend fun FlowCollector<UpdateOrderResult>.takeWhenOrderDataAcquired(
         remoteOrderId: RemoteId,
         localSiteId: LocalId,
