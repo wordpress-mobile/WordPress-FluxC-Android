@@ -198,6 +198,7 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
                         `shippingLines` TEXT NOT NULL,
                         `feeLines` TEXT NOT NULL,
                         `metaData` TEXT NOT NULL,
+                        `taxLines` TEXT NOT NULL,
                          PRIMARY KEY(`localSiteId`, `orderId`)
                         )
                     """.trimIndent()
@@ -211,3 +212,4 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
             )
         }
     }
+}
