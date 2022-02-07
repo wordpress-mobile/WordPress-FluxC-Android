@@ -88,7 +88,7 @@ class OrdersDaoAndroidTest {
         runBlocking {
             val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
 
-            for (id in 1..1000L) {
+            for (id in 1..10000L) {
                 val remoteOrderId = RemoteId(id)
                 WCOrderModel(
                         remoteOrderId = remoteOrderId,
