@@ -214,7 +214,7 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
-    private suspend fun updateOrder(
+    suspend fun updateOrder(
         site: SiteModel,
         orderId: Long,
         updateRequest: UpdateOrderRequest
