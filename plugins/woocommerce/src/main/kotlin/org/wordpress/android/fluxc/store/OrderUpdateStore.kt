@@ -148,19 +148,24 @@ class OrderUpdateStore @Inject internal constructor(
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
 
-                val billing = Billing(
-                    email = billingEmail,
-                    firstName = "",
-                    lastName = "",
-                    company = "",
-                    address1 = "",
-                    address2 = "",
-                    city = "",
-                    state = "",
-                    postcode = "",
-                    country = "",
-                    phone = ""
-                )
+                val billing = if (billingEmail.isNotEmpty()) {
+                    Billing(
+
+                            email = billingEmail,
+                            firstName = "",
+                            lastName = "",
+                            company = "",
+                            address1 = "",
+                            address2 = "",
+                            city = "",
+                            state = "",
+                            postcode = "",
+                            country = "",
+                            phone = ""
+                    )
+                } else {
+                    null
+                }
 
                 val updateRequest = UpdateOrderRequest(
                     customerNote = customerNote,
