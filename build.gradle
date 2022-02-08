@@ -46,6 +46,8 @@ allprojects {
         configFile file("${project.rootDir}/config/checkstyle.xml")
     }
 
+    // See https://issuetracker.google.com/issues/174695268?pli=1,
+    // remove this when Room version is upgraded to 2.4.0 or later
     configurations.all {
         resolutionStrategy {
             force 'org.xerial:sqlite-jdbc:3.34.0'
