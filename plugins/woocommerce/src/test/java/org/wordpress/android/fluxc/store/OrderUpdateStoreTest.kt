@@ -410,7 +410,7 @@ class OrderUpdateStoreTest {
 
     @Test
     fun `should create simple payment with correct amount and tax status`(): Unit = runBlocking {
-        //given
+        // given
         val newOrder = initialOrder.copy(
                 feeLines = OrderRestClient.generateSimplePaymentFeeLineJson(
                         SIMPLE_PAYMENT_AMOUNT,
@@ -420,7 +420,7 @@ class OrderUpdateStoreTest {
         )
 
         setUp {
-            orderRestClient = mock{
+            orderRestClient = mock {
                 onBlocking {
                     createOrder(any(), any())
                 }.doReturn(
