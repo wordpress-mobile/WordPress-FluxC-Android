@@ -484,6 +484,7 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
+     * @Deprecated("Use OrderUpdateStore.createSimplePayment instead")
      * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
      * return a new order with the tax already calculated.
      */
