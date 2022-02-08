@@ -1,12 +1,10 @@
 package org.wordpress.android.fluxc.persistence
 
 import android.app.Application
-import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -33,13 +31,13 @@ class OrdersDaoAndroidTest {
     }
 
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    private val randString = (1..(10000))
+    private val randString = (1..(100000))
             .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
 
     @Test
-    fun testBigOrderForSite() {
+    fun crashingWhenRandStringToEveryField() {
         runBlocking {
             val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
 
@@ -77,58 +75,51 @@ class OrdersDaoAndroidTest {
             ).also {
                 sut.insertOrUpdateOrder(it)
             }
-            val storedOrders = sut.getOrdersForSiteByRemoteIds(site.localId(), listOf(remoteOrderId))
-
-            assertThat(storedOrders).hasSize(1)
+            sut.getOrdersForSiteByRemoteIds(site.localId(), listOf(remoteOrderId))
         }
     }
 
     @Test
-    fun testBigAmountOfOrderForSite() {
+    fun notCrashingWhenRandStringToOnlyOneField() {
         runBlocking {
             val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
 
-            for (id in 1..10000L) {
-                val remoteOrderId = RemoteId(id)
-                WCOrderModel(
-                        remoteOrderId = remoteOrderId,
-                        localSiteId = LocalId(TEST_LOCAL_SITE_ID),
-                        status = CoreOrderStatus.PROCESSING.value,
-                        lineItems = randString,
-                        shippingLines = randString,
-                        shippingCountry = randString,
-                        shippingPhone = randString,
-                        feeLines = randString,
-                        taxLines = randString,
-                        metaData = randString,
-                        billingFirstName = randString,
-                        billingLastName = randString,
-                        billingCompany = randString,
-                        billingAddress1 = randString,
-                        billingAddress2 = randString,
-                        billingCity = randString,
-                        billingState = randString,
-                        billingPostcode = randString,
-                        billingCountry = randString,
-                        billingEmail = randString,
-                        billingPhone = randString,
-                        shippingFirstName = randString,
-                        shippingLastName = randString,
-                        shippingCompany = randString,
-                        shippingAddress1 = randString,
-                        shippingAddress2 = randString,
-                        shippingCity = randString,
-                        shippingState = randString,
-                        shippingPostcode = randString,
-                ).also {
-                    sut.insertOrUpdateOrder(it)
-                }
+            val remoteOrderId = RemoteId(1)
+            WCOrderModel(
+                    remoteOrderId = remoteOrderId,
+                    localSiteId = LocalId(TEST_LOCAL_SITE_ID),
+                    status = CoreOrderStatus.PROCESSING.value,
+                    lineItems = randString,
+                    shippingLines = "",
+                    shippingCountry = "",
+                    shippingPhone = "",
+                    feeLines = "",
+                    taxLines = "",
+                    metaData = "",
+                    billingFirstName = "",
+                    billingLastName = "",
+                    billingCompany = "",
+                    billingAddress1 = "",
+                    billingAddress2 = "",
+                    billingCity = "",
+                    billingState = "",
+                    billingPostcode = "",
+                    billingCountry = "",
+                    billingEmail = "",
+                    billingPhone = "",
+                    shippingFirstName = "",
+                    shippingLastName = "",
+                    shippingCompany = "",
+                    shippingAddress1 = "",
+                    shippingAddress2 = "",
+                    shippingCity = "",
+                    shippingState = "",
+                    shippingPostcode = "",
+            ).also {
+                sut.insertOrUpdateOrder(it)
             }
+            sut.getOrdersForSiteByRemoteIds(site.localId(), listOf(remoteOrderId))
 
-            Log.d("tag", "Test")
-            val storedOrders = sut.getOrdersForSiteByRemoteIds(site.localId(), (1..100L).map { RemoteId(it) })
-
-            assertThat(storedOrders).hasSize(100)
         }
     }
 
