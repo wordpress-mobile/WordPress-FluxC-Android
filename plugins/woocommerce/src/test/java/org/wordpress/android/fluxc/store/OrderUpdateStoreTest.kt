@@ -454,6 +454,26 @@ class OrderUpdateStoreTest {
         }
     }
 
+    @Test
+    fun `should delete local copy of order when delete request succeeds`(): Unit = runBlocking {
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    deleteOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(Unit)
+                )
+            }
+        }
+
+        sut.deleteOrder(
+            site = site,
+            orderId = TEST_REMOTE_ORDER_ID.value
+        )
+
+        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID.value)
+    }
+
     private companion object {
         val TEST_REMOTE_ORDER_ID = RemoteId(321L)
         val TEST_LOCAL_SITE_ID = LocalId(654)
