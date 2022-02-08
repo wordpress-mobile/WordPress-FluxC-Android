@@ -409,11 +409,30 @@ class OrderUpdateStoreTest {
 //      Simple payments
 
     @Test
-    fun `should create simple payment`(): Unit = runBlocking {
+    fun `should create simple payment with correct amount and tax status`(): Unit = runBlocking {
+        //given
+        val newOrder = initialOrder.copy(
+                feeLines = OrderRestClient.generateSimplePaymentFeeLineJson(
+                        SIMPLE_PAYMENT_AMOUNT,
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
+                ).toString()
+        )
+
         setUp {
-            orderRestClient = mock()
+            orderRestClient = mock{
+                onBlocking {
+                    createOrder(any(), any())
+                }.doReturn(
+                    WooPayload(newOrder)
+                )
+            }
         }
+
+        // when
         val result = sut.createSimplePayment(site, SIMPLE_PAYMENT_AMOUNT, SIMPLE_PAYMENT_IS_TAXABLE)
+
+        // then
         assertThat(result.isError).isFalse()
         assertThat(result.model).isNotNull
         assertThat(result.model!!.getFeeLineList()).hasSize(1)
