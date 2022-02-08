@@ -224,7 +224,7 @@ class OrderUpdateStore @Inject internal constructor(
         orderId: Long,
         updateRequest: UpdateOrderRequest
     ): WooResult<WCOrderModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+        return coroutineEngine.withDefaultContext(T.API, this, "updateOrder") {
             val result = wcOrderRestClient.updateOrder(site, orderId, updateRequest)
 
             return@withDefaultContext if (result.isError) {
