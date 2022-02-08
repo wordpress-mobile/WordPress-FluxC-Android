@@ -200,7 +200,7 @@ class OrderUpdateStore @Inject internal constructor(
      * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
      * pass the id of an existing fee line item to replace it.
      */
-    private fun generateSimplePaymentFeeLineList(
+    fun generateSimplePaymentFeeLineList(
         amount: String,
         isTaxable: Boolean,
         feeId: Long? = null
