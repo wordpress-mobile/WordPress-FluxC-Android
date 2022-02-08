@@ -45,6 +45,12 @@ allprojects {
         toolVersion = '8.3'
         configFile file("${project.rootDir}/config/checkstyle.xml")
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force 'org.xerial:sqlite-jdbc:3.34.0'
+        }
+    }
 }
 
 subprojects {
