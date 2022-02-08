@@ -7,24 +7,24 @@ import com.google.gson.annotations.SerializedName
  */
 class FeeLine {
     @SerializedName("id")
-    val id: Long? = null
+    var id: Long? = null
 
     @SerializedName("name")
-    val name: String? = null
+    var name: String? = null
 
     @SerializedName("total")
-    val total: String? = null
+    var total: String? = null
 
     @SerializedName("total_tax")
-    val totalTax: String? = null
+    var totalTax: String? = null
 
     @SerializedName("tax_status")
-    val taxStatus: FeeLineTaxStatus? = null
+    var taxStatus: FeeLineTaxStatus? = null
 }
 
-enum class FeeLineTaxStatus {
+enum class FeeLineTaxStatus(val value: String) {
     @SerializedName("taxable")
-    Taxable,
+    Taxable("taxable"),
     @SerializedName("none")
-    None
+    None("none")
 }

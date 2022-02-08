@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -404,6 +405,55 @@ class OrderUpdateStoreTest {
         assertThat(results[1].event.error.type).isEqualTo(GENERIC_ERROR)
     }
 
+    @Test
+    fun `should optimistically update simple payment`(): Unit = runBlocking {
+        // given
+        val updatedOrder = initialOrder.copy(
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
+                billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
+                feeLines = OrderRestClient.generateSimplePaymentFeeLineJson(
+                        SIMPLE_PAYMENT_AMOUNT,
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
+                ).toString()
+        )
+
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(updatedOrder)
+                )
+            }
+            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
+                    updatedOrder
+            )
+        }
+
+        // when
+        val results = sut.updateSimplePayment(
+                site = site,
+                orderId = TEST_REMOTE_ORDER_ID.value,
+                amount = SIMPLE_PAYMENT_AMOUNT,
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
+                billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
+                isTaxable = SIMPLE_PAYMENT_IS_TAXABLE
+        ).toList()
+
+        // then
+        assertThat(results).hasSize(2).containsExactly(
+                OptimisticUpdateResult(OnOrderChanged()),
+                RemoteUpdateResult(OnOrderChanged())
+        )
+        ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)?.let { order ->
+            assertThat(order.billingEmail).isEqualTo(SIMPLE_PAYMENT_BILLING_EMAIL)
+            assertThat(order.customerNote).isEqualTo(SIMPLE_PAYMENT_CUSTOMER_NOTE)
+            assertThat(order.getFeeLineList()).hasSize(1)
+            assertThat(order.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
+        }
+    }
+
     private companion object {
         val TEST_REMOTE_ORDER_ID = RemoteId(321L)
         val TEST_LOCAL_SITE_ID = LocalId(654)
@@ -412,6 +462,12 @@ class OrderUpdateStoreTest {
         const val INITIAL_SHIPPING_FIRST_NAME = "original shipping first name"
         const val UPDATED_SHIPPING_FIRST_NAME = "updated shipping first name"
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
+
+        const val SIMPLE_PAYMENT_FEE_ID = 1L
+        const val SIMPLE_PAYMENT_AMOUNT = "10.00"
+        const val SIMPLE_PAYMENT_CUSTOMER_NOTE = "Simple payment customer note"
+        const val SIMPLE_PAYMENT_BILLING_EMAIL = "example@example.com"
+        const val SIMPLE_PAYMENT_IS_TAXABLE = true
 
         val initialOrder = WCOrderModel(
                 remoteOrderId = TEST_REMOTE_ORDER_ID,
