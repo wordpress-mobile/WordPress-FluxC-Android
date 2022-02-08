@@ -879,7 +879,7 @@ class OrderRestClient @Inject constructor(
     suspend fun deleteOrder(
         site: SiteModel,
         orderId: Long,
-        force: Boolean
+        trash: Boolean
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
 
@@ -888,7 +888,7 @@ class OrderRestClient @Inject constructor(
                 site = site,
                 url = url,
                 clazz = Unit::class.java,
-                params = mapOf("force" to force.toString())
+                params = mapOf("force" to trash.not().toString())
         )
 
         return when (response) {

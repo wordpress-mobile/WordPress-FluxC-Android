@@ -240,10 +240,10 @@ class OrderUpdateStore @Inject internal constructor(
     suspend fun deleteOrder(
         site: SiteModel,
         orderId: Long,
-        force: Boolean = false
+        trash: Boolean = true
     ): WooResult<Unit> {
         return coroutineEngine.withDefaultContext(T.API, this, "deleteOrder") {
-            val result = wcOrderRestClient.deleteOrder(site, orderId, force)
+            val result = wcOrderRestClient.deleteOrder(site, orderId, trash)
 
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
