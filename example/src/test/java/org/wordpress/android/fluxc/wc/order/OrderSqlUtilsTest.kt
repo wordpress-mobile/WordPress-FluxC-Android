@@ -47,66 +47,70 @@ class OrderSqlUtilsTest {
 
     @Test
     fun testInsertOrIgnoreOrderNotes() {
-        val order = OrderTestUtils.generateSampleOrder(42)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, order.id)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, order.id)
+        val orderId = 42L
+        val order = OrderTestUtils.generateSampleOrder(orderId)
+        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
+        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
 
         // Test inserting notes
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
 
         // Test ignoring notes already saved to db
         val inserted = OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1))
         assertEquals(0, inserted)
-        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes2.size)
     }
 
     @Test
     fun testInsertOrIgnoreOrderNote() {
-        val order = OrderTestUtils.generateSampleOrder(42)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, order.id)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, order.id)
+        val orderId = 42L
+        val order = OrderTestUtils.generateSampleOrder(orderId)
+        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
+        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
 
         // Test inserting notes
         OrderSqlUtils.insertOrIgnoreOrderNote(note1)
         OrderSqlUtils.insertOrIgnoreOrderNote(note2)
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
 
         // Test ignoring notes already saved to db
         val inserted = OrderSqlUtils.insertOrIgnoreOrderNote(note1)
         assertEquals(0, inserted)
-        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes2.size)
     }
 
     @Test
     fun testGetOrderNotesForOrder() {
-        val order = OrderTestUtils.generateSampleOrder(42)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, order.id)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, order.id)
+        val orderId = 42L
+        val order = OrderTestUtils.generateSampleOrder(orderId)
+        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
+        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
 
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
     }
 
     @Test
     fun testDeleteOrderNotesForSite() {
-        val order = OrderTestUtils.generateSampleOrder(42)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, order.id)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, order.id)
+        val orderId = 42L
+        val order = OrderTestUtils.generateSampleOrder(orderId)
+        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
+        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
         OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
         val site = SiteModel().apply { id = order.localSiteId.value }
 
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(2, storedNotes.size)
 
         val deletedCount = OrderSqlUtils.deleteOrderNotesForSite(site)
         assertEquals(2, deletedCount)
-        val verify = OrderSqlUtils.getOrderNotesForOrder(order.id)
+        val verify = OrderSqlUtils.getOrderNotesForOrder(orderId)
         assertEquals(0, verify.size)
     }
 
@@ -211,11 +215,11 @@ class OrderSqlUtilsTest {
     @Test
     fun testGetOrderShipmentTrackingsForOrder() {
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
+        val orderId = 3L
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
-                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderId)
                 .toMutableList()
         assertEquals(2, trackings.size)
 
@@ -224,17 +228,17 @@ class OrderSqlUtilsTest {
         assertEquals(2, rowsAffected)
 
         // Attempt to save again (should ignore both existing entries and add new one)
-        trackings.add(OrderTestUtils.generateOrderShipmentTracking(siteModel.id, orderModel.id))
+        trackings.add(OrderTestUtils.generateOrderShipmentTracking(siteModel.id, orderId))
         rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
         assertEquals(1, rowsAffected)
 
         // Get all shipment trackings for a single order
-        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         assertEquals(3, trackingsForOrder.size)
 
         // get a single shipment tracking by tracking number
         val shipmentTracking = OrderSqlUtils.getShipmentTrackingByTrackingNumber(
-                siteModel, orderModel.id, trackingsForOrder[0].trackingNumber
+                siteModel, orderId, trackingsForOrder[0].trackingNumber
         )
         assertNotNull(shipmentTracking)
         assertEquals(trackingsForOrder[0].trackingNumber, shipmentTracking.trackingNumber)
@@ -242,13 +246,13 @@ class OrderSqlUtilsTest {
 
     @Test
     fun testDeleteOrderShipmentTrackingsForSite() {
+        val orderId = 3L
         // Insert shipment trackings into the database
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
-                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderId)
                 .toMutableList()
         assertEquals(2, trackings.size)
         var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
@@ -259,31 +263,31 @@ class OrderSqlUtilsTest {
         assertEquals(2, rowsAffected)
 
         // Verify no shipment trackings in db
-        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         assertEquals(0, trackingsInDb.size)
     }
 
     @Test
     fun testDeleteOrderShipmentTrackingsById() {
+        val orderId = 3L
         // Insert shipment trackings into the database
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
-                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderId)
                 .toMutableList()
         assertEquals(2, trackings.size)
         var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
         assertEquals(2, rowsAffected)
 
         // Delete the first shipment tracking
-        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         rowsAffected = OrderSqlUtils.deleteOrderShipmentTrackingById(trackingsInDb[0])
         assertEquals(1, rowsAffected)
 
         // Verify only a single shipment tracking row in db
-        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         assertEquals(1, trackingsInDb.size)
     }
 
