@@ -9,7 +9,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
