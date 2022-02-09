@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
@@ -480,19 +481,12 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "simple payment," which is an empty order assigned the passed amount
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
-        val taxStatus = if (isTaxable) "taxable" else "none"
-        val jsonFee = JsonObject().also {
-            it.addProperty("name", "Simple Payment")
-            it.addProperty("total", amount)
-            it.addProperty("tax_status", taxStatus)
-        }
-
-        val jsonFeeItems = JsonArray().also { it.add(jsonFee) }
         val params = mapOf(
-                "fee_lines" to jsonFeeItems,
+                "fee_lines" to generateSimplePaymentFeeLineJson(amount, isTaxable),
                 "_fields" to ORDER_FIELDS
         )
 
@@ -869,6 +863,27 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        trash: Boolean
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+                restClient = this,
+                site = site,
+                url = url,
+                clazz = Unit::class.java,
+                params = mapOf("force" to trash.not().toString())
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
+        }
+    }
+
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
             status?.let { put("status", it.statusKey) }
@@ -996,5 +1011,22 @@ class OrderRestClient @Inject constructor(
                 "tracking_number",
                 "tracking_provider"
         ).joinToString(separator = ",")
+
+        const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
+
+        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
+            val jsonFee = JsonObject().also { json ->
+                feeId?.let {
+                    json.addProperty("id", it)
+                }
+                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
+                json.addProperty("total", amount)
+                json.addProperty(
+                        "tax_status",
+                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
+                )
+            }
+            return JsonArray().also { it.add(jsonFee) }
+        }
     }
 }
