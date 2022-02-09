@@ -876,6 +876,27 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        trash: Boolean
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+                restClient = this,
+                site = site,
+                url = url,
+                clazz = Unit::class.java,
+                params = mapOf("force" to trash.not().toString())
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
+        }
+    }
+
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
             status?.let { put("status", it.statusKey) }

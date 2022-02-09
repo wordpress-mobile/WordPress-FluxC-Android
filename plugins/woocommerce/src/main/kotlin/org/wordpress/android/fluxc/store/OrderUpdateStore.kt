@@ -224,7 +224,7 @@ class OrderUpdateStore @Inject internal constructor(
         orderId: Long,
         updateRequest: UpdateOrderRequest
     ): WooResult<WCOrderModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+        return coroutineEngine.withDefaultContext(T.API, this, "updateOrder") {
             val result = wcOrderRestClient.updateOrder(site, orderId, updateRequest)
 
             return@withDefaultContext if (result.isError) {
@@ -233,6 +233,23 @@ class OrderUpdateStore @Inject internal constructor(
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
                 WooResult(model)
+            }
+        }
+    }
+
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        trash: Boolean = true
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteOrder") {
+            val result = wcOrderRestClient.deleteOrder(site, orderId, trash)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                ordersDao.deleteOrder(site.localId(), orderId)
+                WooResult(Unit)
             }
         }
     }
