@@ -30,7 +30,7 @@ import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.RichOrderEntity
 import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
 import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
@@ -475,7 +475,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                                             coroutineScope.launch {
                                                 val result = wcShippingLabelStore.getShippingRates(
                                                         site,
-                                                        order.remoteOrderId.value,
+                                                        order.orderInfo.remoteOrderId.value,
                                                         origin,
                                                         destination,
                                                         listOf(box),
@@ -555,7 +555,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                     val isInternational = destination.country != origin.country
                     val customsData = if (isInternational) {
                         val customsItems =
-                                order.getLineItemList().map {
+                                order.lineItems.map {
                                     val quantity = it.quantity ?: 0f
                                     WCCustomsItem(
                                             productId = it.productId!!,
@@ -580,7 +580,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
 
                     val ratesResult = wcShippingLabelStore.getShippingRates(
                             site,
-                            order.remoteOrderId.value,
+                            order.orderInfo.remoteOrderId.value,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(box),
@@ -613,12 +613,12 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                             serviceId = rate.serviceId,
                             serviceName = rate.title,
                             carrierId = rate.carrierId,
-                            products = order.getLineItemList().map { it.productId!! }
+                            products = order.lineItems.map { it.productId!! }
                     )
                     prependToLog("Purchasing label")
                     val result = wcShippingLabelStore.purchaseShippingLabels(
                             site,
-                            order.remoteOrderId.value,
+                            order.orderInfo.remoteOrderId.value,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(packageData),
@@ -734,7 +734,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     }
 
     private suspend fun loadData(site: SiteModel, orderId: Long):
-            Triple<WCOrderModel?, ShippingLabelAddress?, ShippingLabelAddress?> {
+            Triple<RichOrderEntity?, ShippingLabelAddress?, ShippingLabelAddress?> {
         prependToLog("Loading shipping data...")
 
         dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
@@ -755,8 +755,8 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
             )
         }
 
-        val order = wcOrderStore.getOrderByIdAndSite(orderId, site)
-        val destination = order?.getShippingAddress()?.let {
+        val order = wcOrderStore.getRichOrderByIdAndSite(orderId, site)
+        val destination = order?.orderInfo?.getShippingAddress()?.let {
             ShippingLabelAddress(
                     name = "${it.firstName} ${it.lastName}",
                     address = it.address1,

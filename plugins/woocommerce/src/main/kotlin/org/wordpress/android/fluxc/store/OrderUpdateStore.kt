@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDomainModel
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
@@ -59,10 +60,10 @@ class OrderUpdateStore @Inject internal constructor(
                         newCustomerNote
                 )
                 val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-                    ordersDao.insertOrUpdateOrder(initialOrder)
+                    ordersDao.insertOrderInfoEntity(initialOrder)
                     OnOrderChanged(orderError = updateRemoteOrderPayload.error)
                 } else {
-                    ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
+                    ordersDao.insertOrderInfoEntity(updateRemoteOrderPayload.order.toDomainModel(site.localId()))
                     OnOrderChanged()
                 }
                 emit(RemoteUpdateResult(remoteUpdateResult))
@@ -174,7 +175,7 @@ class OrderUpdateStore @Inject internal constructor(
                 )
                 val result = updateOrder(site, orderId, updateRequest)
                 val remoteUpdateResult = if (result.isError) {
-                    ordersDao.insertOrUpdateOrder(initialOrder)
+                    ordersDao.insertOrderInfoEntity(initialOrder)
                     OnOrderChanged(orderError = OrderError(message = result.error.message ?: ""))
                 } else {
                     OnOrderChanged()
@@ -213,7 +214,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 val model = result.result!!
-                ordersDao.insertOrUpdateOrder(model)
+                ordersDao.insertOrderInfoEntity(model)
                 WooResult(model)
             }
         }
@@ -231,7 +232,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 val model = result.result!!
-                ordersDao.insertOrUpdateOrder(model)
+                ordersDao.insertOrderInfoEntity(model)
                 WooResult(model)
             }
         }
@@ -334,10 +335,10 @@ class OrderUpdateStore @Inject internal constructor(
         }
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-            ordersDao.insertOrUpdateOrder(initialOrder)
+            ordersDao.insertOrderInfoEntity(initialOrder)
             OnOrderChanged(orderError = mapError(updateRemoteOrderPayload.error))
         } else {
-            ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
+            ordersDao.insertOrderInfoEntity(updateRemoteOrderPayload.order.toDomainModel(localSiteId = LocalId(123)))
             OnOrderChanged()
         }
 

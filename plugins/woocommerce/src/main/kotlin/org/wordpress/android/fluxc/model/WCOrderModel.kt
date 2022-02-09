@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -9,12 +10,17 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.order.FeeLine
-import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.ShippingLine
 import org.wordpress.android.fluxc.model.order.TaxLine
+import org.wordpress.android.fluxc.model.order.entities.LineItemEntity
 import java.math.BigDecimal
 import kotlin.DeprecationLevel.ERROR
+
+data class RichOrderEntity(
+    val orderInfo: WCOrderModel,
+    val lineItems: List<LineItemEntity>
+)
 
 @Entity(
         tableName = "OrderEntity",
@@ -102,18 +108,11 @@ data class WCOrderModel(
     fun getShippingAddress() = OrderAddress.Shipping(this)
 
     /**
-     * Deserializes the JSON contained in [lineItems] into a list of [LineItem] objects.
-     */
-    fun getLineItemList(): List<LineItem> {
-        val responseType = object : TypeToken<List<LineItem>>() {}.type
-        return gson.fromJson(lineItems, responseType) as? List<LineItem> ?: emptyList()
-    }
-
-    /**
      * Returns the order subtotal (the sum of the subtotals of each line item in the order).
      */
     fun getOrderSubtotal(): Double {
-        return getLineItemList().sumByDouble { it.subtotal?.toDoubleOrNull() ?: 0.0 }
+//        return getLineItemList().sumByDouble { it.subtotal?.toDoubleOrNull() ?: 0.0 }
+        return 0.0
     }
 
     /**

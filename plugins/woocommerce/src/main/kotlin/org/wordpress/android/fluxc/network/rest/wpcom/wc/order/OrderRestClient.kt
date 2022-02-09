@@ -103,14 +103,11 @@ class OrderRestClient @Inject constructor(
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
-                    }.orEmpty()
-
-                    val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                    val canLoadMore = response.orEmpty().size == WCOrderStore.NUM_ORDERS_PER_FETCH
 
                     val payload = FetchOrdersResponsePayload(
-                            site, orderModels, filterByStatus, offset > 0, canLoadMore)
+                            site, response.orEmpty(), filterByStatus, offset > 0, canLoadMore
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
@@ -203,14 +200,11 @@ class OrderRestClient @Inject constructor(
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
-                    }.orEmpty()
 
                     val payload = FetchOrdersByIdsResponsePayload(
                             site = site,
                             remoteOrderIds = remoteOrderIds,
-                            fetchedOrders = orderModels
+                            fetchedOrders = response.orEmpty()
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
@@ -310,26 +304,21 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let { orderDto ->
-                    val newModel = orderDto.toDomainModel(site.localId())
-                    RemoteOrderPayload(newModel, site)
-                } ?: RemoteOrderPayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        WCOrderModel(
-                                remoteOrderId = RemoteId(remoteOrderId),
-                                localSiteId = site.localId()
-                        ),
-                        site
-                )
+                if (response.data != null) {
+                    RemoteOrderPayload(response.data!!, site)
+                } else {
+                    RemoteOrderPayload(
+                            OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                            OrderDto(),
+                            site
+                    )
+                }
             }
             is JetpackError -> {
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
                         orderError,
-                        WCOrderModel(
-                                remoteOrderId = RemoteId(remoteOrderId),
-                                localSiteId = site.localId()
-                        ),
+                        OrderDto(),
                         site
                 )
             }
@@ -439,23 +428,22 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let { orderDto ->
-                    val newModel = orderDto.toDomainModel(orderToUpdate.localSiteId).copy(
-                            id = orderToUpdate.id
+                if (response.data != null) {
+                    RemoteOrderPayload(response.data!!, site)
+                } else {
+                    RemoteOrderPayload(
+                            OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                            response.data!!,
+                            site
                     )
-                    RemoteOrderPayload(newModel, site)
-                } ?: RemoteOrderPayload(
-                    OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                    orderToUpdate,
-                    site
-                )
+                }
             }
             is JetpackError -> {
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
-                    orderError,
-                    orderToUpdate,
-                    site
+                        orderError,
+                        null!!,
+                        site
                 )
             }
         }
@@ -505,13 +493,12 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newModel = it.toDomainModel(localSiteId = site.localId())
-                    RemoteOrderPayload(newModel, site)
+                    RemoteOrderPayload(it, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                         // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
                         // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
+                        OrderDto(),
                         site
                 )
             }
@@ -521,7 +508,7 @@ class OrderRestClient @Inject constructor(
                         orderError,
                         // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
                         // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
+                        OrderDto(),
                         site
                 )
             }

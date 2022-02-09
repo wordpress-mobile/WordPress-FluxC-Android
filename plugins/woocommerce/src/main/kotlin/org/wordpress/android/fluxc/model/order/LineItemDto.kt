@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.model.order
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCMetaData
 
-data class LineItem(
+data class LineItemDto(
     val id: Long? = null,
     val name: String? = null,
     @SerializedName("parent_name")

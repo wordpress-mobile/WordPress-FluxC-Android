@@ -4,7 +4,7 @@ import org.wordpress.android.fluxc.model.WCOrderStatusModel
 
 data class UpdateOrderRequest(
     val status: WCOrderStatusModel? = null,
-    val lineItems: List<LineItem>? = null,
+    val lineItems: List<LineItemDto>? = null,
     val shippingAddress: OrderAddress.Shipping? = null,
     val billingAddress: OrderAddress.Billing? = null,
     val feeLines: List<FeeLine>? = null,

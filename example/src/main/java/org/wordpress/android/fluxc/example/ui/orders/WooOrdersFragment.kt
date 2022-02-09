@@ -33,7 +33,7 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
-import org.wordpress.android.fluxc.model.order.LineItem
+import org.wordpress.android.fluxc.model.order.LineItemDto
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -545,7 +545,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             UpdateOrderRequest(
                                     status = status,
                                     lineItems = products.map {
-                                        LineItem(productId = it, quantity = 1f)
+                                        LineItemDto(productId = it, quantity = 1f)
                                     },
                                     shippingAddress = shippingAddress,
                                     billingAddress = billingAddress,

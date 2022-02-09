@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "38081df5a9dc4a02c48a2f92c7987d00",
+    "identityHash": "00de59325a2ad67bd1be0213f294801b",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -225,6 +225,113 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "LineItemEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`parentOrderId` INTEGER NOT NULL, `parentOrderLocalSiteId` INTEGER NOT NULL, `id` INTEGER, `name` TEXT, `parentName` TEXT, `productId` INTEGER, `variationId` INTEGER, `quantity` REAL, `subtotal` TEXT, `total` TEXT, `totalTax` TEXT, `sku` TEXT, `price` TEXT, PRIMARY KEY(`parentOrderId`, `parentOrderLocalSiteId`), FOREIGN KEY(`parentOrderLocalSiteId`, `parentOrderId`) REFERENCES `OrderEntity`(`localSiteId`, `remoteOrderId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "parentOrderId",
+            "columnName": "parentOrderId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentOrderLocalSiteId",
+            "columnName": "parentOrderLocalSiteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "parentName",
+            "columnName": "parentName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "productId",
+            "columnName": "productId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "variationId",
+            "columnName": "variationId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "subtotal",
+            "columnName": "subtotal",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "total",
+            "columnName": "total",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "totalTax",
+            "columnName": "totalTax",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sku",
+            "columnName": "sku",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "parentOrderId",
+            "parentOrderLocalSiteId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "OrderEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "parentOrderLocalSiteId",
+              "parentOrderId"
+            ],
+            "referencedColumns": [
+              "localSiteId",
+              "remoteOrderId"
+            ]
+          }
+        ]
       },
       {
         "tableName": "OrderEntity",
@@ -530,7 +637,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '38081df5a9dc4a02c48a2f92c7987d00')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '00de59325a2ad67bd1be0213f294801b')"
     ]
   }
 }

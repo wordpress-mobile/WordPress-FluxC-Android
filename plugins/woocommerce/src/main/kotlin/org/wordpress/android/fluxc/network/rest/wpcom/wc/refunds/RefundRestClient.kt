@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.order.LineItem
+import org.wordpress.android.fluxc.model.order.LineItemDto
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundFeeLine
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
@@ -146,7 +146,7 @@ class RefundRestClient @Inject constructor(
         @SerializedName("amount") val amount: String?,
         @SerializedName("reason") val reason: String?,
         @SerializedName("refunded_payment") val refundedPayment: Boolean?,
-        @SerializedName("line_items") val items: List<LineItem>?,
+        @SerializedName("line_items") val items: List<LineItemDto>?,
         @SerializedName("shipping_lines") val shippingLineItems: List<WCRefundShippingLine>?,
         @SerializedName("fee_lines") val feeLineItems: List<WCRefundFeeLine>?
     )
