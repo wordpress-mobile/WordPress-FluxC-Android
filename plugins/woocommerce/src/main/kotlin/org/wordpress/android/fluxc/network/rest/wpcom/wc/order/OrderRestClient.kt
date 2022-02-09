@@ -3,9 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -21,7 +19,6 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
@@ -482,51 +479,6 @@ class OrderRestClient @Inject constructor(
             orderToUpdate, site,
             mapOf("shipping" to shipping, "billing" to billing)
     )
-
-    /**
-     * @Deprecated("Use OrderUpdateStore.createSimplePayment instead")
-     * This function can be dropped once WCAndroid switches to OrderUpdateStore.createSimplePayment
-     */
-    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
-        val params = mapOf(
-                "fee_lines" to generateSimplePaymentFeeLineJson(amount, isTaxable),
-                "_fields" to ORDER_FIELDS
-        )
-
-        val url = WOOCOMMERCE.orders.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = it.toDomainModel(localSiteId = site.localId())
-                    RemoteOrderPayload(newModel, site)
-                } ?: RemoteOrderPayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
-                        // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
-                        site
-                )
-            }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
-                RemoteOrderPayload(
-                        orderError,
-                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
-                        // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
-                        site
-                )
-            }
-        }
-    }
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
@@ -1024,22 +976,5 @@ class OrderRestClient @Inject constructor(
                 "tracking_number",
                 "tracking_provider"
         ).joinToString(separator = ",")
-
-        const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
-
-        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
-            val jsonFee = JsonObject().also { json ->
-                feeId?.let {
-                    json.addProperty("id", it)
-                }
-                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
-                json.addProperty("total", amount)
-                json.addProperty(
-                        "tax_status",
-                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
-                )
-            }
-            return JsonArray().also { it.add(jsonFee) }
-        }
     }
 }
