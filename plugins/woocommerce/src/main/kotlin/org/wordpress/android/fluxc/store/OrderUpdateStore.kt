@@ -126,7 +126,7 @@ class OrderUpdateStore @Inject internal constructor(
         isTaxable: Boolean
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
-            val initialOrder = ordersDao.getOrder(RemoteId(orderId), site.localId())
+            val initialOrder = ordersDao.getOrder(orderId, site.localId())
             if (initialOrder == null) {
                 emitNoEntityFound("Order with id $orderId not found")
             } else {
@@ -138,7 +138,7 @@ class OrderUpdateStore @Inject internal constructor(
                     null
                 }
 
-                ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
+                ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
                     copy(
                         customerNote = customerNote,
                         billingEmail = billingEmail,

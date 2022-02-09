@@ -433,7 +433,7 @@ class OrderUpdateStoreTest {
         // when
         val results = sut.updateSimplePayment(
                 site = site,
-                orderId = TEST_REMOTE_ORDER_ID.value,
+                orderId = TEST_REMOTE_ORDER_ID,
                 amount = SIMPLE_PAYMENT_AMOUNT,
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
@@ -467,10 +467,10 @@ class OrderUpdateStoreTest {
 
         sut.deleteOrder(
             site = site,
-            orderId = TEST_REMOTE_ORDER_ID.value
+            orderId = TEST_REMOTE_ORDER_ID
         )
 
-        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID.value)
+        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID)
     }
 
     private companion object {
