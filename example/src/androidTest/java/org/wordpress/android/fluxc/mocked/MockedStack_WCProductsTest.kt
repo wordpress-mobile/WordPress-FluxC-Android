@@ -512,6 +512,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
                 assertEquals(3, reviewerAvatarUrlBySize.size)
             }
         }
+        Unit
     }
 
     @Test
