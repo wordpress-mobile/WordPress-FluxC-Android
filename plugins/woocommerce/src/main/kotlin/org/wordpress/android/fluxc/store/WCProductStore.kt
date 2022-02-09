@@ -1236,9 +1236,7 @@ class WCProductStore @Inject constructor(
                 wcProductRestClient.updateProductReviewStatus(site, remoteReviewId, newStatus)
             }
             return@withDefaultContext if (result.isError) {
-                OnProductReviewChanged(0).also { it.error = result.error
-                    it.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
-                }
+                OnProductReviewChanged(0)
             } else {
                 val rowsAffected = result.productReview?.let { review ->
                     if (review.status == "spam" || review.status == "trash") {
@@ -1249,9 +1247,7 @@ class WCProductStore @Inject constructor(
                         ProductSqlUtils.insertOrUpdateProductReview(review)
                     }
                 } ?: 0
-                OnProductReviewChanged(rowsAffected).also {
-                    it.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
-                }
+                OnProductReviewChanged(rowsAffected)
             }
         }
     }

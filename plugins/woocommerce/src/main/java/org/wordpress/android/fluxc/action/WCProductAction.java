@@ -39,7 +39,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload;
 
 @ActionEnum
@@ -57,8 +56,6 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchSingleProductShippingClassPayload.class)
     FETCH_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = UpdateProductReviewStatusPayload.class)
-    UPDATE_PRODUCT_REVIEW_STATUS,
     @Action(payloadType = UpdateProductImagesPayload.class)
     UPDATE_PRODUCT_IMAGES,
     @Action(payloadType = UpdateProductPayload.class)
