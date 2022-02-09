@@ -175,7 +175,7 @@ class WCOrderStore @Inject constructor(
         val order: OrderDto,
         val site: SiteModel
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) { this.error = error }
+        constructor(error: OrderError, order: OrderDto, site: SiteModel) : this(order, site) { this.error = error }
     }
 
     sealed class UpdateOrderResult {

@@ -526,11 +526,11 @@ class OrderRestClient @Inject constructor(
     ): FetchOrderNotesResponsePayload {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf(),
-            Array<OrderNoteApiResponse>::class.java
+                this,
+                site,
+                url,
+                mapOf(),
+                Array<OrderNoteApiResponse>::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
@@ -658,7 +658,8 @@ class OrderRestClient @Inject constructor(
         val params = if (isCustomProvider) {
             mutableMapOf(
                     "custom_tracking_provider" to tracking.trackingProvider,
-                    "custom_tracking_link" to tracking.trackingLink)
+                    "custom_tracking_link" to tracking.trackingLink
+            )
         } else {
             mutableMapOf("tracking_provider" to tracking.trackingProvider)
         }
