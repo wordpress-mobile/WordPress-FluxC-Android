@@ -60,4 +60,7 @@ abstract class OrdersDao {
 
     @Query("SELECT COUNT(*) FROM OrderEntity WHERE localSiteId = :localSiteId")
     abstract fun getOrderCountForSite(localSiteId: LocalId): Int
+
+    @Query("DELETE FROM OrderEntity WHERE localSiteId = :localSiteId AND remoteOrderId = :orderId")
+    abstract suspend fun deleteOrder(localSiteId: LocalId, orderId: Long)
 }
