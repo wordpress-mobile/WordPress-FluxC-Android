@@ -206,7 +206,7 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
             execSQL(
                     // language=RoomSql
                     """
-                        CREATE UNIQUE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` 
+                        CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` 
                         ON `OrderEntity` (`localSiteId`, `orderId`);
                     """.trimIndent()
             )

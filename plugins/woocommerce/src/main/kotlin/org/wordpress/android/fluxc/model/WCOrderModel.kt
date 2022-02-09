@@ -16,8 +16,7 @@ import java.math.BigDecimal
 @Entity(
     tableName = "OrderEntity",
     indices = [Index(
-        value = ["localSiteId", "orderId"],
-        unique = true
+        value = ["localSiteId", "orderId"]
     )],
     primaryKeys = ["localSiteId", "orderId"]
 )

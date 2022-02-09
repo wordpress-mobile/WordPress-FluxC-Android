@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "2e5a4641ac6952886cb3b57d868e002e",
+    "identityHash": "ff7e764abea5deadebb7f31a8227640f",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -511,12 +511,12 @@
         "indices": [
           {
             "name": "index_OrderEntity_localSiteId_orderId",
-            "unique": true,
+            "unique": false,
             "columnNames": [
               "localSiteId",
               "orderId"
             ],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` ON `${TABLE_NAME}` (`localSiteId`, `orderId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` ON `${TABLE_NAME}` (`localSiteId`, `orderId`)"
           }
         ],
         "foreignKeys": []
@@ -525,7 +525,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e5a4641ac6952886cb3b57d868e002e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ff7e764abea5deadebb7f31a8227640f')"
     ]
   }
 }
