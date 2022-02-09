@@ -9,7 +9,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCOrderNoteModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
-    @Column var localOrderId = 0 // The local db unique identifier for the parent order object
+    @Column(name = "LOCAL_ORDER_ID") var orderId = 0L // The local db unique identifier for the parent order object
     @Column var remoteNoteId = 0L // The unique identifier for this note on the server
     @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
     @Column var note = ""

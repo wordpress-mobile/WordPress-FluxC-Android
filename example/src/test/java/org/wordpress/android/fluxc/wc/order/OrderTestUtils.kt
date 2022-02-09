@@ -28,13 +28,13 @@ import kotlin.test.assertNotNull
 
 object OrderTestUtils {
     fun generateSampleOrder(
-        remoteId: Long,
+        orderId: Long,
         orderStatus: String = CoreOrderStatus.PROCESSING.value,
         siteId: Int = 6,
         modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderModel {
         return WCOrderModel(
-            remoteOrderId = RemoteId(remoteId),
+            remoteOrderId = RemoteId(orderId),
             localSiteId = LocalId(siteId),
             status = orderStatus,
             dateModified = modified,
@@ -56,7 +56,7 @@ object OrderTestUtils {
         }
     }
 
-    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Int): List<WCOrderNoteModel> {
+    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Long): List<WCOrderNoteModel> {
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderNoteApiResponse> ?: emptyList()
         return converted.map {
@@ -66,15 +66,15 @@ object OrderTestUtils {
                 note = it.note ?: ""
                 isCustomerNote = it.customer_note
                 localSiteId = siteId
-                localOrderId = orderId
+                this.orderId = orderId
             }
         }
     }
 
-    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Int): WCOrderNoteModel {
+    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Long): WCOrderNoteModel {
         return WCOrderNoteModel().apply {
             localSiteId = siteId.value
-            localOrderId = orderId
+            this.orderId = orderId
             remoteNoteId = remoteId
             dateCreated = "1955-11-05T14:15:00Z"
             note = "This is a test note"
@@ -98,14 +98,14 @@ object OrderTestUtils {
     fun getOrderShipmentTrackingsFromJson(
         json: String,
         siteId: Int,
-        orderId: Int
+        orderId: Long
     ): List<WCOrderShipmentTrackingModel> {
         val responseType = object : TypeToken<List<OrderShipmentTrackingApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderShipmentTrackingApiResponse> ?: emptyList()
         return converted.map {
             WCOrderShipmentTrackingModel().apply {
                 localSiteId = siteId
-                localOrderId = orderId
+                this.orderId = orderId
                 remoteTrackingId = it.tracking_id ?: ""
                 trackingNumber = it.tracking_number ?: ""
                 trackingProvider = it.tracking_provider ?: ""
@@ -115,10 +115,10 @@ object OrderTestUtils {
         }
     }
 
-    fun generateOrderShipmentTracking(siteId: Int, orderId: Int): WCOrderShipmentTrackingModel {
+    fun generateOrderShipmentTracking(siteId: Int, orderId: Long): WCOrderShipmentTrackingModel {
         return WCOrderShipmentTrackingModel().apply {
             localSiteId = siteId
-            localOrderId = orderId
+            this.orderId = orderId
             remoteTrackingId = "3290834092801"
             trackingNumber = "ZZ9939921"
             trackingProvider = "USPS"
