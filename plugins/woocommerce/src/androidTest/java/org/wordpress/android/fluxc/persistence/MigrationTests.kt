@@ -49,8 +49,23 @@ class MigrationTests {
     @Test
     fun testMigrate6to7() {
         helper.apply {
-            createDatabase(TEST_DB, 6).close()
-            runMigrationsAndValidate(TEST_DB, 7, true, MIGRATION_6_7)
+            val existingDb = createDatabase(TEST_DB, 6).apply {
+                execSQL(
+                        // language=RoomSql
+                        """
+                            INSERT INTO OrderEntity VALUES(1, 2, 3, '123', 'processing', '$', 'key', 'date of creation', 'date of modification', '123', '456', '789', 'card', 'by card', 'date paid', TRUE, 'sample customer note', '213', 'CODE', 123, 'billing first name', 'billing last name', 'billing company', 'billing address1', 'billing address2', 'billing city', 'billing state', 'billing postcode', 'billing country', 'billing email', 'billing phone', 'shipping first name', 'shipping last name', 'shipping company', 'shipping address1', 'shipping address2', 'shipping city', 'shipping state', 'shipping postcode', 'shipping country', 'shipping phone', 'line items', 'shipping lines', 'fee lines', 'meta data')
+                        """.trimIndent()
+                )
+            }.close()
+
+            val migratedDb = runMigrationsAndValidate(TEST_DB, 7, true, MIGRATION_6_7)
+
+            migratedDb.query(
+                    // language=RoomSql
+                    """
+                        SELECT * FROM OrderEntity
+                    """.trimIndent()
+            )
         }
     }
 
