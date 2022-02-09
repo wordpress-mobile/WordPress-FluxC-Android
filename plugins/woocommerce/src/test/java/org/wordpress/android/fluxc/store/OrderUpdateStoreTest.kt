@@ -412,7 +412,7 @@ class OrderUpdateStoreTest {
     fun `should create simple payment with correct amount and tax status`(): Unit = runBlocking {
         // given
         val newOrder = initialOrder.copy(
-                feeLines = sut.generateSimplePaymentFeeLineJson(
+                feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE,
                         SIMPLE_PAYMENT_FEE_ID
@@ -446,7 +446,7 @@ class OrderUpdateStoreTest {
         val updatedOrder = initialOrder.copy(
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
-                feeLines = sut.generateSimplePaymentFeeLineJson(
+                feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE,
                         SIMPLE_PAYMENT_FEE_ID
