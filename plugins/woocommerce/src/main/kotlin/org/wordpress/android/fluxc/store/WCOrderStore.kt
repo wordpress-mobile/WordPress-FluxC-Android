@@ -319,6 +319,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    // TODO nbradbury this and related code can be removed
     data class OnQuickOrderResult(
         var order: OrderEntity? = null
     ) : OnChanged<OrderError>()
