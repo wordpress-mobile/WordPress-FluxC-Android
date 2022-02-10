@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
@@ -44,7 +45,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Test
     fun whenValidDataProvidedForCapturePaymentThenSuccessReturned() = runBlocking {
-        interceptor.respondWithError("wc-pay-capture-terminal-payment-response-success.json", 200)
+        interceptor.respondWith("wc-pay-capture-terminal-payment-response-success.json")
 
         val result = restClient.capturePayment(
             WOOCOMMERCE_PAYMENTS,
@@ -115,7 +116,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Test
     fun whenLoadAccountInvalidStatusThenFallbacksToUnknown() = runBlocking {
-        interceptor.respondWithError("wc-pay-load-account-response-new-status.json", 200)
+        interceptor.respondWith("wc-pay-load-account-response-new-status.json")
 
         val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
@@ -124,7 +125,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Test
     fun whenLoadAccountEmptyStatusThenFallbackToNoAccount() = runBlocking {
-        interceptor.respondWithError("wc-pay-load-account-response-empty-status.json", 200)
+        interceptor.respondWith("wc-pay-load-account-response-empty-status.json")
 
         val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
@@ -133,7 +134,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Test
     fun whenOverdueRequirementsThenCurrentDeadlineCorrectlyParsed() = runBlocking {
-        interceptor.respondWithError("wc-pay-load-account-response-current-deadline.json", 200)
+        interceptor.respondWith("wc-pay-load-account-response-current-deadline.json")
 
         val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
@@ -142,7 +143,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Test
     fun whenLoadAccountRestrictedSoonStatusThenRestrictedSoonStatusReturned() = runBlocking {
-        interceptor.respondWithError("wc-pay-load-account-response-restricted-soon-status.json", 200)
+        interceptor.respondWith("wc-pay-load-account-response-restricted-soon-status.json")
 
         val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
@@ -151,11 +152,20 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Test
     fun whenLoadAccountIsLiveThenIsLiveFlagIsTrue() = runBlocking {
-        interceptor.respondWithError("wc-pay-load-account-response-is-live-account.json", 200)
+        interceptor.respondWith("wc-pay-load-account-response-is-live-account.json")
 
         val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
 
         assertTrue(result.result!!.isLive)
+    }
+
+    @Test
+    fun whenStatementeDescriptorNullThenFieldSetToNull() = runBlocking {
+        interceptor.respondWith("stripe-extension-statement-descriptor-null.json")
+
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+
+        assertNull(result.result!!.statementDescriptor)
     }
 
     @Test
