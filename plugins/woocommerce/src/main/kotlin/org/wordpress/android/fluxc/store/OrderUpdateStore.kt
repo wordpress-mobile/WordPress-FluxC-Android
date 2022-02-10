@@ -118,6 +118,17 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    /**
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
+     */
+    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<WCOrderModel> {
+        val createOrderRequest = UpdateOrderRequest(
+                feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+        )
+        return createOrder(site, createOrderRequest)
+    }
+
     suspend fun updateSimplePayment(
         site: SiteModel,
         orderId: Long,
@@ -189,7 +200,7 @@ class OrderUpdateStore @Inject internal constructor(
      * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
      * pass the id of an existing fee line item to replace it.
      */
-    private fun generateSimplePaymentFeeLineList(
+    fun generateSimplePaymentFeeLineList(
         amount: String,
         isTaxable: Boolean,
         feeId: Long? = null
