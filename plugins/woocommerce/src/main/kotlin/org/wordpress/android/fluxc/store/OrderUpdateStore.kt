@@ -197,6 +197,27 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    /**
+     * Generates the feeLines for a simple payment order containing a single fee line item with
+     * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
+     * pass the id of an existing fee line item to replace it.
+     */
+    private fun generateSimplePaymentFeeLineList(
+        amount: String,
+        isTaxable: Boolean,
+        feeId: Long? = null
+    ): List<FeeLine> {
+        FeeLine().also { feeLine ->
+            feeId?.let {
+                feeLine.id = it
+            }
+            feeLine.name = SIMPLE_PAYMENT_FEELINE_NAME
+            feeLine.total = amount
+            feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
+            return listOf(feeLine)
+        }
+    }
+
     suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<WCOrderModel> {
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
             val result = wcOrderRestClient.createOrder(site, createOrderRequest)
@@ -361,27 +382,6 @@ class OrderUpdateStore @Inject internal constructor(
 
     companion object {
         private const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
-
-        /**
-         * Generates the feeLines for a simple payment order containing a single fee line item with
-         * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
-         * pass the id of an existing fee line item to replace it.
-         */
-        fun generateSimplePaymentFeeLineList(
-            amount: String,
-            isTaxable: Boolean,
-            feeId: Long? = null
-        ): List<FeeLine> {
-            FeeLine().also { feeLine ->
-                feeId?.let {
-                    feeLine.id = it
-                }
-                feeLine.name = SIMPLE_PAYMENT_FEELINE_NAME
-                feeLine.total = amount
-                feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
-                return listOf(feeLine)
-            }
-        }
 
         fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
             val jsonFee = JsonObject().also { json ->
