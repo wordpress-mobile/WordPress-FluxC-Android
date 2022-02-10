@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Add
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Edit
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
@@ -39,7 +38,7 @@ class AddressEditDialogFragment : DaggerFragment() {
         @JvmStatic
         fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
                 AddressEditDialogFragment = AddressEditDialogFragment().apply {
-            this.selectedOrder = WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1))
+            this.selectedOrder = WCOrderModel(localSiteId = LocalId(-1), orderId = -1)
             this.mode = Add
             this.addressListener = listener
             this.currentAddressType.value = addressType
@@ -95,7 +94,7 @@ class AddressEditDialogFragment : DaggerFragment() {
                 when (addressType) {
                     SHIPPING -> {
                         binding.addressTypeSwitch.text =
-                                "Edit shipping address for order ${selectedOrder.remoteOrderId}"
+                                "Edit shipping address for order ${selectedOrder.orderId}"
                         binding.firstName.setText(selectedOrder.shippingFirstName)
                         binding.lastName.setText(selectedOrder.shippingLastName)
                         binding.company.setText(selectedOrder.shippingCompany)
@@ -108,7 +107,7 @@ class AddressEditDialogFragment : DaggerFragment() {
                         binding.email.visibility = View.INVISIBLE
                     }
                     BILLING -> {
-                        binding.addressTypeSwitch.text = "Edit billing address for order ${selectedOrder.remoteOrderId}"
+                        binding.addressTypeSwitch.text = "Edit billing address for order ${selectedOrder.orderId}"
                         binding.firstName.setText(selectedOrder.billingFirstName)
                         binding.lastName.setText(selectedOrder.billingLastName)
                         binding.company.setText(selectedOrder.billingCompany)
@@ -137,7 +136,7 @@ class AddressEditDialogFragment : DaggerFragment() {
                 Edit -> {
                     lifecycleScope.launch {
                         orderUpdateStore.updateOrderAddress(
-                                remoteOrderId = selectedOrder.remoteOrderId,
+                                orderId = selectedOrder.orderId,
                                 localSiteId = selectedOrder.localSiteId,
                                 newAddress = newAddress
                         ).collect {
@@ -155,7 +154,7 @@ class AddressEditDialogFragment : DaggerFragment() {
         sendBothAddressesUpdate.setOnClickListener {
             lifecycleScope.launch {
                 orderUpdateStore.updateBothOrderAddresses(
-                        remoteOrderId = selectedOrder.remoteOrderId,
+                        orderId = selectedOrder.orderId,
                         localSiteId = selectedOrder.localSiteId,
                         shippingAddress = generateShippingAddressModel(binding),
                         billingAddress = generateBillingAddressModel(binding)

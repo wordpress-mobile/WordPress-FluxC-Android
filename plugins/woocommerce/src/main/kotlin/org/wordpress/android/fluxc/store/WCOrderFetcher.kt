@@ -32,7 +32,7 @@ class WCOrderFetcher @Inject constructor(private val dispatcher: Dispatcher) {
      * The [RemoteId] of the [WCOrderModel] in the process of being fetched from
      * the remote API.
      */
-    private val ongoingRequests = Collections.synchronizedSet(mutableSetOf<RemoteId>())
+    private val ongoingRequests = Collections.synchronizedSet(mutableSetOf<Long>())
 
     init {
         dispatcher.register(this)
@@ -44,16 +44,16 @@ class WCOrderFetcher @Inject constructor(private val dispatcher: Dispatcher) {
      * fetched.
      *
      * @param [site] The [SiteModel] to fetch the orders from
-     * @param [remoteItemIds] A list containing the [RemoteId]'s of the orders to fetch
+     * @param [orderIds] A list containing the ids of the orders to fetch
      */
-    fun fetchOrders(site: SiteModel, remoteItemIds: List<RemoteId>) {
-        val idsToFetch = remoteItemIds.filter {
+    fun fetchOrders(site: SiteModel, orderIds: List<Long>) {
+        val idsToFetch = orderIds.filter {
             // ignore duplicate requests
             !ongoingRequests.contains(it)
         }
         if (idsToFetch.isNotEmpty()) {
             ongoingRequests.addAll(idsToFetch)
-            val payload = FetchOrdersByIdsPayload(site = site, remoteIds = idsToFetch)
+            val payload = FetchOrdersByIdsPayload(site = site, orderIds = idsToFetch)
             dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
         }
     }

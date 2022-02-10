@@ -11,7 +11,6 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
@@ -330,7 +329,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify all records were inserted
         val summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(10, summariesDb.size)
     }
 
@@ -346,10 +345,10 @@ class OrderSqlUtilsTest {
         val firstOption = summaryList[0]
         OrderSqlUtils.insertOrUpdateOrderSummaries(listOf(firstOption))
         var summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, listOf(RemoteId(firstOption.remoteOrderId)))
+                .getOrderSummariesForRemoteIds(site, listOf(firstOption.orderId))
         assertEquals(1, summariesDb.size)
         assertEquals(firstOption.dateCreated, summariesDb[0].dateCreated)
-        assertEquals(firstOption.remoteOrderId, summariesDb[0].remoteOrderId)
+        assertEquals(firstOption.orderId, summariesDb[0].orderId)
         assertEquals(firstOption.localSiteId, summariesDb[0].localSiteId)
 
         // Act:
@@ -360,7 +359,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify the modified property was updated
         summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, listOf(RemoteId(firstOption.remoteOrderId)))
+                .getOrderSummariesForRemoteIds(site, listOf(firstOption.orderId))
         assertEquals(1, summariesDb.size)
         assertEquals(firstOption.dateCreated, summariesDb[0].dateCreated)
     }
@@ -376,7 +375,7 @@ class OrderSqlUtilsTest {
         val summaryList = OrderTestUtils.getTestOrderSummaryList(site)
         OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
         var summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(10, summariesDb.size)
 
         // Act:
@@ -386,7 +385,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify all order summaries deleted for the active site
         summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(0, summariesDb.size)
     }
 
@@ -404,7 +403,7 @@ class OrderSqlUtilsTest {
         val summaryList = OrderTestUtils.getTestOrderSummaryList(site)
         OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
         var summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(10, summariesDb.size)
 
         // Act:
@@ -414,7 +413,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify all order summaries for the deleted site have also been deleted
         summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(0, summariesDb.size)
     }
 
@@ -434,7 +433,7 @@ class OrderSqlUtilsTest {
         // - Verify all records fetched successfully
         // - Verify list saved to db matches list fetched from db
         val summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) }).sortedBy { it.id }
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId }).sortedBy { it.id }
         assertEquals(300, summariesDb.size)
         assertEquals(summaryList, summariesDb)
     }

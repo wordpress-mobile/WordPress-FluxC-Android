@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -186,20 +185,20 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Requests orders from the API that match the provided list of [remoteOrderIds] by making a GET call to
+     * Requests orders from the API that match the provided list of [orderIds] by making a GET call to
      * `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS_BY_IDS] action with the resulting list of orders.
      *
      * @param site The WooCommerce [SiteModel] the orders belong to
-     * @param remoteOrderIds A list of remote order identifiers to fetch from the API
+     * @param orderIds A list of remote order identifiers to fetch from the API
      */
-    fun fetchOrdersByIds(site: SiteModel, remoteOrderIds: List<RemoteId>) {
+    fun fetchOrdersByIds(site: SiteModel, orderIds: List<Long>) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderDto>>() {}.type
         val params = mapOf(
-                "per_page" to remoteOrderIds.size.toString(),
-                "include" to remoteOrderIds.map { it.value }.joinToString(),
+                "per_page" to orderIds.size.toString(),
+                "include" to orderIds.map { it }.joinToString(),
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
@@ -209,15 +208,15 @@ class OrderRestClient @Inject constructor(
 
                     val payload = FetchOrdersByIdsResponsePayload(
                             site = site,
-                            remoteOrderIds = remoteOrderIds,
+                            orderIds = orderIds,
                             fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
-                WPComErrorListener { networkError ->
+                { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersByIdsResponsePayload(
-                            error = orderError, site = site, remoteOrderIds = remoteOrderIds)
+                            error = orderError, site = site, orderIds = orderIds)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
@@ -242,7 +241,7 @@ class OrderRestClient @Inject constructor(
                     val payload = FetchOrderStatusOptionsResponsePayload(site, orderStatusOptions)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
                 },
-                WPComErrorListener { networkError ->
+                { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
@@ -294,10 +293,10 @@ class OrderRestClient @Inject constructor(
     /**
      * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
      *
-     * @param [remoteOrderId] Unique server id of the order to fetch
+     * @param [orderId] Unique server id of the order to fetch
      */
-    suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): RemoteOrderPayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
+    suspend fun fetchSingleOrder(site: SiteModel, orderId: Long): RemoteOrderPayload {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = mapOf("_fields" to ORDER_FIELDS)
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -316,7 +315,7 @@ class OrderRestClient @Inject constructor(
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                         WCOrderModel(
-                                remoteOrderId = RemoteId(remoteOrderId),
+                                orderId = orderId,
                                 localSiteId = site.localId()
                         ),
                         site
@@ -327,7 +326,7 @@ class OrderRestClient @Inject constructor(
                 RemoteOrderPayload(
                         orderError,
                         WCOrderModel(
-                                remoteOrderId = RemoteId(remoteOrderId),
+                                orderId = orderId,
                                 localSiteId = site.localId()
                         ),
                         site
@@ -427,7 +426,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         updatePayload: Map<String, Any>
     ): RemoteOrderPayload {
-        val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId.value).pathV3
+        val url = WOOCOMMERCE.orders.id(orderToUpdate.orderId).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
             restClient = this,
@@ -509,7 +508,7 @@ class OrderRestClient @Inject constructor(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                         // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
                         // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
+                        WCOrderModel(localSiteId = LocalId(-1), orderId = -1),
                         site
                 )
             }
@@ -519,7 +518,7 @@ class OrderRestClient @Inject constructor(
                         orderError,
                         // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
                         // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
+                        WCOrderModel(localSiteId = LocalId(-1), orderId = -1),
                         site
                 )
             }
@@ -765,7 +764,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         order: WCOrderModel
     ): FetchOrderShipmentProvidersResponsePayload {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId.value).shipment_trackings.providers.pathV2
+        val url = WOOCOMMERCE.orders.id(order.orderId).shipment_trackings.providers.pathV2
         val params = emptyMap<String, String>()
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -899,7 +898,7 @@ class OrderRestClient @Inject constructor(
 
     private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
         return WCOrderSummaryModel().apply {
-            remoteOrderId = response.id ?: 0
+            orderId = response.id ?: 0
             dateCreated = convertDateToUTCString(response.dateCreatedGmt)
             dateModified = convertDateToUTCString(response.dateModifiedGmt)
         }
