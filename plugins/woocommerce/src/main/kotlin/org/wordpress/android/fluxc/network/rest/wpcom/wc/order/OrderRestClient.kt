@@ -807,7 +807,7 @@ class OrderRestClient @Inject constructor(
     suspend fun createOrder(
         site: SiteModel,
         request: UpdateOrderRequest
-    ): WooPayload<WCOrderModel> {
+    ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.pathV3
         val params = request.toNetworkRequest()
 
@@ -837,7 +837,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         orderId: Long,
         request: UpdateOrderRequest
-    ): WooPayload<WCOrderModel> {
+    ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = request.toNetworkRequest()
 
