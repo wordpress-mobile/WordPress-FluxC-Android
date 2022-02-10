@@ -481,8 +481,8 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
-     * return a new order with the tax already calculated.
+     * @Deprecated("Use OrderUpdateStore.createSimplePayment instead")
+     * This function can be dropped once WCAndroid switches to OrderUpdateStore.createSimplePayment
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val params = mapOf(

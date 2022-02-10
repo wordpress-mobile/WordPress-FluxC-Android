@@ -449,11 +449,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     coroutineScope.launch {
                         try {
                             val amount = editText.text.toString()
-                            val result = wcOrderStore.postSimplePayment(site, amount, true)
+                            val result = orderUpdateStore.createSimplePayment(site, amount, true)
                             if (result.isError) {
                                 prependToLog("Creating simple payment failed.")
                             } else {
-                                prependToLog("Created simple payment with remote ID ${result.order?.orderId}.")
+                                prependToLog("Created simple payment with remote ID ${result.model?.orderId}.")
                             }
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")

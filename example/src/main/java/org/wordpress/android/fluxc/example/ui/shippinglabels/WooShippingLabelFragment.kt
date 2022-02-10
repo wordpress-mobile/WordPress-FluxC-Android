@@ -653,7 +653,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                     }
                     val plugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
                     plugin?.let {
-                        prependToLog("$it")
+                        prependToLog("${it.displayName} ${it.version}")
                     }
                 }
             }

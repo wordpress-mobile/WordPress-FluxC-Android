@@ -142,7 +142,7 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
 
 internal val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL")
+        database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL DEFAULT ''")
     }
 }
 
