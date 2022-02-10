@@ -121,7 +121,7 @@ class OrderUpdateStore @Inject internal constructor(
      * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
      * return a new order with the tax already calculated.
      */
-    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<WCOrderModel> {
+    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<OrderEntity> {
         val createOrderRequest = UpdateOrderRequest(
                 feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
         )
