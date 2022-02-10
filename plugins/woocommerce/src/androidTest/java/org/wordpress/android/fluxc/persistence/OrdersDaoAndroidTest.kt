@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.entities.LineItemEntity
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 
@@ -31,7 +33,7 @@ class OrdersDaoAndroidTest {
     }
 
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    private val randString = (1..(100000))
+    private val randString = (1..(1500000))
             .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
@@ -73,7 +75,7 @@ class OrdersDaoAndroidTest {
                     shippingState = randString,
                     shippingPostcode = randString,
             ).also {
-                sut.insertOrUpdateOrder(it)
+                sut.insertOrderInfoEntity(it)
             }
             sut.getOrdersForSiteByRemoteIds(site.localId(), listOf(remoteOrderId))
         }
@@ -116,9 +118,107 @@ class OrdersDaoAndroidTest {
                     shippingState = "",
                     shippingPostcode = "",
             ).also {
-                sut.insertOrUpdateOrder(it)
+                sut.insertOrderInfoEntity(it)
             }
             sut.getOrdersForSiteByRemoteIds(site.localId(), listOf(remoteOrderId))
+
+        }
+    }
+
+    @Test
+    fun crashingWhenRandStringToTwoFields() {
+        runBlocking {
+            val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
+
+            val remoteOrderId = RemoteId(1)
+            WCOrderModel(
+                    remoteOrderId = remoteOrderId,
+                    localSiteId = LocalId(TEST_LOCAL_SITE_ID),
+                    status = CoreOrderStatus.PROCESSING.value,
+                    lineItems = randString,
+                    shippingLines = randString,
+                    shippingCountry = "",
+                    shippingPhone = "",
+                    feeLines = "",
+                    taxLines = "",
+                    metaData = "",
+                    billingFirstName = "",
+                    billingLastName = "",
+                    billingCompany = "",
+                    billingAddress1 = "",
+                    billingAddress2 = "",
+                    billingCity = "",
+                    billingState = "",
+                    billingPostcode = "",
+                    billingCountry = "",
+                    billingEmail = "",
+                    billingPhone = "",
+                    shippingFirstName = "",
+                    shippingLastName = "",
+                    shippingCompany = "",
+                    shippingAddress1 = "",
+                    shippingAddress2 = "",
+                    shippingCity = "",
+                    shippingState = "",
+                    shippingPostcode = "",
+            ).also {
+                sut.insertOrderInfoEntity(it)
+            }
+            sut.getOrdersForSiteByRemoteIds(site.localId(), listOf(remoteOrderId))
+
+        }
+    }
+
+    @Test
+    fun notCrashingWhenRandStringToTwoFieldsButViaDatabase() {
+        runBlocking {
+            val site = SiteModel().apply { id = TEST_LOCAL_SITE_ID }
+
+            val remoteOrderId = RemoteId(1)
+            WCOrderModel(
+                    remoteOrderId = remoteOrderId,
+                    localSiteId = LocalId(TEST_LOCAL_SITE_ID),
+                    status = CoreOrderStatus.PROCESSING.value,
+                    lineItems = randString,
+                    shippingLines = "",
+                    shippingCountry = "",
+                    shippingPhone = "",
+                    feeLines = "",
+                    taxLines = "",
+                    metaData = "",
+                    billingFirstName = "",
+                    billingLastName = "",
+                    billingCompany = "",
+                    billingAddress1 = "",
+                    billingAddress2 = "",
+                    billingCity = "",
+                    billingState = "",
+                    billingPostcode = "",
+                    billingCountry = "",
+                    billingEmail = "",
+                    billingPhone = "",
+                    shippingFirstName = "",
+                    shippingLastName = "",
+                    shippingCompany = "",
+                    shippingAddress1 = "",
+                    shippingAddress2 = "",
+                    shippingCity = "",
+                    shippingState = "",
+                    shippingPostcode = "",
+            ).also {
+                sut.insertOrUpdateOrder(
+                        order = it,
+                        lineItems = listOf(
+                                LineItemEntity(
+                                        parentOrderId = it.remoteOrderId.value,
+                                        parentOrderLocalSiteId = it.localSiteId.value.toLong(),
+                                        name = randString
+                                )
+                        )
+                )
+            }
+            val result = sut.observeRichOrderEntity(remoteOrderId, site.localId()).first()
+            assert(result!!.lineItems.first().name==randString)
 
         }
     }
