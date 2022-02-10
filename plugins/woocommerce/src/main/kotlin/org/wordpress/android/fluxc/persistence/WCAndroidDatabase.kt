@@ -19,23 +19,24 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 
 @Database(
-        version = 7,
-        entities = [
-            AddonEntity::class,
-            AddonOptionEntity::class,
-            GlobalAddonGroupEntity::class,
-            WCOrderModel::class
-        ]
+    version = 8,
+    entities = [
+        AddonEntity::class,
+        AddonOptionEntity::class,
+        GlobalAddonGroupEntity::class,
+        WCOrderModel::class
+    ]
 )
 @TypeConverters(
-        value = [
-            LocalIdConverter::class,
-            LongListConverter::class,
-            RemoteIdConverter::class,
-            BigDecimalConverter::class
-        ]
+    value = [
+        LocalIdConverter::class,
+        LongListConverter::class,
+        RemoteIdConverter::class,
+        BigDecimalConverter::class
+    ]
 )
 abstract class WCAndroidDatabase : RoomDatabase() {
     internal abstract fun addonsDao(): AddonsDao
@@ -43,16 +44,17 @@ abstract class WCAndroidDatabase : RoomDatabase() {
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(
-                applicationContext,
-                WCAndroidDatabase::class.java,
-                "wc-android-database"
+            applicationContext,
+            WCAndroidDatabase::class.java,
+            "wc-android-database"
         ).allowMainThreadQueries()
-                .fallbackToDestructiveMigrationOnDowngrade()
-                .fallbackToDestructiveMigrationFrom(1, 2)
-                .addMigrations(MIGRATION_3_4)
-                .addMigrations(MIGRATION_4_5)
-                .addMigrations(MIGRATION_5_6)
-                .addMigrations(MIGRATION_6_7)
-                .build()
+            .fallbackToDestructiveMigrationOnDowngrade()
+            .fallbackToDestructiveMigrationFrom(1, 2)
+            .addMigrations(MIGRATION_3_4)
+            .addMigrations(MIGRATION_4_5)
+            .addMigrations(MIGRATION_5_6)
+            .addMigrations(MIGRATION_6_7)
+            .addMigrations(MIGRATION_7_8)
+            .build()
     }
 }

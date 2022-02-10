@@ -145,3 +145,71 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
         database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL")
     }
 }
+
+internal val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE OrderEntity")
+            execSQL(
+                    // language=RoomSql
+                    """ 
+                        CREATE TABLE IF NOT EXISTS OrderEntity (
+                        `localSiteId` INTEGER NOT NULL,
+                        `orderId` INTEGER NOT NULL,
+                        `number` TEXT NOT NULL,
+                        `status` TEXT NOT NULL,
+                        `currency` TEXT NOT NULL,
+                        `orderKey` TEXT NOT NULL,
+                        `dateCreated` TEXT NOT NULL,
+                        `dateModified` TEXT NOT NULL,
+                        `total` TEXT NOT NULL,
+                        `totalTax` TEXT NOT NULL,
+                        `shippingTotal` TEXT NOT NULL,
+                        `paymentMethod` TEXT NOT NULL,
+                        `paymentMethodTitle` TEXT NOT NULL,
+                        `datePaid` TEXT NOT NULL,
+                        `pricesIncludeTax` INTEGER NOT NULL,
+                        `customerNote` TEXT NOT NULL,
+                        `discountTotal` TEXT NOT NULL,
+                        `discountCodes` TEXT NOT NULL,
+                        `refundTotal` TEXT NOT NULL,
+                        `billingFirstName` TEXT NOT NULL,
+                        `billingLastName` TEXT NOT NULL,
+                        `billingCompany` TEXT NOT NULL,
+                        `billingAddress1` TEXT NOT NULL,
+                        `billingAddress2` TEXT NOT NULL,
+                        `billingCity` TEXT NOT NULL,
+                        `billingState` TEXT NOT NULL,
+                        `billingPostcode` TEXT NOT NULL,
+                        `billingCountry` TEXT NOT NULL,
+                        `billingEmail` TEXT NOT NULL,
+                        `billingPhone` TEXT NOT NULL,
+                        `shippingFirstName` TEXT NOT NULL,
+                        `shippingLastName` TEXT NOT NULL,
+                        `shippingCompany` TEXT NOT NULL,
+                        `shippingAddress1` TEXT NOT NULL,
+                        `shippingAddress2` TEXT NOT NULL,
+                        `shippingCity` TEXT NOT NULL,
+                        `shippingState` TEXT NOT NULL,
+                        `shippingPostcode` TEXT NOT NULL,
+                        `shippingCountry` TEXT NOT NULL,
+                        `shippingPhone` TEXT NOT NULL,
+                        `lineItems` TEXT NOT NULL,
+                        `shippingLines` TEXT NOT NULL,
+                        `feeLines` TEXT NOT NULL,
+                        `metaData` TEXT NOT NULL,
+                        `taxLines` TEXT NOT NULL,
+                         PRIMARY KEY(`localSiteId`, `orderId`)
+                        )
+                    """.trimIndent()
+            )
+            execSQL(
+                    // language=RoomSql
+                    """
+                        CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` 
+                        ON `OrderEntity` (`localSiteId`, `orderId`);
+                    """.trimIndent()
+            )
+        }
+    }
+}

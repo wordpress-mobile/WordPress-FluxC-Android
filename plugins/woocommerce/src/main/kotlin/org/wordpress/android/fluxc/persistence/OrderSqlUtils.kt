@@ -7,7 +7,6 @@ import com.wellsql.generated.WCOrderStatusModelTable
 import com.wellsql.generated.WCOrderSummaryModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
@@ -27,7 +26,7 @@ object OrderSqlUtils {
      * Kotlin's chunked functionality to ensure we don't crash with the "SQLiteException: too many SQL variables"
      * exception.
      */
-    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> {
+    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<Long>): List<WCOrderSummaryModel> {
         if (remoteOrderIds.isEmpty()) {
             return emptyList()
         }
@@ -37,12 +36,12 @@ object OrderSqlUtils {
 
     private fun doGetOrderSummariesForRemoteIds(
         site: SiteModel,
-        remoteOrderIds: List<RemoteId>
+        orderIds: List<Long>
     ): List<WCOrderSummaryModel> {
         return WellSql.select(WCOrderSummaryModel::class.java)
                 .where()
                 .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
-                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
+                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, orderIds)
                 .endWhere()
                 .asModel
     }

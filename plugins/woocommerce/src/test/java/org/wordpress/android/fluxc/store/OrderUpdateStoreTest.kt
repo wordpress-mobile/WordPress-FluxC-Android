@@ -14,7 +14,6 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -85,7 +84,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateCustomerOrderNote(
-                remoteOrderId = TEST_REMOTE_ORDER_ID,
+                orderId = TEST_REMOTE_ORDER_ID,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -121,7 +120,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateCustomerOrderNote(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -151,7 +150,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateCustomerOrderNote(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -161,7 +160,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(
                         event = OnOrderChanged(
                                 orderError = OrderError(
-                                        message = "Order with id ${initialOrder.remoteOrderId.value} not found"
+                                        message = "Order with id ${initialOrder.orderId} not found"
                                 )
                         )
                 )
@@ -194,7 +193,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateBothOrderAddresses(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 localSiteId = site.localId(),
                 shippingAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME),
                 billingAddress = emptyBilling.copy(firstName = UPDATED_BILLING_FIRST_NAME)
@@ -232,7 +231,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 localSiteId = site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -268,7 +267,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -298,7 +297,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -308,7 +307,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(
                         OnOrderChanged(
                                 orderError = OrderError(
-                                        message = "Order with id ${initialOrder.remoteOrderId.value} not found"
+                                        message = "Order with id ${initialOrder.orderId} not found"
                                 )
                         )
                 )
@@ -326,7 +325,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -366,7 +365,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyBilling
         ).toList()
@@ -396,7 +395,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyBilling.copy(email = "custom@mail.com")
         ).toList()
@@ -434,7 +433,7 @@ class OrderUpdateStoreTest {
         // when
         val results = sut.updateSimplePayment(
                 site = site,
-                orderId = TEST_REMOTE_ORDER_ID.value,
+                orderId = TEST_REMOTE_ORDER_ID,
                 amount = SIMPLE_PAYMENT_AMOUNT,
                 customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
@@ -468,14 +467,14 @@ class OrderUpdateStoreTest {
 
         sut.deleteOrder(
             site = site,
-            orderId = TEST_REMOTE_ORDER_ID.value
+            orderId = TEST_REMOTE_ORDER_ID
         )
 
-        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID.value)
+        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID)
     }
 
     private companion object {
-        val TEST_REMOTE_ORDER_ID = RemoteId(321L)
+        const val TEST_REMOTE_ORDER_ID = 321L
         val TEST_LOCAL_SITE_ID = LocalId(654)
         const val INITIAL_CUSTOMER_NOTE = "original customer note"
         const val UPDATED_CUSTOMER_NOTE = "updated customer note"
@@ -490,7 +489,7 @@ class OrderUpdateStoreTest {
         const val SIMPLE_PAYMENT_IS_TAXABLE = true
 
         val initialOrder = WCOrderModel(
-                remoteOrderId = TEST_REMOTE_ORDER_ID,
+                orderId = TEST_REMOTE_ORDER_ID,
                 localSiteId = TEST_LOCAL_SITE_ID,
                 customerNote = INITIAL_CUSTOMER_NOTE,
                 shippingFirstName = INITIAL_SHIPPING_FIRST_NAME
