@@ -46,7 +46,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
         assertEquals("US", result.model?.country)
         assertEquals(false, result.model?.hasPendingRequirements)
         assertEquals(false, result.model?.hasOverdueRequirements)
-        assertEquals("", result.model?.statementDescriptor)
+        assertTrue(result.model?.statementDescriptor.isNullOrEmpty())
         assertEquals("US", result.model?.country)
         assertEquals("usd", result.model?.storeCurrencies?.default)
         assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)

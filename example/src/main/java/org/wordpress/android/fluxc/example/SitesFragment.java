@@ -167,8 +167,15 @@ public class SitesFragment extends Fragment {
     }
 
     private void newSiteAction(String name) {
-        // Default language "en" (english)
-        NewSitePayload newSitePayload = new NewSitePayload(name, "en", SiteVisibility.PUBLIC, true);
+        String defaultLanguage = "en";
+        String defaultTimeZoneId = "Europe/London";
+
+        NewSitePayload newSitePayload = new NewSitePayload(
+                name,
+                defaultLanguage,
+                defaultTimeZoneId,
+                SiteVisibility.PUBLIC,
+                true);
         mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
     }
 
