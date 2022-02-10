@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 
@@ -104,7 +104,7 @@ class OrdersDaoTest {
         fun generateSampleOrder(
             orderId: Long,
             orderStatus: String = CoreOrderStatus.PROCESSING.value
-        ) = WCOrderModel(
+        ) = OrderEntity(
                 orderId = orderId,
                 localSiteId = LocalId(TEST_LOCAL_SITE_ID),
                 status = orderStatus

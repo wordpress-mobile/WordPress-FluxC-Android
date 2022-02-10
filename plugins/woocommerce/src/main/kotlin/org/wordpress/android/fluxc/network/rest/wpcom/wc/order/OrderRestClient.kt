@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -314,7 +314,7 @@ class OrderRestClient @Inject constructor(
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        WCOrderModel(
+                        OrderEntity(
                                 orderId = orderId,
                                 localSiteId = site.localId()
                         ),
@@ -325,7 +325,7 @@ class OrderRestClient @Inject constructor(
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
                         orderError,
-                        WCOrderModel(
+                        OrderEntity(
                                 orderId = orderId,
                                 localSiteId = site.localId()
                         ),
@@ -422,7 +422,7 @@ class OrderRestClient @Inject constructor(
      * updating the order.
      */
     private suspend fun updateOrder(
-        orderToUpdate: WCOrderModel,
+        orderToUpdate: OrderEntity,
         site: SiteModel,
         updatePayload: Map<String, Any>
     ): RemoteOrderPayload {
@@ -458,20 +458,20 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(orderToUpdate: WCOrderModel, site: SiteModel, status: String) =
+    suspend fun updateOrderStatus(orderToUpdate: OrderEntity, site: SiteModel, status: String) =
             updateOrder(orderToUpdate, site, mapOf("status" to status))
 
-    suspend fun updateCustomerOrderNote(orderToUpdate: WCOrderModel, site: SiteModel, newNotes: String) =
+    suspend fun updateCustomerOrderNote(orderToUpdate: OrderEntity, site: SiteModel, newNotes: String) =
             updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
 
-    suspend fun updateBillingAddress(orderToUpdate: WCOrderModel, site: SiteModel, billing: Billing) =
+    suspend fun updateBillingAddress(orderToUpdate: OrderEntity, site: SiteModel, billing: Billing) =
             updateOrder(orderToUpdate, site, mapOf("billing" to billing))
 
-    suspend fun updateShippingAddress(orderToUpdate: WCOrderModel, site: SiteModel, shipping: Shipping) =
+    suspend fun updateShippingAddress(orderToUpdate: OrderEntity, site: SiteModel, shipping: Shipping) =
             updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
     suspend fun updateBothOrderAddresses(
-        orderToUpdate: WCOrderModel,
+        orderToUpdate: OrderEntity,
         site: SiteModel,
         shipping: Shipping,
         billing: Billing
@@ -508,7 +508,7 @@ class OrderRestClient @Inject constructor(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                         // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
                         // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), orderId = -1),
+                        OrderEntity(localSiteId = LocalId(-1), orderId = -1),
                         site
                 )
             }
@@ -518,7 +518,7 @@ class OrderRestClient @Inject constructor(
                         orderError,
                         // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
                         // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), orderId = -1),
+                        OrderEntity(localSiteId = LocalId(-1), orderId = -1),
                         site
                 )
             }
@@ -527,7 +527,7 @@ class OrderRestClient @Inject constructor(
 
     /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
+     * retrieving a list of notes for the given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun fetchOrderNotes(
         orderId: Long,
@@ -560,7 +560,7 @@ class OrderRestClient @Inject constructor(
 
     /**
      * Makes a POST call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * saving the provide4d note for the given WooCommerce [SiteModel] and [WCOrderModel].
+     * saving the provide4d note for the given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun postOrderNote(
         orderId: Long,
@@ -606,7 +606,7 @@ class OrderRestClient @Inject constructor(
 
     /**
      * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [WCOrderModel].
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [OrderEntity].
      *
      * Note: This is not currently supported in v3, but will be in the short future.
      *
@@ -762,7 +762,7 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun fetchOrderShipmentProviders(
         site: SiteModel,
-        order: WCOrderModel
+        order: OrderEntity
     ): FetchOrderShipmentProvidersResponsePayload {
         val url = WOOCOMMERCE.orders.id(order.orderId).shipment_trackings.providers.pathV2
         val params = emptyMap<String, String>()
@@ -807,7 +807,7 @@ class OrderRestClient @Inject constructor(
     suspend fun createOrder(
         site: SiteModel,
         request: UpdateOrderRequest
-    ): WooPayload<WCOrderModel> {
+    ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.pathV3
         val params = request.toNetworkRequest()
 
@@ -837,7 +837,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         orderId: Long,
         request: UpdateOrderRequest
-    ): WooPayload<WCOrderModel> {
+    ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = request.toNetworkRequest()
 

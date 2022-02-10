@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Add
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.Mode.Edit
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
@@ -29,7 +29,7 @@ class AddressEditDialogFragment : DaggerFragment() {
         // These instantiations won't work with screen rotation or process death scenarios.
         // They are just for the sake of simplification of the example
         @JvmStatic
-        fun newInstanceForEditing(order: WCOrderModel): AddressEditDialogFragment =
+        fun newInstanceForEditing(order: OrderEntity): AddressEditDialogFragment =
                 AddressEditDialogFragment().apply {
                     this.selectedOrder = order
                     this.mode = Edit
@@ -38,7 +38,7 @@ class AddressEditDialogFragment : DaggerFragment() {
         @JvmStatic
         fun newInstanceForCreation(addressType: AddressType, listener: (OrderAddress) -> Unit):
                 AddressEditDialogFragment = AddressEditDialogFragment().apply {
-            this.selectedOrder = WCOrderModel(localSiteId = LocalId(-1), orderId = -1)
+            this.selectedOrder = OrderEntity(localSiteId = LocalId(-1), orderId = -1)
             this.mode = Add
             this.addressListener = listener
             this.currentAddressType.value = addressType
@@ -57,7 +57,7 @@ class AddressEditDialogFragment : DaggerFragment() {
     private lateinit var mode: Mode
     private var currentAddressType = MutableStateFlow(SHIPPING)
 
-    private lateinit var selectedOrder: WCOrderModel
+    private lateinit var selectedOrder: OrderEntity
     private var originalBillingEmail = ""
 
     private var addressListener: ((OrderAddress) -> Unit)? = null

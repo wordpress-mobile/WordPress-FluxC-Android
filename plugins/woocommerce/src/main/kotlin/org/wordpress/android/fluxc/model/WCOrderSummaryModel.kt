@@ -12,7 +12,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
  * Class represents the bare minimum fields needed to determine if an order is outdated and
  * needs to be fetched. It's also important to store this information in the database so it
  * can be used by the order list's implementation of [ListItemDataSourceInterface] to create a list
- * of existing orders in the [WCOrderModel] table, as well as a list of orders being fetched by the
+ * of existing orders in the [OrderEntity] table, as well as a list of orders being fetched by the
  * API because they do not yet exist. Normally we wouldn't need this extra step to work with the
  * [org.wordpress.android.fluxc.store.ListStore], but since we need the `dateCreated` field to group the
  * orders into time-based groups, this extra table is necessary.

@@ -15,7 +15,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
@@ -524,7 +524,7 @@ class OrderUpdateStoreTest {
         const val SIMPLE_PAYMENT_IS_TAXABLE = true
         val SIMPLE_PAYMENT_TAX_STATUS = FeeLineTaxStatus.Taxable.value
 
-        val initialOrder = WCOrderModel(
+        val initialOrder = OrderEntity(
                 orderId = TEST_REMOTE_ORDER_ID,
                 localSiteId = TEST_LOCAL_SITE_ID,
                 customerNote = INITIAL_CUSTOMER_NOTE,

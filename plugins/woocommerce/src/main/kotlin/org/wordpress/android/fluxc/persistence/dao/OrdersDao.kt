@@ -7,27 +7,27 @@ import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 
 @Dao
 abstract class OrdersDao {
     @Query("SELECT * FROM OrderEntity")
-    abstract suspend fun getAllOrders(): List<WCOrderModel>
+    abstract suspend fun getAllOrders(): List<OrderEntity>
 
     @Insert(onConflict = REPLACE)
-    abstract fun insertOrUpdateOrder(order: WCOrderModel)
+    abstract fun insertOrUpdateOrder(order: OrderEntity)
 
     @Query("SELECT * FROM OrderEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
-    abstract suspend fun getOrder(orderId: Long, localSiteId: LocalId): WCOrderModel?
+    abstract suspend fun getOrder(orderId: Long, localSiteId: LocalId): OrderEntity?
 
     @Query("SELECT * FROM OrderEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
-    abstract fun observeOrder(orderId: Long, localSiteId: LocalId): Flow<WCOrderModel?>
+    abstract fun observeOrder(orderId: Long, localSiteId: LocalId): Flow<OrderEntity?>
 
     @Transaction
     open suspend fun updateLocalOrder(
         orderId: Long,
         localSiteId: LocalId,
-        updateOrder: WCOrderModel.() -> WCOrderModel
+        updateOrder: OrderEntity.() -> OrderEntity
     ) {
         getOrder(orderId, localSiteId)
             ?.let(updateOrder)
@@ -35,22 +35,22 @@ abstract class OrdersDao {
     }
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
-    abstract suspend fun getOrdersForSite(localSiteId: LocalId, status: List<String>): List<WCOrderModel>
+    abstract suspend fun getOrdersForSite(localSiteId: LocalId, status: List<String>): List<OrderEntity>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId")
-    abstract suspend fun getOrdersForSite(localSiteId: LocalId): List<WCOrderModel>
+    abstract suspend fun getOrdersForSite(localSiteId: LocalId): List<OrderEntity>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId")
-    abstract fun observeOrdersForSite(localSiteId: LocalId): Flow<List<WCOrderModel>>
+    abstract fun observeOrdersForSite(localSiteId: LocalId): Flow<List<OrderEntity>>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
-    abstract fun observeOrdersForSite(localSiteId: LocalId, status: List<String>): Flow<List<WCOrderModel>>
+    abstract fun observeOrdersForSite(localSiteId: LocalId, status: List<String>): Flow<List<OrderEntity>>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND orderId IN (:orderIds)")
     abstract fun getOrdersForSiteByRemoteIds(
         localSiteId: LocalId,
         orderIds: List<Long>
-    ): List<WCOrderModel>
+    ): List<OrderEntity>
 
     @Query("DELETE FROM OrderEntity WHERE localSiteId = :localSiteId")
     abstract fun deleteOrdersForSite(localSiteId: LocalId)

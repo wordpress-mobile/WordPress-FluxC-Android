@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.math.BigDecimal
@@ -57,7 +57,7 @@ class OrderDto : Response {
     val fee_lines: JsonElement? = null
     val id: Long? = null
     // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
-    // See WCOrderModel.LineItem
+    // See OrderEntity.LineItem
     val line_items: JsonElement? = null
     val number: String? = null
     val payment_method: String? = null
@@ -66,7 +66,7 @@ class OrderDto : Response {
     val refunds: List<Refund>? = null
     val shipping: Shipping? = null
     // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
-    // See WCOrderModel.ShippingLines
+    // See OrderEntity.ShippingLines
     val shipping_lines: JsonElement? = null
     val shipping_total: String? = null
     val status: String? = null
@@ -76,11 +76,11 @@ class OrderDto : Response {
     val tax_lines: JsonElement? = null
 }
 
-fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
+fun OrderDto.toDomainModel(localSiteId: LocalId): OrderEntity {
     fun convertDateToUTCString(date: String?): String =
             date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
-    return WCOrderModel(
+    return OrderEntity(
             orderId = this.id ?: 0,
             localSiteId = localSiteId,
             number = this.number ?: (this.id ?: 0).toString(),

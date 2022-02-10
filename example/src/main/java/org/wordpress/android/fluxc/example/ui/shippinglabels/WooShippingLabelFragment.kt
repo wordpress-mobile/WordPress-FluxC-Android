@@ -29,7 +29,7 @@ import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
 import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
@@ -733,7 +733,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     }
 
     private suspend fun loadData(site: SiteModel, orderId: Long):
-            Triple<WCOrderModel?, ShippingLabelAddress?, ShippingLabelAddress?> {
+            Triple<OrderEntity?, ShippingLabelAddress?, ShippingLabelAddress?> {
         prependToLog("Loading shipping data...")
 
         dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
