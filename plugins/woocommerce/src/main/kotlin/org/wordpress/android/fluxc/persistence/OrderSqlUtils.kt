@@ -83,10 +83,11 @@ object OrderSqlUtils {
         }
     }
 
-    fun getOrderNotesForOrder(orderId: Long): List<WCOrderNoteModel> =
+    fun getOrderNotesForOrder(site: SiteModel, orderId: Long): List<WCOrderNoteModel> =
             WellSql.select(WCOrderNoteModel::class.java)
                     .where()
                     .equals(WCOrderNoteModelTable.LOCAL_ORDER_ID, orderId)
+                    .equals(WCOrderNoteModelTable.LOCAL_SITE_ID, site.id)
                     .endWhere()
                     .orderBy(WCOrderNoteModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                     .asModel

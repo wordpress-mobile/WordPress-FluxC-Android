@@ -209,13 +209,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 coroutineScope.launch {
                     getFirstWCOrder()?.let { order ->
                         @Suppress("DEPRECATION_ERROR")
-                        val notesCountBeforeRequest = wcOrderStore.getOrderNotesForOrder(order.orderId).size
+                        val notesCountBeforeRequest = wcOrderStore.getOrderNotesForOrder(site, order.orderId).size
                         coroutineScope.launch {
                             @Suppress("DEPRECATION_ERROR")
                             wcOrderStore.fetchOrderNotes(order.orderId, site)
                                 .takeUnless { it.isError }
                                 ?.let {
                                     val notesCountAfterRequest = wcOrderStore.getOrderNotesForOrder(
+                                            site,
                                             order.orderId
                                     ).size
                                     prependToLog(

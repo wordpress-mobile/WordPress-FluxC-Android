@@ -220,10 +220,11 @@ class WCOrderStoreTest {
         val orderId = 949L
         val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, 6, orderId)
         val orderModel = OrderTestUtils.generateSampleOrder(1).copy(orderId = orderId)
+        val site = SiteModel().apply { id = orderModel.localSiteId.value }
         assertEquals(6, noteModels.size)
         OrderSqlUtils.insertOrIgnoreOrderNote(noteModels[0])
 
-        val retrievedNotes = orderStore.getOrderNotesForOrder(orderModel.orderId)
+        val retrievedNotes = orderStore.getOrderNotesForOrder(site, orderModel.orderId)
         assertEquals(1, retrievedNotes.size)
         assertEquals(noteModels[0], retrievedNotes[0])
     }
