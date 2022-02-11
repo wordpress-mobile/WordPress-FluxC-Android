@@ -552,17 +552,6 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }
 
-    @Test
-    fun testPostSimplePayment() = runBlocking {
-        interceptor.respondWith("wc-fetch-order-response-success.json")
-        val response = orderRestClient.postSimplePayment(siteModel, "10.00", isTaxable = true)
-
-        with(response) {
-            assertNull(error)
-            assertNotNull(order)
-        }
-    }
-
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
