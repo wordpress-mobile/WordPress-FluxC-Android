@@ -201,7 +201,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         orderStore.fetchOrderNotes(firstOrder.orderId, sSite)
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.orderId)
+        val fetchedNotes = orderStore.getOrderNotesForOrder(sSite, firstOrder.orderId)
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
@@ -219,7 +219,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         )
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.orderId)
+        val fetchedNotes = orderStore.getOrderNotesForOrder(sSite, orderModel.orderId)
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
