@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
@@ -27,7 +27,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
         AddonEntity::class,
         AddonOptionEntity::class,
         GlobalAddonGroupEntity::class,
-        WCOrderModel::class
+        OrderEntity::class
     ]
 )
 @TypeConverters(
