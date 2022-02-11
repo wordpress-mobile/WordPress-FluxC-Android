@@ -405,8 +405,8 @@ class WCOrderStore @Inject constructor(
     /**
      * Returns the notes belonging to supplied [OrderEntity] as a list of [WCOrderNoteModel].
      */
-    fun getOrderNotesForOrder(orderId: Long): List<WCOrderNoteModel> =
-        OrderSqlUtils.getOrderNotesForOrder(orderId)
+    fun getOrderNotesForOrder(site: SiteModel, orderId: Long): List<WCOrderNoteModel> =
+        OrderSqlUtils.getOrderNotesForOrder(site, orderId)
 
     /**
      * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
