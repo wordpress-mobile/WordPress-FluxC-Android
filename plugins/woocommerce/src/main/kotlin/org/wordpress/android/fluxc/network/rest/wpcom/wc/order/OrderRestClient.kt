@@ -104,7 +104,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
+                        orderDto.toDatabaseEntity(site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
@@ -204,7 +204,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
+                        orderDto.toDatabaseEntity(site.localId())
                     }.orEmpty()
 
                     val payload = FetchOrdersByIdsResponsePayload(
@@ -274,7 +274,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
+                        orderDto.toDatabaseEntity(site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
@@ -311,7 +311,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    val newModel = orderDto.toDomainModel(site.localId())
+                    val newModel = orderDto.toDatabaseEntity(site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
@@ -440,7 +440,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    val newModel = orderDto.toDomainModel(orderToUpdate.localSiteId).copy(
+                    val newModel = orderDto.toDatabaseEntity(orderToUpdate.localSiteId).copy(
                             id = orderToUpdate.id
                     )
                     RemoteOrderPayload(newModel, site)
@@ -505,7 +505,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newModel = it.toDomainModel(localSiteId = site.localId())
+                    val newModel = it.toDatabaseEntity(localSiteId = site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
@@ -835,7 +835,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDto.toDomainModel(site.localId()))
+                WooPayload(orderDto.toDatabaseEntity(site.localId()))
             } ?: WooPayload(
                     error = WooError(
                             type = WooErrorType.GENERIC_ERROR,
@@ -865,7 +865,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDto.toDomainModel(site.localId()))
+                WooPayload(orderDto.toDatabaseEntity(site.localId()))
             } ?: WooPayload(
                     error = WooError(
                             type = WooErrorType.GENERIC_ERROR,

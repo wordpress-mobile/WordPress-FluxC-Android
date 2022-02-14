@@ -1,9 +1,11 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.math.BigDecimal
@@ -77,11 +79,11 @@ class OrderDto : Response {
     val tax_lines: JsonElement? = null
 }
 
-fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
+fun OrderDto.toDatabaseEntity(localSiteId: LocalId): WCOrderModel {
     fun convertDateToUTCString(date: String?): String =
             date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
-    return WCOrderModel(
+    val rawRemoteDataEntity = WCOrderModel(
             remoteOrderId = RemoteId(this.id ?: 0),
             localSiteId = localSiteId,
             number = this.number ?: (this.id ?: 0).toString(),
@@ -135,4 +137,25 @@ fun OrderDto.toDomainModel(localSiteId: LocalId): WCOrderModel {
             taxLines = this.tax_lines.toString(),
             metaData = this.meta_data.toString()
     )
+
+    val gson = Gson()
+
+    val slimmedDownEntity = rawRemoteDataEntity.copy(
+            lineItems = gson.toJson(rawRemoteDataEntity.getLineItemList().map { rawLineItem ->
+                rawLineItem.copy(
+                        metaData = rawLineItem.metaData?.filter { singleMetaData ->
+                            singleMetaData.key.startsWith("_").not()
+                        }
+                )
+            }),
+            shippingLines = gson.toJson(rawRemoteDataEntity.getShippingLineList()),
+            feeLines = gson.toJson(rawRemoteDataEntity.getFeeLineList()),
+            taxLines = gson.toJson(rawRemoteDataEntity.getTaxLineList()),
+            metaData = gson.toJson(
+                    rawRemoteDataEntity.getMetaDataList()
+                            .filter { it.key == WCProductModel.ADDONS_METADATA_KEY }
+            )
+    )
+
+    return slimmedDownEntity
 }
