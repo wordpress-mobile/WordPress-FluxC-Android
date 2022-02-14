@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.store
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -118,6 +120,17 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    /**
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
+     */
+    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<WCOrderModel> {
+        val createOrderRequest = UpdateOrderRequest(
+                feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+        )
+        return createOrder(site, createOrderRequest)
+    }
+
     suspend fun updateSimplePayment(
         site: SiteModel,
         orderId: Long,
@@ -143,7 +156,7 @@ class OrderUpdateStore @Inject internal constructor(
                     copy(
                         customerNote = customerNote,
                         billingEmail = billingEmail,
-                        feeLines = OrderRestClient.generateSimplePaymentFeeLineJson(amount, isTaxable, feeId).toString()
+                        feeLines = generateSimplePaymentFeeLineJson(amount, isTaxable, feeId).toString()
                     )
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
@@ -198,7 +211,7 @@ class OrderUpdateStore @Inject internal constructor(
             feeId?.let {
                 feeLine.id = it
             }
-            feeLine.name = OrderRestClient.SIMPLE_PAYMENT_FEELINE_NAME
+            feeLine.name = SIMPLE_PAYMENT_FEELINE_NAME
             feeLine.total = amount
             feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
             return listOf(feeLine)
@@ -365,5 +378,24 @@ class OrderUpdateStore @Inject internal constructor(
         emit(UpdateOrderResult.OptimisticUpdateResult(
                 OnOrderChanged(orderError = OrderError(message = message))
         ))
+    }
+
+    companion object {
+        private const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
+
+        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
+            val jsonFee = JsonObject().also { json ->
+                feeId?.let {
+                    json.addProperty("id", it)
+                }
+                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
+                json.addProperty("total", amount)
+                json.addProperty(
+                        "tax_status",
+                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
+                )
+            }
+            return JsonArray().also { it.add(jsonFee) }
+        }
     }
 }
