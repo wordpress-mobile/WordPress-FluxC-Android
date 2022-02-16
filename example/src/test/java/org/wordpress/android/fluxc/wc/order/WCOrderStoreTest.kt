@@ -69,7 +69,7 @@ class WCOrderStoreTest {
                 .allowMainThreadQueries()
                 .build()
 
-        ordersDao = database.ordersDao()
+        ordersDao = database.ordersDao
 
         orderStore = WCOrderStore(Dispatcher(), orderRestClient, orderFetcher, initCoroutineEngine(), ordersDao)
 

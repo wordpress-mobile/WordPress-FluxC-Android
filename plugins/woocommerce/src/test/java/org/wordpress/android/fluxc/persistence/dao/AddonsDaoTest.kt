@@ -35,7 +35,7 @@ internal class AddonsDaoTest {
         database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
                 .allowMainThreadQueries()
                 .build()
-        sut = database.addonsDao()
+        sut = database.addonsDao
     }
 
     @Test
