@@ -145,3 +145,186 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
         database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL DEFAULT ''")
     }
 }
+
+internal val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `Coupons` (`id` INTEGER NOT NULL,
+                        `siteId` INTEGER NOT NULL,
+                        `code` TEXT,
+                        `dateCreated` TEXT,
+                        `dateCreatedGmt` TEXT,
+                        `dateModified` TEXT,
+                        `dateModifiedGmt` TEXT,
+                        `discountType` TEXT,
+                        `description` TEXT,
+                        `dateExpires` TEXT,
+                        `dateExpiresGmt` TEXT,
+                        `usageCount` INTEGER,
+                        `isForIndividualUse` INTEGER,
+                        `usageLimit` INTEGER,
+                        `usageLimitPerUser` INTEGER,
+                        `limitUsageToXItems` INTEGER,
+                        `isShippingFree` INTEGER,
+                        `areSaleItemsExcluded` INTEGER,
+                        `minimumAmount` TEXT,
+                        `maximumAmount` TEXT,
+                        PRIMARY KEY(`id`,`siteId`))
+                        """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `Products` (
+                    `id` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT,
+                    `slug` TEXT,
+                    `permalink` TEXT,
+                    `dateCreated` TEXT,
+                    `dateModified` TEXT,
+                    `type` TEXT,
+                    `status` TEXT,
+                    `isFeatured` INTEGER,
+                    `catalogVisibility` TEXT,
+                    `description` TEXT,
+                    `shortDescription` TEXT,
+                    `sku` TEXT,
+                    `price` TEXT,
+                    `regularPrice` TEXT,
+                    `salePrice` TEXT,
+                    `isOnSale` INTEGER,
+                    `totalSales` INTEGER,
+                    `isPurchasable` INTEGER,
+                    `dateOnSaleFrom` TEXT,
+                    `dateOnSaleTo` TEXT,
+                    `dateOnSaleFromGmt` TEXT,
+                    `dateOnSaleToGmt` TEXT,
+                    `isVirtual` INTEGER,
+                    `isDownloadable` INTEGER,
+                    `downloadLimit` INTEGER,
+                    `downloadExpiry` INTEGER,
+                    `isSoldIndividually` INTEGER,
+                    `externalUrl` TEXT,
+                    `buttonText` TEXT,
+                    `taxStatus` TEXT,
+                    `taxClass` TEXT,
+                    `isStockManaged` INTEGER,
+                    `stockQuantity` REAL,
+                    `stockStatus` TEXT,
+                    `backorders` TEXT,
+                    `areBackordersAllowed` INTEGER,
+                    `isBackordered` INTEGER,
+                    `isShippingRequired` INTEGER,
+                    `isShippingTaxable` INTEGER,
+                    `shippingClass` TEXT,
+                    `shippingClassId` INTEGER,
+                    `areReviewsAllowed` INTEGER,
+                    `averageRating` TEXT,
+                    `ratingCount` INTEGER,
+                    `parentId` INTEGER,
+                    `purchaseNote` TEXT,
+                    `menuOrder` INTEGER,
+                    PRIMARY KEY(`id`,`siteId`))
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `ProductCategories` (
+                `id` INTEGER NOT NULL,
+                `siteId` INTEGER NOT NULL,
+                `parentId` INTEGER,
+                `name` TEXT,
+                `slug` TEXT,
+                PRIMARY KEY(`id`,`siteId`))
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `CouponEmails` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                    `couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL,
+                    `email` TEXT NOT NULL,
+                    FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) 
+                    ON UPDATE NO ACTION ON DELETE CASCADE )
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `CouponsAndProducts` (`couponId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `productId` INTEGER NOT NULL,
+                    `isExcluded` INTEGER NOT NULL,
+                    PRIMARY KEY(`couponId`,`productId`),
+                    FOREIGN KEY(`couponId`,`siteId`) 
+                    REFERENCES `Coupons`(`id`,`siteId`) 
+                    ON UPDATE NO ACTION ON DELETE CASCADE ,
+                    FOREIGN KEY(`productId`,`siteId`) 
+                    REFERENCES `Products`(`id`,`siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `CouponsAndProductCategories` (
+                    `couponId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `productCategoryId` INTEGER NOT NULL,
+                    `isExcluded` INTEGER NOT NULL,
+                    PRIMARY KEY(`couponId`, `productCategoryId`),
+                    FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) 
+                    ON UPDATE NO ACTION ON DELETE CASCADE ,
+                    FOREIGN KEY(`productCategoryId`, `siteId`) 
+                    REFERENCES `ProductCategories`(`id`, `siteId`) 
+                    ON UPDATE NO ACTION ON DELETE CASCADE )
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_Coupons_id_siteId` ON `Coupons` (`id`, `siteId`);
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId` 
+                    ON `CouponEmails` (`couponId`, `siteId`)
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_couponId_siteId` 
+                    ON `CouponsAndProducts` (`couponId`, `siteId`)
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_productId_siteId` 
+                    ON `CouponsAndProducts` (`productId`, `siteId`)
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_couponId_siteId` 
+                    ON `CouponsAndProductCategories` (`couponId`, `siteId`)
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_productCategoryId_siteId` 
+                    ON `CouponsAndProductCategories` (`productCategoryId`, `siteId`)
+                """.trimIndent()
+            )
+        }
+    }
+}

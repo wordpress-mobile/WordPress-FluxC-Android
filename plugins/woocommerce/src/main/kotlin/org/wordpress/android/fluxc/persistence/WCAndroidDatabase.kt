@@ -6,28 +6,47 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
+import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
+import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
+import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
+import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 
 @Database(
-        version = 7,
+        version = 8,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
             GlobalAddonGroupEntity::class,
-            WCOrderModel::class
-        ]
+            WCOrderModel::class,
+            CouponEntity::class,
+            CouponEmailEntity::class,
+            CouponAndProductEntity::class,
+            CouponAndProductCategoryEntity::class,
+            ProductEntity::class,
+            ProductCategoryEntity::class
+        ],
+        exportSchema = true
 )
 @TypeConverters(
         value = [
@@ -38,8 +57,11 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
         ]
 )
 abstract class WCAndroidDatabase : RoomDatabase() {
-    internal abstract fun addonsDao(): AddonsDao
-    abstract fun ordersDao(): OrdersDao
+    internal abstract val addonsDao: AddonsDao
+    internal abstract val ordersDao: OrdersDao
+    internal abstract val couponsDao: CouponsDao
+    internal abstract val productsDao: ProductsDao
+    internal abstract val productCategoriesDao: ProductCategoriesDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(
@@ -53,6 +75,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
                 .addMigrations(MIGRATION_6_7)
+                .addMigrations(MIGRATION_7_8)
                 .build()
     }
 }
