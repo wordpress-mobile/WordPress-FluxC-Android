@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.ShippingLine
+import org.wordpress.android.fluxc.model.order.TaxLine
 import java.math.BigDecimal
 import kotlin.DeprecationLevel.ERROR
 
@@ -74,6 +75,7 @@ data class WCOrderModel(
     val lineItems: String = "",
     val shippingLines: String = "",
     val feeLines: String = "",
+    val taxLines: String = "",
     val metaData: String = ""
 ) {
     companion object {
@@ -128,6 +130,14 @@ data class WCOrderModel(
     fun getFeeLineList(): List<FeeLine> {
         val responseType = object : TypeToken<List<FeeLine>>() {}.type
         return gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
+    }
+
+    /**
+     * Deserializes the JSON contained in [taxLines] into a list of [TaxLine] objects.
+     */
+    fun getTaxLineList(): List<TaxLine> {
+        val responseType = object : TypeToken<List<TaxLine>>() {}.type
+        return gson.fromJson(taxLines, responseType) as? List<TaxLine> ?: emptyList()
     }
 
     /**

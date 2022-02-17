@@ -17,7 +17,9 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -404,6 +406,109 @@ class OrderUpdateStoreTest {
         assertThat(results[1].event.error.type).isEqualTo(GENERIC_ERROR)
     }
 
+//      Simple payments
+
+    @Test
+    fun `should create simple payment with correct amount and tax status`(): Unit = runBlocking {
+        // given
+        val newOrder = initialOrder.copy(
+                feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
+                        SIMPLE_PAYMENT_AMOUNT,
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
+                ).toString()
+        )
+
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    createOrder(any(), any())
+                }.doReturn(
+                    WooPayload(newOrder)
+                )
+            }
+        }
+
+        // when
+        val result = sut.createSimplePayment(site, SIMPLE_PAYMENT_AMOUNT, SIMPLE_PAYMENT_IS_TAXABLE)
+
+        // then
+        assertThat(result.isError).isFalse()
+        assertThat(result.model).isNotNull
+        assertThat(result.model!!.getFeeLineList()).hasSize(1)
+        assertThat(result.model!!.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
+        assertThat(result.model!!.getFeeLineList()[0].taxStatus!!.value).isEqualTo(SIMPLE_PAYMENT_TAX_STATUS)
+    }
+
+    @Test
+    fun `should optimistically update simple payment`(): Unit = runBlocking {
+        // given
+        val updatedOrder = initialOrder.copy(
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
+                billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
+                feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
+                        SIMPLE_PAYMENT_AMOUNT,
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
+                ).toString()
+        )
+
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(updatedOrder)
+                )
+            }
+            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
+                    updatedOrder
+            )
+        }
+
+        // when
+        val results = sut.updateSimplePayment(
+                site = site,
+                orderId = TEST_REMOTE_ORDER_ID.value,
+                amount = SIMPLE_PAYMENT_AMOUNT,
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
+                billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
+                isTaxable = SIMPLE_PAYMENT_IS_TAXABLE
+        ).toList()
+
+        // then
+        assertThat(results).hasSize(2).containsExactly(
+                OptimisticUpdateResult(OnOrderChanged()),
+                RemoteUpdateResult(OnOrderChanged())
+        )
+        ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)?.let { order ->
+            assertThat(order.billingEmail).isEqualTo(SIMPLE_PAYMENT_BILLING_EMAIL)
+            assertThat(order.customerNote).isEqualTo(SIMPLE_PAYMENT_CUSTOMER_NOTE)
+            assertThat(order.getFeeLineList()).hasSize(1)
+            assertThat(order.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
+        }
+    }
+
+    @Test
+    fun `should delete local copy of order when delete request succeeds`(): Unit = runBlocking {
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    deleteOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(Unit)
+                )
+            }
+        }
+
+        sut.deleteOrder(
+            site = site,
+            orderId = TEST_REMOTE_ORDER_ID.value
+        )
+
+        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID.value)
+    }
+
     private companion object {
         val TEST_REMOTE_ORDER_ID = RemoteId(321L)
         val TEST_LOCAL_SITE_ID = LocalId(654)
@@ -412,6 +517,13 @@ class OrderUpdateStoreTest {
         const val INITIAL_SHIPPING_FIRST_NAME = "original shipping first name"
         const val UPDATED_SHIPPING_FIRST_NAME = "updated shipping first name"
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
+
+        const val SIMPLE_PAYMENT_FEE_ID = 1L
+        const val SIMPLE_PAYMENT_AMOUNT = "10.00"
+        const val SIMPLE_PAYMENT_CUSTOMER_NOTE = "Simple payment customer note"
+        const val SIMPLE_PAYMENT_BILLING_EMAIL = "example@example.com"
+        const val SIMPLE_PAYMENT_IS_TAXABLE = true
+        val SIMPLE_PAYMENT_TAX_STATUS = FeeLineTaxStatus.Taxable.value
 
         val initialOrder = WCOrderModel(
                 remoteOrderId = TEST_REMOTE_ORDER_ID,

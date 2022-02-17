@@ -3,12 +3,14 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.inperson.WCConnectionTokenResult
-import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.InPersonPaymentsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -75,6 +77,16 @@ class WCInPersonPaymentsStore @Inject constructor(
     ): WCTerminalStoreLocationResult {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getStoreLocationForSite") {
             restClient.getStoreLocationForSite(activePlugin, site)
+        }
+    }
+
+    suspend fun fetchPaymentCharge(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel,
+        chargeId: String
+    ): WooPayload<WCPaymentChargeApiResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchPaymentCharge") {
+            restClient.fetchPaymentCharge(activePlugin, chargeId, site)
         }
     }
 

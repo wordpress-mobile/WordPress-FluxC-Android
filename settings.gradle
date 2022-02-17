@@ -21,7 +21,6 @@ pluginManagement {
         }
         gradlePluginPortal()
         google()
-        jcenter()
     }
     resolutionStrategy {
         eachPlugin {
