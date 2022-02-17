@@ -15,6 +15,8 @@ abstract class StoreSelectingFragment : DaggerFragment() {
     protected var selectedPos: Int = -1
     protected var selectedSite: SiteModel? = null
 
+    open fun onSiteSelected(site: SiteModel) {}
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.findViewById<LinearLayout>(R.id.buttonContainer).addView(
@@ -23,6 +25,7 @@ abstract class StoreSelectingFragment : DaggerFragment() {
                     setOnClickListener {
                         showStoreSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
                             override fun onSiteSelected(site: SiteModel, pos: Int) {
+                                onSiteSelected(site)
                                 selectedSite = site
                                 selectedPos = pos
                                 buttonContainer.toggleSiteDependentButtons(true)

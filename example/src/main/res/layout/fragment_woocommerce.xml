@@ -119,6 +119,12 @@
             android:text="Customers" />
 
         <Button
+            android:id="@+id/coupons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Coupons" />
+
+        <Button
             android:id="@+id/help_support"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
