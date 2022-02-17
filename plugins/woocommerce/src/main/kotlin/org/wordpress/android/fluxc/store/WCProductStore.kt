@@ -924,6 +924,7 @@ class WCProductStore @Inject constructor(
                 }
             } else {
                 val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(result.product)
+                productsDao.insertOrUpdate(result.product.toDataModel(result.site.siteId))
 
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
@@ -966,7 +967,7 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds).result
         }?.also {
             ProductSqlUtils.insertOrUpdateProducts(it)
-            productsDao.insertProducts(it.map { product -> product.toDataModel(site.siteId) })
+            productsDao.insertOrUpdate(it.map { product -> product.toDataModel(site.siteId) })
         }
     }
 
@@ -1161,11 +1162,12 @@ class WCProductStore @Inject constructor(
             // products deleted outside of the app will persist
             if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
+                productsDao.deleteAll(payload.site.siteId)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
             onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
 
-            productsDao.insertProducts(payload.products.map { product ->
+            productsDao.insertOrUpdate(payload.products.map { product ->
                 product.toDataModel(payload.site.siteId)
             })
 
@@ -1312,6 +1314,8 @@ class WCProductStore @Inject constructor(
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
             onProductUpdated = OnProductUpdated(rowsAffected, payload.product.remoteProductId)
+
+            productsDao.insertOrUpdate(payload.product.toDataModel(payload.site.siteId))
         }
 
         onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
