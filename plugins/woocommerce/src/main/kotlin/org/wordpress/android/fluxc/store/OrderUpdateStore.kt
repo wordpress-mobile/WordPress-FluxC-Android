@@ -1,14 +1,20 @@
 package org.wordpress.android.fluxc.store
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.order.FeeLine
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
+import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
@@ -110,6 +116,153 @@ class OrderUpdateStore @Inject internal constructor(
                         shippingAddress.toDto(),
                         billingAddress.toDto()
                 ).let { emitRemoteUpdateContainingBillingAddress(it, initialOrder, billingAddress) }
+            }
+        }
+    }
+
+    /**
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
+     */
+    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<WCOrderModel> {
+        val createOrderRequest = UpdateOrderRequest(
+                feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+        )
+        return createOrder(site, createOrderRequest)
+    }
+
+    suspend fun updateSimplePayment(
+        site: SiteModel,
+        orderId: Long,
+        amount: String,
+        customerNote: String,
+        billingEmail: String,
+        isTaxable: Boolean
+    ): Flow<UpdateOrderResult> {
+        return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
+            val initialOrder = ordersDao.getOrder(RemoteId(orderId), site.localId())
+            if (initialOrder == null) {
+                emitNoEntityFound("Order with id $orderId not found")
+            } else {
+                // simple payment is assigned a single fee list item upon creation and we must re-use the
+                // existing fee id or else a new fee will be added
+                val feeId = if (initialOrder.getFeeLineList().isNotEmpty()) {
+                    initialOrder.getFeeLineList()[0].id
+                } else {
+                    null
+                }
+
+                ordersDao.updateLocalOrder(initialOrder.remoteOrderId, initialOrder.localSiteId) {
+                    copy(
+                        customerNote = customerNote,
+                        billingEmail = billingEmail,
+                        feeLines = generateSimplePaymentFeeLineJson(amount, isTaxable, feeId).toString()
+                    )
+                }
+                emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
+
+                val billing = if (billingEmail.isNotEmpty()) {
+                    Billing(
+
+                            email = billingEmail,
+                            firstName = "",
+                            lastName = "",
+                            company = "",
+                            address1 = "",
+                            address2 = "",
+                            city = "",
+                            state = "",
+                            postcode = "",
+                            country = "",
+                            phone = ""
+                    )
+                } else {
+                    null
+                }
+
+                val updateRequest = UpdateOrderRequest(
+                    customerNote = customerNote,
+                    billingAddress = billing,
+                    feeLines = generateSimplePaymentFeeLineList(amount, isTaxable, feeId)
+                )
+                val result = updateOrder(site, orderId, updateRequest)
+                val remoteUpdateResult = if (result.isError) {
+                    ordersDao.insertOrUpdateOrder(initialOrder)
+                    OnOrderChanged(orderError = OrderError(message = result.error.message ?: ""))
+                } else {
+                    OnOrderChanged()
+                }
+                emit(RemoteUpdateResult(remoteUpdateResult))
+            }
+        }
+    }
+
+    /**
+     * Generates the feeLines for a simple payment order containing a single fee line item with
+     * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
+     * pass the id of an existing fee line item to replace it.
+     */
+    private fun generateSimplePaymentFeeLineList(
+        amount: String,
+        isTaxable: Boolean,
+        feeId: Long? = null
+    ): List<FeeLine> {
+        FeeLine().also { feeLine ->
+            feeId?.let {
+                feeLine.id = it
+            }
+            feeLine.name = SIMPLE_PAYMENT_FEELINE_NAME
+            feeLine.total = amount
+            feeLine.taxStatus = if (isTaxable) FeeLineTaxStatus.Taxable else FeeLineTaxStatus.None
+            return listOf(feeLine)
+        }
+    }
+
+    suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<WCOrderModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                val model = result.result!!
+                ordersDao.insertOrUpdateOrder(model)
+                WooResult(model)
+            }
+        }
+    }
+
+    suspend fun updateOrder(
+        site: SiteModel,
+        orderId: Long,
+        updateRequest: UpdateOrderRequest
+    ): WooResult<WCOrderModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "updateOrder") {
+            val result = wcOrderRestClient.updateOrder(site, orderId, updateRequest)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                val model = result.result!!
+                ordersDao.insertOrUpdateOrder(model)
+                WooResult(model)
+            }
+        }
+    }
+
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        trash: Boolean = true
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteOrder") {
+            val result = wcOrderRestClient.deleteOrder(site, orderId, trash)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                ordersDao.deleteOrder(site.localId(), orderId)
+                WooResult(Unit)
             }
         }
     }
@@ -225,5 +378,24 @@ class OrderUpdateStore @Inject internal constructor(
         emit(UpdateOrderResult.OptimisticUpdateResult(
                 OnOrderChanged(orderError = OrderError(message = message))
         ))
+    }
+
+    companion object {
+        private const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
+
+        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
+            val jsonFee = JsonObject().also { json ->
+                feeId?.let {
+                    json.addProperty("id", it)
+                }
+                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
+                json.addProperty("total", amount)
+                json.addProperty(
+                        "tax_status",
+                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
+                )
+            }
+            return JsonArray().also { it.add(jsonFee) }
+        }
     }
 }

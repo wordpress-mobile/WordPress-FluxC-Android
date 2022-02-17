@@ -92,6 +92,13 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("\$10.00 fee", getFeeLineList()[0].name)
             assertEquals("2.00", getFeeLineList()[0].totalTax)
             assertEquals(28L, getFeeLineList()[0].id)
+            assertEquals(1, getTaxLineList().size)
+            assertEquals(318L, getTaxLineList()[0].id)
+            assertEquals(false, getTaxLineList()[0].compound)
+            assertEquals("1.35", getTaxLineList()[0].taxTotal)
+            assertEquals("State Tax", getTaxLineList()[0].label)
+            assertEquals("0.00", getTaxLineList()[0].shippingTaxTotal)
+            assertEquals(5.25f, getTaxLineList()[0].ratePercent)
         }
 
         // Customer note
@@ -543,17 +550,6 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNotNull(payload.error)
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
-    }
-
-    @Test
-    fun testPostSimplePayment() = runBlocking {
-        interceptor.respondWith("wc-fetch-order-response-success.json")
-        val response = orderRestClient.postSimplePayment(siteModel, "10.00", isTaxable = true)
-
-        with(response) {
-            assertNull(error)
-            assertNotNull(order)
-        }
     }
 
     @Suppress("unused")

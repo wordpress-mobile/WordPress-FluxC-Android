@@ -6,9 +6,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCHED_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -21,11 +19,8 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.CreateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDomainModel
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
@@ -338,6 +333,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    // TODO nbradbury this and related code can be removed
     data class OnQuickOrderResult(
         var order: WCOrderModel? = null
     ) : OnChanged<OrderError>()
@@ -381,8 +377,20 @@ class WCOrderStore @Inject constructor(
         ordersDao.getOrdersForSite(site.localId(), status = status.asList())
     }
 
-    fun observeOrdersForSite(siteLocalId: LocalId, statuses: List<String>) =
-            ordersDao.observeOrdersForSite(siteLocalId, statuses)
+    /**
+     * Observe the changes to orders for a given [SiteModel]
+     *
+     * @param site the current site
+     * @param statuses an optional list of statuses to filter the list of orders, pass an empty list to include all
+     *                 orders
+     */
+    fun observeOrdersForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<List<WCOrderModel>> {
+        return if (statuses.isEmpty()) {
+            ordersDao.observeOrdersForSite(site.localId())
+        } else {
+            ordersDao.observeOrdersForSite(site.localId(), statuses)
+        }
+    }
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
@@ -522,41 +530,6 @@ class WCOrderStore @Inject constructor(
             } else {
                 ordersDao.insertOrUpdateOrder(order = result.order)
                 OnOrderChanged()
-            }
-        }
-    }
-
-    /**
-     * @deprecated This function can be removed once the client is updated to use postSimplePayment
-     */
-    @Deprecated("Use postSimplePayment instead")
-    suspend fun postQuickOrder(site: SiteModel, amount: String): OnQuickOrderResult {
-        return postSimplePayment(site, amount, false)
-    }
-
-    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): OnQuickOrderResult {
-        return coroutineEngine.withDefaultContext(T.API, this, "postSimplePayment") {
-            val result = wcOrderRestClient.postSimplePayment(site, amount, isTaxable)
-
-            return@withDefaultContext if (result.isError) {
-                OnQuickOrderResult().also { it.error = result.error }
-            } else {
-                ordersDao.insertOrUpdateOrder(result.order)
-                OnQuickOrderResult(result.order)
-            }
-        }
-    }
-
-    suspend fun createOrder(site: SiteModel, createOrderRequest: CreateOrderRequest): WooResult<WCOrderModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
-            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
-
-            return@withDefaultContext if (result.isError) {
-                WooResult(result.error)
-            } else {
-                val model = result.result!!.toDomainModel(site.localId())
-                ordersDao.insertOrUpdateOrder(model)
-                WooResult(model)
             }
         }
     }

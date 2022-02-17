@@ -20,11 +20,19 @@ allprojects {
             content {
                 includeGroup "org.wordpress"
                 includeGroup "org.wordpress.fluxc"
+                includeGroup "org.wordpress.wellsql"
             }
         }
         google()
-        jcenter()
         mavenCentral()
+        maven {
+            url "https://a8c-libs.s3.amazonaws.com/android/jcenter-mirror"
+            content {
+                includeVersion "com.android.volley", "volley", "1.1.1"
+                includeVersion "com.facebook.flipper", "flipper", "0.51.0"
+                includeVersion "com.facebook.flipper", "flipper-network-plugin", "0.51.0"
+            }
+        }
     }
 
     task checkstyle(type: Checkstyle) {
@@ -63,7 +71,7 @@ subprojects {
 
 ext {
     daggerVersion = '2.29.1'
-    wellSqlVersion = '1.6.0'
+    wellSqlVersion = '1.7.0'
     supportLibraryVersion = '27.1.1'
     arch_paging_version = '1.0.1'
     arch_lifecycle_version = '1.1.1'

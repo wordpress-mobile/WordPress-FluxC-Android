@@ -43,6 +43,9 @@ abstract class OrdersDao {
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId")
     abstract suspend fun getOrdersForSite(localSiteId: LocalId): List<WCOrderModel>
 
+    @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId")
+    abstract fun observeOrdersForSite(localSiteId: LocalId): Flow<List<WCOrderModel>>
+
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
     abstract fun observeOrdersForSite(localSiteId: LocalId, status: List<String>): Flow<List<WCOrderModel>>
 
@@ -57,4 +60,7 @@ abstract class OrdersDao {
 
     @Query("SELECT COUNT(*) FROM OrderEntity WHERE localSiteId = :localSiteId")
     abstract fun getOrderCountForSite(localSiteId: LocalId): Int
+
+    @Query("DELETE FROM OrderEntity WHERE localSiteId = :localSiteId AND remoteOrderId = :orderId")
+    abstract suspend fun deleteOrder(localSiteId: LocalId, orderId: Long)
 }

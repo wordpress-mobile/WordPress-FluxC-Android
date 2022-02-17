@@ -13,8 +13,9 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentError
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationError
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
@@ -207,6 +208,30 @@ class InPersonPaymentsRestClient @Inject constructor(
                         mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
                 )
             }
+        }
+    }
+
+    suspend fun fetchPaymentCharge(
+        activePlugin: InPersonPaymentsPluginType,
+        chargeId: String,
+        site: SiteModel
+    ): WooPayload<WCPaymentChargeApiResult> {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.charges.charge(chargeId).pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.charges.charge(chargeId).pathV3
+        }
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                mapOf(),
+                WCPaymentChargeApiResult::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
