@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -30,7 +29,7 @@ class CouponRestClient @Inject constructor(
         page: Int,
         pageSize: Int
     ): WooPayload<Array<CouponDto>> {
-        val url = WOOCOMMERCE.customers.pathV3
+        val url = WOOCOMMERCE.coupons.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
@@ -51,32 +50,4 @@ class CouponRestClient @Inject constructor(
             }
         }
     }
-
-    data class CouponDto(
-        @SerializedName("id") val id: Long,
-        @SerializedName("code") val code: String,
-        @SerializedName("date_created") val dateCreated: String?,
-        @SerializedName("date_created_gmt") val dateCreatedGmt: String?,
-        @SerializedName("date_modified") val dateModified: String?,
-        @SerializedName("date_modified_gmt") val dateModifiedGmt: String?,
-        @SerializedName("discount_type") val discountType: String?,
-        @SerializedName("description") val description: String?,
-        @SerializedName("date_expires") val dateExpires: String?,
-        @SerializedName("date_expires_gmt") val dateExpiresGmt: String?,
-        @SerializedName("usage_count") val usageCount: Int?,
-        @SerializedName("individual_use") val individualUse: Boolean?,
-        @SerializedName("product_ids") val productIds: List<Long>?,
-        @SerializedName("excluded_product_ids") val excludedProductIds: List<Long>?,
-        @SerializedName("usage_limit") val usageLimit: Int?,
-        @SerializedName("usage_limit_per_user") val usageLimitPerUser: Int?,
-        @SerializedName("limit_usage_to_x_items") val limitUsageToXItems: Int?,
-        @SerializedName("free_shipping") val freeShipping: Boolean?,
-        @SerializedName("product_categories") val productCategories: List<Long>?,
-        @SerializedName("excluded_product_categories") val excludedProductCategories: List<Long>?,
-        @SerializedName("exclude_sale_items") val excludeSaleItems: Boolean?,
-        @SerializedName("minimum_amount") val minimumAmount: String?,
-        @SerializedName("maximum_amount") val maximumAmount: String?,
-        @SerializedName("email_restrictions") val emailRestrictions: List<String>?,
-        @SerializedName("used_by") val usedBy: List<Long>?
-    )
 }
