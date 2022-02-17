@@ -970,9 +970,15 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    suspend fun fetchProductCategoryListSynced(site: SiteModel, categoryIds: List<Long>): List<WCProductCategoryModel>? {
+    suspend fun fetchProductCategoryListSynced(
+        site: SiteModel,
+        categoryIds: List<Long>
+    ): List<WCProductCategoryModel>? {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductCategoryList") {
-            wcProductRestClient.fetchProductsCategoriesWithSyncRequest(site = site, remoteCategoryIds = categoryIds).result
+            wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
+                site = site,
+                remoteCategoryIds = categoryIds
+            ).result
         }?.also {
             ProductSqlUtils.insertOrUpdateProductCategories(it)
             productCategoriesDao.insertProductCategories(

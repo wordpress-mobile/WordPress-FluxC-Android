@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 
 @Dao
@@ -25,4 +24,3 @@ abstract class ProductsDao {
     @Query("SELECT * FROM Products WHERE siteId = :siteId AND id IN (:productIds) ORDER BY id")
     abstract fun getProductsByIds(siteId: Long, productIds: List<Long>): List<ProductEntity>
 }
-

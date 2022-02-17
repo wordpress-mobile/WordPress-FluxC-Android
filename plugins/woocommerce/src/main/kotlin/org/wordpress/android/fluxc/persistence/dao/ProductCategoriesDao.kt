@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
-import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 
 @Dao
 abstract class ProductCategoriesDao {

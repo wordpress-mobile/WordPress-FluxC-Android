@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import org.wordpress.android.fluxc.model.WCProductModel
 
 @Entity(
         tableName = "CouponEmails",

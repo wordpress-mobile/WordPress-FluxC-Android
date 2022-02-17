@@ -21,4 +21,3 @@ class ProductCategoryApiResponse : Response {
         }
     }
 }
-
