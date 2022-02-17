@@ -32,6 +32,9 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
+import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
+import org.wordpress.android.fluxc.persistence.dao.ProductsDao
+import org.wordpress.android.fluxc.persistence.entity.toDataModel
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
@@ -50,6 +53,8 @@ class WCProductStore @Inject constructor(
     private val wcProductRestClient: ProductRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
+    private val productsDao: ProductsDao,
+    private val productCategoriesDao: ProductCategoriesDao,
     private val logger: AppLogWrapper
 ) : Store(dispatcher) {
     companion object {
@@ -957,10 +962,22 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>): List<WCProductModel>? {
-        return coroutineEngine?.withDefaultContext(API, this, "fetchProductList") {
-            wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductList") {
+            wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds).result
         }?.also {
             ProductSqlUtils.insertOrUpdateProducts(it)
+            productsDao.insertProducts(it.map { product -> product.toDataModel(site.siteId) })
+        }
+    }
+
+    suspend fun fetchProductCategoryListSynced(site: SiteModel, categoryIds: List<Long>): List<WCProductCategoryModel>? {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductCategoryList") {
+            wcProductRestClient.fetchProductsCategoriesWithSyncRequest(site = site, remoteCategoryIds = categoryIds).result
+        }?.also {
+            ProductSqlUtils.insertOrUpdateProductCategories(it)
+            productCategoriesDao.insertProductCategories(
+                it.map { product -> product.toDataModel(site.siteId) }
+            )
         }
     }
 
@@ -1142,16 +1159,20 @@ class WCProductStore @Inject constructor(
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
             onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
 
+            productsDao.insertProducts(payload.products.map { product ->
+                product.toDataModel(payload.site.siteId)
+            })
+
             // TODO: 18/08/2021 @wzieba add tests
-            coroutineEngine?.launch(T.DB, this, "cacheProductsAddons") {
+            coroutineEngine.launch(T.DB, this, "cacheProductsAddons") {
                 payload.products.forEach { product ->
 
                     val domainAddons = mapProductAddonsToDomain(product.addons)
 
                     addonsDao.cacheProductAddons(
-                            productRemoteId = product.remoteProductId,
-                            siteRemoteId = payload.site.siteId,
-                            addons = domainAddons
+                        productRemoteId = product.remoteProductId,
+                        siteRemoteId = payload.site.siteId,
+                        addons = domainAddons
                     )
                 }
             }
@@ -1328,6 +1349,10 @@ class WCProductStore @Inject constructor(
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductCategories(payload.categories)
             onProductCategoryChanged = OnProductCategoryChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+
+            productCategoriesDao.insertProductCategories(
+                payload.categories.map { it.toDataModel(payload.site.siteId) }
+            )
         }
 
         onProductCategoryChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_CATEGORIES
@@ -1340,7 +1365,10 @@ class WCProductStore @Inject constructor(
         if (payload.isError) {
             onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
         } else {
-            val rowsAffected = payload.category?.let { ProductSqlUtils.insertOrUpdateProductCategory(it) } ?: 0
+            val rowsAffected = payload.category?.let {
+                productCategoriesDao.insertProductCategory(it.toDataModel(payload.site.siteId))
+                ProductSqlUtils.insertOrUpdateProductCategory(it)
+            } ?: 0
             onProductCategoryChanged = OnProductCategoryChanged(rowsAffected)
         }
 
