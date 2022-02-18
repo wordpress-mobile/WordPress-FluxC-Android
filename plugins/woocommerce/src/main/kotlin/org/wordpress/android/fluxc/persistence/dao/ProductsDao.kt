@@ -9,10 +9,10 @@ import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 @Dao
 abstract class ProductsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertOrUpdate(entity: ProductEntity): Long
+    abstract suspend fun insertOrUpdateProduct(entity: ProductEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertOrUpdate(entities: List<ProductEntity>)
+    abstract suspend fun insertOrUpdateProducts(entities: List<ProductEntity>)
 
     @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
         "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId ORDER BY p.id")
@@ -22,5 +22,8 @@ abstract class ProductsDao {
     abstract fun getProductsByIds(siteId: Long, productIds: List<Long>): List<ProductEntity>
 
     @Query("DELETE FROM Products WHERE siteId = :siteId")
-    abstract fun deleteAll(siteId: Long)
+    abstract suspend fun deleteAllProducts(siteId: Long)
+
+    @Query("DELETE FROM Products WHERE siteId = :siteId AND id = :productId")
+    abstract suspend fun deleteProductByProductId(siteId: Long, productId: Long)
 }

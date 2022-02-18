@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -53,7 +52,7 @@ class CouponStore @Inject constructor(
                 response.result != null -> {
                     response.result.forEach { dto ->
                         couponsDao.transaction {
-                            couponsDao.insertCoupon(dto.toDataModel(site.siteId))
+                            couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
                             insertRelatedProducts(dto, site)
                             insertRelatedProductCategories(dto, site)
                             insertRestrictedEmailAddresses(dto, site)
@@ -67,12 +66,12 @@ class CouponStore @Inject constructor(
         }
     }
 
-    private fun insertRestrictedEmailAddresses(
+    private suspend fun insertRestrictedEmailAddresses(
         dto: CouponDto,
         site: SiteModel
     ) {
         dto.restrictedEmails?.forEach { email ->
-            couponsDao.insertCouponEmail(
+            couponsDao.insertOrUpdateCouponEmail(
                 CouponEmailEntity(
                     couponId = dto.id,
                     siteId = site.siteId,
@@ -87,7 +86,7 @@ class CouponStore @Inject constructor(
         fetchMissingProductCategories(dto.excludedProductCategoryIds, site)
 
         dto.productCategoryIds?.forEach { categoryId ->
-            couponsDao.insertCouponAndProductCategory(
+            couponsDao.insertOrUpdateCouponAndProductCategory(
                 CouponAndProductCategoryEntity(
                     couponId = dto.id,
                     siteId = site.siteId,
@@ -98,7 +97,7 @@ class CouponStore @Inject constructor(
         }
 
         dto.excludedProductCategoryIds?.forEach { categoryId ->
-            couponsDao.insertCouponAndProductCategory(
+            couponsDao.insertOrUpdateCouponAndProductCategory(
                 CouponAndProductCategoryEntity(
                     couponId = dto.id,
                     siteId = site.siteId,
@@ -114,7 +113,7 @@ class CouponStore @Inject constructor(
         fetchMissingProducts(dto.excludedProductIds, site)
 
         dto.productIds?.forEach { productId ->
-            couponsDao.insertCouponAndProduct(
+            couponsDao.insertOrUpdateCouponAndProduct(
                 CouponAndProductEntity(
                     couponId = dto.id,
                     siteId = site.siteId,
@@ -125,7 +124,7 @@ class CouponStore @Inject constructor(
         }
 
         dto.excludedProductIds?.forEach { productId ->
-            couponsDao.insertCouponAndProduct(
+            couponsDao.insertOrUpdateCouponAndProduct(
                 CouponAndProductEntity(
                     couponId = dto.id,
                     siteId = site.siteId,

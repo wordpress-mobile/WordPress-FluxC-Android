@@ -19,16 +19,18 @@ abstract class CouponsDao {
     abstract fun observeCoupons(siteId: Long): Flow<List<CouponWithEmails>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertCoupon(entity: CouponEntity): Long
+    abstract suspend fun insertOrUpdateCoupon(entity: CouponEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertCouponAndProductCategory(entity: CouponAndProductCategoryEntity): Long
+    abstract suspend fun insertOrUpdateCouponAndProductCategory(
+        entity: CouponAndProductCategoryEntity
+    )
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertCouponAndProduct(entity: CouponAndProductEntity): Long
+    abstract suspend fun insertOrUpdateCouponAndProduct(entity: CouponAndProductEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertCouponEmail(entity: CouponEmailEntity): Long
+    abstract suspend fun insertOrUpdateCouponEmail(entity: CouponEmailEntity)
 
     @Transaction
     open suspend fun transaction(block: suspend () -> Unit) {
