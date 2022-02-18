@@ -22,6 +22,8 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
+import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
@@ -42,8 +44,10 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
     private val productRestClient: ProductRestClient = mock()
-    private val productsDbHelper: ProductsDbHelper = mock()
-    private val productCategoriesDbHelper: ProductCategoriesDbHelper = mock()
+    private val productsDao: ProductsDao = mock()
+    private val productsDbHelper = ProductsDbHelper(productsDao)
+    private val productCategoriesDao: ProductCategoriesDao = mock()
+    private val productCategoriesDbHelper = ProductCategoriesDbHelper(productCategoriesDao)
     private val productStore = WCProductStore(
             Dispatcher(),
             productRestClient,
