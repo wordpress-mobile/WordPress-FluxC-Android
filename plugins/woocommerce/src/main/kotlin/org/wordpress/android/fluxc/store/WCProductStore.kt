@@ -32,7 +32,6 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
-import org.wordpress.android.fluxc.persistence.entity.toDataModel
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
