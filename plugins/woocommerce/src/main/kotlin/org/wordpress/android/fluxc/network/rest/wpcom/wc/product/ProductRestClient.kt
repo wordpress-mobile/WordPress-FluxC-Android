@@ -457,7 +457,6 @@ class ProductRestClient @Inject constructor(
             Array<ProductApiResponse>::class.java
     )
 
-    @JvmName("handleResultFromProductApiResponse")
     private fun JetpackResponse<Array<ProductApiResponse>>.handleResultFrom(site: SiteModel) =
         when (this) {
             is JetpackSuccess -> {
