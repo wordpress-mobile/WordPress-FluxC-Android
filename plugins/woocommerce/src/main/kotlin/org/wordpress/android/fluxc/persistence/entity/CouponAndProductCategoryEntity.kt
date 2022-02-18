@@ -9,8 +9,8 @@ import androidx.room.Index
     foreignKeys = [
         ForeignKey(
                 entity = CouponEntity::class,
-                parentColumns = arrayOf("id", "siteId"),
-                childColumns = arrayOf("couponId", "siteId"),
+                parentColumns = ["id", "siteId"],
+                childColumns = ["couponId", "siteId"],
                 onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
