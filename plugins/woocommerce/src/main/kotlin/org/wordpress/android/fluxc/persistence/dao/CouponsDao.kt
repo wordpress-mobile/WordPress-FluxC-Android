@@ -31,9 +31,4 @@ abstract class CouponsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateCouponEmail(entity: CouponEmailEntity)
-
-    @Transaction
-    open suspend fun transaction(block: suspend () -> Unit) {
-        block()
-    }
 }

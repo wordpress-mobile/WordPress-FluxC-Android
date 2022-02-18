@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ER
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
+import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
@@ -21,6 +22,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,7 +34,8 @@ class CouponStore @Inject constructor(
     private val productsDao: ProductsDao,
     private val productCategoriesDao: ProductCategoriesDao,
     private val coroutineEngine: CoroutineEngine,
-    private val productStore: WCProductStore
+    private val productStore: WCProductStore,
+    private val database: WCAndroidDatabase
 ) {
     companion object {
         // Just get everything
@@ -51,11 +54,17 @@ class CouponStore @Inject constructor(
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     response.result.forEach { dto ->
-                        couponsDao.transaction {
-                            couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
-                            insertRelatedProducts(dto, site)
-                            insertRelatedProductCategories(dto, site)
-                            insertRestrictedEmailAddresses(dto, site)
+                        database.runInTransaction {
+                            coroutineEngine.launch(
+                                T.DB,
+                                this,
+                                "fetchCoupons DB transaction"
+                            ) {
+                                couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
+                                insertRelatedProducts(dto, site)
+                                insertRelatedProductCategories(dto, site)
+                                insertRestrictedEmailAddresses(dto, site)
+                            }
                         }
                     }
 
