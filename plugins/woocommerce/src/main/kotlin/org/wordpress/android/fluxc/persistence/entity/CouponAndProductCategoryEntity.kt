@@ -15,8 +15,8 @@ import androidx.room.Index
         ),
         ForeignKey(
                 entity = ProductCategoryEntity::class,
-                parentColumns = arrayOf("id", "siteId"),
-                childColumns = arrayOf("productCategoryId", "siteId"),
+                parentColumns = ["id", "siteId"],
+                childColumns = ["productCategoryId", "siteId"],
                 onDelete = ForeignKey.CASCADE
         )
     ],
