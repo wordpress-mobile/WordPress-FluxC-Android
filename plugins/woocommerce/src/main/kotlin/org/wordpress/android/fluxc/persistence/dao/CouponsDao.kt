@@ -18,11 +18,6 @@ abstract class CouponsDao {
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId ORDER BY id")
     abstract fun observeCoupons(siteId: Long): Flow<List<CouponWithEmails>>
 
-    @Query("SELECT * FROM CouponsAndProductCategories WHERE isExcluded = :areExcluded")
-    abstract fun getCouponProductCategories(
-        areExcluded: Boolean
-    ): List<CouponAndProductCategoryEntity>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertCoupon(entity: CouponEntity): Long
 
