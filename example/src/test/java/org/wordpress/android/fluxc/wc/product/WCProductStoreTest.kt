@@ -30,6 +30,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
+import org.wordpress.android.fluxc.utils.ProductsDbHelper
 import org.wordpress.android.fluxc.wc.utils.SiteTestUtils
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -40,12 +42,16 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
     private val productRestClient: ProductRestClient = mock()
+    private val productsDbHelper: ProductsDbHelper = mock()
+    private val productCategoriesDbHelper: ProductCategoriesDbHelper = mock()
     private val productStore = WCProductStore(
             Dispatcher(),
             productRestClient,
             addonsDao = mock(),
             logger = mock(),
-            coroutineEngine = initCoroutineEngine()
+            coroutineEngine = initCoroutineEngine(),
+            productsDbHelper = productsDbHelper,
+            productCategoriesDbHelper = productCategoriesDbHelper
     )
 
     @Before
