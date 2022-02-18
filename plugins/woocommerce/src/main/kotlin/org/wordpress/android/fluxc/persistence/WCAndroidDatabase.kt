@@ -35,14 +35,14 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
-            GlobalAddonGroupEntity::class,
-            WCOrderModel::class,
             CouponEntity::class,
             CouponEmailEntity::class,
             CouponAndProductEntity::class,
             CouponAndProductCategoryEntity::class,
+            GlobalAddonGroupEntity::class,
             ProductEntity::class,
-            ProductCategoryEntity::class
+            ProductCategoryEntity::class,
+            WCOrderModel::class
         ],
         exportSchema = true
 )
