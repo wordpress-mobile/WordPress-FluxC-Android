@@ -55,11 +55,11 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
         ]
 )
 abstract class WCAndroidDatabase : RoomDatabase() {
-    internal abstract val addonsDao: AddonsDao
-    internal abstract val ordersDao: OrdersDao
-    internal abstract val couponsDao: CouponsDao
-    internal abstract val productsDao: ProductsDao
-    internal abstract val productCategoriesDao: ProductCategoriesDao
+    abstract val addonsDao: AddonsDao
+    abstract val ordersDao: OrdersDao
+    abstract val couponsDao: CouponsDao
+    abstract val productsDao: ProductsDao
+    abstract val productCategoriesDao: ProductCategoriesDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(
