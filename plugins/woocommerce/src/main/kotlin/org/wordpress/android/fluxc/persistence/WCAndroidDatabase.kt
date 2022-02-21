@@ -43,8 +43,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
             ProductEntity::class,
             ProductCategoryEntity::class,
             WCOrderModel::class
-        ],
-        exportSchema = true
+        ]
 )
 @TypeConverters(
         value = [
