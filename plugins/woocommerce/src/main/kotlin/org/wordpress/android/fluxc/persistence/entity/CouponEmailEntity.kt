@@ -6,7 +6,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-        tableName = "CouponEmails",
         foreignKeys = [
             ForeignKey(
                     entity = CouponEntity::class,
@@ -15,10 +14,10 @@ import androidx.room.PrimaryKey
                     onDelete = ForeignKey.CASCADE
             )
         ],
-        indices = [Index("couponId", "siteId")]
+        primaryKeys = ["couponId", "siteId", "email"],
+        indices = [Index("couponId", "siteId", "email")]
 )
 data class CouponEmailEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val couponId: Long,
     val siteId: Long,
     val email: String

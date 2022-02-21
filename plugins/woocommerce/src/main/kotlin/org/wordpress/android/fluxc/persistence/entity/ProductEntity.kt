@@ -4,7 +4,6 @@ import androidx.room.Entity
 import org.wordpress.android.fluxc.model.WCProductModel
 
 @Entity(
-    tableName = "Products",
     primaryKeys = ["id", "siteId"]
 )
 data class ProductEntity(

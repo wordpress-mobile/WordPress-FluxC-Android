@@ -14,16 +14,16 @@ abstract class ProductsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateProducts(entities: List<ProductEntity>)
 
-    @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
+    @Query("SELECT * FROM ProductEntity p JOIN CouponAndProductEntity c ON p.id = c.productId " +
         "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId ORDER BY p.id")
     abstract fun getCouponProducts(couponId: Long, areExcluded: Boolean): List<ProductEntity>
 
-    @Query("SELECT * FROM Products WHERE siteId = :siteId AND id IN (:productIds) ORDER BY id")
+    @Query("SELECT * FROM ProductEntity WHERE siteId = :siteId AND id IN (:productIds) ORDER BY id")
     abstract fun getProductsByIds(siteId: Long, productIds: List<Long>): List<ProductEntity>
 
-    @Query("DELETE FROM Products WHERE siteId = :siteId")
+    @Query("DELETE FROM ProductEntity WHERE siteId = :siteId")
     abstract suspend fun deleteAllProducts(siteId: Long)
 
-    @Query("DELETE FROM Products WHERE siteId = :siteId AND id = :productId")
+    @Query("DELETE FROM ProductEntity WHERE siteId = :siteId AND id = :productId")
     abstract suspend fun deleteProductByProductId(siteId: Long, productId: Long)
 }
