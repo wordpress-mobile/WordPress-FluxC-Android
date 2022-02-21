@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -181,14 +180,10 @@ class CouponStore @Inject constructor(
         if (!productIds.isNullOrEmpty()) {
             val products = productsDao.getProductsByIds(site.siteId, productIds).map { it.id }
 
-            Log.d("COUPONS", "Found products in DB: ${products.size}")
-
             // find missing products
             val missingIds = productIds - products
             if (missingIds.isNotEmpty()) {
-                productStore.fetchProductListSynced(site, missingIds)?.let { missingProducts ->
-                    Log.d("COUPONS", "Fetched missing products: ${missingProducts.size}")
-                }
+                productStore.fetchProductListSynced(site, missingIds)
             }
         }
     }
@@ -200,14 +195,10 @@ class CouponStore @Inject constructor(
                 categoryIds
             ).map { it.id }
 
-            Log.d("COUPONS", "Found categories in DB: ${categories.size}")
-
             // find missing product categories
             val missingIds = categoryIds - categories
             if (missingIds.isNotEmpty()) {
-                productStore.fetchProductCategoryListSynced(site, missingIds)?.let { missingCategories ->
-                    Log.d("COUPONS", "Fetched missing categories: ${missingCategories.size}")
-                }
+                productStore.fetchProductCategoryListSynced(site, missingIds)
             }
         }
     }
