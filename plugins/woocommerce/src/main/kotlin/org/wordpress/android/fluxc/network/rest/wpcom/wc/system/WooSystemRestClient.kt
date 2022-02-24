@@ -30,7 +30,7 @@ class WooSystemRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<ActivePluginsResponse> {
+    suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<WCSystemPluginResponse> {
         val url = WOOCOMMERCE.system_status.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -38,7 +38,7 @@ class WooSystemRestClient @Inject constructor(
                 site,
                 url,
                 mapOf("_fields" to "active_plugins,inactive_plugins"),
-                ActivePluginsResponse::class.java
+                WCSystemPluginResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
@@ -115,20 +115,6 @@ class WooSystemRestClient @Inject constructor(
             is JetpackSuccess -> WooPayload(response.data)
             is JetpackError -> WooPayload(response.error.toWooError())
         }
-    }
-
-    data class ActivePluginsResponse(
-        @SerializedName("active_plugins") private val activePlugins: List<SystemPluginModel>?,
-        @SerializedName("inactive_plugins") private val inactivePlugins: List<SystemPluginModel>?
-    ) {
-        val plugins: List<SystemPluginModel>
-            get() = activePlugins.orEmpty().map { it.copy(isActive = true) } + inactivePlugins.orEmpty()
-
-        data class SystemPluginModel(
-            val name: String,
-            val version: String,
-            val isActive: Boolean = false
-        )
     }
 
     data class SSRResponse(

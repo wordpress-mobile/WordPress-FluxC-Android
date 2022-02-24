@@ -484,8 +484,8 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
-     * return a new order with the tax already calculated.
+     * @Deprecated("Use OrderUpdateStore.createSimplePayment instead")
+     * This function can be dropped once WCAndroid switches to OrderUpdateStore.createSimplePayment
      */
     suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
         val params = mapOf(
@@ -873,6 +873,27 @@ class OrderRestClient @Inject constructor(
                             message = "Success response with empty data"
                     )
             )
+        }
+    }
+
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        trash: Boolean
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+                restClient = this,
+                site = site,
+                url = url,
+                clazz = Unit::class.java,
+                params = mapOf("force" to trash.not().toString())
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
         }
     }
 

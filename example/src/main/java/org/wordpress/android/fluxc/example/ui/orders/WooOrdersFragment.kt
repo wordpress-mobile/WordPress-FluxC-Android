@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.BILLING
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.SHIPPING
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.example.utils.showTwoButtonsDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -450,11 +451,11 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     coroutineScope.launch {
                         try {
                             val amount = editText.text.toString()
-                            val result = wcOrderStore.postSimplePayment(site, amount, true)
+                            val result = orderUpdateStore.createSimplePayment(site, amount, true)
                             if (result.isError) {
                                 prependToLog("Creating simple payment failed.")
                             } else {
-                                prependToLog("Created simple payment with remote ID ${result.order?.remoteOrderId}.")
+                                prependToLog("Created simple payment with remote ID ${result.model?.remoteOrderId}.")
                             }
                         } catch (e: NumberFormatException) {
                             prependToLog("Invalid amount.")
@@ -556,6 +557,41 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         prependToLog("Order creation failed, error ${result.error.type} ${result.error.message}")
                     } else {
                         prependToLog("Created order with id ${result.model!!.remoteOrderId}")
+                    }
+                }
+            }
+        }
+
+        delete_order.setOnClickListener {
+            selectedSite?.let { site ->
+                lifecycleScope.launch {
+                    val orderId = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please enter the order id",
+                        isNumeric = true
+                    )?.toLongOrNull()
+                    if (orderId == null) {
+                        prependToLog("Please enter a valid order id")
+                        return@launch
+                    }
+
+                    val shouldTrash = showTwoButtonsDialog(
+                        activity = requireActivity(),
+                        message = "Do you want to move the order to trash?"
+                    )
+
+                    val result = orderUpdateStore.deleteOrder(site, orderId, shouldTrash)
+
+                    when {
+                        result.isError -> {
+                            prependToLog("Deleting order failed, error ${result.error.type} ${result.error.message}")
+                        }
+                        shouldTrash -> {
+                            prependToLog("Order $orderId has been moved to trash")
+                        }
+                        else -> {
+                            prependToLog("Order $orderId has been deleted succesfully")
+                        }
                     }
                 }
             }
@@ -684,8 +720,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             wcOrderStore.getOrderStatusOptionsForSite(it)
         }?.map { it.label to it.statusCount }?.toMap()
         prependToLog(
-                "Fetched order status options from the api: $orderStatusOptions " +
-                        "- updated ${event.rowsAffected} in the db"
+            "Fetched order status options from the api: $orderStatusOptions " +
+                "- updated ${event.rowsAffected} in the db"
         )
     }
 

@@ -118,6 +118,17 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    /**
+     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
+     * return a new order with the tax already calculated.
+     */
+    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<WCOrderModel> {
+        val createOrderRequest = UpdateOrderRequest(
+                feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+        )
+        return createOrder(site, createOrderRequest)
+    }
+
     suspend fun updateSimplePayment(
         site: SiteModel,
         orderId: Long,
@@ -148,19 +159,24 @@ class OrderUpdateStore @Inject internal constructor(
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
 
-                val billing = Billing(
-                    email = billingEmail,
-                    firstName = "",
-                    lastName = "",
-                    company = "",
-                    address1 = "",
-                    address2 = "",
-                    city = "",
-                    state = "",
-                    postcode = "",
-                    country = "",
-                    phone = ""
-                )
+                val billing = if (billingEmail.isNotEmpty()) {
+                    Billing(
+
+                            email = billingEmail,
+                            firstName = "",
+                            lastName = "",
+                            company = "",
+                            address1 = "",
+                            address2 = "",
+                            city = "",
+                            state = "",
+                            postcode = "",
+                            country = "",
+                            phone = ""
+                    )
+                } else {
+                    null
+                }
 
                 val updateRequest = UpdateOrderRequest(
                     customerNote = customerNote,
@@ -184,7 +200,7 @@ class OrderUpdateStore @Inject internal constructor(
      * the passed information. Pass null for the feeId if this is a new fee line item, otherwise
      * pass the id of an existing fee line item to replace it.
      */
-    private fun generateSimplePaymentFeeLineList(
+    fun generateSimplePaymentFeeLineList(
         amount: String,
         isTaxable: Boolean,
         feeId: Long? = null
@@ -219,7 +235,7 @@ class OrderUpdateStore @Inject internal constructor(
         orderId: Long,
         updateRequest: UpdateOrderRequest
     ): WooResult<WCOrderModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+        return coroutineEngine.withDefaultContext(T.API, this, "updateOrder") {
             val result = wcOrderRestClient.updateOrder(site, orderId, updateRequest)
 
             return@withDefaultContext if (result.isError) {
@@ -228,6 +244,23 @@ class OrderUpdateStore @Inject internal constructor(
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
                 WooResult(model)
+            }
+        }
+    }
+
+    suspend fun deleteOrder(
+        site: SiteModel,
+        orderId: Long,
+        trash: Boolean = true
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteOrder") {
+            val result = wcOrderRestClient.deleteOrder(site, orderId, trash)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                ordersDao.deleteOrder(site.localId(), orderId)
+                WooResult(Unit)
             }
         }
     }
