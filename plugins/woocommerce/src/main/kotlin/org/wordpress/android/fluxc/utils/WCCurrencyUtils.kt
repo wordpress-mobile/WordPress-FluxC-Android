@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.Currency
 import java.util.Locale
 
@@ -13,12 +14,15 @@ object WCCurrencyUtils {
      *
      * Currency symbol and placement are not handled.
      */
-    fun formatCurrencyForDisplay(rawValue: Double, siteSettings: WCSettingsModel): String {
-        val decimalFormat = if (siteSettings.currencyDecimalNumber > 0) {
-            DecimalFormat("#,##0.${"0".repeat(siteSettings.currencyDecimalNumber)}")
+    fun formatCurrencyForDisplay(rawValue: Double, siteSettings: WCSettingsModel, locale: Locale? = null): String {
+        val pattern = if (siteSettings.currencyDecimalNumber > 0) {
+            "#,##0.${"0".repeat(siteSettings.currencyDecimalNumber)}"
         } else {
-            DecimalFormat("#,##0")
+            "#,##0"
         }
+
+        val decimalFormat = locale?.let { DecimalFormat(pattern, DecimalFormatSymbols(locale)) }
+                ?: DecimalFormat(pattern)
 
         decimalFormat.decimalFormatSymbols = decimalFormat.decimalFormatSymbols.apply {
             // If no decimal separator is set, keep whatever the system default is
