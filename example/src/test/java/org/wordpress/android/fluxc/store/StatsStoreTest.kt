@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.StatsStore.InsightType.COMMENTS
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWERS
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.LATEST_POST_SUMMARY
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.POSTING_ACTIVITY
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.TODAY_STATS
 import org.wordpress.android.fluxc.store.StatsStore.ManagementType
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsType.FILE_DOWNLOADS
 import org.wordpress.android.fluxc.test
@@ -136,9 +137,9 @@ class StatsStoreTest {
 
     @Test
     fun `removes type from list`() = test {
-        store.removeType(site, LATEST_POST_SUMMARY)
+        store.removeType(site, TODAY_STATS)
 
-        val addedTypes = DEFAULT_INSIGHTS - LATEST_POST_SUMMARY
+        val addedTypes = DEFAULT_INSIGHTS - TODAY_STATS
 
         // executed twice, because the first time the default list is inserted first
         verify(insightTypesSqlUtils).insertOrReplaceAddedItems(
