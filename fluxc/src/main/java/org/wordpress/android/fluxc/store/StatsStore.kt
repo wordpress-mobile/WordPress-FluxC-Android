@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.persistence.InsightTypeSqlUtils
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.ALL_TIME_STATS
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWER_TOTALS
-import org.wordpress.android.fluxc.store.StatsStore.InsightType.LATEST_POST_SUMMARY
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.TODAY_STATS
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType
@@ -34,7 +33,7 @@ import java.util.Collections
 import javax.inject.Inject
 import javax.inject.Singleton
 
-val DEFAULT_INSIGHTS = listOf(LATEST_POST_SUMMARY, TODAY_STATS, ALL_TIME_STATS, FOLLOWER_TOTALS)
+val DEFAULT_INSIGHTS = listOf(TODAY_STATS, ALL_TIME_STATS, FOLLOWER_TOTALS)
 val STATS_UNAVAILABLE_WITH_JETPACK = listOf(FILE_DOWNLOADS)
 const val INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN = "INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN"
 
