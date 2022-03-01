@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 
 @Dao
@@ -15,8 +16,22 @@ abstract class ProductsDao {
     abstract suspend fun insertOrUpdateProducts(entities: List<ProductEntity>)
 
     @Query("SELECT * FROM ProductEntity p JOIN CouponAndProductEntity c ON p.id = c.productId " +
-        "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId ORDER BY p.id")
-    abstract fun getCouponProducts(couponId: Long, areExcluded: Boolean): List<ProductEntity>
+        "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +
+        "ORDER BY p.id")
+    abstract fun getCouponProducts(
+        siteId: Long,
+        couponId: Long,
+        areExcluded: Boolean
+    ): List<ProductEntity>
+
+    @Query("SELECT * FROM ProductEntity p JOIN CouponAndProductEntity c ON p.id = c.productId " +
+        "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +
+        "ORDER BY p.id")
+    abstract fun observeCouponProducts(
+        siteId: Long,
+        couponId: Long,
+        areExcluded: Boolean
+    ): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM ProductEntity WHERE siteId = :siteId AND id IN (:productIds) ORDER BY id")
     abstract fun getProductsByIds(siteId: Long, productIds: List<Long>): List<ProductEntity>

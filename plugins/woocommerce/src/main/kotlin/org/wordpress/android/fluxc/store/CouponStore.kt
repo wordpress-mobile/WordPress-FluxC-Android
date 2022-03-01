@@ -148,18 +148,22 @@ class CouponStore @Inject constructor(
             .mapLatest { list ->
                 list.map {
                     val includedProducts = productsDao.getCouponProducts(
+                        siteId = site.siteId,
                         couponId = it.couponEntity.id,
                         areExcluded = false
                     )
                     val excludedProducts = productsDao.getCouponProducts(
+                        siteId = site.siteId,
                         couponId = it.couponEntity.id,
                         areExcluded = true
                     )
                     val includedCategories = productCategoriesDao.getCouponProductCategories(
+                        siteId = site.siteId,
                         couponId = it.couponEntity.id,
                         areExcluded = true
                     )
                     val excludedCategories = productCategoriesDao.getCouponProductCategories(
+                        siteId = site.siteId,
                         couponId = it.couponEntity.id,
                         areExcluded = false
                     )
