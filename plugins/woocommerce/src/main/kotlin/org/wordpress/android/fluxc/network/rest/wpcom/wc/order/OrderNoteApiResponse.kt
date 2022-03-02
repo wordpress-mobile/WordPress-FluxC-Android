@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
-import org.wordpress.android.fluxc.model.OrderNoteEntity
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName")

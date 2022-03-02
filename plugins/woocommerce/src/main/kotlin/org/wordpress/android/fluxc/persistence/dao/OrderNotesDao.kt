@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
-import org.wordpress.android.fluxc.model.OrderNoteEntity
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 
 @Dao
 interface OrderNotesDao {
