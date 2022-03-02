@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -280,10 +281,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         // Verify basic order fields and private, system note
         with(payload.result!![0]) {
-            assertEquals(1942, noteId)
+            assertEquals(RemoteId(1942), noteId)
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
-            assertEquals(5, localSiteId)
-            assertEquals(88, orderId)
+            assertEquals(LocalId(5), localSiteId)
+            assertEquals(RemoteId(88), orderId)
             assertEquals(
                     "Email queued: Poster Purchase Follow-Up scheduled " +
                             "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note
@@ -318,7 +319,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
-            assertEquals(OrderErrorType.INVALID_ID, error.type)
+            assertEquals(WooErrorType.INVALID_ID, error.type)
         }
     }
 
