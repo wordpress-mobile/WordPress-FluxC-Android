@@ -1,29 +1,18 @@
 package org.wordpress.android.fluxc.model
 
-import com.yarolegovich.wellsql.core.Identifiable
-import com.yarolegovich.wellsql.core.annotation.Column
-import com.yarolegovich.wellsql.core.annotation.PrimaryKey
-import com.yarolegovich.wellsql.core.annotation.Table
-import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
-@Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCOrderNoteModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    @Column var localSiteId = 0
-    @Column var localOrderId = 0 // The local db unique identifier for the parent order object
-    @Column var remoteNoteId = 0L // The unique identifier for this note on the server
-    @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column var note = ""
-    @Column var author = ""
-    @Column var isSystemNote = false // True if the note is 'system-created', else created by a site user
-        @JvmName("setIsSystemNote")
-        set
-    @Column var isCustomerNote = false // False if private, else customer-facing. Default is false
-        @JvmName("setIsCustomerNote")
-        set
-
-    override fun getId() = id
-
-    override fun setId(id: Int) {
-        this.id = id
-    }
-}
+@Entity(tableName = "OrderNoteEntity", primaryKeys = ["localSiteId", "noteId"])
+data class WCOrderNoteModel(
+    var localSiteId: LocalId,
+    var noteId: RemoteId,
+    var orderid: RemoteId,
+    @ColumnInfo(defaultValue = "") var dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    @ColumnInfo(defaultValue = "") var note: String = "",
+    @ColumnInfo(defaultValue = "") var author: String = "",
+    @ColumnInfo(defaultValue = "0") var isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
+    @ColumnInfo(defaultValue = "0") var isCustomerNote: Boolean = false// False if private, else customer-facing. Default is false
+)
