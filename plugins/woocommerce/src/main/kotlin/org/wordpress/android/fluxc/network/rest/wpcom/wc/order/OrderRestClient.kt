@@ -42,7 +42,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingRe
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -53,7 +52,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
-import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -484,11 +482,10 @@ class OrderRestClient @Inject constructor(
      * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
      */
     suspend fun fetchOrderNotes(
-        localOrderId: Int,
-        remoteOrderId: Long,
+        orderId: RemoteId,
         site: SiteModel
-    ): FetchOrderNotesResponsePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
+    ): WooPayload<List<WCOrderNoteModel>> {
+        val url = WOOCOMMERCE.orders.id(orderId.value).notes.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
             site,
@@ -499,14 +496,11 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 val noteModels = response.data?.map {
-                    it.toDataModel(site.localId(), RemoteId(remoteOrderId))
+                    it.toDataModel(site.localId(), orderId)
                 }.orEmpty()
-                FetchOrderNotesResponsePayload(localOrderId, remoteOrderId, site, noteModels)
+                WooPayload(noteModels)
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
-                FetchOrderNotesResponsePayload(orderError, site, localOrderId, remoteOrderId)
-            }
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -515,16 +509,16 @@ class OrderRestClient @Inject constructor(
      * saving the provide4d note for the given WooCommerce [SiteModel] and [WCOrderModel].
      */
     suspend fun postOrderNote(
-        localOrderId: Int,
-        remoteOrderId: Long,
+        remoteOrderId: RemoteId,
         site: SiteModel,
-        note: WCOrderNoteModel
-    ): RemoteOrderNotePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
+        note: String,
+        isCustomerNote: Boolean
+    ): WooPayload<WCOrderNoteModel> {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId.value).notes.pathV3
 
         val params = mutableMapOf(
-                "note" to note.note,
-                "customer_note" to note.isCustomerNote,
+                "note" to note,
+                "customer_note" to isCustomerNote,
                 "added_by_user" to true
         )
 
@@ -538,20 +532,17 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newNote = it.toDataModel(site.localId(), RemoteId(remoteOrderId))
-                    return RemoteOrderNotePayload(localOrderId, remoteOrderId, site, newNote)
-                } ?: RemoteOrderNotePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        localOrderId,
-                        remoteOrderId,
-                        site,
-                        note
+                    val newNote = it.toDataModel(site.localId(), remoteOrderId)
+                    return WooPayload(newNote)
+                } ?: WooPayload(
+                        WooError(
+                                type = WooErrorType.GENERIC_ERROR,
+                                original = GenericErrorType.UNKNOWN,
+                                message = "Success response with empty data"
+                        )
                 )
             }
-            is JetpackError -> {
-                val noteError = networkErrorToOrderError(response.error)
-                return RemoteOrderNotePayload(noteError, localOrderId, remoteOrderId, site, note)
-            }
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 

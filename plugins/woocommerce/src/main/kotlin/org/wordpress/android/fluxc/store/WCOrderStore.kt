@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
@@ -180,44 +181,12 @@ class WCOrderStore @Inject constructor(
         data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
     }
 
-    class FetchOrderNotesPayload(
-        var localOrderId: Int,
-        var remoteOrderId: Long,
-        var site: SiteModel
-    ) : Payload<BaseNetworkError>()
-
-    class FetchOrderNotesResponsePayload(
-        var localOrderId: Int,
-        var remoteOrderId: Long,
-        var site: SiteModel,
-        var notes: List<WCOrderNoteModel> = emptyList()
-    ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, localOrderId: Int, remoteOrderId: Long) : this(
-                localOrderId, remoteOrderId, site
-        ) { this.error = error }
-    }
-
     class PostOrderNotePayload(
-        var localOrderId: Int,
         var remoteOrderId: Long,
         val site: SiteModel,
-        val note: WCOrderNoteModel
+        val note: String,
+        val isCustomerNote: Boolean
     ) : Payload<BaseNetworkError>()
-
-    class RemoteOrderNotePayload(
-        var localOrderId: Int,
-        var remoteOrderId: Long,
-        val site: SiteModel,
-        val note: WCOrderNoteModel
-    ) : Payload<OrderError>() {
-        constructor(
-            error: OrderError,
-            localOrderId: Int,
-            remoteOrderId: Long,
-            site: SiteModel,
-            note: WCOrderNoteModel
-        ) : this(localOrderId, remoteOrderId, site, note) { this.error = error }
-    }
 
     class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
 
@@ -587,28 +556,36 @@ class WCOrderStore @Inject constructor(
         ordersDao.insertOrUpdateOrder(updatedOrder)
     }
 
-    suspend fun fetchOrderNotes(localOrderId: Int, remoteOrderId: Long, site: SiteModel): OnOrderChanged {
+    suspend fun fetchOrderNotes(
+        site: SiteModel,
+        orderId: RemoteId
+    ): WooResult<List<WCOrderNoteModel>> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderNotes") {
-            val result = wcOrderRestClient.fetchOrderNotes(localOrderId, remoteOrderId, site)
+            val result = wcOrderRestClient.fetchOrderNotes(orderId, site)
 
-            return@withDefaultContext if (result.isError) {
-                OnOrderChanged(orderError = result.error)
-            } else {
-                orderNotesDao.insertNotes(*result.notes.toTypedArray())
-                OnOrderChanged()
+            return@withDefaultContext result.let {
+                if (!it.isError) {
+                    orderNotesDao.insertNotes(*it.result!!.toTypedArray())
+                }
+                result.asWooResult()
             }
         }
     }
 
-    suspend fun postOrderNote(payload: PostOrderNotePayload): OnOrderChanged {
+    suspend fun postOrderNote(
+        site: SiteModel,
+        orderId: RemoteId,
+        note: String,
+        isCustomerNote: Boolean
+    ): WooResult<WCOrderNoteModel> {
         return coroutineEngine.withDefaultContext(T.API, this, "postOrderNote") {
-            val result = with(payload) { wcOrderRestClient.postOrderNote(localOrderId, remoteOrderId, site, note) }
+            val result = wcOrderRestClient.postOrderNote(orderId, site, note, isCustomerNote)
 
-            return@withDefaultContext if (payload.isError) {
-                OnOrderChanged(orderError = result.error)
+            return@withDefaultContext if (result.isError) {
+                result.asWooResult()
             } else {
-                orderNotesDao.insertNotes(result.note)
-                OnOrderChanged()
+                orderNotesDao.insertNotes(result.result!!)
+                result.asWooResult()
             }
         }
     }
