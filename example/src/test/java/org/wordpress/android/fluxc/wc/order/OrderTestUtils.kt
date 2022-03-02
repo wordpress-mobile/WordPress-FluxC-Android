@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiRespo
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDataModel
 import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.utils.DateUtils
 import kotlin.collections.MutableMap.MutableEntry
@@ -56,31 +57,22 @@ object OrderTestUtils {
         }
     }
 
-    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Int): List<WCOrderNoteModel> {
+    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Long): List<WCOrderNoteModel> {
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderNoteApiResponse> ?: emptyList()
         return converted.map {
-            WCOrderNoteModel().apply {
-                remoteNoteId = it.id ?: 0
-                dateCreated = "${it.date_created_gmt}Z"
-                note = it.note ?: ""
-                isCustomerNote = it.customer_note
-                localSiteId = siteId
-                localOrderId = orderId
-            }
+            it.toDataModel(localSiteId = LocalId(siteId), orderId = RemoteId(orderId))
         }
     }
 
-    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Int): WCOrderNoteModel {
-        return WCOrderNoteModel().apply {
-            localSiteId = siteId.value
-            localOrderId = orderId
-            remoteNoteId = remoteId
-            dateCreated = "1955-11-05T14:15:00Z"
-            note = "This is a test note"
-            isCustomerNote = true
-        }
-    }
+    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Int) = WCOrderNoteModel(
+        localSiteId = siteId,
+        noteId = RemoteId(0L),
+        orderId = RemoteId(remoteId),
+        dateCreated = "1955-11-05T14:15:00Z",
+        note = "This is a test note",
+        isCustomerNote = true
+    )
 
     fun getOrderStatusOptionsFromJson(json: String, siteId: Int): List<WCOrderStatusModel> {
         val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
