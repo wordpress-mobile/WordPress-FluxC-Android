@@ -10,9 +10,14 @@ data class WCOrderNoteModel(
     var localSiteId: LocalId,
     var noteId: RemoteId,
     var orderId: RemoteId,
-    @ColumnInfo(defaultValue = "") var dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @ColumnInfo(defaultValue = "") var note: String = "",
-    @ColumnInfo(defaultValue = "") var author: String = "",
-    @ColumnInfo(defaultValue = "0") var isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
-    @ColumnInfo(defaultValue = "0") var isCustomerNote: Boolean = false// False if private, else customer-facing. Default is false
+    @ColumnInfo(defaultValue = "")
+    var dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    @ColumnInfo(defaultValue = "")
+    var note: String = "",
+    @ColumnInfo(defaultValue = "")
+    var author: String = "",
+    @ColumnInfo(defaultValue = "0")
+    var isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
+    @ColumnInfo(defaultValue = "0")
+    var isCustomerNote: Boolean = false // False if private, else customer-facing. Default is false
 )
