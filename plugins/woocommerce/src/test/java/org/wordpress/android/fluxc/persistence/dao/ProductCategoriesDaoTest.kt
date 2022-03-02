@@ -54,6 +54,7 @@ class ProductCategoriesDaoTest {
         category = category.copy(name = "updated")
         productCategoriesDao.insertOrUpdateProductCategory(category)
 
+        // then
         observedProduct = productCategoriesDao
             .getProductCategoriesByIds(category.siteId, listOf(category.id))
         assertThat(observedProduct.first()).isEqualTo(category)
@@ -122,21 +123,6 @@ class ProductCategoriesDaoTest {
         assertThat(includedCategories).isEqualTo(listOf(cat1, cat2))
         assertThat(excludedCategories).isEqualTo(listOf(cat3, cat4))
     }
-
-    /*
-
-        val expectedDataModel = CouponDataModel(
-            couponEntity = coupon,
-            products = listOf(product1),
-            excludedProducts = emptyList(),
-            categories = emptyList(),
-            excludedCategories = emptyList(),
-            restrictedEmails = emptyList()
-        )
-        // then
-        assertThat(observedCouponDataModel).isEqualTo(expectedDataModel)
-     */
-
 
     companion object {
         fun generateProductCategoryEntity(

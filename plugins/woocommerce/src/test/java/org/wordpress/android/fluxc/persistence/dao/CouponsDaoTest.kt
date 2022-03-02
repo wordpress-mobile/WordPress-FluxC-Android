@@ -15,8 +15,6 @@ import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 
