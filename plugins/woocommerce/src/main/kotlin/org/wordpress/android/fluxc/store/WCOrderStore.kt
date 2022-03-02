@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
@@ -43,7 +44,8 @@ class WCOrderStore @Inject constructor(
     private val wcOrderRestClient: OrderRestClient,
     private val wcOrderFetcher: WCOrderFetcher,
     private val coroutineEngine: CoroutineEngine,
-    private val ordersDao: OrdersDao
+    private val ordersDao: OrdersDao,
+    private val orderNotesDao: OrderNotesDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
@@ -420,7 +422,10 @@ class WCOrderStore @Inject constructor(
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
      */
     fun getOrderNotesForOrder(orderId: Int): List<WCOrderNoteModel> =
-            OrderSqlUtils.getOrderNotesForOrder(orderId)
+            error("")
+
+    suspend fun getOrderNotesForOrder(site: SiteModel, orderId: RemoteId): List<WCOrderNoteModel> =
+            orderNotesDao.queryNotesOfOrder(site.localId(), orderId)
 
     /**
      * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
@@ -589,7 +594,7 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 OnOrderChanged(orderError = result.error)
             } else {
-                OrderSqlUtils.insertOrIgnoreOrderNotes(result.notes)
+                orderNotesDao.insertNotes(*result.notes.toTypedArray())
                 OnOrderChanged()
             }
         }
@@ -602,7 +607,7 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (payload.isError) {
                 OnOrderChanged(orderError = result.error)
             } else {
-                OrderSqlUtils.insertOrIgnoreOrderNote(result.note)
+                orderNotesDao.insertNotes(result.note)
                 OnOrderChanged()
             }
         }
@@ -706,7 +711,7 @@ class WCOrderStore @Inject constructor(
             // or if the user manual changed some order IDs)
             if (!payload.loadedMore) {
                 ordersDao.deleteOrdersForSite(payload.site.localId())
-                OrderSqlUtils.deleteOrderNotesForSite(payload.site)
+                orderNotesDao.deleteOrderNotesForSite(payload.site.localId())
                 OrderSqlUtils.deleteOrderShipmentTrackingsForSite(payload.site)
             }
 
