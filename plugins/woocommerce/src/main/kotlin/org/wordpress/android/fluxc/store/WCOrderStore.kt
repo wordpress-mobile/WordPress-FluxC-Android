@@ -181,13 +181,6 @@ class WCOrderStore @Inject constructor(
         data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
     }
 
-    class PostOrderNotePayload(
-        var remoteOrderId: Long,
-        val site: SiteModel,
-        val note: String,
-        val isCustomerNote: Boolean
-    ) : Payload<BaseNetworkError>()
-
     class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
 
     class FetchOrderStatusOptionsResponsePayload(
