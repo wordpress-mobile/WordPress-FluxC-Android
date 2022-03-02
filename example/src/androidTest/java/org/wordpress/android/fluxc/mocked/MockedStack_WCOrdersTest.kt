@@ -17,9 +17,9 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -271,20 +271,19 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchSuccess() = runBlocking {
         interceptor.respondWith("wc-order-notes-response-success.json")
         val payload = orderRestClient.fetchOrderNotes(
-                localOrderId = 8,
-                remoteOrderId = 88,
-                site = siteModel
+                site = siteModel,
+                orderId = RemoteId(88)
         )
 
         assertNull(payload.error)
-        assertEquals(8, payload.notes.size)
+        assertEquals(8, payload.result!!.size)
 
         // Verify basic order fields and private, system note
-        with(payload.notes[0]) {
-            assertEquals(1942, remoteNoteId)
+        with(payload.result!![0]) {
+            assertEquals(1942, noteId)
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
             assertEquals(5, localSiteId)
-            assertEquals(8, localOrderId)
+            assertEquals(88, orderId)
             assertEquals(
                     "Email queued: Poster Purchase Follow-Up scheduled " +
                             "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note
@@ -294,14 +293,14 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         // Verify private user-created note
-        with(payload.notes[6]) {
+        with(payload.result!![6]) {
             assertEquals("Interesting order!", note)
             assertFalse(isCustomerNote)
             assertFalse(isSystemNote)
         }
 
         // Verify customer-facing note
-        with(payload.notes[7]) {
+        with(payload.result!![7]) {
             assertEquals("Shipping soon!", note)
             assertTrue(isCustomerNote)
             assertFalse(isSystemNote)
@@ -312,9 +311,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchError() = runBlocking {
         interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
         val payload = orderRestClient.fetchOrderNotes(
-                localOrderId = 8,
-                remoteOrderId = 88,
-                site = siteModel
+                site = siteModel,
+                orderId = RemoteId(88)
         )
 
         with(payload) {
@@ -327,52 +325,46 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderNotePostSuccess() = runBlocking {
         val orderModel = WCOrderModel(id = 5, localSiteId = siteModel.localId(), remoteOrderId = RemoteId(0))
-        val originalNote = WCOrderNoteModel().apply {
-            localOrderId = 5
-            localSiteId = siteModel.id
-            note = "Test rest note"
-            isCustomerNote = true
-        }
 
         interceptor.respondWith("wc-order-note-post-response-success.json")
         val payload = orderRestClient.postOrderNote(
-                orderModel.id, orderModel.remoteOrderId.value, siteModel, originalNote
+                site = siteModel,
+                remoteOrderId = orderModel.remoteOrderId,
+                note = "Test rest note",
+                isCustomerNote = true
         )
 
         with(payload) {
             assertNull(error)
-            assertEquals(originalNote.note, note.note)
-            assertEquals(originalNote.isCustomerNote, note.isCustomerNote)
-            assertFalse(note.isSystemNote) // Any note created from the app should be flagged as user-created
-            assertEquals(originalNote.localOrderId, note.localOrderId)
-            assertEquals(originalNote.localSiteId, note.localSiteId)
+            assertEquals("Test rest note", result!!.note)
+            assertEquals(true, result!!.isCustomerNote)
+            assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
+            assertEquals(orderModel.remoteOrderId, result!!.orderId)
+            assertEquals(siteModel.localId(), result!!.localSiteId)
         }
     }
 
     @Test
     fun testOrderNotePostError() = runBlocking {
         val orderModel = WCOrderModel(5, siteModel.localId(), remoteOrderId = RemoteId(0))
-        val originalNote = WCOrderNoteModel().apply {
-            localOrderId = 5
-            localSiteId = siteModel.id
-            note = "Test rest note"
-            isCustomerNote = true
-        }
 
         val errorJson = JsonObject().apply {
             addProperty("error", "woocommerce_rest_shop_order_invalid_id")
             addProperty("message", "Invalid ID.")
         }
 
-        interceptor.respondWithError(errorJson, 400)
+        interceptor.respondWithError(errorJson, 404)
         val payload = orderRestClient.postOrderNote(
-                orderModel.id, orderModel.remoteOrderId.value, siteModel, originalNote
+                site = siteModel,
+                remoteOrderId = orderModel.remoteOrderId,
+                note = "Test rest note",
+                isCustomerNote = true
         )
 
         with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
-            assertEquals(OrderErrorType.INVALID_ID, error.type)
+            assertEquals(WooErrorType.INVALID_ID, error.type)
         }
     }
 
