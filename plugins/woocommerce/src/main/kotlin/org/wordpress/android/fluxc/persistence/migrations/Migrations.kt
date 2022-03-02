@@ -145,3 +145,21 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
         database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL DEFAULT ''")
     }
 }
+
+internal val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS OrderNoteEntity (
+                localSiteId INTEGER NOT NULL, 
+                noteId INTEGER NOT NULL, 
+                orderId INTEGER NOT NULL, 
+                dateCreated TEXT NOT NULL DEFAULT '', 
+                note TEXT NOT NULL DEFAULT '', 
+                author TEXT NOT NULL DEFAULT '', 
+                isSystemNote INTEGER NOT NULL DEFAULT 0, 
+                isCustomerNote INTEGER NOT NULL DEFAULT 0, 
+                PRIMARY KEY(localSiteId, noteId)
+            )
+        """.trimIndent())
+    }
+}
