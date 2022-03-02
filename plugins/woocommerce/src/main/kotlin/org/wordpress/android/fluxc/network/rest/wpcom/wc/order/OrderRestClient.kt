@@ -499,10 +499,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 val noteModels = response.data?.map {
-                    orderNoteResponseToOrderNoteModel(it).apply {
-                        localSiteId = site.id
-                        this.localOrderId = localOrderId
-                    }
+                    it.toDataModel(site.localId(), RemoteId(remoteOrderId))
                 }.orEmpty()
                 FetchOrderNotesResponsePayload(localOrderId, remoteOrderId, site, noteModels)
             }
@@ -541,10 +538,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newNote = orderNoteResponseToOrderNoteModel(it).apply {
-                        localSiteId = site.id
-                        this.localOrderId = localOrderId
-                    }
+                    val newNote = it.toDataModel(site.localId(), RemoteId(remoteOrderId))
                     return RemoteOrderNotePayload(localOrderId, remoteOrderId, site, newNote)
                 } ?: RemoteOrderNotePayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
@@ -865,17 +859,6 @@ class OrderRestClient @Inject constructor(
             remoteOrderId = response.id ?: 0
             dateCreated = convertDateToUTCString(response.dateCreatedGmt)
             dateModified = convertDateToUTCString(response.dateModifiedGmt)
-        }
-    }
-
-    private fun orderNoteResponseToOrderNoteModel(response: OrderNoteApiResponse): WCOrderNoteModel {
-        return WCOrderNoteModel().apply {
-            remoteNoteId = response.id ?: 0
-            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
-            note = response.note ?: ""
-            isSystemNote = response.author == "system" || response.author == "WooCommerce"
-            author = response.author ?: ""
-            isCustomerNote = response.customer_note
         }
     }
 

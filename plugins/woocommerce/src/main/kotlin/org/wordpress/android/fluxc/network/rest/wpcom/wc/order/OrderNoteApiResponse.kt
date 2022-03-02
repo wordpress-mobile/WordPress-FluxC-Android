@@ -1,5 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName")
@@ -12,3 +15,15 @@ class OrderNoteApiResponse : Response {
     // reference only. Default is false.
     val customer_note: Boolean = false
 }
+
+fun OrderNoteApiResponse.toDataModel(localSiteId: LocalId, orderId: RemoteId): WCOrderNoteModel =
+        WCOrderNoteModel(
+                localSiteId = localSiteId,
+                noteId = RemoteId(id ?: 0),
+                orderId = orderId,
+                dateCreated = date_created_gmt?.let { "${it}Z" } ?: "",
+                note = note ?: "",
+                isSystemNote = author == "system" || author == "WooCommerce",
+                author = author ?: "",
+                isCustomerNote = customer_note
+        )
