@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.OrderNoteEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -484,7 +484,7 @@ class OrderRestClient @Inject constructor(
     suspend fun fetchOrderNotes(
         orderId: RemoteId,
         site: SiteModel
-    ): WooPayload<List<WCOrderNoteModel>> {
+    ): WooPayload<List<OrderNoteEntity>> {
         val url = WOOCOMMERCE.orders.id(orderId.value).notes.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
@@ -513,7 +513,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         note: String,
         isCustomerNote: Boolean
-    ): WooPayload<WCOrderNoteModel> {
+    ): WooPayload<OrderNoteEntity> {
         val url = WOOCOMMERCE.orders.id(remoteOrderId.value).notes.pathV3
 
         val params = mutableMapOf(

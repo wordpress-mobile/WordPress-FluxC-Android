@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.OrderNoteEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -57,7 +57,7 @@ object OrderTestUtils {
         }
     }
 
-    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Long): List<WCOrderNoteModel> {
+    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Long): List<OrderNoteEntity> {
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderNoteApiResponse> ?: emptyList()
         return converted.map {
@@ -65,7 +65,7 @@ object OrderTestUtils {
         }
     }
 
-    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Int) = WCOrderNoteModel(
+    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Int) = OrderNoteEntity(
         localSiteId = siteId,
         noteId = RemoteId(0L),
         orderId = RemoteId(remoteId),

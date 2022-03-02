@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.OrderNoteEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -381,12 +381,12 @@ class WCOrderStore @Inject constructor(
     }
 
     /**
-     * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
+     * Returns the notes belonging to supplied [WCOrderModel] as a list of [OrderNoteEntity].
      */
-    fun getOrderNotesForOrder(orderId: Int): List<WCOrderNoteModel> =
+    fun getOrderNotesForOrder(orderId: Int): List<OrderNoteEntity> =
             error("")
 
-    suspend fun getOrderNotesForOrder(site: SiteModel, orderId: RemoteId): List<WCOrderNoteModel> =
+    suspend fun getOrderNotesForOrder(site: SiteModel, orderId: RemoteId): List<OrderNoteEntity> =
             orderNotesDao.queryNotesOfOrder(site.localId(), orderId)
 
     /**
@@ -552,7 +552,7 @@ class WCOrderStore @Inject constructor(
     suspend fun fetchOrderNotes(
         site: SiteModel,
         orderId: RemoteId
-    ): WooResult<List<WCOrderNoteModel>> {
+    ): WooResult<List<OrderNoteEntity>> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderNotes") {
             val result = wcOrderRestClient.fetchOrderNotes(orderId, site)
 
@@ -570,7 +570,7 @@ class WCOrderStore @Inject constructor(
         orderId: RemoteId,
         note: String,
         isCustomerNote: Boolean
-    ): WooResult<WCOrderNoteModel> {
+    ): WooResult<OrderNoteEntity> {
         return coroutineEngine.withDefaultContext(T.API, this, "postOrderNote") {
             val result = wcOrderRestClient.postOrderNote(orderId, site, note, isCustomerNote)
 

@@ -6,7 +6,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
 @Entity(tableName = "OrderNoteEntity", primaryKeys = ["localSiteId", "noteId"])
-data class WCOrderNoteModel(
+data class OrderNoteEntity(
     var localSiteId: LocalId,
     var noteId: RemoteId,
     var orderId: RemoteId,
