@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
+import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
@@ -43,6 +44,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 abstract class WCAndroidDatabase : RoomDatabase() {
     internal abstract fun addonsDao(): AddonsDao
     abstract fun ordersDao(): OrdersDao
+    abstract fun orderNotesDao(): OrderNotesDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(

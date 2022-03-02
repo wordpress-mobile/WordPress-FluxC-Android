@@ -21,4 +21,6 @@ class WCDatabaseModule {
     @Provides fun provideOrdersDao(database: WCAndroidDatabase): OrdersDao {
         return database.ordersDao()
     }
+
+    @Provides fun provideOrderNotesDao(database: WCAndroidDatabase) = database.orderNotesDao()
 }
