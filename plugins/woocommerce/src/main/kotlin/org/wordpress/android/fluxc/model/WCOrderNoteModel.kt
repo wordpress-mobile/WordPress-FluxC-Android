@@ -9,7 +9,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 data class WCOrderNoteModel(
     var localSiteId: LocalId,
     var noteId: RemoteId,
-    var orderid: RemoteId,
+    var orderId: RemoteId,
     @ColumnInfo(defaultValue = "") var dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
     @ColumnInfo(defaultValue = "") var note: String = "",
     @ColumnInfo(defaultValue = "") var author: String = "",
