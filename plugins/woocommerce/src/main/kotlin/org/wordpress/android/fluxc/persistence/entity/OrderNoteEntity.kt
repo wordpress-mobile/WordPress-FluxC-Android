@@ -7,17 +7,17 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
 @Entity(tableName = "OrderNoteEntity", primaryKeys = ["localSiteId", "noteId"])
 data class OrderNoteEntity(
-    var localSiteId: LocalId,
-    var noteId: RemoteId,
-    var orderId: RemoteId,
+    val localSiteId: LocalId,
+    val noteId: RemoteId,
+    val orderId: RemoteId,
     @ColumnInfo(defaultValue = "")
-    var dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    val dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
     @ColumnInfo(defaultValue = "")
-    var note: String = "",
+    val note: String = "",
     @ColumnInfo(defaultValue = "")
-    var author: String = "",
+    val author: String = "",
     @ColumnInfo(defaultValue = "0")
-    var isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
+    val isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
     @ColumnInfo(defaultValue = "0")
-    var isCustomerNote: Boolean = false // False if private, else customer-facing. Default is false
+    val isCustomerNote: Boolean = false // False if private, else customer-facing. Default is false
 )
