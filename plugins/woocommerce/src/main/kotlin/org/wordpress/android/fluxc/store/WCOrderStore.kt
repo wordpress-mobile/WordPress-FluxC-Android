@@ -383,9 +383,6 @@ class WCOrderStore @Inject constructor(
     /**
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [OrderNoteEntity].
      */
-    fun getOrderNotesForOrder(orderId: Int): List<OrderNoteEntity> =
-            error("")
-
     suspend fun getOrderNotesForOrder(site: SiteModel, orderId: RemoteId): List<OrderNoteEntity> =
             orderNotesDao.queryNotesOfOrder(site.localId(), orderId)
 
