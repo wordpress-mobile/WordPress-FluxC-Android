@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "5d9d5b8abbef48c07f2baf6a7c535f3f",
+    "identityHash": "7b16e46b71fe7c665fba76f535862ed2",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -528,11 +528,11 @@
       },
       {
         "tableName": "OrderNotes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL DEFAULT '', `note` TEXT NOT NULL DEFAULT '', `author` TEXT NOT NULL DEFAULT '', `isSystemNote` INTEGER NOT NULL DEFAULT 0, `isCustomerNote` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`localSiteId`, `noteId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL DEFAULT '', `note` TEXT NOT NULL DEFAULT '', `author` TEXT NOT NULL DEFAULT '', `isSystemNote` INTEGER NOT NULL DEFAULT 0, `isCustomerNote` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`siteId`, `noteId`))",
         "fields": [
           {
-            "fieldPath": "localSiteId",
-            "columnName": "localSiteId",
+            "fieldPath": "siteId",
+            "columnName": "siteId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -586,7 +586,7 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "localSiteId",
+            "siteId",
             "noteId"
           ],
           "autoGenerate": false
@@ -598,7 +598,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5d9d5b8abbef48c07f2baf6a7c535f3f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b16e46b71fe7c665fba76f535862ed2')"
     ]
   }
 }

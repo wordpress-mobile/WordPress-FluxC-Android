@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -283,7 +282,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload.result!![0]) {
             assertEquals(RemoteId(1942), noteId)
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
-            assertEquals(LocalId(5), localSiteId)
+            assertEquals(RemoteId(5), siteId)
             assertEquals(RemoteId(88), orderId)
             assertEquals(
                     "Email queued: Poster Purchase Follow-Up scheduled " +
@@ -341,7 +340,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(true, result!!.isCustomerNote)
             assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
             assertEquals(orderModel.remoteOrderId, result!!.orderId)
-            assertEquals(siteModel.localId(), result!!.localSiteId)
+            assertEquals(siteModel.localId(), result!!.siteId)
         }
     }
 

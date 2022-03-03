@@ -384,7 +384,7 @@ class WCOrderStore @Inject constructor(
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [OrderNoteEntity].
      */
     suspend fun getOrderNotesForOrder(site: SiteModel, orderId: RemoteId): List<OrderNoteEntity> =
-            orderNotesDao.queryNotesOfOrder(site.localId(), orderId)
+            orderNotesDao.queryNotesOfOrder(site.remoteId(), orderId)
 
     /**
      * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
@@ -678,7 +678,7 @@ class WCOrderStore @Inject constructor(
             // or if the user manual changed some order IDs)
             if (!payload.loadedMore) {
                 ordersDao.deleteOrdersForSite(payload.site.localId())
-                orderNotesDao.deleteOrderNotesForSite(payload.site.localId())
+                orderNotesDao.deleteOrderNotesForSite(payload.site.remoteId())
                 OrderSqlUtils.deleteOrderShipmentTrackingsForSite(payload.site)
             }
 

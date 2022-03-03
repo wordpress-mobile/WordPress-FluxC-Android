@@ -2,12 +2,11 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
-@Entity(tableName = "OrderNotes", primaryKeys = ["localSiteId", "noteId"])
+@Entity(tableName = "OrderNotes", primaryKeys = ["siteId", "noteId"])
 data class OrderNoteEntity(
-    val localSiteId: LocalId,
+    val siteId: RemoteId,
     val noteId: RemoteId,
     val orderId: RemoteId,
     @ColumnInfo(defaultValue = "")

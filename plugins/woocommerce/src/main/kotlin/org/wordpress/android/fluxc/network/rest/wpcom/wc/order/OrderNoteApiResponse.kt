@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.network.Response
@@ -16,9 +15,9 @@ class OrderNoteApiResponse : Response {
     val customer_note: Boolean = false
 }
 
-fun OrderNoteApiResponse.toDataModel(localSiteId: LocalId, orderId: RemoteId): OrderNoteEntity =
+fun OrderNoteApiResponse.toDataModel(siteId: RemoteId, orderId: RemoteId): OrderNoteEntity =
         OrderNoteEntity(
-                localSiteId = localSiteId,
+                siteId = siteId,
                 noteId = RemoteId(id ?: 0),
                 orderId = orderId,
                 dateCreated = date_created_gmt?.let { "${it}Z" } ?: "",
