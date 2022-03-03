@@ -149,7 +149,7 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
 internal val MIGRATION_7_8 = object : Migration(7, 8) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("""
-            CREATE TABLE IF NOT EXISTS OrderNoteEntity (
+            CREATE TABLE IF NOT EXISTS OrderNotes (
                 localSiteId INTEGER NOT NULL, 
                 noteId INTEGER NOT NULL, 
                 orderId INTEGER NOT NULL, 

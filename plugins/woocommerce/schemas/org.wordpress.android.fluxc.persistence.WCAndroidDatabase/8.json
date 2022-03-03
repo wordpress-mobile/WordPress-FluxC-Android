@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "233fcefc836e2cf7b023d58a59ed9211",
+    "identityHash": "5d9d5b8abbef48c07f2baf6a7c535f3f",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -527,7 +527,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "OrderNoteEntity",
+        "tableName": "OrderNotes",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL DEFAULT '', `note` TEXT NOT NULL DEFAULT '', `author` TEXT NOT NULL DEFAULT '', `isSystemNote` INTEGER NOT NULL DEFAULT 0, `isCustomerNote` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`localSiteId`, `noteId`))",
         "fields": [
           {
@@ -598,7 +598,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '233fcefc836e2cf7b023d58a59ed9211')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5d9d5b8abbef48c07f2baf6a7c535f3f')"
     ]
   }
 }

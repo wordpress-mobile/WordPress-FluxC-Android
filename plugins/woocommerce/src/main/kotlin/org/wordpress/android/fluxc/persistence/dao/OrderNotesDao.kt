@@ -13,9 +13,9 @@ interface OrderNotesDao {
     @Insert(onConflict = REPLACE)
     suspend fun insertNotes(vararg notes: OrderNoteEntity)
 
-    @Query("SELECT * FROM OrderNoteEntity WHERE localSiteId = :localSiteId AND orderId = :orderId")
+    @Query("SELECT * FROM OrderNotes WHERE localSiteId = :localSiteId AND orderId = :orderId")
     suspend fun queryNotesOfOrder(localSiteId: LocalId, orderId: RemoteId): List<OrderNoteEntity>
 
-    @Query("DELETE FROM OrderNoteEntity WHERE localSiteId = :localSiteId")
+    @Query("DELETE FROM OrderNotes WHERE localSiteId = :localSiteId")
     fun deleteOrderNotesForSite(localSiteId: LocalId)
 }

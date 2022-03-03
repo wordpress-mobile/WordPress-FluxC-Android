@@ -5,7 +5,7 @@ import androidx.room.Entity
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
-@Entity(tableName = "OrderNoteEntity", primaryKeys = ["localSiteId", "noteId"])
+@Entity(tableName = "OrderNotes", primaryKeys = ["localSiteId", "noteId"])
 data class OrderNoteEntity(
     val localSiteId: LocalId,
     val noteId: RemoteId,
