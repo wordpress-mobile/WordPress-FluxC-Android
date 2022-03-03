@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "7b16e46b71fe7c665fba76f535862ed2",
+    "identityHash": "483895ec92768edddcad4043881acd49",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -528,7 +528,7 @@
       },
       {
         "tableName": "OrderNotes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL DEFAULT '', `note` TEXT NOT NULL DEFAULT '', `author` TEXT NOT NULL DEFAULT '', `isSystemNote` INTEGER NOT NULL DEFAULT 0, `isCustomerNote` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`siteId`, `noteId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL DEFAULT 0, `isCustomerNote` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`siteId`, `noteId`))",
         "fields": [
           {
             "fieldPath": "siteId",
@@ -552,22 +552,19 @@
             "fieldPath": "dateCreated",
             "columnName": "dateCreated",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
+            "notNull": false
           },
           {
             "fieldPath": "note",
             "columnName": "note",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
+            "notNull": false
           },
           {
             "fieldPath": "author",
             "columnName": "author",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
+            "notNull": false
           },
           {
             "fieldPath": "isSystemNote",
@@ -598,7 +595,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b16e46b71fe7c665fba76f535862ed2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '483895ec92768edddcad4043881acd49')"
     ]
   }
 }

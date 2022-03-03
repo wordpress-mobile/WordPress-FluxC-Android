@@ -150,16 +150,15 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS OrderNotes (
-                siteId INTEGER NOT NULL, 
-                noteId INTEGER NOT NULL, 
-                orderId INTEGER NOT NULL, 
-                dateCreated TEXT NOT NULL DEFAULT '', 
-                note TEXT NOT NULL DEFAULT '', 
-                author TEXT NOT NULL DEFAULT '', 
-                isSystemNote INTEGER NOT NULL DEFAULT 0, 
-                isCustomerNote INTEGER NOT NULL DEFAULT 0, 
-                PRIMARY KEY(siteId, noteId)
-            )
+                siteId INTEGER NOT NULL,
+                noteId INTEGER NOT NULL,
+                orderId INTEGER NOT NULL,
+                dateCreated TEXT,
+                note TEXT,
+                author TEXT,
+                isSystemNote INTEGER NOT NULL DEFAULT 0,
+                isCustomerNote INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY(`siteId`, `noteId`))
         """.trimIndent())
     }
 }

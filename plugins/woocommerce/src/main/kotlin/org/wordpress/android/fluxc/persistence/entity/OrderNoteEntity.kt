@@ -9,12 +9,9 @@ data class OrderNoteEntity(
     val siteId: RemoteId,
     val noteId: RemoteId,
     val orderId: RemoteId,
-    @ColumnInfo(defaultValue = "")
-    val dateCreated: String = "", // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @ColumnInfo(defaultValue = "")
-    val note: String = "",
-    @ColumnInfo(defaultValue = "")
-    val author: String = "",
+    val dateCreated: String? = null, // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    val note: String? = null,
+    val author: String? = null,
     @ColumnInfo(defaultValue = "0")
     val isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
     @ColumnInfo(defaultValue = "0")
