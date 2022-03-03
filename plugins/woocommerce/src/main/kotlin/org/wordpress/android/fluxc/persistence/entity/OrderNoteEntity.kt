@@ -2,14 +2,17 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.persistence.converters.ISO8601DateConverter
+import java.util.Date
 
 @Entity(tableName = "OrderNotes", primaryKeys = ["siteId", "noteId"])
 data class OrderNoteEntity(
     val siteId: RemoteId,
     val noteId: RemoteId,
     val orderId: RemoteId,
-    val dateCreated: String? = null, // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    @field:TypeConverters(ISO8601DateConverter::class) val dateCreated: Date? = null,
     val note: String? = null,
     val author: String? = null,
     @ColumnInfo(defaultValue = "0")
