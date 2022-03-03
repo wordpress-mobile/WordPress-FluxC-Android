@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePa
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.util.DateTimeUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
@@ -281,7 +282,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         // Verify basic order fields and private, system note
         with(payload.result!![0]) {
             assertEquals(RemoteId(1942), noteId)
-            assertEquals("2018-04-27T20:48:10Z", dateCreated)
+            assertEquals(DateTimeUtils.dateUTCFromIso8601("2018-04-27T20:48:10Z"), dateCreated)
             assertEquals(siteModel.remoteId(), siteId)
             assertEquals(RemoteId(88), orderId)
             assertEquals(

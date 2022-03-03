@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDataModel
 import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.util.DateTimeUtils
 import kotlin.collections.MutableMap.MutableEntry
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -69,7 +70,7 @@ object OrderTestUtils {
         siteId = siteId,
         noteId = RemoteId(0L),
         orderId = RemoteId(remoteId),
-        dateCreated = "1955-11-05T14:15:00Z",
+        dateCreated = DateTimeUtils.dateUTCFromIso8601("1955-11-05T14:15:00Z"),
         note = "This is a test note",
         isCustomerNote = true
     )
