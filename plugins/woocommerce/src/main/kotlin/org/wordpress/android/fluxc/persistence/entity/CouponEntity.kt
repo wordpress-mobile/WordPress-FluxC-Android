@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.Relation
 
 @Entity(
+    tableName = "Coupons",
     primaryKeys = ["id", "siteId"],
     indices = [Index("id", "siteId")]
 )

@@ -246,11 +246,12 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `CouponEmails` (
-                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-                    `couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL,
-                    `email` TEXT NOT NULL,
-                    FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) 
-                    ON UPDATE NO ACTION ON DELETE CASCADE )
+                    `couponId` INTEGER NOT NULL, 
+                    `siteId` INTEGER NOT NULL, 
+                    `email` TEXT NOT NULL, 
+                    PRIMARY KEY(`couponId`, `siteId`, `email`), 
+                    FOREIGN KEY(`couponId`, `siteId`) 
+                    REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )
                 """.trimIndent()
             )
 
@@ -293,8 +294,8 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
 
             execSQL(
                 // language=RoomSql
-                """CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId` 
-                    ON `CouponEmails` (`couponId`, `siteId`)
+                """CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId_email` 
+                    ON `CouponEmails` (`couponId`, `siteId`, `email`)
                 """.trimIndent()
             )
 

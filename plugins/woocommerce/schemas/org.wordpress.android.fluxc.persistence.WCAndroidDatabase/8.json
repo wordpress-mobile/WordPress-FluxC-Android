@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "3dfede2a3c1810f0ce93f18791560d9d",
+    "identityHash": "03a8a325e2d03c4a6f5b63a3eacbb060",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -189,7 +189,7 @@
         ]
       },
       {
-        "tableName": "CouponEntity",
+        "tableName": "Coupons",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `code` TEXT, `dateCreated` TEXT, `dateCreatedGmt` TEXT, `dateModified` TEXT, `dateModifiedGmt` TEXT, `discountType` TEXT, `description` TEXT, `dateExpires` TEXT, `dateExpiresGmt` TEXT, `usageCount` INTEGER, `isForIndividualUse` INTEGER, `usageLimit` INTEGER, `usageLimitPerUser` INTEGER, `limitUsageToXItems` INTEGER, `isShippingFree` INTEGER, `areSaleItemsExcluded` INTEGER, `minimumAmount` TEXT, `maximumAmount` TEXT, PRIMARY KEY(`id`, `siteId`))",
         "fields": [
           {
@@ -322,20 +322,20 @@
         },
         "indices": [
           {
-            "name": "index_CouponEntity_id_siteId",
+            "name": "index_Coupons_id_siteId",
             "unique": false,
             "columnNames": [
               "id",
               "siteId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponEntity_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Coupons_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
           }
         ],
         "foreignKeys": []
       },
       {
-        "tableName": "CouponEmailEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`couponId`, `siteId`, `email`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `CouponEntity`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "CouponEmails",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`couponId`, `siteId`, `email`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "couponId",
@@ -366,19 +366,19 @@
         },
         "indices": [
           {
-            "name": "index_CouponEmailEntity_couponId_siteId_email",
+            "name": "index_CouponEmails_couponId_siteId_email",
             "unique": false,
             "columnNames": [
               "couponId",
               "siteId",
               "email"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponEmailEntity_couponId_siteId_email` ON `${TABLE_NAME}` (`couponId`, `siteId`, `email`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId_email` ON `${TABLE_NAME}` (`couponId`, `siteId`, `email`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "CouponEntity",
+            "table": "Coupons",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -393,8 +393,8 @@
         ]
       },
       {
-        "tableName": "CouponAndProductEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `productId` INTEGER NOT NULL, `isExcluded` INTEGER NOT NULL, PRIMARY KEY(`couponId`, `productId`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `CouponEntity`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productId`, `siteId`) REFERENCES `ProductEntity`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "CouponsAndProducts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `productId` INTEGER NOT NULL, `isExcluded` INTEGER NOT NULL, PRIMARY KEY(`couponId`, `productId`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productId`, `siteId`) REFERENCES `Products`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "couponId",
@@ -430,27 +430,27 @@
         },
         "indices": [
           {
-            "name": "index_CouponAndProductEntity_couponId_siteId",
+            "name": "index_CouponsAndProducts_couponId_siteId",
             "unique": false,
             "columnNames": [
               "couponId",
               "siteId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponAndProductEntity_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
           },
           {
-            "name": "index_CouponAndProductEntity_productId_siteId",
+            "name": "index_CouponsAndProducts_productId_siteId",
             "unique": false,
             "columnNames": [
               "productId",
               "siteId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponAndProductEntity_productId_siteId` ON `${TABLE_NAME}` (`productId`, `siteId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_productId_siteId` ON `${TABLE_NAME}` (`productId`, `siteId`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "CouponEntity",
+            "table": "Coupons",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -463,7 +463,7 @@
             ]
           },
           {
-            "table": "ProductEntity",
+            "table": "Products",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -478,8 +478,8 @@
         ]
       },
       {
-        "tableName": "CouponAndProductCategoryEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `productCategoryId` INTEGER NOT NULL, `isExcluded` INTEGER NOT NULL, PRIMARY KEY(`couponId`, `productCategoryId`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `CouponEntity`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productCategoryId`, `siteId`) REFERENCES `ProductCategoryEntity`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "CouponsAndProductCategories",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `productCategoryId` INTEGER NOT NULL, `isExcluded` INTEGER NOT NULL, PRIMARY KEY(`couponId`, `productCategoryId`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productCategoryId`, `siteId`) REFERENCES `ProductCategories`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "couponId",
@@ -515,27 +515,27 @@
         },
         "indices": [
           {
-            "name": "index_CouponAndProductCategoryEntity_couponId_siteId",
+            "name": "index_CouponsAndProductCategories_couponId_siteId",
             "unique": false,
             "columnNames": [
               "couponId",
               "siteId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponAndProductCategoryEntity_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
           },
           {
-            "name": "index_CouponAndProductCategoryEntity_productCategoryId_siteId",
+            "name": "index_CouponsAndProductCategories_productCategoryId_siteId",
             "unique": false,
             "columnNames": [
               "productCategoryId",
               "siteId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponAndProductCategoryEntity_productCategoryId_siteId` ON `${TABLE_NAME}` (`productCategoryId`, `siteId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_productCategoryId_siteId` ON `${TABLE_NAME}` (`productCategoryId`, `siteId`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "CouponEntity",
+            "table": "Coupons",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -548,7 +548,7 @@
             ]
           },
           {
-            "table": "ProductCategoryEntity",
+            "table": "ProductCategories",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -601,7 +601,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "ProductEntity",
+        "tableName": "Products",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT, `slug` TEXT, `permalink` TEXT, `dateCreated` TEXT, `dateModified` TEXT, `type` TEXT, `status` TEXT, `isFeatured` INTEGER, `catalogVisibility` TEXT, `description` TEXT, `shortDescription` TEXT, `sku` TEXT, `price` TEXT, `regularPrice` TEXT, `salePrice` TEXT, `isOnSale` INTEGER, `totalSales` INTEGER, `isPurchasable` INTEGER, `dateOnSaleFrom` TEXT, `dateOnSaleTo` TEXT, `dateOnSaleFromGmt` TEXT, `dateOnSaleToGmt` TEXT, `isVirtual` INTEGER, `isDownloadable` INTEGER, `downloadLimit` INTEGER, `downloadExpiry` INTEGER, `isSoldIndividually` INTEGER, `externalUrl` TEXT, `buttonText` TEXT, `taxStatus` TEXT, `taxClass` TEXT, `isStockManaged` INTEGER, `stockQuantity` REAL, `stockStatus` TEXT, `backorders` TEXT, `areBackordersAllowed` INTEGER, `isBackordered` INTEGER, `isShippingRequired` INTEGER, `isShippingTaxable` INTEGER, `shippingClass` TEXT, `shippingClassId` INTEGER, `areReviewsAllowed` INTEGER, `averageRating` TEXT, `ratingCount` INTEGER, `parentId` INTEGER, `purchaseNote` TEXT, `menuOrder` INTEGER, PRIMARY KEY(`id`, `siteId`))",
         "fields": [
           {
@@ -910,7 +910,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "ProductCategoryEntity",
+        "tableName": "ProductCategories",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `parentId` INTEGER, `name` TEXT, `slug` TEXT, PRIMARY KEY(`id`, `siteId`))",
         "fields": [
           {
@@ -1258,7 +1258,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3dfede2a3c1810f0ce93f18791560d9d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '03a8a325e2d03c4a6f5b63a3eacbb060')"
     ]
   }
 }
