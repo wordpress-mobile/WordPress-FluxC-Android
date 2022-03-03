@@ -282,7 +282,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload.result!![0]) {
             assertEquals(RemoteId(1942), noteId)
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
-            assertEquals(RemoteId(5), siteId)
+            assertEquals(siteModel.remoteId(), siteId)
             assertEquals(RemoteId(88), orderId)
             assertEquals(
                     "Email queued: Poster Purchase Follow-Up scheduled " +
