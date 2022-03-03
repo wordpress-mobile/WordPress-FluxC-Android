@@ -340,7 +340,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(true, result!!.isCustomerNote)
             assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
             assertEquals(orderModel.remoteOrderId, result!!.orderId)
-            assertEquals(siteModel.localId(), result!!.siteId)
+            assertEquals(siteModel.remoteId(), result!!.siteId)
         }
     }
 

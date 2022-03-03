@@ -241,7 +241,7 @@ class WCOrderStoreTest {
         assertEquals(6, noteModels.size)
         orderNotesDao.insertNotes(noteModels[0])
 
-        val retrievedNotes = orderStore.getOrderNotesForOrder(SiteModel().apply { id = 6 }, orderModel.remoteOrderId)
+        val retrievedNotes = orderStore.getOrderNotesForOrder(SiteModel().apply { siteId = 6 }, orderModel.remoteOrderId)
         assertEquals(1, retrievedNotes.size)
         assertEquals(noteModels[0], retrievedNotes[0])
     }
