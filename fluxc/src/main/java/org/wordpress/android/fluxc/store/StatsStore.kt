@@ -57,9 +57,14 @@ class StatsStore
     suspend fun getInsightTypes(site: SiteModel): List<StatsType> =
             coroutineEngine.withDefaultContext(AppLog.T.STATS, this, "getInsightTypes") {
                 val types = mutableListOf<StatsType>()
-                if (!preferenceUtils.getFluxCPreferences().getBoolean(INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN, false)) {
-                    types.add(ManagementType.NEWS_CARD)
-                }
+/**
+ * Customize Insights Management card is being hidden for now.
+ * It will be updated to new design in the next iteration.
+ * Also, make sure to remove @Ignore annotation on tests in StatsStoreTest when this is undone.
+ **/
+//                if (!preferenceUtils.getFluxCPreferences().getBoolean(INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN, false)) {
+//                    types.add(ManagementType.NEWS_CARD)
+//                }
                 types.addAll(getAddedInsights(site))
                 types.add(ManagementType.CONTROL)
                 return@withDefaultContext types
