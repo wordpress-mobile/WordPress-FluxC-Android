@@ -23,8 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.StatsStore
-import org.wordpress.android.fluxc.store.StatsStore.InsightType
-import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWERS
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWER_TOTALS
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
@@ -68,15 +67,15 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
 
         // Starts with default blocks (those in DEFAULT_INSIGHTS)
         assertEquals(emptyStats.size, DEFAULT_INSIGHTS.size)
-        if (!emptyStats.contains(InsightType.FOLLOWERS)) {
-            runBlocking { statsStore.addType(site, InsightType.FOLLOWERS) }
+        if (!emptyStats.contains(FOLLOWER_TOTALS)) {
+            runBlocking { statsStore.addType(site, FOLLOWER_TOTALS) }
         }
 
         val statsWithFollowers = runBlocking { statsStore.getAddedInsights(site) }
 
         assertEquals(statsWithFollowers.size, DEFAULT_INSIGHTS.size + 1)
 
-        runBlocking { statsStore.removeType(site, FOLLOWERS) }
+        runBlocking { statsStore.removeType(site, FOLLOWER_TOTALS) }
 
         val statsWithoutFollowers = runBlocking { statsStore.getAddedInsights(site) }
 
@@ -114,8 +113,10 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
     }
 
     private fun authenticate(): SiteModel {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY
+        )
 
         return siteStore.sites[0]
     }
