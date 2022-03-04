@@ -29,7 +29,9 @@ enum class WooErrorType {
     INVALID_ID,
     GENERIC_ERROR,
     INVALID_RESPONSE,
-    AUTHORIZATION_REQUIRED
+    AUTHORIZATION_REQUIRED,
+    INVALID_PARAM,
+    PLUGIN_NOT_ACTIVE
 }
 
 fun WPComGsonNetworkError.toWooError(): WooError {
@@ -46,8 +48,13 @@ fun WPComGsonNetworkError.toWooError(): WooError {
         AUTHORIZATION_REQUIRED,
         NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
         NOT_FOUND -> WooErrorType.INVALID_ID
-        UNKNOWN,
-        null -> WooErrorType.GENERIC_ERROR
+        UNKNOWN, null -> {
+            when (apiError) {
+                "rest_invalid_param" -> WooErrorType.INVALID_PARAM
+                "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
+                else -> WooErrorType.GENERIC_ERROR
+            }
+        }
     }
     return WooError(type, this.type, message)
 }
