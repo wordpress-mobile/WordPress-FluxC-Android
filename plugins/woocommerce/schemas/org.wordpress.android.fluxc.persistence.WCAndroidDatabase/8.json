@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "483895ec92768edddcad4043881acd49",
+    "identityHash": "f791ffbacf072bd61529514337a801e1",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -528,7 +528,7 @@
       },
       {
         "tableName": "OrderNotes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL DEFAULT 0, `isCustomerNote` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`siteId`, `noteId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL, `isCustomerNote` INTEGER NOT NULL, PRIMARY KEY(`siteId`, `noteId`))",
         "fields": [
           {
             "fieldPath": "siteId",
@@ -570,15 +570,13 @@
             "fieldPath": "isSystemNote",
             "columnName": "isSystemNote",
             "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
+            "notNull": true
           },
           {
             "fieldPath": "isCustomerNote",
             "columnName": "isCustomerNote",
             "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -595,7 +593,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '483895ec92768edddcad4043881acd49')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f791ffbacf072bd61529514337a801e1')"
     ]
   }
 }
