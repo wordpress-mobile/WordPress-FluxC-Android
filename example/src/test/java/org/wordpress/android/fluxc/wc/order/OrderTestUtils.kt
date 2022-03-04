@@ -66,15 +66,6 @@ object OrderTestUtils {
         }
     }
 
-    fun generateSampleNote(remoteId: Long, siteId: RemoteId, orderId: Int) = OrderNoteEntity(
-        siteId = siteId,
-        noteId = RemoteId(0L),
-        orderId = RemoteId(remoteId),
-        dateCreated = DateTimeUtils.dateUTCFromIso8601("1955-11-05T14:15:00Z"),
-        note = "This is a test note",
-        isCustomerNote = true
-    )
-
     fun getOrderStatusOptionsFromJson(json: String, siteId: Int): List<WCOrderStatusModel> {
         val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderStatusApiResponse> ?: emptyList()
