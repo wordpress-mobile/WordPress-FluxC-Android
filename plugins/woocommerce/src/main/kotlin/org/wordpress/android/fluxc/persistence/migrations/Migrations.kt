@@ -156,8 +156,8 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
                 dateCreated TEXT,
                 note TEXT,
                 author TEXT,
-                isSystemNote INTEGER NOT NULL DEFAULT 0,
-                isCustomerNote INTEGER NOT NULL DEFAULT 0,
+                isSystemNote INTEGER NOT NULL,
+                isCustomerNote INTEGER NOT NULL,
                 PRIMARY KEY(`siteId`, `noteId`))
         """.trimIndent())
     }
