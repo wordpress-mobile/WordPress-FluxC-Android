@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.persistence.entity
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -15,8 +14,6 @@ data class OrderNoteEntity(
     @field:TypeConverters(ISO8601DateConverter::class) val dateCreated: Date? = null,
     val note: String? = null,
     val author: String? = null,
-    @ColumnInfo(defaultValue = "0")
-    val isSystemNote: Boolean = false, // True if the note is 'system-created', else created by a site user
-    @ColumnInfo(defaultValue = "0")
-    val isCustomerNote: Boolean = false // False if private, else customer-facing. Default is false
+    val isSystemNote: Boolean, // True if the note is 'system-created', else created by a site user
+    val isCustomerNote: Boolean // False if private, else customer-facing.
 )
