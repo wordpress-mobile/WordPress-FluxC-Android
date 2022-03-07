@@ -148,6 +148,23 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
 
 internal val MIGRATION_7_8 = object : Migration(7, 8) {
     override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS OrderNotes (
+                siteId INTEGER NOT NULL,
+                noteId INTEGER NOT NULL,
+                orderId INTEGER NOT NULL,
+                dateCreated TEXT,
+                note TEXT,
+                author TEXT,
+                isSystemNote INTEGER NOT NULL,
+                isCustomerNote INTEGER NOT NULL,
+                PRIMARY KEY(`siteId`, `noteId`))
+        """.trimIndent())
+    }
+}
+
+internal val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL(
                 // language=RoomSql
@@ -329,3 +346,4 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
         }
     }
 }
+

@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
@@ -27,7 +26,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChange
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
-import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -200,28 +198,25 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        orderStore.fetchOrderNotes(firstOrder.id, firstOrder.remoteOrderId.value, sSite)
+        orderStore.fetchOrderNotes(sSite, firstOrder.remoteOrderId)
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder.id)
+        val fetchedNotes = orderStore.getOrderNotesForOrder(sSite, firstOrder.remoteOrderId)
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
     @Throws(InterruptedException::class)
     @Test
     fun testPostOrderNote() = runBlocking {
-        val originalNote = WCOrderNoteModel().apply {
-            localOrderId = orderModel.id
-            localSiteId = sSite.id
-            note = "Test rest note"
-            isCustomerNote = true
-        }
         orderStore.postOrderNote(
-            PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId.value, sSite, originalNote)
+                site = sSite,
+                orderId = orderModel.remoteOrderId,
+                note = "Test rest note",
+                isCustomerNote = true
         )
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel.id)
+        val fetchedNotes = orderStore.getOrderNotesForOrder(sSite, orderModel.remoteOrderId)
         assertTrue(fetchedNotes.isNotEmpty())
     }
 

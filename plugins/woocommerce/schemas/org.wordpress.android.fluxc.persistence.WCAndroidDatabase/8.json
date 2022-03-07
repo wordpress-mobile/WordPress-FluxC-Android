@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "03a8a325e2d03c4a6f5b63a3eacbb060",
+    "identityHash": "f791ffbacf072bd61529514337a801e1",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -189,380 +189,6 @@
         ]
       },
       {
-        "tableName": "Coupons",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `code` TEXT, `dateCreated` TEXT, `dateCreatedGmt` TEXT, `dateModified` TEXT, `dateModifiedGmt` TEXT, `discountType` TEXT, `description` TEXT, `dateExpires` TEXT, `dateExpiresGmt` TEXT, `usageCount` INTEGER, `isForIndividualUse` INTEGER, `usageLimit` INTEGER, `usageLimitPerUser` INTEGER, `limitUsageToXItems` INTEGER, `isShippingFree` INTEGER, `areSaleItemsExcluded` INTEGER, `minimumAmount` TEXT, `maximumAmount` TEXT, PRIMARY KEY(`id`, `siteId`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "siteId",
-            "columnName": "siteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "code",
-            "columnName": "code",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateCreated",
-            "columnName": "dateCreated",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateCreatedGmt",
-            "columnName": "dateCreatedGmt",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateModified",
-            "columnName": "dateModified",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateModifiedGmt",
-            "columnName": "dateModifiedGmt",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "discountType",
-            "columnName": "discountType",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateExpires",
-            "columnName": "dateExpires",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateExpiresGmt",
-            "columnName": "dateExpiresGmt",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "usageCount",
-            "columnName": "usageCount",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isForIndividualUse",
-            "columnName": "isForIndividualUse",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "usageLimit",
-            "columnName": "usageLimit",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "usageLimitPerUser",
-            "columnName": "usageLimitPerUser",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "limitUsageToXItems",
-            "columnName": "limitUsageToXItems",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isShippingFree",
-            "columnName": "isShippingFree",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "areSaleItemsExcluded",
-            "columnName": "areSaleItemsExcluded",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "minimumAmount",
-            "columnName": "minimumAmount",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "maximumAmount",
-            "columnName": "maximumAmount",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "id",
-            "siteId"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [
-          {
-            "name": "index_Coupons_id_siteId",
-            "unique": false,
-            "columnNames": [
-              "id",
-              "siteId"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_Coupons_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
-          }
-        ],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "CouponEmails",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`couponId`, `siteId`, `email`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "couponId",
-            "columnName": "couponId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "siteId",
-            "columnName": "siteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "email",
-            "columnName": "email",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "couponId",
-            "siteId",
-            "email"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [
-          {
-            "name": "index_CouponEmails_couponId_siteId_email",
-            "unique": false,
-            "columnNames": [
-              "couponId",
-              "siteId",
-              "email"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId_email` ON `${TABLE_NAME}` (`couponId`, `siteId`, `email`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "Coupons",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "couponId",
-              "siteId"
-            ],
-            "referencedColumns": [
-              "id",
-              "siteId"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "CouponsAndProducts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `productId` INTEGER NOT NULL, `isExcluded` INTEGER NOT NULL, PRIMARY KEY(`couponId`, `productId`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productId`, `siteId`) REFERENCES `Products`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "couponId",
-            "columnName": "couponId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "siteId",
-            "columnName": "siteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "productId",
-            "columnName": "productId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isExcluded",
-            "columnName": "isExcluded",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "couponId",
-            "productId"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [
-          {
-            "name": "index_CouponsAndProducts_couponId_siteId",
-            "unique": false,
-            "columnNames": [
-              "couponId",
-              "siteId"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
-          },
-          {
-            "name": "index_CouponsAndProducts_productId_siteId",
-            "unique": false,
-            "columnNames": [
-              "productId",
-              "siteId"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_productId_siteId` ON `${TABLE_NAME}` (`productId`, `siteId`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "Coupons",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "couponId",
-              "siteId"
-            ],
-            "referencedColumns": [
-              "id",
-              "siteId"
-            ]
-          },
-          {
-            "table": "Products",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "productId",
-              "siteId"
-            ],
-            "referencedColumns": [
-              "id",
-              "siteId"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "CouponsAndProductCategories",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `productCategoryId` INTEGER NOT NULL, `isExcluded` INTEGER NOT NULL, PRIMARY KEY(`couponId`, `productCategoryId`), FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`productCategoryId`, `siteId`) REFERENCES `ProductCategories`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "couponId",
-            "columnName": "couponId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "siteId",
-            "columnName": "siteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "productCategoryId",
-            "columnName": "productCategoryId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isExcluded",
-            "columnName": "isExcluded",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "couponId",
-            "productCategoryId"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [
-          {
-            "name": "index_CouponsAndProductCategories_couponId_siteId",
-            "unique": false,
-            "columnNames": [
-              "couponId",
-              "siteId"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
-          },
-          {
-            "name": "index_CouponsAndProductCategories_productCategoryId_siteId",
-            "unique": false,
-            "columnNames": [
-              "productCategoryId",
-              "siteId"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_productCategoryId_siteId` ON `${TABLE_NAME}` (`productCategoryId`, `siteId`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "Coupons",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "couponId",
-              "siteId"
-            ],
-            "referencedColumns": [
-              "id",
-              "siteId"
-            ]
-          },
-          {
-            "table": "ProductCategories",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "productCategoryId",
-              "siteId"
-            ],
-            "referencedColumns": [
-              "id",
-              "siteId"
-            ]
-          }
-        ]
-      },
-      {
         "tableName": "GlobalAddonGroupEntity",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`globalGroupLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `restrictedCategoriesIds` TEXT NOT NULL, `siteRemoteId` INTEGER NOT NULL)",
         "fields": [
@@ -596,360 +222,6 @@
             "globalGroupLocalId"
           ],
           "autoGenerate": true
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "Products",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT, `slug` TEXT, `permalink` TEXT, `dateCreated` TEXT, `dateModified` TEXT, `type` TEXT, `status` TEXT, `isFeatured` INTEGER, `catalogVisibility` TEXT, `description` TEXT, `shortDescription` TEXT, `sku` TEXT, `price` TEXT, `regularPrice` TEXT, `salePrice` TEXT, `isOnSale` INTEGER, `totalSales` INTEGER, `isPurchasable` INTEGER, `dateOnSaleFrom` TEXT, `dateOnSaleTo` TEXT, `dateOnSaleFromGmt` TEXT, `dateOnSaleToGmt` TEXT, `isVirtual` INTEGER, `isDownloadable` INTEGER, `downloadLimit` INTEGER, `downloadExpiry` INTEGER, `isSoldIndividually` INTEGER, `externalUrl` TEXT, `buttonText` TEXT, `taxStatus` TEXT, `taxClass` TEXT, `isStockManaged` INTEGER, `stockQuantity` REAL, `stockStatus` TEXT, `backorders` TEXT, `areBackordersAllowed` INTEGER, `isBackordered` INTEGER, `isShippingRequired` INTEGER, `isShippingTaxable` INTEGER, `shippingClass` TEXT, `shippingClassId` INTEGER, `areReviewsAllowed` INTEGER, `averageRating` TEXT, `ratingCount` INTEGER, `parentId` INTEGER, `purchaseNote` TEXT, `menuOrder` INTEGER, PRIMARY KEY(`id`, `siteId`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "siteId",
-            "columnName": "siteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "slug",
-            "columnName": "slug",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "permalink",
-            "columnName": "permalink",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateCreated",
-            "columnName": "dateCreated",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateModified",
-            "columnName": "dateModified",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "type",
-            "columnName": "type",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "status",
-            "columnName": "status",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isFeatured",
-            "columnName": "isFeatured",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "catalogVisibility",
-            "columnName": "catalogVisibility",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "shortDescription",
-            "columnName": "shortDescription",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "sku",
-            "columnName": "sku",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "price",
-            "columnName": "price",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "regularPrice",
-            "columnName": "regularPrice",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "salePrice",
-            "columnName": "salePrice",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isOnSale",
-            "columnName": "isOnSale",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "totalSales",
-            "columnName": "totalSales",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isPurchasable",
-            "columnName": "isPurchasable",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateOnSaleFrom",
-            "columnName": "dateOnSaleFrom",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateOnSaleTo",
-            "columnName": "dateOnSaleTo",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateOnSaleFromGmt",
-            "columnName": "dateOnSaleFromGmt",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dateOnSaleToGmt",
-            "columnName": "dateOnSaleToGmt",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isVirtual",
-            "columnName": "isVirtual",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isDownloadable",
-            "columnName": "isDownloadable",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "downloadLimit",
-            "columnName": "downloadLimit",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "downloadExpiry",
-            "columnName": "downloadExpiry",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isSoldIndividually",
-            "columnName": "isSoldIndividually",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "externalUrl",
-            "columnName": "externalUrl",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "buttonText",
-            "columnName": "buttonText",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "taxStatus",
-            "columnName": "taxStatus",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "taxClass",
-            "columnName": "taxClass",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isStockManaged",
-            "columnName": "isStockManaged",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "stockQuantity",
-            "columnName": "stockQuantity",
-            "affinity": "REAL",
-            "notNull": false
-          },
-          {
-            "fieldPath": "stockStatus",
-            "columnName": "stockStatus",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "backorders",
-            "columnName": "backorders",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "areBackordersAllowed",
-            "columnName": "areBackordersAllowed",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isBackordered",
-            "columnName": "isBackordered",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isShippingRequired",
-            "columnName": "isShippingRequired",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "isShippingTaxable",
-            "columnName": "isShippingTaxable",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "shippingClass",
-            "columnName": "shippingClass",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "shippingClassId",
-            "columnName": "shippingClassId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "areReviewsAllowed",
-            "columnName": "areReviewsAllowed",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "averageRating",
-            "columnName": "averageRating",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "ratingCount",
-            "columnName": "ratingCount",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "parentId",
-            "columnName": "parentId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "purchaseNote",
-            "columnName": "purchaseNote",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "menuOrder",
-            "columnName": "menuOrder",
-            "affinity": "INTEGER",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "id",
-            "siteId"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "ProductCategories",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `parentId` INTEGER, `name` TEXT, `slug` TEXT, PRIMARY KEY(`id`, `siteId`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "siteId",
-            "columnName": "siteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "parentId",
-            "columnName": "parentId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "slug",
-            "columnName": "slug",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "id",
-            "siteId"
-          ],
-          "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
@@ -1253,12 +525,75 @@
           }
         ],
         "foreignKeys": []
+      },
+      {
+        "tableName": "OrderNotes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL, `isCustomerNote` INTEGER NOT NULL, PRIMARY KEY(`siteId`, `noteId`))",
+        "fields": [
+          {
+            "fieldPath": "siteId",
+            "columnName": "siteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "noteId",
+            "columnName": "noteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "orderId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isSystemNote",
+            "columnName": "isSystemNote",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCustomerNote",
+            "columnName": "isCustomerNote",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "siteId",
+            "noteId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '03a8a325e2d03c4a6f5b63a3eacbb060')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f791ffbacf072bd61529514337a801e1')"
     ]
   }
 }

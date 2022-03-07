@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
+import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
@@ -24,14 +25,16 @@ import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 
 @Database(
-        version = 8,
+        version = 9,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -40,6 +43,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
             CouponAndProductEntity::class,
             CouponAndProductCategoryEntity::class,
             GlobalAddonGroupEntity::class,
+            OrderNoteEntity::class,
             ProductEntity::class,
             ProductCategoryEntity::class,
             WCOrderModel::class
@@ -56,6 +60,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 abstract class WCAndroidDatabase : RoomDatabase() {
     abstract val addonsDao: AddonsDao
     abstract val ordersDao: OrdersDao
+    abstract val orderNotesDao: OrderNotesDao
     abstract val couponsDao: CouponsDao
     abstract val productsDao: ProductsDao
     abstract val productCategoriesDao: ProductCategoriesDao
@@ -73,6 +78,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_5_6)
                 .addMigrations(MIGRATION_6_7)
                 .addMigrations(MIGRATION_7_8)
+                .addMigrations(MIGRATION_8_9)
                 .build()
     }
 }
