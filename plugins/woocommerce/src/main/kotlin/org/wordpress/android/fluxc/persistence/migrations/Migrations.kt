@@ -148,6 +148,23 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
 
 internal val MIGRATION_7_8 = object : Migration(7, 8) {
     override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS OrderNotes (
+                siteId INTEGER NOT NULL,
+                noteId INTEGER NOT NULL,
+                orderId INTEGER NOT NULL,
+                dateCreated TEXT,
+                note TEXT,
+                author TEXT,
+                isSystemNote INTEGER NOT NULL,
+                isCustomerNote INTEGER NOT NULL,
+                PRIMARY KEY(`siteId`, `noteId`))
+        """.trimIndent())
+    }
+}
+
+internal val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL(
                 // language=RoomSql
@@ -246,11 +263,12 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `CouponEmails` (
-                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-                    `couponId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL,
-                    `email` TEXT NOT NULL,
-                    FOREIGN KEY(`couponId`, `siteId`) REFERENCES `Coupons`(`id`, `siteId`) 
-                    ON UPDATE NO ACTION ON DELETE CASCADE )
+                    `couponId` INTEGER NOT NULL, 
+                    `siteId` INTEGER NOT NULL, 
+                    `email` TEXT NOT NULL, 
+                    PRIMARY KEY(`couponId`, `siteId`, `email`), 
+                    FOREIGN KEY(`couponId`, `siteId`) 
+                    REFERENCES `Coupons`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )
                 """.trimIndent()
             )
 
@@ -293,8 +311,8 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
 
             execSQL(
                 // language=RoomSql
-                """CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId` 
-                    ON `CouponEmails` (`couponId`, `siteId`)
+                """CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId_email` 
+                    ON `CouponEmails` (`couponId`, `siteId`, `email`)
                 """.trimIndent()
             )
 
