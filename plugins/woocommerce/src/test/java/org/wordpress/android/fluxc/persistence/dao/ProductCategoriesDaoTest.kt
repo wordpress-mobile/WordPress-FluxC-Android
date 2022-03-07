@@ -130,7 +130,7 @@ class ProductCategoriesDaoTest {
             parentId: Long? = null,
             name: String = "",
             slug: String = "",
-            siteId: Long = 1,
+            siteId: Long = 1
         ) = ProductCategoryEntity(
             id = remoteId,
             siteId = siteId,
