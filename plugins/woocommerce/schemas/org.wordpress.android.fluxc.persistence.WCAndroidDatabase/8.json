@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "ff7e764abea5deadebb7f31a8227640f",
+    "identityHash": "f791ffbacf072bd61529514337a801e1",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -228,8 +228,14 @@
       },
       {
         "tableName": "OrderEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `number` TEXT NOT NULL, `status` TEXT NOT NULL, `currency` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `dateModified` TEXT NOT NULL, `total` TEXT NOT NULL, `totalTax` TEXT NOT NULL, `shippingTotal` TEXT NOT NULL, `paymentMethod` TEXT NOT NULL, `paymentMethodTitle` TEXT NOT NULL, `datePaid` TEXT NOT NULL, `pricesIncludeTax` INTEGER NOT NULL, `customerNote` TEXT NOT NULL, `discountTotal` TEXT NOT NULL, `discountCodes` TEXT NOT NULL, `refundTotal` TEXT NOT NULL, `billingFirstName` TEXT NOT NULL, `billingLastName` TEXT NOT NULL, `billingCompany` TEXT NOT NULL, `billingAddress1` TEXT NOT NULL, `billingAddress2` TEXT NOT NULL, `billingCity` TEXT NOT NULL, `billingState` TEXT NOT NULL, `billingPostcode` TEXT NOT NULL, `billingCountry` TEXT NOT NULL, `billingEmail` TEXT NOT NULL, `billingPhone` TEXT NOT NULL, `shippingFirstName` TEXT NOT NULL, `shippingLastName` TEXT NOT NULL, `shippingCompany` TEXT NOT NULL, `shippingAddress1` TEXT NOT NULL, `shippingAddress2` TEXT NOT NULL, `shippingCity` TEXT NOT NULL, `shippingState` TEXT NOT NULL, `shippingPostcode` TEXT NOT NULL, `shippingCountry` TEXT NOT NULL, `shippingPhone` TEXT NOT NULL, `lineItems` TEXT NOT NULL, `shippingLines` TEXT NOT NULL, `feeLines` TEXT NOT NULL, `taxLines` TEXT NOT NULL, `metaData` TEXT NOT NULL, PRIMARY KEY(`localSiteId`, `orderId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `localSiteId` INTEGER NOT NULL, `remoteOrderId` INTEGER NOT NULL, `number` TEXT NOT NULL, `status` TEXT NOT NULL, `currency` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `dateModified` TEXT NOT NULL, `total` TEXT NOT NULL, `totalTax` TEXT NOT NULL, `shippingTotal` TEXT NOT NULL, `paymentMethod` TEXT NOT NULL, `paymentMethodTitle` TEXT NOT NULL, `datePaid` TEXT NOT NULL, `pricesIncludeTax` INTEGER NOT NULL, `customerNote` TEXT NOT NULL, `discountTotal` TEXT NOT NULL, `discountCodes` TEXT NOT NULL, `refundTotal` TEXT NOT NULL, `billingFirstName` TEXT NOT NULL, `billingLastName` TEXT NOT NULL, `billingCompany` TEXT NOT NULL, `billingAddress1` TEXT NOT NULL, `billingAddress2` TEXT NOT NULL, `billingCity` TEXT NOT NULL, `billingState` TEXT NOT NULL, `billingPostcode` TEXT NOT NULL, `billingCountry` TEXT NOT NULL, `billingEmail` TEXT NOT NULL, `billingPhone` TEXT NOT NULL, `shippingFirstName` TEXT NOT NULL, `shippingLastName` TEXT NOT NULL, `shippingCompany` TEXT NOT NULL, `shippingAddress1` TEXT NOT NULL, `shippingAddress2` TEXT NOT NULL, `shippingCity` TEXT NOT NULL, `shippingState` TEXT NOT NULL, `shippingPostcode` TEXT NOT NULL, `shippingCountry` TEXT NOT NULL, `shippingPhone` TEXT NOT NULL, `lineItems` TEXT NOT NULL, `shippingLines` TEXT NOT NULL, `feeLines` TEXT NOT NULL, `taxLines` TEXT NOT NULL, `metaData` TEXT NOT NULL)",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "localSiteId",
             "columnName": "localSiteId",
@@ -237,8 +243,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "orderId",
-            "columnName": "orderId",
+            "fieldPath": "remoteOrderId",
+            "columnName": "remoteOrderId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -503,29 +509,91 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "localSiteId",
-            "orderId"
+            "id"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [
           {
-            "name": "index_OrderEntity_localSiteId_orderId",
-            "unique": false,
+            "name": "index_OrderEntity_localSiteId_remoteOrderId",
+            "unique": true,
             "columnNames": [
               "localSiteId",
-              "orderId"
+              "remoteOrderId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` ON `${TABLE_NAME}` (`localSiteId`, `orderId`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_remoteOrderId` ON `${TABLE_NAME}` (`localSiteId`, `remoteOrderId`)"
           }
         ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "OrderNotes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`siteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL, `isCustomerNote` INTEGER NOT NULL, PRIMARY KEY(`siteId`, `noteId`))",
+        "fields": [
+          {
+            "fieldPath": "siteId",
+            "columnName": "siteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "noteId",
+            "columnName": "noteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "orderId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isSystemNote",
+            "columnName": "isSystemNote",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCustomerNote",
+            "columnName": "isCustomerNote",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "siteId",
+            "noteId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
         "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ff7e764abea5deadebb7f31a8227640f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f791ffbacf072bd61529514337a801e1')"
     ]
   }
 }

@@ -7,9 +7,10 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -19,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiRespo
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.toDataModel
 import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.utils.DateUtils
 import kotlin.collections.MutableMap.MutableEntry
@@ -55,29 +57,11 @@ object OrderTestUtils {
         }
     }
 
-    fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Long): List<WCOrderNoteModel> {
+    fun getOrderNotesFromJsonString(json: String, siteId: Long, orderId: Long): List<OrderNoteEntity> {
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderNoteApiResponse> ?: emptyList()
         return converted.map {
-            WCOrderNoteModel().apply {
-                remoteNoteId = it.id ?: 0
-                dateCreated = "${it.date_created_gmt}Z"
-                note = it.note ?: ""
-                isCustomerNote = it.customer_note
-                localSiteId = siteId
-                this.orderId = orderId
-            }
-        }
-    }
-
-    fun generateSampleNote(remoteId: Long, siteId: LocalId, orderId: Long): WCOrderNoteModel {
-        return WCOrderNoteModel().apply {
-            localSiteId = siteId.value
-            this.orderId = orderId
-            remoteNoteId = remoteId
-            dateCreated = "1955-11-05T14:15:00Z"
-            note = "This is a test note"
-            isCustomerNote = true
+            it.toDataModel(siteId = RemoteId(siteId), orderId = RemoteId(orderId))
         }
     }
 

@@ -3,24 +3,20 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
@@ -40,12 +36,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -56,7 +52,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
-import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -481,58 +476,13 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * @Deprecated("Use OrderUpdateStore.createSimplePayment instead")
-     * This function can be dropped once WCAndroid switches to OrderUpdateStore.createSimplePayment
-     */
-    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
-        val params = mapOf(
-                "fee_lines" to generateSimplePaymentFeeLineJson(amount, isTaxable),
-                "_fields" to ORDER_FIELDS
-        )
-
-        val url = WOOCOMMERCE.orders.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = it.toDomainModel(localSiteId = site.localId())
-                    RemoteOrderPayload(newModel, site)
-                } ?: RemoteOrderPayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
-                        // added for successful merge
-                        OrderEntity(localSiteId = LocalId(-1), orderId = -1),
-                        site
-                )
-            }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
-                RemoteOrderPayload(
-                        orderError,
-                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
-                        // added for successful merge
-                        OrderEntity(localSiteId = LocalId(-1), orderId = -1),
-                        site
-                )
-            }
-        }
-    }
-
-    /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of notes for the given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun fetchOrderNotes(
         orderId: Long,
         site: SiteModel
-    ): FetchOrderNotesResponsePayload {
+    ): WooPayload<List<OrderNoteEntity>> {
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
@@ -544,17 +494,11 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 val noteModels = response.data?.map {
-                    orderNoteResponseToOrderNoteModel(it).apply {
-                        localSiteId = site.id
-                        this.orderId = orderId
-                    }
+                    it.toDataModel(site.remoteId(), RemoteId(orderId))
                 }.orEmpty()
-                FetchOrderNotesResponsePayload(orderId, site, noteModels)
+                WooPayload(noteModels)
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
-                FetchOrderNotesResponsePayload(orderError, site, orderId)
-            }
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -565,13 +509,14 @@ class OrderRestClient @Inject constructor(
     suspend fun postOrderNote(
         orderId: Long,
         site: SiteModel,
-        note: WCOrderNoteModel
-    ): RemoteOrderNotePayload {
+        note: String,
+        isCustomerNote: Boolean
+    ): WooPayload<OrderNoteEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
 
         val params = mutableMapOf(
-                "note" to note.note,
-                "customer_note" to note.isCustomerNote,
+                "note" to note,
+                "customer_note" to isCustomerNote,
                 "added_by_user" to true
         )
 
@@ -585,22 +530,17 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newNote = orderNoteResponseToOrderNoteModel(it).apply {
-                        localSiteId = site.id
-                        this.orderId = orderId
-                    }
-                    return RemoteOrderNotePayload(orderId, site, newNote)
-                } ?: RemoteOrderNotePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        orderId,
-                        site,
-                        note
+                    val newNote = it.toDataModel(site.remoteId(), RemoteId(orderId))
+                    return WooPayload(newNote)
+                } ?: WooPayload(
+                        WooError(
+                                type = WooErrorType.GENERIC_ERROR,
+                                original = GenericErrorType.UNKNOWN,
+                                message = "Success response with empty data"
+                        )
                 )
             }
-            is JetpackError -> {
-                val noteError = networkErrorToOrderError(response.error)
-                return RemoteOrderNotePayload(noteError, orderId, site, note)
-            }
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -904,17 +844,6 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    private fun orderNoteResponseToOrderNoteModel(response: OrderNoteApiResponse): WCOrderNoteModel {
-        return WCOrderNoteModel().apply {
-            remoteNoteId = response.id ?: 0
-            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
-            note = response.note ?: ""
-            isSystemNote = response.author == "system" || response.author == "WooCommerce"
-            author = response.author ?: ""
-            isCustomerNote = response.customer_note
-        }
-    }
-
     private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderError {
         val orderErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
@@ -1011,22 +940,5 @@ class OrderRestClient @Inject constructor(
                 "tracking_number",
                 "tracking_provider"
         ).joinToString(separator = ",")
-
-        const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
-
-        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
-            val jsonFee = JsonObject().also { json ->
-                feeId?.let {
-                    json.addProperty("id", it)
-                }
-                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
-                json.addProperty("total", amount)
-                json.addProperty(
-                        "tax_status",
-                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
-                )
-            }
-            return JsonArray().also { it.add(jsonFee) }
-        }
     }
 }

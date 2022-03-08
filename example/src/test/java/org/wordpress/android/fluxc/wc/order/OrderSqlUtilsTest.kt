@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -33,7 +32,6 @@ class OrderSqlUtilsTest {
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
                 listOf(
-                        WCOrderNoteModel::class.java,
                         WCOrderStatusModel::class.java,
                         WCOrderShipmentTrackingModel::class.java,
                         WCOrderShipmentProviderModel::class.java,
@@ -42,78 +40,6 @@ class OrderSqlUtilsTest {
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
-    }
-
-    @Test
-    fun testInsertOrIgnoreOrderNotes() {
-        val orderId = 42L
-        val order = OrderTestUtils.generateSampleOrder(orderId)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
-        val site = SiteModel().apply { id = order.localSiteId.value }
-
-        // Test inserting notes
-        OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(2, storedNotes.size)
-
-        // Test ignoring notes already saved to db
-        val inserted = OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1))
-        assertEquals(0, inserted)
-        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(2, storedNotes2.size)
-    }
-
-    @Test
-    fun testInsertOrIgnoreOrderNote() {
-        val orderId = 42L
-        val order = OrderTestUtils.generateSampleOrder(orderId)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
-        val site = SiteModel().apply { id = order.localSiteId.value }
-
-        // Test inserting notes
-        OrderSqlUtils.insertOrIgnoreOrderNote(note1)
-        OrderSqlUtils.insertOrIgnoreOrderNote(note2)
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(2, storedNotes.size)
-
-        // Test ignoring notes already saved to db
-        val inserted = OrderSqlUtils.insertOrIgnoreOrderNote(note1)
-        assertEquals(0, inserted)
-        val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(2, storedNotes2.size)
-    }
-
-    @Test
-    fun testGetOrderNotesForOrder() {
-        val orderId = 42L
-        val order = OrderTestUtils.generateSampleOrder(orderId)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
-        OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
-        val site = SiteModel().apply { id = order.localSiteId.value }
-
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(2, storedNotes.size)
-    }
-
-    @Test
-    fun testDeleteOrderNotesForSite() {
-        val orderId = 42L
-        val order = OrderTestUtils.generateSampleOrder(orderId)
-        val note1 = OrderTestUtils.generateSampleNote(1, order.localSiteId, orderId)
-        val note2 = OrderTestUtils.generateSampleNote(2, order.localSiteId, orderId)
-        OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1, note2))
-        val site = SiteModel().apply { id = order.localSiteId.value }
-
-        val storedNotes = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(2, storedNotes.size)
-
-        val deletedCount = OrderSqlUtils.deleteOrderNotesForSite(site)
-        assertEquals(2, deletedCount)
-        val verify = OrderSqlUtils.getOrderNotesForOrder(site, orderId)
-        assertEquals(0, verify.size)
     }
 
     @Test

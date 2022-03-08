@@ -13,15 +13,17 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
@@ -43,7 +45,8 @@ class WCOrderStore @Inject constructor(
     private val wcOrderRestClient: OrderRestClient,
     private val wcOrderFetcher: WCOrderFetcher,
     private val coroutineEngine: CoroutineEngine,
-    private val ordersDao: OrdersDao
+    private val ordersDao: OrdersDao,
+    private val orderNotesDao: OrderNotesDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
@@ -172,37 +175,6 @@ class WCOrderStore @Inject constructor(
 
         data class OptimisticUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
         data class RemoteUpdateResult(override val event: OnOrderChanged) : UpdateOrderResult()
-    }
-
-    class FetchOrderNotesResponsePayload(
-        var orderId: Long,
-        var site: SiteModel,
-        var notes: List<WCOrderNoteModel> = emptyList()
-    ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, orderId: Long) : this(orderId, site) {
-            this.error = error
-        }
-    }
-
-    class PostOrderNotePayload(
-        var orderId: Long,
-        val site: SiteModel,
-        val note: WCOrderNoteModel
-    ) : Payload<BaseNetworkError>()
-
-    class RemoteOrderNotePayload(
-        var orderId: Long,
-        val site: SiteModel,
-        val note: WCOrderNoteModel
-    ) : Payload<OrderError>() {
-        constructor(
-            error: OrderError,
-            orderId: Long,
-            site: SiteModel,
-            note: WCOrderNoteModel
-        ) : this(orderId, site, note) {
-            this.error = error
-        }
     }
 
     class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
@@ -403,10 +375,10 @@ class WCOrderStore @Inject constructor(
     }
 
     /**
-     * Returns the notes belonging to supplied [OrderEntity] as a list of [WCOrderNoteModel].
+     * Returns the notes belonging to supplied [OrderEntity] as a list of [OrderNoteEntity].
      */
-    fun getOrderNotesForOrder(site: SiteModel, orderId: Long): List<WCOrderNoteModel> =
-        OrderSqlUtils.getOrderNotesForOrder(site, orderId)
+    suspend fun getOrderNotesForOrder(site: SiteModel, orderId: Long): List<OrderNoteEntity> =
+            orderNotesDao.queryNotesOfOrder(siteId = site.remoteId(), orderId = RemoteId(orderId))
 
     /**
      * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
@@ -520,27 +492,6 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    /**
-     * @deprecated This function can be removed once the client is updated to use postSimplePayment
-     */
-    @Deprecated("Use postSimplePayment instead")
-    suspend fun postQuickOrder(site: SiteModel, amount: String): OnQuickOrderResult {
-        return postSimplePayment(site, amount, false)
-    }
-
-    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): OnQuickOrderResult {
-        return coroutineEngine.withDefaultContext(T.API, this, "postSimplePayment") {
-            val result = wcOrderRestClient.postSimplePayment(site, amount, isTaxable)
-
-            return@withDefaultContext if (result.isError) {
-                OnQuickOrderResult().also { it.error = result.error }
-            } else {
-                ordersDao.insertOrUpdateOrder(result.order)
-                OnQuickOrderResult(result.order)
-            }
-        }
-    }
-
     suspend fun updateOrderStatus(
         orderId: Long,
         site: SiteModel,
@@ -589,28 +540,36 @@ class WCOrderStore @Inject constructor(
         ordersDao.insertOrUpdateOrder(updatedOrder)
     }
 
-    suspend fun fetchOrderNotes(orderId: Long, site: SiteModel): OnOrderChanged {
+    suspend fun fetchOrderNotes(
+        site: SiteModel,
+        orderId: Long
+    ): WooResult<List<OrderNoteEntity>> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchOrderNotes") {
             val result = wcOrderRestClient.fetchOrderNotes(orderId, site)
 
-            return@withDefaultContext if (result.isError) {
-                OnOrderChanged(orderError = result.error)
-            } else {
-                OrderSqlUtils.insertOrIgnoreOrderNotes(result.notes)
-                OnOrderChanged()
+            return@withDefaultContext result.let {
+                if (!it.isError) {
+                    orderNotesDao.insertNotes(*it.result!!.toTypedArray())
+                }
+                result.asWooResult()
             }
         }
     }
 
-    suspend fun postOrderNote(payload: PostOrderNotePayload): OnOrderChanged {
+    suspend fun postOrderNote(
+        site: SiteModel,
+        orderId: Long,
+        note: String,
+        isCustomerNote: Boolean
+    ): WooResult<OrderNoteEntity> {
         return coroutineEngine.withDefaultContext(T.API, this, "postOrderNote") {
-            val result = with(payload) { wcOrderRestClient.postOrderNote(orderId, site, note) }
+            val result = wcOrderRestClient.postOrderNote(orderId, site, note, isCustomerNote)
 
-            return@withDefaultContext if (payload.isError) {
-                OnOrderChanged(orderError = result.error)
+            return@withDefaultContext if (result.isError) {
+                result.asWooResult()
             } else {
-                OrderSqlUtils.insertOrIgnoreOrderNote(result.note)
-                OnOrderChanged()
+                orderNotesDao.insertNotes(result.result!!)
+                result.asWooResult()
             }
         }
     }
@@ -713,7 +672,7 @@ class WCOrderStore @Inject constructor(
             // or if the user manual changed some order IDs)
             if (!payload.loadedMore) {
                 ordersDao.deleteOrdersForSite(payload.site.localId())
-                OrderSqlUtils.deleteOrderNotesForSite(payload.site)
+                orderNotesDao.deleteOrderNotesForSite(payload.site.remoteId())
                 OrderSqlUtils.deleteOrderShipmentTrackingsForSite(payload.site)
             }
 

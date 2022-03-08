@@ -26,10 +26,10 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -37,6 +37,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
@@ -58,6 +59,7 @@ class WCOrderStoreTest {
     private val orderFetcher: WCOrderFetcher = mock()
     private val orderRestClient: OrderRestClient = mock()
     lateinit var ordersDao: OrdersDao
+    lateinit var orderNotesDao: OrderNotesDao
     lateinit var orderStore: WCOrderStore
 
     @Before
@@ -68,13 +70,21 @@ class WCOrderStoreTest {
                 .allowMainThreadQueries()
                 .build()
 
-        ordersDao = database.ordersDao()
+        ordersDao = database.ordersDao
+        orderNotesDao = database.orderNotesDao
 
-        orderStore = WCOrderStore(Dispatcher(), orderRestClient, orderFetcher, initCoroutineEngine(), ordersDao)
+        orderStore = WCOrderStore(
+                dispatcher = Dispatcher(),
+                wcOrderRestClient = orderRestClient,
+                wcOrderFetcher = orderFetcher,
+                coroutineEngine = initCoroutineEngine(),
+                ordersDao = ordersDao,
+                orderNotesDao = orderNotesDao
+        )
 
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCOrderNoteModel::class.java, WCOrderStatusModel::class.java),
+                listOf(WCOrderStatusModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -215,14 +225,15 @@ class WCOrderStoreTest {
     }
 
     @Test
-    fun testGetOrderNotesForOrder() {
+    fun testGetOrderNotesForOrder() = runBlocking {
         val notesJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_notes.json")
         val orderId = 949L
-        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, 6, orderId)
-        val orderModel = OrderTestUtils.generateSampleOrder(1).copy(orderId = orderId)
-        val site = SiteModel().apply { id = orderModel.localSiteId.value }
+        val siteId = 6L
+        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, siteId, orderId)
+        val orderModel = OrderTestUtils.generateSampleOrder(orderId).copy(localSiteId = LocalId(siteId.toInt()))
+        val site = SiteModel().apply { setSiteId(siteId) }
         assertEquals(6, noteModels.size)
-        OrderSqlUtils.insertOrIgnoreOrderNote(noteModels[0])
+        orderNotesDao.insertNotes(noteModels[0])
 
         val retrievedNotes = orderStore.getOrderNotesForOrder(site, orderModel.orderId)
         assertEquals(1, retrievedNotes.size)

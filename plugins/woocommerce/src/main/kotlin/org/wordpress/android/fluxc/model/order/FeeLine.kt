@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.model.order
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.utils.NullStringJsonAdapter
 
 /**
  * Represents a fee line.
@@ -10,6 +12,7 @@ class FeeLine {
     var id: Long? = null
 
     @SerializedName("name")
+    @JsonAdapter(NullStringJsonAdapter::class, nullSafe = false)
     var name: String? = null
 
     @SerializedName("total")

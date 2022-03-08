@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -25,6 +26,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePa
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.util.DateTimeUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
@@ -266,18 +268,18 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchSuccess() = runBlocking {
         interceptor.respondWith("wc-order-notes-response-success.json")
         val payload = orderRestClient.fetchOrderNotes(
-                orderId = 88,
-                site = siteModel
+                site = siteModel,
+                orderId = 88
         )
 
         assertNull(payload.error)
-        assertEquals(8, payload.notes.size)
+        assertEquals(8, payload.result!!.size)
 
         // Verify basic order fields and private, system note
-        with(payload.notes[0]) {
-            assertEquals(1942, remoteNoteId)
-            assertEquals("2018-04-27T20:48:10Z", dateCreated)
-            assertEquals(5, localSiteId)
+        with(payload.result!![0]) {
+            assertEquals(1942, noteId)
+            assertEquals(DateTimeUtils.dateUTCFromIso8601("2018-04-27T20:48:10Z"), dateCreated)
+            assertEquals(siteModel.remoteId(), siteId)
             assertEquals(88, orderId)
             assertEquals(
                     "Email queued: Poster Purchase Follow-Up scheduled " +
@@ -288,14 +290,14 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         // Verify private user-created note
-        with(payload.notes[6]) {
+        with(payload.result!![6]) {
             assertEquals("Interesting order!", note)
             assertFalse(isCustomerNote)
             assertFalse(isSystemNote)
         }
 
         // Verify customer-facing note
-        with(payload.notes[7]) {
+        with(payload.result!![7]) {
             assertEquals("Shipping soon!", note)
             assertTrue(isCustomerNote)
             assertFalse(isSystemNote)
@@ -306,14 +308,14 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchError() = runBlocking {
         interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
         val payload = orderRestClient.fetchOrderNotes(
-                orderId = 88,
-                site = siteModel
+                site = siteModel,
+                orderId = 88
         )
 
         with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
-            assertEquals(OrderErrorType.INVALID_ID, error.type)
+            assertEquals(WooErrorType.INVALID_ID, error.type)
         }
     }
 
@@ -332,38 +334,35 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         with(payload) {
             assertNull(error)
-            assertEquals(originalNote.note, note.note)
-            assertEquals(originalNote.isCustomerNote, note.isCustomerNote)
-            assertFalse(note.isSystemNote) // Any note created from the app should be flagged as user-created
-            assertEquals(originalNote.orderId, note.orderId)
-            assertEquals(originalNote.localSiteId, note.localSiteId)
+            assertEquals("Test rest note", result!!.note)
+            assertEquals(true, result!!.isCustomerNote)
+            assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
+            assertEquals(orderModel.remoteOrderId, result!!.orderId)
+            assertEquals(siteModel.remoteId(), result!!.siteId)
         }
     }
 
     @Test
     fun testOrderNotePostError() = runBlocking {
         val orderModel = OrderEntity(siteModel.localId(), orderId = 0)
-        val originalNote = WCOrderNoteModel().apply {
-            orderId = 5
-            localSiteId = siteModel.id
-            note = "Test rest note"
-            isCustomerNote = true
-        }
 
         val errorJson = JsonObject().apply {
             addProperty("error", "woocommerce_rest_shop_order_invalid_id")
             addProperty("message", "Invalid ID.")
         }
 
-        interceptor.respondWithError(errorJson, 400)
+        interceptor.respondWithError(errorJson, 404)
         val payload = orderRestClient.postOrderNote(
-                orderModel.orderId, siteModel, originalNote
+                site = siteModel,
+                remoteOrderId = orderModel.remoteOrderId,
+                note = "Test rest note",
+                isCustomerNote = true
         )
 
         with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
-            assertEquals(OrderErrorType.INVALID_ID, error.type)
+            assertEquals(WooErrorType.INVALID_ID, error.type)
         }
     }
 
@@ -541,17 +540,6 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val payload = orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
         assertNotNull(payload.error)
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
-    }
-
-    @Test
-    fun testPostSimplePayment() = runBlocking {
-        interceptor.respondWith("wc-fetch-order-response-success.json")
-        val response = orderRestClient.postSimplePayment(siteModel, "10.00", isTaxable = true)
-
-        with(response) {
-            assertNull(error)
-            assertNotNull(order)
-        }
     }
 
     @Suppress("unused")

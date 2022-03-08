@@ -31,7 +31,6 @@ import org.wordpress.android.fluxc.example.utils.showTwoButtonsDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.LineItem
@@ -52,7 +51,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult.Success
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
-import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
@@ -208,16 +206,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     getFirstWCOrder()?.let { order ->
-                        @Suppress("DEPRECATION_ERROR")
                         val notesCountBeforeRequest = wcOrderStore.getOrderNotesForOrder(site, order.orderId).size
                         coroutineScope.launch {
-                            @Suppress("DEPRECATION_ERROR")
-                            wcOrderStore.fetchOrderNotes(order.orderId, site)
+                            wcOrderStore.fetchOrderNotes(site, order.orderId)
                                 .takeUnless { it.isError }
                                 ?.let {
                                     val notesCountAfterRequest = wcOrderStore.getOrderNotesForOrder(
-                                            site,
-                                            order.orderId
+                                            site = site,
+                                            orderId = order.orderId
                                     ).size
                                     prependToLog(
                                         "Fetched order(${order.orderId}) notes. " +
@@ -236,12 +232,14 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 coroutineScope.launch {
                     getFirstWCOrder()?.let { order ->
                         showSingleLineDialog(activity, "Enter note") { editText ->
-                            val newNote = WCOrderNoteModel().apply {
-                                note = editText.text.toString()
-                            }
+                            val newNote = editText.text.toString()
                             coroutineScope.launch {
-                                val payload = PostOrderNotePayload(order.orderId, site, newNote)
-                                val onOrderChanged = wcOrderStore.postOrderNote(payload)
+                                val onOrderChanged = wcOrderStore.postOrderNote(
+                                        site = site,
+                                        orderId = order.orderId,
+                                        note = newNote,
+                                        isCustomerNote = false
+                                )
                                 if (!onOrderChanged.isError) {
                                     prependToLog(
                                         "Posted note to the api for order ${order.orderId}"

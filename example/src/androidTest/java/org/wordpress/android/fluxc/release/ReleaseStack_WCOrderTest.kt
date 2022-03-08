@@ -13,7 +13,6 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
@@ -26,7 +25,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChange
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
-import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -208,14 +206,11 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testPostOrderNote() = runBlocking {
-        val originalNote = WCOrderNoteModel().apply {
-            orderId = orderModel.orderId
-            localSiteId = sSite.id
-            note = "Test rest note"
-            isCustomerNote = true
-        }
         orderStore.postOrderNote(
-            PostOrderNotePayload(orderModel.orderId, sSite, originalNote)
+                site = sSite,
+                orderId = orderModel.orderId,
+                note = "Test rest note",
+                isCustomerNote = true
         )
 
         // Verify results

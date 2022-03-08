@@ -443,11 +443,10 @@ class ProductRestClient @Inject constructor(
         searchQuery: String? = null
     ) = buildParametersMap(pageSize, sortType, offset, searchQuery, remoteProductIds)
             .let {
-                WOOCOMMERCE.products.pathV3
-                        .requestTo(site, it)
+                WOOCOMMERCE.products.pathV3.requestProductTo(site, it)
             }.handleResultFrom(site)
 
-    private suspend fun String.requestTo(
+    private suspend fun String.requestProductTo(
         site: SiteModel,
         params: Map<String, String>
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -459,34 +458,93 @@ class ProductRestClient @Inject constructor(
     )
 
     private fun JetpackResponse<Array<ProductApiResponse>>.handleResultFrom(site: SiteModel) =
-            when (this) {
-                is JetpackSuccess -> {
-                    data
-                            ?.map {
-                                it.asProductModel()
-                                        .apply { localSiteId = site.id }
-                            }
-                            .orEmpty()
-                            .let { WooPayload(it.toList()) }
-                }
-                is JetpackError -> {
-                    WooPayload(error.toWooError())
-                }
+        when (this) {
+            is JetpackSuccess -> {
+                data
+                    ?.map {
+                        it.asProductModel()
+                            .apply { localSiteId = site.id }
+                    }
+                    .orEmpty()
+                    .let { WooPayload(it.toList()) }
             }
+            is JetpackError -> {
+                WooPayload(error.toWooError())
+            }
+        }
+
+    /**
+     * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of product categories for the given WooCommerce [SiteModel].
+     *
+     * but requiring this call to be suspended so the return call be synced within the coroutine job
+     */
+    suspend fun fetchProductsCategoriesWithSyncRequest(
+        site: SiteModel,
+        remoteCategoryIds: List<Long>,
+        pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
+        productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
+        offset: Int = 0
+    ): WooPayload<List<WCProductCategoryModel>> {
+        val sortOrder = when (productCategorySorting) {
+            NAME_DESC -> "desc"
+            else -> "asc"
+        }
+
+        val params = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "offset" to offset.toString(),
+            "order" to sortOrder,
+            "orderby" to "name",
+            "include" to remoteCategoryIds.map { it }.joinToString()
+        )
+
+        return WOOCOMMERCE.products.categories.pathV3
+            .requestCategoryTo(site, params)
+            .handleResultFrom(site)
+    }
+
+    @JvmName("handleResultFromProductCategoryApiResponse")
+    private fun JetpackResponse<Array<ProductCategoryApiResponse>>.handleResultFrom(site: SiteModel) =
+        when (this) {
+            is JetpackSuccess -> {
+                data
+                    ?.map {
+                        it.asProductCategoryModel()
+                            .apply { localSiteId = site.id }
+                    }
+                    .orEmpty()
+                    .let { WooPayload(it.toList()) }
+            }
+            is JetpackError -> {
+                WooPayload(error.toWooError())
+            }
+        }
+
+    private suspend fun String.requestCategoryTo(
+        site: SiteModel,
+        params: Map<String, String>
+    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        this@ProductRestClient,
+        site,
+        this,
+        params,
+        Array<ProductCategoryApiResponse>::class.java
+    )
 
     private fun buildParametersMap(
         pageSize: Int,
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
-        productIds: List<Long>
+        ids: List<Long>
     ): MutableMap<String, String> {
         return mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "orderby" to sortType.asOrderByParameter(),
-                "order" to sortType.asSortOrderParameter(),
-                "offset" to offset.toString(),
-                "include" to productIds.map { it }.joinToString()
+            "per_page" to pageSize.toString(),
+            "orderby" to sortType.asOrderByParameter(),
+            "order" to sortType.asSortOrderParameter(),
+            "offset" to offset.toString(),
+            "include" to ids.map { it }.joinToString()
         ).putIfNotEmpty("search" to searchQuery)
     }
 
@@ -903,7 +961,7 @@ class ProductRestClient @Inject constructor(
                 { response: List<ProductCategoryApiResponse>? ->
                     response?.let {
                         val categories = it.map { category ->
-                            productCategoryResponseToProductCategoryModel(category).apply { localSiteId = site.id }
+                            category.asProductCategoryModel().apply { localSiteId = site.id }
                         }
                         val canLoadMore = categories.size == pageSize
                         val loadedMore = offset > 0
@@ -944,7 +1002,7 @@ class ProductRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
                 { response: ProductCategoryApiResponse? ->
                     val categoryResponse = response?.let {
-                        productCategoryResponseToProductCategoryModel(it).apply {
+                        it.asProductCategoryModel().apply {
                             localSiteId = site.id
                         }
                     }
@@ -1506,17 +1564,6 @@ class ProductRestClient @Inject constructor(
             rating = response.rating
             verified = response.verified
             reviewerAvatarsJson = response.reviewer_avatar_urls?.toString() ?: ""
-        }
-    }
-
-    private fun productCategoryResponseToProductCategoryModel(
-        response: ProductCategoryApiResponse
-    ): WCProductCategoryModel {
-        return WCProductCategoryModel().apply {
-            remoteCategoryId = response.id
-            name = response.name ?: ""
-            slug = response.slug ?: ""
-            parent = response.parent ?: 0L
         }
     }
 
