@@ -28,7 +28,7 @@ class OrdersDaoTest {
         database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
                 .allowMainThreadQueries()
                 .build()
-        sut = database.ordersDao()
+        sut = database.ordersDao
     }
 
     @Test
