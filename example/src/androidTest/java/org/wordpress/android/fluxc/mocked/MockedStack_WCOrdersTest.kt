@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
@@ -277,7 +276,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         // Verify basic order fields and private, system note
         with(payload.result!![0]) {
-            assertEquals(1942, noteId)
+            assertEquals(1942, noteId.value)
             assertEquals(DateTimeUtils.dateUTCFromIso8601("2018-04-27T20:48:10Z"), dateCreated)
             assertEquals(siteModel.remoteId(), siteId)
             assertEquals(88, orderId)
@@ -321,23 +320,22 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderNotePostSuccess() = runBlocking {
-        val orderId = 5L
-        val originalNote = WCOrderNoteModel().apply {
-            this.orderId = orderId
-            localSiteId = siteModel.id
-            note = "Test rest note"
-            isCustomerNote = true
-        }
+        val orderModel = OrderEntity(orderId = 5, localSiteId = siteModel.localId())
 
         interceptor.respondWith("wc-order-note-post-response-success.json")
-        val payload = orderRestClient.postOrderNote(orderId, siteModel, originalNote)
+        val payload = orderRestClient.postOrderNote(
+            site = siteModel,
+            orderId = orderModel.orderId,
+            note = "Test rest note",
+            isCustomerNote = true
+        )
 
         with(payload) {
             assertNull(error)
             assertEquals("Test rest note", result!!.note)
             assertEquals(true, result!!.isCustomerNote)
             assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
-            assertEquals(orderModel.remoteOrderId, result!!.orderId)
+            assertEquals(orderModel.orderId, result!!.orderId.value)
             assertEquals(siteModel.remoteId(), result!!.siteId)
         }
     }
@@ -354,7 +352,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         interceptor.respondWithError(errorJson, 404)
         val payload = orderRestClient.postOrderNote(
                 site = siteModel,
-                remoteOrderId = orderModel.remoteOrderId,
+                orderId = orderModel.orderId,
                 note = "Test rest note",
                 isCustomerNote = true
         )

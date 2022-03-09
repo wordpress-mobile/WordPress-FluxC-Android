@@ -196,7 +196,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         // Fetch notes for the first order returned
         val firstOrder = orderStore.getOrdersForSite(sSite)[0]
-        orderStore.fetchOrderNotes(firstOrder.orderId, sSite)
+        orderStore.fetchOrderNotes(sSite, firstOrder.orderId)
 
         // Verify results
         val fetchedNotes = orderStore.getOrderNotesForOrder(sSite, firstOrder.orderId)
