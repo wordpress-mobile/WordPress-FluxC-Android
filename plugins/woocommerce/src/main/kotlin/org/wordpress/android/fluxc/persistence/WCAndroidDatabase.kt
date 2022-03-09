@@ -7,8 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
+import org.wordpress.android.fluxc.persistence.converters.ISO8601DateConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
+import org.wordpress.android.fluxc.persistence.converters.ProductBackorderStatusConverter
+import org.wordpress.android.fluxc.persistence.converters.ProductStatusConverter
+import org.wordpress.android.fluxc.persistence.converters.ProductStockStatusConverter
+import org.wordpress.android.fluxc.persistence.converters.ProductTaxStatusConverter
+import org.wordpress.android.fluxc.persistence.converters.ProductTypeConverter
+import org.wordpress.android.fluxc.persistence.converters.ProductVisibilityConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
@@ -34,7 +41,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 
 @Database(
-        version = 9,
+        version = 10,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -54,7 +61,14 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
             LocalIdConverter::class,
             LongListConverter::class,
             RemoteIdConverter::class,
-            BigDecimalConverter::class
+            BigDecimalConverter::class,
+            ISO8601DateConverter::class,
+            ProductBackorderStatusConverter::class,
+            ProductStatusConverter::class,
+            ProductStockStatusConverter::class,
+            ProductTaxStatusConverter::class,
+            ProductTypeConverter::class,
+            ProductVisibilityConverter::class
         ]
 )
 abstract class WCAndroidDatabase : RoomDatabase() {
