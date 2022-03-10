@@ -75,13 +75,13 @@ private val OrderListDiffItemCallback = object : DiffUtil.ItemCallback<WCOrderLi
             return oldItem.title == newItem.title
         }
         if (oldItem is LoadingItem && newItem is LoadingItem) {
-            return oldItem.remoteId == newItem.remoteId
+            return oldItem.orderId == newItem.orderId
         }
         if (oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem) {
-            return oldItem.remoteOrderId == newItem.remoteOrderId
+            return oldItem.orderId == newItem.orderId
         }
         if (oldItem is LoadingItem && newItem is WCOrderListUIItem) {
-            return oldItem.remoteId == newItem.remoteOrderId
+            return oldItem.orderId == newItem.orderId
         }
         return false
     }
@@ -91,7 +91,7 @@ private val OrderListDiffItemCallback = object : DiffUtil.ItemCallback<WCOrderLi
             return oldItem.title == newItem.title
         }
         if (oldItem is LoadingItem && newItem is LoadingItem) {
-            return oldItem.remoteId == newItem.remoteId
+            return oldItem.orderId == newItem.orderId
         }
         if (oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem) {
             // AS is lying, it's not actually smart casting, so we have to do it :sigh:
