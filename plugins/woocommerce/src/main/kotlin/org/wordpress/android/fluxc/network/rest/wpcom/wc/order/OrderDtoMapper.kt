@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import java.math.BigDecimal
 import javax.inject.Inject
 
-internal class OrderDtoMapper @Inject constructor(
+class OrderDtoMapper @Inject internal constructor(
     private val stripOrder: StripOrder
 ) {
     fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): OrderEntity {

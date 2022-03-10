@@ -65,7 +65,7 @@ import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
 @Singleton
-internal class OrderRestClient @Inject constructor(
+class OrderRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,

@@ -40,7 +40,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCOrderStore @Inject internal constructor(
+class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderRestClient: OrderRestClient,
     private val wcOrderFetcher: WCOrderFetcher,
