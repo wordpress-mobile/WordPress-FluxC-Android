@@ -19,17 +19,13 @@ data class LineItem(
     val totalTax: String? = null,
     val sku: String? = null,
     val price: String? = null, // The per-item price
-
     @SerializedName("meta_data")
-    val metaData: List<WCMetaData>? = null
+    val metaData: List<WCMetaData>? = null,
+    val attributeList: List<AttributeDto> = metaData?.filter {
+        it.displayKey is String && it.displayValue is String
+    }?.map {
+        AttributeDto(it.displayKey, it.displayValue as String)
+    } ?: emptyList()
 ) {
-    class Attribute(val key: String?, val value: String?)
-
-    fun getAttributeList(): List<Attribute> {
-        return metaData?.filter {
-            it.displayKey is String && it.displayValue is String
-        }?.map {
-            Attribute(it.displayKey, it.displayValue as String)
-        } ?: emptyList()
-    }
+    class AttributeDto(val key: String?, val value: String?)
 }
