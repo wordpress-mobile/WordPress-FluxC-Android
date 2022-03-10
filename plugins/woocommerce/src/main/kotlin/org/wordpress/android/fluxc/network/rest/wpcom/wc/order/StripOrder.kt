@@ -1,0 +1,33 @@
+package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
+
+import com.google.gson.Gson
+import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.order.LineItemDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isNotInternalAttributeData
+import javax.inject.Inject
+
+internal class StripOrder @Inject constructor(private val gson: Gson) {
+    operator fun invoke(fatModel: OrderEntity): OrderEntity {
+        return fatModel.copy(
+                lineItems = gson.toJson(fatModel.getLineItemList().map { lineItemDto: LineItemDto ->
+                    lineItemDto.copy(
+                            metaData = lineItemDto.metaData?.filter { it.isNotInternalAttributeData }
+                    )
+                }),
+                shippingLines = gson.toJson(fatModel.getShippingLineList()),
+                feeLines = gson.toJson(fatModel.getFeeLineList()),
+                taxLines = gson.toJson(fatModel.getTaxLineList()),
+                metaData = gson.toJson(
+                        fatModel.getMetaDataList()
+                                .filter {
+                                    it.key == WCProductModel.ADDONS_METADATA_KEY ||
+                                            it.key == CHARGE_ID_KEY ||
+                                            it.key == SHIPPING_PHONE_KEY
+                                }
+                )
+        )
+    }
+}
