@@ -79,7 +79,12 @@ data class ProductEntity(
 
     val parentId: Int? = null,
     val purchaseNote: String? = null,
-    val menuOrder: Int? = null
+    val menuOrder: Int? = null,
+
+    val weight: Float? = null,
+    val length: Float? = null,
+    val width: Float? = null,
+    val height: Float? = null
 ) {
     sealed class Type(open val value: String) {
         object Simple : Type(CoreProductType.SIMPLE.value)
@@ -231,5 +236,9 @@ fun WCProductModel.toDataModel(siteId: Long): ProductEntity =
         ratingCount,
         parentId,
         purchaseNote,
-        menuOrder
+        menuOrder,
+        weight.toFloatOrNull(),
+        length.toFloatOrNull(),
+        width.toFloatOrNull(),
+        height.toFloatOrNull()
     )
