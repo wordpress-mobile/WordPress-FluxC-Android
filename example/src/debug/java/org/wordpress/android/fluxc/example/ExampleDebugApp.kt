@@ -21,11 +21,11 @@ class ExampleDebugApp : ExampleApp() {
         component.inject(this)
 
         if (FlipperUtils.shouldEnableFlipper(this)) {
-            SoLoader.init(this, false)
-            AndroidFlipperClient.getInstance(this).apply {
-                addPlugin(InspectorFlipperPlugin(applicationContext, DescriptorMapping.withDefaults()))
-                addPlugin(NetworkFlipperPlugin())
-            }.start()
+//            SoLoader.init(this, false)
+//            AndroidFlipperClient.getInstance(this).apply {
+//                addPlugin(InspectorFlipperPlugin(applicationContext, DescriptorMapping.withDefaults()))
+//                addPlugin(NetworkFlipperPlugin())
+//            }.start()
         }
     }
 }
