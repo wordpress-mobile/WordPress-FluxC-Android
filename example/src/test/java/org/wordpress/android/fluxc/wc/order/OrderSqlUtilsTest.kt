@@ -11,7 +11,6 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.TestSiteSqlUtils
 import org.wordpress.android.fluxc.UnitTestUtils
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -144,11 +143,11 @@ class OrderSqlUtilsTest {
     @Test
     fun testGetOrderShipmentTrackingsForOrder() {
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
+        val orderId = 3L
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
-                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderId)
                 .toMutableList()
         assertEquals(2, trackings.size)
 
@@ -157,17 +156,17 @@ class OrderSqlUtilsTest {
         assertEquals(2, rowsAffected)
 
         // Attempt to save again (should ignore both existing entries and add new one)
-        trackings.add(OrderTestUtils.generateOrderShipmentTracking(siteModel.id, orderModel.id))
+        trackings.add(OrderTestUtils.generateOrderShipmentTracking(siteModel.id, orderId))
         rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
         assertEquals(1, rowsAffected)
 
         // Get all shipment trackings for a single order
-        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         assertEquals(3, trackingsForOrder.size)
 
         // get a single shipment tracking by tracking number
         val shipmentTracking = OrderSqlUtils.getShipmentTrackingByTrackingNumber(
-                siteModel, orderModel.id, trackingsForOrder[0].trackingNumber
+                siteModel, orderId, trackingsForOrder[0].trackingNumber
         )
         assertNotNull(shipmentTracking)
         assertEquals(trackingsForOrder[0].trackingNumber, shipmentTracking.trackingNumber)
@@ -175,13 +174,13 @@ class OrderSqlUtilsTest {
 
     @Test
     fun testDeleteOrderShipmentTrackingsForSite() {
+        val orderId = 3L
         // Insert shipment trackings into the database
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
-                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderId)
                 .toMutableList()
         assertEquals(2, trackings.size)
         var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
@@ -192,31 +191,31 @@ class OrderSqlUtilsTest {
         assertEquals(2, rowsAffected)
 
         // Verify no shipment trackings in db
-        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         assertEquals(0, trackingsInDb.size)
     }
 
     @Test
     fun testDeleteOrderShipmentTrackingsById() {
+        val orderId = 3L
         // Insert shipment trackings into the database
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
         val trackings = OrderTestUtils
-                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderId)
                 .toMutableList()
         assertEquals(2, trackings.size)
         var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
         assertEquals(2, rowsAffected)
 
         // Delete the first shipment tracking
-        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         rowsAffected = OrderSqlUtils.deleteOrderShipmentTrackingById(trackingsInDb[0])
         assertEquals(1, rowsAffected)
 
         // Verify only a single shipment tracking row in db
-        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderId)
         assertEquals(1, trackingsInDb.size)
     }
 
@@ -259,7 +258,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify all records were inserted
         val summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(10, summariesDb.size)
     }
 
@@ -275,10 +274,10 @@ class OrderSqlUtilsTest {
         val firstOption = summaryList[0]
         OrderSqlUtils.insertOrUpdateOrderSummaries(listOf(firstOption))
         var summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, listOf(RemoteId(firstOption.remoteOrderId)))
+                .getOrderSummariesForRemoteIds(site, listOf(firstOption.orderId))
         assertEquals(1, summariesDb.size)
         assertEquals(firstOption.dateCreated, summariesDb[0].dateCreated)
-        assertEquals(firstOption.remoteOrderId, summariesDb[0].remoteOrderId)
+        assertEquals(firstOption.orderId, summariesDb[0].orderId)
         assertEquals(firstOption.localSiteId, summariesDb[0].localSiteId)
 
         // Act:
@@ -289,7 +288,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify the modified property was updated
         summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, listOf(RemoteId(firstOption.remoteOrderId)))
+                .getOrderSummariesForRemoteIds(site, listOf(firstOption.orderId))
         assertEquals(1, summariesDb.size)
         assertEquals(firstOption.dateCreated, summariesDb[0].dateCreated)
     }
@@ -305,7 +304,7 @@ class OrderSqlUtilsTest {
         val summaryList = OrderTestUtils.getTestOrderSummaryList(site)
         OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
         var summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(10, summariesDb.size)
 
         // Act:
@@ -315,7 +314,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify all order summaries deleted for the active site
         summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(0, summariesDb.size)
     }
 
@@ -333,7 +332,7 @@ class OrderSqlUtilsTest {
         val summaryList = OrderTestUtils.getTestOrderSummaryList(site)
         OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
         var summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(10, summariesDb.size)
 
         // Act:
@@ -343,7 +342,7 @@ class OrderSqlUtilsTest {
         // Assert:
         // - Verify all order summaries for the deleted site have also been deleted
         summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId })
         assertEquals(0, summariesDb.size)
     }
 
@@ -363,7 +362,7 @@ class OrderSqlUtilsTest {
         // - Verify all records fetched successfully
         // - Verify list saved to db matches list fetched from db
         val summariesDb = OrderSqlUtils
-                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) }).sortedBy { it.id }
+                .getOrderSummariesForRemoteIds(site, summaryList.map { it.orderId }).sortedBy { it.id }
         assertEquals(300, summariesDb.size)
         assertEquals(summaryList, summariesDb)
     }

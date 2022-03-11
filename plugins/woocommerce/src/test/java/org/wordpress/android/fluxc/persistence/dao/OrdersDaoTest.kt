@@ -11,9 +11,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 
@@ -35,10 +34,8 @@ class OrdersDaoTest {
     fun testInsertAndUpdateOrder() {
         runBlocking {
             // when
-            val initialOrder = generateSampleOrder(42).let {
-                val generatedId = sut.insertOrUpdateOrder(it).toInt()
-                it.copy(id = generatedId)
-            }
+            val initialOrder = generateSampleOrder(42)
+            sut.insertOrUpdateOrder(initialOrder)
             val site = SiteModel().apply { id = initialOrder.localSiteId.value }
 
             // then
@@ -105,10 +102,10 @@ class OrdersDaoTest {
         const val TEST_LOCAL_SITE_ID = 6
 
         fun generateSampleOrder(
-            remoteId: Long,
+            orderId: Long,
             orderStatus: String = CoreOrderStatus.PROCESSING.value
-        ) = WCOrderModel(
-                remoteOrderId = RemoteId(remoteId),
+        ) = OrderEntity(
+                orderId = orderId,
                 localSiteId = LocalId(TEST_LOCAL_SITE_ID),
                 status = orderStatus
         )

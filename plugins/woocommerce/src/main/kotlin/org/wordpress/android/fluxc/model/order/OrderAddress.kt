@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.model.order
 
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 
 sealed class OrderAddress {
     abstract val firstName: String
@@ -26,17 +26,17 @@ sealed class OrderAddress {
         override val country: String,
         override val phone: String
     ) : OrderAddress() {
-        constructor(orderModel: WCOrderModel) : this(
-                firstName = orderModel.shippingFirstName,
-                lastName = orderModel.shippingLastName,
-                company = orderModel.shippingCompany,
-                address1 = orderModel.shippingAddress1,
-                address2 = orderModel.shippingAddress2,
-                city = orderModel.shippingCity,
-                state = orderModel.shippingState,
-                postcode = orderModel.shippingPostcode,
-                country = orderModel.shippingCountry,
-                phone = orderModel.shippingPhone
+        constructor(orderEntity: OrderEntity) : this(
+                firstName = orderEntity.shippingFirstName,
+                lastName = orderEntity.shippingLastName,
+                company = orderEntity.shippingCompany,
+                address1 = orderEntity.shippingAddress1,
+                address2 = orderEntity.shippingAddress2,
+                city = orderEntity.shippingCity,
+                state = orderEntity.shippingState,
+                postcode = orderEntity.shippingPostcode,
+                country = orderEntity.shippingCountry,
+                phone = orderEntity.shippingPhone
         )
     }
 
@@ -53,18 +53,18 @@ sealed class OrderAddress {
         override val country: String,
         override val phone: String
     ) : OrderAddress() {
-        constructor(orderModel: WCOrderModel) : this(
-                email = orderModel.billingEmail,
-                firstName = orderModel.billingFirstName,
-                lastName = orderModel.billingLastName,
-                company = orderModel.billingCompany,
-                address1 = orderModel.billingAddress1,
-                address2 = orderModel.billingAddress2,
-                city = orderModel.billingCity,
-                state = orderModel.billingState,
-                postcode = orderModel.billingPostcode,
-                country = orderModel.billingCountry,
-                phone = orderModel.billingPhone
+        constructor(orderEntity: OrderEntity) : this(
+                email = orderEntity.billingEmail,
+                firstName = orderEntity.billingFirstName,
+                lastName = orderEntity.billingLastName,
+                company = orderEntity.billingCompany,
+                address1 = orderEntity.billingAddress1,
+                address2 = orderEntity.billingAddress2,
+                city = orderEntity.billingCity,
+                state = orderEntity.billingState,
+                postcode = orderEntity.billingPostcode,
+                country = orderEntity.billingCountry,
+                phone = orderEntity.billingPhone
         )
     }
 }
