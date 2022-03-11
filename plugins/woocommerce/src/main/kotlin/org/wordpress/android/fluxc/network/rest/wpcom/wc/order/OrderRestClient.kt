@@ -10,9 +10,9 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
-import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -825,25 +825,15 @@ class OrderRestClient @Inject constructor(
     }
 
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
-        // the backend will fail to create the order if the billing email is an empty string,
-        // so we pass it as null to avoid this situation
-        val billingDto = if (billingAddress?.email?.isEmpty() == true) {
-            billingAddress.toDto().copy(email = null)
-        } else {
-            billingAddress?.toDto()
-        }
-
-        val params = mutableMapOf<String, Any>().apply {
+        return mutableMapOf<String, Any>().apply {
             status?.let { put("status", it.statusKey) }
             lineItems?.let { put("line_items", it) }
             shippingAddress?.toDto()?.let { put("shipping", it) }
-            billingDto?.let { put("billing", it) }
+            billingAddress?.toDto()?.let { put("billing", it) }
             feeLines?.let { put("fee_lines", it) }
             shippingLines?.let { put("shipping_lines", it) }
             customerNote?.let { put("customer_note", it) }
         }
-
-        return params
     }
 
     private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
