@@ -7,7 +7,6 @@ import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
-import org.wordpress.android.fluxc.model.WCProductModel.Companion.ADDONS_METADATA_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
 import org.wordpress.android.fluxc.utils.json
@@ -152,10 +151,6 @@ internal class StripOrderTest {
                 "id" To "3"
                 "key" To SHIPPING_PHONE_KEY
             })
-            add(json {
-                "id" To "4"
-                "key" To ADDONS_METADATA_KEY
-            })
         }.toString()
         val fatModel = emptyOrder.copy(metaData = metaDataFromRemote)
 
@@ -166,14 +161,12 @@ internal class StripOrderTest {
         assertThat(fatModel.metaData).contains(
                 redundantMemberKey,
                 CHARGE_ID_KEY,
-                SHIPPING_PHONE_KEY,
-                ADDONS_METADATA_KEY
+                SHIPPING_PHONE_KEY
         )
         assertThat(strippedOrder.metaData).doesNotContain(redundantMemberKey)
                 .contains(
                         CHARGE_ID_KEY,
-                        SHIPPING_PHONE_KEY,
-                        ADDONS_METADATA_KEY
+                        SHIPPING_PHONE_KEY
                 )
     }
 

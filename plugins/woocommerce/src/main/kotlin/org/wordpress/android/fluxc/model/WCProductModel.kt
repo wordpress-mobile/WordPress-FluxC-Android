@@ -26,7 +26,7 @@ import org.wordpress.android.util.AppLog.T
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     companion object {
-        internal const val ADDONS_METADATA_KEY = "_product_addons"
+        private const val ADDONS_METADATA_KEY = "_product_addons"
     }
 
     @Column var localSiteId = 0
