@@ -85,7 +85,9 @@ class OrderDtoMapper @Inject internal constructor(
                 state = this.state,
                 postcode = this.postcode,
                 country = this.country,
-                email = this.email,
+                // the backend will fail to create the order if the billing email is an empty string,
+                // so we use null to avoid this situation
+                email = this.email.ifEmpty { null },
                 phone = this.phone
         )
 
