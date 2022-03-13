@@ -6,6 +6,7 @@ import com.android.volley.Response.Listener;
 
 import org.wordpress.android.fluxc.action.AuthenticationAction;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseType;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 
 /**
@@ -13,7 +14,7 @@ import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
  * {@link AuthenticationAction#AUTHENTICATE_ERROR} events.
  */
 public class DiscoveryXMLRPCRequest extends XMLRPCRequest {
-    DiscoveryXMLRPCRequest(String url, XMLRPC method, Listener<? super Object[]> listener,
+    DiscoveryXMLRPCRequest(String url, XMLRPC method, Listener<ResponseType> listener,
                            BaseErrorListener errorListener) {
         super(url, method, null, listener, errorListener);
     }

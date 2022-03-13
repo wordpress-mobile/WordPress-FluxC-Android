@@ -30,12 +30,13 @@ class XMLRPCRequestBuilder
         listener: (T) -> Unit,
         errorListener: (BaseNetworkError) -> Unit
     ): XMLRPCRequest {
-        return XMLRPCRequest(url, method, params, { obj: Any? ->
-            if (obj == null) {
+        return XMLRPCRequest(url, method, params, { obj: ResponseType? ->
+            val data = obj.dataOrNull()
+            if (data == null) {
                 errorListener.invoke(BaseNetworkError(INVALID_RESPONSE))
             }
             try {
-                clazz.cast(obj)?.let { listener(it) }
+                clazz.cast(data)?.let { listener(it) }
             } catch (e: ClassCastException) {
                 errorListener.invoke(BaseNetworkError(INVALID_RESPONSE))
             }

@@ -36,12 +36,12 @@ public class XMLRPCRequest extends BaseRequest<Object> {
     private static final String PROTOCOL_CHARSET = "utf-8";
     private static final String PROTOCOL_CONTENT_TYPE = String.format("text/xml; charset=%s", PROTOCOL_CHARSET);
 
-    private final Listener<? super Object[]> mListener;
+    private final Listener<ResponseType> mListener;
     private final XMLRPC mMethod;
     private final Object[] mParams;
     private final XmlSerializer mSerializer = Xml.newSerializer();
 
-    public XMLRPCRequest(String url, XMLRPC method, List<Object> params, Listener<? super Object[]> listener,
+    public XMLRPCRequest(String url, XMLRPC method, List<Object> params, Listener<ResponseType> listener,
                          BaseErrorListener errorListener) {
         super(Method.POST, url, errorListener);
         mListener = listener;
@@ -138,22 +138,22 @@ public class XMLRPCRequest extends BaseRequest<Object> {
      * Helper method to capture the Listener's wildcard parameter type and use it to cast the response before
      * calling {@code onResponse()}.
      */
-    private <K> void deliverResponse(final Listener<K> listener, Object rawResponse) {
+    private void deliverResponse(final Listener<ResponseType> listener, Object rawResponse) {
         // The XMLRPCSerializer always returns an Object - it's up to the client making the request to know whether
         // it's really an Object[] (i.e., when requesting a list of values from the API).
         // We've already restricted the Listener parameterization to Object and Object[], so we know this is returning
         // a 'safe' type - but it's still up to the client to know if an Object or an Object[] is the expected response.
         // So, we're matching the parsed response to the Listener parameter we were given, trusting that the network
         // client knows what it's doing
-        @SuppressWarnings("unchecked") K response = (K) rawResponse;
+        //@SuppressWarnings("unchecked") K response = (K) rawResponse;
         try {
-            listener.onResponse(response);
+            listener.onResponse(ResponseType.Companion.wrapRawDataOrNull(rawResponse));
         } catch (ClassCastException e) {
             // If we aren't returning the type the client was expecting, treat this as an API response parse error
             OnUnexpectedError onUnexpectedError = new OnUnexpectedError(e,
                     "API response parse error: " + e.getMessage());
             onUnexpectedError.addExtra(OnUnexpectedError.KEY_URL, getUrl());
-            onUnexpectedError.addExtra(OnUnexpectedError.KEY_RESPONSE, response.toString());
+            onUnexpectedError.addExtra(OnUnexpectedError.KEY_RESPONSE, rawResponse.toString());
             mOnParseErrorListener.onParseError(onUnexpectedError);
             listener.onResponse(null);
         }
