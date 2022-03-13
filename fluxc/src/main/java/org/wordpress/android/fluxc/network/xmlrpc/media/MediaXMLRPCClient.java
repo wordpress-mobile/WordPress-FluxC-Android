@@ -25,6 +25,8 @@ import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.HTTPAuthModel;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseType;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseTypeKt;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCException;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCFault;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
@@ -100,12 +102,13 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         List<Object> params = getBasicParams(site, media);
         params.add(getEditMediaFields(media));
         add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.EDIT_POST, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         // response should be a boolean indicating result of push request
-                        if (response == null || !(response instanceof Boolean) || !(Boolean) response) {
-                            String message = "could not parse XMLRPC.EDIT_MEDIA response: " + response;
+                        Object rawData = ResponseTypeKt.dataOrNull(response);
+                        if (rawData == null || !(rawData instanceof Boolean) || !(Boolean) rawData) {
+                            String message = "could not parse XMLRPC.EDIT_MEDIA response: " + rawData;
                             AppLog.w(T.MEDIA, message);
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
                             error.logMessage = message;
@@ -285,17 +288,18 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         params.add(queryParams);
 
         add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_MEDIA_LIBRARY, params,
-                new Listener<Object[]>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object[] response) {
-                        List<MediaModel> mediaList = getMediaListFromXmlrpcResponse(response, site.getId());
+                    public void onResponse(ResponseType response) {
+                        Object[] rawData = (Object[])ResponseTypeKt.dataOrNull(response);
+                        List<MediaModel> mediaList = getMediaListFromXmlrpcResponse(rawData, site.getId());
                         if (mediaList != null) {
                             AppLog.v(T.MEDIA, "Fetched media list for site via XMLRPC.GET_MEDIA_LIBRARY");
                             boolean canLoadMore = mediaList.size() == number;
                             notifyMediaListFetched(site, mediaList, offset > 0, canLoadMore, mimeType);
                         } else {
                             String message = "could not parse XMLRPC.GET_MEDIA_LIBRARY response: "
-                                             + Arrays.toString(response);
+                                             + Arrays.toString(rawData);
                             AppLog.w(T.MEDIA, message);
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
                             error.logMessage = "XMLRPC: " + message;
@@ -337,11 +341,11 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
 
         List<Object> params = getBasicParams(site, media);
         add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_MEDIA_ITEM, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         AppLog.v(T.MEDIA, "Fetched media for site via XMLRPC.GET_MEDIA_ITEM");
-                        MediaModel responseMedia = getMediaFromXmlrpcResponse((HashMap) response);
+                        MediaModel responseMedia = getMediaFromXmlrpcResponse((HashMap) ResponseTypeKt.dataOrNull(response));
                         if (responseMedia != null) {
                             AppLog.v(T.MEDIA, "Fetched media with remoteId= " + media.getMediaId()
                                               + " localId=" + media.getId());
@@ -400,12 +404,13 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
 
         List<Object> params = getBasicParams(site, media);
         add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.DELETE_POST, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         // response should be a boolean indicating result of push request
-                        if (response == null || !(response instanceof Boolean) || !(Boolean) response) {
-                            String message = "could not parse XMLRPC.DELETE_MEDIA response: " + response;
+                        Object rawData = ResponseTypeKt.dataOrNull(response);
+                        if (rawData == null || !(rawData instanceof Boolean) || !(Boolean) rawData) {
+                            String message = "could not parse XMLRPC.DELETE_MEDIA response: " + rawData;
                             AppLog.w(T.MEDIA, message);
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
                             error.logMessage = "XMLRPC: " + message;

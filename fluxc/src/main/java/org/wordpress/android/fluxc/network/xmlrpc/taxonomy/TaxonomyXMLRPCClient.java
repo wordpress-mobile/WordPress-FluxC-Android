@@ -20,6 +20,8 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseType;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseTypeKt;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload;
@@ -59,25 +61,26 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
         params.add(term.getRemoteTermId());
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_TERM, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
-                    if (response != null && response instanceof Map) {
-                        TermModel termModel = termResponseObjectToTermModel(response, site);
-                        FetchTermResponsePayload payload;
-                        if (termModel != null) {
-                            if (origin == TaxonomyAction.PUSH_TERM) {
-                                termModel.setId(term.getId());
+                    public void onResponse(ResponseType response) {
+                        Object rawData = ResponseTypeKt.dataOrNull(response);
+                        if (rawData != null && rawData instanceof Map) {
+                            TermModel termModel = termResponseObjectToTermModel(rawData, site);
+                            FetchTermResponsePayload payload;
+                            if (termModel != null) {
+                                if (origin == TaxonomyAction.PUSH_TERM) {
+                                    termModel.setId(term.getId());
+                                }
+                                payload = new FetchTermResponsePayload(termModel, site);
+                            } else {
+                                payload = new FetchTermResponsePayload(term, site);
+                                payload.error = new TaxonomyError(TaxonomyErrorType.INVALID_RESPONSE);
                             }
-                            payload = new FetchTermResponsePayload(termModel, site);
-                        } else {
-                            payload = new FetchTermResponsePayload(term, site);
-                            payload.error = new TaxonomyError(TaxonomyErrorType.INVALID_RESPONSE);
-                        }
-                        payload.origin = origin;
+                            payload.origin = origin;
 
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
-                    }
+                            mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
+                        }
                     }
                 },
                 new BaseErrorListener() {
@@ -115,10 +118,11 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
         params.add(taxonomyName);
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_TERMS, params,
-                new Listener<Object[]>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object[] response) {
-                        TermsModel terms = termsResponseToTermsModel(response, site);
+                    public void onResponse(ResponseType response) {
+                        Object[] rawData = (Object[]) ResponseTypeKt.dataOrNull(response);
+                        TermsModel terms = termsResponseToTermsModel(rawData, site);
 
                         FetchTermsResponsePayload payload = new FetchTermsResponsePayload(terms, site, taxonomyName);
 
@@ -169,12 +173,12 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
 
         XMLRPC method = updatingExistingTerm ? XMLRPC.EDIT_TERM : XMLRPC.NEW_TERM;
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         // `term_id` is only returned for XMLRPC.NEW_TERM
                         if (!updatingExistingTerm) {
-                            term.setRemoteTermId(Long.valueOf((String) response));
+                            term.setRemoteTermId(Long.valueOf((String) ResponseTypeKt.dataOrNull(response)));
                         }
 
                         RemoteTermPayload payload = new RemoteTermPayload(term, site);
@@ -219,9 +223,9 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
         params.add(term.getRemoteTermId());
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.DELETE_TERM, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         RemoteTermPayload payload = new RemoteTermPayload(term, site);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newDeletedTermAction(payload));
                     }

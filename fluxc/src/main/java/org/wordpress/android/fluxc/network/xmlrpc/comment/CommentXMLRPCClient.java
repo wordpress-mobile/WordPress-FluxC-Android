@@ -19,6 +19,8 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseType;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseTypeKt;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCUtils;
 import org.wordpress.android.fluxc.store.CommentStore.CommentError;
@@ -62,10 +64,10 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         params.add(commentParams);
         final XMLRPCRequest request = new XMLRPCRequest(
                 site.getXmlRpcUrl(), XMLRPC.GET_COMMENTS, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
-                        List<CommentModel> comments = commentsResponseToCommentList(response, site);
+                    public void onResponse(ResponseType response) {
+                        List<CommentModel> comments = commentsResponseToCommentList(ResponseTypeKt.dataOrNull(response), site);
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(comments, site, number,
                                 offset, status);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
@@ -97,9 +99,9 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         params.add(commentParams);
         final XMLRPCRequest request = new XMLRPCRequest(
                 site.getXmlRpcUrl(), XMLRPC.EDIT_COMMENT, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
                         mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(payload));
                     }
@@ -128,10 +130,10 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         params.add(remoteCommentId);
         final XMLRPCRequest request = new XMLRPCRequest(
                 site.getXmlRpcUrl(), XMLRPC.GET_COMMENT, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
-                        CommentModel updatedComment = commentResponseToComment(response, site);
+                    public void onResponse(ResponseType response) {
+                        CommentModel updatedComment = commentResponseToComment(ResponseTypeKt.dataOrNull(response), site);
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(updatedComment);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(payload));
                     }
@@ -160,9 +162,9 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         params.add(remoteCommentId);
         final XMLRPCRequest request = new XMLRPCRequest(
                 site.getXmlRpcUrl(), XMLRPC.DELETE_COMMENT, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
                         if (comment != null) {
                             // This is ugly but the XMLRPC response doesn't contain any info about the update comment.
@@ -249,13 +251,13 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         params.add(commentParams);
         final XMLRPCRequest request = new XMLRPCRequest(
                 site.getXmlRpcUrl(), XMLRPC.NEW_COMMENT, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
                         comment.setRemoteParentCommentId(parentId);
-                        if (response instanceof Integer) {
-                            comment.setRemoteCommentId((int) response);
+                        if (ResponseTypeKt.dataOrNull(response) instanceof Integer) {
+                            comment.setRemoteCommentId((int) ResponseTypeKt.dataOrNull(response));
                         } else {
                             payload.error = new CommentError(CommentErrorType.GENERIC_ERROR, "");
                         }

@@ -14,6 +14,8 @@ import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryException;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseType;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseTypeKt;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.UrlUtils;
 
@@ -83,12 +85,12 @@ public class DiscoveryXMLRPCClient extends BaseXMLRPCClient {
 
         AppLog.i(AppLog.T.NUX, "Trying system.listMethods on the following URL: " + url);
 
-        BaseRequestFuture<Object[]> future = BaseRequestFuture.newFuture();
+        BaseRequestFuture<ResponseType> future = BaseRequestFuture.newFuture();
         DiscoveryXMLRPCRequest request = new DiscoveryXMLRPCRequest(url, XMLRPC.LIST_METHODS, future, future);
         add(request);
 
         try {
-            return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            return (Object[]) ResponseTypeKt.dataOrNull(future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         } catch (InterruptedException | TimeoutException e) {
             AppLog.e(AppLog.T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {

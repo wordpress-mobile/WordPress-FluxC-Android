@@ -29,6 +29,8 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseType;
+import org.wordpress.android.fluxc.network.xmlrpc.ResponseTypeKt;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCUtils;
 import org.wordpress.android.fluxc.store.PostStore;
@@ -81,11 +83,12 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         List<Object> params = createFetchPostParams(post, site);
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_POST, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
-                        if (response instanceof Map) {
-                            PostModel postModel = postResponseObjectToPostModel((Map) response, site);
+                    public void onResponse(ResponseType response) {
+                        Object rawData = ResponseTypeKt.dataOrNull(response);
+                        if (rawData instanceof Map) {
+                            PostModel postModel = postResponseObjectToPostModel((Map) rawData, site);
                             FetchPostResponsePayload payload;
                             if (postModel != null) {
                                 if (origin == PostAction.PUSH_POST) {
@@ -122,12 +125,13 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         params.add(Arrays.asList("post_id", postStatusField));
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_POST, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         String remotePostStatus = null;
-                        if (response instanceof Map) {
-                            remotePostStatus = MapUtils.getMapStr((Map) response, postStatusField);
+                        Object rawData = ResponseTypeKt.dataOrNull(response);
+                        if (rawData instanceof Map) {
+                            remotePostStatus = MapUtils.getMapStr((Map) rawData, postStatusField);
                         }
                         FetchPostStatusResponsePayload payload = new FetchPostStatusResponsePayload(post, site);
                         if (remotePostStatus != null) {
@@ -161,13 +165,14 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         final boolean loadedMore = offset > 0;
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_POSTS, params,
-                new Listener<Object[]>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object[] response) {
+                    public void onResponse(ResponseType response) {
+                        Object[] rawData = (Object[])ResponseTypeKt.dataOrNull(response);
                         boolean canLoadMore =
-                                response != null && response.length == pageSize;
-                        List<PostListItem> postListItems = postListItemsFromPostsResponse(response);
-                        PostError postError = response == null ? new PostError(PostErrorType.INVALID_RESPONSE) : null;
+                                rawData != null && rawData.length == pageSize;
+                        List<PostListItem> postListItems = postListItemsFromPostsResponse(rawData);
+                        PostError postError = rawData == null ? new PostError(PostErrorType.INVALID_RESPONSE) : null;
                         FetchPostListResponsePayload responsePayload =
                                 new FetchPostListResponsePayload(listDescriptor, postListItems, loadedMore,
                                         canLoadMore, postError);
@@ -195,15 +200,16 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                         getPages, offset, PostStore.NUM_POSTS_PER_FETCH, statusList, null, null, null, null);
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_POSTS, params,
-                new Listener<Object[]>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object[] response) {
+                    public void onResponse(ResponseType response) {
+                        Object[] rawData = (Object[]) ResponseTypeKt.dataOrNull(response);
                         boolean canLoadMore = false;
-                        if (response != null && response.length == PostStore.NUM_POSTS_PER_FETCH) {
+                        if (rawData != null && rawData.length == PostStore.NUM_POSTS_PER_FETCH) {
                             canLoadMore = true;
                         }
 
-                        PostsModel posts = postsResponseToPostsModel(response, site);
+                        PostsModel posts = postsResponseToPostsModel(rawData, site);
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site, getPages,
                                 offset > 0, canLoadMore);
@@ -256,11 +262,12 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         final XMLRPC method = post.isLocalDraft() ? XMLRPC.NEW_POST : XMLRPC.EDIT_POST;
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
-                        if (method.equals(XMLRPC.NEW_POST) && response instanceof String) {
-                            post.setRemotePostId(Long.valueOf((String) response));
+                    public void onResponse(ResponseType response) {
+                        Object rawData = ResponseTypeKt.dataOrNull(response);
+                        if (method.equals(XMLRPC.NEW_POST) && rawData instanceof String) {
+                            post.setRemotePostId(Long.valueOf((String) rawData));
                         }
                         post.setIsLocalDraft(false);
                         post.setIsLocallyChanged(false);
@@ -297,9 +304,9 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         params.add(post.getRemotePostId());
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.DELETE_POST, params,
-                new Listener<Object>() {
+                new Listener<ResponseType>() {
                     @Override
-                    public void onResponse(Object response) {
+                    public void onResponse(ResponseType response) {
                         // XML-RPC response doesn't contain the deleted post object
                         DeletedPostPayload payload =
                                 new DeletedPostPayload(post, site, postDeleteActionType, (PostModel) null);
