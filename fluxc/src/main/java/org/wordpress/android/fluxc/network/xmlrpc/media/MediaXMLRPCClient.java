@@ -291,7 +291,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                 new Listener<ResponseType>() {
                     @Override
                     public void onResponse(ResponseType response) {
-                        Object[] rawData = (Object[])ResponseTypeKt.dataOrNull(response);
+                        Object[] rawData = (Object[]) ResponseTypeKt.dataOrNull(response);
                         List<MediaModel> mediaList = getMediaListFromXmlrpcResponse(rawData, site.getId());
                         if (mediaList != null) {
                             AppLog.v(T.MEDIA, "Fetched media list for site via XMLRPC.GET_MEDIA_LIBRARY");
@@ -345,7 +345,9 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                     @Override
                     public void onResponse(ResponseType response) {
                         AppLog.v(T.MEDIA, "Fetched media for site via XMLRPC.GET_MEDIA_ITEM");
-                        MediaModel responseMedia = getMediaFromXmlrpcResponse((HashMap) ResponseTypeKt.dataOrNull(response));
+                        MediaModel responseMedia = getMediaFromXmlrpcResponse(
+                                (HashMap) ResponseTypeKt.dataOrNull(response)
+                        );
                         if (responseMedia != null) {
                             AppLog.v(T.MEDIA, "Fetched media with remoteId= " + media.getMediaId()
                                               + " localId=" + media.getId());

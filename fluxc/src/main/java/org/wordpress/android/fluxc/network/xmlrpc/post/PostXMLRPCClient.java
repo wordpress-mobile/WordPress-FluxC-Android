@@ -168,7 +168,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<ResponseType>() {
                     @Override
                     public void onResponse(ResponseType response) {
-                        Object[] rawData = (Object[])ResponseTypeKt.dataOrNull(response);
+                        Object[] rawData = (Object[]) ResponseTypeKt.dataOrNull(response);
                         boolean canLoadMore =
                                 rawData != null && rawData.length == pageSize;
                         List<PostListItem> postListItems = postListItemsFromPostsResponse(rawData);

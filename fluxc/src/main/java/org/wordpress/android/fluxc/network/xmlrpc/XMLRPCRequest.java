@@ -145,7 +145,7 @@ public class XMLRPCRequest extends BaseRequest<Object> {
         // a 'safe' type - but it's still up to the client to know if an Object or an Object[] is the expected response.
         // So, we're matching the parsed response to the Listener parameter we were given, trusting that the network
         // client knows what it's doing
-        //@SuppressWarnings("unchecked") K response = (K) rawResponse;
+        // @SuppressWarnings("unchecked") K response = (K) rawResponse;
         try {
             listener.onResponse(ResponseType.Companion.wrapRawDataOrNull(rawResponse));
         } catch (ClassCastException e) {

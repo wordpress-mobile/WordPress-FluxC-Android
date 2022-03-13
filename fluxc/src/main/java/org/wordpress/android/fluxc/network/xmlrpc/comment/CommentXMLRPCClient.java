@@ -67,7 +67,10 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<ResponseType>() {
                     @Override
                     public void onResponse(ResponseType response) {
-                        List<CommentModel> comments = commentsResponseToCommentList(ResponseTypeKt.dataOrNull(response), site);
+                        List<CommentModel> comments = commentsResponseToCommentList(
+                                ResponseTypeKt.dataOrNull(response),
+                                site
+                        );
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(comments, site, number,
                                 offset, status);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
@@ -133,7 +136,10 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<ResponseType>() {
                     @Override
                     public void onResponse(ResponseType response) {
-                        CommentModel updatedComment = commentResponseToComment(ResponseTypeKt.dataOrNull(response), site);
+                        CommentModel updatedComment = commentResponseToComment(
+                                ResponseTypeKt.dataOrNull(response),
+                                site
+                        );
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(updatedComment);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(payload));
                     }
