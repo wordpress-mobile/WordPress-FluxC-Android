@@ -14,7 +14,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
@@ -26,7 +26,7 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
         fun newInstance(
             fragment: Fragment,
             site: SiteModel,
-            order: WCOrderModel,
+            order: OrderEntity,
             providers: List<String>
         ) = WCAddOrderShipmentTrackingDialog().apply {
             setTargetFragment(fragment, 200)
@@ -39,7 +39,7 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
     interface Listener {
         fun onTrackingSubmitted(
             site: SiteModel,
-            order: WCOrderModel,
+            order: OrderEntity,
             tracking: WCOrderShipmentTrackingModel,
             isCustomProvider: Boolean
         )
@@ -47,7 +47,7 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
 
     lateinit var listener: Listener
     lateinit var site: SiteModel
-    lateinit var order: WCOrderModel
+    lateinit var order: OrderEntity
     lateinit var providers: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {

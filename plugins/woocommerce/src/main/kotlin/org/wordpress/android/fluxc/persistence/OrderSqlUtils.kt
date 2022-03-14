@@ -6,7 +6,6 @@ import com.wellsql.generated.WCOrderStatusModelTable
 import com.wellsql.generated.WCOrderSummaryModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -25,7 +24,7 @@ object OrderSqlUtils {
      * Kotlin's chunked functionality to ensure we don't crash with the "SQLiteException: too many SQL variables"
      * exception.
      */
-    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> {
+    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<Long>): List<WCOrderSummaryModel> {
         if (remoteOrderIds.isEmpty()) {
             return emptyList()
         }
@@ -35,12 +34,12 @@ object OrderSqlUtils {
 
     private fun doGetOrderSummariesForRemoteIds(
         site: SiteModel,
-        remoteOrderIds: List<RemoteId>
+        orderIds: List<Long>
     ): List<WCOrderSummaryModel> {
         return WellSql.select(WCOrderSummaryModel::class.java)
                 .where()
                 .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
-                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
+                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, orderIds)
                 .endWhere()
                 .asModel
     }
@@ -96,7 +95,7 @@ object OrderSqlUtils {
                 .or()
                 .beginGroup()
                 .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, tracking.localSiteId)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, tracking.localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, tracking.orderId)
                 .equals(WCOrderShipmentTrackingModelTable.REMOTE_TRACKING_ID, tracking.remoteTrackingId)
                 .endGroup().endGroup().endWhere().asModel
 
@@ -110,27 +109,27 @@ object OrderSqlUtils {
 
     fun getShipmentTrackingsForOrder(
         site: SiteModel,
-        localOrderId: Int
+        orderId: Long
     ): List<WCOrderShipmentTrackingModel> {
         return WellSql.select(WCOrderShipmentTrackingModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, orderId)
                 .endGroup().endWhere()
                 .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
     }
 
     fun getShipmentTrackingByTrackingNumber(
         site: SiteModel,
-        localOrderId: Int,
+        orderId: Long,
         trackingNumber: String
     ): WCOrderShipmentTrackingModel? {
         return WellSql.select(WCOrderShipmentTrackingModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, orderId)
                 .equals(WCOrderShipmentTrackingModelTable.TRACKING_NUMBER, trackingNumber)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
