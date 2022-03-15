@@ -74,6 +74,23 @@ class CouponStore @Inject constructor(
         }
     }
 
+    suspend fun deleteCoupon(
+        site: SiteModel,
+        couponId: Long,
+        trash: Boolean = true
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteCoupon") {
+            val result = restClient.deleteCoupon(site, couponId, trash)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                couponsDao.deleteCoupon(site.siteId, couponId)
+                WooResult(Unit)
+            }
+        }
+    }
+
     private suspend fun insertRestrictedEmailAddresses(
         dto: CouponDto,
         site: SiteModel
