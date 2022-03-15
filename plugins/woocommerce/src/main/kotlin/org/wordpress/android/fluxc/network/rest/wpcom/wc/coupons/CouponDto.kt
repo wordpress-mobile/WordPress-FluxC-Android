@@ -2,6 +2,9 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons
 
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Companion
+import org.wordpress.android.util.DateTimeUtils
 
 data class CouponDto(
     @SerializedName("id") val id: Long,
@@ -35,14 +38,14 @@ data class CouponDto(
             id = id,
             siteId = siteId,
             code = code,
-            dateCreated = dateCreated,
-            dateCreatedGmt = dateCreatedGmt,
-            dateModified = dateModified,
-            dateModifiedGmt = dateModifiedGmt,
-            discountType = discountType,
+            dateCreated = dateCreated?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            dateCreatedGmt = dateCreatedGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            dateModified = dateModified?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            dateModifiedGmt = dateModifiedGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            discountType = DiscountType.fromString(discountType),
             description = description,
-            dateExpires = dateExpires,
-            dateExpiresGmt = dateExpiresGmt,
+            dateExpires = dateExpires?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            dateExpiresGmt = dateExpiresGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
             usageCount = usageCount,
             isForIndividualUse = isForIndividualUse,
             usageLimit = usageLimit,
