@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
@@ -31,4 +32,10 @@ abstract class CouponsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateCouponEmail(entity: CouponEmailEntity)
+
+    @Query("DELETE FROM Coupons WHERE siteId = :siteId AND id = :couponId")
+    abstract suspend fun deleteCoupon(siteId: Long, couponId: Long)
+
+    @Query("SELECT COUNT(*) FROM CouponEmails WHERE siteId = :siteId AND couponId = :couponId")
+    abstract suspend fun getEmailCount(siteId: Long, couponId: Long): Int
 }
