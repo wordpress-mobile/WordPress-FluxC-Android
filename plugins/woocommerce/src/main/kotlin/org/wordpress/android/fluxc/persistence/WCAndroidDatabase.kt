@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.ISO8601DateConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
         version = 10,
@@ -53,7 +54,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
             OrderNoteEntity::class,
             ProductEntity::class,
             ProductCategoryEntity::class,
-            WCOrderModel::class
+            OrderEntity::class
         ]
 )
 @TypeConverters(
@@ -93,6 +94,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_6_7)
                 .addMigrations(MIGRATION_7_8)
                 .addMigrations(MIGRATION_8_9)
+                .addMigrations(MIGRATION_9_10)
                 .build()
     }
 }

@@ -9,7 +9,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -29,13 +29,13 @@ import kotlin.test.assertNotNull
 
 object OrderTestUtils {
     fun generateSampleOrder(
-        remoteId: Long,
+        orderId: Long,
         orderStatus: String = CoreOrderStatus.PROCESSING.value,
         siteId: Int = 6,
         modified: String = "1955-11-05T14:15:00Z"
-    ): WCOrderModel {
-        return WCOrderModel(
-            remoteOrderId = RemoteId(remoteId),
+    ): OrderEntity {
+        return OrderEntity(
+            orderId = orderId,
             localSiteId = LocalId(siteId),
             status = orderStatus,
             dateModified = modified,
@@ -52,7 +52,7 @@ object OrderTestUtils {
         modified: String = "1955-11-05T14:15:00Z"
     ): WCOrderSummaryModel {
         return WCOrderSummaryModel(id.toInt()).apply {
-            remoteOrderId = remoteId.toLong()
+            orderId = remoteId.toLong()
             dateModified = modified
         }
     }
@@ -81,14 +81,14 @@ object OrderTestUtils {
     fun getOrderShipmentTrackingsFromJson(
         json: String,
         siteId: Int,
-        orderId: Int
+        orderId: Long
     ): List<WCOrderShipmentTrackingModel> {
         val responseType = object : TypeToken<List<OrderShipmentTrackingApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderShipmentTrackingApiResponse> ?: emptyList()
         return converted.map {
             WCOrderShipmentTrackingModel().apply {
                 localSiteId = siteId
-                localOrderId = orderId
+                this.orderId = orderId
                 remoteTrackingId = it.tracking_id ?: ""
                 trackingNumber = it.tracking_number ?: ""
                 trackingProvider = it.tracking_provider ?: ""
@@ -98,10 +98,10 @@ object OrderTestUtils {
         }
     }
 
-    fun generateOrderShipmentTracking(siteId: Int, orderId: Int): WCOrderShipmentTrackingModel {
+    fun generateOrderShipmentTracking(siteId: Int, orderId: Long): WCOrderShipmentTrackingModel {
         return WCOrderShipmentTrackingModel().apply {
             localSiteId = siteId
-            localOrderId = orderId
+            this.orderId = orderId
             remoteTrackingId = "3290834092801"
             trackingNumber = "ZZ9939921"
             trackingProvider = "USPS"
@@ -144,7 +144,7 @@ object OrderTestUtils {
         return converted.map { response ->
             WCOrderSummaryModel().apply {
                 localSiteId = siteId
-                remoteOrderId = response.id ?: 0
+                orderId = response.id ?: 0
                 dateCreated = response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
                 dateModified = response.dateModifiedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
             }
