@@ -24,7 +24,7 @@ data class InboxNoteActionDto(
     @SerializedName("label") val label: String?,
     @SerializedName("query") val query: String?,
     @SerializedName("status") val status: String?,
-    @SerializedName("primary") val primary: Boolean?,
+    @SerializedName("primary") val primary: Boolean = false,
     @SerializedName("actioned_text") val actionedText: String?,
     @SerializedName("nonce_action") val nonceAction: String?,
     @SerializedName("nonce_name") val nonceName: String?,
