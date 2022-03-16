@@ -64,7 +64,7 @@ data class ProductEntity(
     val stockQuantity: Double? = null,
     val stockStatus: StockStatus? = null,
 
-    val backorders: BackorderStatus? = null,
+    val backorderStatus: BackorderStatus? = null,
     val areBackordersAllowed: Boolean? = null,
     val isBackordered: Boolean? = null,
 
