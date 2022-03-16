@@ -28,5 +28,5 @@ data class InboxNoteActionDto(
     @SerializedName("actioned_text") val actionedText: String?,
     @SerializedName("nonce_action") val nonceAction: String?,
     @SerializedName("nonce_name") val nonceName: String?,
-    @SerializedName("url") val url: String?,
+    @SerializedName("url") val url: String?
 )
