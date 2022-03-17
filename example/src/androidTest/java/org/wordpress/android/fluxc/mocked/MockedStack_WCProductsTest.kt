@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.WCProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
@@ -47,7 +47,7 @@ import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
 class MockedStack_WCProductsTest : MockedStack_Base() {
-    @Inject internal lateinit var productRestClient: ProductRestClient
+    @Inject internal lateinit var productRestClient: WCProductRestClient
     @Inject internal lateinit var siteSqlUtils: SiteSqlUtils
     @Inject internal lateinit var dispatcher: Dispatcher
 
