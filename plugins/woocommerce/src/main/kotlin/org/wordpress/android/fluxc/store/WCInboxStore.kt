@@ -24,8 +24,8 @@ class WCInboxStore @Inject constructor(
 
     suspend fun fetchNotes(
         site: SiteModel,
-        page: Int = CouponStore.DEFAULT_PAGE,
-        pageSize: Int = CouponStore.DEFAULT_PAGE_SIZE
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<List<InboxNoteDto>> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
             val response = restClient.fetchNotes(site, page, pageSize)
