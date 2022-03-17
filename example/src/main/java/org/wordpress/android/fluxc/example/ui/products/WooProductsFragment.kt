@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_VARIATION
-import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
@@ -485,9 +484,6 @@ class WooProductsFragment : StoreSelectingFragment() {
                         pendingFetchSingleProductVariationOffset = 0
                         load_more_product_variations.isEnabled = false
                     }
-                }
-                UPDATE_PRODUCT_REVIEW_STATUS -> {
-                    prependToLog("${event.rowsAffected} product reviews updated")
                 }
                 DELETED_PRODUCT -> {
                     prependToLog("${event.rowsAffected} product deleted")

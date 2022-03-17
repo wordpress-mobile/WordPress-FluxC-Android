@@ -76,7 +76,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPass
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
-import java.util.HashMap
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -1129,34 +1128,13 @@ class ProductRestClient @Inject constructor(
      * Makes a PUT call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * updating the status for the given product review to [newStatus].
      *
-     * Dispatches a [WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS]
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote ID of the product review to be updated
      * @param [newStatus] The new status to update the product review to
+     *
+     * @return [WooPayload] with the updated [WCProductReviewModel]
      */
-    fun legacyUpdateProductReviewStatus(site: SiteModel, remoteReviewId: Long, newStatus: String) {
-        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
-        val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
-        val params = mapOf("status" to newStatus)
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, responseType,
-                { response: ProductReviewApiResponse? ->
-                    response?.let {
-                        val review = productReviewResponseToProductReviewModel(response).apply {
-                            localSiteId = site.id
-                        }
-                        val payload = RemoteProductReviewPayload(site, review)
-                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
-                    }
-                },
-                { networkError ->
-                    val productReviewError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductReviewPayload(productReviewError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
-                })
-        add(request)
-    }
-
     suspend fun updateProductReviewStatus(
         site: SiteModel,
         remoteReviewId: Long,

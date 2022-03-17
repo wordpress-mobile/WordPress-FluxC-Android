@@ -23,7 +23,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload;
@@ -39,7 +38,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload;
 
 @ActionEnum
@@ -57,8 +55,6 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchSingleProductShippingClassPayload.class)
     FETCH_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = UpdateProductReviewStatusPayload.class)
-    UPDATE_PRODUCT_REVIEW_STATUS,
     @Action(payloadType = UpdateProductImagesPayload.class)
     UPDATE_PRODUCT_IMAGES,
     @Action(payloadType = UpdateProductPayload.class)
@@ -97,8 +93,6 @@ public enum WCProductAction implements IAction {
     FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = RemoteProductShippingClassPayload.class)
     FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
-    @Action(payloadType = RemoteProductReviewPayload.class)
-    UPDATED_PRODUCT_REVIEW_STATUS,
     @Action(payloadType = RemoteUpdateProductImagesPayload.class)
     UPDATED_PRODUCT_IMAGES,
     @Action(payloadType = RemoteUpdateProductPayload.class)
