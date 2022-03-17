@@ -260,6 +260,43 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
+        update_review_status.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val id = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter the remoteReviewId of the review",
+                        isNumeric = true
+                    )?.toLongOrNull()
+                    if (id == null) {
+                        prependToLog("Please enter a valid id")
+                        return@launch
+                    }
+                    val newStatus = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter the new status: (approved|hold|spam|trash)"
+                    )
+                    if (newStatus == null) {
+                        prependToLog("Please enter a valid status")
+                        return@launch
+                    }
+
+                    val result = wcProductStore.updateProductReviewStatus(
+                        site = site, reviewId = id, newStatus = newStatus
+                    )
+
+                    if (!result.isError) {
+                        prependToLog("Product Review status updated successfully")
+                    } else {
+                        prependToLog(
+                            "Product Review status update failed, " +
+                                "${result.error.type} ${result.error.message}"
+                        )
+                    }
+                }
+            }
+        }
+
         fetch_product_shipping_class.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
