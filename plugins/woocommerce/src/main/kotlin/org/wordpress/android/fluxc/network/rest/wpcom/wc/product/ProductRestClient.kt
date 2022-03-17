@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -29,6 +30,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
@@ -1132,7 +1135,7 @@ class ProductRestClient @Inject constructor(
      * @param [remoteReviewId] The remote ID of the product review to be updated
      * @param [newStatus] The new status to update the product review to
      */
-    fun updateProductReviewStatus(site: SiteModel, remoteReviewId: Long, newStatus: String) {
+    fun legacyUpdateProductReviewStatus(site: SiteModel, remoteReviewId: Long, newStatus: String) {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
         val params = mapOf("status" to newStatus)
@@ -1152,6 +1155,40 @@ class ProductRestClient @Inject constructor(
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
                 })
         add(request)
+    }
+
+    suspend fun updateProductReviewStatus(
+        site: SiteModel,
+        remoteReviewId: Long,
+        newStatus: String
+    ): WooPayload<WCProductReviewModel> {
+        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
+        val params = mapOf("status" to newStatus)
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            restClient = this,
+            site = site,
+            url = url,
+            body = params,
+            clazz = ProductReviewApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val review = productReviewResponseToProductReviewModel(it).apply {
+                        localSiteId = site.id
+                    }
+                    WooPayload(review)
+                } ?: WooPayload(
+                    error = WooError(
+                        type = WooErrorType.GENERIC_ERROR,
+                        original = GenericErrorType.UNKNOWN,
+                        message = "Success response with empty data"
+                    )
+                )
+            }
+            is JetpackError -> WooPayload(error = response.error.toWooError())
+        }
     }
 
     /**

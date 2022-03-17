@@ -494,7 +494,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductReviewStatusSuccess() {
         interceptor.respondWith("wc-update-product-review-response-success.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
+        productRestClient.legacyUpdateProductReviewStatus(siteModel, 0, "spam")
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -524,7 +524,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductReviewStatusFailed() {
         interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
+        productRestClient.legacyUpdateProductReviewStatus(siteModel, 0, "spam")
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

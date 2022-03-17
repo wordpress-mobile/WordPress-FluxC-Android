@@ -1052,8 +1052,28 @@ class WCProductStore @Inject constructor(
     }
 
     private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {
-        with(payload) { wcProductRestClient.updateProductReviewStatus(site, remoteReviewId, newStatus) }
+        with(payload) { wcProductRestClient.legacyUpdateProductReviewStatus(site, remoteReviewId, newStatus) }
     }
+
+    suspend fun updateProductReviewStatus(site: SiteModel, reviewId: Long, newStatus: String) =
+        coroutineEngine.withDefaultContext(API, this, "updateProductReviewStatus") {
+            val result = wcProductRestClient.updateProductReviewStatus(site, reviewId, newStatus)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                result.result?.let { review ->
+                    if (review.status == "spam" || review.status == "trash") {
+                        // Delete this review from the database
+                        ProductSqlUtils.deleteProductReview(review)
+                    } else {
+                        // Insert or update in the database
+                        ProductSqlUtils.insertOrUpdateProductReview(review)
+                    }
+                }
+                WooResult(result.result)
+            }
+        }
 
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
         with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
