@@ -40,7 +40,7 @@ data class CouponWithEmails(
 )
 
 data class CouponDataModel(
-    val couponEntity: CouponEntity,
+    val coupon: CouponEntity,
     val products: List<ProductEntity>,
     val excludedProducts: List<ProductEntity>,
     val categories: List<ProductCategoryEntity>,

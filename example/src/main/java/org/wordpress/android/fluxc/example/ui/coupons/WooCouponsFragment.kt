@@ -31,7 +31,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
-                    val codes = coupons.map { it.couponEntity.code }.joinToString()
+                    val codes = coupons.map { it.coupon.code }.joinToString()
                     prependToLog("Coupons changed: [$codes]")
                 }
             }
