@@ -55,7 +55,7 @@ android {
         // pressure on the API (authentication/fetch profile/fetch sites).
         // Uncomment the next line to enable the Orchestrator.
         // execution 'ANDROID_TEST_ORCHESTRATOR'
-
+        unitTests.includeAndroidResources  = true
         unitTests.all {
             if (project.hasProperty('testsMaxHeapSize')) {
                 // maxHeapSize for tests is not limited unless we give an explicit value
@@ -137,7 +137,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.13'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$gradle.ext.kotlinVersion"
-    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'org.robolectric:robolectric:4.7.3'
     testImplementation 'androidx.test:core:1.3.0'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
