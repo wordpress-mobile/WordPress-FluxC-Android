@@ -39,7 +39,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -623,20 +622,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteProductVariationImageSuccess() {
+    fun testDeleteProductVariationImageSuccess() = runBlocking {
         interceptor.respondWith("wc-delete-product-variation-image-success.json")
 
         val testVariation = generateSampleVariation()
         val updateVariation = testVariation.copy().apply {
             image = "{id:0}"
         }
-        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
+        val payload = productRestClient.updateVariation(siteModel, testVariation, updateVariation)
         with(payload) {
             assertNull(error)
             assertNotNull(variation.image)
@@ -645,20 +638,15 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteProductVariationImageError() {
+    fun testDeleteProductVariationImageError() = runBlocking {
         interceptor.respondWithError("wc-delete-product-variation-image-failure.json", 400)
 
         val testVariation = generateSampleVariation()
         val updateVariation = testVariation.copy().apply {
             image = "{id:0}"
         }
-        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
+        val payload = productRestClient.updateVariation(siteModel, testVariation, updateVariation)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
         with(payload) {
             assertNotNull("Error should not be null", error)
             assertEquals(
