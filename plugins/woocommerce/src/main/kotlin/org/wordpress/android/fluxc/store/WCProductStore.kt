@@ -784,8 +784,6 @@ class WCProductStore @Inject constructor(
                 updateProductImages(action.payload as UpdateProductImagesPayload)
             WCProductAction.UPDATE_PRODUCT ->
                 updateProduct(action.payload as UpdateProductPayload)
-            WCProductAction.UPDATE_VARIATION ->
-                updateVariation(action.payload as UpdateVariationPayload)
             WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS ->
                 fetchProductShippingClass(action.payload as FetchSingleProductShippingClassPayload)
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST ->
@@ -824,8 +822,6 @@ class WCProductStore @Inject constructor(
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
             WCProductAction.UPDATED_PRODUCT ->
                 handleUpdateProduct(action.payload as RemoteUpdateProductPayload)
-            WCProductAction.UPDATED_VARIATION ->
-                handleUpdateVariation(action.payload as RemoteUpdateVariationPayload)
             WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST ->
                 handleFetchProductShippingClassesCompleted(action.payload as RemoteProductShippingClassListPayload)
             WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS ->
@@ -1086,10 +1082,35 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun updateVariation(payload: UpdateVariationPayload) {
-        with(payload) {
-            val storedVariation = getVariationByRemoteId(site, variation.remoteProductId, variation.remoteVariationId)
-            wcProductRestClient.updateVariation(site, storedVariation, variation)
+    suspend fun updateVariation(payload: UpdateVariationPayload): OnVariationUpdated {
+        return coroutineEngine.withDefaultContext(API, this, "updateVariation") {
+            with(payload) {
+                val storedVariation = getVariationByRemoteId(
+                    site,
+                    variation.remoteProductId,
+                    variation.remoteVariationId
+                )
+                val result: RemoteUpdateVariationPayload = wcProductRestClient.updateVariation(
+                    site,
+                    storedVariation,
+                    variation
+                )
+//                onVariationUpdated.causeOfChange = WCProductAction.UPDATED_VARIATION
+                return@withDefaultContext if (result.isError) {
+                    OnVariationUpdated(
+                        0,
+                        result.variation.remoteProductId,
+                        result.variation.remoteVariationId
+                    ).also { it.error = result.error }
+                } else {
+                    val rowsAffected = insertOrUpdateProductVariation(result.variation)
+                    OnVariationUpdated(
+                        rowsAffected,
+                        result.variation.remoteProductId,
+                        result.variation.remoteVariationId
+                    )
+                }
+            }
         }
     }
 
@@ -1321,29 +1342,6 @@ class WCProductStore @Inject constructor(
             onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
             emitChange(onProductUpdated)
         }
-    }
-
-    private fun handleUpdateVariation(payload: RemoteUpdateVariationPayload) {
-        val onVariationUpdated: OnVariationUpdated
-
-        if (payload.isError) {
-            onVariationUpdated = OnVariationUpdated(
-                    0,
-                    payload.variation.remoteProductId,
-                    payload.variation.remoteVariationId
-            )
-                    .also { it.error = payload.error }
-        } else {
-            val rowsAffected = insertOrUpdateProductVariation(payload.variation)
-            onVariationUpdated = OnVariationUpdated(
-                    rowsAffected,
-                    payload.variation.remoteProductId,
-                    payload.variation.remoteVariationId
-            )
-        }
-
-        onVariationUpdated.causeOfChange = WCProductAction.UPDATED_VARIATION
-        emitChange(onVariationUpdated)
     }
 
     private fun handleFetchProductCategories(payload: RemoteProductCategoriesPayload) {
