@@ -741,47 +741,52 @@ class ProductRestClient @Inject constructor(
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/remoteProductId` to update a product
      *
-     * Dispatches a WCProductAction.UPDATED_PRODUCT action with the result
-     *
      * @param [site] The site to fetch product reviews for
      * @param [storedWCProductVariationModel] the stored model to compare with the [updatedProductVariationModel]
      * @param [updatedProductVariationModel] the product model that contains the update
      */
-    fun updateVariation(
+    suspend fun updateVariation(
         site: SiteModel,
         storedWCProductVariationModel: WCProductVariationModel?,
         updatedProductVariationModel: WCProductVariationModel
-    ) {
+    ): RemoteUpdateVariationPayload {
         val remoteProductId = updatedProductVariationModel.remoteProductId
         val remoteVariationId = updatedProductVariationModel.remoteVariationId
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
-        val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
         val body = variantModelToProductJsonBody(storedWCProductVariationModel, updatedProductVariationModel)
 
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
-                { response: ProductVariationApiResponse? ->
-                    response?.let {
-                        val newModel = it.asProductVariationModel().apply {
-                            this.remoteProductId = remoteProductId
-                            localSiteId = site.id
-                        }
-                        val payload = RemoteUpdateVariationPayload(site, newModel)
-                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedVariationAction(payload))
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            this, site, url, body, ProductVariationApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = it.asProductVariationModel().apply {
+                        this.remoteProductId = remoteProductId
+                        localSiteId = site.id
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteUpdateVariationPayload(
-                            productError,
-                            site,
-                            WCProductVariationModel().apply {
-                                this.remoteProductId = remoteProductId
-                                this.remoteVariationId = remoteVariationId
-                            }
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedVariationAction(payload))
-                })
-        add(request)
+                    RemoteUpdateVariationPayload(site, newModel)
+                } ?: RemoteUpdateVariationPayload(
+                    ProductError(GENERIC_ERROR, "Success response with empty data"),
+                    site,
+                    WCProductVariationModel().apply {
+                        this.remoteProductId = remoteProductId
+                        this.remoteVariationId = remoteVariationId
+                    }
+                )
+            }
+            is JetpackError -> {
+                val productError = networkErrorToProductError(response.error)
+                RemoteUpdateVariationPayload(
+                    productError,
+                    site,
+                    WCProductVariationModel().apply {
+                        this.remoteProductId = remoteProductId
+                        this.remoteVariationId = remoteVariationId
+                    }
+                )
+            }
+        }
     }
 
     /**
