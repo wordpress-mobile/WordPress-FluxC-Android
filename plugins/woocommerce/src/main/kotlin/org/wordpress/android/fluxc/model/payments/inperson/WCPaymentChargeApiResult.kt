@@ -242,11 +242,13 @@ data class WCPaymentChargeApiResult(
 
     data class PaymentMethodDetails(
         @SerializedName("card_present")
-        val cardPresent: CardPresent?,
+        val cardDetails: CardDetails?,
+        @SerializedName("interac_present")
+        val interacCardDetails: CardDetails?,
         @SerializedName("type")
         val type: String?
     ) {
-        data class CardPresent(
+        data class CardDetails(
             @SerializedName("amount_authorized")
             val amountAuthorized: Int?,
             @SerializedName("brand")
