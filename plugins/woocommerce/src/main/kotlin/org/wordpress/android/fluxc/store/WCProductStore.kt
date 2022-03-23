@@ -1095,7 +1095,6 @@ class WCProductStore @Inject constructor(
                     storedVariation,
                     variation
                 )
-//                onVariationUpdated.causeOfChange = WCProductAction.UPDATED_VARIATION
                 return@withDefaultContext if (result.isError) {
                     OnVariationUpdated(
                         0,
