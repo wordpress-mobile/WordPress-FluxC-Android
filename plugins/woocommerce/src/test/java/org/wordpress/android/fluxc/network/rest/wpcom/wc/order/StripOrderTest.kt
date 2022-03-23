@@ -20,7 +20,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `ignore additional members in line item`() {
+    fun `should ignore additional members in line item`() {
         // given
         val lineItemsFromRemote = JsonArray().apply {
             add(
@@ -42,7 +42,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `ignore internal-only remote line item attributes if applied to metadata key`() {
+    fun `should ignore internal-only remote line item attributes if applied to metadata key`() {
         // given
         val internalOnlyAttributeMemberKey = "_internal_attribute_key"
         val lineItemsFromRemote = JsonArray().apply {
@@ -70,7 +70,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `ignore additional members in shipping item`() {
+    fun `should ignore additional members in shipping item`() {
         // given
         val shippingLineItemsFromRemote = JsonArray().apply {
             add(
@@ -92,7 +92,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `ignore additional members in fee item`() {
+    fun `should ignore additional members in fee item`() {
         // given
         val feeLineItemsFromRemote = JsonArray().apply {
             add(
@@ -114,7 +114,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `ignore additional members in tax item`() {
+    fun `should ignore additional members in tax item`() {
         // given
         val taxLineItemsFromRemote = JsonArray().apply {
             add(
@@ -136,7 +136,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `drop any not needed meta data`() {
+    fun `should drop any not needed meta data`() {
         // given
         val metaDataFromRemote = JsonArray().apply {
             add(json {
@@ -168,6 +168,33 @@ internal class StripOrderTest {
                         CHARGE_ID_KEY,
                         SHIPPING_PHONE_KEY
                 )
+    }
+
+    @Test
+    fun `should filter out item attribute if its key is empty`() {
+        val emptyAttributeValue = "sample value"
+        val lineItemsFromRemote = JsonArray().apply {
+            add(
+                json {
+                    "id" To 1234
+                    "name" To "iPhone"
+                    "meta_data" To listOf(
+                        json {
+                            "key" To ""
+                            "value" To emptyAttributeValue
+                        }
+                    )
+                }
+            )
+        }.toString()
+        val fatModel = emptyOrder.copy(lineItems = lineItemsFromRemote)
+
+        // when
+        val strippedOrder = sut.invoke(fatModel)
+
+        // then
+        assertThat(fatModel.lineItems).contains(emptyAttributeValue)
+        assertThat(strippedOrder.lineItems).doesNotContain(emptyAttributeValue)
     }
 
     companion object {
