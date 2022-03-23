@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
 import org.wordpress.android.fluxc.utils.ProductsDbHelper
@@ -149,18 +150,15 @@ class WCProductStoreTest {
     }
 
     @Test
-    fun testUpdateVariation() {
+    fun testUpdateVariation() = runBlocking {
         val variationModel = ProductTestUtils.generateSampleVariation(42, 24).apply {
             description = "test description"
         }
         val site = SiteModel().apply { id = variationModel.localSiteId }
-        ProductSqlUtils.insertOrUpdateProductVariation(variationModel)
+        whenever(productRestClient.updateVariation(site, null, variationModel))
+            .thenReturn(RemoteUpdateVariationPayload(site, variationModel))
 
-        // Simulate incoming action with updated product model
-        val payload = RemoteUpdateVariationPayload(site, variationModel.apply {
-            description = "Updated description"
-        })
-        productStore.onAction(WCProductActionBuilder.newUpdatedVariationAction(payload))
+        productStore.updateVariation(UpdateVariationPayload(site, variationModel))
 
         with(productStore.getVariationByRemoteId(
                 site,

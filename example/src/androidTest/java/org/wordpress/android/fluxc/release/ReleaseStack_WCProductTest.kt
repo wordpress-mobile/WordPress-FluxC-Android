@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release
 
 import com.google.gson.JsonArray
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
@@ -51,7 +52,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClasses
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
@@ -625,7 +625,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testUpdateVariation() {
+    fun testUpdateVariation() = runBlocking {
         val updatedVariationStatus = CoreProductStatus.PUBLISH.value
         variationModel.status = updatedVariationStatus
 
@@ -638,12 +638,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedVariationSalePrice = "12"
         variationModel.salePrice = updatedVariationSalePrice
 
-        nextEvent = TestEvent.UPDATED_VARIATION
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newUpdateVariationAction(UpdateVariationPayload(sSite, variationModel))
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        withTimeout(TestUtils.DEFAULT_TIMEOUT_MS.toLong()) {
+            productStore.updateVariation(UpdateVariationPayload(sSite, variationModel))
+        }
 
         val updatedVariation = productStore.getVariationByRemoteId(
                 sSite,
@@ -813,17 +810,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
-        mCountDownLatch.countDown()
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationUpdated(event: OnVariationUpdated) {
-        event.error?.let {
-            throw AssertionError("OnVariationUpdated has unexpected error: ${it.type}, ${it.message}")
-        }
-
-        assertEquals(TestEvent.UPDATED_VARIATION, nextEvent)
         mCountDownLatch.countDown()
     }
 
