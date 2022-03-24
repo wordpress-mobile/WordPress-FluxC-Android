@@ -14,6 +14,7 @@ data class CouponEntity(
     val id: Long,
     val siteId: Long,
     val code: String? = null,
+    val amount: String? = null,
     val dateCreated: String? = null,
     val dateCreatedGmt: String? = null,
     val dateModified: String? = null,

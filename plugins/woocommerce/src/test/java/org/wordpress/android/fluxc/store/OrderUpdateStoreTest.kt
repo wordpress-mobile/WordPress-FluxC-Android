@@ -538,6 +538,6 @@ class OrderUpdateStoreTest {
         val emptyShipping = OrderAddress.Shipping("", "", "", "", "", "", "", "", "", "")
         val emptyBilling = OrderAddress.Billing("", "", "", "", "", "", "", "", "", "", "")
         val emptyShippingDto = Shipping("", "", "", "", "", "", "", "", "", "")
-        val emptyBillingDto = Billing("", "", "", "", "", "", "", "", "", "", "")
+        val emptyBillingDto = Billing("", "", "", "", "", "", "", "", "", null, "")
     }
 }
