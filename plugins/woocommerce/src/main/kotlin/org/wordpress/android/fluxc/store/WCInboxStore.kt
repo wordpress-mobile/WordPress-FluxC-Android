@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -16,7 +15,6 @@ import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
 import org.wordpress.android.util.AppLog.T.DB
 import javax.inject.Inject
@@ -30,7 +28,7 @@ class WCInboxStore @Inject constructor(
     private val inboxNotesDao: InboxNotesDao
 ) {
     companion object {
-        const val DEFAULT_PAGE_SIZE = 50
+        const val DEFAULT_PAGE_SIZE = 100
         const val DEFAULT_PAGE = 1
     }
 
@@ -66,16 +64,16 @@ class WCInboxStore @Inject constructor(
                     "fetchInboxNotes DB transaction"
                 ) {
                     inboxNotesDao.insertOrUpdateInboxNote(dto.toDataModel(site.siteId))
-                    saveInboxNoteActions(dto)
+                    saveInboxNoteActions(dto, site.id.toLong())
                 }
             }
         }
     }
 
-    private suspend fun saveInboxNoteActions(dto: InboxNoteDto) {
+    private suspend fun saveInboxNoteActions(dto: InboxNoteDto, siteId: Long) {
         dto.actions.forEach { action ->
             inboxNotesDao.insertOrUpdateInboxNoteAction(
-                action.toDataModel(dto.id)
+                action.toDataModel(dto.id, siteId)
             )
         }
     }

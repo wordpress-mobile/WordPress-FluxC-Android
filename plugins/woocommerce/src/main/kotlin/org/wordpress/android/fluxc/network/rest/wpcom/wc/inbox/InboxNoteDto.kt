@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox
 
-import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
@@ -23,7 +22,7 @@ data class InboxNoteDto(
 ) {
     fun toDataModel(siteId: Long) =
         InboxNoteEntity(
-            inboxNoteId = id,
+            id = id,
             siteId = siteId,
             name = name,
             isSnoozable = isSnoozable,
@@ -49,10 +48,11 @@ data class InboxNoteActionDto(
     @SerializedName("nonce_name") val nonceName: String?,
     @SerializedName("url") val url: String
 ) {
-    fun toDataModel(inboxNoteId: Long) =
+    fun toDataModel(inboxNoteId: Long, siteId: Long) =
         InboxNoteActionEntity(
-            actionId = id,
+            id = id,
             inboxNoteId = inboxNoteId,
+            siteId = siteId,
             name = name,
             label = label,
             url = url,

@@ -8,14 +8,16 @@ import androidx.room.PrimaryKey
     tableName = "InboxNoteActions",
     foreignKeys = [ForeignKey(
         entity = InboxNoteEntity::class,
-        parentColumns = ["inboxNoteId"],
-        childColumns = ["inboxNoteId"],
+        parentColumns = ["id", "siteId"],
+        childColumns = ["inboxNoteId", "siteId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    primaryKeys = ["id", "inboxNoteId", "siteId"],
 )
 data class InboxNoteActionEntity(
-    @PrimaryKey val actionId: Long,
+    val id: Long,
     val inboxNoteId: Long,
+    val siteId: Long,
     val name: String,
     val label: String,
     val url: String,

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "6c40c25602a91c9a88bf0691cc0f8d56",
+    "identityHash": "c082002a0cf8df4210582143b947e159",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1311,12 +1311,193 @@
           }
         ],
         "foreignKeys": []
+      },
+      {
+        "tableName": "InboxNotes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `isSnoozable` INTEGER NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT, PRIMARY KEY(`id`, `siteId`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "siteId",
+            "columnName": "siteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSnoozable",
+            "columnName": "isSnoozable",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "content",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateReminder",
+            "columnName": "dateReminder",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id",
+            "siteId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_InboxNotes_id_siteId",
+            "unique": false,
+            "columnNames": [
+              "id",
+              "siteId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_InboxNotes_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "InboxNoteActions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `inboxNoteId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `label` TEXT NOT NULL, `url` TEXT NOT NULL, `query` TEXT, `status` TEXT, `primary` INTEGER NOT NULL, `actionedText` TEXT, PRIMARY KEY(`id`, `inboxNoteId`, `siteId`), FOREIGN KEY(`inboxNoteId`, `siteId`) REFERENCES `InboxNotes`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inboxNoteId",
+            "columnName": "inboxNoteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "siteId",
+            "columnName": "siteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "query",
+            "columnName": "query",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "primary",
+            "columnName": "primary",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actionedText",
+            "columnName": "actionedText",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id",
+            "inboxNoteId",
+            "siteId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "InboxNotes",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "inboxNoteId",
+              "siteId"
+            ],
+            "referencedColumns": [
+              "id",
+              "siteId"
+            ]
+          }
+        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6c40c25602a91c9a88bf0691cc0f8d56')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c082002a0cf8df4210582143b947e159')"
     ]
   }
 }

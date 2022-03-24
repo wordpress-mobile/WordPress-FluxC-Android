@@ -8,7 +8,7 @@ import androidx.room.Relation
 data class InboxNoteWithActions(
     @Embedded val inboxNote: InboxNoteEntity,
     @Relation(
-        parentColumn = "inboxNoteId",
+        parentColumn = "id",
         entityColumn = "inboxNoteId"
     )
     val noteActions: List<InboxNoteActionEntity>
@@ -16,11 +16,11 @@ data class InboxNoteWithActions(
 
 @Entity(
     tableName = "InboxNotes",
-    primaryKeys = ["inboxNoteId", "siteId"],
-    indices = [Index("inboxNoteId", "siteId")]
+    primaryKeys = ["id", "siteId"],
+    indices = [Index("id", "siteId")]
 )
 data class InboxNoteEntity(
-    val inboxNoteId: Long,
+    val id: Long,
     val siteId: Long,
     val name: String,
     val isSnoozable: Boolean = false,
