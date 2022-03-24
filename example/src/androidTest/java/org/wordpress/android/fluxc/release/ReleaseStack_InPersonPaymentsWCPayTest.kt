@@ -96,7 +96,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
         val result = store.fetchPaymentCharge(WOOCOMMERCE_PAYMENTS, sSite, chargeId)
 
         assertFalse(result.isError)
-        assertEquals("9969", result.asWooResult().model?.paymentMethodDetails?.cardPresent?.last4)
+        assertEquals("9969", result.asWooResult().model?.paymentMethodDetails?.cardDetails?.last4)
         assertEquals(4500, result.asWooResult().model?.amount)
     }
 }

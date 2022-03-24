@@ -91,6 +91,13 @@
             android:text="Fetch Product Review by ID"/>
 
         <Button
+            android:id="@+id/update_review_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product Review Status" />
+
+        <Button
             android:id="@+id/fetch_product_shipping_class"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

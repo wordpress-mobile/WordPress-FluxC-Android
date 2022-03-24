@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORI
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
-import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
@@ -277,6 +276,43 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
+        update_review_status.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val id = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter the remoteReviewId of the review",
+                        isNumeric = true
+                    )?.toLongOrNull()
+                    if (id == null) {
+                        prependToLog("Please enter a valid id")
+                        return@launch
+                    }
+                    val newStatus = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter the new status: (approved|hold|spam|trash)"
+                    )
+                    if (newStatus == null) {
+                        prependToLog("Please enter a valid status")
+                        return@launch
+                    }
+
+                    val result = wcProductStore.updateProductReviewStatus(
+                        site = site, reviewId = id, newStatus = newStatus
+                    )
+
+                    if (!result.isError) {
+                        prependToLog("Product Review status updated successfully")
+                    } else {
+                        prependToLog(
+                            "Product Review status update failed, " +
+                                "${result.error.type} ${result.error.message}"
+                        )
+                    }
+                }
+            }
+        }
+
         fetch_product_shipping_class.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
@@ -501,9 +537,6 @@ class WooProductsFragment : StoreSelectingFragment() {
                         pendingFetchSingleProductVariationOffset = 0
                         load_more_product_variations.isEnabled = false
                     }
-                }
-                UPDATE_PRODUCT_REVIEW_STATUS -> {
-                    prependToLog("${event.rowsAffected} product reviews updated")
                 }
                 DELETED_PRODUCT -> {
                     prependToLog("${event.rowsAffected} product deleted")
