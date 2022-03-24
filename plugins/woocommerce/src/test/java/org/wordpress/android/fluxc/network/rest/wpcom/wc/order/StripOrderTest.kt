@@ -172,6 +172,7 @@ internal class StripOrderTest {
 
     @Test
     fun `should filter out item attribute if its key is empty`() {
+        // given
         val emptyAttributeValue = "sample value"
         val lineItemsFromRemote = JsonArray().apply {
             add(
