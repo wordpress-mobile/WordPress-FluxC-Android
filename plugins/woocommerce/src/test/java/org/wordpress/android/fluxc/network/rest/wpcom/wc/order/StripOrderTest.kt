@@ -171,7 +171,7 @@ internal class StripOrderTest {
     }
 
     @Test
-    fun `should filter out item attribute if its key is empty`() {
+    fun `should not crash when item attribute key is empty`() {
         // given
         val emptyAttributeValue = "sample value"
         val lineItemsFromRemote = JsonArray().apply {
@@ -195,7 +195,7 @@ internal class StripOrderTest {
 
         // then
         assertThat(fatModel.lineItems).contains(emptyAttributeValue)
-        assertThat(strippedOrder.lineItems).doesNotContain(emptyAttributeValue)
+        assertThat(strippedOrder.lineItems).contains(emptyAttributeValue)
     }
 
     companion object {
