@@ -768,8 +768,6 @@ class WCProductStore @Inject constructor(
         val actionType = action.type as? WCProductAction ?: return
         when (actionType) {
             // remote actions
-            WCProductAction.FETCH_SINGLE_VARIATION ->
-                fetchSingleVariation(action.payload as FetchSingleVariationPayload)
             WCProductAction.FETCH_PRODUCT_SKU_AVAILABILITY ->
                 fetchProductSkuAvailability(action.payload as FetchProductSkuAvailabilityPayload)
             WCProductAction.FETCH_PRODUCTS ->
@@ -806,8 +804,6 @@ class WCProductStore @Inject constructor(
                 deleteProduct(action.payload as DeleteProductPayload)
 
             // remote responses
-            WCProductAction.FETCHED_SINGLE_VARIATION ->
-                handleFetchSingleVariationCompleted(action.payload as RemoteVariationPayload)
             WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY ->
                 handleFetchProductSkuAvailabilityCompleted(action.payload as RemoteProductSkuAvailabilityPayload)
             WCProductAction.FETCHED_PRODUCTS ->
@@ -940,8 +936,25 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun fetchSingleVariation(payload: FetchSingleVariationPayload) {
-        with(payload) { wcProductRestClient.fetchSingleVariation(site, remoteProductId, remoteVariationId) }
+    suspend fun fetchSingleVariation(payload: FetchSingleVariationPayload): OnVariationChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleVariation") {
+            val result = with(payload) {
+                wcProductRestClient.fetchSingleVariation(site, remoteProductId, remoteVariationId)
+            }
+            return@withDefaultContext if (result.isError) {
+                OnVariationChanged(0).also {
+                    it.error = result.error
+                    it.remoteProductId = result.variation.remoteProductId
+                    it.remoteVariationId = result.variation.remoteVariationId
+                }
+            } else {
+                val rowsAffected = insertOrUpdateProductVariation(result.variation)
+                OnVariationChanged(rowsAffected).also {
+                    it.remoteProductId = result.variation.remoteProductId
+                    it.remoteVariationId = result.variation.remoteVariationId
+                }
+            }
+        }
     }
 
     private fun fetchProductSkuAvailability(payload: FetchProductSkuAvailabilityPayload) {
@@ -1137,27 +1150,6 @@ class WCProductStore @Inject constructor(
                         null
                     }
                 }
-    }
-
-    private fun handleFetchSingleVariationCompleted(payload: RemoteVariationPayload) {
-        val onVariationChanged: OnVariationChanged
-
-        if (payload.isError) {
-            onVariationChanged = OnVariationChanged(0).also {
-                it.error = payload.error
-                it.remoteProductId = payload.variation.remoteProductId
-                it.remoteVariationId = payload.variation.remoteVariationId
-            }
-        } else {
-            val rowsAffected = insertOrUpdateProductVariation(payload.variation)
-            onVariationChanged = OnVariationChanged(rowsAffected).also {
-                it.remoteProductId = payload.variation.remoteProductId
-                it.remoteVariationId = payload.variation.remoteVariationId
-            }
-        }
-
-        onVariationChanged.causeOfChange = WCProductAction.FETCH_SINGLE_VARIATION
-        emitChange(onVariationChanged)
     }
 
     private fun handleFetchProductSkuAvailabilityCompleted(payload: RemoteProductSkuAvailabilityPayload) {
