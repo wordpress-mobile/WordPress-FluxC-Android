@@ -289,40 +289,51 @@ class ProductRestClient @Inject constructor(
      * Makes a GET request to `/wp-json/wc/v3/products/[remoteProductId]/variations/[remoteVariationId]` to fetch
      * a single product variation
      *
-     * Dispatches a WCProductAction.FETCHED_SINGLE_VARIATION action with the result
      *
      * @param [remoteProductId] Unique server id of the product to fetch
      * @param [remoteVariationId] Unique server id of the variation to fetch
      */
-    fun fetchSingleVariation(site: SiteModel, remoteProductId: Long, remoteVariationId: Long) {
+    suspend fun fetchSingleVariation(
+        site: SiteModel,
+        remoteProductId: Long,
+        remoteVariationId: Long
+    ): RemoteVariationPayload {
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
-        val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
         val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: ProductVariationApiResponse? ->
-                    response?.let {
-                        val newModel = it.asProductVariationModel().apply {
-                            this.remoteProductId = remoteProductId
-                            localSiteId = site.id
-                        }
-                        val payload = RemoteVariationPayload(newModel, site)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleVariationAction(payload))
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this, site, url, params, ProductVariationApiResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                response.data?.let {
+                    val newModel = it.asProductVariationModel().apply {
+                        this.remoteProductId = remoteProductId
+                        localSiteId = site.id
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteVariationPayload(
-                            productError,
-                            WCProductVariationModel().apply {
-                                this.remoteProductId = remoteProductId
-                                this.remoteVariationId = remoteVariationId
-                            },
-                            site
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleVariationAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    return RemoteVariationPayload(newModel, site)
+                } ?: RemoteVariationPayload(
+                    ProductError(GENERIC_ERROR, "Success response with empty data"),
+                    WCProductVariationModel().apply {
+                        this.remoteProductId = remoteProductId
+                        this.remoteVariationId = remoteVariationId
+                    },
+                    site
+                )
+            }
+            is JetpackError -> {
+                val productError = networkErrorToProductError(response.error)
+                return RemoteVariationPayload(
+                    productError,
+                    WCProductVariationModel().apply {
+                        this.remoteProductId = remoteProductId
+                        this.remoteVariationId = remoteVariationId
+                    },
+                    site
+                )
+            }
+        }
     }
 
     /**
