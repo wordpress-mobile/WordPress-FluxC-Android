@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORI
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_VARIATION
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
@@ -66,7 +65,6 @@ class WooProductsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
 
-    private var pendingFetchSingleVariationRemoteId: Long? = null
     private var pendingFetchSingleProductShippingClassRemoteId: Long? = null
 
     private var pendingFetchProductVariationsProductRemoteId: Long? = null
@@ -127,13 +125,31 @@ class WooProductsFragment : StoreSelectingFragment() {
                                 activity,
                                 "Enter the remoteVariationId of variation to fetch:"
                         ) { variationIdText ->
-                            pendingFetchSingleVariationRemoteId = variationIdText.text.toString().toLongOrNull()
-                            pendingFetchSingleVariationRemoteId?.let { variationId ->
-                                prependToLog("Submitting request to fetch product by " +
-                                        "remoteProductId $productRemoteId, " +
-                                        "remoteVariationProductID $variationId")
-                                val payload = FetchSingleVariationPayload(site, productId, variationId)
-                                dispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(payload))
+                            variationIdText.text.toString().toLongOrNull()?.let { variationId ->
+                                coroutineScope.launch {
+                                    prependToLog(
+                                        "Submitting request to fetch product by " +
+                                            "remoteProductId $productRemoteId, " +
+                                            "remoteVariationProductID $variationId"
+                                    )
+                                    val payload = FetchSingleVariationPayload(
+                                        site,
+                                        productId,
+                                        variationId
+                                    )
+                                    val result = wcProductStore.fetchSingleVariation(payload)
+                                    prependToLog("Fetching single variation " +
+                                        "${result.error?.let { "failed" } ?: "was successful"}"
+                                    )
+                                    val variation = wcProductStore.getVariationByRemoteId(
+                                        site,
+                                        result.remoteProductId,
+                                        result.remoteVariationId
+                                    )
+                                    variation?.let {
+                                        prependToLog("Variation with id! ${it.remoteVariationId} found in local db")
+                                    } ?: prependToLog("WARNING: Fetched product not found in the local database!")
+                                }
                             } ?: prependToLog("No valid remoteVariationId defined...doing nothing")
                         }
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
@@ -502,24 +518,8 @@ class WooProductsFragment : StoreSelectingFragment() {
     fun onVariationChanged(event: OnVariationChanged) {
         if (event.isError) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        selectedSite?.let { site ->
-            when (event.causeOfChange) {
-                FETCH_SINGLE_VARIATION -> {
-                    pendingFetchSingleVariationRemoteId = null
-                    val variation = wcProductStore.getVariationByRemoteId(
-                            site,
-                            event.remoteProductId,
-                            event.remoteVariationId
-                    )
-                    variation?.let {
-                        prependToLog("Single variation fetched! ${it.remoteVariationId}")
-                    } ?: prependToLog("WARNING: Fetched product not found in the local database!")
-                }
-                else -> prependToLog("Product store was updated from a " + event.causeOfChange)
-            }
+        } else {
+            prependToLog("Product store was updated from a " + event.causeOfChange)
         }
     }
 

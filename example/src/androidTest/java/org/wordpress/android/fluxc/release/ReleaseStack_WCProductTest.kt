@@ -80,8 +80,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         ADDED_PRODUCT_CATEGORY,
         FETCHED_PRODUCT_TAGS,
         ADDED_PRODUCT_TAGS,
-        FETCHED_SINGLE_VARIATION,
-        UPDATED_VARIATION,
         ADD_PRODUCT,
         ADDED_PRODUCT
     }
@@ -153,7 +151,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleVariation() {
+    fun testFetchSingleVariation() = runBlocking {
         // remove all variation for this site and verify there are none
         ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
         assertEquals(
@@ -161,18 +159,14 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 0
         )
 
-        nextEvent = TestEvent.FETCHED_SINGLE_VARIATION
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchSingleVariationAction(
-                        FetchSingleVariationPayload(
-                                sSite,
-                                variationModel.remoteProductId,
-                                variationModel.remoteVariationId
-                        )
-                )
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        val result = productStore.fetchSingleVariation(FetchSingleVariationPayload(
+            sSite,
+            variationModel.remoteProductId,
+            variationModel.remoteVariationId
+        ))
+
+        assertEquals(result.remoteProductId, variationModel.remoteProductId)
+        assertEquals(result.remoteVariationId, variationModel.remoteVariationId)
 
         // Verify results
         val fetchedVariation = productStore.getVariationByRemoteId(
@@ -784,26 +778,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             WCProductAction.FETCH_PRODUCT_VARIATIONS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationChanged(event: OnVariationChanged) {
-        event.error?.let {
-            throw AssertionError("OnVariationChanged has unexpected error: " + it.type)
-        }
-
-        lastVariationEvent = event
-
-        when (event.causeOfChange) {
-            WCProductAction.FETCH_SINGLE_VARIATION -> {
-                assertEquals(TestEvent.FETCHED_SINGLE_VARIATION, nextEvent)
-                assertEquals(event.remoteProductId, variationModel.remoteProductId)
-                assertEquals(event.remoteVariationId, variationModel.remoteVariationId)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
