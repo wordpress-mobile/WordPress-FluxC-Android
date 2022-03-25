@@ -55,28 +55,6 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasStripeExtensionAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-            STRIPE,
-                sSite,
-                17L
-        )
-
-        assertEquals("cus_KpWfupr71lMX0W", result.model?.customerId)
-    }
-
-    @Test
-    fun givenSiteHasStripeExtensionAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-            STRIPE,
-                sSite,
-                1L
-        )
-
-        assertTrue(result.isError)
-    }
-
-    @Test
     fun givenSiteHasStripeExtensionAndStripeAddressThenLocationDataReturned() = runBlocking {
         val result = store.getStoreLocationForSite(STRIPE, sSite)
 
