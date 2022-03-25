@@ -42,7 +42,7 @@ class WCInboxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    saveInboxNotes(response.result, site)
+                    saveInboxNotes(response.result, site.siteId)
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -50,12 +50,12 @@ class WCInboxStore @Inject constructor(
         }
     }
 
-    fun observeInboxNotes(site: SiteModel): Flow<List<InboxNoteWithActions>> =
-        inboxNotesDao.observeInboxNotes(site.siteId)
+    fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>> =
+        inboxNotesDao.observeInboxNotes(siteId)
             .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
 
-    private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, site: SiteModel) {
+    private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         result.forEach { dto ->
             database.runInTransaction {
                 coroutineEngine.launch(
@@ -63,8 +63,8 @@ class WCInboxStore @Inject constructor(
                     this,
                     "fetchInboxNotes DB transaction"
                 ) {
-                    inboxNotesDao.insertOrUpdateInboxNote(dto.toDataModel(site.siteId))
-                    saveInboxNoteActions(dto, site.id.toLong())
+                    inboxNotesDao.insertOrUpdateInboxNote(dto.toDataModel(siteId))
+                    saveInboxNoteActions(dto, siteId)
                 }
             }
         }
