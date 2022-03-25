@@ -1,3 +1,9 @@
+# Nodes with values to reuse in the pipeline.
+common_params:
+  # Common plugin settings to use with the `plugins` key.
+  - &common_plugins
+    - automattic/bash-cache#2.3.0
+
 agents:
   queue: "android"
 
@@ -5,12 +11,14 @@ steps:
   - label: "Publish :fluxc-annotations"
     key: "publish-fluxc-annotations"
     command: .buildkite/publish-fluxc-annotations.sh
+    plugins: *common_plugins
 
   - label: "Publish :fluxc-processor"
     key: "publish-fluxc-processor"
     depends_on:
       - "publish-fluxc-annotations"
     command: .buildkite/publish-fluxc-processor.sh
+    plugins: *common_plugins
 
   - label: "Publish :fluxc"
     key: "publish-fluxc"
@@ -18,6 +26,7 @@ steps:
       - "publish-fluxc-processor"
       - "publish-fluxc-annotations"
     command: .buildkite/publish-fluxc.sh
+    plugins: *common_plugins
 
   - label: "Publish :plugins:woocommerce"
     key: "publish-plugins-woocommerce"
@@ -26,3 +35,4 @@ steps:
       - "publish-fluxc-annotations"
       - "publish-fluxc"
     command: .buildkite/publish-plugins-woocommerce.sh
+    plugins: *common_plugins
