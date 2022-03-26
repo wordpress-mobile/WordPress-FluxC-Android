@@ -160,12 +160,12 @@ class CouponStore @Inject constructor(
                     val includedCategories = productCategoriesDao.getCouponProductCategories(
                         siteId = site.siteId,
                         couponId = it.couponEntity.id,
-                        areExcluded = true
+                        areExcluded = false
                     )
                     val excludedCategories = productCategoriesDao.getCouponProductCategories(
                         siteId = site.siteId,
                         couponId = it.couponEntity.id,
-                        areExcluded = false
+                        areExcluded = true
                     )
                     CouponDataModel(
                         it.couponEntity,
