@@ -41,7 +41,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCreated
@@ -156,11 +155,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 0
         )
 
-        val result = productStore.fetchSingleVariation(FetchSingleVariationPayload(
+        val result = productStore.fetchSingleVariation(
             sSite,
             variationModel.remoteProductId,
             variationModel.remoteVariationId
-        ))
+        )
 
         assertEquals(result.remoteProductId, variationModel.remoteProductId)
         assertEquals(result.remoteVariationId, variationModel.remoteVariationId)

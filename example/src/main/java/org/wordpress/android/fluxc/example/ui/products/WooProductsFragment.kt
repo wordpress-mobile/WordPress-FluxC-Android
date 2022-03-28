@@ -43,7 +43,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
@@ -131,12 +130,7 @@ class WooProductsFragment : StoreSelectingFragment() {
                                             "remoteProductId $productRemoteId, " +
                                             "remoteVariationProductID $variationId"
                                     )
-                                    val payload = FetchSingleVariationPayload(
-                                        site,
-                                        productId,
-                                        variationId
-                                    )
-                                    val result = wcProductStore.fetchSingleVariation(payload)
+                                    val result = wcProductStore.fetchSingleVariation(site, productId, variationId)
                                     prependToLog("Fetching single variation " +
                                         "${result.error?.let { "failed" } ?: "was successful"}"
                                     )
