@@ -545,7 +545,7 @@ class WCProductStore @Inject constructor(
 
     class OnVariationChanged(
         var remoteProductId: Long = 0L,
-        var remoteVariationId: Long = 0L,
+        var remoteVariationId: Long = 0L
     ) : OnChanged<ProductError>()
 
     class OnProductSkuAvailabilityChanged(
