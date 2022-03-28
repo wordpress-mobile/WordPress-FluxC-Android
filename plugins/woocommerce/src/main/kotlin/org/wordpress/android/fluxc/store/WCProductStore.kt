@@ -86,12 +86,6 @@ class WCProductStore @Inject constructor(
         var remoteProductId: Long
     ) : Payload<BaseNetworkError>()
 
-    class FetchSingleVariationPayload(
-        var site: SiteModel,
-        var remoteProductId: Long,
-        var remoteVariationId: Long
-    ) : Payload<BaseNetworkError>()
-
     class FetchProductsPayload(
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
@@ -932,11 +926,15 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    suspend fun fetchSingleVariation(payload: FetchSingleVariationPayload): OnVariationChanged {
+    suspend fun fetchSingleVariation(
+        site: SiteModel,
+        remoteProductId: Long,
+        remoteVariationId: Long
+    ): OnVariationChanged {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleVariation") {
-            val result = with(payload) {
-                wcProductRestClient.fetchSingleVariation(site, remoteProductId, remoteVariationId)
-            }
+            val result = wcProductRestClient
+                .fetchSingleVariation(site, remoteProductId, remoteVariationId)
+
             return@withDefaultContext if (result.isError) {
                 OnVariationChanged(0).also {
                     it.error = result.error
