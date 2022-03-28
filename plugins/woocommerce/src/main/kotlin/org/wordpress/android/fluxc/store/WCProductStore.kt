@@ -544,13 +544,9 @@ class WCProductStore @Inject constructor(
     }
 
     class OnVariationChanged(
-        var rowsAffected: Int,
-        var remoteProductId: Long = 0L, // only set for fetching a single variation
-        var remoteVariationId: Long = 0L, // only set for fetching a single variation
-        var canLoadMore: Boolean = false
-    ) : OnChanged<ProductError>() {
-        var causeOfChange: WCProductAction? = null
-    }
+        var remoteProductId: Long = 0L,
+        var remoteVariationId: Long = 0L,
+    ) : OnChanged<ProductError>()
 
     class OnProductSkuAvailabilityChanged(
         var sku: String,
@@ -942,8 +938,8 @@ class WCProductStore @Inject constructor(
                     it.remoteVariationId = result.variation.remoteVariationId
                 }
             } else {
-                val rowsAffected = insertOrUpdateProductVariation(result.variation)
-                OnVariationChanged(rowsAffected).also {
+                insertOrUpdateProductVariation(result.variation)
+                OnVariationChanged().also {
                     it.remoteProductId = result.variation.remoteProductId
                     it.remoteVariationId = result.variation.remoteVariationId
                 }

@@ -49,7 +49,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
@@ -112,7 +111,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
-    private var lastVariationEvent: OnVariationChanged? = null
     private var lastProductCategoryEvent: OnProductCategoryChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastProductTagEvent: OnProductTagChanged? = null

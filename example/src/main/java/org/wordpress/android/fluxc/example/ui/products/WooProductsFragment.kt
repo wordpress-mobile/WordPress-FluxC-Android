@@ -50,7 +50,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClasses
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductSkuAvailabilityChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -537,16 +536,6 @@ class WooProductsFragment : StoreSelectingFragment() {
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationChanged(event: OnVariationChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-        } else {
-            prependToLog("Product store was updated from a " + event.causeOfChange)
         }
     }
 
