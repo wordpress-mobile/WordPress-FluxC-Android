@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 data class CouponDto(
     @SerializedName("id") val id: Long,
     @SerializedName("code") val code: String?,
+    @SerializedName("amount") val amount: String?,
     @SerializedName("date_created") val dateCreated: String?,
     @SerializedName("date_created_gmt") val dateCreatedGmt: String?,
     @SerializedName("date_modified") val dateModified: String?,
@@ -35,6 +36,7 @@ data class CouponDto(
             id = id,
             siteId = siteId,
             code = code,
+            amount = amount,
             dateCreated = dateCreated,
             dateCreatedGmt = dateCreatedGmt,
             dateModified = dateModified,

@@ -414,3 +414,43 @@ internal val MIGRATION_9_10 = object : Migration(9, 10) {
         }
     }
 }
+
+internal val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE Coupons")
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `Coupons` (`id` INTEGER NOT NULL,
+                        `siteId` INTEGER NOT NULL,
+                        `code` TEXT,
+                        `amount` TEXT,
+                        `dateCreated` TEXT,
+                        `dateCreatedGmt` TEXT,
+                        `dateModified` TEXT,
+                        `dateModifiedGmt` TEXT,
+                        `discountType` TEXT,
+                        `description` TEXT,
+                        `dateExpires` TEXT,
+                        `dateExpiresGmt` TEXT,
+                        `usageCount` INTEGER,
+                        `isForIndividualUse` INTEGER,
+                        `usageLimit` INTEGER,
+                        `usageLimitPerUser` INTEGER,
+                        `limitUsageToXItems` INTEGER,
+                        `isShippingFree` INTEGER,
+                        `areSaleItemsExcluded` INTEGER,
+                        `minimumAmount` TEXT,
+                        `maximumAmount` TEXT,
+                        PRIMARY KEY(`id`,`siteId`))
+                        """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_Coupons_id_siteId` ON `Coupons` (`id`, `siteId`);
+                """.trimIndent()
+            )
+        }
+    }
+}
