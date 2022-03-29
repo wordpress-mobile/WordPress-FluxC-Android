@@ -33,7 +33,6 @@ import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.store.WCDataStore
 import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
 import org.wordpress.android.util.AppLog
@@ -72,7 +71,18 @@ class WooCommerceFragment : StoreSelectingFragment() {
 
         log_woo_api_versions.setOnClickListener {
             for (site in wooCommerceStore.getWooCommerceSites()) {
-                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteApiVersionAction(site))
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooCommerceStore.fetchSupportedApiVersion(site)
+                    }
+                    result.error?.let {
+                        prependToLog("Error in onApiVersionFetched: ${it.type} - ${it.message}")
+                    }
+                    result.model?.let {
+                        val formattedVersion = it.apiVersion?.substringAfterLast("/")
+                        prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+                    }
+                }
             }
         }
 
@@ -212,20 +222,6 @@ class WooCommerceFragment : StoreSelectingFragment() {
     override fun onStop() {
         super.onStop()
         dispatcher.unregister(this)
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onApiVersionFetched(event: OnApiVersionFetched) {
-        if (event.isError) {
-            prependToLog("Error in onApiVersionFetched: ${event.error.type} - ${event.error.message}")
-            return
-        }
-
-        with(event) {
-            val formattedVersion = apiVersion.substringAfterLast("/")
-            prependToLog("Max Woo version for ${site.name}: $formattedVersion")
-        }
     }
 
     @Suppress("unused")
