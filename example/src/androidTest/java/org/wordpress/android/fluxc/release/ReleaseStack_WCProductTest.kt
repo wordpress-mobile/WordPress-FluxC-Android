@@ -41,17 +41,14 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCreated
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
-import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
@@ -79,8 +76,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         ADDED_PRODUCT_CATEGORY,
         FETCHED_PRODUCT_TAGS,
         ADDED_PRODUCT_TAGS,
-        FETCHED_SINGLE_VARIATION,
-        UPDATED_VARIATION,
         ADD_PRODUCT,
         ADDED_PRODUCT
     }
@@ -116,10 +111,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
-    private var lastVariationEvent: OnVariationChanged? = null
     private var lastProductCategoryEvent: OnProductCategoryChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
-    private var lastReviewEvent: OnProductReviewChanged? = null
     private var lastProductTagEvent: OnProductTagChanged? = null
     private var lastAddNewProductEvent: OnProductCreated? = null
 
@@ -152,7 +145,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleVariation() {
+    fun testFetchSingleVariation() = runBlocking {
         // remove all variation for this site and verify there are none
         ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
         assertEquals(
@@ -160,18 +153,14 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 0
         )
 
-        nextEvent = TestEvent.FETCHED_SINGLE_VARIATION
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchSingleVariationAction(
-                        FetchSingleVariationPayload(
-                                sSite,
-                                variationModel.remoteProductId,
-                                variationModel.remoteVariationId
-                        )
-                )
+        val result = productStore.fetchSingleVariation(
+            sSite,
+            variationModel.remoteProductId,
+            variationModel.remoteVariationId
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(result.remoteProductId, variationModel.remoteProductId)
+        assertEquals(result.remoteVariationId, variationModel.remoteVariationId)
 
         // Verify results
         val fetchedVariation = productStore.getVariationByRemoteId(
@@ -756,26 +745,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             WCProductAction.FETCH_PRODUCT_VARIATIONS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationChanged(event: OnVariationChanged) {
-        event.error?.let {
-            throw AssertionError("OnVariationChanged has unexpected error: " + it.type)
-        }
-
-        lastVariationEvent = event
-
-        when (event.causeOfChange) {
-            WCProductAction.FETCH_SINGLE_VARIATION -> {
-                assertEquals(TestEvent.FETCHED_SINGLE_VARIATION, nextEvent)
-                assertEquals(event.remoteProductId, variationModel.remoteProductId)
-                assertEquals(event.remoteVariationId, variationModel.remoteVariationId)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
