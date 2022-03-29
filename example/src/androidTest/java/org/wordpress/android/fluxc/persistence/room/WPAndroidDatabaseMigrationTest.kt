@@ -153,7 +153,8 @@ class WPAndroidDatabaseMigrationTest {
                     "parentId," +
                     "iLike)" +
                     " VALUES (1, 5, 32, 4, 2, 22, \"authorUrl\", \"authorName\", \"authorEmail\"," +
-                    "\"authorProfileImageUrl\",\"postTitle\",\"status\",\"datePublished\",111,\"content\",\"url\",0,0,1)"
+                    "\"authorProfileImageUrl\",\"postTitle\",\"status\",\"datePublished\",111," +
+                    "\"content\",\"url\",0,0,1)"
             )
             close()
         }
