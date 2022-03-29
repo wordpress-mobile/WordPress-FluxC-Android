@@ -932,7 +932,7 @@ class WCProductStore @Inject constructor(
                 .fetchSingleVariation(site, remoteProductId, remoteVariationId)
 
             return@withDefaultContext if (result.isError) {
-                OnVariationChanged(0).also {
+                OnVariationChanged().also {
                     it.error = result.error
                     it.remoteProductId = result.variation.remoteProductId
                     it.remoteVariationId = result.variation.remoteVariationId
