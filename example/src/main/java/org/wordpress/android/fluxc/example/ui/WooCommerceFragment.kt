@@ -1,12 +1,9 @@
 package org.wordpress.android.fluxc.example.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,18 +41,13 @@ import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooCommerceFragment : Fragment() {
+class WooCommerceFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject lateinit var wooCommerceStore: WooCommerceStore
     @Inject lateinit var wooDataStore: WCDataStore
     @Inject lateinit var wooUserStore: WCUserStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
-
-    override fun onAttach(context: Context) {
-        AndroidSupportInjection.inject(this)
-        super.onAttach(context)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woocommerce, container, false)
@@ -85,19 +77,19 @@ class WooCommerceFragment : Fragment() {
         }
 
         fetch_settings.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
             } ?: showNoWCSitesToast()
         }
 
         fetch_product_settings.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchProductSettingsAction(it))
             } ?: showNoWCSitesToast()
         }
 
         get_user_role.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
                         wooUserStore.fetchUserRole(site)
@@ -113,55 +105,55 @@ class WooCommerceFragment : Fragment() {
         }
 
         orders.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooOrdersFragment())
             } ?: showNoWCSitesToast()
         }
 
         products.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooProductsFragment())
             } ?: showNoWCSitesToast()
         }
 
         stats.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooStatsFragment())
             } ?: showNoWCSitesToast()
         }
 
         stats_revenue.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooRevenueStatsFragment())
             } ?: showNoWCSitesToast()
         }
 
         refunds.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooRefundsFragment())
             } ?: showNoWCSitesToast()
         }
 
         gateways.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooGatewaysFragment())
             } ?: showNoWCSitesToast()
         }
 
         taxes.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooTaxFragment())
             } ?: showNoWCSitesToast()
         }
 
         shipping_labels.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooShippingLabelFragment())
             } ?: showNoWCSitesToast()
         }
 
         leaderboards.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooLeaderboardsFragment())
             } ?: showNoWCSitesToast()
         }
@@ -171,25 +163,25 @@ class WooCommerceFragment : Fragment() {
         }
 
         attributes.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooProductAttributeFragment())
             } ?: showNoWCSitesToast()
         }
 
         customers.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooCustomersFragment())
             } ?: showNoWCSitesToast()
         }
 
         coupons.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooCouponsFragment())
             } ?: showNoWCSitesToast()
         }
 
         help_support.setOnClickListener {
-            getFirstWCSite()?.let {
+            selectedSite?.let {
                 replaceFragment(WooHelpSupportFragment())
             } ?: showNoWCSitesToast()
         }
@@ -198,7 +190,7 @@ class WooCommerceFragment : Fragment() {
     private fun launchCountriesRequest() {
         coroutineScope.launch {
             try {
-                getFirstWCSite()?.let {
+                selectedSite?.let {
                     wooDataStore.fetchCountriesAndStates(it).model?.let { country ->
                         country.forEach { location ->
                             prependToLog(location.name)
@@ -270,6 +262,4 @@ class WooCommerceFragment : Fragment() {
     private fun showNoWCSitesToast() {
         ToastUtils.showToast(activity, "No WooCommerce sites found for this account!")
     }
-
-    private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
 }
