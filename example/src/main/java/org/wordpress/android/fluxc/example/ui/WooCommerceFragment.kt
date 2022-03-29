@@ -9,9 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.LogUtils
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
@@ -29,19 +26,15 @@ import org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFra
 import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
-import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.store.WCDataStore
 import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
-import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
 class WooCommerceFragment : StoreSelectingFragment() {
-    @Inject internal lateinit var dispatcher: Dispatcher
     @Inject lateinit var wooCommerceStore: WooCommerceStore
     @Inject lateinit var wooDataStore: WCDataStore
     @Inject lateinit var wooUserStore: WCUserStore
@@ -49,7 +42,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woocommerce, container, false)
+        inflater.inflate(R.layout.fragment_woocommerce, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -87,14 +80,39 @@ class WooCommerceFragment : StoreSelectingFragment() {
         }
 
         fetch_settings.setOnClickListener {
-            selectedSite?.let {
-                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooCommerceStore.fetchSiteGeneralSettings(site)
+                    }
+                    result.error?.let {
+                        prependToLog("Error fetching settings: ${it.type} - ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("Updated site settings for ${site.name}:\n" +
+                            it.toString()
+                        )
+                    }
+                }
             } ?: showNoWCSitesToast()
         }
 
         fetch_product_settings.setOnClickListener {
-            selectedSite?.let {
-                dispatcher.dispatch(WCCoreActionBuilder.newFetchProductSettingsAction(it))
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooCommerceStore.fetchSiteProductSettings(site)
+                    }
+                    result.error?.let {
+                        prependToLog("Error in onWCProductSettingsChanged: ${it.type} - ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog(
+                            "Updated product settings for ${site.name}: " +
+                                "weight unit = ${it.weightUnit}, dimension unit = ${it.dimensionUnit}"
+                        )
+                    } ?: prependToLog("Error getting product settings from db")
+                }
             } ?: showNoWCSitesToast()
         }
 
@@ -206,53 +224,12 @@ class WooCommerceFragment : StoreSelectingFragment() {
                             prependToLog(location.name)
                         }
                     }
-                    ?: prependToLog("Couldn't fetch countries.")
+                        ?: prependToLog("Couldn't fetch countries.")
                 } ?: showNoWCSitesToast()
             } catch (ex: Exception) {
                 prependToLog("Couldn't fetch countries. Error: ${ex.message}")
             }
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        dispatcher.register(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        dispatcher.unregister(this)
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCSiteSettingsChanged(event: OnWCSiteSettingsChanged) {
-        if (event.isError) {
-            prependToLog("Error in onWCSiteSettingsChanged: ${event.error.type} - ${event.error.message}")
-            return
-        }
-
-        with(event) {
-            prependToLog("Updated site settings for ${site.name}:\n" +
-                    wooCommerceStore.getSiteSettings(site).toString()
-            )
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCProductSettingsChanged(event: OnWCProductSettingsChanged) {
-        if (event.isError) {
-            prependToLog("Error in onWCProductSettingsChanged: ${event.error.type} - ${event.error.message}")
-            return
-        }
-
-        wooCommerceStore.getProductSettings(event.site)?.let { settings ->
-            prependToLog(
-                    "Updated product settings for ${event.site.name}: " +
-                            "weight unit = ${settings.weightUnit}, dimension unit = ${settings.dimensionUnit}"
-            )
-        } ?: prependToLog("Error getting product settings from db")
     }
 
     private fun showNoWCSitesToast() {
