@@ -54,28 +54,6 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-            WOOCOMMERCE_PAYMENTS,
-                sSite,
-                17L
-        )
-
-        assertEquals("cus_JyzaCUE61Qmy8y", result.model?.customerId)
-    }
-
-    @Test
-    fun givenSiteHasWCPayAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-            WOOCOMMERCE_PAYMENTS,
-                sSite,
-                1L
-        )
-
-        assertTrue(result.isError)
-    }
-
-    @Test
     fun givenSiteHasWCPayAndStripeAddressThenLocationDataReturned() = runBlocking {
         val result = store.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, sSite)
 
