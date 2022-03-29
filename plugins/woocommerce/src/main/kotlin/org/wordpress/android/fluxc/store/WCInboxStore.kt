@@ -37,7 +37,7 @@ class WCInboxStore @Inject constructor(
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<Unit> {
-        return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             val response = restClient.fetchInboxNotes(site, page, pageSize)
             when {
                 response.isError -> WooResult(response.error)
