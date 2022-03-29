@@ -63,28 +63,6 @@ open class WooCommerceStore @Inject constructor(
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
     }
 
-    class FetchApiVersionResponsePayload(
-        var site: SiteModel,
-        var version: String
-    ) : Payload<ApiVersionError>() {
-        constructor(error: ApiVersionError, site: SiteModel) : this(site, "") { this.error = error }
-    }
-
-    class ApiVersionError(
-        val type: ApiVersionErrorType = ApiVersionErrorType.GENERIC_ERROR,
-        val message: String = ""
-    ) : OnChangedError
-
-    enum class ApiVersionErrorType {
-        GENERIC_ERROR,
-        NO_WOO_API;
-
-        companion object {
-            private val reverseMap = values().associateBy(ApiVersionErrorType::name)
-            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
-        }
-    }
-
     class FetchWCSiteSettingsResponsePayload(
         val site: SiteModel,
         val settings: WCSettingsModel?
@@ -116,8 +94,6 @@ open class WooCommerceStore @Inject constructor(
     }
 
     // OnChanged events
-    class OnApiVersionFetched(val site: SiteModel, val apiVersion: String) : OnChanged<ApiVersionError>()
-
     class OnWCSiteSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
 
     class OnWCProductSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
@@ -129,12 +105,9 @@ open class WooCommerceStore @Inject constructor(
         val actionType = action.type as? WCCoreAction ?: return
         when (actionType) {
             // Remote actions
-            WCCoreAction.FETCH_SITE_API_VERSION -> getApiVersion(action.payload as SiteModel)
             WCCoreAction.FETCH_SITE_SETTINGS -> fetchSiteSettings(action.payload as SiteModel)
             WCCoreAction.FETCH_PRODUCT_SETTINGS -> fetchProductSettings(action.payload as SiteModel)
             // Remote responses
-            WCCoreAction.FETCHED_SITE_API_VERSION ->
-                handleGetApiVersionCompleted(action.payload as FetchApiVersionResponsePayload)
             WCCoreAction.FETCHED_SITE_SETTINGS ->
                 handleFetchSiteSettingsCompleted(action.payload as FetchWCSiteSettingsResponsePayload)
             WCCoreAction.FETCHED_PRODUCT_SETTINGS ->
@@ -447,8 +420,6 @@ open class WooCommerceStore @Inject constructor(
         return formatCurrencyForDisplay(amount.toString(), site, currencyCode, applyDecimalFormatting)
     }
 
-    private fun getApiVersion(site: SiteModel) = wcCoreRestClient.getSupportedWooApiVersion(site)
-
     private fun fetchSiteSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsGeneral(site)
 
     private fun fetchProductSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsProducts(site)
@@ -475,17 +446,5 @@ open class WooCommerceStore @Inject constructor(
         }
 
         emitChange(onWCProductSettingsChanged)
-    }
-
-    private fun handleGetApiVersionCompleted(payload: FetchApiVersionResponsePayload) {
-        val onApiVersionFetched: OnApiVersionFetched
-
-        if (payload.isError) {
-            onApiVersionFetched = OnApiVersionFetched(payload.site, "").also { it.error = payload.error }
-        } else {
-            onApiVersionFetched = OnApiVersionFetched(payload.site, payload.version)
-        }
-
-        emitChange(onApiVersionFetched)
     }
 }

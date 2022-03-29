@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils.WCSettingsBuilder
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettingsResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
@@ -55,20 +54,6 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         mMockedNetworkAppComponent.inject(this)
         dispatcher.register(this)
         lastAction = null
-    }
-
-    @Test
-    fun testApiVersionFetch() {
-        interceptor.respondWith("jetpack-tunnel-root-response-success.json")
-        wcRestClient.getSupportedWooApiVersion(siteModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCCoreAction.FETCHED_SITE_API_VERSION, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchApiVersionResponsePayload
-        assertNull(payload.error)
-        assertEquals(WooCommerceStore.WOO_API_NAMESPACE_V3, payload.version)
     }
 
     @Test
