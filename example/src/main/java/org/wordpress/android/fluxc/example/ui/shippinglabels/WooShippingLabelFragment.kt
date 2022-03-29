@@ -26,7 +26,6 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
-import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
@@ -736,14 +735,12 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
             Triple<OrderEntity?, ShippingLabelAddress?, ShippingLabelAddress?> {
         prependToLog("Loading shipping data...")
 
-        dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
-
         val payload = FetchOrdersByIdsPayload(site, listOf(orderId))
         dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
 
         delay(5000)
 
-        val origin = wooCommerceStore.getSiteSettings(site)?.let {
+        val origin = wooCommerceStore.fetchSiteGeneralSettings(site).model?.let {
             ShippingLabelAddress(
                     name = "Test Name",
                     address = it.address,

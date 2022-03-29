@@ -5,8 +5,6 @@ import com.wellsql.generated.SiteModelTable
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.Payload
-import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
@@ -37,7 +35,6 @@ import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.LanguageUtils
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.absoluteValue
@@ -65,57 +62,10 @@ open class WooCommerceStore @Inject constructor(
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
     }
 
-    class FetchWCSiteSettingsResponsePayload(
-        val site: SiteModel,
-        val settings: WCSettingsModel?
-    ) : Payload<WCSiteSettingsError>() {
-        constructor(error: WCSiteSettingsError, site: SiteModel) : this(site, null) { this.error = error }
-    }
-
-    class WCSiteSettingsError(
-        val type: WCSiteSettingsErrorType = WCSiteSettingsErrorType.GENERIC_ERROR,
-        val message: String = ""
-    ) : OnChangedError
-
-    enum class WCSiteSettingsErrorType {
-        GENERIC_ERROR,
-        INVALID_RESPONSE;
-
-        companion object {
-            private val reverseMap = values().associateBy(WCSiteSettingsErrorType::name)
-            fun fromString(type: String) =
-                    reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
-        }
-    }
-
-    class FetchWCProductSettingsResponsePayload(
-        val site: SiteModel,
-        val settings: WCProductSettingsModel?
-    ) : Payload<WCSiteSettingsError>() {
-        constructor(error: WCSiteSettingsError, site: SiteModel) : this(site, null) { this.error = error }
-    }
-
-    // OnChanged events
-    class OnWCSiteSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
-
-    class OnWCProductSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
-
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    override fun onAction(action: Action<*>) {
-        val actionType = action.type as? WCCoreAction ?: return
-        when (actionType) {
-            // Remote actions
-            WCCoreAction.FETCH_SITE_SETTINGS -> fetchSiteSettings(action.payload as SiteModel)
-            WCCoreAction.FETCH_PRODUCT_SETTINGS -> fetchProductSettings(action.payload as SiteModel)
-            // Remote responses
-            WCCoreAction.FETCHED_SITE_SETTINGS ->
-                handleFetchSiteSettingsCompleted(action.payload as FetchWCSiteSettingsResponsePayload)
-            WCCoreAction.FETCHED_PRODUCT_SETTINGS ->
-                handleFetchProductSettingsCompleted(action.payload as FetchWCProductSettingsResponsePayload)
-        }
-    }
+    override fun onAction(action: Action<*>) { }
 
     suspend fun fetchWooCommerceSites(): WooResult<List<SiteModel>> {
         val fetchResult = siteStore.fetchSites(FetchSitesPayload())
@@ -468,33 +418,5 @@ open class WooCommerceStore @Inject constructor(
         applyDecimalFormatting: Boolean
     ): String {
         return formatCurrencyForDisplay(amount.toString(), site, currencyCode, applyDecimalFormatting)
-    }
-
-    private fun fetchSiteSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsGeneral(site)
-
-    private fun fetchProductSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsProducts(site)
-
-    private fun handleFetchSiteSettingsCompleted(payload: FetchWCSiteSettingsResponsePayload) {
-        val onWCSiteSettingsChanged = OnWCSiteSettingsChanged(payload.site)
-        if (payload.isError || payload.settings == null) {
-            onWCSiteSettingsChanged.error =
-                    payload.error ?: WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
-        } else {
-            WCSettingsSqlUtils.insertOrUpdateSettings(payload.settings)
-        }
-
-        emitChange(onWCSiteSettingsChanged)
-    }
-
-    private fun handleFetchProductSettingsCompleted(payload: FetchWCProductSettingsResponsePayload) {
-        val onWCProductSettingsChanged = OnWCProductSettingsChanged(payload.site)
-        if (payload.isError || payload.settings == null) {
-            onWCProductSettingsChanged.error =
-                    payload.error ?: WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
-        } else {
-            WCProductSettingsSqlUtils.insertOrUpdateProductSettings(payload.settings)
-        }
-
-        emitChange(onWCProductSettingsChanged)
     }
 }
