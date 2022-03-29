@@ -19,6 +19,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionError
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionErrorType
@@ -35,10 +38,32 @@ import javax.inject.Singleton
 class WooCommerceRestClient @Inject constructor(
     appContext: Context,
     private val dispatcher: Dispatcher,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    /**
+     * Makes a GET call to the root wp-json endpoint (`/`) via the Jetpack tunnel (see [JetpackTunnelGsonRequest])
+     * for the given [SiteModel], and parses through the `namespaces` field in the result for supported versions
+     * of the Woo API.
+     *
+     */
+    suspend fun fetchSupportedWooApiVersion(site: SiteModel): WooPayload<RootWPAPIRestResponse> {
+        val url = "/"
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            mapOf("_fields" to "authentication,namespaces"),
+            RootWPAPIRestResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
     /**
      * Makes a GET call to the root wp-json endpoint (`/`) via the Jetpack tunnel (see [JetpackTunnelGsonRequest])
      * for the given [SiteModel], and parses through the `namespaces` field in the result for supported versions

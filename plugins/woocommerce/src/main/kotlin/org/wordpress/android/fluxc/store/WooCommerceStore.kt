@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCApiVersionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.toDomainModel
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils
@@ -333,6 +334,36 @@ open class WooCommerceStore @Inject constructor(
                         siteSqlUtils.insertOrUpdateSite(site)
                         true
                     } ?: false
+                }
+            }
+        }
+    }
+
+    suspend fun fetchSupportedApiVersion(site: SiteModel): WooResult<WCApiVersionResponse> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSupportedWooApiVersion") {
+            val response = wcCoreRestClient.fetchSupportedWooApiVersion(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(
+                        T.API,
+                        "Checking WooCommerce API version failed for site ${site.siteId}"
+                    )
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val namespaces = response.result.namespaces
+                    val maxWooApiVersion = namespaces?.run {
+                        find { it == WOO_API_NAMESPACE_V3 }
+                            ?: find { it == WOO_API_NAMESPACE_V2 }
+                            ?: find { it == WOO_API_NAMESPACE_V1 }
+                    }
+                    WooResult(WCApiVersionResponse(
+                        siteModel = site,
+                        apiVersion = maxWooApiVersion
+                    ))
+                }
+                else -> {
+                    WooResult(WooError(GENERIC_ERROR, UNKNOWN))
                 }
             }
         }
