@@ -64,6 +64,41 @@ class WooCommerceRestClient @Inject constructor(
      * Makes a GET call to `/wc/v3/settings/general` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving site settings for the given WooCommerce [SiteModel].
      *
+     */
+    suspend fun fetchSiteSettingsGeneral(site: SiteModel): WooPayload<List<SiteSettingsResponse>> {
+        val url = WOOCOMMERCE.settings.general.pathV3
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            emptyMap(),
+            Array<SiteSettingsResponse>::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data?.toList())
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    suspend fun fetchSiteSettingsProducts(site: SiteModel): WooPayload<List<SiteSettingsResponse>> {
+        val url = WOOCOMMERCE.settings.products.pathV3
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            emptyMap(),
+            Array<SiteSettingsResponse>::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data?.toList())
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/settings/general` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving site settings for the given WooCommerce [SiteModel].
+     *
      * Dispatches a [WCCoreAction.FETCHED_SITE_SETTINGS] action with a selected subset of the response values,
      * converted to a [WCSettingsModel].
      */

@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_S
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
+import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -49,6 +50,7 @@ open class WooCommerceStore @Inject constructor(
     private val siteStore: SiteStore,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
+    private val settingsMapper: WCSettingsMapper,
     private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
     enum class WooPlugin(val pluginName: String) {
@@ -334,6 +336,54 @@ open class WooCommerceStore @Inject constructor(
                         siteModel = site,
                         apiVersion = maxWooApiVersion
                     ))
+                }
+                else -> {
+                    WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+                }
+            }
+        }
+    }
+
+    suspend fun fetchSiteGeneralSettings(site: SiteModel): WooResult<WCSettingsModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSiteGeneralSettings") {
+            val response = wcCoreRestClient.fetchSiteSettingsGeneral(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(
+                        T.API,
+                        "Failed to fetch Woo Site settings for site ${site.siteId}"
+                    )
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val settings = settingsMapper.mapSiteSettings(response.result, site)
+                    WCSettingsSqlUtils.insertOrUpdateSettings(settings)
+
+                    WooResult(settings)
+                }
+                else -> {
+                    WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+                }
+            }
+        }
+    }
+
+    suspend fun fetchSiteProductSettings(site: SiteModel): WooResult<WCProductSettingsModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSiteProductSettings") {
+            val response = wcCoreRestClient.fetchSiteSettingsProducts(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(
+                        T.API,
+                        "Failed to fetch Woo product settings for site ${site.siteId}"
+                    )
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val settings = settingsMapper.mapProductSettings(response.result, site)
+                    WCProductSettingsSqlUtils.insertOrUpdateProductSettings(settings)
+
+                    WooResult(settings)
                 }
                 else -> {
                     WooResult(WooError(GENERIC_ERROR, UNKNOWN))
