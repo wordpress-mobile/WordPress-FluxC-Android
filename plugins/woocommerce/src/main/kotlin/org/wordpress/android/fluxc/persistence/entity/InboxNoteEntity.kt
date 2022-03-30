@@ -27,12 +27,12 @@ data class InboxNoteEntity(
     val title: String,
     val content: String,
     val dateCreated: String,
-    val status: InboxNoteStatus,
+    val status: LocalInboxNoteStatus,
     val source: String? = null,
     val type: String? = null,
     val dateReminder: String? = null
 ){
-    enum class InboxNoteStatus{
+    enum class LocalInboxNoteStatus{
         Unactioned,
         Actioned,
         Snoozed

@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
-import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.InboxNoteStatus.Unactioned
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Unactioned
 
 data class InboxNoteDto(
     @SerializedName("id") val id: Long,
