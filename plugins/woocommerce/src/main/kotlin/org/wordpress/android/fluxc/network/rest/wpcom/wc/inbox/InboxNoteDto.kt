@@ -30,7 +30,7 @@ data class InboxNoteDto(
             status = Unactioned,
             source = source,
             type = type,
-            dateReminder = dateReminder,
+            dateReminder = dateReminder
         )
 }
 
