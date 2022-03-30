@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,6 +14,7 @@ import androidx.room.PrimaryKey
         onDelete = ForeignKey.CASCADE
     )],
     primaryKeys = ["id", "inboxNoteId", "siteId"],
+    indices = [Index("id", "inboxNoteId", "siteId")]
 )
 data class InboxNoteActionEntity(
     val id: Long,

@@ -23,7 +23,6 @@ data class InboxNoteEntity(
     val id: Long,
     val siteId: Long,
     val name: String,
-    val isSnoozable: Boolean = false,
     val title: String,
     val content: String,
     val dateCreated: String,

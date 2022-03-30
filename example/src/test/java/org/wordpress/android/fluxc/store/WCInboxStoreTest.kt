@@ -127,7 +127,6 @@ class WCInboxStoreTest {
             name = "",
             type = "",
             status = "",
-            isSnoozable = false,
             source = "",
             actions = listOf(ANY_INBOX_NOTE_ACTION_DTO),
             locale = "",

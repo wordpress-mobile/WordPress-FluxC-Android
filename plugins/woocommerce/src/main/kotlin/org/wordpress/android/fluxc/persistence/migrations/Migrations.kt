@@ -465,7 +465,6 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                     `id` INTEGER NOT NULL,
                     `siteId` INTEGER NOT NULL,
                     `name` TEXT NOT NULL,
-                    `isSnoozable` INTEGER,
                     `title` TEXT NOT NULL,
                     `content` TEXT NOT NULL,
                     `dateCreated` TEXT NOT NULL,
@@ -495,7 +494,7 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                     `url` TEXT NOT NULL,
                     `query` TEXT,
                     `status` TEXT,
-                    `primary` INTEGER,
+                    `primary` INTEGER NOT NULL,
                     `actionedText` TEXT,
                     PRIMARY KEY(`id`,`inboxNoteId`, `siteId`),
                     FOREIGN KEY(`inboxNoteId`, `siteId`)

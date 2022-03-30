@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "44439bac729b89da2b18d5d66336cec5",
+    "identityHash": "f781dd64c495cb41d131bbd75bfd25ab",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -334,7 +334,6 @@
               "id",
               "siteId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Coupons_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
           }
         ],
@@ -380,7 +379,6 @@
               "siteId",
               "email"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_siteId_email` ON `${TABLE_NAME}` (`couponId`, `siteId`, `email`)"
           }
         ],
@@ -444,7 +442,6 @@
               "couponId",
               "siteId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
           },
           {
@@ -454,7 +451,6 @@
               "productId",
               "siteId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProducts_productId_siteId` ON `${TABLE_NAME}` (`productId`, `siteId`)"
           }
         ],
@@ -531,7 +527,6 @@
               "couponId",
               "siteId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_couponId_siteId` ON `${TABLE_NAME}` (`couponId`, `siteId`)"
           },
           {
@@ -541,7 +536,6 @@
               "productCategoryId",
               "siteId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_CouponsAndProductCategories_productCategoryId_siteId` ON `${TABLE_NAME}` (`productCategoryId`, `siteId`)"
           }
         ],
@@ -1319,7 +1313,6 @@
               "localSiteId",
               "orderId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` ON `${TABLE_NAME}` (`localSiteId`, `orderId`)"
           }
         ],
@@ -1327,7 +1320,7 @@
       },
       {
         "tableName": "InboxNotes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `isSnoozable` INTEGER NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT, PRIMARY KEY(`id`, `siteId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT, PRIMARY KEY(`id`, `siteId`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -1345,12 +1338,6 @@
             "fieldPath": "name",
             "columnName": "name",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isSnoozable",
-            "columnName": "isSnoozable",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -1411,7 +1398,6 @@
               "id",
               "siteId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_InboxNotes_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
           }
         ],
@@ -1490,7 +1476,18 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_InboxNoteActions_id_inboxNoteId_siteId",
+            "unique": false,
+            "columnNames": [
+              "id",
+              "inboxNoteId",
+              "siteId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_id_inboxNoteId_siteId` ON `${TABLE_NAME}` (`id`, `inboxNoteId`, `siteId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "InboxNotes",
@@ -1511,7 +1508,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '44439bac729b89da2b18d5d66336cec5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f781dd64c495cb41d131bbd75bfd25ab')"
     ]
   }
 }
