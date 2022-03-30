@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPayment
 import javax.inject.Inject
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import java.util.Locale
 
 class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
@@ -46,33 +47,11 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
         assertEquals("US", result.model?.country)
         assertEquals(false, result.model?.hasPendingRequirements)
         assertEquals(false, result.model?.hasOverdueRequirements)
-        assertEquals("", result.model?.statementDescriptor)
+        assertEquals(result.model?.statementDescriptor?.toLowerCase(Locale.ROOT), "custom descriptor")
         assertEquals("US", result.model?.country)
         assertEquals("usd", result.model?.storeCurrencies?.default)
         assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)
         assertEquals(WCPaymentAccountStatus.COMPLETE, result.model?.status)
-    }
-
-    @Test
-    fun givenSiteHasStripeExtensionAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-            STRIPE,
-                sSite,
-                17L
-        )
-
-        assertEquals("cus_KpWfupr71lMX0W", result.model?.customerId)
-    }
-
-    @Test
-    fun givenSiteHasStripeExtensionAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-            STRIPE,
-                sSite,
-                1L
-        )
-
-        assertTrue(result.isError)
     }
 
     @Test

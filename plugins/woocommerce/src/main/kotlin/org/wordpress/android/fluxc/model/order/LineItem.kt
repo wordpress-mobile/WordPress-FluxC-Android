@@ -19,7 +19,6 @@ data class LineItem(
     val totalTax: String? = null,
     val sku: String? = null,
     val price: String? = null, // The per-item price
-
     @SerializedName("meta_data")
     val metaData: List<WCMetaData>? = null
 ) {

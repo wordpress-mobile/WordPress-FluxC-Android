@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.inperson.WCConnectionTokenResult
-import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
@@ -58,16 +57,6 @@ class WCInPersonPaymentsStore @Inject constructor(
     ): WooResult<WCPaymentAccountResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "loadAccount") {
             restClient.loadAccount(activePlugin, site).asWooResult()
-        }
-    }
-
-    suspend fun createCustomerByOrderId(
-        activePlugin: InPersonPaymentsPluginType,
-        site: SiteModel,
-        orderId: Long
-    ): WooResult<WCCreateCustomerByOrderIdResult> {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomerByOrderId") {
-            restClient.createCustomerByOrderId(activePlugin, site, orderId).asWooResult()
         }
     }
 

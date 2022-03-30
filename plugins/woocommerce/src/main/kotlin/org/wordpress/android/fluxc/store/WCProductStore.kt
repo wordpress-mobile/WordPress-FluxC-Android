@@ -37,6 +37,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.AppLogWrapper
+import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
+import org.wordpress.android.fluxc.utils.ProductsDbHelper
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
@@ -50,6 +52,8 @@ class WCProductStore @Inject constructor(
     private val wcProductRestClient: ProductRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
+    private val productsDbHelper: ProductsDbHelper,
+    private val productCategoriesDbHelper: ProductCategoriesDbHelper,
     private val logger: AppLogWrapper
 ) : Store(dispatcher) {
     companion object {
@@ -80,12 +84,6 @@ class WCProductStore @Inject constructor(
     class FetchSingleProductPayload(
         var site: SiteModel,
         var remoteProductId: Long
-    ) : Payload<BaseNetworkError>()
-
-    class FetchSingleVariationPayload(
-        var site: SiteModel,
-        var remoteProductId: Long,
-        var remoteVariationId: Long
     ) : Payload<BaseNetworkError>()
 
     class FetchProductsPayload(
@@ -546,13 +544,9 @@ class WCProductStore @Inject constructor(
     }
 
     class OnVariationChanged(
-        var rowsAffected: Int,
-        var remoteProductId: Long = 0L, // only set for fetching a single variation
-        var remoteVariationId: Long = 0L, // only set for fetching a single variation
-        var canLoadMore: Boolean = false
-    ) : OnChanged<ProductError>() {
-        var causeOfChange: WCProductAction? = null
-    }
+        var remoteProductId: Long = 0L,
+        var remoteVariationId: Long = 0L
+    ) : OnChanged<ProductError>()
 
     class OnProductSkuAvailabilityChanged(
         var sku: String,
@@ -764,8 +758,6 @@ class WCProductStore @Inject constructor(
         val actionType = action.type as? WCProductAction ?: return
         when (actionType) {
             // remote actions
-            WCProductAction.FETCH_SINGLE_VARIATION ->
-                fetchSingleVariation(action.payload as FetchSingleVariationPayload)
             WCProductAction.FETCH_PRODUCT_SKU_AVAILABILITY ->
                 fetchProductSkuAvailability(action.payload as FetchProductSkuAvailabilityPayload)
             WCProductAction.FETCH_PRODUCTS ->
@@ -774,14 +766,10 @@ class WCProductStore @Inject constructor(
                 searchProducts(action.payload as SearchProductsPayload)
             WCProductAction.FETCH_PRODUCT_VARIATIONS ->
                 fetchProductVariations(action.payload as FetchProductVariationsPayload)
-            WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS ->
-                updateProductReviewStatus(action.payload as UpdateProductReviewStatusPayload)
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
             WCProductAction.UPDATE_PRODUCT ->
                 updateProduct(action.payload as UpdateProductPayload)
-            WCProductAction.UPDATE_VARIATION ->
-                updateVariation(action.payload as UpdateVariationPayload)
             WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS ->
                 fetchProductShippingClass(action.payload as FetchSingleProductShippingClassPayload)
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST ->
@@ -804,8 +792,6 @@ class WCProductStore @Inject constructor(
                 deleteProduct(action.payload as DeleteProductPayload)
 
             // remote responses
-            WCProductAction.FETCHED_SINGLE_VARIATION ->
-                handleFetchSingleVariationCompleted(action.payload as RemoteVariationPayload)
             WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY ->
                 handleFetchProductSkuAvailabilityCompleted(action.payload as RemoteProductSkuAvailabilityPayload)
             WCProductAction.FETCHED_PRODUCTS ->
@@ -814,14 +800,10 @@ class WCProductStore @Inject constructor(
                 handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
             WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
                 handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
-            WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS ->
-                handleUpdateProductReviewStatus(action.payload as RemoteProductReviewPayload)
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
             WCProductAction.UPDATED_PRODUCT ->
                 handleUpdateProduct(action.payload as RemoteUpdateProductPayload)
-            WCProductAction.UPDATED_VARIATION ->
-                handleUpdateVariation(action.payload as RemoteUpdateVariationPayload)
             WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST ->
                 handleFetchProductShippingClassesCompleted(action.payload as RemoteProductShippingClassListPayload)
             WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS ->
@@ -850,15 +832,15 @@ class WCProductStore @Inject constructor(
         productId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductModel> =
-            coroutineEngine?.withDefaultContext(API, this, "submitProductAttributes") {
+            coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
                 wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
-                        ?.asWooResult()
-                        ?.model?.asProductModel()
-                        ?.apply {
-                            localSiteId = site.id
-                            ProductSqlUtils.insertOrUpdateProduct(this)
-                        }
-                        ?.let { WooResult(it) }
+                    .asWooResult()
+                    .model?.asProductModel()
+                    ?.apply {
+                        localSiteId = site.id
+                        productsDbHelper.insertOrUpdateProducts(site, this)
+                    }
+                    ?.let { WooResult(it) }
             } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     suspend fun submitVariationAttributeChanges(
@@ -867,44 +849,44 @@ class WCProductStore @Inject constructor(
         variationId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(API, this, "submitVariationAttributes") {
+            coroutineEngine.withDefaultContext(API, this, "submitVariationAttributes") {
                 wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
-                        ?.asWooResult()
-                        ?.model?.asProductVariationModel()
-                        ?.apply { insertOrUpdateProductVariation(this) }
-                        ?.let { WooResult(it) }
+                    .asWooResult()
+                    .model?.asProductVariationModel()
+                    ?.apply { insertOrUpdateProductVariation(this) }
+                    ?.let { WooResult(it) }
             } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     suspend fun generateEmptyVariation(
         site: SiteModel,
         product: WCProductModel
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(API, this, "generateEmptyVariation") {
-                product.attributeList
-                        .filter { it.variation }
-                        .map { ProductVariantOption(it.id, it.name, "") }
-                        .let { Gson().toJson(it) }
-                        .let { wcProductRestClient.generateEmptyVariation(site, product.remoteProductId, it) }
-                        ?.asWooResult()
-                        ?.model?.asProductVariationModel()
-                        ?.apply { insertOrUpdateProductVariation(this) }
-                        ?.let { WooResult(it) }
-                        ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
-            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+        coroutineEngine.withDefaultContext(API, this, "generateEmptyVariation") {
+            product.attributeList
+                .filter { it.variation }
+                .map { ProductVariantOption(it.id, it.name, "") }
+                .let { Gson().toJson(it) }
+                .let { wcProductRestClient.generateEmptyVariation(site, product.remoteProductId, it) }
+                .asWooResult()
+                .model?.asProductVariationModel()
+                ?.apply { insertOrUpdateProductVariation(this) }
+                ?.let { WooResult(it) }
+                ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
+        }
 
     suspend fun deleteVariation(
         site: SiteModel,
         productId: Long,
         variationId: Long
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine?.withDefaultContext(API, this, "deleteVariation") {
-                wcProductRestClient.deleteVariation(site, productId, variationId)
-                        ?.asWooResult()
-                        ?.model?.asProductVariationModel()
-                        ?.apply { deleteVariationsForProduct(site, productId) }
-                        ?.let { WooResult(it) }
-                        ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
-            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+        coroutineEngine.withDefaultContext(API, this, "deleteVariation") {
+            wcProductRestClient.deleteVariation(site, productId, variationId)
+                .asWooResult()
+                .model?.asProductVariationModel()
+                ?.apply { deleteVariationsForProduct(site, productId) }
+                ?.let { WooResult(it) }
+                ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
+        }
 
     override fun onRegister() = AppLog.d(API, "WCProductStore onRegister")
 
@@ -918,7 +900,10 @@ class WCProductStore @Inject constructor(
                     it.remoteProductId = result.product.remoteProductId
                 }
             } else {
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(result.product)
+                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
+                    payload.site,
+                    result.product
+                )
 
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
@@ -937,8 +922,29 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun fetchSingleVariation(payload: FetchSingleVariationPayload) {
-        with(payload) { wcProductRestClient.fetchSingleVariation(site, remoteProductId, remoteVariationId) }
+    suspend fun fetchSingleVariation(
+        site: SiteModel,
+        remoteProductId: Long,
+        remoteVariationId: Long
+    ): OnVariationChanged {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSingleVariation") {
+            val result = wcProductRestClient
+                .fetchSingleVariation(site, remoteProductId, remoteVariationId)
+
+            return@withDefaultContext if (result.isError) {
+                OnVariationChanged().also {
+                    it.error = result.error
+                    it.remoteProductId = result.variation.remoteProductId
+                    it.remoteVariationId = result.variation.remoteVariationId
+                }
+            } else {
+                insertOrUpdateProductVariation(result.variation)
+                OnVariationChanged().also {
+                    it.remoteProductId = result.variation.remoteProductId
+                    it.remoteVariationId = result.variation.remoteVariationId
+                }
+            }
+        }
     }
 
     private fun fetchProductSkuAvailability(payload: FetchProductSkuAvailabilityPayload) {
@@ -957,10 +963,24 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>): List<WCProductModel>? {
-        return coroutineEngine?.withDefaultContext(API, this, "fetchProductList") {
-            wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductList") {
+            wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds).result
         }?.also {
-            ProductSqlUtils.insertOrUpdateProducts(it)
+            productsDbHelper.insertOrUpdateProducts(site, it)
+        }
+    }
+
+    suspend fun fetchProductCategoryListSynced(
+        site: SiteModel,
+        categoryIds: List<Long>
+    ): List<WCProductCategoryModel>? {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductCategoryList") {
+            wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
+                site = site,
+                remoteCategoryIds = categoryIds
+            ).result
+        }?.also {
+            productCategoriesDbHelper.insertOrUpdateProductCategories(site, it)
         }
     }
 
@@ -1030,9 +1050,25 @@ class WCProductStore @Inject constructor(
         with(payload) { wcProductRestClient.updateProductPassword(site, remoteProductId, password) }
     }
 
-    private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {
-        with(payload) { wcProductRestClient.updateProductReviewStatus(site, remoteReviewId, newStatus) }
-    }
+    suspend fun updateProductReviewStatus(site: SiteModel, reviewId: Long, newStatus: String) =
+        coroutineEngine.withDefaultContext(API, this, "updateProductReviewStatus") {
+            val result = wcProductRestClient.updateProductReviewStatus(site, reviewId, newStatus)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                result.result?.let { review ->
+                    if (review.status == "spam" || review.status == "trash") {
+                        // Delete this review from the database
+                        ProductSqlUtils.deleteProductReview(review)
+                    } else {
+                        // Insert or update in the database
+                        ProductSqlUtils.insertOrUpdateProductReview(review)
+                    }
+                }
+                WooResult(result.result)
+            }
+        }
 
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
         with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
@@ -1065,10 +1101,34 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun updateVariation(payload: UpdateVariationPayload) {
-        with(payload) {
-            val storedVariation = getVariationByRemoteId(site, variation.remoteProductId, variation.remoteVariationId)
-            wcProductRestClient.updateVariation(site, storedVariation, variation)
+    suspend fun updateVariation(payload: UpdateVariationPayload): OnVariationUpdated {
+        return coroutineEngine.withDefaultContext(API, this, "updateVariation") {
+            with(payload) {
+                val storedVariation = getVariationByRemoteId(
+                    site,
+                    variation.remoteProductId,
+                    variation.remoteVariationId
+                )
+                val result: RemoteUpdateVariationPayload = wcProductRestClient.updateVariation(
+                    site,
+                    storedVariation,
+                    variation
+                )
+                return@withDefaultContext if (result.isError) {
+                    OnVariationUpdated(
+                        0,
+                        result.variation.remoteProductId,
+                        result.variation.remoteVariationId
+                    ).also { it.error = result.error }
+                } else {
+                    val rowsAffected = insertOrUpdateProductVariation(result.variation)
+                    OnVariationUpdated(
+                        rowsAffected,
+                        result.variation.remoteProductId,
+                        result.variation.remoteVariationId
+                    )
+                }
+            }
         }
     }
 
@@ -1097,27 +1157,6 @@ class WCProductStore @Inject constructor(
                 }
     }
 
-    private fun handleFetchSingleVariationCompleted(payload: RemoteVariationPayload) {
-        val onVariationChanged: OnVariationChanged
-
-        if (payload.isError) {
-            onVariationChanged = OnVariationChanged(0).also {
-                it.error = payload.error
-                it.remoteProductId = payload.variation.remoteProductId
-                it.remoteVariationId = payload.variation.remoteVariationId
-            }
-        } else {
-            val rowsAffected = insertOrUpdateProductVariation(payload.variation)
-            onVariationChanged = OnVariationChanged(rowsAffected).also {
-                it.remoteProductId = payload.variation.remoteProductId
-                it.remoteVariationId = payload.variation.remoteVariationId
-            }
-        }
-
-        onVariationChanged.causeOfChange = WCProductAction.FETCH_SINGLE_VARIATION
-        emitChange(onVariationChanged)
-    }
-
     private fun handleFetchProductSkuAvailabilityCompleted(payload: RemoteProductSkuAvailabilityPayload) {
         val onProductSkuAvailabilityChanged = OnProductSkuAvailabilityChanged(payload.sku, payload.available)
         if (payload.isError) {
@@ -1128,37 +1167,43 @@ class WCProductStore @Inject constructor(
     }
 
     private fun handleFetchProductsCompleted(payload: RemoteProductListPayload) {
-        val onProductChanged: OnProductChanged
+        coroutineEngine.launch(T.DB, this, "handleFetchProductsCompleted") {
+            val onProductChanged: OnProductChanged
 
-        if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
-        } else {
-            // remove the existing products for this site if this is the first page of results
-            // or if the remoteProductIds or excludedProductIds are null, otherwise
-            // products deleted outside of the app will persist
-            if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
-                ProductSqlUtils.deleteProductsForSite(payload.site)
-            }
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
-            onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+            if (payload.isError) {
+                onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+            } else {
+                // remove the existing products for this site if this is the first page of results
+                // or if the remoteProductIds or excludedProductIds are null, otherwise
+                // products deleted outside of the app will persist
+                if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
+                    productsDbHelper.deleteAllProducts(payload.site)
+                }
 
-            // TODO: 18/08/2021 @wzieba add tests
-            coroutineEngine?.launch(T.DB, this, "cacheProductsAddons") {
-                payload.products.forEach { product ->
+                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
+                    payload.site,
+                    payload.products
+                )
+                onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
 
-                    val domainAddons = mapProductAddonsToDomain(product.addons)
+                // TODO: 18/08/2021 @wzieba add tests
+                coroutineEngine.launch(T.DB, this, "cacheProductsAddons") {
+                    payload.products.forEach { product ->
 
-                    addonsDao.cacheProductAddons(
+                        val domainAddons = mapProductAddonsToDomain(product.addons)
+
+                        addonsDao.cacheProductAddons(
                             productRemoteId = product.remoteProductId,
                             siteRemoteId = payload.site.siteId,
                             addons = domainAddons
-                    )
+                        )
+                    }
                 }
             }
-        }
 
-        onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS
-        emitChange(onProductChanged)
+            onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS
+            emitChange(onProductChanged)
+        }
     }
 
     private fun handleSearchProductsCompleted(payload: RemoteSearchProductsPayload) {
@@ -1238,28 +1283,6 @@ class WCProductStore @Inject constructor(
         emitChange(onProductChanged)
     }
 
-    private fun handleUpdateProductReviewStatus(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductReviewChanged
-
-        if (payload.isError) {
-            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = payload.productReview?.let { review ->
-                if (review.status == "spam" || review.status == "trash") {
-                    // Delete this review from the database
-                    ProductSqlUtils.deleteProductReview(review)
-                } else {
-                    // Insert or update in the database
-                    ProductSqlUtils.insertOrUpdateProductReview(review)
-                }
-            } ?: 0
-            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
-        }
-
-        onProductReviewChanged.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
-        emitChange(onProductReviewChanged)
-    }
-
     private fun handleUpdateProductImages(payload: RemoteUpdateProductImagesPayload) {
         val onProductImagesChanged: OnProductImagesChanged
 
@@ -1277,75 +1300,69 @@ class WCProductStore @Inject constructor(
     }
 
     private fun handleUpdateProduct(payload: RemoteUpdateProductPayload) {
-        val onProductUpdated: OnProductUpdated
+        coroutineEngine.launch(T.DB, this, "handleUpdateProduct") {
+            val onProductUpdated: OnProductUpdated
 
-        if (payload.isError) {
-            onProductUpdated = OnProductUpdated(0, payload.product.remoteProductId)
+            if (payload.isError) {
+                onProductUpdated = OnProductUpdated(0, payload.product.remoteProductId)
                     .also { it.error = payload.error }
-        } else {
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductUpdated = OnProductUpdated(rowsAffected, payload.product.remoteProductId)
+            } else {
+                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
+                    payload.site,
+                    payload.product
+                )
+                onProductUpdated = OnProductUpdated(rowsAffected, payload.product.remoteProductId)
+            }
+
+            onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
+            emitChange(onProductUpdated)
         }
-
-        onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
-        emitChange(onProductUpdated)
-    }
-
-    private fun handleUpdateVariation(payload: RemoteUpdateVariationPayload) {
-        val onVariationUpdated: OnVariationUpdated
-
-        if (payload.isError) {
-            onVariationUpdated = OnVariationUpdated(
-                    0,
-                    payload.variation.remoteProductId,
-                    payload.variation.remoteVariationId
-            )
-                    .also { it.error = payload.error }
-        } else {
-            val rowsAffected = insertOrUpdateProductVariation(payload.variation)
-            onVariationUpdated = OnVariationUpdated(
-                    rowsAffected,
-                    payload.variation.remoteProductId,
-                    payload.variation.remoteVariationId
-            )
-        }
-
-        onVariationUpdated.causeOfChange = WCProductAction.UPDATED_VARIATION
-        emitChange(onVariationUpdated)
     }
 
     private fun handleFetchProductCategories(payload: RemoteProductCategoriesPayload) {
-        val onProductCategoryChanged: OnProductCategoryChanged
+        coroutineEngine.launch(T.DB, this, "handleFetchProductCategories") {
+            val onProductCategoryChanged: OnProductCategoryChanged
 
-        if (payload.isError) {
-            onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
-        } else {
-            // Clear existing product categories if this is a fresh fetch (loadMore = false).
-            // This is the simplest way to keep our local categories in sync with remote categories
-            // in case of deletions.
-            if (!payload.loadedMore) {
-                ProductSqlUtils.deleteAllProductCategoriesForSite(payload.site)
+            if (payload.isError) {
+                onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
+            } else {
+                // Clear existing product categories if this is a fresh fetch (loadMore = false).
+                // This is the simplest way to keep our local categories in sync with remote categories
+                // in case of deletions.
+                if (!payload.loadedMore) {
+                    productCategoriesDbHelper.deleteAllProductCategories(payload.site)
+                }
+                val rowsAffected = productCategoriesDbHelper.insertOrUpdateProductCategories(
+                    payload.site,
+                    payload.categories
+                )
+                onProductCategoryChanged = OnProductCategoryChanged(
+                    rowsAffected,
+                    canLoadMore = payload.canLoadMore
+                )
             }
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProductCategories(payload.categories)
-            onProductCategoryChanged = OnProductCategoryChanged(rowsAffected, canLoadMore = payload.canLoadMore)
-        }
 
-        onProductCategoryChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_CATEGORIES
-        emitChange(onProductCategoryChanged)
+            onProductCategoryChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_CATEGORIES
+            emitChange(onProductCategoryChanged)
+        }
     }
 
     private fun handleAddProductCategory(payload: RemoteAddProductCategoryResponsePayload) {
-        val onProductCategoryChanged: OnProductCategoryChanged
+        coroutineEngine.launch(T.DB, this, "handleAddProductCategory") {
+            val onProductCategoryChanged: OnProductCategoryChanged
 
-        if (payload.isError) {
-            onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = payload.category?.let { ProductSqlUtils.insertOrUpdateProductCategory(it) } ?: 0
-            onProductCategoryChanged = OnProductCategoryChanged(rowsAffected)
+            if (payload.isError) {
+                onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
+            } else {
+                val rowsAffected = payload.category?.let {
+                    productCategoriesDbHelper.insertOrUpdateProductCategories(payload.site, it)
+                } ?: 0
+                onProductCategoryChanged = OnProductCategoryChanged(rowsAffected)
+            }
+
+            onProductCategoryChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_CATEGORY
+            emitChange(onProductCategoryChanged)
         }
-
-        onProductCategoryChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_CATEGORY
-        emitChange(onProductCategoryChanged)
     }
 
     private fun handleFetchProductTagsCompleted(payload: RemoteProductTagsPayload) {
@@ -1379,30 +1396,43 @@ class WCProductStore @Inject constructor(
     }
 
     private fun handleAddNewProduct(payload: RemoteAddProductPayload) {
-        val onProductCreated: OnProductCreated
+        coroutineEngine.launch(T.DB, this, "handleAddNewProduct") {
+            val onProductCreated: OnProductCreated
 
-        if (payload.isError) {
-            onProductCreated = OnProductCreated(0, payload.product.remoteProductId).also { it.error = payload.error }
-        } else {
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductCreated = OnProductCreated(rowsAffected, payload.product.remoteProductId)
+            if (payload.isError) {
+                onProductCreated = OnProductCreated(
+                    0,
+                    payload.product.remoteProductId
+                ).also { it.error = payload.error }
+            } else {
+                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
+                    payload.site,
+                    payload.product
+                )
+                onProductCreated = OnProductCreated(rowsAffected, payload.product.remoteProductId)
+            }
+
+            onProductCreated.causeOfChange = WCProductAction.ADDED_PRODUCT
+            emitChange(onProductCreated)
         }
-
-        onProductCreated.causeOfChange = WCProductAction.ADDED_PRODUCT
-        emitChange(onProductCreated)
     }
 
     private fun handleDeleteProduct(payload: RemoteDeleteProductPayload) {
-        val onProductChanged: OnProductChanged
+        coroutineEngine.launch(T.DB, this, "handleDeleteProduct") {
+            val onProductChanged: OnProductChanged
 
-        if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
-        } else {
-            val rowsAffected = ProductSqlUtils.deleteProduct(payload.site, payload.remoteProductId)
-            onProductChanged = OnProductChanged(rowsAffected, payload.remoteProductId)
+            if (payload.isError) {
+                onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+            } else {
+                val rowsAffected = productsDbHelper.deleteProduct(
+                    payload.site,
+                    payload.remoteProductId
+                )
+                onProductChanged = OnProductChanged(rowsAffected, payload.remoteProductId)
+            }
+
+            onProductChanged.causeOfChange = WCProductAction.DELETED_PRODUCT
+            emitChange(onProductChanged)
         }
-
-        onProductChanged.causeOfChange = WCProductAction.DELETED_PRODUCT
-        emitChange(onProductChanged)
     }
 }

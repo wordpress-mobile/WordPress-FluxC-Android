@@ -3,25 +3,20 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
-import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
-import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
@@ -39,14 +34,14 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
@@ -57,7 +52,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
-import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -76,6 +70,7 @@ class OrderRestClient @Inject constructor(
     private val dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
+    private val orderDtoMapper: OrderDtoMapper,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -104,7 +99,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
+                        orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
@@ -186,38 +181,38 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Requests orders from the API that match the provided list of [remoteOrderIds] by making a GET call to
+     * Requests orders from the API that match the provided list of [orderIds] by making a GET call to
      * `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS_BY_IDS] action with the resulting list of orders.
      *
      * @param site The WooCommerce [SiteModel] the orders belong to
-     * @param remoteOrderIds A list of remote order identifiers to fetch from the API
+     * @param orderIds A list of remote order identifiers to fetch from the API
      */
-    fun fetchOrdersByIds(site: SiteModel, remoteOrderIds: List<RemoteId>) {
+    fun fetchOrdersByIds(site: SiteModel, orderIds: List<Long>) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderDto>>() {}.type
         val params = mapOf(
-                "per_page" to remoteOrderIds.size.toString(),
-                "include" to remoteOrderIds.map { it.value }.joinToString(),
+                "per_page" to orderIds.size.toString(),
+                "include" to orderIds.map { it }.joinToString(),
                 "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
+                        orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val payload = FetchOrdersByIdsResponsePayload(
                             site = site,
-                            remoteOrderIds = remoteOrderIds,
+                            orderIds = orderIds,
                             fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
-                WPComErrorListener { networkError ->
+                { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersByIdsResponsePayload(
-                            error = orderError, site = site, remoteOrderIds = remoteOrderIds)
+                            error = orderError, site = site, orderIds = orderIds)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
@@ -242,7 +237,7 @@ class OrderRestClient @Inject constructor(
                     val payload = FetchOrderStatusOptionsResponsePayload(site, orderStatusOptions)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
                 },
-                WPComErrorListener { networkError ->
+                { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
@@ -274,7 +269,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderDto.toDomainModel(site.localId())
+                        orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
@@ -294,10 +289,10 @@ class OrderRestClient @Inject constructor(
     /**
      * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
      *
-     * @param [remoteOrderId] Unique server id of the order to fetch
+     * @param [orderId] Unique server id of the order to fetch
      */
-    suspend fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long): RemoteOrderPayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
+    suspend fun fetchSingleOrder(site: SiteModel, orderId: Long): RemoteOrderPayload {
+        val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = mapOf("_fields" to ORDER_FIELDS)
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -311,12 +306,12 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    val newModel = orderDto.toDomainModel(site.localId())
+                    val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        WCOrderModel(
-                                remoteOrderId = RemoteId(remoteOrderId),
+                        OrderEntity(
+                                orderId = orderId,
                                 localSiteId = site.localId()
                         ),
                         site
@@ -326,8 +321,8 @@ class OrderRestClient @Inject constructor(
                 val orderError = networkErrorToOrderError(response.error)
                 RemoteOrderPayload(
                         orderError,
-                        WCOrderModel(
-                                remoteOrderId = RemoteId(remoteOrderId),
+                        OrderEntity(
+                                orderId = orderId,
                                 localSiteId = site.localId()
                         ),
                         site
@@ -423,11 +418,11 @@ class OrderRestClient @Inject constructor(
      * updating the order.
      */
     private suspend fun updateOrder(
-        orderToUpdate: WCOrderModel,
+        orderToUpdate: OrderEntity,
         site: SiteModel,
         updatePayload: Map<String, Any>
     ): RemoteOrderPayload {
-        val url = WOOCOMMERCE.orders.id(orderToUpdate.remoteOrderId.value).pathV3
+        val url = WOOCOMMERCE.orders.id(orderToUpdate.orderId).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
             restClient = this,
@@ -440,8 +435,8 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    val newModel = orderDto.toDomainModel(orderToUpdate.localSiteId).copy(
-                            id = orderToUpdate.id
+                    val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).copy(
+                            orderId = orderToUpdate.orderId
                     )
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
@@ -461,20 +456,20 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(orderToUpdate: WCOrderModel, site: SiteModel, status: String) =
+    suspend fun updateOrderStatus(orderToUpdate: OrderEntity, site: SiteModel, status: String) =
             updateOrder(orderToUpdate, site, mapOf("status" to status))
 
-    suspend fun updateCustomerOrderNote(orderToUpdate: WCOrderModel, site: SiteModel, newNotes: String) =
+    suspend fun updateCustomerOrderNote(orderToUpdate: OrderEntity, site: SiteModel, newNotes: String) =
             updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
 
-    suspend fun updateBillingAddress(orderToUpdate: WCOrderModel, site: SiteModel, billing: Billing) =
+    suspend fun updateBillingAddress(orderToUpdate: OrderEntity, site: SiteModel, billing: Billing) =
             updateOrder(orderToUpdate, site, mapOf("billing" to billing))
 
-    suspend fun updateShippingAddress(orderToUpdate: WCOrderModel, site: SiteModel, shipping: Shipping) =
+    suspend fun updateShippingAddress(orderToUpdate: OrderEntity, site: SiteModel, shipping: Shipping) =
             updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
     suspend fun updateBothOrderAddresses(
-        orderToUpdate: WCOrderModel,
+        orderToUpdate: OrderEntity,
         site: SiteModel,
         shipping: Shipping,
         billing: Billing
@@ -484,60 +479,14 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
-     * return a new order with the tax already calculated.
-     */
-    suspend fun postSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): RemoteOrderPayload {
-        val params = mapOf(
-                "fee_lines" to generateSimplePaymentFeeLineJson(amount, isTaxable),
-                "_fields" to ORDER_FIELDS
-        )
-
-        val url = WOOCOMMERCE.orders.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = it.toDomainModel(localSiteId = site.localId())
-                    RemoteOrderPayload(newModel, site)
-                } ?: RemoteOrderPayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
-                        // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
-                        site
-                )
-            }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
-                RemoteOrderPayload(
-                        orderError,
-                        // We should update `RemoteOrderPayload` signature or change return type. This is a quick fix
-                        // added for successful merge
-                        WCOrderModel(localSiteId = LocalId(-1), remoteOrderId = RemoteId(-1)),
-                        site
-                )
-            }
-        }
-    }
-
-    /**
      * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
+     * retrieving a list of notes for the given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun fetchOrderNotes(
-        localOrderId: Int,
-        remoteOrderId: Long,
+        orderId: Long,
         site: SiteModel
-    ): FetchOrderNotesResponsePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
+    ): WooPayload<List<OrderNoteEntity>> {
+        val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
             site,
@@ -548,35 +497,29 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 val noteModels = response.data?.map {
-                    orderNoteResponseToOrderNoteModel(it).apply {
-                        localSiteId = site.id
-                        this.localOrderId = localOrderId
-                    }
+                    it.toDataModel(site.remoteId(), RemoteId(orderId))
                 }.orEmpty()
-                FetchOrderNotesResponsePayload(localOrderId, remoteOrderId, site, noteModels)
+                WooPayload(noteModels)
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
-                FetchOrderNotesResponsePayload(orderError, site, localOrderId, remoteOrderId)
-            }
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
     /**
      * Makes a POST call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * saving the provide4d note for the given WooCommerce [SiteModel] and [WCOrderModel].
+     * saving the provide4d note for the given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun postOrderNote(
-        localOrderId: Int,
-        remoteOrderId: Long,
+        orderId: Long,
         site: SiteModel,
-        note: WCOrderNoteModel
-    ): RemoteOrderNotePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
+        note: String,
+        isCustomerNote: Boolean
+    ): WooPayload<OrderNoteEntity> {
+        val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
 
         val params = mutableMapOf(
-                "note" to note.note,
-                "customer_note" to note.isCustomerNote,
+                "note" to note,
+                "customer_note" to isCustomerNote,
                 "added_by_user" to true
         )
 
@@ -590,39 +533,32 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newNote = orderNoteResponseToOrderNoteModel(it).apply {
-                        localSiteId = site.id
-                        this.localOrderId = localOrderId
-                    }
-                    return RemoteOrderNotePayload(localOrderId, remoteOrderId, site, newNote)
-                } ?: RemoteOrderNotePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        localOrderId,
-                        remoteOrderId,
-                        site,
-                        note
+                    val newNote = it.toDataModel(site.remoteId(), RemoteId(orderId))
+                    return WooPayload(newNote)
+                } ?: WooPayload(
+                        WooError(
+                                type = WooErrorType.GENERIC_ERROR,
+                                original = GenericErrorType.UNKNOWN,
+                                message = "Success response with empty data"
+                        )
                 )
             }
-            is JetpackError -> {
-                val noteError = networkErrorToOrderError(response.error)
-                return RemoteOrderNotePayload(noteError, localOrderId, remoteOrderId, site, note)
-            }
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
     /**
      * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [WCOrderModel].
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [OrderEntity].
      *
      * Note: This is not currently supported in v3, but will be in the short future.
      *
      */
     suspend fun fetchOrderShipmentTrackings(
         site: SiteModel,
-        localOrderId: Int,
-        remoteOrderId: Long
+        orderId: Long
     ): FetchOrderShipmentTrackingsResponsePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).shipment_trackings.pathV2
+        val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
         val params = mapOf("_fields" to TRACKING_FIELDS)
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -638,15 +574,15 @@ class OrderRestClient @Inject constructor(
                 val trackings = response.data?.map {
                     orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
-                        this.localOrderId = localOrderId
+                        this.orderId = orderId
                     }
                 }.orEmpty()
 
-                FetchOrderShipmentTrackingsResponsePayload(site, localOrderId, trackings)
+                FetchOrderShipmentTrackingsResponsePayload(site, orderId, trackings)
             }
             is JetpackError -> {
                 val trackingsError = networkErrorToOrderError(response.error)
-                FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, localOrderId)
+                FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, orderId)
             }
         }
     }
@@ -662,12 +598,11 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun addOrderShipmentTrackingForOrder(
         site: SiteModel,
-        localOrderId: Int,
-        remoteOrderId: Long,
+        orderId: Long,
         tracking: WCOrderShipmentTrackingModel,
         isCustomProvider: Boolean
     ): AddOrderShipmentTrackingResponsePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).shipment_trackings.pathV2
+        val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
         val params = if (isCustomProvider) {
             mutableMapOf(
                     "custom_tracking_provider" to tracking.trackingProvider,
@@ -690,21 +625,20 @@ class OrderRestClient @Inject constructor(
             is JetpackSuccess -> {
                 response.data?.let {
                     val trackingModel = orderShipmentTrackingResponseToModel(it).apply {
-                        this.localOrderId = localOrderId
+                        this.orderId = orderId
                         localSiteId = site.id
                     }
-                    AddOrderShipmentTrackingResponsePayload(site, localOrderId, remoteOrderId, trackingModel)
+                    AddOrderShipmentTrackingResponsePayload(site, orderId, trackingModel)
                 } ?: AddOrderShipmentTrackingResponsePayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                         site,
-                        localOrderId,
-                        remoteOrderId,
+                        orderId,
                         tracking
                 )
             }
             is JetpackError -> {
                 val trackingsError = networkErrorToOrderError(response.error)
-                AddOrderShipmentTrackingResponsePayload(trackingsError, site, localOrderId, remoteOrderId, tracking)
+                AddOrderShipmentTrackingResponsePayload(trackingsError, site, orderId, tracking)
             }
         }
     }
@@ -719,11 +653,10 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun deleteShipmentTrackingForOrder(
         site: SiteModel,
-        localOrderId: Int,
-        remoteOrderId: Long,
+        orderId: Long,
         tracking: WCOrderShipmentTrackingModel
     ): DeleteOrderShipmentTrackingResponsePayload {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId)
+        val url = WOOCOMMERCE.orders.id(orderId)
                 .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
         val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
                 this,
@@ -736,20 +669,18 @@ class OrderRestClient @Inject constructor(
                 response.data?.let {
                     val model = orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
-                        this.localOrderId = localOrderId
+                        this.orderId = orderId
                         id = tracking.id
                     }
                     DeleteOrderShipmentTrackingResponsePayload(
                             site,
-                            localOrderId,
-                            remoteOrderId,
+                            orderId,
                             model
                     )
                 } ?: DeleteOrderShipmentTrackingResponsePayload(
                         OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                         site,
-                        localOrderId,
-                        remoteOrderId,
+                        orderId,
                         tracking
                 )
             }
@@ -757,8 +688,7 @@ class OrderRestClient @Inject constructor(
                 DeleteOrderShipmentTrackingResponsePayload(
                         networkErrorToOrderError(response.error),
                         site,
-                        localOrderId,
-                        remoteOrderId,
+                        orderId,
                         tracking
                 )
             }
@@ -775,9 +705,9 @@ class OrderRestClient @Inject constructor(
      */
     suspend fun fetchOrderShipmentProviders(
         site: SiteModel,
-        order: WCOrderModel
+        order: OrderEntity
     ): FetchOrderShipmentProvidersResponsePayload {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId.value).shipment_trackings.providers.pathV2
+        val url = WOOCOMMERCE.orders.id(order.orderId).shipment_trackings.providers.pathV2
         val params = emptyMap<String, String>()
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -820,7 +750,7 @@ class OrderRestClient @Inject constructor(
     suspend fun createOrder(
         site: SiteModel,
         request: UpdateOrderRequest
-    ): WooPayload<WCOrderModel> {
+    ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.pathV3
         val params = request.toNetworkRequest()
 
@@ -835,7 +765,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDto.toDomainModel(site.localId()))
+                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()))
             } ?: WooPayload(
                     error = WooError(
                             type = WooErrorType.GENERIC_ERROR,
@@ -850,7 +780,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel,
         orderId: Long,
         request: UpdateOrderRequest
-    ): WooPayload<WCOrderModel> {
+    ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = request.toNetworkRequest()
 
@@ -865,7 +795,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDto.toDomainModel(site.localId()))
+                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()))
             } ?: WooPayload(
                     error = WooError(
                             type = WooErrorType.GENERIC_ERROR,
@@ -911,20 +841,9 @@ class OrderRestClient @Inject constructor(
 
     private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
         return WCOrderSummaryModel().apply {
-            remoteOrderId = response.id ?: 0
+            orderId = response.id ?: 0
             dateCreated = convertDateToUTCString(response.dateCreatedGmt)
             dateModified = convertDateToUTCString(response.dateModifiedGmt)
-        }
-    }
-
-    private fun orderNoteResponseToOrderNoteModel(response: OrderNoteApiResponse): WCOrderNoteModel {
-        return WCOrderNoteModel().apply {
-            remoteNoteId = response.id ?: 0
-            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
-            note = response.note ?: ""
-            isSystemNote = response.author == "system" || response.author == "WooCommerce"
-            author = response.author ?: ""
-            isCustomerNote = response.customer_note
         }
     }
 
@@ -1024,22 +943,5 @@ class OrderRestClient @Inject constructor(
                 "tracking_number",
                 "tracking_provider"
         ).joinToString(separator = ",")
-
-        const val SIMPLE_PAYMENT_FEELINE_NAME = "Simple Payment"
-
-        fun generateSimplePaymentFeeLineJson(amount: String, isTaxable: Boolean, feeId: Long? = null): JsonArray {
-            val jsonFee = JsonObject().also { json ->
-                feeId?.let {
-                    json.addProperty("id", it)
-                }
-                json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
-                json.addProperty("total", amount)
-                json.addProperty(
-                        "tax_status",
-                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
-                )
-            }
-            return JsonArray().also { it.add(jsonFee) }
-        }
     }
 }

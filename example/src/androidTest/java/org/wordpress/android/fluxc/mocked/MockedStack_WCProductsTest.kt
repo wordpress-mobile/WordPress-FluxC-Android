@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
@@ -30,7 +31,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResp
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
@@ -39,7 +39,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -493,46 +492,37 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
     @Test
     fun testUpdateProductReviewStatusSuccess() {
-        interceptor.respondWith("wc-update-product-review-response-success.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
+        runBlocking {
+            interceptor.respondWith("wc-update-product-review-response-success.json")
+            val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS, lastAction!!.type)
-
-        // Verify payload and product review properties
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertFalse(payload.isError)
-        assertEquals(siteModel.id, payload.site.id)
-        payload.productReview?.let {
-            with(it) {
-                assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T15:48:07Z", dateCreated)
-                assertEquals(18, remoteProductId)
-                assertEquals("spam", status)
-                assertEquals("Johnny", reviewerName)
-                assertEquals("johnny@gmail.com", reviewerEmail)
-                assertEquals("<p>What a lovely cap!</p>\n", review)
-                assertEquals(4, rating)
-                assertEquals(false, verified)
-                assertEquals(3, reviewerAvatarUrlBySize.size)
+            assertFalse(result.isError)
+            result.result?.let {
+                with(it) {
+                    assertEquals(5499, remoteProductReviewId)
+                    assertEquals("2019-07-09T15:48:07Z", dateCreated)
+                    assertEquals(18, remoteProductId)
+                    assertEquals("spam", status)
+                    assertEquals("Johnny", reviewerName)
+                    assertEquals("johnny@gmail.com", reviewerEmail)
+                    assertEquals("<p>What a lovely cap!</p>\n", review)
+                    assertEquals(4, rating)
+                    assertEquals(false, verified)
+                    assertEquals(3, reviewerAvatarUrlBySize.size)
+                }
             }
         }
     }
 
     @Test
     fun testUpdateProductReviewStatusFailed() {
-        interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
+        runBlocking {
+            interceptor.respondWithError("wc-response-failure-invalid-param.json")
+            val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertTrue(payload.isError)
-        assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
+            assertTrue(result.isError)
+            assertEquals(WooErrorType.INVALID_ID, result.error.type)
+        }
     }
 
     private fun generateTestImageList(): List<WCProductImageModel> {
@@ -623,20 +613,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteProductVariationImageSuccess() {
+    fun testDeleteProductVariationImageSuccess() = runBlocking {
         interceptor.respondWith("wc-delete-product-variation-image-success.json")
 
         val testVariation = generateSampleVariation()
         val updateVariation = testVariation.copy().apply {
             image = "{id:0}"
         }
-        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
+        val payload = productRestClient.updateVariation(siteModel, testVariation, updateVariation)
         with(payload) {
             assertNull(error)
             assertNotNull(variation.image)
@@ -645,20 +629,15 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteProductVariationImageError() {
+    fun testDeleteProductVariationImageError() = runBlocking {
         interceptor.respondWithError("wc-delete-product-variation-image-failure.json", 400)
 
         val testVariation = generateSampleVariation()
         val updateVariation = testVariation.copy().apply {
             image = "{id:0}"
         }
-        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
+        val payload = productRestClient.updateVariation(siteModel, testVariation, updateVariation)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
         with(payload) {
             assertNotNull("Error should not be null", error)
             assertEquals(
