@@ -454,3 +454,61 @@ internal val MIGRATION_10_11 = object : Migration(10, 11) {
         }
     }
 }
+
+internal val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE InboxNotes")
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `InboxNotes` (
+                    `id` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `isSnoozable` INTEGER,
+                    `title` TEXT NOT NULL,
+                    `content` TEXT NOT NULL,
+                    `dateCreated` TEXT NOT NULL,
+                    `status` TEXT NOT NULL,
+                    `source` TEXT,
+                    `type` TEXT,
+                    `dateReminder` TEXT,
+                    PRIMARY KEY(`id`,`siteId`))
+                    """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_InboxNotes_id_siteId` ON `InboxNotes` (`id`, `siteId`);
+                """.trimIndent()
+            )
+
+            execSQL("DROP TABLE InboxNoteActions")
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `InboxNoteActions` (
+                    `id` INTEGER NOT NULL,
+                    `inboxNoteId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `label` TEXT NOT NULL,
+                    `url` TEXT NOT NULL,
+                    `query` TEXT,
+                    `status` TEXT,
+                    `primary` INTEGER,
+                    `actionedText` TEXT,
+                    PRIMARY KEY(`id`,`inboxNoteId`, `siteId`),
+                    FOREIGN KEY(`inboxNoteId`, `siteId`)
+                    REFERENCES `InboxNotes`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )
+                    """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_id_inboxNoteId_siteId` 
+                    ON `InboxNoteActions` (`id`, `inboxNoteId`, `siteId`)
+                """.trimIndent()
+            )
+        }
+    }
+}
