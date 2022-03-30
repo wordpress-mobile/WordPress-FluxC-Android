@@ -51,7 +51,7 @@ abstract class CouponsDao {
 
     @Transaction
     open suspend fun insertOrUpdateCoupon(entity: CouponEntity) {
-        val id: Long = insertCoupon(entity)
+        val id = insertCoupon(entity)
         if (id == -1L) {
             updateCoupon(entity)
         }
@@ -61,7 +61,7 @@ abstract class CouponsDao {
     open suspend fun insertOrUpdateCouponAndProductCategory(
         entity: CouponAndProductCategoryEntity
     ) {
-        val id: Long = insertCouponAndProductCategory(entity)
+        val id = insertCouponAndProductCategory(entity)
         if (id == -1L) {
             updateCouponAndProductCategory(entity)
         }
@@ -69,7 +69,7 @@ abstract class CouponsDao {
 
     @Transaction
     open suspend fun insertOrUpdateCouponAndProduct(entity: CouponAndProductEntity) {
-        val id: Long = insertCouponAndProduct(entity)
+        val id = insertCouponAndProduct(entity)
         if (id == -1L) {
             updateCouponAndProduct(entity)
         }
@@ -77,7 +77,7 @@ abstract class CouponsDao {
 
     @Transaction
     open suspend fun insertOrUpdateCouponEmail(entity: CouponEmailEntity) {
-        val id: Long = insertCouponEmail(entity)
+        val id = insertCouponEmail(entity)
         if (id == -1L) {
             updateCouponEmail(entity)
         }
