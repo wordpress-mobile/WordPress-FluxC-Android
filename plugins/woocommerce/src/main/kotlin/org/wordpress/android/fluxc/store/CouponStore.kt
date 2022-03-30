@@ -4,9 +4,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -164,9 +166,13 @@ class CouponStore @Inject constructor(
         }
     }
 
-    fun observeSingleCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel> =
+    fun observeSingleCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel?> =
         couponsDao.observeSingleCoupon(site.siteId, couponId)
-            .map { assembleCouponDataModel(site, it) }
+            .map { coupon ->
+                coupon?.let {
+                    assembleCouponDataModel(site, it)
+                }
+            }
 
     @ExperimentalCoroutinesApi
     fun observeCoupons(site: SiteModel): Flow<List<CouponDataModel>> =

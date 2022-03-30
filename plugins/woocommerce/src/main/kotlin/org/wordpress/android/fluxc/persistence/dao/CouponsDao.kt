@@ -20,7 +20,7 @@ abstract class CouponsDao {
 
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
-    abstract fun observeSingleCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails>
+    abstract fun observeSingleCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateCoupon(entity: CouponEntity)
