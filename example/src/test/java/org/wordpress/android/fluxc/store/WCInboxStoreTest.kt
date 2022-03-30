@@ -26,7 +26,6 @@ import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 class WCInboxStoreTest {
-
     private val restClient: InboxRestClient = mock()
     private val database: WCAndroidDatabase = mock()
     private val inboxNotesDao: InboxNotesDao = mock()
