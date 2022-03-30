@@ -353,4 +353,56 @@ class CouponStoreTest {
 
         assertThat(observedDataModel).isEqualTo(expectedDataModel)
     }
+
+    @Test
+    fun `Observing a specific coupon returns the correct coupon data model`(): Unit = test {
+        whenever(couponsDao.observeSingleCoupon(site.siteId, expectedCoupon.id)).thenReturn(
+            flowOf(CouponWithEmails(expectedCoupon, listOf(expectedEmail)))
+        )
+
+        // included products
+        val includedProducts = listOf(includedProduct1, includedProduct2)
+        whenever(productsDao.getCouponProducts(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = false
+        )).thenReturn(includedProducts)
+
+        // excluded products
+        val excludedProducts = listOf(excludedProduct1, excludedProduct2)
+        whenever(productsDao.getCouponProducts(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = true
+        )).thenReturn(excludedProducts)
+
+        // included categories
+        val includedCategories = listOf(includedCategory1, includedCategory2)
+        whenever(productCategoriesDao.getCouponProductCategories(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = false
+        )).thenReturn(includedCategories)
+
+        // excluded categories
+        val excludedCategories = listOf(excludedCategory1, excludedCategory2)
+        whenever(productCategoriesDao.getCouponProductCategories(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = true
+        )).thenReturn(excludedCategories)
+
+        val expectedDataModel = CouponDataModel(
+            expectedCoupon,
+            includedProducts,
+            excludedProducts,
+            includedCategories,
+            excludedCategories,
+            listOf(expectedEmail)
+        )
+
+        val observedDataModel = couponStore.observeSingleCoupon(site, expectedCoupon.id).first()
+
+        assertThat(observedDataModel).isEqualTo(expectedDataModel)
+    }
 }
