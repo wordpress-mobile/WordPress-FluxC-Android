@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release
 
 import com.google.gson.JsonArray
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
@@ -40,23 +41,18 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCreated
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
-import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
-import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
 import java.util.Date
 import java.util.concurrent.CountDownLatch
@@ -80,8 +76,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         ADDED_PRODUCT_CATEGORY,
         FETCHED_PRODUCT_TAGS,
         ADDED_PRODUCT_TAGS,
-        FETCHED_SINGLE_VARIATION,
-        UPDATED_VARIATION,
         ADD_PRODUCT,
         ADDED_PRODUCT
     }
@@ -117,10 +111,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
-    private var lastVariationEvent: OnVariationChanged? = null
     private var lastProductCategoryEvent: OnProductCategoryChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
-    private var lastReviewEvent: OnProductReviewChanged? = null
     private var lastProductTagEvent: OnProductTagChanged? = null
     private var lastAddNewProductEvent: OnProductCreated? = null
 
@@ -153,7 +145,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchSingleVariation() {
+    fun testFetchSingleVariation() = runBlocking {
         // remove all variation for this site and verify there are none
         ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
         assertEquals(
@@ -161,18 +153,14 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 0
         )
 
-        nextEvent = TestEvent.FETCHED_SINGLE_VARIATION
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchSingleVariationAction(
-                        FetchSingleVariationPayload(
-                                sSite,
-                                variationModel.remoteProductId,
-                                variationModel.remoteVariationId
-                        )
-                )
+        val result = productStore.fetchSingleVariation(
+            sSite,
+            variationModel.remoteProductId,
+            variationModel.remoteVariationId
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(result.remoteProductId, variationModel.remoteProductId)
+        assertEquals(result.remoteVariationId, variationModel.remoteVariationId)
 
         // Verify results
         val fetchedVariation = productStore.getVariationByRemoteId(
@@ -427,14 +415,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Update review status to spam - should get deleted from db
         review?.let {
             val newStatus = "spam"
-            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
-            )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            productStore.updateProductReviewStatus(sSite, it.remoteProductReviewId, newStatus)
 
             // Verify results - review should be deleted from db
             val savedReview = productStore
@@ -446,13 +427,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         review?.let {
             val newStatus = "approved"
             nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
-            )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            productStore.updateProductReviewStatus(sSite, it.remoteProductReviewId, newStatus)
 
             // Verify results
             val savedReview = productStore
@@ -464,14 +439,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Update review status to trash - should get deleted from db
         review?.let {
             val newStatus = "trash"
-            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
-            )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            productStore.updateProductReviewStatus(sSite, it.remoteProductReviewId, newStatus)
 
             // Verify results - review should be deleted from db
             val savedReview = productStore
@@ -482,14 +450,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Update review status to hold - should get added to db
         review?.let {
             val newStatus = "hold"
-            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
-            mCountDownLatch = CountDownLatch(1)
-            mDispatcher.dispatch(
-                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
-                    )
-            )
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+            productStore.updateProductReviewStatus(sSite, it.remoteProductReviewId, newStatus)
 
             // Verify results
             val savedReview = productStore
@@ -653,7 +614,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testUpdateVariation() {
+    fun testUpdateVariation() = runBlocking {
         val updatedVariationStatus = CoreProductStatus.PUBLISH.value
         variationModel.status = updatedVariationStatus
 
@@ -666,12 +627,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedVariationSalePrice = "12"
         variationModel.salePrice = updatedVariationSalePrice
 
-        nextEvent = TestEvent.UPDATED_VARIATION
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newUpdateVariationAction(UpdateVariationPayload(sSite, variationModel))
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        withTimeout(TestUtils.DEFAULT_TIMEOUT_MS.toLong()) {
+            productStore.updateVariation(UpdateVariationPayload(sSite, variationModel))
+        }
 
         val updatedVariation = productStore.getVariationByRemoteId(
                 sSite,
@@ -795,44 +753,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationChanged(event: OnVariationChanged) {
-        event.error?.let {
-            throw AssertionError("OnVariationChanged has unexpected error: " + it.type)
-        }
-
-        lastVariationEvent = event
-
-        when (event.causeOfChange) {
-            WCProductAction.FETCH_SINGLE_VARIATION -> {
-                assertEquals(TestEvent.FETCHED_SINGLE_VARIATION, nextEvent)
-                assertEquals(event.remoteProductId, variationModel.remoteProductId)
-                assertEquals(event.remoteVariationId, variationModel.remoteVariationId)
-                mCountDownLatch.countDown()
-            }
-            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onProductReviewChanged(event: OnProductReviewChanged) {
-        event.error?.let {
-            throw AssertionError("OnProductReviewChanged has unexpected error: " + it.type)
-        }
-
-        lastReviewEvent = event
-
-        when (event.causeOfChange) {
-            WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS -> {
-                assertEquals(TestEvent.UPDATED_PRODUCT_REVIEW_STATUS, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaListFetched(event: OnMediaListFetched) {
         event.error?.let {
             throw AssertionError("WCProductTest.onMediaListFetched has unexpected error: ${it.type}, ${it.message}")
@@ -859,17 +779,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
-        mCountDownLatch.countDown()
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationUpdated(event: OnVariationUpdated) {
-        event.error?.let {
-            throw AssertionError("OnVariationUpdated has unexpected error: ${it.type}, ${it.message}")
-        }
-
-        assertEquals(TestEvent.UPDATED_VARIATION, nextEvent)
         mCountDownLatch.countDown()
     }
 
