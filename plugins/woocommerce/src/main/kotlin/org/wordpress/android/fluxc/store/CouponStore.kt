@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
 import org.wordpress.android.util.AppLog.T.DB
 import javax.inject.Inject
@@ -68,7 +69,7 @@ class CouponStore @Inject constructor(
         couponId: Long
     ): WooResult<Unit> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupon") {
-            val response = restClient.fetchSingleCoupon(site, couponId)
+            val response = restClient.fetchCoupon(site, couponId)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
@@ -91,6 +92,23 @@ class CouponStore @Inject constructor(
                 insertRelatedProducts(dto, site)
                 insertRelatedProductCategories(dto, site)
                 insertRestrictedEmailAddresses(dto, site)
+            }
+        }
+    }
+
+    suspend fun deleteCoupon(
+        site: SiteModel,
+        couponId: Long,
+        trash: Boolean = true
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteCoupon") {
+            val result = restClient.deleteCoupon(site, couponId, trash)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                couponsDao.deleteCoupon(site.siteId, couponId)
+                WooResult(Unit)
             }
         }
     }

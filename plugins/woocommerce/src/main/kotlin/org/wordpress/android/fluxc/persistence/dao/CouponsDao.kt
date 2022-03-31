@@ -82,4 +82,10 @@ abstract class CouponsDao {
             updateCouponEmail(entity)
         }
     }
+
+    @Query("DELETE FROM Coupons WHERE siteId = :siteId AND id = :couponId")
+    abstract suspend fun deleteCoupon(siteId: Long, couponId: Long)
+
+    @Query("SELECT COUNT(*) FROM CouponEmails WHERE siteId = :siteId AND couponId = :couponId")
+    abstract suspend fun getEmailCount(siteId: Long, couponId: Long): Int
 }

@@ -51,6 +51,26 @@ class WooCouponsFragment : StoreSelectingFragment() {
             }
         }
 
+        btnDeleteCoupon.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                    activity,
+                    "Enter a coupon ID to be deleted:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let {
+                        lifecycleScope.launch {
+                            val result = store.deleteCoupon(site, it, false)
+                            if (result.isError) {
+                                prependToLog("Coupon deletion failed: ${result.error.message}")
+                            } else {
+                                prependToLog("Coupon successfully deleted")
+                            }
+                        }
+                    } ?: prependToLog("Invalid coupon ID")
+                }
+            }
+        }
+
         btnFetchSingleCoupon.setOnClickListener {
             showSingleLineDialog(activity, "Enter the coupon ID to fetch:") { editText ->
                 editText.text.toString().toLongOrNull()?.let {

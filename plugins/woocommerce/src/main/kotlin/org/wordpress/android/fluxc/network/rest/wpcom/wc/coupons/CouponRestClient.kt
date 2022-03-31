@@ -53,7 +53,7 @@ class CouponRestClient @Inject constructor(
         }
     }
 
-    suspend fun fetchSingleCoupon(
+    suspend fun fetchCoupon(
         site: SiteModel,
         couponId: Long
     ): WooPayload<CouponDto> {
@@ -73,6 +73,27 @@ class CouponRestClient @Inject constructor(
             is JetpackError -> {
                 WooPayload(response.error.toWooError())
             }
+        }
+    }
+
+    suspend fun deleteCoupon(
+        site: SiteModel,
+        couponId: Long,
+        trash: Boolean
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.coupons.id(couponId).pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+            restClient = this,
+            site = site,
+            url = url,
+            clazz = Unit::class.java,
+            params = mapOf("force" to trash.not().toString())
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
         }
     }
 }

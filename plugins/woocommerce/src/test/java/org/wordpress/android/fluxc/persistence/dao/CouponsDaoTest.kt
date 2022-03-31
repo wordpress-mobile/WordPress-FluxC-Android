@@ -51,7 +51,7 @@ class CouponsDaoTest {
         // when
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        var observedCoupon = couponsDao.observeCoupons(1).first()
+        var observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
 
         // then
         val expected = CouponWithEmails(coupon, listOf(email))
@@ -61,7 +61,7 @@ class CouponsDaoTest {
         val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
         val newExpected = CouponWithEmails(newCoupon, listOf(email))
         couponsDao.insertOrUpdateCoupon(newCoupon)
-        observedCoupon = couponsDao.observeCoupons(1).first()
+        observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
 
         // then
         assertThat(observedCoupon.first()).isEqualTo(newExpected)
@@ -95,6 +95,34 @@ class CouponsDaoTest {
 
         // then
         assertThat(observedCoupon.first()).isEqualTo(expected)
+    }
+
+    @Test
+    fun `test coupon delete`(): Unit = runBlocking {
+        // when
+        val coupon = generateCouponEntity()
+        val email = CouponEmailEntity(
+            couponId = coupon.id,
+            siteId = coupon.siteId,
+            email = "test@test.com"
+        )
+        couponsDao.insertOrUpdateCoupon(coupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
+        var observedCoupons = couponsDao.observeCoupons(coupon.siteId).first()
+        var emailCount = couponsDao.getEmailCount(coupon.siteId, coupon.id)
+
+        // then
+        assertThat(observedCoupons.size).isEqualTo(1)
+        assertThat(emailCount).isEqualTo(1)
+
+        // when
+        couponsDao.deleteCoupon(coupon.siteId, coupon.id)
+        observedCoupons = couponsDao.observeCoupons(coupon.siteId).first()
+        emailCount = couponsDao.getEmailCount(coupon.siteId, coupon.id)
+
+        // then
+        assertThat(observedCoupons.size).isEqualTo(0)
+        assertThat(emailCount).isEqualTo(0)
     }
 
     companion object {
