@@ -30,6 +30,7 @@ import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
 import org.wordpress.android.util.AppLog.T.DB
 import java.util.Date
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -204,8 +205,8 @@ class CouponStore @Inject constructor(
 
     suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
         coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {
-            // Old date
-            val date = Date(0)
+            // Old date, 1 second since epoch
+            val date = Date(TimeUnit.SECONDS.toMillis(1))
 
             return@withDefaultContext restClient.fetchCouponReport(site, couponId, date)
                 .let { result ->
