@@ -356,7 +356,7 @@ class CouponStoreTest {
 
     @Test
     fun `Observing a specific coupon returns the correct coupon data model`(): Unit = test {
-        whenever(couponsDao.observeSingleCoupon(site.siteId, expectedCoupon.id)).thenReturn(
+        whenever(couponsDao.observeCoupon(site.siteId, expectedCoupon.id)).thenReturn(
             flowOf(CouponWithEmails(expectedCoupon, listOf(expectedEmail)))
         )
 
@@ -401,7 +401,7 @@ class CouponStoreTest {
             listOf(expectedEmail)
         )
 
-        val observedDataModel = couponStore.observeSingleCoupon(site, expectedCoupon.id).first()
+        val observedDataModel = couponStore.observeCoupon(site, expectedCoupon.id).first()
 
         assertThat(observedDataModel).isEqualTo(expectedDataModel)
     }

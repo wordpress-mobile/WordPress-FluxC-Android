@@ -63,11 +63,11 @@ class CouponStore @Inject constructor(
         }
     }
 
-    suspend fun fetchSingleCoupon(
+    suspend fun fetchCoupon(
         site: SiteModel,
         couponId: Long
     ): WooResult<Unit> {
-        return coroutineEngine.withDefaultContext(API, this, "fetchSingleCoupon") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchCoupon") {
             val response = restClient.fetchSingleCoupon(site, couponId)
             when {
                 response.isError -> WooResult(response.error)
@@ -164,8 +164,8 @@ class CouponStore @Inject constructor(
         }
     }
 
-    fun observeSingleCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel?> =
-        couponsDao.observeSingleCoupon(site.siteId, couponId)
+    fun observeCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel?> =
+        couponsDao.observeCoupon(site.siteId, couponId)
             .map { coupon ->
                 coupon?.let {
                     assembleCouponDataModel(site, it)

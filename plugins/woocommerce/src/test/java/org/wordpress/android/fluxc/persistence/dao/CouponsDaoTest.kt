@@ -72,7 +72,7 @@ class CouponsDaoTest {
         // when
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        val observedCoupon = couponsDao.observeSingleCoupon(1, coupon.id + 1)
+        val observedCoupon = couponsDao.observeCoupon(1, coupon.id + 1)
 
         // then
         assertThat(observedCoupon.first()).isNull()
@@ -83,7 +83,7 @@ class CouponsDaoTest {
         // when
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        val observedCoupon = couponsDao.observeSingleCoupon(1, coupon.id)
+        val observedCoupon = couponsDao.observeCoupon(1, coupon.id)
 
         var expected = CouponWithEmails(coupon, listOf(email))
         assertThat(observedCoupon.first()).isEqualTo(expected)

@@ -55,9 +55,9 @@ class WooCouponsFragment : StoreSelectingFragment() {
             showSingleLineDialog(activity, "Enter the coupon ID to fetch:") { editText ->
                 editText.text.toString().toLongOrNull()?.let {
                     coroutineScope.launch {
-                        store.fetchSingleCoupon(selectedSite!!, it)
+                        store.fetchCoupon(selectedSite!!, it)
                         prependToLog(
-                            store.observeSingleCoupon(selectedSite!!, it)
+                            store.observeCoupon(selectedSite!!, it)
                                 .first()?.couponEntity?.toString() ?: "Coupon $it not found"
                         )
                     }
