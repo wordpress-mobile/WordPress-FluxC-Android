@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -32,7 +33,6 @@ import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.math.BigDecimal
-import java.util.Date
 
 @RunWith(MockitoJUnitRunner::class)
 class CouponStoreTest {
@@ -411,7 +411,7 @@ class CouponStoreTest {
 
     @Test
     fun `fetching coupon report should return the correct data`() = test {
-        whenever(restClient.fetchCouponReport(site, expectedCoupon.id, Date(0))).thenReturn(
+        whenever(restClient.fetchCouponReport(any(), any(), any())).thenReturn(
             WooPayload(
                 CouponReportDto(
                     couponId = expectedCoupon.id,
