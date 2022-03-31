@@ -113,7 +113,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
                         )
                         prependToLog(
                             "Coupon was used ${report.ordersCount} times and " +
-                                "resulted in ${usageAmountFormatted} savings"
+                                "resulted in $usageAmountFormatted savings"
                         )
                     }
                 }

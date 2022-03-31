@@ -218,7 +218,6 @@ class CouponStore @Inject constructor(
                 }
         }
 
-
     private fun assembleCouponDataModel(
         site: SiteModel,
         it: CouponWithEmails
