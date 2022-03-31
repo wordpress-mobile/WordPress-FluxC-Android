@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.persistence.WPAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_1_2
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_2_3
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_3_4
-import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_5_6
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.WP_DB_NAME
 import java.io.IOException
 
@@ -31,8 +30,7 @@ class WPAndroidDatabaseMigrationTest {
     fun migrate1To2() {
         helper.createDatabase(WP_DB_NAME, 1).apply {
             // populate BloggingReminders with some data
-            execSQL(
-                """
+            execSQL("""
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
@@ -62,13 +60,11 @@ class WPAndroidDatabaseMigrationTest {
     fun migrate2To3() {
         helper.createDatabase(WP_DB_NAME, 2).apply {
             // populate BloggingReminders with some data
-            execSQL(
-                """ 
+            execSQL(""" 
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
-            """
-            )
+            """)
             close()
         }
 
@@ -96,13 +92,11 @@ class WPAndroidDatabaseMigrationTest {
 
         helper.createDatabase(WP_DB_NAME, oldVersion).apply {
             // populate BloggingReminders with some data
-            execSQL(
-                """ 
+            execSQL(""" 
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
-            """
-            )
+            """)
             close()
         }
 
@@ -119,75 +113,6 @@ class WPAndroidDatabaseMigrationTest {
         assertThat(cursor.getInt(4)).isEqualTo(0)
         assertThat(cursor.getInt(8)).isEqualTo(10)
         assertThat(cursor.getInt(9)).isEqualTo(0)
-        cursor.close()
-        db.close()
-    }
-
-    @Test
-    @Throws(IOException::class)
-    fun migrate5To6() {
-        val oldVersion = 5
-        val newVersion = 6
-
-        helper.createDatabase(WP_DB_NAME, oldVersion).apply {
-            // populate old Comments table with some data
-            execSQL(
-                "INSERT INTO Comments(" +
-                    "id," +
-                    "remoteCommentId," +
-                    "remotePostId," +
-                    "remoteParentCommentId," +
-                    "localSiteId," +
-                    "remoteSiteId," +
-                    "authorUrl," +
-                    "authorName," +
-                    "authorEmail," +
-                    "authorProfileImageUrl," +
-                    "postTitle," +
-                    "status," +
-                    "datePublished," +
-                    "publishedTimestamp," +
-                    "content," +
-                    "url," +
-                    "hasParent," +
-                    "parentId," +
-                    "iLike)" +
-                    " VALUES (1, 5, 32, 4, 2, 22, \"authorUrl\", \"authorName\", \"authorEmail\"," +
-                    "\"authorProfileImageUrl\",\"postTitle\",\"status\",\"datePublished\",111," +
-                    "\"content\",\"url\",0,0,1)"
-            )
-            close()
-        }
-
-        // Re-open the database with the new version and provide migration to check against.
-        val db = helper.runMigrationsAndValidate(WP_DB_NAME, newVersion, true, MIGRATION_5_6)
-
-        // Validate that the data was migrated properly.
-        val cursor = db.query("SELECT * FROM Comments")
-
-        assertThat(cursor.count).isEqualTo(1)
-        cursor.moveToFirst()
-        assertThat(cursor.getInt(0)).isEqualTo(1)
-        assertThat(cursor.getInt(1)).isEqualTo(5)
-        assertThat(cursor.getInt(2)).isEqualTo(32)
-        // remoteParentCommentId with value 4 would have been at index 3, but we removed it
-        assertThat(cursor.getInt(3)).isEqualTo(2)
-        assertThat(cursor.getInt(4)).isEqualTo(22)
-        assertThat(cursor.getString(5)).isEqualTo("authorUrl")
-        assertThat(cursor.getString(6)).isEqualTo("authorName")
-        assertThat(cursor.getString(7)).isEqualTo("authorEmail")
-        assertThat(cursor.getString(8)).isEqualTo("authorProfileImageUrl")
-        // index 9 is a newly added authorId column with default value 0
-        assertThat(cursor.getInt(9)).isEqualTo(0)
-        assertThat(cursor.getString(10)).isEqualTo("postTitle")
-        assertThat(cursor.getString(11)).isEqualTo("status")
-        assertThat(cursor.getString(12)).isEqualTo("datePublished")
-        assertThat(cursor.getInt(13)).isEqualTo(111)
-        assertThat(cursor.getString(14)).isEqualTo("content")
-        assertThat(cursor.getString(15)).isEqualTo("url")
-        assertThat(cursor.getInt(16)).isEqualTo(0)
-        assertThat(cursor.getInt(17)).isEqualTo(0)
-        assertThat(cursor.getInt(18)).isEqualTo(1)
         cursor.close()
         db.close()
     }
