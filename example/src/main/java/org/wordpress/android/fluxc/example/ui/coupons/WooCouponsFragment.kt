@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.CouponStore
 import javax.inject.Inject
@@ -31,7 +32,9 @@ class WooCouponsFragment : StoreSelectingFragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
-                    val codes = coupons.map { it.couponEntity.code }.joinToString()
+                    val codes = coupons.joinToString {
+                        "${it.couponEntity.code}(${it.couponEntity.id})"
+                    }
                     prependToLog("Coupons changed: [$codes]")
                 }
             }
@@ -44,6 +47,26 @@ class WooCouponsFragment : StoreSelectingFragment() {
         btnFetchCoupons.setOnClickListener {
             coroutineScope.launch {
                 store.fetchCoupons(selectedSite!!)
+            }
+        }
+
+        btnDeleteCoupon.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                    activity,
+                    "Enter a coupon ID to be deleted:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let {
+                        lifecycleScope.launch {
+                            val result = store.deleteCoupon(site, it, false)
+                            if (result.isError) {
+                                prependToLog("Coupon deletion failed: ${result.error.message}")
+                            } else {
+                                prependToLog("Coupon successfully deleted")
+                            }
+                        }
+                    } ?: prependToLog("Invalid coupon ID")
+                }
             }
         }
     }
