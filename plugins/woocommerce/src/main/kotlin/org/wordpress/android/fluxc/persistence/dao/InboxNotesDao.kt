@@ -6,6 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
@@ -15,6 +17,9 @@ abstract class InboxNotesDao {
     @Transaction
     @Query("SELECT * FROM InboxNotes WHERE siteId = :siteId ORDER BY dateCreated DESC")
     abstract fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>>
+
+    @Query("SELECT * FROM InboxNotes WHERE id = :inboxNoteId AND siteId = :siteId")
+    abstract suspend fun getInboxNote(inboxNoteId: Long, siteId: Long): InboxNoteWithActions?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNote(entity: InboxNoteEntity): Long

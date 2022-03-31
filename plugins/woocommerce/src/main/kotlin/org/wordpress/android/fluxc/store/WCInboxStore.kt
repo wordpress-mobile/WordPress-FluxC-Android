@@ -49,6 +49,24 @@ class WCInboxStore @Inject constructor(
         inboxNotesDao.observeInboxNotes(siteId)
             .distinctUntilChanged()
 
+    suspend fun markInboxNoteAsActioned(
+        site: SiteModel,
+        noteId: Long,
+        actionId: Long
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+            val response = restClient.markInboxNoteAsActioned(site, noteId, actionId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    markNoteAsActionedLocally(response.result, site.siteId)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         val notesWithActions = result.map { dto ->
             InboxNoteWithActions(
@@ -57,5 +75,18 @@ class WCInboxStore @Inject constructor(
             )
         }
         inboxNotesDao.insertInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
+    }
+
+    private suspend fun markNoteAsActionedLocally(updatedNote: InboxNoteDto, siteId: Long) {
+        database.runInTransaction {
+            coroutineEngine.launch(
+                DB,
+                this,
+                "mark note as actioned in DB"
+            ) {
+                inboxNotesDao.insertOrUpdateInboxNote(updatedNote.toDataModel(siteId))
+                saveInboxNoteActions(updatedNote, siteId)
+            }
+        }
     }
 }

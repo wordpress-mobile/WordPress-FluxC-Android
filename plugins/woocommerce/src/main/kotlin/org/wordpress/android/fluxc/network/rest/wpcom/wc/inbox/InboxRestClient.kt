@@ -52,4 +52,29 @@ class InboxRestClient @Inject constructor(
             }
         }
     }
+
+    suspend fun markInboxNoteAsActioned(
+        site: SiteModel,
+        inboxNoteId: Long,
+        inboxNoteActionId: Long
+    ): WooPayload<InboxNoteDto> {
+        val url = WOOCOMMERCE.admin.notes.note(inboxNoteId)
+            .action.item(inboxNoteActionId).pathV4Analytics
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            emptyMap(),
+            InboxNoteDto::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
 }
