@@ -16,8 +16,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.util.DateTimeUtils
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -108,9 +109,10 @@ class CouponRestClient @Inject constructor(
         after: Date
     ): WooPayload<List<CouponReportDto>> {
         val url = WOOCOMMERCE.reports.coupons.pathV4Analytics
+        val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ROOT)
 
         val params = mapOf(
-            "after" to DateTimeUtils.iso8601FromDate(after),
+            "after" to dateFormatter.format(after),
             "coupons" to couponsIds.joinToString(",")
         )
 
