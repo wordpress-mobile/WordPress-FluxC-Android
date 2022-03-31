@@ -53,6 +53,29 @@ class CouponRestClient @Inject constructor(
         }
     }
 
+    suspend fun fetchCoupon(
+        site: SiteModel,
+        couponId: Long
+    ): WooPayload<CouponDto> {
+        val url = WOOCOMMERCE.coupons.id(couponId).pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this,
+            site,
+            url,
+            emptyMap(),
+            CouponDto::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     suspend fun deleteCoupon(
         site: SiteModel,
         couponId: Long,

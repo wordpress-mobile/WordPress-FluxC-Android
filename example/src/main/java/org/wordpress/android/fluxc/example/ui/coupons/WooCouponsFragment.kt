@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.fragment_woo_coupons.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
@@ -33,7 +34,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
                     val codes = coupons.joinToString {
-                        "${it.couponEntity.code}(${it.couponEntity.id})"
+                        "${it.couponEntity.code}(ID ${it.couponEntity.id})"
                     }
                     prependToLog("Coupons changed: [$codes]")
                 }
@@ -67,6 +68,20 @@ class WooCouponsFragment : StoreSelectingFragment() {
                         }
                     } ?: prependToLog("Invalid coupon ID")
                 }
+            }
+        }
+
+        btnFetchSingleCoupon.setOnClickListener {
+            showSingleLineDialog(activity, "Enter the coupon ID to fetch:") { editText ->
+                editText.text.toString().toLongOrNull()?.let {
+                    coroutineScope.launch {
+                        store.fetchCoupon(selectedSite!!, it)
+                        prependToLog(
+                            store.observeCoupon(selectedSite!!, it)
+                                .first()?.couponEntity?.toString() ?: "Coupon $it not found"
+                        )
+                    }
+                } ?: prependToLog("Invalid coupon ID")
             }
         }
     }
