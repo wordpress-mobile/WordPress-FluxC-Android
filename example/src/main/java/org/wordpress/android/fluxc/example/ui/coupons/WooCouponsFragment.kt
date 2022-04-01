@@ -19,10 +19,12 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.CouponStore
+import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
 class WooCouponsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var store: CouponStore
+    @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -82,6 +84,39 @@ class WooCouponsFragment : StoreSelectingFragment() {
                         )
                     }
                 } ?: prependToLog("Invalid coupon ID")
+            }
+        }
+
+        btnFetchCouponReport.setOnClickListener {
+            coroutineScope.launch {
+                val couponId = showSingleLineDialog(
+                    requireActivity(),
+                    "Enter the coupon Id:",
+                    isNumeric = true
+                )?.toLongOrNull()
+                    ?: run {
+                        prependToLog("Please enter a valid id")
+                        return@launch
+                    }
+
+                val reportResult = store.fetchCouponReport(selectedSite!!, couponId)
+
+                when {
+                    reportResult.isError ->
+                        prependToLog("Fetching report failed, ${reportResult.error.message}")
+                    else -> {
+                        val report = reportResult.model!!
+                        val usageAmountFormatted = wooCommerceStore.formatCurrencyForDisplay(
+                            report.amount.toDouble(),
+                            selectedSite!!,
+                            applyDecimalFormatting = true
+                        )
+                        prependToLog(
+                            "Coupon was used ${report.ordersCount} times and " +
+                                "resulted in $usageAmountFormatted savings"
+                        )
+                    }
+                }
             }
         }
     }
