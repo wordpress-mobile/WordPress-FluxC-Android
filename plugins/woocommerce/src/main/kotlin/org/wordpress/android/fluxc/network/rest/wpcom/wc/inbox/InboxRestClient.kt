@@ -77,4 +77,22 @@ class InboxRestClient @Inject constructor(
             }
         }
     }
+
+    suspend fun deleteNote(
+        site: SiteModel,
+        inboxNoteId: Long
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.admin.notes.delete.note(inboxNoteId).pathV4Analytics
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+            this,
+            site,
+            url,
+            Unit::class.java
+        )
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
+        }
+    }
 }

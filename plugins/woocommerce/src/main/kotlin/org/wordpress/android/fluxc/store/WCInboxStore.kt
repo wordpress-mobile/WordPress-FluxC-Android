@@ -31,8 +31,8 @@ class WCInboxStore @Inject constructor(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
-    ): WooResult<Unit> {
-        return coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             val response = restClient.fetchInboxNotes(site, page, pageSize)
             when {
                 response.isError -> WooResult(response.error)
@@ -43,7 +43,6 @@ class WCInboxStore @Inject constructor(
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
-    }
 
     fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>> =
         inboxNotesDao.observeInboxNotes(siteId)
@@ -53,8 +52,8 @@ class WCInboxStore @Inject constructor(
         site: SiteModel,
         noteId: Long,
         actionId: Long
-    ): WooResult<Unit> {
-        return coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             val response = restClient.markInboxNoteAsActioned(site, noteId, actionId)
             when {
                 response.isError -> WooResult(response.error)
@@ -65,7 +64,21 @@ class WCInboxStore @Inject constructor(
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
-    }
+
+
+    suspend fun deleteNote(site: SiteModel, noteId: Long): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+            val response = restClient.deleteNote(site, noteId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    deleteInboxNoteLocally(noteId, site.siteId)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         val notesWithActions = result.map { dto ->
@@ -86,6 +99,18 @@ class WCInboxStore @Inject constructor(
             ) {
                 inboxNotesDao.insertOrUpdateInboxNote(updatedNote.toDataModel(siteId))
                 saveInboxNoteActions(updatedNote, siteId)
+            }
+        }
+    }
+
+    private suspend fun deleteInboxNoteLocally(noteId: Long, siteId: Long) {
+        database.runInTransaction {
+            coroutineEngine.launch(
+                DB,
+                this,
+                "mark note as actioned in DB"
+            ) {
+                inboxNotesDao.deleteInboxNote(noteId, siteId)
             }
         }
     }

@@ -30,6 +30,9 @@ abstract class InboxNotesDao {
     @Query("DELETE FROM InboxNotes WHERE siteId = :siteId")
     abstract fun deleteInboxNotesForSite(siteId: Long)
 
+    @Query("DELETE FROM InboxNotes WHERE id = :inboxNoteId AND siteId = :siteId")
+    abstract suspend fun deleteInboxNote(inboxNoteId: Long, siteId: Long)
+    
     @Transaction
     open suspend fun insertInboxNotesAndActions(siteId: Long, vararg notes: InboxNoteWithActions) {
         deleteInboxNotesForSite(siteId)
