@@ -65,7 +65,6 @@ class WCInboxStore @Inject constructor(
             }
         }
 
-
     suspend fun deleteNote(site: SiteModel, noteId: Long): WooResult<Unit> =
         coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             val response = restClient.deleteNote(site, noteId)
@@ -78,7 +77,6 @@ class WCInboxStore @Inject constructor(
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
-
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         val notesWithActions = result.map { dto ->

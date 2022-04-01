@@ -4,7 +4,9 @@ import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus
-import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.*
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Actioned
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Snoozed
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Unactioned
 
 data class InboxNoteDto(
     @SerializedName("id") val id: Long,
@@ -39,7 +41,7 @@ data class InboxNoteDto(
             this == STATUS_UNACTIONED -> Unactioned
             this == STATUS_ACTIONED -> Actioned
             this == STATUS_SNOOZED -> Snoozed
-            else -> Unknown
+            else -> LocalInboxNoteStatus.Unknown
         }
 
     private companion object {
