@@ -49,7 +49,6 @@ class WCInboxStore @Inject constructor(
 
     fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>> =
         inboxNotesDao.observeInboxNotes(siteId)
-            .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
