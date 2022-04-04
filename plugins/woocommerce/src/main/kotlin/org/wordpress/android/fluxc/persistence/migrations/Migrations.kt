@@ -458,7 +458,6 @@ internal val MIGRATION_10_11 = object : Migration(10, 11) {
 internal val MIGRATION_11_12 = object : Migration(11, 12) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
-            execSQL("DROP TABLE InboxNotes")
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `InboxNotes` (
@@ -482,7 +481,6 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                 """.trimIndent()
             )
 
-            execSQL("DROP TABLE InboxNoteActions")
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `InboxNoteActions` (
