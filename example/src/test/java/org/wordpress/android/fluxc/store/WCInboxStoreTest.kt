@@ -1,13 +1,11 @@
 package org.wordpress.android.fluxc.store
 
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions
-import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -18,7 +16,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxNoteActionDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxNoteDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxRestClient
-import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 import org.wordpress.android.fluxc.store.WCInboxStore.Companion.DEFAULT_PAGE
