@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxNoteDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxRestClient
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 import org.wordpress.android.fluxc.store.WCInboxStore.Companion.DEFAULT_PAGE
 import org.wordpress.android.fluxc.store.WCInboxStore.Companion.DEFAULT_PAGE_SIZE
 import org.wordpress.android.fluxc.test
@@ -27,23 +28,13 @@ import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 class WCInboxStoreTest {
     private val restClient: InboxRestClient = mock()
-    private val database: WCAndroidDatabase = mock()
     private val inboxNotesDao: InboxNotesDao = mock()
 
     private val sut = WCInboxStore(
         restClient,
         initCoroutineEngine(),
-        database,
         inboxNotesDao
     )
-
-    @Before
-    fun setUp() {
-        val blockArg1 = argumentCaptor<Runnable>()
-        whenever(database.runInTransaction(blockArg1.capture())).then {
-            blockArg1.firstValue.run()
-        }
-    }
 
     @Test
     fun `Given notes are fetched successfully, when notes fetched, then save them into DB`() =
@@ -52,8 +43,8 @@ class WCInboxStoreTest {
 
             sut.fetchInboxNotes(ANY_SITE)
 
-            verify(inboxNotesDao).insertOrUpdateInboxNote(
-                ANY_INBOX_NOTE_DTO.toDataModel(ANY_SITE.siteId)
+            verify(inboxNotesDao).insertInboxNotesAndActions(
+                *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
             )
         }
 
@@ -137,5 +128,16 @@ class WCInboxStoreTest {
             dateReminder = ""
         )
         val ANY_SITE = SiteModel().apply { siteId = 1 }
+        val INBOX_NOTES_WITH_ACTIONS_ENTITY = listOf(
+            InboxNoteWithActions(
+                inboxNote = ANY_INBOX_NOTE_DTO.toDataModel(ANY_SITE.siteId),
+                noteActions = listOf(
+                    ANY_INBOX_NOTE_ACTION_DTO.toDataModel(
+                        ANY_INBOX_NOTE_DTO.id,
+                        ANY_SITE.siteId
+                    )
+                )
+            )
+        )
     }
 }

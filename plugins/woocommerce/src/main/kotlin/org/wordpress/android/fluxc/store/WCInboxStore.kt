@@ -11,12 +11,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ER
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxNoteDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxRestClient
-import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
-import org.wordpress.android.util.AppLog.T.DB
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,7 +22,6 @@ import javax.inject.Singleton
 class WCInboxStore @Inject constructor(
     private val restClient: InboxRestClient,
     private val coroutineEngine: CoroutineEngine,
-    private val database: WCAndroidDatabase,
     private val inboxNotesDao: InboxNotesDao
 ) {
     companion object {
@@ -56,25 +53,12 @@ class WCInboxStore @Inject constructor(
             .distinctUntilChanged()
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
-        result.forEach { dto ->
-            database.runInTransaction {
-                coroutineEngine.launch(
-                    DB,
-                    this,
-                    "fetchInboxNotes DB transaction"
-                ) {
-                    inboxNotesDao.insertOrUpdateInboxNote(dto.toDataModel(siteId))
-                    saveInboxNoteActions(dto, siteId)
-                }
-            }
-        }
-    }
-
-    private suspend fun saveInboxNoteActions(dto: InboxNoteDto, siteId: Long) {
-        dto.actions.forEach { action ->
-            inboxNotesDao.insertOrUpdateInboxNoteAction(
-                action.toDataModel(dto.id, siteId)
+        val notesWithActions = result.map { dto ->
+            InboxNoteWithActions(
+                inboxNote = dto.toDataModel(siteId),
+                noteActions = dto.actions.map { it.toDataModel(dto.id, siteId) }
             )
         }
+        inboxNotesDao.insertInboxNotesAndActions(*notesWithActions.toTypedArray())
     }
 }
