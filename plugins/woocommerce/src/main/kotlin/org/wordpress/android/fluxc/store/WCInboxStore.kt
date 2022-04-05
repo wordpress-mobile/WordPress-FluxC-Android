@@ -53,9 +53,9 @@ class WCInboxStore @Inject constructor(
         val notesWithActions = result.map { dto ->
             InboxNoteWithActions(
                 inboxNote = dto.toDataModel(siteId),
-                noteActions = dto.actions.map { it.toDataModel(dto.id, siteId) }
+                noteActions = dto.actions.map { it.toDataModel(siteId) }
             )
         }
-        inboxNotesDao.insertInboxNotesAndActions(*notesWithActions.toTypedArray())
+        inboxNotesDao.insertInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
     }
 }

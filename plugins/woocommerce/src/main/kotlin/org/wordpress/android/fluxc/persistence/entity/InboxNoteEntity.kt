@@ -1,25 +1,22 @@
 package org.wordpress.android.fluxc.persistence.entity
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.Relation
+import androidx.room.*
 
 data class InboxNoteWithActions(
     @Embedded val inboxNote: InboxNoteEntity,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "inboxNoteId"
+        parentColumn = "localId",
+        entityColumn = "inboxNoteLocalId"
     )
     val noteActions: List<InboxNoteActionEntity>
 )
 
 @Entity(
     tableName = "InboxNotes",
-    primaryKeys = ["id", "siteId"],
     indices = [Index("id", "siteId")]
 )
 data class InboxNoteEntity(
+    @PrimaryKey(autoGenerate = true) val localId: Long = 0,
     val id: Long,
     val siteId: Long,
     val name: String,

@@ -1,10 +1,6 @@
 package org.wordpress.android.fluxc.store
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
@@ -41,7 +37,7 @@ class WCInboxStoreTest {
             sut.fetchInboxNotes(ANY_SITE)
 
             verify(inboxNotesDao).insertInboxNotesAndActions(
-                *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
+                ANY_SITE.siteId, *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
             )
         }
 
@@ -130,7 +126,6 @@ class WCInboxStoreTest {
                 inboxNote = ANY_INBOX_NOTE_DTO.toDataModel(ANY_SITE.siteId),
                 noteActions = listOf(
                     ANY_INBOX_NOTE_ACTION_DTO.toDataModel(
-                        ANY_INBOX_NOTE_DTO.id,
                         ANY_SITE.siteId
                     )
                 )

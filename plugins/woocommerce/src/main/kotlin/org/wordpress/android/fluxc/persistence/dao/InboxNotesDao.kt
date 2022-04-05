@@ -1,10 +1,6 @@
 package org.wordpress.android.fluxc.persistence.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
@@ -17,21 +13,21 @@ abstract class InboxNotesDao {
     abstract fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertOrUpdateInboxNote(entity: InboxNoteEntity)
+    abstract suspend fun insertOrUpdateInboxNote(entity: InboxNoteEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNoteAction(entity: InboxNoteActionEntity)
 
-    @Transaction
     @Query("DELETE FROM InboxNotes WHERE siteId = :siteId")
-    abstract suspend fun deleteSiteInboxNotes(siteId: Long)
+    abstract fun deleteInboxNotesForSite(siteId: Long)
 
     @Transaction
-    open suspend fun insertInboxNotesAndActions(vararg notes: InboxNoteWithActions) {
+    open suspend fun insertInboxNotesAndActions(siteId: Long, vararg notes: InboxNoteWithActions) {
+        deleteInboxNotesForSite(siteId)
         notes.forEach { noteWithActions ->
-            insertOrUpdateInboxNote(noteWithActions.inboxNote)
+            val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
             noteWithActions.noteActions.forEach {
-                insertOrUpdateInboxNoteAction(it)
+                insertOrUpdateInboxNoteAction(it.copy(inboxNoteLocalId = localNoteId))
             }
         }
     }

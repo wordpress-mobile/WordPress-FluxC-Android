@@ -2,22 +2,20 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Index
 
 @Entity(
     tableName = "InboxNoteActions",
     foreignKeys = [ForeignKey(
         entity = InboxNoteEntity::class,
-        parentColumns = ["id", "siteId"],
-        childColumns = ["inboxNoteId", "siteId"],
+        parentColumns = ["localId"],
+        childColumns = ["inboxNoteLocalId"],
         onDelete = ForeignKey.CASCADE
     )],
-    primaryKeys = ["id", "inboxNoteId", "siteId"],
-    indices = [Index("id", "inboxNoteId", "siteId")]
+    primaryKeys = ["id", "inboxNoteLocalId"]
 )
 data class InboxNoteActionEntity(
     val id: Long,
-    val inboxNoteId: Long,
+    val inboxNoteLocalId: Long,
     val siteId: Long,
     val name: String,
     val label: String,

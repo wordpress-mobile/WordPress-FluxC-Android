@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "f781dd64c495cb41d131bbd75bfd25ab",
+    "identityHash": "43786eecf39f71773bbea3d3b581a2f1",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1320,8 +1320,14 @@
       },
       {
         "tableName": "InboxNotes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT, PRIMARY KEY(`id`, `siteId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT)",
         "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "id",
             "columnName": "id",
@@ -1385,10 +1391,9 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "id",
-            "siteId"
+            "localId"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [
           {
@@ -1405,7 +1410,7 @@
       },
       {
         "tableName": "InboxNoteActions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `inboxNoteId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `label` TEXT NOT NULL, `url` TEXT NOT NULL, `query` TEXT, `status` TEXT, `primary` INTEGER NOT NULL, `actionedText` TEXT, PRIMARY KEY(`id`, `inboxNoteId`, `siteId`), FOREIGN KEY(`inboxNoteId`, `siteId`) REFERENCES `InboxNotes`(`id`, `siteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `inboxNoteLocalId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `label` TEXT NOT NULL, `url` TEXT NOT NULL, `query` TEXT, `status` TEXT, `primary` INTEGER NOT NULL, `actionedText` TEXT, PRIMARY KEY(`id`, `inboxNoteLocalId`), FOREIGN KEY(`inboxNoteLocalId`) REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -1414,8 +1419,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "inboxNoteId",
-            "columnName": "inboxNoteId",
+            "fieldPath": "inboxNoteLocalId",
+            "columnName": "inboxNoteLocalId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1471,35 +1476,21 @@
         "primaryKey": {
           "columnNames": [
             "id",
-            "inboxNoteId",
-            "siteId"
+            "inboxNoteLocalId"
           ],
           "autoGenerate": false
         },
-        "indices": [
-          {
-            "name": "index_InboxNoteActions_id_inboxNoteId_siteId",
-            "unique": false,
-            "columnNames": [
-              "id",
-              "inboxNoteId",
-              "siteId"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_id_inboxNoteId_siteId` ON `${TABLE_NAME}` (`id`, `inboxNoteId`, `siteId`)"
-          }
-        ],
+        "indices": [],
         "foreignKeys": [
           {
             "table": "InboxNotes",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "inboxNoteId",
-              "siteId"
+              "inboxNoteLocalId"
             ],
             "referencedColumns": [
-              "id",
-              "siteId"
+              "localId"
             ]
           }
         ]
@@ -1508,7 +1499,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f781dd64c495cb41d131bbd75bfd25ab')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '43786eecf39f71773bbea3d3b581a2f1')"
     ]
   }
 }

@@ -46,10 +46,10 @@ data class InboxNoteActionDto(
     @SerializedName("nonce_name") val nonceName: String?,
     @SerializedName("url") val url: String
 ) {
-    fun toDataModel(inboxNoteId: Long, siteId: Long) =
+    fun toDataModel(siteId: Long) =
         InboxNoteActionEntity(
             id = id,
-            inboxNoteId = inboxNoteId,
+            inboxNoteLocalId = 0,
             siteId = siteId,
             name = name,
             label = label,
