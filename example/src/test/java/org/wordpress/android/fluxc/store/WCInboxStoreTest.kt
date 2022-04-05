@@ -40,7 +40,7 @@ class WCInboxStoreTest {
 
             sut.fetchInboxNotes(ANY_SITE)
 
-            verify(inboxNotesDao).insertInboxNotesAndActions(
+            verify(inboxNotesDao).updateAllInboxNotesAndActions(
                 ANY_SITE.siteId, *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
             )
         }
@@ -62,7 +62,7 @@ class WCInboxStoreTest {
 
             sut.fetchInboxNotes(ANY_SITE)
 
-            verify(inboxNotesDao, never()).insertOrUpdateInboxNote(any())
+            verify(inboxNotesDao, never()).insertOrReplaceNote(any())
         }
 
     @Test

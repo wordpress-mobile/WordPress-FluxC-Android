@@ -58,7 +58,7 @@ class WCInboxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    markNoteAsActionedLocally(response.result, site.siteId)
+                    markNoteAsActionedLocally(site.siteId, response.result)
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -85,11 +85,11 @@ class WCInboxStore @Inject constructor(
         val notesWithActions = result.map { dto ->
             dto.toInboxNoteWithActionsEntity(siteId)
         }
-        inboxNotesDao.insertInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
+        inboxNotesDao.updateAllInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
     }
 
-    private suspend fun markNoteAsActionedLocally(updatedNote: InboxNoteDto, siteId: Long) {
+    private suspend fun markNoteAsActionedLocally(siteId: Long, updatedNote: InboxNoteDto) {
         val noteWithActionsEntity = updatedNote.toInboxNoteWithActionsEntity(siteId)
-        inboxNotesDao.insertInboxNotesAndActions(siteId, noteWithActionsEntity)
+        inboxNotesDao.updateNote(siteId, noteWithActionsEntity)
     }
 }
