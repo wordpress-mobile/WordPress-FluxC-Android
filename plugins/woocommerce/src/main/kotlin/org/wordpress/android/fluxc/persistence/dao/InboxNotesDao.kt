@@ -25,6 +25,7 @@ abstract class InboxNotesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNoteAction(entity: InboxNoteActionEntity)
 
+    @Transaction
     @Query("DELETE FROM InboxNotes WHERE siteId = :siteId")
     abstract fun deleteInboxNotesForSite(siteId: Long)
 

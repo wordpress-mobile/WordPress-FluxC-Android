@@ -65,13 +65,16 @@ class WCInboxStore @Inject constructor(
             }
         }
 
-    suspend fun deleteNote(site: SiteModel, noteId: Long): WooResult<Unit> =
+    suspend fun deleteNote(
+        site: SiteModel,
+        noteId: Long
+    ): WooResult<Unit> =
         coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             val response = restClient.deleteNote(site, noteId)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    deleteInboxNoteLocally(noteId, site.siteId)
+                    inboxNotesDao.deleteInboxNote(noteId, site.siteId)
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -80,36 +83,13 @@ class WCInboxStore @Inject constructor(
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         val notesWithActions = result.map { dto ->
-            InboxNoteWithActions(
-                inboxNote = dto.toDataModel(siteId),
-                noteActions = dto.actions.map { it.toDataModel(siteId) }
-            )
+            dto.toInboxNoteWithActionsEntity(siteId)
         }
         inboxNotesDao.insertInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
     }
 
     private suspend fun markNoteAsActionedLocally(updatedNote: InboxNoteDto, siteId: Long) {
-        database.runInTransaction {
-            coroutineEngine.launch(
-                DB,
-                this,
-                "mark note as actioned in DB"
-            ) {
-                inboxNotesDao.insertOrUpdateInboxNote(updatedNote.toDataModel(siteId))
-                saveInboxNoteActions(updatedNote, siteId)
-            }
-        }
-    }
-
-    private suspend fun deleteInboxNoteLocally(noteId: Long, siteId: Long) {
-        database.runInTransaction {
-            coroutineEngine.launch(
-                DB,
-                this,
-                "mark note as actioned in DB"
-            ) {
-                inboxNotesDao.deleteInboxNote(noteId, siteId)
-            }
-        }
+        val noteWithActionsEntity = updatedNote.toInboxNoteWithActionsEntity(siteId)
+        inboxNotesDao.insertInboxNotesAndActions(siteId, noteWithActionsEntity)
     }
 }

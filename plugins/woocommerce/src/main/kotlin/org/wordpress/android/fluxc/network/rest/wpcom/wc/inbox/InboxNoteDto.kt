@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInbox
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Actioned
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Snoozed
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Unactioned
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 
 data class InboxNoteDto(
     @SerializedName("id") val id: Long,
@@ -22,7 +23,13 @@ data class InboxNoteDto(
     @SerializedName("date_created") val dateCreated: String,
     @SerializedName("date_reminder") val dateReminder: String?
 ) {
-    fun toDataModel(siteId: Long) =
+    fun toInboxNoteWithActionsEntity(siteId: Long) =
+        InboxNoteWithActions(
+            inboxNote = toInboxNoteEntity(siteId),
+            noteActions = actions.map { it.toDataModel(siteId) }
+        )
+
+    fun toInboxNoteEntity(siteId: Long) =
         InboxNoteEntity(
             id = id,
             siteId = siteId,
