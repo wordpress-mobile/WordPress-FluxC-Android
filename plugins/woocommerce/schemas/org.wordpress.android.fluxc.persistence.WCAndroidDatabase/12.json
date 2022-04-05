@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "43786eecf39f71773bbea3d3b581a2f1",
+    "identityHash": "0cca8009f3a179d0f911bcc61401c7f1",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1320,7 +1320,7 @@
       },
       {
         "tableName": "InboxNotes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT)",
         "fields": [
           {
             "fieldPath": "localId",
@@ -1329,8 +1329,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1397,24 +1397,24 @@
         },
         "indices": [
           {
-            "name": "index_InboxNotes_id_siteId",
-            "unique": false,
+            "name": "index_InboxNotes_remoteId_siteId",
+            "unique": true,
             "columnNames": [
-              "id",
+              "remoteId",
               "siteId"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_InboxNotes_id_siteId` ON `${TABLE_NAME}` (`id`, `siteId`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_siteId` ON `${TABLE_NAME}` (`remoteId`, `siteId`)"
           }
         ],
         "foreignKeys": []
       },
       {
         "tableName": "InboxNoteActions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `inboxNoteLocalId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `label` TEXT NOT NULL, `url` TEXT NOT NULL, `query` TEXT, `status` TEXT, `primary` INTEGER NOT NULL, `actionedText` TEXT, PRIMARY KEY(`id`, `inboxNoteLocalId`), FOREIGN KEY(`inboxNoteLocalId`) REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`remoteId` INTEGER NOT NULL, `inboxNoteLocalId` INTEGER NOT NULL, `siteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `label` TEXT NOT NULL, `url` TEXT NOT NULL, `query` TEXT, `status` TEXT, `primary` INTEGER NOT NULL, `actionedText` TEXT, PRIMARY KEY(`remoteId`, `inboxNoteLocalId`), FOREIGN KEY(`inboxNoteLocalId`) REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1475,7 +1475,7 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "id",
+            "remoteId",
             "inboxNoteLocalId"
           ],
           "autoGenerate": false
@@ -1499,7 +1499,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '43786eecf39f71773bbea3d3b581a2f1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0cca8009f3a179d0f911bcc61401c7f1')"
     ]
   }
 }

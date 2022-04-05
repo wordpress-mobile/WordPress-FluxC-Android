@@ -31,7 +31,7 @@ data class InboxNoteDto(
 
     fun toInboxNoteEntity(siteId: Long) =
         InboxNoteEntity(
-            id = id,
+            remoteId = id,
             siteId = siteId,
             name = name,
             title = title,
@@ -72,7 +72,7 @@ data class InboxNoteActionDto(
 ) {
     fun toDataModel(siteId: Long) =
         InboxNoteActionEntity(
-            id = id,
+            remoteId = id,
             inboxNoteLocalId = 0,
             siteId = siteId,
             name = name,

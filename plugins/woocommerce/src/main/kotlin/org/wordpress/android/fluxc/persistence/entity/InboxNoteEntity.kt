@@ -17,11 +17,14 @@ data class InboxNoteWithActions(
 
 @Entity(
     tableName = "InboxNotes",
-    indices = [Index("id", "siteId")]
+    indices = [Index(
+        value = ["remoteId", "siteId"],
+        unique = true
+    )]
 )
 data class InboxNoteEntity(
     @PrimaryKey(autoGenerate = true) val localId: Long = 0,
-    val id: Long,
+    val remoteId: Long,
     val siteId: Long,
     val name: String,
     val title: String,
