@@ -11,10 +11,10 @@ import androidx.room.ForeignKey
         childColumns = ["inboxNoteLocalId"],
         onDelete = ForeignKey.CASCADE
     )],
-    primaryKeys = ["id", "inboxNoteLocalId"]
+    primaryKeys = ["remoteId", "inboxNoteLocalId"]
 )
 data class InboxNoteActionEntity(
-    val id: Long,
+    val remoteId: Long,
     val inboxNoteLocalId: Long,
     val siteId: Long,
     val name: String,

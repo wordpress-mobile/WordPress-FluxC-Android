@@ -462,7 +462,7 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `InboxNotes` (
                     `localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                    `id` INTEGER NOT NULL,
+                    `remoteId` INTEGER NOT NULL,
                     `siteId` INTEGER NOT NULL,
                     `name` TEXT NOT NULL,
                     `title` TEXT NOT NULL,
@@ -484,7 +484,7 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `InboxNoteActions` (
-                    `id` INTEGER NOT NULL,
+                    `remoteId` INTEGER NOT NULL,
                     `inboxNoteId` INTEGER NOT NULL,
                     `siteId` INTEGER NOT NULL,
                     `name` TEXT NOT NULL,
@@ -494,7 +494,7 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                     `status` TEXT,
                     `primary` INTEGER NOT NULL,
                     `actionedText` TEXT,
-                    PRIMARY KEY(`id`,`inboxNoteLocalId`),
+                    PRIMARY KEY(`remoteId`,`inboxNoteLocalId`),
                     FOREIGN KEY(`inboxNoteLocalId`)
                     REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )
                     """.trimIndent()
