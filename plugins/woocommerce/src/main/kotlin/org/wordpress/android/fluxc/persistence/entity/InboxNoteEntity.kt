@@ -1,6 +1,10 @@
 package org.wordpress.android.fluxc.persistence.entity
 
-import androidx.room.*
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 data class InboxNoteWithActions(
     @Embedded val inboxNote: InboxNoteEntity,
