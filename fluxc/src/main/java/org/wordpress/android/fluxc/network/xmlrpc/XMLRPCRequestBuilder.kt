@@ -36,8 +36,8 @@ class XMLRPCRequestBuilder
             url,
             method,
             params,
-            // **Do not** convert it to lambda! See https://youtrack.jetbrains.com/issue/KT-51868
-            Listener<Any> { obj: Any? ->
+            // Converting this to lambda causes tests failure, e.g. testFetchSite
+            Listener<Any?> { obj: Any? ->
                 if (obj == null) {
                     errorListener.invoke(BaseNetworkError(INVALID_RESPONSE))
                 }
