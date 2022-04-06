@@ -42,6 +42,7 @@ plugins {
 
 gradleEnterprise {
     server = "https://gradle.a8c.com"
+    allowUntrustedServer = false
 }
 
 rootProject.name = 'FluxC'
