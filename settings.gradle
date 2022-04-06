@@ -45,6 +45,9 @@ gradleEnterprise {
     allowUntrustedServer = false
     buildScan {
         publishAlways()
+        capture {
+            taskInputFiles = true
+        }
     }
 }
 
