@@ -36,6 +36,8 @@ pluginManagement {
     }
 }
 
+rootProject.name = 'FluxC'
+
 include ':fluxc',
         ':fluxc-processor',
         ':fluxc-annotations',
