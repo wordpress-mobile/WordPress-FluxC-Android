@@ -40,7 +40,7 @@ class WCInboxStoreTest {
 
             sut.fetchInboxNotes(ANY_SITE)
 
-            verify(inboxNotesDao).insertInboxNotesAndActions(
+            verify(inboxNotesDao).deleteAllAndInsertInboxNotes(
                 ANY_SITE.siteId, *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
             )
         }

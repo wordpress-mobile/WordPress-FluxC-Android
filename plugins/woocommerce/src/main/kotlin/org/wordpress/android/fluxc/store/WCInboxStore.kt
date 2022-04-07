@@ -56,6 +56,6 @@ class WCInboxStore @Inject constructor(
                 noteActions = dto.actions.map { it.toDataModel(siteId) }
             )
         }
-        inboxNotesDao.insertInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
+        inboxNotesDao.deleteAllAndInsertInboxNotes(siteId, *notesWithActions.toTypedArray())
     }
 }

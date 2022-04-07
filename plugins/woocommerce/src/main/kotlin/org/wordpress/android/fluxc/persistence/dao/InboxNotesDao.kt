@@ -26,7 +26,7 @@ abstract class InboxNotesDao {
     abstract fun deleteInboxNotesForSite(siteId: Long)
 
     @Transaction
-    open suspend fun insertInboxNotesAndActions(siteId: Long, vararg notes: InboxNoteWithActions) {
+    open suspend fun deleteAllAndInsertInboxNotes(siteId: Long, vararg notes: InboxNoteWithActions) {
         deleteInboxNotesForSite(siteId)
         notes.forEach { noteWithActions ->
             val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
