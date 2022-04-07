@@ -53,7 +53,7 @@ class CouponStore @Inject constructor(
         pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
-            val response = restClient.fetchCoupons(site, page, pageSize, null)
+            val response = restClient.fetchCoupons(site, page, pageSize)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
@@ -204,8 +204,8 @@ class CouponStore @Inject constructor(
             .mapLatest { list ->
                 list.map { assembleCouponDataModel(site, it) }
             }
-            .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
 
     private fun assembleCouponDataModel(site: SiteModel, it: CouponWithEmails): CouponDataModel {
         val includedProducts = productsDao.getCouponProducts(
