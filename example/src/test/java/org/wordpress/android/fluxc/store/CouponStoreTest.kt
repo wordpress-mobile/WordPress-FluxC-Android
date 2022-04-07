@@ -235,7 +235,7 @@ class CouponStoreTest {
 
         val result = couponStore.fetchCoupons(site)
 
-        assertThat(result).isEqualTo(WooResult(Unit))
+        assertThat(result).isEqualTo(WooResult(false))
     }
 
     @Test

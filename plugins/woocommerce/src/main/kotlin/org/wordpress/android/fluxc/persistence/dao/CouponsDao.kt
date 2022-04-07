@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.persistence.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -85,6 +86,9 @@ abstract class CouponsDao {
 
     @Query("DELETE FROM Coupons WHERE siteId = :siteId AND id = :couponId")
     abstract suspend fun deleteCoupon(siteId: Long, couponId: Long)
+
+    @Query("DELETE FROM Coupons WHERE siteId = :siteId")
+    abstract suspend fun deleteAllCoupons(siteId: Long)
 
     @Query("SELECT COUNT(*) FROM CouponEmails WHERE siteId = :siteId AND couponId = :couponId")
     abstract suspend fun getEmailCount(siteId: Long, couponId: Long): Int

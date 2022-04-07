@@ -19,12 +19,13 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.CouponStore
+import org.wordpress.android.fluxc.store.CouponStore.Companion.DEFAULT_PAGE
 import javax.inject.Inject
 
 class WooCouponsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var store: CouponStore
-
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private var couponPage = DEFAULT_PAGE
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_coupons, container, false)
@@ -33,10 +34,10 @@ class WooCouponsFragment : StoreSelectingFragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
-                    val codes = coupons.joinToString {
+                    val codes = coupons.joinToString(",\n") {
                         "${it.couponEntity.code}(ID ${it.couponEntity.id})"
                     }
-                    prependToLog("Coupons changed: [$codes]")
+                    prependToLog("Coupons changed (${coupons.size}): \n$codes\n")
                 }
             }
         }
@@ -47,7 +48,13 @@ class WooCouponsFragment : StoreSelectingFragment() {
 
         btnFetchCoupons.setOnClickListener {
             coroutineScope.launch {
-                store.fetchCoupons(selectedSite!!)
+                val result = store.fetchCoupons(selectedSite!!, couponPage++, pageSize = 3)
+                if (result.model == true) {
+                    btnFetchCoupons.text = "Fetch More Coupons"
+                } else {
+                    btnFetchCoupons.text = "Can't load more coupons"
+                    btnFetchCoupons.isEnabled = false
+                }
             }
         }
 

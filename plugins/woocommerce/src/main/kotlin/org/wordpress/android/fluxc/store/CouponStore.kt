@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.fluxc.utils.runInTransactionAsync
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
 import org.wordpress.android.util.AppLog.T.DB
@@ -50,14 +51,22 @@ class CouponStore @Inject constructor(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
-    ): WooResult<Unit> {
+    ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
-            val response = restClient.fetchCoupons(site, page, pageSize)
+            val response = restClient.fetchCoupons(site, page, pageSize, null)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    response.result.forEach { addCouponToDatabase(it, site) }
-                    WooResult(Unit)
+                    database.runInTransactionAsync {
+                        // clear the table if the 1st page is requested
+                        if (page == 1) {
+                            couponsDao.deleteAllCoupons(site.siteId)
+                        }
+
+                        response.result.forEach { addCouponToDatabase(it, site) }
+                    }
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(canLoadMore)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
@@ -113,10 +122,7 @@ class CouponStore @Inject constructor(
         }
     }
 
-    private suspend fun insertRestrictedEmailAddresses(
-        dto: CouponDto,
-        site: SiteModel
-    ) {
+    private suspend fun insertRestrictedEmailAddresses(dto: CouponDto, site: SiteModel) {
         dto.restrictedEmails?.forEach { email ->
             couponsDao.insertOrUpdateCouponEmail(
                 CouponEmailEntity(
@@ -189,6 +195,8 @@ class CouponStore @Inject constructor(
                     assembleCouponDataModel(site, it)
                 }
             }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
 
     @ExperimentalCoroutinesApi
     fun observeCoupons(site: SiteModel): Flow<List<CouponDataModel>> =
@@ -199,10 +207,7 @@ class CouponStore @Inject constructor(
             .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
 
-    private fun assembleCouponDataModel(
-        site: SiteModel,
-        it: CouponWithEmails
-    ): CouponDataModel {
+    private fun assembleCouponDataModel(site: SiteModel, it: CouponWithEmails): CouponDataModel {
         val includedProducts = productsDao.getCouponProducts(
             siteId = site.siteId,
             couponId = it.couponEntity.id,
