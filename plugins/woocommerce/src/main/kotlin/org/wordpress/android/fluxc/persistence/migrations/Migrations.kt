@@ -454,3 +454,51 @@ internal val MIGRATION_10_11 = object : Migration(10, 11) {
         }
     }
 }
+
+internal val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `InboxNotes` (
+                    `localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `remoteId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `title` TEXT NOT NULL,
+                    `content` TEXT NOT NULL,
+                    `dateCreated` TEXT NOT NULL,
+                    `status` TEXT NOT NULL,
+                    `source` TEXT,
+                    `type` TEXT,
+                    `dateReminder` TEXT)
+                    """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_InboxNotes_id_siteId` ON `InboxNotes` (`remoteId`, `siteId`);
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `InboxNoteActions` (
+                    `remoteId` INTEGER NOT NULL,
+                    `inboxNoteId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `label` TEXT NOT NULL,
+                    `url` TEXT NOT NULL,
+                    `query` TEXT,
+                    `status` TEXT,
+                    `primary` INTEGER NOT NULL,
+                    `actionedText` TEXT,
+                    PRIMARY KEY(`remoteId`,`inboxNoteLocalId`),
+                    FOREIGN KEY(`inboxNoteLocalId`)
+                    REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )
+                    """.trimIndent()
+            )
+        }
+    }
+}

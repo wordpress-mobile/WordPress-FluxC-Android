@@ -26,7 +26,7 @@ class InboxRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchNotes(
+    suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int,
         pageSize: Int
