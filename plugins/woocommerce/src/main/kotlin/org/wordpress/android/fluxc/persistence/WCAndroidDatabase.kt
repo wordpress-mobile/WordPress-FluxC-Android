@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
+import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
@@ -23,10 +24,13 @@ import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
@@ -36,7 +40,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-        version = 11,
+        version = 12,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -48,7 +52,9 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             OrderNoteEntity::class,
             ProductEntity::class,
             ProductCategoryEntity::class,
-            OrderEntity::class
+            OrderEntity::class,
+            InboxNoteEntity::class,
+            InboxNoteActionEntity::class
         ]
 )
 @TypeConverters(
@@ -66,6 +72,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
     abstract val couponsDao: CouponsDao
     abstract val productsDao: ProductsDao
     abstract val productCategoriesDao: ProductCategoriesDao
+    abstract val inboxNotesDao: InboxNotesDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(
@@ -83,6 +90,7 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_8_9)
                 .addMigrations(MIGRATION_9_10)
                 .addMigrations(MIGRATION_10_11)
+                .addMigrations(MIGRATION_11_12)
                 .build()
     }
 }
