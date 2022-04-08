@@ -1215,14 +1215,14 @@ class WCProductStore @Inject constructor(
                     payload.site,
                     payload.products
                 )
-                emitChange(
-                    OnProductsSearched(
-                        payload.searchQuery,
-                        payload.products,
-                        payload.canLoadMore
-                    )
-                )
             }
+            emitChange(
+                OnProductsSearched(
+                    payload.searchQuery,
+                    payload.products,
+                    payload.canLoadMore
+                )
+            )
         }
     }
 
