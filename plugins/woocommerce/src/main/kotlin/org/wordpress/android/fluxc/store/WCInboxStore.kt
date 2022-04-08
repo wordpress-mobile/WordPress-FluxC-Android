@@ -82,10 +82,8 @@ class WCInboxStore @Inject constructor(
         }
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
-        val notesWithActions = result.map { dto ->
-            dto.toInboxNoteWithActionsEntity(siteId)
-        }
-        inboxNotesDao.updateAllInboxNotesAndActions(siteId, *notesWithActions.toTypedArray())
+        val notesWithActions = result.map { it.toInboxNoteWithActionsEntity(siteId) }
+        inboxNotesDao.deleteAllAndInsertInboxNotes(siteId, *notesWithActions.toTypedArray())
     }
 
     private suspend fun markNoteAsActionedLocally(siteId: Long, updatedNote: InboxNoteDto) {

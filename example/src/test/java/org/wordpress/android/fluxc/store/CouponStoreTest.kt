@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -15,6 +16,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponReportDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
@@ -30,6 +32,7 @@ import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import java.math.BigDecimal
 
 @RunWith(MockitoJUnitRunner::class)
 class CouponStoreTest {
@@ -352,5 +355,76 @@ class CouponStoreTest {
         val observedDataModel = couponStore.observeCoupons(site).first()
 
         assertThat(observedDataModel).isEqualTo(expectedDataModel)
+    }
+
+    @Test
+    fun `Observing a specific coupon returns the correct coupon data model`(): Unit = test {
+        whenever(couponsDao.observeCoupon(site.siteId, expectedCoupon.id)).thenReturn(
+            flowOf(CouponWithEmails(expectedCoupon, listOf(expectedEmail)))
+        )
+
+        // included products
+        val includedProducts = listOf(includedProduct1, includedProduct2)
+        whenever(productsDao.getCouponProducts(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = false
+        )).thenReturn(includedProducts)
+
+        // excluded products
+        val excludedProducts = listOf(excludedProduct1, excludedProduct2)
+        whenever(productsDao.getCouponProducts(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = true
+        )).thenReturn(excludedProducts)
+
+        // included categories
+        val includedCategories = listOf(includedCategory1, includedCategory2)
+        whenever(productCategoriesDao.getCouponProductCategories(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = false
+        )).thenReturn(includedCategories)
+
+        // excluded categories
+        val excludedCategories = listOf(excludedCategory1, excludedCategory2)
+        whenever(productCategoriesDao.getCouponProductCategories(
+            siteId = site.siteId,
+            couponId = couponDto.id,
+            areExcluded = true
+        )).thenReturn(excludedCategories)
+
+        val expectedDataModel = CouponDataModel(
+            expectedCoupon,
+            includedProducts,
+            excludedProducts,
+            includedCategories,
+            excludedCategories,
+            listOf(expectedEmail)
+        )
+
+        val observedDataModel = couponStore.observeCoupon(site, expectedCoupon.id).first()
+
+        assertThat(observedDataModel).isEqualTo(expectedDataModel)
+    }
+
+    @Test
+    fun `fetching coupon report should return the correct data`() = test {
+        whenever(restClient.fetchCouponReport(any(), any(), any())).thenReturn(
+            WooPayload(
+                CouponReportDto(
+                    couponId = expectedCoupon.id,
+                    amount = "10",
+                    ordersCount = 2
+                )
+            )
+        )
+
+        val couponReport = couponStore.fetchCouponReport(site, expectedCoupon.id).model!!
+
+        assertThat(couponReport.couponId).isEqualTo(expectedCoupon.id)
+        assertThat(couponReport.amount).isEqualByComparingTo(BigDecimal.TEN)
+        assertThat(couponReport.ordersCount).isEqualTo(2)
     }
 }

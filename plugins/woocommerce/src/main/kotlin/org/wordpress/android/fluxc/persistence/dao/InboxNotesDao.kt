@@ -17,13 +17,10 @@ abstract class InboxNotesDao {
     abstract fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertOrReplaceNote(entity: InboxNoteEntity): Long
+    abstract suspend fun insertOrUpdateInboxNote(entity: InboxNoteEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNoteAction(entity: InboxNoteActionEntity)
-
-    @Query("DELETE FROM InboxNotes WHERE siteId = :siteId AND remoteId = :remoteNoteId")
-    abstract suspend fun deleteNote(siteId: Long, remoteNoteId: Long)
 
     @Transaction
     @Query("DELETE FROM InboxNotes WHERE siteId = :siteId")
@@ -33,10 +30,13 @@ abstract class InboxNotesDao {
     abstract suspend fun deleteInboxNote(remoteNoteId: Long, siteId: Long)
 
     @Transaction
-    open suspend fun updateAllInboxNotesAndActions(siteId: Long, vararg notesWithActions: InboxNoteWithActions) {
+    open suspend fun deleteAllAndInsertInboxNotes(
+        siteId: Long,
+        vararg notes: InboxNoteWithActions
+    ) {
         deleteInboxNotesForSite(siteId)
-        notesWithActions.forEach { noteWithActions ->
-            val localNoteId = insertOrReplaceNote(noteWithActions.inboxNote)
+        notes.forEach { noteWithActions ->
+            val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
             noteWithActions.noteActions.forEach {
                 insertOrUpdateInboxNoteAction(it.copy(inboxNoteLocalId = localNoteId))
             }
@@ -45,8 +45,8 @@ abstract class InboxNotesDao {
 
     @Transaction
     open suspend fun updateNote(siteId: Long, noteWithActions: InboxNoteWithActions) {
-        deleteNote(siteId, noteWithActions.inboxNote.remoteId)
-        val localNoteId = insertOrReplaceNote(noteWithActions.inboxNote)
+        deleteInboxNote(siteId, noteWithActions.inboxNote.remoteId)
+        val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
         noteWithActions.noteActions.forEach {
             insertOrUpdateInboxNoteAction(it.copy(inboxNoteLocalId = localNoteId))
         }
