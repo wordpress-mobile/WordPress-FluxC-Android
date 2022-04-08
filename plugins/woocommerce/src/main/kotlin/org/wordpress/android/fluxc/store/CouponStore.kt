@@ -82,7 +82,7 @@ class CouponStore @Inject constructor(
         site: SiteModel,
         searchString: String,
         page: Int = DEFAULT_PAGE,
-        pageSize: Int = DEFAULT_PAGE_SIZE,
+        pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<CouponSearchResult> {
         return coroutineEngine.withDefaultContext(API, this, "searchCoupons") {
             val response = restClient.fetchCoupons(site, page, pageSize, searchString)
