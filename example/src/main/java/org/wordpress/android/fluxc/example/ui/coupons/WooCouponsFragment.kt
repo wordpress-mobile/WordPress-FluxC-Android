@@ -38,7 +38,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
                     val codes = coupons.joinToString(",\n") {
-                        "${it.couponEntity.code}(ID ${it.couponEntity.id})"
+                        "${it.coupon.code}(ID ${it.coupon.id})"
                     }
                     prependToLog("Coupons changed (${coupons.size}): \n$codes\n")
                 }
@@ -88,7 +88,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
                         store.fetchCoupon(selectedSite!!, it)
                         prependToLog(
                             store.observeCoupon(selectedSite!!, it)
-                                .first()?.couponEntity?.toString() ?: "Coupon $it not found"
+                                .first()?.coupon?.toString() ?: "Coupon $it not found"
                         )
                     }
                 } ?: prependToLog("Invalid coupon ID")

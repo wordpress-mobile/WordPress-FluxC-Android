@@ -230,26 +230,26 @@ class CouponStore @Inject constructor(
     private fun assembleCouponDataModel(site: SiteModel, it: CouponWithEmails): CouponDataModel {
         val includedProducts = productsDao.getCouponProducts(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = false
         )
         val excludedProducts = productsDao.getCouponProducts(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = true
         )
         val includedCategories = productCategoriesDao.getCouponProductCategories(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = false
         )
         val excludedCategories = productCategoriesDao.getCouponProductCategories(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = true
         )
         return CouponDataModel(
-            it.couponEntity,
+            it.coupon,
             includedProducts,
             excludedProducts,
             includedCategories,

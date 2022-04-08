@@ -35,13 +35,13 @@ data class CouponEntity(
 )
 
 data class CouponWithEmails(
-    @Embedded val couponEntity: CouponEntity,
+    @Embedded val coupon: CouponEntity,
     @Relation(parentColumn = "id", entityColumn = "couponId")
     val restrictedEmails: List<CouponEmailEntity>
 )
 
 data class CouponDataModel(
-    val couponEntity: CouponEntity,
+    val coupon: CouponEntity,
     val products: List<ProductEntity>,
     val excludedProducts: List<ProductEntity>,
     val categories: List<ProductCategoryEntity>,
