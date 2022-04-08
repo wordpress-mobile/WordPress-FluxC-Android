@@ -58,7 +58,7 @@ class CouponStore @Inject constructor(
         pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
-            val response = restClient.fetchCoupons(site, page, pageSize)
+            val response = restClient.fetchCoupons(site, page, pageSize, null)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
@@ -78,10 +78,40 @@ class CouponStore @Inject constructor(
         }
     }
 
-    suspend fun fetchCoupon(
+    // Returns a boolean indicating whether more coupons can be fetched
+    suspend fun searchCoupons(
         site: SiteModel,
-        couponId: Long
-    ): WooResult<Unit> {
+        searchString: String,
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+    ): WooResult<CouponSearchResult> {
+        return coroutineEngine.withDefaultContext(API, this, "searchCoupons") {
+            val response = restClient.fetchCoupons(site, page, pageSize, searchString)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    database.runInTransaction {
+                        response.result.forEach { addCouponToDatabase(it, site) }
+                    }
+
+                    database
+
+                    val couponIds = response.result.map { it.id }
+                    val coupons = couponsDao.getCoupons(site.siteId, couponIds)
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(
+                        CouponSearchResult(
+                            coupons.map { assembleCouponDataModel(site, it) },
+                            canLoadMore
+                        )
+                    )
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun fetchCoupon(site: SiteModel, couponId: Long): WooResult<Unit> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupon") {
             val response = restClient.fetchCoupon(site, couponId)
             when {
@@ -284,4 +314,9 @@ class CouponStore @Inject constructor(
             }
         }
     }
+
+    data class CouponSearchResult(
+        val coupons: List<CouponDataModel>,
+        val canLoadMore: Boolean
+    )
 }

@@ -127,5 +127,19 @@ class WooCouponsFragment : StoreSelectingFragment() {
                 }
             }
         }
+
+        btnSearchCoupons.setOnClickListener {
+            showSingleLineDialog(activity, "Enter the search query:") { editText ->
+                coroutineScope.launch {
+                    val query = editText.text.toString()
+                    val searchResult = store.searchCoupons(selectedSite!!, query)
+                    prependToLog("Coupon search (\"$query\") results:\n" +
+                        searchResult.model!!.coupons.joinToString("\n,") {
+                            "${it.coupon.code}(ID ${it.coupon.id})"
+                        }
+                    )
+                }
+            }
+        }
     }
 }

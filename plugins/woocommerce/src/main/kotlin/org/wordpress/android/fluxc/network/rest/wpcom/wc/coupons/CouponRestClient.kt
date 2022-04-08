@@ -35,19 +35,23 @@ class CouponRestClient @Inject constructor(
     suspend fun fetchCoupons(
         site: SiteModel,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        searchQuery: String?
     ): WooPayload<Array<CouponDto>> {
         val url = WOOCOMMERCE.coupons.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf(
-                "page" to page.toString(),
-                "per_page" to pageSize.toString()
-            ),
-            Array<CouponDto>::class.java
+            restClient = this,
+            site = site,
+            url = url,
+            params = mutableMapOf<String, String>().apply {
+                put("page", page.toString())
+                put("per_page", pageSize.toString())
+                searchQuery?.let {
+                    put("search", searchQuery)
+                }
+            },
+            clazz = Array<CouponDto>::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
