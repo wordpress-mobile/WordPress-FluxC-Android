@@ -129,15 +129,15 @@ class WooCouponsFragment : StoreSelectingFragment() {
         }
 
         btnSearchCoupons.setOnClickListener {
-            showSingleLineDialog(activity, "Enter the search query:") { editText ->
+            showSingleLineDialog(activity, "Enter a search query:") { editText ->
                 coroutineScope.launch {
                     val query = editText.text.toString()
                     val searchResult = store.searchCoupons(selectedSite!!, query)
-                    prependToLog("Coupon search (\"$query\") results:\n" +
-                        searchResult.model!!.coupons.joinToString("\n,") {
-                            "${it.coupon.code}(ID ${it.coupon.id})"
-                        }
-                    )
+                    val title = "Coupon search (\"$query\") results:"
+                    val results = searchResult.model!!.coupons.joinToString(",\n") {
+                        "${it.coupon.code}(ID ${it.coupon.id})"
+                    }
+                    prependToLog("$title\n$results\n")
                 }
             }
         }

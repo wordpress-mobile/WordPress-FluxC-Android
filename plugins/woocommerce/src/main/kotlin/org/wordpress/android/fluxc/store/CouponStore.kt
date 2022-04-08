@@ -89,7 +89,7 @@ class CouponStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    database.runInTransaction {
+                    database.withTransaction {
                         response.result.forEach { addCouponToDatabase(it, site) }
                     }
 
