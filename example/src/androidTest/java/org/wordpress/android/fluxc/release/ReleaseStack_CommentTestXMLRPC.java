@@ -164,7 +164,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
         assertEquals(comment.getContent(), mNewComment.getContent());
         assertEquals(comment.getAuthorId(), firstComment.getAuthorId());
-        assertEquals(comment.getParentId(), firstComment.getParentId());
+        assertEquals(comment.getParentId(), firstComment.getRemoteCommentId());
     }
 
     @Test
