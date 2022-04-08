@@ -1,5 +1,5 @@
 pluginManagement {
-    gradle.ext.kotlinVersion = '1.4.10'
+    gradle.ext.kotlinVersion = '1.5.32'
     gradle.ext.agpVersion = '7.1.1'
 
     plugins {
@@ -36,14 +36,23 @@ pluginManagement {
     }
 }
 
-include ':fluxc',
-        ':fluxc-processor',
-        ':fluxc-annotations',
-        ':plugins:woocommerce',
-        ':example',
-        ':tests:api'
+plugins {
+    id 'com.gradle.enterprise' version '3.9'
+    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
+}
 
-// Build cache is only enabled for CI, at least for now
+gradleEnterprise {
+    server = "https://gradle.a8c.com"
+    allowUntrustedServer = false
+    buildScan {
+        publishAlways()
+        capture {
+            taskInputFiles = true
+        }
+        uploadInBackground = System.getenv("CI") == null
+    }
+}
+
 if (System.getenv().containsKey("CI")) {
     buildCache {
         remote(HttpBuildCache) {
@@ -54,3 +63,12 @@ if (System.getenv().containsKey("CI")) {
         }
     }
 }
+
+rootProject.name = 'FluxC'
+
+include ':fluxc',
+        ':fluxc-processor',
+        ':fluxc-annotations',
+        ':plugins:woocommerce',
+        ':example',
+        ':tests:api'

@@ -8,12 +8,14 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.coupons.CouponReport
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.toDataModel
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
@@ -28,6 +30,8 @@ import org.wordpress.android.fluxc.utils.runInTransactionAsync
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
 import org.wordpress.android.util.AppLog.T.DB
+import java.util.Date
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -207,6 +211,21 @@ class CouponStore @Inject constructor(
             }
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
+
+    suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
+        coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {
+            // Old date, 1 second since epoch
+            val date = Date(TimeUnit.SECONDS.toMillis(1))
+
+            return@withDefaultContext restClient.fetchCouponReport(site, couponId, date)
+                .let { result ->
+                    if (result.isError) {
+                        WooResult(result.error)
+                    } else {
+                        WooResult(result.result!!.toDataModel())
+                    }
+                }
+        }
 
     private fun assembleCouponDataModel(site: SiteModel, it: CouponWithEmails): CouponDataModel {
         val includedProducts = productsDao.getCouponProducts(
