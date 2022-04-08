@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -26,10 +27,8 @@ import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.fluxc.utils.runInTransactionAsync
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
-import org.wordpress.android.util.AppLog.T.DB
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -62,7 +61,7 @@ class CouponStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    database.runInTransactionAsync {
+                    database.withTransaction {
                         // clear the table if the 1st page is requested
                         if (page == 1) {
                             couponsDao.deleteAllCoupons(site.siteId)
