@@ -47,6 +47,7 @@ class CouponStore @Inject constructor(
         const val DEFAULT_PAGE = 1
     }
 
+    // Returns a boolean indicating whether more coupons can be fetched
     suspend fun fetchCoupons(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
