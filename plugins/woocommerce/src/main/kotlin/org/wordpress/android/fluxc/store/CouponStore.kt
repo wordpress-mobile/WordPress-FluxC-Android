@@ -94,18 +94,12 @@ class CouponStore @Inject constructor(
         }
     }
 
-    private fun addCouponToDatabase(dto: CouponDto, site: SiteModel) {
-        database.runInTransaction {
-            coroutineEngine.launch(
-                tag = DB,
-                caller = this,
-                loggedMessage = "Add coupon DB transaction"
-            ) {
-                couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
-                insertRelatedProducts(dto, site)
-                insertRelatedProductCategories(dto, site)
-                insertRestrictedEmailAddresses(dto, site)
-            }
+    private suspend fun addCouponToDatabase(dto: CouponDto, site: SiteModel) {
+        database.withTransaction {
+            couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
+            insertRelatedProducts(dto, site)
+            insertRelatedProductCategories(dto, site)
+            insertRestrictedEmailAddresses(dto, site)
         }
     }
 
