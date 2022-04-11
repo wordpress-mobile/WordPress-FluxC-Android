@@ -38,6 +38,7 @@ data class InboxNoteEntity(
     enum class LocalInboxNoteStatus {
         Unactioned,
         Actioned,
-        Snoozed
+        Snoozed,
+        Unknown
     }
 }
