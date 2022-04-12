@@ -36,7 +36,7 @@ class CouponRestClient @Inject constructor(
         site: SiteModel,
         page: Int,
         pageSize: Int,
-        searchQuery: String?
+        searchQuery: String? = null
     ): WooPayload<Array<CouponDto>> {
         val url = WOOCOMMERCE.coupons.pathV3
 

@@ -54,7 +54,7 @@ class CouponStore @Inject constructor(
         pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
-            val response = restClient.fetchCoupons(site, page, pageSize, null)
+            val response = restClient.fetchCoupons(site, page, pageSize)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
@@ -86,7 +86,7 @@ class CouponStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    database.withTransaction {
+                    database.executeInTransaction {
                         response.result.forEach { addCouponToDatabase(it, site) }
                     }
 
