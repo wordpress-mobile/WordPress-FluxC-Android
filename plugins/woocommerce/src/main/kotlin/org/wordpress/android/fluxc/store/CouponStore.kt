@@ -193,7 +193,6 @@ class CouponStore @Inject constructor(
                 }
             }
             .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
 
     @ExperimentalCoroutinesApi
     fun observeCoupons(site: SiteModel): Flow<List<CouponDataModel>> =
@@ -202,7 +201,6 @@ class CouponStore @Inject constructor(
                 list.map { assembleCouponDataModel(site, it) }
             }
             .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
 
     suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
         coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {
