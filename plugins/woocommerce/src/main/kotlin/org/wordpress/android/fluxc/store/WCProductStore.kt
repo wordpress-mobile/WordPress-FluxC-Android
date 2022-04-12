@@ -1207,12 +1207,23 @@ class WCProductStore @Inject constructor(
     }
 
     private fun handleSearchProductsCompleted(payload: RemoteSearchProductsPayload) {
-        val onProductsSearched = if (payload.isError) {
-            OnProductsSearched(payload.searchQuery)
+        if (payload.isError) {
+            emitChange(OnProductsSearched(payload.searchQuery))
         } else {
-            OnProductsSearched(payload.searchQuery, payload.products, payload.canLoadMore)
+            coroutineEngine.launch(T.DB, this, "handleSearchProductsCompleted") {
+                productsDbHelper.insertOrUpdateProducts(
+                    payload.site,
+                    payload.products
+                )
+                emitChange(
+                    OnProductsSearched(
+                        payload.searchQuery,
+                        payload.products,
+                        payload.canLoadMore
+                    )
+                )
+            }
         }
-        emitChange(onProductsSearched)
     }
 
     private fun handleFetchProductShippingClassesCompleted(payload: RemoteProductShippingClassListPayload) {
