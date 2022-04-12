@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.toDataModel
-import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
+import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
@@ -42,7 +41,7 @@ class CouponStore @Inject constructor(
     private val productCategoriesDao: ProductCategoriesDao,
     private val coroutineEngine: CoroutineEngine,
     private val productStore: WCProductStore,
-    private val database: WCAndroidDatabase
+    private val database: TransactionExecutor
 ) {
     companion object {
         // Just get everything
@@ -61,7 +60,7 @@ class CouponStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    database.withTransaction {
+                    database.executeInTransaction {
                         // clear the table if the 1st page is requested
                         if (page == 1) {
                             couponsDao.deleteAllCoupons(site.siteId)
@@ -125,7 +124,7 @@ class CouponStore @Inject constructor(
     }
 
     private suspend fun addCouponToDatabase(dto: CouponDto, site: SiteModel) {
-        database.withTransaction {
+        database.executeInTransaction {
             couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
             insertRelatedProducts(dto, site)
             insertRelatedProductCategories(dto, site)
@@ -224,7 +223,6 @@ class CouponStore @Inject constructor(
                 }
             }
             .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
 
     @ExperimentalCoroutinesApi
     fun observeCoupons(site: SiteModel): Flow<List<CouponDataModel>> =
@@ -233,7 +231,6 @@ class CouponStore @Inject constructor(
                 list.map { assembleCouponDataModel(site, it) }
             }
             .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
 
     suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
         coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {

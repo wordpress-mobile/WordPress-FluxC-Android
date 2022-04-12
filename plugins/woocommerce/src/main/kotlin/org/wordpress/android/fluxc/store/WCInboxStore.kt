@@ -31,8 +31,8 @@ class WCInboxStore @Inject constructor(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
-    ): WooResult<Unit> {
-        return coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             val response = restClient.fetchInboxNotes(site, page, pageSize)
             when {
                 response.isError -> WooResult(response.error)
@@ -43,19 +43,51 @@ class WCInboxStore @Inject constructor(
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
-    }
 
     fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>> =
         inboxNotesDao.observeInboxNotes(siteId)
             .distinctUntilChanged()
 
-    private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
-        val notesWithActions = result.map { dto ->
-            InboxNoteWithActions(
-                inboxNote = dto.toDataModel(siteId),
-                noteActions = dto.actions.map { it.toDataModel(siteId) }
-            )
+    suspend fun markInboxNoteAsActioned(
+        site: SiteModel,
+        noteId: Long,
+        actionId: Long
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+            val response = restClient.markInboxNoteAsActioned(site, noteId, actionId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    markNoteAsActionedLocally(site.siteId, response.result)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
         }
+
+    suspend fun deleteNote(
+        site: SiteModel,
+        noteId: Long
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
+            val response = restClient.deleteNote(site, noteId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    inboxNotesDao.deleteInboxNote(noteId, site.siteId)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+
+    private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
+        val notesWithActions = result.map { it.toInboxNoteWithActionsEntity(siteId) }
         inboxNotesDao.deleteAllAndInsertInboxNotes(siteId, *notesWithActions.toTypedArray())
+    }
+
+    private suspend fun markNoteAsActionedLocally(siteId: Long, updatedNote: InboxNoteDto) {
+        val noteWithActionsEntity = updatedNote.toInboxNoteWithActionsEntity(siteId)
+        inboxNotesDao.updateNote(siteId, noteWithActionsEntity)
     }
 }

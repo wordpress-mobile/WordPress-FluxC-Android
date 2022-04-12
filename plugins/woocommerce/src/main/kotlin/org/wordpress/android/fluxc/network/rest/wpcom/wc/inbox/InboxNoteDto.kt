@@ -3,7 +3,11 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Actioned
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Snoozed
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Unactioned
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 
 data class InboxNoteDto(
     @SerializedName("id") val id: Long,
@@ -19,7 +23,13 @@ data class InboxNoteDto(
     @SerializedName("date_created") val dateCreated: String,
     @SerializedName("date_reminder") val dateReminder: String?
 ) {
-    fun toDataModel(siteId: Long) =
+    fun toInboxNoteWithActionsEntity(siteId: Long) =
+        InboxNoteWithActions(
+            inboxNote = toInboxNoteEntity(siteId),
+            noteActions = actions.map { it.toDataModel(siteId) }
+        )
+
+    fun toInboxNoteEntity(siteId: Long) =
         InboxNoteEntity(
             remoteId = id,
             siteId = siteId,
@@ -27,11 +37,25 @@ data class InboxNoteDto(
             title = title,
             content = content,
             dateCreated = dateCreated,
-            status = Unactioned,
+            status = status.toInboxNoteStatus(),
             source = source,
             type = type,
             dateReminder = dateReminder
         )
+
+    private fun String.toInboxNoteStatus() =
+        when {
+            this == STATUS_UNACTIONED -> Unactioned
+            this == STATUS_ACTIONED -> Actioned
+            this == STATUS_SNOOZED -> Snoozed
+            else -> LocalInboxNoteStatus.Unknown
+        }
+
+    private companion object {
+        const val STATUS_UNACTIONED = "unactioned"
+        const val STATUS_ACTIONED = "actioned"
+        const val STATUS_SNOOZED = "snoozed"
+    }
 }
 
 data class InboxNoteActionDto(
