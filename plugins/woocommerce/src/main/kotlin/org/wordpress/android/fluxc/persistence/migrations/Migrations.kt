@@ -477,7 +477,7 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
 
             execSQL(
                 // language=RoomSql
-                """CREATE INDEX IF NOT EXISTS `index_InboxNotes_id_siteId` ON `InboxNotes` (`remoteId`, `siteId`);
+                """CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_siteId` ON `InboxNotes` (`remoteId`, `siteId`)
                 """.trimIndent()
             )
 
@@ -485,7 +485,7 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `InboxNoteActions` (
                     `remoteId` INTEGER NOT NULL,
-                    `inboxNoteId` INTEGER NOT NULL,
+                    `inboxNoteLocalId` INTEGER NOT NULL,
                     `siteId` INTEGER NOT NULL,
                     `name` TEXT NOT NULL,
                     `label` TEXT NOT NULL,

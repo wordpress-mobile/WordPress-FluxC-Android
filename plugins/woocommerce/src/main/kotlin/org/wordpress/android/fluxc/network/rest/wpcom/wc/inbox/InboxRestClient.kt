@@ -44,12 +44,8 @@ class InboxRestClient @Inject constructor(
             Array<InboxNoteDto>::class.java
         )
         return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -69,12 +65,8 @@ class InboxRestClient @Inject constructor(
             InboxNoteDto::class.java
         )
         return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 

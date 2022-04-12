@@ -171,7 +171,9 @@ public class SitesFragment extends Fragment {
         String defaultTimeZoneId = "Europe/London";
 
         NewSitePayload newSitePayload = new NewSitePayload(
+                "username",
                 name,
+                null,
                 defaultLanguage,
                 defaultTimeZoneId,
                 SiteVisibility.PUBLIC,
