@@ -6,7 +6,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxNoteDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxRestClient
@@ -82,9 +81,7 @@ class WCInboxStore @Inject constructor(
             }
         }
 
-    suspend fun deleteAllNotesForSite(
-        site: SiteModel,
-    ): WooResult<Unit> =
+    suspend fun deleteAllNotesForSite(site: SiteModel): WooResult<Unit> =
         coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
             inboxNotesDao.deleteInboxNotesForSite(site.siteId)
             val response = restClient.deleteAllNotesForSite(site)
