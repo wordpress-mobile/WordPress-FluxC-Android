@@ -67,6 +67,7 @@ data class OrderEntity(
     val feeLines: String = "",
     val taxLines: String = "",
     val metaData: String = "",
+    @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = ""
 ) {
     companion object {

@@ -502,9 +502,3 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
         }
     }
 }
-
-internal val MIGRATION_12_13 = object : Migration(12, 13) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE OrderEntity ADD paymentUrl TEXT NOT NULL DEFAULT ''")
-    }
-}
