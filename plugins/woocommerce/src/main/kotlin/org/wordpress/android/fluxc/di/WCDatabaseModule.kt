@@ -45,6 +45,5 @@ abstract class WCDatabaseModule {
 
         @Provides fun provideInboxNotesDao(database: WCAndroidDatabase) = database.inboxNotesDao
     }
-    
     @Binds abstract fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
 }
