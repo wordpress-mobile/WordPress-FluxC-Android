@@ -11,16 +11,20 @@ import kotlinx.android.synthetic.main.fragment_woo_coupons.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.CouponStore
+import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
 class WooCouponsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var store: CouponStore
+    @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -31,7 +35,9 @@ class WooCouponsFragment : StoreSelectingFragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
-                    val codes = coupons.map { it.couponEntity.code }.joinToString()
+                    val codes = coupons.joinToString {
+                        "${it.couponEntity.code}(ID ${it.couponEntity.id})"
+                    }
                     prependToLog("Coupons changed: [$codes]")
                 }
             }
@@ -44,6 +50,73 @@ class WooCouponsFragment : StoreSelectingFragment() {
         btnFetchCoupons.setOnClickListener {
             coroutineScope.launch {
                 store.fetchCoupons(selectedSite!!)
+            }
+        }
+
+        btnDeleteCoupon.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                    activity,
+                    "Enter a coupon ID to be deleted:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let {
+                        lifecycleScope.launch {
+                            val result = store.deleteCoupon(site, it, false)
+                            if (result.isError) {
+                                prependToLog("Coupon deletion failed: ${result.error.message}")
+                            } else {
+                                prependToLog("Coupon successfully deleted")
+                            }
+                        }
+                    } ?: prependToLog("Invalid coupon ID")
+                }
+            }
+        }
+
+        btnFetchSingleCoupon.setOnClickListener {
+            showSingleLineDialog(activity, "Enter the coupon ID to fetch:") { editText ->
+                editText.text.toString().toLongOrNull()?.let {
+                    coroutineScope.launch {
+                        store.fetchCoupon(selectedSite!!, it)
+                        prependToLog(
+                            store.observeCoupon(selectedSite!!, it)
+                                .first()?.couponEntity?.toString() ?: "Coupon $it not found"
+                        )
+                    }
+                } ?: prependToLog("Invalid coupon ID")
+            }
+        }
+
+        btnFetchCouponReport.setOnClickListener {
+            coroutineScope.launch {
+                val couponId = showSingleLineDialog(
+                    requireActivity(),
+                    "Enter the coupon Id:",
+                    isNumeric = true
+                )?.toLongOrNull()
+                    ?: run {
+                        prependToLog("Please enter a valid id")
+                        return@launch
+                    }
+
+                val reportResult = store.fetchCouponReport(selectedSite!!, couponId)
+
+                when {
+                    reportResult.isError ->
+                        prependToLog("Fetching report failed, ${reportResult.error.message}")
+                    else -> {
+                        val report = reportResult.model!!
+                        val usageAmountFormatted = wooCommerceStore.formatCurrencyForDisplay(
+                            report.amount.toDouble(),
+                            selectedSite!!,
+                            applyDecimalFormatting = true
+                        )
+                        prependToLog(
+                            "Coupon was used ${report.ordersCount} times and " +
+                                "resulted in $usageAmountFormatted savings"
+                        )
+                    }
+                }
             }
         }
     }

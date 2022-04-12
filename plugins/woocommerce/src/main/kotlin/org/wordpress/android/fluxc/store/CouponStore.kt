@@ -1,17 +1,21 @@
 package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.coupons.CouponReport
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.toDataModel
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
@@ -20,9 +24,13 @@ import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEn
 import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
+import org.wordpress.android.util.AppLog.T.DB
+import java.util.Date
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,24 +60,59 @@ class CouponStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    response.result.forEach { dto ->
-                        database.runInTransaction {
-                            coroutineEngine.launch(
-                                T.DB,
-                                this,
-                                "fetchCoupons DB transaction"
-                            ) {
-                                couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
-                                insertRelatedProducts(dto, site)
-                                insertRelatedProductCategories(dto, site)
-                                insertRestrictedEmailAddresses(dto, site)
-                            }
-                        }
-                    }
-
+                    response.result.forEach { addCouponToDatabase(it, site) }
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun fetchCoupon(
+        site: SiteModel,
+        couponId: Long
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchCoupon") {
+            val response = restClient.fetchCoupon(site, couponId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    addCouponToDatabase(response.result, site)
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    private fun addCouponToDatabase(dto: CouponDto, site: SiteModel) {
+        database.runInTransaction {
+            coroutineEngine.launch(
+                tag = DB,
+                caller = this,
+                loggedMessage = "Add coupon DB transaction"
+            ) {
+                couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
+                insertRelatedProducts(dto, site)
+                insertRelatedProductCategories(dto, site)
+                insertRestrictedEmailAddresses(dto, site)
+            }
+        }
+    }
+
+    suspend fun deleteCoupon(
+        site: SiteModel,
+        couponId: Long,
+        trash: Boolean = true
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "deleteCoupon") {
+            val result = restClient.deleteCoupon(site, couponId, trash)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                couponsDao.deleteCoupon(site.siteId, couponId)
+                WooResult(Unit)
             }
         }
     }
@@ -143,42 +186,71 @@ class CouponStore @Inject constructor(
         }
     }
 
+    fun observeCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel?> =
+        couponsDao.observeCoupon(site.siteId, couponId)
+            .map { coupon ->
+                coupon?.let {
+                    assembleCouponDataModel(site, it)
+                }
+            }
+
+    @ExperimentalCoroutinesApi
     fun observeCoupons(site: SiteModel): Flow<List<CouponDataModel>> =
         couponsDao.observeCoupons(site.siteId)
             .mapLatest { list ->
-                list.map {
-                    val includedProducts = productsDao.getCouponProducts(
-                        siteId = site.siteId,
-                        couponId = it.couponEntity.id,
-                        areExcluded = false
-                    )
-                    val excludedProducts = productsDao.getCouponProducts(
-                        siteId = site.siteId,
-                        couponId = it.couponEntity.id,
-                        areExcluded = true
-                    )
-                    val includedCategories = productCategoriesDao.getCouponProductCategories(
-                        siteId = site.siteId,
-                        couponId = it.couponEntity.id,
-                        areExcluded = true
-                    )
-                    val excludedCategories = productCategoriesDao.getCouponProductCategories(
-                        siteId = site.siteId,
-                        couponId = it.couponEntity.id,
-                        areExcluded = false
-                    )
-                    CouponDataModel(
-                        it.couponEntity,
-                        includedProducts,
-                        excludedProducts,
-                        includedCategories,
-                        excludedCategories,
-                        it.restrictedEmails
-                    )
-                }
+                list.map { assembleCouponDataModel(site, it) }
             }
             .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
+
+    suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
+        coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {
+            // Old date, 1 second since epoch
+            val date = Date(TimeUnit.SECONDS.toMillis(1))
+
+            return@withDefaultContext restClient.fetchCouponReport(site, couponId, date)
+                .let { result ->
+                    if (result.isError) {
+                        WooResult(result.error)
+                    } else {
+                        WooResult(result.result!!.toDataModel())
+                    }
+                }
+        }
+
+    private fun assembleCouponDataModel(
+        site: SiteModel,
+        it: CouponWithEmails
+    ): CouponDataModel {
+        val includedProducts = productsDao.getCouponProducts(
+            siteId = site.siteId,
+            couponId = it.couponEntity.id,
+            areExcluded = false
+        )
+        val excludedProducts = productsDao.getCouponProducts(
+            siteId = site.siteId,
+            couponId = it.couponEntity.id,
+            areExcluded = true
+        )
+        val includedCategories = productCategoriesDao.getCouponProductCategories(
+            siteId = site.siteId,
+            couponId = it.couponEntity.id,
+            areExcluded = false
+        )
+        val excludedCategories = productCategoriesDao.getCouponProductCategories(
+            siteId = site.siteId,
+            couponId = it.couponEntity.id,
+            areExcluded = true
+        )
+        return CouponDataModel(
+            it.couponEntity,
+            includedProducts,
+            excludedProducts,
+            includedCategories,
+            excludedCategories,
+            it.restrictedEmails
+        )
+    }
 
     private suspend fun fetchMissingProducts(productIds: List<Long>?, site: SiteModel) {
         if (!productIds.isNullOrEmpty()) {

@@ -20,9 +20,9 @@ class WPAndroidDatabaseMigrationTest {
     @Rule
     @JvmField
     val helper: MigrationTestHelper = MigrationTestHelper(
-            InstrumentationRegistry.getInstrumentation(),
-            WPAndroidDatabase::class.java.canonicalName,
-            FrameworkSQLiteOpenHelperFactory()
+        InstrumentationRegistry.getInstrumentation(),
+        WPAndroidDatabase::class.java.canonicalName,
+        FrameworkSQLiteOpenHelperFactory()
     )
 
     @Test
