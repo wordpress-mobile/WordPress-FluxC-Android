@@ -2,10 +2,12 @@ package org.wordpress.android.fluxc.store
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponReportDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
-import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
+import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
@@ -41,7 +43,15 @@ class CouponStoreTest {
     @Mock private lateinit var productsDao: ProductsDao
     @Mock private lateinit var productCategoriesDao: ProductCategoriesDao
     @Mock private lateinit var productStore: WCProductStore
-    @Mock private lateinit var database: WCAndroidDatabase
+
+    private val transactionExecutor: TransactionExecutor = mock {
+        val blockArg1 = argumentCaptor<suspend () -> Unit>()
+        onBlocking { executeInTransaction(blockArg1.capture()) }.then {
+            runBlocking {
+                blockArg1.lastValue.invoke()
+            }
+        }
+    }
 
     private lateinit var couponStore: CouponStore
 
@@ -219,13 +229,8 @@ class CouponStoreTest {
             productCategoriesDao,
             initCoroutineEngine(),
             productStore,
-            database
+            transactionExecutor
         )
-
-        val blockArg1 = argumentCaptor<Runnable>()
-        whenever(database.runInTransaction(blockArg1.capture())).then {
-            blockArg1.firstValue.run()
-        }
     }
 
     @Test
@@ -238,7 +243,7 @@ class CouponStoreTest {
 
         val result = couponStore.fetchCoupons(site)
 
-        assertThat(result).isEqualTo(WooResult(Unit))
+        assertThat(result).isEqualTo(WooResult(false))
     }
 
     @Test
