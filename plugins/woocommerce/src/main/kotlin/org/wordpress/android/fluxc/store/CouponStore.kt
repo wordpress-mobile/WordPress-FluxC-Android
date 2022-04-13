@@ -74,7 +74,6 @@ class CouponStore @Inject constructor(
         }
     }
 
-    // Returns a boolean indicating whether more coupons can be fetched
     suspend fun searchCoupons(
         site: SiteModel,
         searchString: String,
@@ -89,8 +88,6 @@ class CouponStore @Inject constructor(
                     database.executeInTransaction {
                         response.result.forEach { addCouponToDatabase(it, site) }
                     }
-
-                    database
 
                     val couponIds = response.result.map { it.id }
                     val coupons = couponsDao.getCoupons(site.siteId, couponIds)
