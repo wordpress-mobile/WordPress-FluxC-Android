@@ -26,6 +26,18 @@ class InboxRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    private companion object {
+        val ALL_INBOX_NOTE_TYPES_STRING = arrayOf(
+            "info",
+            "survey",
+            "marketing",
+            "update",
+            "error",
+            "warning",
+            "email"
+        ).joinToString(separator = ",")
+    }
+
     suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int,
@@ -97,7 +109,13 @@ class InboxRestClient @Inject constructor(
             this,
             site,
             url,
-            Unit::class.java
+            Unit::class.java,
+            mapOf(
+                "page" to "1",
+                "per_page" to "100",
+                "status" to "pending,unactioned,actioned,snoozed,sent",
+                "type" to ALL_INBOX_NOTE_TYPES_STRING
+            ),
         )
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
