@@ -74,10 +74,37 @@ class CouponStore @Inject constructor(
         }
     }
 
-    suspend fun fetchCoupon(
+    suspend fun searchCoupons(
         site: SiteModel,
-        couponId: Long
-    ): WooResult<Unit> {
+        searchString: String,
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE
+    ): WooResult<CouponSearchResult> {
+        return coroutineEngine.withDefaultContext(API, this, "searchCoupons") {
+            val response = restClient.fetchCoupons(site, page, pageSize, searchString)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    database.executeInTransaction {
+                        response.result.forEach { addCouponToDatabase(it, site) }
+                    }
+
+                    val couponIds = response.result.map { it.id }
+                    val coupons = couponsDao.getCoupons(site.siteId, couponIds)
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(
+                        CouponSearchResult(
+                            coupons.map { assembleCouponDataModel(site, it) },
+                            canLoadMore
+                        )
+                    )
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun fetchCoupon(site: SiteModel, couponId: Long): WooResult<Unit> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupon") {
             val response = restClient.fetchCoupon(site, couponId)
             when {
@@ -218,26 +245,26 @@ class CouponStore @Inject constructor(
     private fun assembleCouponDataModel(site: SiteModel, it: CouponWithEmails): CouponDataModel {
         val includedProducts = productsDao.getCouponProducts(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = false
         )
         val excludedProducts = productsDao.getCouponProducts(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = true
         )
         val includedCategories = productCategoriesDao.getCouponProductCategories(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = false
         )
         val excludedCategories = productCategoriesDao.getCouponProductCategories(
             siteId = site.siteId,
-            couponId = it.couponEntity.id,
+            couponId = it.coupon.id,
             areExcluded = true
         )
         return CouponDataModel(
-            it.couponEntity,
+            it.coupon,
             includedProducts,
             excludedProducts,
             includedCategories,
@@ -272,4 +299,9 @@ class CouponStore @Inject constructor(
             }
         }
     }
+
+    data class CouponSearchResult(
+        val coupons: List<CouponDataModel>,
+        val canLoadMore: Boolean
+    )
 }
