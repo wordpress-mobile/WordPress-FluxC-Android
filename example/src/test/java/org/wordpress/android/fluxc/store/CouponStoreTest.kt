@@ -2,18 +2,18 @@ package org.wordpress.android.fluxc.store
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import org.wordpress.android.fluxc.TEST_SCOPE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
@@ -43,7 +43,15 @@ class CouponStoreTest {
     @Mock private lateinit var productsDao: ProductsDao
     @Mock private lateinit var productCategoriesDao: ProductCategoriesDao
     @Mock private lateinit var productStore: WCProductStore
-    @Mock private lateinit var transactionExecutor: TransactionExecutor
+
+    private val transactionExecutor: TransactionExecutor = mock {
+        val blockArg1 = argumentCaptor<suspend () -> Unit>()
+        onBlocking { executeInTransaction(blockArg1.capture()) }.then {
+            runBlocking {
+                blockArg1.lastValue.invoke()
+            }
+        }
+    }
 
     private lateinit var couponStore: CouponStore
 
@@ -225,15 +233,6 @@ class CouponStoreTest {
         )
     }
 
-    private suspend fun mockTransaction() {
-        val blockArg1 = argumentCaptor<suspend () -> Unit>()
-        whenever(transactionExecutor.executeInTransaction(blockArg1.capture())).then {
-            TEST_SCOPE.launch {
-                blockArg1.lastValue.invoke()
-            }
-        }
-    }
-
     @Test
     fun `Coupons is fetched with a correct result`() = test {
         whenever(restClient.fetchCoupons(
@@ -249,8 +248,6 @@ class CouponStoreTest {
 
     @Test
     fun `Coupon is inserted in DB correctly`() = test {
-        mockTransaction()
-
         whenever(restClient.fetchCoupons(
             site,
             CouponStore.DEFAULT_PAGE,
@@ -264,8 +261,6 @@ class CouponStoreTest {
 
     @Test
     fun `Coupon emails are inserted in DB correctly`() = test {
-        mockTransaction()
-
         whenever(restClient.fetchCoupons(
             site,
             CouponStore.DEFAULT_PAGE,
@@ -279,8 +274,6 @@ class CouponStoreTest {
 
     @Test
     fun `Coupon products are inserted in DB correctly`() = test {
-        mockTransaction()
-
         whenever(restClient.fetchCoupons(
             site,
             CouponStore.DEFAULT_PAGE,
@@ -297,8 +290,6 @@ class CouponStoreTest {
 
     @Test
     fun `Coupon categories are inserted in DB correctly`() = test {
-        mockTransaction()
-
         whenever(restClient.fetchCoupons(
             site,
             CouponStore.DEFAULT_PAGE,
