@@ -22,17 +22,33 @@ abstract class InboxNotesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNoteAction(entity: InboxNoteActionEntity)
 
+    @Transaction
     @Query("DELETE FROM InboxNotes WHERE siteId = :siteId")
     abstract fun deleteInboxNotesForSite(siteId: Long)
 
+    @Query("DELETE FROM InboxNotes WHERE remoteId = :remoteNoteId AND siteId = :siteId")
+    abstract suspend fun deleteInboxNote(remoteNoteId: Long, siteId: Long)
+
     @Transaction
-    open suspend fun deleteAllAndInsertInboxNotes(siteId: Long, vararg notes: InboxNoteWithActions) {
+    open suspend fun deleteAllAndInsertInboxNotes(
+        siteId: Long,
+        vararg notes: InboxNoteWithActions
+    ) {
         deleteInboxNotesForSite(siteId)
         notes.forEach { noteWithActions ->
             val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
             noteWithActions.noteActions.forEach {
                 insertOrUpdateInboxNoteAction(it.copy(inboxNoteLocalId = localNoteId))
             }
+        }
+    }
+
+    @Transaction
+    open suspend fun updateNote(siteId: Long, noteWithActions: InboxNoteWithActions) {
+        deleteInboxNote(siteId, noteWithActions.inboxNote.remoteId)
+        val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
+        noteWithActions.noteActions.forEach {
+            insertOrUpdateInboxNoteAction(it.copy(inboxNoteLocalId = localNoteId))
         }
     }
 }

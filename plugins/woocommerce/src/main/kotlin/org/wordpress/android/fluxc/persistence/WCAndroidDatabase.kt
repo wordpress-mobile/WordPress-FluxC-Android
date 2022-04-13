@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.persistence
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -40,7 +41,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-        version = 12,
+        version = 13,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -55,6 +56,9 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             OrderEntity::class,
             InboxNoteEntity::class,
             InboxNoteActionEntity::class
+        ],
+        autoMigrations = [
+            AutoMigration(from = 12, to = 13)
         ]
 )
 @TypeConverters(

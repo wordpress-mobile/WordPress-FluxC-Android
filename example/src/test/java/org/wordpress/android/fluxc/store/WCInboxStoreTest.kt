@@ -127,7 +127,7 @@ class WCInboxStoreTest {
         val ANY_SITE = SiteModel().apply { siteId = 1 }
         val INBOX_NOTES_WITH_ACTIONS_ENTITY = listOf(
             InboxNoteWithActions(
-                inboxNote = ANY_INBOX_NOTE_DTO.toDataModel(ANY_SITE.siteId),
+                inboxNote = ANY_INBOX_NOTE_DTO.toInboxNoteEntity(ANY_SITE.siteId),
                 noteActions = listOf(
                     ANY_INBOX_NOTE_ACTION_DTO.toDataModel(
                         ANY_SITE.siteId

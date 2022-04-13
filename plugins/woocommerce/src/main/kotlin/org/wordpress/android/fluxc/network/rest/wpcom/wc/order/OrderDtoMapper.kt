@@ -67,7 +67,8 @@ class OrderDtoMapper @Inject internal constructor(
                     shippingLines = this.shipping_lines.toString(),
                     feeLines = this.fee_lines.toString(),
                     taxLines = this.tax_lines.toString(),
-                    metaData = this.meta_data.toString()
+                    metaData = this.meta_data.toString(),
+                    paymentUrl = this.payment_url ?: ""
             )
         }
 
