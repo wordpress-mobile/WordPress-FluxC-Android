@@ -41,6 +41,27 @@ plugins {
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
 }
 
+def catalogVersion = "trunk-064e2b178cdddf6a6baaaeea30855349967e959e"
+dependencyResolutionManagement {
+    repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    url = uri("https://a8c-libs.s3.amazonaws.com/android")
+                }
+            }
+            filter {
+                includeModule("com.automattic", "dependency-catalog")
+            }
+        }
+    }
+    versionCatalogs {
+        sharedLibs {
+            from("com.automattic:dependency-catalog:$catalogVersion")
+        }
+    }
+}
+
 gradleEnterprise {
     server = "https://gradle.a8c.com"
     allowUntrustedServer = false
