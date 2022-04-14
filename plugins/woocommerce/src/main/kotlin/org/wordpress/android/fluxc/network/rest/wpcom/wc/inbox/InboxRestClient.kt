@@ -26,22 +26,11 @@ class InboxRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    private companion object {
-        val ALL_INBOX_NOTE_TYPES_STRING = arrayOf(
-            "info",
-            "survey",
-            "marketing",
-            "update",
-            "error",
-            "warning",
-            "email"
-        ).joinToString(separator = ",")
-    }
-
     suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        inboxNoteTypes: Array<String>
     ): WooPayload<Array<InboxNoteDto>> {
         val url = WOOCOMMERCE.admin.notes.pathV4Analytics
 
@@ -51,7 +40,8 @@ class InboxRestClient @Inject constructor(
             url,
             mapOf(
                 "page" to page.toString(),
-                "per_page" to pageSize.toString()
+                "per_page" to pageSize.toString(),
+                "type" to inboxNoteTypes.joinToString(separator = ","),
             ),
             Array<InboxNoteDto>::class.java
         )
@@ -101,7 +91,10 @@ class InboxRestClient @Inject constructor(
     }
 
     suspend fun deleteAllNotesForSite(
-        site: SiteModel
+        site: SiteModel,
+        page: Int,
+        pageSize: Int,
+        inboxNoteTypes: Array<String>
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.admin.notes.delete.all.pathV4Analytics
 
@@ -111,11 +104,10 @@ class InboxRestClient @Inject constructor(
             url,
             Unit::class.java,
             mapOf(
-                "page" to "1",
-                "per_page" to "100",
-                "status" to "pending,unactioned,actioned,snoozed,sent",
-                "type" to ALL_INBOX_NOTE_TYPES_STRING
-            ),
+                "page" to page.toString(),
+                "per_page" to pageSize.toString(),
+                "type" to inboxNoteTypes.joinToString(separator = ","),
+            )
         )
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())

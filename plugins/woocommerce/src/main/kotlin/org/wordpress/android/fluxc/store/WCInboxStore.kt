@@ -23,17 +23,27 @@ class WCInboxStore @Inject constructor(
     private val inboxNotesDao: InboxNotesDao
 ) {
     companion object {
+        // API has a restriction were no more than 25 notes can be deleted at once so when deleting all notes
+        // for site we have to calculate the number of "pages" to be deleted. This only applies for deletion.
+        const val MAX_PAGE_SIZE_FOR_DELETING_NOTES = 25
         const val DEFAULT_PAGE_SIZE = 100
         const val DEFAULT_PAGE = 1
+        val INBOX_NOTE_TYPES_FOR_APPS = arrayOf(
+            "info",
+            "survey",
+            "marketing",
+            "warning",
+        )
     }
 
     suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
-        pageSize: Int = DEFAULT_PAGE_SIZE
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        inboxNoteTypes: Array<String> = INBOX_NOTE_TYPES_FOR_APPS
     ): WooResult<Unit> =
         coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
-            val response = restClient.fetchInboxNotes(site, page, pageSize)
+            val response = restClient.fetchInboxNotes(site, page, pageSize, inboxNoteTypes)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
@@ -81,15 +91,26 @@ class WCInboxStore @Inject constructor(
             }
         }
 
-    suspend fun deleteAllNotesForSite(site: SiteModel): WooResult<Unit> =
+    suspend fun deleteNotesForSite(
+        site: SiteModel,
+        pageSize: Int = MAX_PAGE_SIZE_FOR_DELETING_NOTES,
+        inboxNoteTypes: Array<String> = INBOX_NOTE_TYPES_FOR_APPS
+    ): List<WooResult<Unit>> =
         coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
-            inboxNotesDao.deleteInboxNotesForSite(site.siteId)
-            val response = restClient.deleteAllNotesForSite(site)
-            when {
-                response.isError -> WooResult(response.error)
-                response.result != null -> WooResult(Unit)
-                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            val sizeOfCachedNotesForSite = inboxNotesDao.getInboxNotesForSite(site.siteId).size
+            var numberOfPagesToDelete = sizeOfCachedNotesForSite / MAX_PAGE_SIZE_FOR_DELETING_NOTES
+            if (sizeOfCachedNotesForSite % MAX_PAGE_SIZE_FOR_DELETING_NOTES > 0) {
+                numberOfPagesToDelete++
             }
+            inboxNotesDao.deleteInboxNotesForSite(site.siteId)
+            val results = mutableListOf<WooResult<Unit>>()
+            for (page in 1..numberOfPagesToDelete) {
+                results.add(
+                    restClient.deleteAllNotesForSite(site, page, pageSize, inboxNoteTypes)
+                        .asWooResult()
+                )
+            }
+            results
         }
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
