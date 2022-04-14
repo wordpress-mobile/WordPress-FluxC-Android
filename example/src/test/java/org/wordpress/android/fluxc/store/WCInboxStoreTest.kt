@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxNoteDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox.InboxRestClient
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
-import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.*
+import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus.Unactioned
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 import org.wordpress.android.fluxc.store.WCInboxStore.Companion.DEFAULT_PAGE
 import org.wordpress.android.fluxc.store.WCInboxStore.Companion.DEFAULT_PAGE_SIZE

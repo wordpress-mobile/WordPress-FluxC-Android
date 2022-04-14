@@ -32,7 +32,7 @@ class WCInboxStore @Inject constructor(
             "info",
             "survey",
             "marketing",
-            "warning",
+            "warning"
         )
     }
 

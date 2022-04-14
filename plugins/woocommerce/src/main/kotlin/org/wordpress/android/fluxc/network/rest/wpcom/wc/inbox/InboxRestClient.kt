@@ -41,7 +41,7 @@ class InboxRestClient @Inject constructor(
             mapOf(
                 "page" to page.toString(),
                 "per_page" to pageSize.toString(),
-                "type" to inboxNoteTypes.joinToString(separator = ","),
+                "type" to inboxNoteTypes.joinToString(separator = ",")
             ),
             Array<InboxNoteDto>::class.java
         )
@@ -106,7 +106,7 @@ class InboxRestClient @Inject constructor(
             mapOf(
                 "page" to page.toString(),
                 "per_page" to pageSize.toString(),
-                "type" to inboxNoteTypes.joinToString(separator = ","),
+                "type" to inboxNoteTypes.joinToString(separator = ",")
             )
         )
         return when (response) {
