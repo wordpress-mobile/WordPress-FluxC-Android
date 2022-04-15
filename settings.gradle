@@ -41,7 +41,7 @@ plugins {
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
 }
 
-def catalogVersion = "trunk-dc36a38f49488d50abbb39e2a0c7a07504c9655a"
+def catalogVersion = "trunk-3412c0ccd5e5b6bd5f2eb25cb773ecf5184553df"
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
@@ -67,7 +67,6 @@ dependencyResolutionManagement {
             version("dagger", "2.29.1")
             version("facebook-flipper", "0.51.0")
             version("facebook-soloader", "0.9.0")
-            version("junit", "4.13")
             version("kotlinx-coroutines", "1.3.9")
             version("mockito", "3.3.3")
         }
