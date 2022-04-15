@@ -41,7 +41,7 @@ plugins {
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
 }
 
-def catalogVersion = "trunk-47e80b64f5a4f598d7a8dec8c619987a7c75c870"
+def catalogVersion = "trunk-7fb5bc4b84335f849f05cec0cc19ecc577924e8f"
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
@@ -58,6 +58,17 @@ dependencyResolutionManagement {
     versionCatalogs {
         sharedLibs {
             from("com.automattic:dependency-catalog:$catalogVersion")
+
+            version("androidx-annotation", "1.0.2")
+            version("androidx-constraintlayout", "1.1.3")
+            version("androidx-recyclerview", "1.0.0")
+            version("apache-commons-text", "1.1")
+            version("dagger", "2.29.1")
+            version("facebook-flipper", "0.51.0")
+            version("facebook-soloader", "0.9.0")
+            version("junit", "4.13")
+            version("kotlinx-coroutines", "1.3.9")
+            version("mockito", "3.3.3")
         }
     }
 }
