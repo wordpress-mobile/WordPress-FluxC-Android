@@ -154,6 +154,9 @@ dependencies {
     androidTestImplementation sharedLibs.androidx.test.runner
     androidTestUtil sharedLibs.androidx.test.orchestrator
 
+    androidTestImplementation "com.goterl:lazysodium-android:5.0.2@aar"
+    androidTestImplementation "net.java.dev.jna:jna:5.5.0@aar"
+
     // Debug dependencies
     debugImplementation sharedLibs.facebook.flipper
     debugImplementation sharedLibs.facebook.soloader
