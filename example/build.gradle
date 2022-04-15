@@ -111,7 +111,7 @@ dependencies {
     implementation sharedLibs.androidx.annotation
     implementation sharedLibs.androidx.arch.core.common
     implementation sharedLibs.androidx.arch.core.runtime
-    implementation sharedLibs.androidx.lifecycle.runtime
+    implementation sharedLibs.androidx.lifecycle.runtime.ktx
     implementation sharedLibs.apache.commons.lang3
 
     // WordPress libs
