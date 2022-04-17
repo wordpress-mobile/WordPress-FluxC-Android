@@ -70,4 +70,5 @@ class OrderDto : Response {
     val total_tax: String? = null
     val meta_data: JsonElement? = null
     val tax_lines: JsonElement? = null
+    val payment_url: String? = null
 }

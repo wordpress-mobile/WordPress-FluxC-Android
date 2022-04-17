@@ -13,8 +13,12 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 @Dao
 abstract class InboxNotesDao {
     @Transaction
-    @Query("SELECT * FROM InboxNotes WHERE siteId = :siteId ORDER BY dateCreated DESC")
+    @Query("SELECT * FROM InboxNotes WHERE siteId = :siteId ORDER BY dateCreated DESC, remoteId DESC")
     abstract fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>>
+
+    @Transaction
+    @Query("SELECT * FROM InboxNotes WHERE siteId = :siteId")
+    abstract fun getInboxNotesForSite(siteId: Long): List<InboxNoteEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNote(entity: InboxNoteEntity): Long

@@ -1,10 +1,12 @@
 package org.wordpress.android.fluxc.persistence
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.withTransaction
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
@@ -40,7 +42,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-        version = 12,
+        version = 13,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -55,6 +57,9 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             OrderEntity::class,
             InboxNoteEntity::class,
             InboxNoteActionEntity::class
+        ],
+        autoMigrations = [
+            AutoMigration(from = 12, to = 13)
         ]
 )
 @TypeConverters(
@@ -65,7 +70,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             BigDecimalConverter::class
         ]
 )
-abstract class WCAndroidDatabase : RoomDatabase() {
+abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val addonsDao: AddonsDao
     abstract val ordersDao: OrdersDao
     abstract val orderNotesDao: OrderNotesDao
@@ -93,4 +98,9 @@ abstract class WCAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_11_12)
                 .build()
     }
+
+    override suspend fun <R> executeInTransaction(block: suspend () -> R): R =
+        withTransaction(block)
+
+    override fun <R> runInTransaction(block: () -> R): R = runInTransaction(block)
 }

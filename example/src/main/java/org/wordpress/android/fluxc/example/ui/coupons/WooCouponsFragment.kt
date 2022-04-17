@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.CouponStore
+import org.wordpress.android.fluxc.store.CouponStore.Companion.DEFAULT_PAGE
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -27,6 +28,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private var couponPage = DEFAULT_PAGE
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_coupons, container, false)
@@ -35,10 +37,10 @@ class WooCouponsFragment : StoreSelectingFragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(State.STARTED) {
                 store.observeCoupons(site).collect { coupons ->
-                    val codes = coupons.joinToString {
-                        "${it.couponEntity.code}(ID ${it.couponEntity.id})"
+                    val codes = coupons.joinToString(",\n") {
+                        "${it.coupon.code}(ID ${it.coupon.id})"
                     }
-                    prependToLog("Coupons changed: [$codes]")
+                    prependToLog("Coupons changed (${coupons.size}): \n$codes\n")
                 }
             }
         }
@@ -49,7 +51,13 @@ class WooCouponsFragment : StoreSelectingFragment() {
 
         btnFetchCoupons.setOnClickListener {
             coroutineScope.launch {
-                store.fetchCoupons(selectedSite!!)
+                val result = store.fetchCoupons(selectedSite!!, couponPage++, pageSize = 3)
+                if (result.model == true) {
+                    btnFetchCoupons.text = "Fetch More Coupons"
+                } else {
+                    btnFetchCoupons.text = "Can't load more coupons"
+                    btnFetchCoupons.isEnabled = false
+                }
             }
         }
 
@@ -80,7 +88,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
                         store.fetchCoupon(selectedSite!!, it)
                         prependToLog(
                             store.observeCoupon(selectedSite!!, it)
-                                .first()?.couponEntity?.toString() ?: "Coupon $it not found"
+                                .first()?.coupon?.toString() ?: "Coupon $it not found"
                         )
                     }
                 } ?: prependToLog("Invalid coupon ID")
@@ -116,6 +124,20 @@ class WooCouponsFragment : StoreSelectingFragment() {
                                 "resulted in $usageAmountFormatted savings"
                         )
                     }
+                }
+            }
+        }
+
+        btnSearchCoupons.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a search query:") { editText ->
+                coroutineScope.launch {
+                    val query = editText.text.toString()
+                    val searchResult = store.searchCoupons(selectedSite!!, query)
+                    val title = "Coupon search (\"$query\") results:"
+                    val results = searchResult.model!!.coupons.joinToString(",\n") {
+                        "${it.coupon.code}(ID ${it.coupon.id})"
+                    }
+                    prependToLog("$title\n$results\n")
                 }
             }
         }

@@ -38,6 +38,14 @@
             android:text="Delete coupon" />
 
         <Button
+            android:id="@+id/btnSearchCoupons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Search coupons" />
+
+        <Button
             android:id="@+id/btnFetchCouponReport"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

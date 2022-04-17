@@ -29,7 +29,8 @@ class InboxRestClient @Inject constructor(
     suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        inboxNoteTypes: Array<String>
     ): WooPayload<Array<InboxNoteDto>> {
         val url = WOOCOMMERCE.admin.notes.pathV4Analytics
 
@@ -39,7 +40,8 @@ class InboxRestClient @Inject constructor(
             url,
             mapOf(
                 "page" to page.toString(),
-                "per_page" to pageSize.toString()
+                "per_page" to pageSize.toString(),
+                "type" to inboxNoteTypes.joinToString(separator = ",")
             ),
             Array<InboxNoteDto>::class.java
         )
@@ -81,6 +83,31 @@ class InboxRestClient @Inject constructor(
             site,
             url,
             Unit::class.java
+        )
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
+        }
+    }
+
+    suspend fun deleteAllNotesForSite(
+        site: SiteModel,
+        page: Int,
+        pageSize: Int,
+        inboxNoteTypes: Array<String>
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.admin.notes.delete.all.pathV4Analytics
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+            this,
+            site,
+            url,
+            Unit::class.java,
+            mapOf(
+                "page" to page.toString(),
+                "per_page" to pageSize.toString(),
+                "type" to inboxNoteTypes.joinToString(separator = ",")
+            )
         )
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())

@@ -20,6 +20,10 @@ abstract class CouponsDao {
     abstract fun observeCoupons(siteId: Long): Flow<List<CouponWithEmails>>
 
     @Transaction
+    @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id IN (:couponIds) ORDER BY id")
+    abstract fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
+
+    @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
     abstract fun observeCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails?>
 
@@ -85,6 +89,9 @@ abstract class CouponsDao {
 
     @Query("DELETE FROM Coupons WHERE siteId = :siteId AND id = :couponId")
     abstract suspend fun deleteCoupon(siteId: Long, couponId: Long)
+
+    @Query("DELETE FROM Coupons WHERE siteId = :siteId")
+    abstract suspend fun deleteAllCoupons(siteId: Long)
 
     @Query("SELECT COUNT(*) FROM CouponEmails WHERE siteId = :siteId AND couponId = :couponId")
     abstract suspend fun getEmailCount(siteId: Long, couponId: Long): Int
