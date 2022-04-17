@@ -24,6 +24,13 @@ class CouponsDaoTest {
     private lateinit var couponsDao: CouponsDao
     private lateinit var db: WCAndroidDatabase
 
+    private val coupon = generateCouponEntity()
+    private val email = CouponEmailEntity(
+        couponId = coupon.id,
+        siteId = coupon.siteId,
+        email = "test@test.com"
+    )
+
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Application>()
@@ -42,7 +49,58 @@ class CouponsDaoTest {
     @Test
     fun `test coupon insert and update`(): Unit = runBlocking {
         // when
-        var coupon = generateCouponEntity()
+        couponsDao.insertOrUpdateCoupon(coupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
+        var observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
+
+        // then
+        val expected = CouponWithEmails(coupon, listOf(email))
+        assertThat(observedCoupon.first()).isEqualTo(expected)
+
+        // when
+        val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
+        val newExpected = CouponWithEmails(newCoupon, listOf(email))
+        couponsDao.insertOrUpdateCoupon(newCoupon)
+        observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
+
+        // then
+        assertThat(observedCoupon.first()).isEqualTo(newExpected)
+    }
+
+    @Test
+    fun `test specific observation when it is not in the DB`(): Unit = runBlocking {
+        // when
+        couponsDao.insertOrUpdateCoupon(coupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
+        val observedCoupon = couponsDao.observeCoupon(1, coupon.id + 1)
+
+        // then
+        assertThat(observedCoupon.first()).isNull()
+    }
+
+    @Test
+    fun `test specific observation when it is present in the DB`(): Unit = runBlocking {
+        // when
+        couponsDao.insertOrUpdateCoupon(coupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
+        val observedCoupon = couponsDao.observeCoupon(1, coupon.id)
+
+        var expected = CouponWithEmails(coupon, listOf(email))
+        assertThat(observedCoupon.first()).isEqualTo(expected)
+
+        // when
+        val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
+        expected = CouponWithEmails(newCoupon, listOf(email))
+        couponsDao.insertOrUpdateCoupon(newCoupon)
+
+        // then
+        assertThat(observedCoupon.first()).isEqualTo(expected)
+    }
+
+    @Test
+    fun `test coupon delete`(): Unit = runBlocking {
+        // when
+        val coupon = generateCouponEntity()
         val email = CouponEmailEntity(
             couponId = coupon.id,
             siteId = coupon.siteId,
@@ -50,19 +108,21 @@ class CouponsDaoTest {
         )
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        var observedCoupon = couponsDao.observeCoupons(1).first()
+        var observedCoupons = couponsDao.observeCoupons(coupon.siteId).first()
+        var emailCount = couponsDao.getEmailCount(coupon.siteId, coupon.id)
 
         // then
-        val expected = CouponWithEmails(coupon, listOf(email))
-        assertThat(observedCoupon.first()).isEqualTo(expected)
+        assertThat(observedCoupons.size).isEqualTo(1)
+        assertThat(emailCount).isEqualTo(1)
 
         // when
-        coupon = coupon.copy(description = "Updated", usageLimit = 2)
-        couponsDao.insertOrUpdateCoupon(coupon)
-        observedCoupon = couponsDao.observeCoupons(1).first()
+        couponsDao.deleteCoupon(coupon.siteId, coupon.id)
+        observedCoupons = couponsDao.observeCoupons(coupon.siteId).first()
+        emailCount = couponsDao.getEmailCount(coupon.siteId, coupon.id)
 
         // then
-        assertThat(observedCoupon.first().couponEntity).isEqualTo(coupon)
+        assertThat(observedCoupons.size).isEqualTo(0)
+        assertThat(emailCount).isEqualTo(0)
     }
 
     companion object {

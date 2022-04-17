@@ -26,10 +26,11 @@ class InboxRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchNotes(
+    suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        inboxNoteTypes: Array<String>
     ): WooPayload<Array<InboxNoteDto>> {
         val url = WOOCOMMERCE.admin.notes.pathV4Analytics
 
@@ -39,17 +40,78 @@ class InboxRestClient @Inject constructor(
             url,
             mapOf(
                 "page" to page.toString(),
-                "per_page" to pageSize.toString()
+                "per_page" to pageSize.toString(),
+                "type" to inboxNoteTypes.joinToString(separator = ",")
             ),
             Array<InboxNoteDto>::class.java
         )
         return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    suspend fun markInboxNoteAsActioned(
+        site: SiteModel,
+        inboxNoteId: Long,
+        inboxNoteActionId: Long
+    ): WooPayload<InboxNoteDto> {
+        val url = WOOCOMMERCE.admin.notes.note(inboxNoteId)
+            .action.item(inboxNoteActionId).pathV4Analytics
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            emptyMap(),
+            InboxNoteDto::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    suspend fun deleteNote(
+        site: SiteModel,
+        inboxNoteId: Long
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.admin.notes.delete.note(inboxNoteId).pathV4Analytics
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+            this,
+            site,
+            url,
+            Unit::class.java
+        )
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
+        }
+    }
+
+    suspend fun deleteAllNotesForSite(
+        site: SiteModel,
+        page: Int,
+        pageSize: Int,
+        inboxNoteTypes: Array<String>
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.admin.notes.delete.all.pathV4Analytics
+
+        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
+            this,
+            site,
+            url,
+            Unit::class.java,
+            mapOf(
+                "page" to page.toString(),
+                "per_page" to pageSize.toString(),
+                "type" to inboxNoteTypes.joinToString(separator = ",")
+            )
+        )
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> WooPayload(Unit)
         }
     }
 }
