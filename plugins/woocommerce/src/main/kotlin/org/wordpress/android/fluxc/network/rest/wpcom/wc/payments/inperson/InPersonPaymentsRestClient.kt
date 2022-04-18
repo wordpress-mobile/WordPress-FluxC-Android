@@ -13,7 +13,6 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentError
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.PAYMENT_ALREADY_CAPTURED
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentResponsePayload
-import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationError
@@ -131,30 +130,6 @@ class InPersonPaymentsRestClient @Inject constructor(
                 url,
                 params,
                 WCPaymentAccountResult::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
-    }
-
-    suspend fun createCustomerByOrderId(
-        activePlugin: InPersonPaymentsPluginType,
-        site: SiteModel,
-        orderId: Long
-    ): WooPayload<WCCreateCustomerByOrderIdResult> {
-        val url = when (activePlugin) {
-            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.orders.order(orderId).create_customer.pathV3
-            STRIPE -> WOOCOMMERCE.wc_stripe.orders.order(orderId).create_customer.pathV3
-        }
-
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                body = emptyMap(),
-                clazz = WCCreateCustomerByOrderIdResult::class.java
         )
 
         return when (response) {

@@ -414,3 +414,91 @@ internal val MIGRATION_9_10 = object : Migration(9, 10) {
         }
     }
 }
+
+internal val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE Coupons")
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `Coupons` (`id` INTEGER NOT NULL,
+                        `siteId` INTEGER NOT NULL,
+                        `code` TEXT,
+                        `amount` TEXT,
+                        `dateCreated` TEXT,
+                        `dateCreatedGmt` TEXT,
+                        `dateModified` TEXT,
+                        `dateModifiedGmt` TEXT,
+                        `discountType` TEXT,
+                        `description` TEXT,
+                        `dateExpires` TEXT,
+                        `dateExpiresGmt` TEXT,
+                        `usageCount` INTEGER,
+                        `isForIndividualUse` INTEGER,
+                        `usageLimit` INTEGER,
+                        `usageLimitPerUser` INTEGER,
+                        `limitUsageToXItems` INTEGER,
+                        `isShippingFree` INTEGER,
+                        `areSaleItemsExcluded` INTEGER,
+                        `minimumAmount` TEXT,
+                        `maximumAmount` TEXT,
+                        PRIMARY KEY(`id`,`siteId`))
+                        """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE INDEX IF NOT EXISTS `index_Coupons_id_siteId` ON `Coupons` (`id`, `siteId`);
+                """.trimIndent()
+            )
+        }
+    }
+}
+
+internal val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `InboxNotes` (
+                    `localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `remoteId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `title` TEXT NOT NULL,
+                    `content` TEXT NOT NULL,
+                    `dateCreated` TEXT NOT NULL,
+                    `status` TEXT NOT NULL,
+                    `source` TEXT,
+                    `type` TEXT,
+                    `dateReminder` TEXT)
+                    """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_siteId` ON `InboxNotes` (`remoteId`, `siteId`)
+                """.trimIndent()
+            )
+
+            execSQL(
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS `InboxNoteActions` (
+                    `remoteId` INTEGER NOT NULL,
+                    `inboxNoteLocalId` INTEGER NOT NULL,
+                    `siteId` INTEGER NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `label` TEXT NOT NULL,
+                    `url` TEXT NOT NULL,
+                    `query` TEXT,
+                    `status` TEXT,
+                    `primary` INTEGER NOT NULL,
+                    `actionedText` TEXT,
+                    PRIMARY KEY(`remoteId`,`inboxNoteLocalId`),
+                    FOREIGN KEY(`inboxNoteLocalId`)
+                    REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )
+                    """.trimIndent()
+            )
+        }
+    }
+}

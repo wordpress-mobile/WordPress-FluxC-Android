@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 21
@@ -67,7 +67,7 @@ dependencies {
     api fluxcAnnotationsProjectDependency
     kapt fluxcProcessorProjectDependency
 
-    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
 
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"

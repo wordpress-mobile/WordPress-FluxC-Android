@@ -172,6 +172,7 @@ public class SitesFragment extends Fragment {
 
         NewSitePayload newSitePayload = new NewSitePayload(
                 name,
+                null,
                 defaultLanguage,
                 defaultTimeZoneId,
                 SiteVisibility.PUBLIC,

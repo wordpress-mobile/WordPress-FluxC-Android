@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Relation
+import java.math.BigDecimal
 import java.util.Date
 
 @Entity(
@@ -15,6 +16,7 @@ data class CouponEntity(
     val id: Long,
     val siteId: Long,
     val code: String? = null,
+    val amount: BigDecimal? = null,
     val dateCreated: Date? = null,
     val dateCreatedGmt: Date? = null,
     val dateModified: Date? = null,
@@ -30,8 +32,8 @@ data class CouponEntity(
     val limitUsageToXItems: Int? = null,
     val isShippingFree: Boolean? = null,
     val areSaleItemsExcluded: Boolean? = null,
-    val minimumAmount: String? = null,
-    val maximumAmount: String? = null
+    val minimumAmount: BigDecimal? = null,
+    val maximumAmount: BigDecimal? = null
 ) {
     sealed class DiscountType(val value: String) {
         object Percent : DiscountType("percent")
@@ -53,13 +55,13 @@ data class CouponEntity(
 }
 
 data class CouponWithEmails(
-    @Embedded val couponEntity: CouponEntity,
+    @Embedded val coupon: CouponEntity,
     @Relation(parentColumn = "id", entityColumn = "couponId")
     val restrictedEmails: List<CouponEmailEntity>
 )
 
 data class CouponDataModel(
-    val couponEntity: CouponEntity,
+    val coupon: CouponEntity,
     val products: List<ProductEntity>,
     val excludedProducts: List<ProductEntity>,
     val categories: List<ProductCategoryEntity>,

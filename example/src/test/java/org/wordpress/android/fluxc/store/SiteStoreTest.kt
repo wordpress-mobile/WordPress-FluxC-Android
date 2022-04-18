@@ -170,10 +170,11 @@ class SiteStoreTest {
         val dryRun = false
         val payload = NewSitePayload("New site", "CZ", "Europe/London", PUBLIC, dryRun)
         val newSiteRemoteId: Long = 123
-        val response = NewSiteResponsePayload(newSiteRemoteId, dryRun)
+        val response = NewSiteResponsePayload(newSiteRemoteId, dryRun = dryRun)
         whenever(
                 siteRestClient.newSite(
                         payload.siteName,
+                        null,
                         payload.language,
                         payload.timeZoneId,
                         payload.visibility,
@@ -199,6 +200,7 @@ class SiteStoreTest {
         whenever(
                 siteRestClient.newSite(
                         payload.siteName,
+                        null,
                         payload.language,
                         payload.timeZoneId,
                         payload.visibility,

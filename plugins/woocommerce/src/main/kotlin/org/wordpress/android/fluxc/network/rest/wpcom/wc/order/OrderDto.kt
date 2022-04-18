@@ -1,11 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.JsonElement
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.Response
-import org.wordpress.android.fluxc.utils.DateUtils
-import java.math.BigDecimal
 
 @Suppress("PropertyName")
 class OrderDto : Response {
@@ -74,64 +70,5 @@ class OrderDto : Response {
     val total_tax: String? = null
     val meta_data: JsonElement? = null
     val tax_lines: JsonElement? = null
-}
-
-fun OrderDto.toDomainModel(localSiteId: LocalId): OrderEntity {
-    fun convertDateToUTCString(date: String?): String =
-            date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
-
-    return OrderEntity(
-            orderId = this.id ?: 0,
-            localSiteId = localSiteId,
-            number = this.number ?: (this.id ?: 0).toString(),
-            status = this.status ?: "",
-            currency = this.currency ?: "",
-            orderKey = this.order_key ?: "",
-            dateCreated = convertDateToUTCString(this.date_created_gmt),
-            dateModified = convertDateToUTCString(this.date_modified_gmt),
-            total = this.total ?: "",
-            totalTax = this.total_tax ?: "",
-            shippingTotal = this.shipping_total ?: "",
-            paymentMethod = this.payment_method ?: "",
-            paymentMethodTitle = this.payment_method_title ?: "",
-            datePaid = this.date_paid_gmt?.let { "${it}Z" } ?: "",
-            pricesIncludeTax = this.prices_include_tax,
-            customerNote = this.customer_note ?: "",
-            discountTotal = this.discount_total ?: "",
-            discountCodes = this.coupon_lines?.let { couponLines ->
-                // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
-                couponLines
-                        .filter { !it.code.isNullOrEmpty() }
-                        .joinToString { it.code!! }
-            }.orEmpty(),
-            refundTotal = this.refunds?.let { refunds ->
-                // Extract the individual refund totals from the refunds list and store their sum as a Double,
-                refunds.sumOf { it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-            } ?: BigDecimal.ZERO,
-            billingFirstName = this.billing?.first_name ?: "",
-            billingLastName = this.billing?.last_name ?: "",
-            billingCompany = this.billing?.company ?: "",
-            billingAddress1 = this.billing?.address_1 ?: "",
-            billingAddress2 = this.billing?.address_2 ?: "",
-            billingCity = this.billing?.city ?: "",
-            billingState = this.billing?.state ?: "",
-            billingPostcode = this.billing?.postcode ?: "",
-            billingCountry = this.billing?.country ?: "",
-            billingEmail = this.billing?.email ?: "",
-            billingPhone = this.billing?.phone ?: "",
-            shippingFirstName = this.shipping?.first_name ?: "",
-            shippingLastName = this.shipping?.last_name ?: "",
-            shippingCompany = this.shipping?.company ?: "",
-            shippingAddress1 = this.shipping?.address_1 ?: "",
-            shippingAddress2 = this.shipping?.address_2 ?: "",
-            shippingCity = this.shipping?.city ?: "",
-            shippingState = this.shipping?.state ?: "",
-            shippingPostcode = this.shipping?.postcode ?: "",
-            shippingCountry = this.shipping?.country ?: "",
-            lineItems = this.line_items.toString(),
-            shippingLines = this.shipping_lines.toString(),
-            feeLines = this.fee_lines.toString(),
-            taxLines = this.tax_lines.toString(),
-            metaData = this.meta_data.toString()
-    )
+    val payment_url: String? = null
 }

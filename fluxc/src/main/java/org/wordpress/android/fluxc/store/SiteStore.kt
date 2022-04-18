@@ -148,8 +148,21 @@ open class SiteStore
         @JvmField val filterJetpackConnectedPackageSite: Boolean = false
     ) : Payload<BaseNetworkError>()
 
+    /**
+     * Holds the new site parameters for site creation
+     *
+     * @param siteName The domain of the site
+     * @param siteTitle The title of the site
+     * @param language The language of the site
+     * @param timeZoneId The timezone of the site
+     * @param visibility The visibility of the site (public or private)
+     * @param segmentId The segment that the site belongs to
+     * @param siteDesign The design template of the site
+     * @param dryRun If set to true the call only validates the parameters passed
+     */
     data class NewSitePayload(
-        @JvmField val siteName: String,
+        @JvmField val siteName: String?,
+        @JvmField val siteTitle: String?,
         @JvmField val language: String,
         @JvmField val timeZoneId: String?,
         @JvmField val visibility: SiteVisibility,
@@ -158,27 +171,36 @@ open class SiteStore
         @JvmField val dryRun: Boolean
     ) : Payload<BaseNetworkError>() {
         constructor(
-            siteName: String,
+            siteName: String?,
             language: String,
             visibility: SiteVisibility,
             dryRun: Boolean
-        ) : this(siteName, language, null, visibility, null, null, dryRun)
+        ) : this(siteName, null, language, null, visibility, null, null, dryRun)
 
         constructor(
-            siteName: String,
+            siteName: String?,
             language: String,
             visibility: SiteVisibility,
             segmentId: Long?,
             dryRun: Boolean
-        ) : this(siteName, language, null, visibility, segmentId, null, dryRun)
+        ) : this(siteName, null, language, null, visibility, segmentId, null, dryRun)
 
         constructor(
-            siteName: String,
+            siteName: String?,
             language: String,
             timeZoneId: String,
             visibility: SiteVisibility,
             dryRun: Boolean
-        ) : this(siteName, language, timeZoneId, visibility, null, null, dryRun)
+        ) : this(siteName, null, language, timeZoneId, visibility, null, null, dryRun)
+
+        constructor(
+            siteName: String?,
+            siteTitle: String?,
+            language: String,
+            timeZoneId: String,
+            visibility: SiteVisibility,
+            dryRun: Boolean
+        ) : this(siteName, siteTitle, language, timeZoneId, visibility, null, null, dryRun)
     }
 
     data class FetchedPostFormatsPayload(
@@ -498,9 +520,14 @@ open class SiteStore
 
     data class OnNewSiteCreated(
         @JvmField val dryRun: Boolean = false,
+        @JvmField val url: String? = null,
         @JvmField val newSiteRemoteId: Long = 0
     ) : OnChanged<NewSiteError>() {
-        constructor(dryRun: Boolean, newSiteRemoteId: Long, error: NewSiteError?) : this(dryRun, newSiteRemoteId) {
+        constructor(dryRun: Boolean, url: String?, newSiteRemoteId: Long, error: NewSiteError?) : this(
+                dryRun,
+                url,
+                newSiteRemoteId
+        ) {
             this.error = error
         }
     }
@@ -1463,6 +1490,7 @@ open class SiteStore
     suspend fun createNewSite(payload: NewSitePayload): OnNewSiteCreated {
         val result = siteRestClient.newSite(
                 payload.siteName,
+                payload.siteTitle,
                 payload.language,
                 payload.timeZoneId,
                 payload.visibility,
@@ -1476,7 +1504,7 @@ open class SiteStore
     }
 
     private fun handleCreateNewSiteCompleted(payload: NewSiteResponsePayload): OnNewSiteCreated {
-        return OnNewSiteCreated(payload.dryRun, payload.newSiteRemoteId, payload.error)
+        return OnNewSiteCreated(payload.dryRun, payload.siteUrl, payload.newSiteRemoteId, payload.error)
     }
 
     suspend fun fetchPostFormats(site: SiteModel): OnPostFormatsChanged {

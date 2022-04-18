@@ -4,6 +4,7 @@ import java.util.Date
 
 data class UpdateCouponRequest(
     val code: String? = null,
+    val amount: String? = null,
     val discountType: String? = null,
     val description: String? = null,
     val dateExpires: Date? = null,

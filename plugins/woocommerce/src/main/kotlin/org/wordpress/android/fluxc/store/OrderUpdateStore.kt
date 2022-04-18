@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.toDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao

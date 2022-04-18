@@ -9,6 +9,7 @@ import org.wordpress.android.util.DateTimeUtils
 data class CouponDto(
     @SerializedName("id") val id: Long,
     @SerializedName("code") val code: String?,
+    @SerializedName("amount") val amount: String?,
     @SerializedName("date_created") val dateCreated: String?,
     @SerializedName("date_created_gmt") val dateCreatedGmt: String?,
     @SerializedName("date_modified") val dateModified: String?,
@@ -38,11 +39,12 @@ data class CouponDto(
             id = id,
             siteId = siteId,
             code = code,
+            amount = amount?.toBigDecimalOrNull(),
             dateCreated = dateCreated?.let { DateTimeUtils.dateUTCFromIso8601(it) },
             dateCreatedGmt = dateCreatedGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
             dateModified = dateModified?.let { DateTimeUtils.dateUTCFromIso8601(it) },
             dateModifiedGmt = dateModifiedGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
-            discountType = DiscountType.fromString(discountType),
+            discountType = Companion.fromString(discountType),
             description = description,
             dateExpires = dateExpires?.let { DateTimeUtils.dateUTCFromIso8601(it) },
             dateExpiresGmt = dateExpiresGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
@@ -53,7 +55,7 @@ data class CouponDto(
             limitUsageToXItems = limitUsageToXItems,
             isShippingFree = isShippingFree,
             areSaleItemsExcluded = areSaleItemsExcluded,
-            minimumAmount = minimumAmount,
-            maximumAmount = maximumAmount
+            minimumAmount = minimumAmount?.toBigDecimalOrNull(),
+            maximumAmount = maximumAmount?.toBigDecimalOrNull()
         )
 }
