@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 @Dao
 abstract class CouponsDao {
     @Transaction
-    @Query("SELECT * FROM Coupons WHERE siteId = :siteId")
+    @Query("SELECT * FROM Coupons WHERE siteId = :siteId ORDER BY dateCreated")
     abstract fun observeCoupons(siteId: Long): Flow<List<CouponWithEmails>>
 
     @Transaction
@@ -25,8 +25,7 @@ abstract class CouponsDao {
     abstract fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
 
     @Transaction
-    @Query("SELECT * FROM Coupons " +
-        "WHERE siteId = :siteId AND id = :couponId ORDER BY dateCreated")
+    @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
     abstract fun observeCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
