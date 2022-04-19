@@ -215,11 +215,25 @@ class WooProductsFragment : StoreSelectingFragment() {
         load_more_product_variations.setOnClickListener {
             selectedSite?.let { site ->
                 pendingFetchProductVariationsProductRemoteId?.let { id ->
-                    prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
-                    val payload = FetchProductVariationsPayload(
+                    coroutineScope.launch {
+                        prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
+                        val payload = FetchProductVariationsPayload(
                             site, id, offset = pendingFetchSingleProductVariationOffset
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                        )
+                        val result = wcProductStore.fetchProductVariations(payload)
+                        prependToLog(
+                            "Fetched ${result.rowsAffected} product variants. " +
+                                    "More variants available ${result.canLoadMore}"
+                        )
+                        if (result.canLoadMore) {
+                            pendingFetchSingleProductVariationOffset += result.rowsAffected
+                            load_more_product_variations.visibility = View.VISIBLE
+                            load_more_product_variations.isEnabled = true
+                        } else {
+                            pendingFetchSingleProductVariationOffset = 0
+                            load_more_product_variations.isEnabled = false
+                        }
+                    }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
