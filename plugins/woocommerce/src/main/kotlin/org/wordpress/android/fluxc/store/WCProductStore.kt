@@ -29,7 +29,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
-import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -764,8 +763,6 @@ class WCProductStore @Inject constructor(
                 fetchProducts(action.payload as FetchProductsPayload)
             WCProductAction.SEARCH_PRODUCTS ->
                 searchProducts(action.payload as SearchProductsPayload)
-            WCProductAction.FETCH_PRODUCT_VARIATIONS ->
-                fetchProductVariations(action.payload as FetchProductVariationsPayload)
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
             WCProductAction.UPDATE_PRODUCT ->
@@ -798,8 +795,6 @@ class WCProductStore @Inject constructor(
                 handleFetchProductsCompleted(action.payload as RemoteProductListPayload)
             WCProductAction.SEARCHED_PRODUCTS ->
                 handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
-            WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
-                handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
             WCProductAction.UPDATED_PRODUCT ->
@@ -883,7 +878,7 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.deleteVariation(site, productId, variationId)
                 .asWooResult()
                 .model?.asProductVariationModel()
-                ?.apply { deleteVariationsForProduct(site, productId) }
+                ?.apply { ProductSqlUtils.deleteVariationsForProduct(site, productId) }
                 ?.let { WooResult(it) }
                 ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
         }
@@ -992,8 +987,24 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
-        with(payload) { wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset) }
+    suspend fun fetchProductVariations(payload: FetchProductVariationsPayload): OnProductChanged {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductVariations") {
+            val result = with(payload) {
+                    wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset)
+                }
+            return@withDefaultContext if (result.isError) {
+                OnProductChanged(0, payload.remoteProductId).also { it.error = result.error }
+            } else {
+                // delete product variations for site if this is the first page of results, otherwise
+                // product variations deleted outside of the app will persist
+                if (result.offset == 0) {
+                    ProductSqlUtils.deleteVariationsForProduct(result.site, result.remoteProductId)
+                }
+
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(result.variations)
+                OnProductChanged(rowsAffected, payload.remoteProductId, canLoadMore = result.canLoadMore)
+            }
+        }
     }
 
     private fun fetchProductShippingClass(payload: FetchSingleProductShippingClassPayload) {
@@ -1272,26 +1283,6 @@ class WCProductStore @Inject constructor(
         }
         onProductPasswordUpdated.causeOfChange = WCProductAction.UPDATE_PRODUCT_PASSWORD
         emitChange(onProductPasswordUpdated)
-    }
-
-    private fun handleFetchProductVariationsCompleted(payload: RemoteProductVariationsPayload) {
-        val onProductChanged: OnProductChanged
-
-        if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
-        } else {
-            // delete product variations for site if this is the first page of results, otherwise
-            // product variations deleted outside of the app will persist
-            if (payload.offset == 0) {
-                ProductSqlUtils.deleteVariationsForProduct(payload.site, payload.remoteProductId)
-            }
-
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(payload.variations)
-            onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
-        }
-
-        onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_VARIATIONS
-        emitChange(onProductChanged)
     }
 
     private fun handleUpdateProductImages(payload: RemoteUpdateProductImagesPayload) {
