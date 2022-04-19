@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayl
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
@@ -26,7 +25,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingCla
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductTagsPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
@@ -43,8 +41,6 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCTS,
     @Action(payloadType = SearchProductsPayload.class)
     SEARCH_PRODUCTS,
-    @Action(payloadType = FetchProductVariationsPayload.class)
-    FETCH_PRODUCT_VARIATIONS,
     @Action(payloadType = FetchProductShippingClassListPayload.class)
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchSingleProductShippingClassPayload.class)
@@ -77,8 +73,6 @@ public enum WCProductAction implements IAction {
     FETCHED_PRODUCTS,
     @Action(payloadType = RemoteSearchProductsPayload.class)
     SEARCHED_PRODUCTS,
-    @Action(payloadType = RemoteProductVariationsPayload.class)
-    FETCHED_PRODUCT_VARIATIONS,
     @Action(payloadType = RemoteProductShippingClassListPayload.class)
     FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = RemoteProductShippingClassPayload.class)
