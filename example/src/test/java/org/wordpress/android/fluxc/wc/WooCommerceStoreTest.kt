@@ -2,8 +2,6 @@ package org.wordpress.android.fluxc.wc
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -19,10 +17,12 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.TestSiteSqlUtils
-import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSSRModel
+import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
+import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
@@ -34,9 +34,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCApiVersionResp
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCSystemPluginResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCSystemPluginResponse.SystemPluginModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.SSRResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.WPSiteSettingsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.toDomainModel
+import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils.WCSettingsBuilder
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.store.SiteStore
@@ -44,6 +44,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.wc.settings.WCSettingsTestUtils
 import kotlin.test.assertEquals
 
 @Config(manifest = Config.NONE)
@@ -52,22 +53,23 @@ class WooCommerceStoreTest {
     private companion object {
         const val TEST_SITE_REMOTE_ID = 1337L
         const val SUPPORTED_API_VERSION = "wc/v3"
-        const val UNSUPPORTED_API_VERSION = "wc/v1"
     }
 
     private val appContext = ApplicationProvider.getApplicationContext<Application>()
     private val restClient = mock<WooSystemRestClient>()
     private val siteStore = mock<SiteStore>()
     private val wcrestClient = mock<WooCommerceRestClient>()
+    private val settingsMapper = WCSettingsMapper()
 
     private val wooCommerceStore = WooCommerceStore(
-            appContext = appContext,
-            dispatcher = Dispatcher(),
-            coroutineEngine = initCoroutineEngine(),
-            siteStore = siteStore,
-            systemRestClient = restClient,
-            wcCoreRestClient = wcrestClient,
-            siteSqlUtils = TestSiteSqlUtils.siteSqlUtils
+        appContext = appContext,
+        dispatcher = Dispatcher(),
+        coroutineEngine = initCoroutineEngine(),
+        siteStore = siteStore,
+        systemRestClient = restClient,
+        wcCoreRestClient = wcrestClient,
+        siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
+        settingsMapper = settingsMapper
     )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply {
@@ -95,52 +97,19 @@ class WooCommerceStoreTest {
         )
     )
 
-    private val sampleJsonObj = stringToJsonObject(
-            UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/system-status.json")
-    )
-
-    private val ssrResponse = SSRResponse(
-            environment = sampleJsonObj.get("environment"),
-            database = sampleJsonObj.get("database"),
-            activePlugins = sampleJsonObj.get("active_plugins"),
-            theme = sampleJsonObj.get("theme"),
-            settings = sampleJsonObj.get("settings"),
-            security = sampleJsonObj.get("security"),
-            pages = sampleJsonObj.get("pages")
-    )
-
-    private val ssrModel = WCSSRModel(
-            TEST_SITE_REMOTE_ID,
-            ssrResponse.environment?.toString(),
-            ssrResponse.database?.toString(),
-            ssrResponse.activePlugins?.toString(),
-            ssrResponse.theme?.toString(),
-            ssrResponse.settings?.toString(),
-            ssrResponse.security?.toString(),
-            ssrResponse.pages?.toString()
-    )
-
-    private fun stringToJsonObject(jsonText: String): JsonObject {
-        return JsonParser().parse(jsonText).asJsonObject
-    }
-
-    private val supportedApiVersionResponse =
-        RootWPAPIRestResponse().apply {
-            authentication = Authentication()
-            namespaces = arrayListOf(SUPPORTED_API_VERSION)
-        }
-
-    private val unSupportedApiVersionResponse =
-        RootWPAPIRestResponse().apply {
-            authentication = Authentication()
-            namespaces = arrayListOf(UNSUPPORTED_API_VERSION)
-        }
+    private val siteSettingsResponse = WCSettingsTestUtils.getSiteSettingsResponse()
+    private val siteProductSettingsResponse = WCSettingsTestUtils.getSiteProductSettingsResponse()
 
     @Before
     fun setUp() {
         val config = SingleStoreWellSqlConfigForTests(
             appContext,
-            listOf(SitePluginModel::class.java, SiteModel::class.java),
+            listOf(
+                SitePluginModel::class.java,
+                SiteModel::class.java,
+                WCProductSettingsModel::class.java,
+                WCSettingsBuilder::class.java
+            ),
             WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -212,12 +181,54 @@ class WooCommerceStoreTest {
     }
 
     @Test
-    fun `when fetching ssr succeeds, then success returned`() {
+    fun `when fetching ssr succeeds, then success returned`() = test {
+        val result = fetchSSR(isError = false)
+
+        Assertions.assertThat(result.isError).isFalse
+        Assertions.assertThat(result.model).isNotNull
+    }
+
+    @Test
+    fun `when fetch site settings succeeds, then success returned`() = test {
+        val result: WooResult<WCSettingsModel> = fetchSiteSettings()
+
+        Assertions.assertThat(result.isError).isFalse
+        Assertions.assertThat(result.model).isNotNull
+        Assertions.assertThat(result.model).isEqualTo(
+            settingsMapper.mapSiteSettings(siteSettingsResponse!!, site)
+        )
+    }
+
+    @Test
+    fun `when fetch site settings fails, then error returned`() {
         runBlocking {
-            val result = fetchSSR(isError = false)
+            val result: WooResult<WCSettingsModel> = fetchSiteSettings(isError = true)
+            Assertions.assertThat(result.error).isEqualTo(error)
+            Assertions.assertThat(result.model).isNull()
+        }
+    }
+
+    @Test
+    fun `when fetch site product settings succeeds, then success returned`() {
+        runBlocking {
+            val expectedModel = settingsMapper.mapProductSettings(siteProductSettingsResponse!!, site)
+
+            val result: WooResult<WCProductSettingsModel> = fetchSiteProductSettings()
 
             Assertions.assertThat(result.isError).isFalse
             Assertions.assertThat(result.model).isNotNull
+            Assertions.assertThat(result.model?.localSiteId).isEqualTo(expectedModel.localSiteId)
+            Assertions.assertThat(result.model?.weightUnit).isEqualTo(expectedModel.weightUnit)
+            Assertions.assertThat(result.model?.dimensionUnit).isEqualTo(expectedModel.dimensionUnit)
+        }
+    }
+
+    @Test
+    fun `when fetch site product settings fails, then error returned`() {
+        runBlocking {
+            val result: WooResult<WCProductSettingsModel> = fetchSiteProductSettings(isError = true)
+            Assertions.assertThat(result.error).isEqualTo(error)
+            Assertions.assertThat(result.model).isNull()
         }
     }
 
@@ -225,7 +236,7 @@ class WooCommerceStoreTest {
     fun `when fetching supported api version succeeds, then success returned`() {
         runBlocking {
             val result: WooResult<WCApiVersionResponse> = fetchSupportedWooApiVersion(
-                response = supportedApiVersionResponse
+                response = WCSettingsTestUtils.getSupportedApiVersionResponse()
             )
 
             Assertions.assertThat(result.isError).isFalse
@@ -253,7 +264,7 @@ class WooCommerceStoreTest {
         runBlocking {
             val result: WooResult<WCApiVersionResponse> = fetchSupportedWooApiVersion(
                 isError = true,
-                response = unSupportedApiVersionResponse
+                response = WCSettingsTestUtils.getUnsupportedApiVersionResponse()
             )
             Assertions.assertThat(result.error).isEqualTo(error)
         }
@@ -266,9 +277,9 @@ class WooCommerceStoreTest {
             whenever(siteStore.fetchSites(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
             whenever(siteStore.sites).thenReturn(listOf(site))
             whenever(restClient.fetchSiteSettings(site)).thenReturn(
-                    WooPayload(
-                            WPSiteSettingsResponse(title = "new title")
-                    )
+                WooPayload(
+                    WPSiteSettingsResponse(title = "new title")
+                )
             )
             whenever(restClient.checkIfWooCommerceIsAvailable(site)).thenReturn(WooPayload(true))
 
@@ -292,7 +303,7 @@ class WooCommerceStoreTest {
     }
 
     private suspend fun fetchSSR(isError: Boolean = false): WooResult<WCSSRModel> {
-        val payload = WooPayload(ssrResponse)
+        val payload = WooPayload(WCSettingsTestUtils.getSSRResponse())
         if (isError) {
             whenever(restClient.fetchSSR(any())).thenReturn(WooPayload(error))
         } else {
@@ -312,5 +323,25 @@ class WooCommerceStoreTest {
             whenever(wcrestClient.fetchSupportedWooApiVersion(any())).thenReturn(payload)
         }
         return wooCommerceStore.fetchSupportedApiVersion(site)
+    }
+
+    private suspend fun fetchSiteSettings(isError: Boolean = false): WooResult<WCSettingsModel> {
+        val payload = WooPayload(siteSettingsResponse)
+        if (isError) {
+            whenever(wcrestClient.fetchSiteSettingsGeneral(site)).thenReturn(WooPayload(error))
+        } else {
+            whenever(wcrestClient.fetchSiteSettingsGeneral(site)).thenReturn(payload)
+        }
+        return wooCommerceStore.fetchSiteGeneralSettings(site)
+    }
+
+    private suspend fun fetchSiteProductSettings(isError: Boolean = false): WooResult<WCProductSettingsModel> {
+        val payload = WooPayload(siteProductSettingsResponse)
+        if (isError) {
+            whenever(wcrestClient.fetchSiteSettingsProducts(site)).thenReturn(WooPayload(error))
+        } else {
+            whenever(wcrestClient.fetchSiteSettingsProducts(site)).thenReturn(payload)
+        }
+        return wooCommerceStore.fetchSiteProductSettings(site)
     }
 }
