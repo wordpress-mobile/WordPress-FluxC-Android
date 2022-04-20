@@ -95,26 +95,29 @@ class WCInboxStore @Inject constructor(
         site: SiteModel,
         pageSize: Int = MAX_PAGE_SIZE_FOR_DELETING_NOTES,
         inboxNoteTypes: Array<String> = INBOX_NOTE_TYPES_FOR_APPS
-    ): List<WooResult<Unit>> =
+    ): WooResult<Unit> =
         coroutineEngine.withDefaultContext(API, this, "fetchInboxNotes") {
-            val sizeOfCachedNotesForSite = inboxNotesDao.getInboxNotesForSite(site.siteId).size
-            var numberOfPagesToDelete = sizeOfCachedNotesForSite / MAX_PAGE_SIZE_FOR_DELETING_NOTES
-            if (sizeOfCachedNotesForSite % MAX_PAGE_SIZE_FOR_DELETING_NOTES > 0) {
-                numberOfPagesToDelete++
-            }
-            val results = mutableListOf<WooResult<Unit>>()
-            for (page in 1..numberOfPagesToDelete) {
-                val response = restClient
+            var latestResult = WooResult(Unit)
+            for (page in 1..getNumberOfPagesToDelete(site)) {
+                latestResult = restClient
                     .deleteAllNotesForSite(site, page, pageSize, inboxNoteTypes)
-                results.add(response.asWooResult())
-
-                if (response.isError) break
+                    .asWooResult()
+                if (latestResult.isError) break
             }
-            if (!results.any { it.isError }) {
+            if (!latestResult.isError) {
                 inboxNotesDao.deleteInboxNotesForSite(site.siteId)
             }
-            results
+            latestResult
         }
+
+    private fun getNumberOfPagesToDelete(site: SiteModel): Int {
+        val sizeOfCachedNotesForSite = inboxNotesDao.getInboxNotesForSite(site.siteId).size
+        var numberOfPagesToDelete = sizeOfCachedNotesForSite / MAX_PAGE_SIZE_FOR_DELETING_NOTES
+        if (sizeOfCachedNotesForSite % MAX_PAGE_SIZE_FOR_DELETING_NOTES > 0) {
+            numberOfPagesToDelete++
+        }
+        return numberOfPagesToDelete
+    }
 
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         val notesWithActions = result.map { it.toInboxNoteWithActionsEntity(siteId) }
