@@ -24,10 +24,13 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
+import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCApiVersionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCSystemPluginResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCSystemPluginResponse.SystemPluginModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
@@ -48,11 +51,14 @@ import kotlin.test.assertEquals
 class WooCommerceStoreTest {
     private companion object {
         const val TEST_SITE_REMOTE_ID = 1337L
+        const val SUPPORTED_API_VERSION = "wc/v3"
+        const val UNSUPPORTED_API_VERSION = "wc/v1"
     }
 
     private val appContext = ApplicationProvider.getApplicationContext<Application>()
     private val restClient = mock<WooSystemRestClient>()
     private val siteStore = mock<SiteStore>()
+    private val wcrestClient = mock<WooCommerceRestClient>()
 
     private val wooCommerceStore = WooCommerceStore(
             appContext = appContext,
@@ -60,7 +66,7 @@ class WooCommerceStoreTest {
             coroutineEngine = initCoroutineEngine(),
             siteStore = siteStore,
             systemRestClient = restClient,
-            wcCoreRestClient = mock(),
+            wcCoreRestClient = wcrestClient,
             siteSqlUtils = TestSiteSqlUtils.siteSqlUtils
     )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
@@ -117,6 +123,18 @@ class WooCommerceStoreTest {
     private fun stringToJsonObject(jsonText: String): JsonObject {
         return JsonParser().parse(jsonText).asJsonObject
     }
+
+    private val supportedApiVersionResponse =
+        RootWPAPIRestResponse().apply {
+            authentication = Authentication()
+            namespaces = arrayListOf(SUPPORTED_API_VERSION)
+        }
+
+    private val unSupportedApiVersionResponse =
+        RootWPAPIRestResponse().apply {
+            authentication = Authentication()
+            namespaces = arrayListOf(UNSUPPORTED_API_VERSION)
+        }
 
     @Before
     fun setUp() {
@@ -204,6 +222,44 @@ class WooCommerceStoreTest {
     }
 
     @Test
+    fun `when fetching supported api version succeeds, then success returned`() {
+        runBlocking {
+            val result: WooResult<WCApiVersionResponse> = fetchSupportedWooApiVersion(
+                response = supportedApiVersionResponse
+            )
+
+            Assertions.assertThat(result.isError).isFalse
+            Assertions.assertThat(result.model).isNotNull
+            Assertions.assertThat(result.model?.apiVersion).isEqualTo(SUPPORTED_API_VERSION)
+            Assertions.assertThat(result.model?.siteModel).isEqualTo(site)
+        }
+    }
+
+    @Test
+    fun `when fetching unsupported api version succeeds, then blank api version returned`() {
+        runBlocking {
+            val result: WooResult<WCApiVersionResponse> = fetchSupportedWooApiVersion(
+                response = RootWPAPIRestResponse()
+            )
+
+            Assertions.assertThat(result.isError).isFalse
+            Assertions.assertThat(result.model).isNotNull
+            Assertions.assertThat(result.model?.apiVersion).isBlank
+        }
+    }
+
+    @Test
+    fun `when fetching supported api version fails, then error returned`() {
+        runBlocking {
+            val result: WooResult<WCApiVersionResponse> = fetchSupportedWooApiVersion(
+                isError = true,
+                response = unSupportedApiVersionResponse
+            )
+            Assertions.assertThat(result.error).isEqualTo(error)
+        }
+    }
+
+    @Test
     fun `when fetching a jetpack cp site, then fetch metadata from the remote site manually`() {
         runBlocking {
             val site = SiteUtils.generateJetpackCPSite()
@@ -243,5 +299,18 @@ class WooCommerceStoreTest {
             whenever(restClient.fetchSSR(any())).thenReturn(payload)
         }
         return wooCommerceStore.fetchSSR(site)
+    }
+
+    private suspend fun fetchSupportedWooApiVersion(
+        isError: Boolean = false,
+        response: RootWPAPIRestResponse
+    ): WooResult<WCApiVersionResponse> {
+        val payload = WooPayload(response)
+        if (isError) {
+            whenever(wcrestClient.fetchSupportedWooApiVersion(any())).thenReturn(WooPayload(error))
+        } else {
+            whenever(wcrestClient.fetchSupportedWooApiVersion(any())).thenReturn(payload)
+        }
+        return wooCommerceStore.fetchSupportedApiVersion(site)
     }
 }
