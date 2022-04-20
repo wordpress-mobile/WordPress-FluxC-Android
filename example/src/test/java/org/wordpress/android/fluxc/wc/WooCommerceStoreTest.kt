@@ -181,26 +181,22 @@ class WooCommerceStoreTest {
     }
 
     @Test
-    fun `when fetching ssr succeeds, then success returned`() {
-        runBlocking {
-            val result = fetchSSR(isError = false)
+    fun `when fetching ssr succeeds, then success returned`() = test {
+        val result = fetchSSR(isError = false)
 
-            Assertions.assertThat(result.isError).isFalse
-            Assertions.assertThat(result.model).isNotNull
-        }
+        Assertions.assertThat(result.isError).isFalse
+        Assertions.assertThat(result.model).isNotNull
     }
 
     @Test
-    fun `when fetch site settings succeeds, then success returned`() {
-        runBlocking {
-            val result: WooResult<WCSettingsModel> = fetchSiteSettings()
+    fun `when fetch site settings succeeds, then success returned`() = test {
+        val result: WooResult<WCSettingsModel> = fetchSiteSettings()
 
-            Assertions.assertThat(result.isError).isFalse
-            Assertions.assertThat(result.model).isNotNull
-            Assertions.assertThat(result.model).isEqualTo(
-                settingsMapper.mapSiteSettings(siteSettingsResponse!!, site)
-            )
-        }
+        Assertions.assertThat(result.isError).isFalse
+        Assertions.assertThat(result.model).isNotNull
+        Assertions.assertThat(result.model).isEqualTo(
+            settingsMapper.mapSiteSettings(siteSettingsResponse!!, site)
+        )
     }
 
     @Test
