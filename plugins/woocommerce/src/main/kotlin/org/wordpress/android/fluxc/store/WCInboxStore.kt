@@ -104,10 +104,11 @@ class WCInboxStore @Inject constructor(
             }
             val results = mutableListOf<WooResult<Unit>>()
             for (page in 1..numberOfPagesToDelete) {
-                results.add(
-                    restClient.deleteAllNotesForSite(site, page, pageSize, inboxNoteTypes)
-                        .asWooResult()
-                )
+                val response = restClient
+                    .deleteAllNotesForSite(site, page, pageSize, inboxNoteTypes)
+                results.add(response.asWooResult())
+
+                if (response.isError) break
             }
             if (!results.any { it.isError }) {
                 inboxNotesDao.deleteInboxNotesForSite(site.siteId)
