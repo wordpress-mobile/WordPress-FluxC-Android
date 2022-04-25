@@ -4,7 +4,6 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Relation
-import java.math.BigDecimal
 
 @Entity(
     tableName = "Coupons",
