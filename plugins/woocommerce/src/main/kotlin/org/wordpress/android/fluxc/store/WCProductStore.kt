@@ -216,8 +216,8 @@ class WCProductStore @Inject constructor(
                 variationsModifications["date_on_sale_from_gmt"] = startOfSale
             }
 
-            fun endOfSaleGmt(startOfSale: String) = apply {
-                variationsModifications["date_on_sale_to_gmt"] = startOfSale
+            fun endOfSaleGmt(endOfSale: String) = apply {
+                variationsModifications["date_on_sale_to_gmt"] = endOfSale
             }
 
             fun stockQuantity(stockQuantity: Int) = apply {
