@@ -24,9 +24,12 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
@@ -167,6 +170,87 @@ class WCProductStore @Inject constructor(
         var site: SiteModel,
         val variation: WCProductVariationModel
     ) : Payload<BaseNetworkError>()
+
+    /**
+     * Payload used by [batchUpdateVariations] function.
+     *
+     * @param remoteProductId Id of the product.
+     * @param remoteVariationsIds Ids of variations that are going to be updated.
+     * @param modifiedProperties Map of the properties of variation that are going to be updated.
+     * Keys correspond to the names of variation properties. Values are the updated properties values.
+     */
+    class BatchUpdateVariationsPayload(
+        val site: SiteModel,
+        val remoteProductId: Long,
+        val remoteVariationsIds: Collection<Long>,
+        val modifiedProperties: Map<String, Any>
+    ) : Payload<BaseNetworkError>() {
+        /**
+         * Builder class used for instantiating [BatchUpdateVariationsPayload].
+         */
+        class Builder(
+            private val site: SiteModel,
+            private val remoteProductId: Long,
+            private val variationsIds: Collection<Long>,
+        ) {
+            private val variationsModifications = mutableMapOf<String, Any>()
+
+            fun regularPrice(regularPrice: String) = apply {
+                variationsModifications["regular_price"] = regularPrice
+            }
+
+            fun salePrice(salePrice: String) = apply {
+                variationsModifications["sale_price"] = salePrice
+            }
+
+            fun startOfSale(startOfSale: String) = apply {
+                variationsModifications["date_on_sale_from"] = startOfSale
+            }
+
+            fun endOfSale(endOfSale: String) = apply {
+                variationsModifications["date_on_sale_to"] = endOfSale
+            }
+
+            fun startOfSaleGmt(startOfSale: String) = apply {
+                variationsModifications["date_on_sale_from_gmt"] = startOfSale
+            }
+
+            fun endOfSaleGmt(endOfSale: String) = apply {
+                variationsModifications["date_on_sale_to_gmt"] = endOfSale
+            }
+
+            fun stockQuantity(stockQuantity: Int) = apply {
+                variationsModifications["stock_quantity"] = stockQuantity
+            }
+
+            fun stockStatus(stockStatus: CoreProductStockStatus) = apply {
+                variationsModifications["stock_status"] = stockStatus
+            }
+
+            fun weight(weight: String) = apply {
+                variationsModifications["weight"] = weight
+            }
+
+            fun dimensions(dimensions: String) = apply {
+                variationsModifications["dimensions"] = dimensions
+            }
+
+            fun shippingClassId(shippingClassId: String) = apply {
+                variationsModifications["shipping_class_id"] = shippingClassId
+            }
+
+            fun shippingClassSlug(shippingClassSlug: String) = apply {
+                variationsModifications["shipping_class"] = shippingClassSlug
+            }
+
+            fun build() = BatchUpdateVariationsPayload(
+                site,
+                remoteProductId,
+                variationsIds,
+                variationsModifications
+            )
+        }
+    }
 
     class FetchProductCategoriesPayload(
         var site: SiteModel,
@@ -1142,6 +1226,37 @@ class WCProductStore @Inject constructor(
             }
         }
     }
+
+    /**
+     * Batch updates variations on the backend and updates variations locally after successful request.
+     *
+     * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using [BatchUpdateVariationsPayload.Builder] class.
+     */
+    suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload): WooResult<BatchProductVariationsUpdateApiResponse> =
+        coroutineEngine.withDefaultContext(API, this, "batchUpdateVariations") {
+            with(payload) {
+                val result: WooPayload<BatchProductVariationsUpdateApiResponse> =
+                    wcProductRestClient.batchUpdateVariations(
+                        site,
+                        remoteProductId,
+                        remoteVariationsIds,
+                        modifiedProperties
+                    )
+
+                return@withDefaultContext if (result.isError) {
+                    WooResult(result.error)
+                } else {
+                    val updatedVariations = result.result?.updatedVariations?.map { response ->
+                        response.asProductVariationModel().apply {
+                            remoteProductId = payload.remoteProductId
+                            localSiteId = payload.site.id
+                        }
+                    } ?: emptyList()
+                    ProductSqlUtils.insertOrUpdateProductVariations(updatedVariations)
+                    WooResult(result.result)
+                }
+            }
+        }
 
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
