@@ -16,9 +16,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Percent
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
-import org.wordpress.android.util.DateTimeUtils
 
 @ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
@@ -134,14 +132,14 @@ class CouponsDaoTest {
             id = id,
             siteId = 1,
             code = "code",
-            dateCreated = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateCreatedGmt = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateModified = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateModifiedGmt = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            discountType = Percent,
+            dateCreated = "2007-04-05T14:30Z",
+            dateCreatedGmt = "2007-04-05T14:30Z",
+            dateModified = "2007-04-05T14:30Z",
+            dateModifiedGmt = "2007-04-05T14:30Z",
+            discountType = "percent",
             description = "Description",
-            dateExpires = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateExpiresGmt = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
+            dateExpires = "2008-04-05T14:30Z",
+            dateExpiresGmt = "2008-04-05T14:30Z",
             usageCount = 0,
             isForIndividualUse = true,
             usageLimit = 3,
