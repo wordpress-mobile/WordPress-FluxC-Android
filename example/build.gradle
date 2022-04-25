@@ -1,8 +1,8 @@
 plugins {
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.android.extensions"
-    id "org.jetbrains.kotlin.kapt"
+    alias(sharedLibs.plugins.android.application)
+    alias(sharedLibs.plugins.kotlin.android)
+    alias(sharedLibs.plugins.kotlin.android.extensions)
+    alias(sharedLibs.plugins.kotlin.kapt)
 }
 
 android {

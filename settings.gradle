@@ -1,16 +1,4 @@
 pluginManagement {
-    gradle.ext.kotlinVersion = '1.6.10'
-    gradle.ext.agpVersion = '7.1.1'
-
-    plugins {
-        id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
-        id "org.jetbrains.kotlin.android.extensions" version gradle.ext.kotlinVersion
-        id "org.jetbrains.kotlin.jvm" version gradle.ext.kotlinVersion
-        id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
-        id "com.android.application" version gradle.ext.agpVersion
-        id "com.android.library" version gradle.ext.agpVersion
-        id "com.automattic.android.publish-to-s3" version "0.7.0"
-    }
     repositories {
         maven {
             url 'https://a8c-libs.s3.amazonaws.com/android' 
@@ -41,7 +29,7 @@ plugins {
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
 }
 
-def catalogVersion = "trunk-3412c0ccd5e5b6bd5f2eb25cb773ecf5184553df"
+def catalogVersion = "trunk-e3d7db989fca199e6818403eedc2686eb76b5f59"
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
