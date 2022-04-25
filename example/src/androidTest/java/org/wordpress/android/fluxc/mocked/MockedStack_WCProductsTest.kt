@@ -35,7 +35,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingCla
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductTagsPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
@@ -286,27 +285,22 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchProductVariationsSuccess() {
+    fun testFetchProductVariationsSuccess() = runBlocking {
         interceptor.respondWith("wc-fetch-product-variations-response-success.json")
-        productRestClient.fetchProductVariations(siteModel, remoteProductId)
+        val result = productRestClient.fetchProductVariations(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductVariationsPayload
-        assertNull(payload.error)
-        assertEquals(remoteProductId, payload.remoteProductId)
-        assertEquals(3, payload.variations.size)
-        assertEquals("null", payload.variations[0].image)
-        assertNotNull(payload.variations[1].image)
+        assertNull(result.error)
+        assertEquals(remoteProductId, result.remoteProductId)
+        assertEquals(3, result.variations.size)
+        assertEquals("null", result.variations[0].image)
+        assertNotNull(result.variations[1].image)
 
         // save the variation to the db
-        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(result.variations), 3)
 
         // now delete all variations for this product and save again
         ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
-        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(result.variations), 3)
 
         // now verify the db stored the variation correctly
         val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
@@ -321,16 +315,11 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchProductVariationsError() {
+    fun testFetchProductVariationsError() = runBlocking {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        productRestClient.fetchProductVariations(siteModel, remoteProductId)
+        val result = productRestClient.fetchProductVariations(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductVariationsPayload
-        assertNotNull(payload.error)
+        assertNotNull(result.error)
     }
 
     @Test

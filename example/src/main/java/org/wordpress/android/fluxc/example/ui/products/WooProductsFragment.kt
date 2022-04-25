@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.action.WCProductAction.DELETED_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
@@ -190,11 +189,24 @@ class WooProductsFragment : StoreSelectingFragment() {
                         activity,
                         "Enter the remoteProductId of product to fetch variations:"
                 ) { editText ->
-                    pendingFetchProductVariationsProductRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchProductVariationsProductRemoteId?.let { id ->
-                        prependToLog("Submitting request to fetch product variations by remoteProductID $id")
-                        val payload = FetchProductVariationsPayload(site, id)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                    editText.text.toString().toLongOrNull()?.let { id ->
+                        coroutineScope.launch {
+                            pendingFetchProductVariationsProductRemoteId = id
+                            prependToLog("Submitting request to fetch product variations by remoteProductID $id")
+                            val result = wcProductStore.fetchProductVariations(FetchProductVariationsPayload(site, id))
+                            prependToLog(
+                                "Fetched ${result.rowsAffected} product variants. " +
+                                        "More variants available ${result.canLoadMore}"
+                            )
+                            if (result.canLoadMore) {
+                                pendingFetchSingleProductVariationOffset += result.rowsAffected
+                                load_more_product_variations.visibility = View.VISIBLE
+                                load_more_product_variations.isEnabled = true
+                            } else {
+                                pendingFetchSingleProductVariationOffset = 0
+                                load_more_product_variations.isEnabled = false
+                            }
+                        }
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
             }
@@ -203,11 +215,25 @@ class WooProductsFragment : StoreSelectingFragment() {
         load_more_product_variations.setOnClickListener {
             selectedSite?.let { site ->
                 pendingFetchProductVariationsProductRemoteId?.let { id ->
-                    prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
-                    val payload = FetchProductVariationsPayload(
+                    coroutineScope.launch {
+                        prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
+                        val payload = FetchProductVariationsPayload(
                             site, id, offset = pendingFetchSingleProductVariationOffset
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                        )
+                        val result = wcProductStore.fetchProductVariations(payload)
+                        prependToLog(
+                            "Fetched ${result.rowsAffected} product variants. " +
+                                    "More variants available ${result.canLoadMore}"
+                        )
+                        if (result.canLoadMore) {
+                            pendingFetchSingleProductVariationOffset += result.rowsAffected
+                            load_more_product_variations.visibility = View.VISIBLE
+                            load_more_product_variations.isEnabled = true
+                        } else {
+                            pendingFetchSingleProductVariationOffset = 0
+                            load_more_product_variations.isEnabled = false
+                        }
+                    }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
@@ -518,18 +544,6 @@ class WooProductsFragment : StoreSelectingFragment() {
             when (event.causeOfChange) {
                 FETCH_PRODUCTS -> {
                     prependToLog("Fetched ${event.rowsAffected} products")
-                }
-                FETCH_PRODUCT_VARIATIONS -> {
-                    prependToLog("Fetched ${event.rowsAffected} product variants. " +
-                            "More variants available ${event.canLoadMore}")
-                    if (event.canLoadMore) {
-                        pendingFetchSingleProductVariationOffset += event.rowsAffected
-                        load_more_product_variations.visibility = View.VISIBLE
-                        load_more_product_variations.isEnabled = true
-                    } else {
-                        pendingFetchSingleProductVariationOffset = 0
-                        load_more_product_variations.isEnabled = false
-                    }
                 }
                 DELETED_PRODUCT -> {
                     prependToLog("${event.rowsAffected} product deleted")

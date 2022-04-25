@@ -654,8 +654,6 @@ class ProductRestClient @Inject constructor(
      * Makes a GET request to `POST /wp-json/wc/v3/products/[productId]/variations` to fetch
      * variations for a product
      *
-     * Dispatches a WCProductAction.FETCHED_PRODUCT_VARIATIONS action with the result
-     *
      * @param [productId] Unique server id of the product
      *
      * Variations by default are sorted by `menu_order` with sorting order = desc.
@@ -666,12 +664,12 @@ class ProductRestClient @Inject constructor(
      * preserve the sorting order when fetching multiple pages of variations.
      *
      */
-    fun fetchProductVariations(
+    suspend fun fetchProductVariations(
         site: SiteModel,
         productId: Long,
         pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
         offset: Int = 0
-    ) {
+    ): RemoteProductVariationsPayload {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
         val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
         val params = mutableMapOf(
@@ -681,33 +679,33 @@ class ProductRestClient @Inject constructor(
                 "orderby" to "date"
         )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductVariationApiResponse>? ->
-                    val variationModels = response?.map {
-                        it.asProductVariationModel().apply {
-                            localSiteId = site.id
-                            remoteProductId = productId
-                        }
-                    }.orEmpty()
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this, site, url, params, Array<ProductVariationApiResponse>::class.java
+        )
+        when (response) {
+            is JetpackSuccess -> {
+                val variationModels = response.data?.map {
+                    it.asProductVariationModel().apply {
+                        localSiteId = site.id
+                        remoteProductId = productId
+                    }
+                }.orEmpty()
 
-                    val loadedMore = offset > 0
-                    val canLoadMore = variationModels.size == pageSize
-                    val payload = RemoteProductVariationsPayload(
-                            site, productId, variationModels, offset, loadedMore, canLoadMore
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductVariationsPayload(
-                            productError,
-                            site,
-                            productId
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                val loadedMore = offset > 0
+                val canLoadMore = variationModels.size == pageSize
+                return RemoteProductVariationsPayload(
+                    site, productId, variationModels, offset, loadedMore, canLoadMore
+                )
+            }
+            is JetpackError -> {
+                val productError = networkErrorToProductError(response.error)
+                return RemoteProductVariationsPayload(
+                    productError,
+                    site,
+                    productId
+                )
+            }
+        }
     }
 
     /**
