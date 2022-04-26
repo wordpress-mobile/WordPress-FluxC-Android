@@ -102,7 +102,7 @@ class InboxRestClient @Inject constructor(
             this,
             site,
             url,
-            Unit::class.java,
+            Array<InboxNoteDto>::class.java,
             mapOf(
                 "page" to page.toString(),
                 "per_page" to pageSize.toString(),

@@ -63,6 +63,7 @@ class CouponsDaoTest {
         val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
         val newExpected = CouponWithEmails(newCoupon, listOf(email))
         couponsDao.insertOrUpdateCoupon(newCoupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
         observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
 
         // then
@@ -94,6 +95,7 @@ class CouponsDaoTest {
         val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
         expected = CouponWithEmails(newCoupon, listOf(email))
         couponsDao.insertOrUpdateCoupon(newCoupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
 
         // then
         assertThat(observedCoupon.first()).isEqualTo(expected)
