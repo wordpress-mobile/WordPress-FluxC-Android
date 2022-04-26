@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
@@ -140,6 +141,10 @@ class WooCouponsFragment : StoreSelectingFragment() {
                     prependToLog("$title\n$results\n")
                 }
             }
+        }
+
+        btnUpdateCoupon.setOnClickListener {
+            replaceFragment(WooUpdateCouponFragment.newInstance(selectedSite!!.siteId))
         }
     }
 }
