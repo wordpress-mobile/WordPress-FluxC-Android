@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.model.coupons.CouponReport
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -219,6 +220,11 @@ class CouponStore @Inject constructor(
             }
             .distinctUntilChanged()
 
+    suspend fun getCoupon(site: SiteModel, couponId: Long): CouponDataModel? =
+        couponsDao.getCoupon(site.siteId, couponId)?.let {
+            assembleCouponDataModel(site, it)
+        }
+
     @ExperimentalCoroutinesApi
     fun observeCoupons(site: SiteModel): Flow<List<CouponDataModel>> =
         couponsDao.observeCoupons(site.siteId)
@@ -238,6 +244,39 @@ class CouponStore @Inject constructor(
                         WooResult(result.error)
                     } else {
                         WooResult(result.result!!.toDataModel())
+                    }
+                }
+        }
+
+    suspend fun createCoupon(
+        site: SiteModel,
+        updateCouponRequest: UpdateCouponRequest
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(T.API, this, "createCoupon") {
+            return@withDefaultContext restClient.createCoupon(site, updateCouponRequest)
+                .let { response ->
+                    if (response.isError || response.result == null) {
+                        WooResult(response.error)
+                    } else {
+                        addCouponToDatabase(response.result, site)
+                        WooResult(Unit)
+                    }
+                }
+        }
+
+    suspend fun updateCoupon(
+        couponId: Long,
+        site: SiteModel,
+        updateCouponRequest: UpdateCouponRequest
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(T.API, this, "createCoupon") {
+            return@withDefaultContext restClient.updateCoupon(site, couponId, updateCouponRequest)
+                .let { response ->
+                    if (response.isError || response.result == null) {
+                        WooResult(response.error)
+                    } else {
+                        addCouponToDatabase(response.result, site)
+                        WooResult(Unit)
                     }
                 }
         }
