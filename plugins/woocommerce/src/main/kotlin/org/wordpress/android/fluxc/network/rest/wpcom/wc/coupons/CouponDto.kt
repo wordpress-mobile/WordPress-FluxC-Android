@@ -5,6 +5,8 @@ import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Companion
 import org.wordpress.android.util.DateTimeUtils
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class CouponDto(
     @SerializedName("id") val id: Long,
@@ -34,20 +36,20 @@ data class CouponDto(
     @SerializedName("email_restrictions") val restrictedEmails: List<String>?,
     @SerializedName("used_by") val usedBy: List<String>?
 ) {
-    fun toDataModel(siteId: Long) =
+    fun toDataModel(siteId: Long): CouponEntity =
         CouponEntity(
             id = id,
             siteId = siteId,
             code = code,
             amount = amount?.toBigDecimalOrNull(),
-            dateCreated = dateCreated?.let { DateTimeUtils.dateUTCFromIso8601(it) },
-            dateCreatedGmt = dateCreatedGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
-            dateModified = dateModified?.let { DateTimeUtils.dateUTCFromIso8601(it) },
-            dateModifiedGmt = dateModifiedGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            dateCreated = dateCreated,
+            dateCreatedGmt = dateCreatedGmt,
+            dateModified = dateModified,
+            dateModifiedGmt = dateModifiedGmt,
             discountType = Companion.fromString(discountType),
             description = description,
-            dateExpires = dateExpires?.let { DateTimeUtils.dateUTCFromIso8601(it) },
-            dateExpiresGmt = dateExpiresGmt?.let { DateTimeUtils.dateUTCFromIso8601(it) },
+            dateExpires = dateExpires,
+            dateExpiresGmt = dateExpiresGmt,
             usageCount = usageCount,
             isForIndividualUse = isForIndividualUse,
             usageLimit = usageLimit,
