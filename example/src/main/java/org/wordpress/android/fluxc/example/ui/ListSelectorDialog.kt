@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import org.wordpress.android.fluxc.example.R
 import java.util.ArrayList
 
 class ListSelectorDialog : DialogFragment() {
