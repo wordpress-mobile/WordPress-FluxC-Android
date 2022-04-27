@@ -36,5 +36,9 @@ abstract class StoreSelectingFragment : DaggerFragment() {
                 },
                 0
         )
+
+        if (selectedSite != null) {
+            buttonContainer.toggleSiteDependentButtons(true)
+        }
     }
 }
