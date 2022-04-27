@@ -6,7 +6,6 @@ import android.app.DatePickerDialog.OnDateSetListener
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_woo_update_coupon.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,12 +21,16 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
+import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEMS
+import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_MULTI_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 import org.wordpress.android.fluxc.store.CouponStore
+import org.wordpress.android.fluxc.store.ProductCategoryStore
+import org.wordpress.android.fluxc.store.ProductStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
@@ -37,6 +39,8 @@ import javax.inject.Inject
 class WooUpdateCouponFragment : Fragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var couponStore: CouponStore
+    @Inject internal lateinit var productStore: ProductStore
+    @Inject internal lateinit var productCategoryStore: ProductCategoryStore
 
     private var siteId: Long = -1
     private var couponId: Long? = null
@@ -47,13 +51,9 @@ class WooUpdateCouponFragment : Fragment() {
     companion object {
         const val ARG_SELECTED_SITE_ID = "ARG_SELECTED_SITE_ID"
         const val ARG_SELECTED_COUPON_ID = "ARG_SELECTED_COUPON_ID"
-        const val ARG_SELECTED_PRODUCTS = "ARG_SELECTED_PRODUCTS"
-        const val ARG_SELECTED_EXCL_PRODUCTS = "ARG_SELECTED_EXCL_PRODUCTS"
-        const val ARG_SELECTED_CATEGORIES = "ARG_SELECTED_CATEGORIES"
-        const val ARG_SELECTED_EXCL_CATEGORIES = "ARG_SELECTED_EXCL_CATEGORIES"
         const val LIST_RESULT_CODE_EXCL_PRODUCTS = 101
         const val LIST_RESULT_CODE_PRODUCTS = 102
-        const val LIST_RESULT_CODE_EXC_CATEGORIES = 103
+        const val LIST_RESULT_CODE_EXCL_CATEGORIES = 103
         const val LIST_RESULT_CODE_CATEGORIES = 104
         const val LIST_RESULT_CODE_DISCOUNT_TYPE = 105
         const val IS_ADD_NEW_COUPON = "IS_ADD_NEW_COUPON"
@@ -111,8 +111,9 @@ class WooUpdateCouponFragment : Fragment() {
         }
 
         product_ids.isEnabled = false
-        select_product_ids.setOnClickListener {
-        }
+        excluded_product_ids.isEnabled = false
+        category_ids.isEnabled = false
+        excluded_category_ids.isEnabled = false
 
         discount_type.setOnClickListener {
             showListSelectorDialog(
@@ -132,26 +133,10 @@ class WooUpdateCouponFragment : Fragment() {
         coupon_update.setOnClickListener {
             getWCSite()?.let { site ->
                 // update categories only if new categories has been selected
-                val products = product_ids.getText()
-                    .replace(" ", "")
-                    .split(",")
-                    .mapNotNull { it.toLongOrNull() }
-
-                val excludedProducts = excluded_product_ids.getText()
-                    .replace(" ", "")
-                    .split(",")
-                    .mapNotNull { it.toLongOrNull() }
-
-                val excludedCategories = excluded_category_ids.getText()
-                    .replace(" ", "")
-                    .split(",")
-                    .mapNotNull { it.toLongOrNull() }
-
-                val categories = category_ids.getText()
-                    .replace(" ", "")
-                    .split(",")
-                    .mapNotNull { it.toLongOrNull() }
-
+                val products = product_ids.getText().toIdsList()
+                val excludedProducts = excluded_product_ids.getText().toIdsList()
+                val excludedCategories = excluded_category_ids.getText().toIdsList()
+                val categories = category_ids.getText().toIdsList()
                 val emails = restricted_emails.getText()
                     .replace(" ", "")
                     .split(",")
@@ -205,11 +190,77 @@ class WooUpdateCouponFragment : Fragment() {
 
         select_product_ids.setOnClickListener {
             getWCSite()?.let {
+                coroutineScope.launch {
+                    val products = productStore.getProducts(siteId)
+                    val selectedIds = product_ids.getText().toIdsList()
+                    if (products.isNotEmpty()) {
+                        showMultiSelectorDialog(
+                            itemNames = products.map { it.name ?: "[${it.id}]" },
+                            itemIds = products.map { it.id },
+                            selectedIds = selectedIds,
+                            resultCode = LIST_RESULT_CODE_PRODUCTS
+                        )
+                    } else {
+                        prependToLog("No products found: please fetch some first")
+                    }
+                }
             }
         }
 
         select_excluded_product_ids.setOnClickListener {
             getWCSite()?.let {
+                coroutineScope.launch {
+                    val products = productStore.getProducts(siteId)
+                    val selectedIds = excluded_product_ids.getText().toIdsList()
+                    if (products.isNotEmpty()) {
+                        showMultiSelectorDialog(
+                            itemNames = products.map { it.name ?: "[${it.id}]" },
+                            itemIds = products.map { it.id },
+                            selectedIds = selectedIds,
+                            resultCode = LIST_RESULT_CODE_EXCL_PRODUCTS
+                        )
+                    } else {
+                        prependToLog("No products found: please fetch some first")
+                    }
+                }
+            }
+        }
+
+        select_category_ids.setOnClickListener {
+            getWCSite()?.let {
+                coroutineScope.launch {
+                    val categories = productCategoryStore.getCategories(siteId)
+                    val selectedIds = category_ids.getText().toIdsList()
+                    if (categories.isNotEmpty()) {
+                        showMultiSelectorDialog(
+                            itemNames = categories.map { it.name ?: "[${it.id}]" },
+                            itemIds = categories.map { it.id },
+                            selectedIds = selectedIds,
+                            resultCode = LIST_RESULT_CODE_CATEGORIES
+                        )
+                    } else {
+                        prependToLog("No categories found: please fetch some first")
+                    }
+                }
+            }
+        }
+
+        select_excluded_category_ids.setOnClickListener {
+            getWCSite()?.let {
+                coroutineScope.launch {
+                    val categories = productCategoryStore.getCategories(siteId)
+                    val selectedIds = excluded_category_ids.getText().toIdsList()
+                    if (categories.isNotEmpty()) {
+                        showMultiSelectorDialog(
+                            itemNames = categories.map { it.name ?: "[${it.id}]" },
+                            itemIds = categories.map { it.id },
+                            selectedIds = selectedIds,
+                            resultCode = LIST_RESULT_CODE_EXCL_CATEGORIES
+                        )
+                    } else {
+                        prependToLog("No categories found: please fetch some first")
+                    }
+                }
             }
         }
 
@@ -231,6 +282,16 @@ class WooUpdateCouponFragment : Fragment() {
                     }
                 }
             }
+        } else if (requestCode == LIST_MULTI_SELECTOR_REQUEST_CODE) {
+            val selectedItems = data?.getLongArrayExtra(ARG_LIST_SELECTED_ITEMS)
+            val view = when (resultCode) {
+                LIST_RESULT_CODE_PRODUCTS -> product_ids
+                LIST_RESULT_CODE_EXCL_PRODUCTS -> excluded_product_ids
+                LIST_RESULT_CODE_CATEGORIES -> category_ids
+                LIST_RESULT_CODE_EXCL_CATEGORIES -> excluded_category_ids
+                else -> null
+            }
+            view?.setText(selectedItems?.joinToString { it.toString() } ?: "")
         }
     }
 
@@ -249,12 +310,17 @@ class WooUpdateCouponFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
+    private fun String.toIdsList() =
+        replace(" ", "")
+        .split(",")
+        .mapNotNull { it.toLongOrNull() }
+
     private fun updateCouponProperties(couponModel: CouponDataModel) {
         coupon_code.setText(couponModel.coupon.code ?: "")
         coupon_amount.setText(couponModel.coupon.amount.toString())
         discount_type.text = couponModel.coupon.discountType.toString()
         coupon_description.setText(couponModel.coupon.description ?: "")
-        expiry_date.setText(couponModel.coupon.dateExpiresGmt?.toString() ?: "")
+        expiry_date.setText(couponModel.coupon.dateExpires?.split('T')?.get(0) ?: "")
         minimum_amount.setText(couponModel.coupon.minimumAmount.toString())
         maximum_amount.setText(couponModel.coupon.maximumAmount.toString())
         product_ids.setText(couponModel.products.joinToString { it.id.toString() })
@@ -273,7 +339,27 @@ class WooUpdateCouponFragment : Fragment() {
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
         fragmentManager?.let { fm ->
             val dialog = ListSelectorDialog.newInstance(
-                    this, listItems, resultCode, selectedItem
+                fragment = this,
+                listItems = listItems,
+                resultCode = resultCode,
+                selectedListItem = selectedItem
+            )
+            dialog.show(fm, "ListSelectorDialog")
+        }
+    }
+
+    private fun showMultiSelectorDialog(
+        itemNames: List<String>,
+        itemIds: List<Long>,
+        selectedIds: List<Long> = emptyList(),
+        resultCode: Int
+    ) {
+        val items = itemNames.mapIndexed { i, item ->
+            Triple(itemIds[i], item, selectedIds.contains(itemIds[i]))
+        }
+        fragmentManager?.let { fm ->
+            val dialog = ListSelectorDialog.newInstance(
+                this, items, resultCode
             )
             dialog.show(fm, "ListSelectorDialog")
         }
@@ -285,10 +371,9 @@ class WooUpdateCouponFragment : Fragment() {
         } else dateString
         val calendar = DateUtils.getCalendarInstance(date)
         DatePickerDialog(
-                requireActivity(), listener, calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE)
-        )
-                .show()
+            requireActivity(), listener, calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE)
+        ).show()
     }
 
     private fun getWCSite() = wooCommerceStore.getWooCommerceSites()
