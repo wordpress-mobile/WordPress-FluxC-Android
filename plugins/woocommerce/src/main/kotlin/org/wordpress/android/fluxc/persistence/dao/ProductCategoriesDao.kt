@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
+import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 
 @Dao
 abstract class ProductCategoriesDao {
@@ -14,6 +15,12 @@ abstract class ProductCategoriesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateProductCategories(entities: List<ProductCategoryEntity>)
+
+    @Query("SELECT * FROM ProductCategories WHERE siteId = :siteId ORDER BY id")
+    abstract suspend fun getCategories(siteId: Long): List<ProductCategoryEntity>
+
+    @Query("SELECT * FROM ProductCategories WHERE siteId = :siteId ORDER BY id")
+    abstract fun observeCategories(siteId: Long): Flow<List<ProductCategoryEntity>>
 
     @Query("SELECT * FROM ProductCategories p JOIN CouponsAndProductCategories c " +
         "ON p.id = c.productCategoryId WHERE c.isExcluded = :areExcluded " +
