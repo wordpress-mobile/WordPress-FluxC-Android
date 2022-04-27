@@ -161,23 +161,29 @@ class CouponStore @Inject constructor(
         fetchMissingProductCategories(dto.productCategoryIds, site)
         fetchMissingProductCategories(dto.excludedProductCategoryIds, site)
 
-        dto.productCategoryIds?.forEach { categoryId ->
+        productCategoriesDao.getProductCategoriesByIds(
+            siteId = site.siteId,
+            categoryIds = dto.productCategoryIds ?: emptyList()
+        ).forEach { category ->
             couponsDao.insertOrUpdateCouponAndProductCategory(
                 CouponAndProductCategoryEntity(
                     couponId = dto.id,
                     siteId = site.siteId,
-                    productCategoryId = categoryId,
+                    productCategoryId = category.id,
                     isExcluded = false
                 )
             )
         }
 
-        dto.excludedProductCategoryIds?.forEach { categoryId ->
+        productCategoriesDao.getProductCategoriesByIds(
+            siteId = site.siteId,
+            categoryIds = dto.excludedProductCategoryIds ?: emptyList()
+        ).forEach { category ->
             couponsDao.insertOrUpdateCouponAndProductCategory(
                 CouponAndProductCategoryEntity(
                     couponId = dto.id,
                     siteId = site.siteId,
-                    productCategoryId = categoryId,
+                    productCategoryId = category.id,
                     isExcluded = true
                 )
             )
@@ -188,27 +194,29 @@ class CouponStore @Inject constructor(
         fetchMissingProducts(dto.productIds, site)
         fetchMissingProducts(dto.excludedProductIds, site)
 
-        dto.productIds?.forEach { productId ->
-            couponsDao.insertOrUpdateCouponAndProduct(
-                CouponAndProductEntity(
-                    couponId = dto.id,
-                    siteId = site.siteId,
-                    productId = productId,
-                    isExcluded = false
+        productsDao.getProductsByIds(site.siteId, dto.productIds ?: emptyList())
+            .forEach { product ->
+                couponsDao.insertOrUpdateCouponAndProduct(
+                    CouponAndProductEntity(
+                        couponId = dto.id,
+                        siteId = site.siteId,
+                        productId = product.id,
+                        isExcluded = false
+                    )
                 )
-            )
-        }
+            }
 
-        dto.excludedProductIds?.forEach { productId ->
-            couponsDao.insertOrUpdateCouponAndProduct(
-                CouponAndProductEntity(
-                    couponId = dto.id,
-                    siteId = site.siteId,
-                    productId = productId,
-                    isExcluded = true
+        productsDao.getProductsByIds(site.siteId, dto.excludedProductIds ?: emptyList())
+            .forEach { product ->
+                couponsDao.insertOrUpdateCouponAndProduct(
+                    CouponAndProductEntity(
+                        couponId = dto.id,
+                        siteId = site.siteId,
+                        productId = product.id,
+                        isExcluded = true
+                    )
                 )
-            )
-        }
+            }
     }
 
     fun observeCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel?> =
