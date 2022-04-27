@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
@@ -90,12 +91,12 @@ class CouponStoreTest {
         id = couponDto.id,
         siteId = site.siteId,
         code = couponDto.code,
-        amount = couponDto.amount,
+        amount = couponDto.amount?.toBigDecimal(),
         dateCreated = couponDto.dateCreated,
         dateCreatedGmt = couponDto.dateCreatedGmt,
         dateModified = couponDto.dateModified,
         dateModifiedGmt = couponDto.dateModifiedGmt,
-        discountType = couponDto.discountType,
+        discountType = DiscountType.fromString(couponDto.discountType),
         description = couponDto.description,
         dateExpires = couponDto.dateExpires,
         dateExpiresGmt = couponDto.dateExpiresGmt,
@@ -106,8 +107,8 @@ class CouponStoreTest {
         limitUsageToXItems = couponDto.limitUsageToXItems,
         isShippingFree = couponDto.isShippingFree,
         areSaleItemsExcluded = couponDto.areSaleItemsExcluded,
-        minimumAmount = couponDto.minimumAmount,
-        maximumAmount = couponDto.maximumAmount
+        minimumAmount = couponDto.minimumAmount?.toBigDecimal(),
+        maximumAmount = couponDto.maximumAmount?.toBigDecimal()
     )
 
     private val expectedEmail = CouponEmailEntity(
