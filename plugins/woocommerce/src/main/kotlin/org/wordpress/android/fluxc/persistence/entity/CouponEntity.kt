@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Relation
 import java.math.BigDecimal
-import java.util.Date
 
 @Entity(
     tableName = "Coupons",
