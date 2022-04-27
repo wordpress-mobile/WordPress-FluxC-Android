@@ -18,7 +18,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Percent
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
-import org.wordpress.android.util.DateTimeUtils
+import java.math.BigDecimal
 
 @ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
@@ -133,15 +133,16 @@ class CouponsDaoTest {
         fun generateCouponEntity(id: Long = 0) = CouponEntity(
             id = id,
             siteId = 1,
+            amount = BigDecimal(5),
             code = "code",
-            dateCreated = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateCreatedGmt = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateModified = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateModifiedGmt = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
+            dateCreated = "2007-04-05T14:30Z",
+            dateCreatedGmt = "2007-04-05T14:30Z",
+            dateModified = "2007-04-05T14:30Z",
+            dateModifiedGmt = "2007-04-05T14:30Z",
             discountType = Percent,
             description = "Description",
-            dateExpires = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
-            dateExpiresGmt = DateTimeUtils.dateUTCFromIso8601("2007-04-05T14:30Z"),
+            dateExpires = "2008-04-05T14:30Z",
+            dateExpiresGmt = "2008-04-05T14:30Z",
             usageCount = 0,
             isForIndividualUse = true,
             usageLimit = 3,
@@ -149,8 +150,8 @@ class CouponsDaoTest {
             limitUsageToXItems = 5,
             isShippingFree = false,
             areSaleItemsExcluded = true,
-            minimumAmount = "10",
-            maximumAmount = "100"
+            minimumAmount = BigDecimal(1),
+            maximumAmount = BigDecimal(10)
         )
     }
 }
