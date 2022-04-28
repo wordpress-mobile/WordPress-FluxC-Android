@@ -256,6 +256,22 @@ class CouponStore @Inject constructor(
                 }
         }
 
+    suspend fun createCoupon(
+        site: SiteModel,
+        updateCouponRequest: UpdateCouponRequest
+    ): WooResult<Unit> =
+        coroutineEngine.withDefaultContext(T.API, this, "createCoupon") {
+            return@withDefaultContext restClient.createCoupon(site, updateCouponRequest)
+                .let { response ->
+                    if (response.isError || response.result == null) {
+                        WooResult(response.error)
+                    } else {
+                        addCouponToDatabase(response.result, site)
+                        WooResult(Unit)
+                    }
+                }
+        }
+
     suspend fun updateCoupon(
         couponId: Long,
         site: SiteModel,
