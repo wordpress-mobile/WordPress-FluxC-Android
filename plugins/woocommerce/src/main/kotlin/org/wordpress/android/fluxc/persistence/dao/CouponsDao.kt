@@ -21,7 +21,7 @@ abstract class CouponsDao {
     @Transaction
     @Query("SELECT * FROM Coupons " +
         "WHERE siteId = :siteId AND id IN (:couponIds) ORDER BY dateCreated DESC")
-    abstract fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
+    abstract suspend fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
 
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
