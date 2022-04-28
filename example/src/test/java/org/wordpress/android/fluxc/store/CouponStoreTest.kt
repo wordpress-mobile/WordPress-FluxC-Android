@@ -79,7 +79,7 @@ class CouponStoreTest {
         limitUsageToXItems = 2,
         isShippingFree = false,
         productCategoryIds = listOf(2L, 3L),
-        excludedProductCategoryIds = listOf(2L, 3L),
+        excludedProductCategoryIds = listOf(4L, 5L),
         areSaleItemsExcluded = true,
         minimumAmount = "5",
         maximumAmount = "50",
@@ -281,6 +281,16 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
+        whenever(productsDao.getProductsByIds(
+            site.siteId,
+            listOf(includedProduct1.id, includedProduct2.id)
+        )).thenReturn(listOf(includedProduct1, includedProduct2))
+
+        whenever(productsDao.getProductsByIds(
+            site.siteId,
+            listOf(excludedProduct1.id, excludedProduct2.id)
+        )).thenReturn(listOf(excludedProduct1, excludedProduct2))
+
         couponStore.fetchCoupons(site)
 
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedIncludedCouponAndProduct1)
@@ -296,6 +306,16 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE,
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
+
+        whenever(productCategoriesDao.getProductCategoriesByIds(
+            site.siteId,
+            listOf(includedCategory1.id, includedCategory2.id)
+        )).thenReturn(listOf(includedCategory1, includedCategory2))
+
+        whenever(productCategoriesDao.getProductCategoriesByIds(
+            site.siteId,
+            listOf(excludedCategory1.id, excludedCategory2.id)
+        )).thenReturn(listOf(excludedCategory1, excludedCategory2))
 
         couponStore.fetchCoupons(site)
 
