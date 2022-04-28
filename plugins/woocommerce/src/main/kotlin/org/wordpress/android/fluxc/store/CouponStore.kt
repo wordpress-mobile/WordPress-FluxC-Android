@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.coupons.CouponReport
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_PARAM
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
@@ -260,18 +261,29 @@ class CouponStore @Inject constructor(
         couponId: Long,
         site: SiteModel,
         updateCouponRequest: UpdateCouponRequest
-    ): WooResult<Unit> =
-        coroutineEngine.withDefaultContext(T.API, this, "createCoupon") {
-            return@withDefaultContext restClient.updateCoupon(site, couponId, updateCouponRequest)
-                .let { response ->
-                    if (response.isError || response.result == null) {
-                        WooResult(response.error)
-                    } else {
-                        addCouponToDatabase(response.result, site)
-                        WooResult(Unit)
+    ): WooResult<Unit> {
+        return if (updateCouponRequest.code.isNullOrEmpty()) {
+            WooResult(
+                WooError(
+                    type = INVALID_PARAM,
+                    original = UNKNOWN,
+                    message = "Coupon code cannot be empty"
+                )
+            )
+        } else {
+            coroutineEngine.withDefaultContext(T.API, this, "createCoupon") {
+                return@withDefaultContext restClient.updateCoupon(site, couponId, updateCouponRequest)
+                    .let { response ->
+                        if (response.isError || response.result == null) {
+                            WooResult(response.error)
+                        } else {
+                            addCouponToDatabase(response.result, site)
+                            WooResult(Unit)
+                        }
                     }
-                }
+            }
         }
+    }
 
     private fun assembleCouponDataModel(site: SiteModel, it: CouponWithEmails): CouponDataModel {
         val includedProducts = productsDao.getCouponProducts(
