@@ -29,7 +29,7 @@ abstract class CouponsDao {
 
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
-    abstract fun getCoupon(siteId: Long, couponId: Long): CouponWithEmails?
+    abstract suspend fun getCoupon(siteId: Long, couponId: Long): CouponWithEmails?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateCoupon(entity: CouponEntity): Long
