@@ -164,14 +164,6 @@ class WooUpdateCouponFragment : Fragment() {
 
                 coroutineScope.launch {
                     when {
-                        isAddNewCoupon -> {
-                            val result = couponStore.createCoupon(site, request)
-                            if (result.isError) {
-                                prependToLog("Coupon creation failed:\n${result.error.message}")
-                            } else {
-                                prependToLog("Coupon creation successful")
-                            }
-                        }
                         couponId != null -> {
                             val result = couponStore.updateCoupon(couponId!!, site, request)
                             if (result.isError) {
