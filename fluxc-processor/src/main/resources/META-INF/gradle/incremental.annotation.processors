@@ -1,0 +1,2 @@
+org.wordpress.android.fluxc.processor.EndpointProcessor,aggregrate
+org.wordpress.android.fluxc.processor.ActionProcessor,isolating
