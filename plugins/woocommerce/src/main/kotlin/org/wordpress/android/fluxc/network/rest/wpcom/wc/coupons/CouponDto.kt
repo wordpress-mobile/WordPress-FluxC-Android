@@ -42,7 +42,7 @@ data class CouponDto(
             dateCreatedGmt = dateCreatedGmt,
             dateModified = dateModified,
             dateModifiedGmt = dateModifiedGmt,
-            discountType = DiscountType.fromString(discountType),
+            discountType = discountType?.let { DiscountType.fromString(it) },
             description = description,
             dateExpires = dateExpires,
             dateExpiresGmt = dateExpiresGmt,

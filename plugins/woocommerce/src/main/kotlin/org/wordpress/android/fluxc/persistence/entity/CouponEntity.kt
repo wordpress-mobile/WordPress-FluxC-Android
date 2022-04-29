@@ -36,17 +36,19 @@ data class CouponEntity(
     val minimumAmount: BigDecimal? = null,
     val maximumAmount: BigDecimal? = null
 ) {
-    sealed class DiscountType(val value: String) {
+    sealed class DiscountType(open val value: String) {
         object Percent : DiscountType("percent")
         object FixedCart : DiscountType("fixed_cart")
         object FixedProduct : DiscountType("fixed_product")
+        data class Custom(override val value: String) : DiscountType(value)
 
         companion object {
-            fun fromString(value: String?): DiscountType {
+            fun fromString(value: String): DiscountType {
                 return when (value) {
                     Percent.value -> Percent
                     FixedProduct.value -> FixedProduct
-                    else -> FixedCart
+                    FixedCart.value -> FixedCart
+                    else -> Custom(value)
                 }
             }
         }

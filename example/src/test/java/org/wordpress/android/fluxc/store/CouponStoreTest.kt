@@ -96,7 +96,7 @@ class CouponStoreTest {
         dateCreatedGmt = couponDto.dateCreatedGmt,
         dateModified = couponDto.dateModified,
         dateModifiedGmt = couponDto.dateModifiedGmt,
-        discountType = DiscountType.fromString(couponDto.discountType),
+        discountType = couponDto.discountType?.let { DiscountType.fromString(it) },
         description = couponDto.description,
         dateExpires = couponDto.dateExpires,
         dateExpiresGmt = couponDto.dateExpiresGmt,
