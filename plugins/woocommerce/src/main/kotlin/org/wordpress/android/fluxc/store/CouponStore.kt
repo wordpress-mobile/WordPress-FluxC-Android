@@ -400,7 +400,7 @@ class CouponStore @Inject constructor(
         couponId: Long,
         missingIds: List<Long>,
         areExcluded: Boolean
-    ): Exception(
+    ) : Exception(
         "Some${if (areExcluded) " excluded " else " "}entities ($entityName) " +
             "referenced by a coupon ($couponId) are missing: [${missingIds.joinToString()}]"
     )
