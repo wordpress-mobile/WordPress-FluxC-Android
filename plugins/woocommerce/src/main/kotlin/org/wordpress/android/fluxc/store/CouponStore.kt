@@ -113,21 +113,24 @@ class CouponStore @Inject constructor(
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     addCouponToDatabase(response.result, site)
-                    WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
 
-    private suspend fun addCouponToDatabase(dto: CouponDto, site: SiteModel) {
-        database.executeInTransaction {
-            couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
-            insertRelatedProducts(dto, site)
-            insertRelatedProductCategories(dto, site)
-            insertRestrictedEmailAddresses(dto, site)
+    private suspend fun addCouponToDatabase(dto: CouponDto, site: SiteModel) =
+        try {
+            database.executeInTransaction {
+                couponsDao.insertOrUpdateCoupon(dto.toDataModel(site.siteId))
+                insertRelatedProducts(dto, site)
+                insertRelatedCategories(dto, site)
+                insertRestrictedEmailAddresses(dto, site)
+            }
+            WooResult()
+        } catch (e: MissingRelatedEntityException) {
+            WooResult<Unit>(WooError(GENERIC_ERROR, UNKNOWN, e.toString()))
         }
-    }
 
     suspend fun deleteCoupon(
         site: SiteModel,
@@ -158,66 +161,110 @@ class CouponStore @Inject constructor(
         }
     }
 
-    private suspend fun insertRelatedProductCategories(dto: CouponDto, site: SiteModel) {
-        fetchMissingProductCategories(dto.productCategoryIds, site)
-        fetchMissingProductCategories(dto.excludedProductCategoryIds, site)
-
-        productCategoriesDao.getProductCategoriesByIds(
-            siteId = site.siteId,
-            categoryIds = dto.productCategoryIds ?: emptyList()
-        ).forEach { category ->
-            couponsDao.insertOrUpdateCouponAndProductCategory(
-                CouponAndProductCategoryEntity(
-                    couponId = dto.id,
-                    siteId = site.siteId,
-                    productCategoryId = category.id,
-                    isExcluded = false
-                )
+    private suspend fun insertRelatedCategories(dto: CouponDto, site: SiteModel) {
+        dto.productCategoryIds?.let {
+            fetchAndInsertCategories(
+                site = site,
+                couponId = dto.id,
+                categoryIds = dto.productCategoryIds,
+                areExcluded = false
             )
         }
 
-        productCategoriesDao.getProductCategoriesByIds(
-            siteId = site.siteId,
-            categoryIds = dto.excludedProductCategoryIds ?: emptyList()
-        ).forEach { category ->
+        dto.excludedProductCategoryIds?.let {
+            fetchAndInsertCategories(
+                site = site,
+                couponId = dto.id,
+                categoryIds = dto.excludedProductCategoryIds,
+                areExcluded = true
+            )
+        }
+    }
+
+    private suspend fun fetchAndInsertCategories(
+        site: SiteModel,
+        couponId: Long,
+        categoryIds: List<Long>,
+        areExcluded: Boolean
+    ) {
+        fetchMissingProductCategories(categoryIds, site)
+
+        val dbCategoryIds = productCategoriesDao
+            .getProductCategoriesByIds(site.siteId, categoryIds)
+            .map { it.id }
+
+        if (dbCategoryIds.sorted() != categoryIds.sorted()) {
+            throw MissingRelatedEntityException(
+                "ProductCategoryEntity",
+                couponId,
+                categoryIds - dbCategoryIds,
+                areExcluded
+            )
+        }
+
+        categoryIds.forEach { categoryId ->
             couponsDao.insertOrUpdateCouponAndProductCategory(
                 CouponAndProductCategoryEntity(
-                    couponId = dto.id,
+                    couponId = couponId,
                     siteId = site.siteId,
-                    productCategoryId = category.id,
-                    isExcluded = true
+                    productCategoryId = categoryId,
+                    isExcluded = areExcluded
                 )
             )
         }
     }
 
     private suspend fun insertRelatedProducts(dto: CouponDto, site: SiteModel) {
-        fetchMissingProducts(dto.productIds, site)
-        fetchMissingProducts(dto.excludedProductIds, site)
+        dto.productIds?.let {
+            fetchAndInsertProducts(
+                site = site,
+                couponId = dto.id,
+                productIds = dto.productIds,
+                areExcluded = false
+            )
+        }
 
-        productsDao.getProductsByIds(site.siteId, dto.productIds ?: emptyList())
-            .forEach { product ->
-                couponsDao.insertOrUpdateCouponAndProduct(
-                    CouponAndProductEntity(
-                        couponId = dto.id,
-                        siteId = site.siteId,
-                        productId = product.id,
-                        isExcluded = false
-                    )
-                )
-            }
+        dto.excludedProductIds?.let {
+            fetchAndInsertProducts(
+                site = site,
+                couponId = dto.id,
+                productIds = dto.excludedProductIds,
+                areExcluded = true
+            )
+        }
+    }
 
-        productsDao.getProductsByIds(site.siteId, dto.excludedProductIds ?: emptyList())
-            .forEach { product ->
-                couponsDao.insertOrUpdateCouponAndProduct(
-                    CouponAndProductEntity(
-                        couponId = dto.id,
-                        siteId = site.siteId,
-                        productId = product.id,
-                        isExcluded = true
-                    )
+    private suspend fun fetchAndInsertProducts(
+        site: SiteModel,
+        couponId: Long,
+        productIds: List<Long>,
+        areExcluded: Boolean
+    ) {
+        fetchMissingProducts(productIds, site)
+
+        val dbProductIds = productsDao
+            .getProductsByIds(site.siteId, productIds)
+            .map { it.id }
+
+        if (dbProductIds.sorted() != productIds.sorted()) {
+            throw MissingRelatedEntityException(
+                "ProductEntity",
+                couponId,
+                productIds - dbProductIds,
+                areExcluded
+            )
+        }
+
+        productIds.forEach { productId ->
+            couponsDao.insertOrUpdateCouponAndProduct(
+                CouponAndProductEntity(
+                    couponId = couponId,
+                    siteId = site.siteId,
+                    productId = productId,
+                    isExcluded = areExcluded
                 )
-            }
+            )
+        }
     }
 
     fun observeCoupon(site: SiteModel, couponId: Long): Flow<CouponDataModel?> =
@@ -346,5 +393,15 @@ class CouponStore @Inject constructor(
     data class CouponSearchResult(
         val coupons: List<CouponDataModel>,
         val canLoadMore: Boolean
+    )
+
+    class MissingRelatedEntityException(
+        entityName: String,
+        couponId: Long,
+        missingIds: List<Long>,
+        areExcluded: Boolean
+    ): Exception(
+        "Some${if (areExcluded) " excluded " else " "}entities ($entityName) " +
+            "referenced by a coupon ($couponId) are missing: [${missingIds.joinToString()}]"
     )
 }

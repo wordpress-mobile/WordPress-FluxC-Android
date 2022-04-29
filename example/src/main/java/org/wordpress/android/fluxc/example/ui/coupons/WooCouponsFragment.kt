@@ -86,11 +86,15 @@ class WooCouponsFragment : StoreSelectingFragment() {
             showSingleLineDialog(activity, "Enter the coupon ID to fetch:") { editText ->
                 editText.text.toString().toLongOrNull()?.let {
                     coroutineScope.launch {
-                        store.fetchCoupon(selectedSite!!, it)
-                        prependToLog(
-                            store.observeCoupon(selectedSite!!, it)
-                                .first()?.coupon?.toString() ?: "Coupon $it not found"
-                        )
+                        val result = store.fetchCoupon(selectedSite!!, it)
+                        if (result.isError) {
+                            prependToLog("Coupon fetching failed: ${result.error.message}")
+                        } else {
+                            prependToLog(
+                                store.getCoupon(selectedSite!!, it)?.coupon?.toString()
+                                    ?: "Coupon $it not found"
+                            )
+                        }
                     }
                 } ?: prependToLog("Invalid coupon ID")
             }
