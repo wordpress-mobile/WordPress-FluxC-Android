@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons
 
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Companion
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 
 data class CouponDto(
     @SerializedName("id") val id: Long,
@@ -42,7 +42,7 @@ data class CouponDto(
             dateCreatedGmt = dateCreatedGmt,
             dateModified = dateModified,
             dateModifiedGmt = dateModifiedGmt,
-            discountType = Companion.fromString(discountType),
+            discountType = DiscountType.fromString(discountType),
             description = description,
             dateExpires = dateExpires,
             dateExpiresGmt = dateExpiresGmt,
