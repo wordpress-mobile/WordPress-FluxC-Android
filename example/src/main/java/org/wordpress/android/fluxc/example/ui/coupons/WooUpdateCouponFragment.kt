@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_L
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEMS
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_MULTI_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
+import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.ListItem
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
@@ -347,7 +348,7 @@ class WooUpdateCouponFragment : Fragment() {
         resultCode: Int
     ) {
         val items = itemNames.mapIndexed { i, item ->
-            Triple(itemIds[i], item, selectedIds.contains(itemIds[i]))
+            ListItem(itemIds[i], item, selectedIds.contains(itemIds[i]))
         }
         fragmentManager?.let { fm ->
             val dialog = ListSelectorDialog.newInstance(
