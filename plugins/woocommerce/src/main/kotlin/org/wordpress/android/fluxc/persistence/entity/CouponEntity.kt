@@ -4,6 +4,8 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Relation
+import androidx.room.TypeConverters
+import org.wordpress.android.fluxc.persistence.converters.DiscountTypeConverter
 import java.math.BigDecimal
 
 @Entity(
@@ -20,7 +22,7 @@ data class CouponEntity(
     val dateCreatedGmt: String? = null,
     val dateModified: String? = null,
     val dateModifiedGmt: String? = null,
-    val discountType: DiscountType? = null,
+    @field:TypeConverters(DiscountTypeConverter::class) val discountType: DiscountType? = null,
     val description: String? = null,
     val dateExpires: String? = null,
     val dateExpiresGmt: String? = null,
