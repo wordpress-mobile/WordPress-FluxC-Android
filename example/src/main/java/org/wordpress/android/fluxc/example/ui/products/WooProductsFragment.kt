@@ -502,6 +502,10 @@ class WooProductsFragment : StoreSelectingFragment() {
                 }
             }
         }
+
+        batch_update_variations.setOnClickListener {
+            replaceFragment(WooBatchUpdateVariationsFragment.newInstance(selectedPos))
+        }
     }
 
     /**
