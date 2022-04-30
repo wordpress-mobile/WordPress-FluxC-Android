@@ -119,7 +119,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
         date_on_sale_to.setOnClickListener {
             showDatePickerDialog(date_on_sale_to.text.toString()) { _, y, m, d ->
                 date_on_sale_to.text = DateUtils.getFormattedDateString(y, m, d)
-                variationsUpdatePayloadBuilder.startOfSale(date_on_sale_to.text.toString())
+                variationsUpdatePayloadBuilder.endOfSale(date_on_sale_to.text.toString())
             }
         }
 
