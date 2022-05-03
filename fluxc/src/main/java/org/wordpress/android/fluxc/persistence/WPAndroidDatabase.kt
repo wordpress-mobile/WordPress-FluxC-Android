@@ -4,26 +4,36 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import org.wordpress.android.fluxc.persistence.BloggingRemindersDao.BloggingReminders
 import org.wordpress.android.fluxc.persistence.PlanOffersDao.PlanOffer
 import org.wordpress.android.fluxc.persistence.PlanOffersDao.PlanOfferFeature
 import org.wordpress.android.fluxc.persistence.PlanOffersDao.PlanOfferId
+import org.wordpress.android.fluxc.persistence.bloggingprompts.BloggingPromptsDao
+import org.wordpress.android.fluxc.persistence.bloggingprompts.BloggingPromptsDao.BloggingPromptEntity
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao
 import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntity
+import org.wordpress.android.fluxc.persistence.coverters.StringListConverter
 import org.wordpress.android.fluxc.persistence.dashboard.CardsDao
 import org.wordpress.android.fluxc.persistence.dashboard.CardsDao.CardEntity
 
 @Database(
-    version = 6,
+    version = 7,
     entities = [
         BloggingReminders::class,
         PlanOffer::class,
         PlanOfferId::class,
         PlanOfferFeature::class,
         CommentEntity::class,
-        CardEntity::class
+        CardEntity::class,
+        BloggingPromptEntity::class
+    ]
+)
+@TypeConverters(
+    value = [
+        StringListConverter::class
     ]
 )
 abstract class WPAndroidDatabase : RoomDatabase() {
@@ -34,6 +44,8 @@ abstract class WPAndroidDatabase : RoomDatabase() {
     abstract fun commentsDao(): CommentsDao
 
     abstract fun dashboardCardsDao(): CardsDao
+
+    abstract fun bloggingPromptsDao(): BloggingPromptsDao
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
@@ -49,6 +61,7 @@ abstract class WPAndroidDatabase : RoomDatabase() {
             .addMigrations(MIGRATION_2_3)
             .addMigrations(MIGRATION_3_4)
             .addMigrations(MIGRATION_5_6)
+//            .addMigrations(MIGRATION_6_7)
             .build()
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -160,5 +173,23 @@ abstract class WPAndroidDatabase : RoomDatabase() {
                 }
             }
         }
+//
+//        val MIGRATION_6_7 = object : Migration(6, 7) {
+//            override fun migrate(database: SupportSQLiteDatabase) {
+//                database.apply {
+//                    execSQL(
+//                        "CREATE TABLE IF NOT EXISTS `BloggingPrompts` (" +
+//                            "`id` INTEGER PRIMARY KEY NOT NULL, " +
+//                            "`text` TEXT, " +
+//                            "`title` TEXT, " +
+//                            "`content` TEXT, " +
+//                            "`dateGmt` TEXT, " +
+//                            "`isAnswered` INTEGER NOT NULL, " +
+//                            "`respondentsCount` INTEGER NOT NULL, " +
+//                            "`respondentsAvatarsCsv` TEXT)"
+//                    )
+//                }
+//            }
+//        }
     }
 }
