@@ -128,22 +128,50 @@
         android:enabled="false"
         android:inputType="textMultiLine"
         android:lines="1"
-        app:layout_constraintEnd_toStartOf="@+id/date_on_sale_to"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stock_quantity"
         app:textHint="Weight" />
 
-    <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/dimensions"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:enabled="false"
-        android:inputType="textMultiLine"
-        android:lines="1"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/date_on_sale_from"
-        app:layout_constraintTop_toBottomOf="@+id/stock_quantity"
-        app:textHint="Dimensions" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weight">
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/width"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:inputType="textMultiLine"
+            android:lines="1"
+            app:textHint="Width" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/height"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:inputType="textMultiLine"
+            android:lines="1"
+            app:textHint="Height" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/length"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:inputType="textMultiLine"
+            android:lines="1"
+            app:textHint="Length" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
         android:id="@+id/shipping_class_id"

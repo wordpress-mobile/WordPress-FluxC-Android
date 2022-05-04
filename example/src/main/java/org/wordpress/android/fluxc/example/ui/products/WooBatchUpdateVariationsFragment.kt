@@ -154,8 +154,11 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             with(weight.getText()) {
                 if (isNotEmpty()) variationsUpdatePayloadBuilder.weight(this)
             }
-            with(dimensions.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.dimensions(this)
+            val length = length.getText()
+            val width = width.getText()
+            val height = height.getText()
+            if (length.isNotEmpty() || width.isNotEmpty() || height.isNotEmpty()) {
+                variationsUpdatePayloadBuilder.dimensions(length = length, width = width, height = height)
             }
             with(shipping_class_id.getText()) {
                 if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassId(this)
@@ -191,10 +194,12 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             stock_quantity,
             stock_status_button,
             weight,
-            dimensions,
             shipping_class_id,
             shipping_class,
             invoke_button,
+            width,
+            height,
+            length,
         ).forEach { it.isEnabled = true }
     }
 

@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.store
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -223,7 +225,12 @@ class WCProductStore @Inject constructor(
                 variationsModifications["weight"] = weight
             }
 
-            fun dimensions(dimensions: String) = apply {
+            fun dimensions(length: String, width: String, height: String) = apply {
+                val dimensions = JsonObject().apply {
+                    add("length", JsonPrimitive(length))
+                    add("width", JsonPrimitive(width))
+                    add("height", JsonPrimitive(height))
+                }
                 variationsModifications["dimensions"] = dimensions
             }
 
