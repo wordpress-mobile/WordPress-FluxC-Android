@@ -472,8 +472,6 @@ class WCProductStoreTest {
             .salePrice(modifiedSalePrice)
             .startOfSale(modifiedStartOfSale)
             .endOfSale(modifiedEndOfSale)
-            .startOfSaleGmt(modifiedStartOfSaleGmt)
-            .endOfSaleGmt(modifiedEndOfSaleGmt)
             .stockQuantity(modifiedStockQuantity)
             .stockStatus(modifiedStockStatus)
             .weight(modifiedWeight)
