@@ -26,7 +26,6 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.utils.DateUtils
-import java.lang.NumberFormatException
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -149,12 +148,6 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             with(sale_price.getText()) {
                 if (isNotEmpty()) variationsUpdatePayloadBuilder.salePrice(this)
             }
-            with(date_on_sale_from_gmt.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.startOfSaleGmt(this)
-            }
-            with(date_on_sale_to_gmt.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.endOfSaleGmt(this)
-            }
             with(stock_quantity.getText()) {
                 if (isNotEmpty()) variationsUpdatePayloadBuilder.stockQuantity(this.toInt())
             }
@@ -195,8 +188,6 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             sale_price,
             date_on_sale_from,
             date_on_sale_to,
-            date_on_sale_from_gmt,
-            date_on_sale_to_gmt,
             stock_quantity,
             stock_status_button,
             weight,

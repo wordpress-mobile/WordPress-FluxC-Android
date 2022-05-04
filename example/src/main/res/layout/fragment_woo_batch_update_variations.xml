@@ -99,30 +99,6 @@
         app:layout_constraintTop_toBottomOf="@+id/sale_price" />
 
     <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
-        android:id="@+id/date_on_sale_from_gmt"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:inputType="textMultiLine"
-        android:lines="1"
-        app:layout_constraintEnd_toStartOf="@+id/date_on_sale_to"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/date_on_sale_from"
-        app:textHint="Start of sale GMT" />
-
-    <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
-        android:id="@+id/date_on_sale_to_gmt"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:inputType="textMultiLine"
-        android:lines="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/date_on_sale_from"
-        app:layout_constraintTop_toBottomOf="@+id/date_on_sale_from"
-        app:textHint="End of sale GMT" />
-
-    <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
         android:id="@+id/stock_quantity"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -131,7 +107,7 @@
         android:lines="1"
         app:layout_constraintEnd_toStartOf="@+id/date_on_sale_to"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/date_on_sale_to_gmt"
+        app:layout_constraintTop_toBottomOf="@+id/date_on_sale_to"
         app:textHint="Stock quantity" />
 
     <Button
@@ -143,7 +119,7 @@
         android:text="Stock status 📊"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/date_on_sale_from"
-        app:layout_constraintTop_toBottomOf="@+id/date_on_sale_to_gmt" />
+        app:layout_constraintTop_toBottomOf="@+id/date_on_sale_to" />
 
     <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
         android:id="@+id/weight"
