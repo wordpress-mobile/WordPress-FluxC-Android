@@ -158,9 +158,6 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             with(stock_quantity.getText()) {
                 if (isNotEmpty()) variationsUpdatePayloadBuilder.stockQuantity(this.toInt())
             }
-            with(stock_quantity.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.stockQuantity(this.toInt())
-            }
             with(weight.getText()) {
                 if (isNotEmpty()) variationsUpdatePayloadBuilder.weight(this)
             }
