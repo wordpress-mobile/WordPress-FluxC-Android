@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.wc.product
 
+import com.google.gson.JsonObject
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -458,12 +459,12 @@ class WCProductStoreTest {
         val modifiedSalePrice = "123,2.4"
         val modifiedStartOfSale = "tomorrow"
         val modifiedEndOfSale = "next week"
-        val modifiedStartOfSaleGmt = "tomorrow"
-        val modifiedEndOfSaleGmt = "next week"
         val modifiedStockQuantity = 1234
         val modifiedStockStatus = CoreProductStockStatus.IN_STOCK
         val modifiedWeight = "1234 kg"
-        val modifiedDimensions = "10x12x10 cm"
+        val modifiedWidth = "5"
+        val modifiedHeight = "10"
+        val modifiedLength = "15"
         val modifiedShippingClassId = "1234"
         val modifiedShippingClassSlug = "DHL"
 
@@ -472,12 +473,10 @@ class WCProductStoreTest {
             .salePrice(modifiedSalePrice)
             .startOfSale(modifiedStartOfSale)
             .endOfSale(modifiedEndOfSale)
-            .startOfSaleGmt(modifiedStartOfSaleGmt)
-            .endOfSaleGmt(modifiedEndOfSaleGmt)
             .stockQuantity(modifiedStockQuantity)
             .stockStatus(modifiedStockStatus)
             .weight(modifiedWeight)
-            .dimensions(modifiedDimensions)
+            .dimensions(length = modifiedLength, width = modifiedWidth, height = modifiedHeight)
             .shippingClassId(modifiedShippingClassId)
             .shippingClassSlug(modifiedShippingClassSlug)
         val payload = builder.build()
@@ -488,12 +487,14 @@ class WCProductStoreTest {
             assertThat(get("sale_price")).isEqualTo(modifiedSalePrice)
             assertThat(get("date_on_sale_from")).isEqualTo(modifiedStartOfSale)
             assertThat(get("date_on_sale_to")).isEqualTo(modifiedEndOfSale)
-            assertThat(get("date_on_sale_from_gmt")).isEqualTo(modifiedStartOfSaleGmt)
-            assertThat(get("date_on_sale_to_gmt")).isEqualTo(modifiedEndOfSaleGmt)
             assertThat(get("stock_quantity")).isEqualTo(modifiedStockQuantity)
             assertThat(get("stock_status")).isEqualTo(modifiedStockStatus)
             assertThat(get("weight")).isEqualTo(modifiedWeight)
-            assertThat(get("dimensions")).isEqualTo(modifiedDimensions)
+            with(get("dimensions") as JsonObject) {
+                assertThat(get("length").asString).isEqualTo(modifiedLength)
+                assertThat(get("height").asString).isEqualTo(modifiedHeight)
+                assertThat(get("width").asString).isEqualTo(modifiedWidth)
+            }
             assertThat(get("shipping_class_id")).isEqualTo(modifiedShippingClassId)
             assertThat(get("shipping_class")).isEqualTo(modifiedShippingClassSlug)
         }

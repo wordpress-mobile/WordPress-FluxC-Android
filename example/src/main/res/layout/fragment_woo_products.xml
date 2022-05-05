@@ -201,5 +201,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Delete product"/>
+
+        <Button
+            android:id="@+id/batch_update_variations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Batch update variations"/>
     </LinearLayout>
 </ScrollView>
