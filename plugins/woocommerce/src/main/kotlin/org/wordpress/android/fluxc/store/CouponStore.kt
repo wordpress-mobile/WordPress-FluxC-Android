@@ -195,10 +195,10 @@ class CouponStore @Inject constructor(
 
         if (dbCategoryIds.size != categoryIds.size) {
             throw MissingRelatedEntityException(
-                "ProductCategoryEntity",
-                couponId,
-                categoryIds - dbCategoryIds,
-                areExcluded
+                entityName = "ProductCategoryEntity",
+                couponId = couponId,
+                missingIds = categoryIds - dbCategoryIds,
+                areExcluded = areExcluded
             )
         }
 
@@ -248,10 +248,10 @@ class CouponStore @Inject constructor(
 
         if (dbProductIds.size != productIds.size) {
             throw MissingRelatedEntityException(
-                "ProductEntity",
-                couponId,
-                productIds - dbProductIds,
-                areExcluded
+                entityName = "ProductEntity",
+                couponId = couponId,
+                missingIds = productIds - dbProductIds,
+                areExcluded = areExcluded
             )
         }
 
