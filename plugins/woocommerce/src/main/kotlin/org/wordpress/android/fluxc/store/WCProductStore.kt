@@ -193,7 +193,7 @@ class WCProductStore @Inject constructor(
         class Builder(
             private val site: SiteModel,
             private val remoteProductId: Long,
-            private val variationsIds: Collection<Long>,
+            private val variationsIds: Collection<Long>
         ) {
             private val variationsModifications = mutableMapOf<String, Any>()
 
@@ -1231,7 +1231,8 @@ class WCProductStore @Inject constructor(
      *
      * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using [BatchUpdateVariationsPayload.Builder] class.
      */
-    suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload): WooResult<BatchProductVariationsUpdateApiResponse> =
+    suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
+        WooResult<BatchProductVariationsUpdateApiResponse> =
         coroutineEngine.withDefaultContext(API, this, "batchUpdateVariations") {
             with(payload) {
                 val result: WooPayload<BatchProductVariationsUpdateApiResponse> =

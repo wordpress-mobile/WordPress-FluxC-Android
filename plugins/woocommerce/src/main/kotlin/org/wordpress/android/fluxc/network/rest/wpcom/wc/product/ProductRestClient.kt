@@ -816,7 +816,7 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         productId: Long,
         variationsIds: Collection<Long>,
-        modifiedProperties: Map<String, Any>,
+        modifiedProperties: Map<String, Any>
     ): WooPayload<BatchProductVariationsUpdateApiResponse> = WOOCOMMERCE.products.id(productId).variations.batch.pathV3
         .let { url ->
             val variationsUpdates: List<Map<String, Any>> = variationsIds.map { variationId ->
@@ -832,7 +832,6 @@ class ProductRestClient @Inject constructor(
                 BatchProductVariationsUpdateApiResponse::class.java
             ).handleResult()
         }
-
 
     /**
      * Makes a POST request to `/wp-json/wc/v3/products` to create
