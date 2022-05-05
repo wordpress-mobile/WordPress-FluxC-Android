@@ -327,9 +327,22 @@ class WCProductStoreTest {
 
             // when
             val variationsIds = variations.map { it.remoteVariationId }
-            val variationsUpdatePayload = BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variationsIds).build()
-            val response = BatchProductVariationsUpdateApiResponse().apply { updatedVariations = emptyList() }
-            whenever(productRestClient.batchUpdateVariations(any(), any(), any(), any())) doReturn WooPayload(response)
+            val variationsUpdatePayload = BatchUpdateVariationsPayload.Builder(
+                site,
+                product.remoteProductId,
+                variationsIds
+            ).build()
+            val response = BatchProductVariationsUpdateApiResponse().apply {
+                updatedVariations = emptyList()
+            }
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(response)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
 
             // then
@@ -339,28 +352,37 @@ class WCProductStoreTest {
         }
 
     @Test
-    fun `batch variations update should return negative result on failed backend request`() = runBlocking {
-        // given
-        val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
-        val site = SiteModel().apply { id = product.localSiteId }
-        val variations = generateSampleVariations(
-            number = 64,
-            productId = product.remoteProductId,
-            siteId = site.id
-        )
+    fun `batch variations update should return negative result on failed backend request`() =
+        runBlocking {
+            // given
+            val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
+            val site = SiteModel().apply { id = product.localSiteId }
+            val variations = generateSampleVariations(
+                number = 64,
+                productId = product.remoteProductId,
+                siteId = site.id
+            )
 
-        // when
-        val variationsIds = variations.map { it.remoteVariationId }
-        val variationsUpdatePayload =
-            BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variationsIds).build()
-        val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
-        whenever(productRestClient.batchUpdateVariations(any(), any(), any(), any())) doReturn WooPayload(errorResponse)
-        val result = productStore.batchUpdateVariations(variationsUpdatePayload)
+            // when
+            val variationsIds = variations.map { it.remoteVariationId }
+            val variationsUpdatePayload =
+                BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variationsIds)
+                    .build()
+            val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(errorResponse)
+            val result = productStore.batchUpdateVariations(variationsUpdatePayload)
 
-        // then
-        assertThat(result.isError).isTrue
-        Unit
-    }
+            // then
+            assertThat(result.isError).isTrue
+            Unit
+        }
 
     @Test
     fun `batch variations update should update variations locally after successful backend request`() =
@@ -393,8 +415,17 @@ class WCProductStoreTest {
                     sale_price = newSalePrice
                 }
             }
-            val response = BatchProductVariationsUpdateApiResponse().apply { updatedVariations = variationsReturnedFromBackend }
-            whenever(productRestClient.batchUpdateVariations(any(), any(), any(), any())) doReturn WooPayload(response)
+            val response = BatchProductVariationsUpdateApiResponse().apply {
+                updatedVariations = variationsReturnedFromBackend
+            }
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(response)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
 
             // then
@@ -433,7 +464,14 @@ class WCProductStoreTest {
                     .salePrice(newSalePrice)
                     .build()
             val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
-            whenever(productRestClient.batchUpdateVariations(any(), any(), any(), any())) doReturn WooPayload(errorResponse)
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(errorResponse)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
 
             // then
@@ -452,8 +490,16 @@ class WCProductStoreTest {
         // given
         val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
         val site = SiteModel().apply { id = 23 }
-        val variations = generateSampleVariations(number = 64, productId = product.remoteProductId, siteId = site.id)
-        val builder = BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variations.map { it.remoteVariationId })
+        val variations = generateSampleVariations(
+            number = 64,
+            productId = product.remoteProductId,
+            siteId = site.id
+        )
+        val builder = BatchUpdateVariationsPayload.Builder(
+            site,
+            product.remoteProductId,
+            variations.map { it.remoteVariationId }
+        )
 
         val modifiedRegularPrice = "11234.234"
         val modifiedSalePrice = "123,2.4"

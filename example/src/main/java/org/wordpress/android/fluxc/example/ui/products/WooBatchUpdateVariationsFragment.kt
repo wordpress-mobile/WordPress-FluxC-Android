@@ -66,12 +66,12 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             }
 
             val productId = getProductIdInput()
-            if (productId == null){
+            if (productId == null) {
                 prependToLog("Product with id is empty or has wrong format...doing nothing")
                 return@setOnClickListener
             }
             val product = wcProductStore.getProductByRemoteId(site, productId)
-            if(product == null) {
+            if (product == null) {
                 prependToLog("Product with id: $productId not found in DB. Did you forget to fetch?...doing nothing")
                 return@setOnClickListener
             }
@@ -84,7 +84,9 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             variationsIds.forEach { variationId ->
                 val variation = wcProductStore.getVariationByRemoteId(site, productId, variationId)
                 if (variation == null) {
-                    prependToLog("Variation with id: $variationId not found in DB. Did you forget to fetch?...doing nothing")
+                    val msg = "Variation with id: $variationId not found in DB. " +
+                        "Did you forget to fetch?...doing nothing"
+                    prependToLog(msg)
                     return@setOnClickListener
                 }
             }
@@ -199,7 +201,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             invoke_button,
             width,
             height,
-            length,
+            length
         ).forEach { it.isEnabled = true }
     }
 
@@ -210,7 +212,9 @@ class WooBatchUpdateVariationsFragment : Fragment() {
                 LIST_RESULT_CODE_STOCK_STATUS -> {
                     selectedItem?.let { name ->
                         stock_status_button.text = name
-                        variationsUpdatePayloadBuilder.stockStatus(CoreProductStockStatus.values().first { it.value == name })
+                        variationsUpdatePayloadBuilder.stockStatus(
+                            CoreProductStockStatus.values().first { it.value == name }
+                        )
                     }
                 }
             }
