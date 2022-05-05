@@ -9,8 +9,6 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
-import org.wordpress.android.fluxc.persistence.converters.DiscountTypeConverter
-import org.wordpress.android.fluxc.persistence.converters.ISO8601DateConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
@@ -69,9 +67,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             LocalIdConverter::class,
             LongListConverter::class,
             RemoteIdConverter::class,
-            BigDecimalConverter::class,
-            DiscountTypeConverter::class,
-            ISO8601DateConverter::class
+            BigDecimalConverter::class
         ]
 )
 abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {

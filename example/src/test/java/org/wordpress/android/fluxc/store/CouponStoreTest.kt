@@ -96,7 +96,7 @@ class CouponStoreTest {
         dateCreatedGmt = couponDto.dateCreatedGmt,
         dateModified = couponDto.dateModified,
         dateModifiedGmt = couponDto.dateModifiedGmt,
-        discountType = DiscountType.fromString(couponDto.discountType),
+        discountType = couponDto.discountType?.let { DiscountType.fromString(it) },
         description = couponDto.description,
         dateExpires = couponDto.dateExpires,
         dateExpiresGmt = couponDto.dateExpiresGmt,
@@ -268,6 +268,9 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
+        insertCategories()
+        insertProducts()
+
         couponStore.fetchCoupons(site)
 
         verify(couponsDao).insertOrUpdateCouponEmail(expectedEmail)
@@ -281,15 +284,7 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
-        whenever(productsDao.getProductsByIds(
-            site.siteId,
-            listOf(includedProduct1.id, includedProduct2.id)
-        )).thenReturn(listOf(includedProduct1, includedProduct2))
-
-        whenever(productsDao.getProductsByIds(
-            site.siteId,
-            listOf(excludedProduct1.id, excludedProduct2.id)
-        )).thenReturn(listOf(excludedProduct1, excludedProduct2))
+        insertProducts()
 
         couponStore.fetchCoupons(site)
 
@@ -297,6 +292,22 @@ class CouponStoreTest {
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedIncludedCouponAndProduct2)
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedExcludedCouponAndProduct1)
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedExcludedCouponAndProduct2)
+    }
+
+    private fun insertProducts() {
+        whenever(
+            productsDao.getProductsByIds(
+                site.siteId,
+                listOf(includedProduct1.id, includedProduct2.id)
+            )
+        ).thenReturn(listOf(includedProduct1, includedProduct2))
+
+        whenever(
+            productsDao.getProductsByIds(
+                site.siteId,
+                listOf(excludedProduct1.id, excludedProduct2.id)
+            )
+        ).thenReturn(listOf(excludedProduct1, excludedProduct2))
     }
 
     @Test
@@ -307,15 +318,8 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
-        whenever(productCategoriesDao.getProductCategoriesByIds(
-            site.siteId,
-            listOf(includedCategory1.id, includedCategory2.id)
-        )).thenReturn(listOf(includedCategory1, includedCategory2))
-
-        whenever(productCategoriesDao.getProductCategoriesByIds(
-            site.siteId,
-            listOf(excludedCategory1.id, excludedCategory2.id)
-        )).thenReturn(listOf(excludedCategory1, excludedCategory2))
+        insertCategories()
+        insertProducts()
 
         couponStore.fetchCoupons(site)
 
@@ -327,6 +331,22 @@ class CouponStoreTest {
             .insertOrUpdateCouponAndProductCategory(expectedExcludedCouponAndCategory1)
         verify(couponsDao)
             .insertOrUpdateCouponAndProductCategory(expectedExcludedCouponAndCategory2)
+    }
+
+    private fun insertCategories() {
+        whenever(
+            productCategoriesDao.getProductCategoriesByIds(
+                site.siteId,
+                listOf(includedCategory1.id, includedCategory2.id)
+            )
+        ).thenReturn(listOf(includedCategory1, includedCategory2))
+
+        whenever(
+            productCategoriesDao.getProductCategoriesByIds(
+                site.siteId,
+                listOf(excludedCategory1.id, excludedCategory2.id)
+            )
+        ).thenReturn(listOf(excludedCategory1, excludedCategory2))
     }
 
     @Test

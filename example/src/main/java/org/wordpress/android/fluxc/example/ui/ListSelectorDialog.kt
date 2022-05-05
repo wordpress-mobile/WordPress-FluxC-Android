@@ -31,7 +31,7 @@ class ListSelectorDialog : DialogFragment() {
 
         fun newInstance(
             fragment: Fragment,
-            items: List<Triple<Long, String, Boolean>>,
+            items: List<ListItem>,
             resultCode: Int
         ) = ListSelectorDialog().apply {
             setTargetFragment(fragment, LIST_SELECTOR_REQUEST_CODE)
@@ -43,7 +43,7 @@ class ListSelectorDialog : DialogFragment() {
 
     var resultCode: Int = -1
     var listItems: List<String>? = null
-    var items = mutableListOf<Triple<Long, String, Boolean>>()
+    var items = mutableListOf<ListItem>()
     var selectedListItem: String? = null
     var selected: String? = null
     var isSingleChoice = true
@@ -72,14 +72,14 @@ class ListSelectorDialog : DialogFragment() {
                         dialog.dismiss()
                     }
             } else {
-                val checked = items.map { item -> item.third }.toBooleanArray()
+                val checked = items.map { item -> item.isSelected }.toBooleanArray()
                 builder.setTitle("Select multiple items")
-                    .setMultiChoiceItems(items.map { it.second }.toTypedArray(), checked) { _, which, isChecked ->
-                        items[which] = items[which].copy(third = isChecked)
+                    .setMultiChoiceItems(items.map { it.title }.toTypedArray(), checked) { _, which, isChecked ->
+                        items[which] = items[which].copy(isSelected = isChecked)
                     }
                     .setPositiveButton("OK") { dialog, _ ->
                         val intent = activity?.intent
-                        val selectedIds = items.filter { it.third }.map { it.first }.toLongArray()
+                        val selectedIds = items.filter { it.isSelected }.map { it.id }.toLongArray()
                         intent?.putExtra(ARG_LIST_SELECTED_ITEMS, selectedIds)
                         targetFragment?.onActivityResult(LIST_MULTI_SELECTOR_REQUEST_CODE, resultCode, intent)
                         dialog.dismiss()
@@ -103,4 +103,6 @@ class ListSelectorDialog : DialogFragment() {
         outState.putInt(ARG_RESULT_CODE, resultCode)
         outState.putString(ARG_LIST_SELECTED_ITEM, selectedListItem)
     }
+
+    data class ListItem(val id: Long, val title: String, val isSelected: Boolean)
 }
