@@ -97,7 +97,11 @@ class WooUpdateCouponFragment : Fragment() {
 
         if (!isAddNewCoupon) {
             enter_coupon_id.setOnClickListener {
-                showSingleLineDialog(activity, "Enter the ID of coupon to fetch:") { editText ->
+                showSingleLineDialog(
+                    activity = activity,
+                    message = "Enter the ID of coupon to fetch:",
+                    isNumeric = true
+                ) { editText ->
                     couponId = editText.text.toString().toLongOrNull()
                     couponId?.let { id ->
                         updateSelectedCouponId(id)
