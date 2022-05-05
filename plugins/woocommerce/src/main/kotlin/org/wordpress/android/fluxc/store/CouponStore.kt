@@ -193,7 +193,7 @@ class CouponStore @Inject constructor(
             .getProductCategoriesByIds(site.siteId, categoryIds)
             .map { it.id }
 
-        if (dbCategoryIds.sorted() != categoryIds.sorted()) {
+        if (dbCategoryIds.size != categoryIds.size) {
             throw MissingRelatedEntityException(
                 "ProductCategoryEntity",
                 couponId,
@@ -246,7 +246,7 @@ class CouponStore @Inject constructor(
             .getProductsByIds(site.siteId, productIds)
             .map { it.id }
 
-        if (dbProductIds.sorted() != productIds.sorted()) {
+        if (dbProductIds.size != productIds.size) {
             throw MissingRelatedEntityException(
                 "ProductEntity",
                 couponId,
