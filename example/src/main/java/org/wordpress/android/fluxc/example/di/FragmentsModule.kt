@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.example.PluginsFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.example.ui.coupons.WooCouponsFragment
+import org.wordpress.android.fluxc.example.ui.coupons.WooUpdateCouponFragment
 import org.wordpress.android.fluxc.example.ui.customer.WooCustomersFragment
 import org.wordpress.android.fluxc.example.ui.customer.creation.WooCustomerCreationFragment
 import org.wordpress.android.fluxc.example.ui.customer.search.WooCustomersSearchFragment
@@ -30,6 +31,7 @@ import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragme
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooAddonsTestFragment
+import org.wordpress.android.fluxc.example.ui.products.WooBatchUpdateVariationsFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductAttributeFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductFiltersFragment
@@ -95,7 +97,13 @@ internal abstract class FragmentsModule {
     abstract fun provideWooUpdateProductFragmentInjector(): WooUpdateProductFragment
 
     @ContributesAndroidInjector
+    abstract fun provideWooUpdateCouponFragmentInjector(): WooUpdateCouponFragment
+
+    @ContributesAndroidInjector
     abstract fun provideWooUpdateVariationFragmentInjector(): WooUpdateVariationFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideWooBatchUpdateVariationsFragmentInjector(): WooBatchUpdateVariationsFragment
 
     @ContributesAndroidInjector
     abstract fun provideWooProductFiltersFragmentInjector(): WooProductFiltersFragment

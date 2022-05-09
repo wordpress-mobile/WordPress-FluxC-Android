@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductCategoryApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
+import kotlin.random.Random
 
 object ProductTestUtils {
     fun generateSampleProduct(
@@ -51,6 +52,17 @@ object ProductTestUtils {
             localSiteId = siteId
             this.status = status
             this.stockQuantity = stockQuantity
+        }
+    }
+
+    fun generateSampleVariations(number: Int, productId: Long, siteId: Int): List<WCProductVariationModel> {
+        return (0 until number).map {
+            generateSampleVariation(
+                remoteId = productId,
+                variationId = Random.nextLong(),
+                siteId = siteId,
+                stockQuantity = Random.nextDouble()
+            )
         }
     }
 

@@ -21,11 +21,15 @@ abstract class CouponsDao {
     @Transaction
     @Query("SELECT * FROM Coupons " +
         "WHERE siteId = :siteId AND id IN (:couponIds) ORDER BY dateCreated DESC")
-    abstract fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
+    abstract suspend fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
 
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
     abstract fun observeCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails?>
+
+    @Transaction
+    @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
+    abstract suspend fun getCoupon(siteId: Long, couponId: Long): CouponWithEmails?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateCoupon(entity: CouponEntity): Long
