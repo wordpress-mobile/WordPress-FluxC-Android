@@ -203,9 +203,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
         }
 
         coupons.setOnClickListener {
-            selectedSite?.let {
-                replaceFragment(WooCouponsFragment())
-            } ?: showNoWCSitesToast()
+            replaceFragment(WooCouponsFragment())
         }
 
         help_support.setOnClickListener {

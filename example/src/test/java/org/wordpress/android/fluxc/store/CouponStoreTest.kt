@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
@@ -78,7 +79,7 @@ class CouponStoreTest {
         limitUsageToXItems = 2,
         isShippingFree = false,
         productCategoryIds = listOf(2L, 3L),
-        excludedProductCategoryIds = listOf(2L, 3L),
+        excludedProductCategoryIds = listOf(4L, 5L),
         areSaleItemsExcluded = true,
         minimumAmount = "5",
         maximumAmount = "50",
@@ -90,12 +91,12 @@ class CouponStoreTest {
         id = couponDto.id,
         siteId = site.siteId,
         code = couponDto.code,
-        amount = couponDto.amount,
+        amount = couponDto.amount?.toBigDecimal(),
         dateCreated = couponDto.dateCreated,
         dateCreatedGmt = couponDto.dateCreatedGmt,
         dateModified = couponDto.dateModified,
         dateModifiedGmt = couponDto.dateModifiedGmt,
-        discountType = couponDto.discountType,
+        discountType = couponDto.discountType?.let { DiscountType.fromString(it) },
         description = couponDto.description,
         dateExpires = couponDto.dateExpires,
         dateExpiresGmt = couponDto.dateExpiresGmt,
@@ -106,8 +107,8 @@ class CouponStoreTest {
         limitUsageToXItems = couponDto.limitUsageToXItems,
         isShippingFree = couponDto.isShippingFree,
         areSaleItemsExcluded = couponDto.areSaleItemsExcluded,
-        minimumAmount = couponDto.minimumAmount,
-        maximumAmount = couponDto.maximumAmount
+        minimumAmount = couponDto.minimumAmount?.toBigDecimal(),
+        maximumAmount = couponDto.maximumAmount?.toBigDecimal()
     )
 
     private val expectedEmail = CouponEmailEntity(
@@ -267,6 +268,9 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
+        insertCategories()
+        insertProducts()
+
         couponStore.fetchCoupons(site)
 
         verify(couponsDao).insertOrUpdateCouponEmail(expectedEmail)
@@ -280,12 +284,30 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
+        insertProducts()
+
         couponStore.fetchCoupons(site)
 
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedIncludedCouponAndProduct1)
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedIncludedCouponAndProduct2)
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedExcludedCouponAndProduct1)
         verify(couponsDao).insertOrUpdateCouponAndProduct(expectedExcludedCouponAndProduct2)
+    }
+
+    private fun insertProducts() {
+        whenever(
+            productsDao.getProductsByIds(
+                site.siteId,
+                listOf(includedProduct1.id, includedProduct2.id)
+            )
+        ).thenReturn(listOf(includedProduct1, includedProduct2))
+
+        whenever(
+            productsDao.getProductsByIds(
+                site.siteId,
+                listOf(excludedProduct1.id, excludedProduct2.id)
+            )
+        ).thenReturn(listOf(excludedProduct1, excludedProduct2))
     }
 
     @Test
@@ -295,6 +317,9 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE,
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
+
+        insertCategories()
+        insertProducts()
 
         couponStore.fetchCoupons(site)
 
@@ -306,6 +331,22 @@ class CouponStoreTest {
             .insertOrUpdateCouponAndProductCategory(expectedExcludedCouponAndCategory1)
         verify(couponsDao)
             .insertOrUpdateCouponAndProductCategory(expectedExcludedCouponAndCategory2)
+    }
+
+    private fun insertCategories() {
+        whenever(
+            productCategoriesDao.getProductCategoriesByIds(
+                site.siteId,
+                listOf(includedCategory1.id, includedCategory2.id)
+            )
+        ).thenReturn(listOf(includedCategory1, includedCategory2))
+
+        whenever(
+            productCategoriesDao.getProductCategoriesByIds(
+                site.siteId,
+                listOf(excludedCategory1.id, excludedCategory2.id)
+            )
+        ).thenReturn(listOf(excludedCategory1, excludedCategory2))
     }
 
     @Test
