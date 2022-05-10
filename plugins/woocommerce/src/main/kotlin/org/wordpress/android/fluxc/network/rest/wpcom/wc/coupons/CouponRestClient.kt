@@ -87,6 +87,31 @@ class CouponRestClient @Inject constructor(
         }
     }
 
+    suspend fun createCoupon(
+        site: SiteModel,
+        request: UpdateCouponRequest
+    ): WooPayload<CouponDto> {
+        val url = WOOCOMMERCE.coupons.pathV3
+        val params = request.toNetworkRequest()
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            params,
+            CouponDto::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     suspend fun updateCoupon(
         site: SiteModel,
         couponId: Long,
