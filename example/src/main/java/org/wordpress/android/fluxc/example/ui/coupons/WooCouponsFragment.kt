@@ -149,5 +149,9 @@ class WooCouponsFragment : StoreSelectingFragment() {
         btnUpdateCoupon.setOnClickListener {
             replaceFragment(WooUpdateCouponFragment.newInstance(selectedSite!!.siteId))
         }
+
+        btnCreateCoupon.setOnClickListener {
+            replaceFragment(WooUpdateCouponFragment.newInstance(selectedSite!!.siteId, true))
+        }
     }
 }
