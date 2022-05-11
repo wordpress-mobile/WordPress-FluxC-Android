@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 
 @Dao
@@ -20,6 +22,11 @@ abstract class ProductsDao {
 
     @Query("SELECT * FROM Products WHERE siteId = :siteId ORDER BY id")
     abstract fun observeProducts(siteId: Long): Flow<List<ProductEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM Products " +
+        "WHERE siteId = :siteId AND id IN (:productIds) ORDER BY dateCreated DESC")
+    abstract suspend fun getProducts(siteId: Long, productIds: List<Long>): List<ProductEntity>
 
     @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
         "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +

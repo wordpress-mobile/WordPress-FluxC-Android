@@ -13,6 +13,7 @@ import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
@@ -23,6 +24,8 @@ class ProductsDaoTest {
     private lateinit var couponsDao: CouponsDao
     private lateinit var productsDao: ProductsDao
     private lateinit var db: WCAndroidDatabase
+
+    private val site = SiteModel().apply { siteId = SITE_ID }
 
     @Before
     fun createDb() {
@@ -123,13 +126,36 @@ class ProductsDaoTest {
         assertThat(excludedProducts).isEqualTo(listOf(product3, product4))
     }
 
+    @Test
+    fun `test specific product selection`(): Unit = runBlocking {
+        // when
+        val product1 = generateProductEntity(1)
+        val product2 = generateProductEntity(2)
+        val product3 = generateProductEntity(3)
+        val product4 = generateProductEntity(4)
+        productsDao.insertOrUpdateProduct(product1)
+        productsDao.insertOrUpdateProduct(product2)
+        productsDao.insertOrUpdateProduct(product3)
+        productsDao.insertOrUpdateProduct(product4)
+
+        val expectedProducts = listOf(product1, product2)
+        val requestedProductIds = expectedProducts.map { it.id }
+
+        val actualProducts = productsDao.getProducts(site.siteId, requestedProductIds)
+
+        // then
+        assertThat(actualProducts).isEqualTo(expectedProducts)
+    }
+
     companion object {
+        const val SITE_ID = 1L
+
         fun generateProductEntity(
             remoteId: Long,
             type: String = "simple",
             name: String = "",
             virtual: Boolean = false,
-            siteId: Long = 1,
+            siteId: Long = SITE_ID,
             stockStatus: String = CoreProductStockStatus.IN_STOCK.value,
             status: String = "publish",
             stockQuantity: Double = 0.0,
