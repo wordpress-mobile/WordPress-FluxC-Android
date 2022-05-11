@@ -35,6 +35,13 @@
             android:text="Fetch Products"/>
 
         <Button
+            android:id="@+id/fetch_products_room"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Products (Room)"/>
+
+        <Button
             android:id="@+id/fetch_products_with_filters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -47,6 +54,13 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Search Products"/>
+
+        <Button
+            android:id="@+id/search_products_room"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Search Products (Room)"/>
 
         <Button
             android:id="@+id/fetch_product_variations"
