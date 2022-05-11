@@ -450,15 +450,15 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductsWithSyncRequest(
         site: SiteModel,
-        remoteProductIds: List<Long>,
+        remoteProductIds: List<Long> = emptyList(),
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         offset: Int = 0,
         searchQuery: String? = null
     ) = buildParametersMap(pageSize, sortType, offset, searchQuery, remoteProductIds)
-            .let {
-                WOOCOMMERCE.products.pathV3.requestProductTo(site, it)
-            }.handleResultFrom(site)
+        .let {
+            WOOCOMMERCE.products.pathV3.requestProductTo(site, it)
+        }.handleResultFrom(site)
 
     private suspend fun String.requestProductTo(
         site: SiteModel,
@@ -557,9 +557,9 @@ class ProductRestClient @Inject constructor(
             "per_page" to pageSize.toString(),
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
-            "offset" to offset.toString(),
-            "include" to ids.map { it }.joinToString()
+            "offset" to offset.toString()
         ).putIfNotEmpty("search" to searchQuery)
+        .putIfNotEmpty("include" to ids.map { it }.joinToString())
     }
 
     private fun ProductSorting.asOrderByParameter() = when (this) {
