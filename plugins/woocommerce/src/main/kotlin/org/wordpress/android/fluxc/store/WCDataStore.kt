@@ -15,7 +15,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class x @Inject constructor(
+class WCDataStore @Inject constructor(
     private val restClient: WCDataRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val mapper: WCCountryMapper
