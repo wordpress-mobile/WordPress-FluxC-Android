@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -9,6 +8,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
+import org.wordpress.android.fluxc.store.WCProductStore.Companion
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.ProductsDbHelper
 import org.wordpress.android.util.AppLog.T.API
@@ -37,13 +39,21 @@ class ProductStore @Inject constructor(
     suspend fun fetchProducts(
         site: SiteModel,
         offset: Int = 0,
-        pageSize: Int = DEFAULT_PAGE_SIZE
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        sortType: ProductSorting = WCProductStore.DEFAULT_PRODUCT_SORTING,
+        includedVariationIds: List<Long> = emptyList(),
+        excludedVariationIds: List<Long> = emptyList(),
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
             val response = restClient.fetchProductsWithSyncRequest(
                 site = site,
                 offset = offset,
-                pageSize = pageSize
+                pageSize = pageSize,
+                sortType = sortType,
+                includedProductIds = includedVariationIds,
+                excludedProductIds = excludedVariationIds,
+                filterOptions = filterOptions
             )
             when {
                 response.isError -> WooResult(response.error)
@@ -75,14 +85,9 @@ class ProductStore @Inject constructor(
                 response.result != null -> {
                     productsDbHelper.insertOrUpdateProducts(site, response.result)
                     val productIds = response.result.map { it.remoteProductId }
-                    val products = productsDao.getProducts(site.siteId, productIds)
+                    val products = productsDao.getProductsByIds(site.siteId, productIds)
                     val canLoadMore = response.result.size == pageSize
-                    WooResult(
-                        ProductSearchResult(
-                            products,
-                            canLoadMore
-                        )
-                    )
+                    WooResult(ProductSearchResult(products, canLoadMore))
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
