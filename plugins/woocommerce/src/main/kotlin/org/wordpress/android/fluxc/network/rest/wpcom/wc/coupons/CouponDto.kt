@@ -55,9 +55,9 @@ data class CouponDto(
             areSaleItemsExcluded = areSaleItemsExcluded,
             minimumAmount = minimumAmount?.toBigDecimalOrNull(),
             maximumAmount = maximumAmount?.toBigDecimalOrNull(),
-            includedProductIds = productIds?.joinToString(","),
-            excludedProductIds = excludedProductIds?.joinToString(","),
-            includedCategoryIds = productCategoryIds?.joinToString(","),
-            excludedCategoryIds = excludedProductCategoryIds?.joinToString(",")
+            includedProductIds = productIds,
+            excludedProductIds = excludedProductIds,
+            includedCategoryIds = productCategoryIds,
+            excludedCategoryIds = excludedProductCategoryIds
         )
 }

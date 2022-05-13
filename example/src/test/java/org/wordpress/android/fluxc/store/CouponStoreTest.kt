@@ -99,10 +99,10 @@ class CouponStoreTest {
         areSaleItemsExcluded = couponDto.areSaleItemsExcluded,
         minimumAmount = couponDto.minimumAmount?.toBigDecimal(),
         maximumAmount = couponDto.maximumAmount?.toBigDecimal(),
-        includedProductIds = couponDto.productIds?.joinToString(","),
-        excludedProductIds = couponDto.excludedProductIds?.joinToString(","),
-        includedCategoryIds = couponDto.productCategoryIds?.joinToString(","),
-        excludedCategoryIds = couponDto.excludedProductCategoryIds?.joinToString(",")
+        includedProductIds = couponDto.productIds,
+        excludedProductIds = couponDto.excludedProductIds,
+        includedCategoryIds = couponDto.productCategoryIds,
+        excludedCategoryIds = couponDto.excludedProductCategoryIds
     )
 
     private val expectedEmail = CouponEmailEntity(

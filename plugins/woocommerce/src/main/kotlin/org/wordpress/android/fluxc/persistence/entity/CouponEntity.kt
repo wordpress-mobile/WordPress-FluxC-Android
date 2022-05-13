@@ -35,10 +35,10 @@ data class CouponEntity(
     val areSaleItemsExcluded: Boolean? = null,
     val minimumAmount: BigDecimal? = null,
     val maximumAmount: BigDecimal? = null,
-    val includedProductIds: String? = null,
-    val excludedProductIds: String? = null,
-    val includedCategoryIds: String? = null,
-    val excludedCategoryIds: String? = null
+    val includedProductIds: List<Long>? = null,
+    val excludedProductIds: List<Long>? = null,
+    val includedCategoryIds: List<Long>? = null,
+    val excludedCategoryIds: List<Long>? = null
 ) {
     sealed class DiscountType(open val value: String) {
         object Percent : DiscountType("percent")
