@@ -100,7 +100,7 @@ class CouponStoreTest {
         minimumAmount = couponDto.minimumAmount?.toBigDecimal(),
         maximumAmount = couponDto.maximumAmount?.toBigDecimal(),
         includedProductIds = couponDto.productIds?.joinToString(","),
-        excludedProductIds = couponDto.productIds?.joinToString(","),
+        excludedProductIds = couponDto.excludedProductIds?.joinToString(","),
         includedCategoryIds = couponDto.productCategoryIds?.joinToString(","),
         excludedCategoryIds = couponDto.excludedProductCategoryIds?.joinToString(",")
     )
