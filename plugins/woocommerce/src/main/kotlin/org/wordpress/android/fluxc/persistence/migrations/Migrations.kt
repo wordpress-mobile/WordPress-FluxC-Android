@@ -507,4 +507,4 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
 
 @DeleteTable(tableName = "CouponsAndProducts")
 @DeleteTable(tableName = "CouponsAndProductCategories")
-internal class AutoMigration13to14: AutoMigrationSpec
+internal class AutoMigration13to14 : AutoMigrationSpec

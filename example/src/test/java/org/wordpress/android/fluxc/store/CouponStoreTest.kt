@@ -74,7 +74,7 @@ class CouponStoreTest {
         minimumAmount = "5",
         maximumAmount = "50",
         restrictedEmails = listOf("email@email.com"),
-        usedBy = null,
+        usedBy = null
     )
 
     private val expectedCoupon = CouponEntity(
@@ -159,7 +159,6 @@ class CouponStoreTest {
 
         verify(couponsDao).insertOrUpdateCouponEmail(expectedEmail)
     }
-
 
     @Test
     fun `Observing the DB changes returns the correct coupon data model`(): Unit = test {

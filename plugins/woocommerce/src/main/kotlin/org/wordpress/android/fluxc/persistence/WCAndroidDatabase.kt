@@ -57,7 +57,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         ],
         autoMigrations = [
             AutoMigration(from = 12, to = 13),
-            AutoMigration(from = 13, to = 14, spec = AutoMigration13to14::class),
+            AutoMigration(from = 13, to = 14, spec = AutoMigration13to14::class)
         ]
 )
 @TypeConverters(

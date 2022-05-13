@@ -16,8 +16,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClien
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.toDataModel
 import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
-import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
-import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.tools.CoroutineEngine
