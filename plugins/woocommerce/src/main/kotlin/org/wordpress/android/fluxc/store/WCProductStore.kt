@@ -34,7 +34,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
-import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
@@ -42,6 +41,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.AppLogWrapper
 import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
+import org.wordpress.android.fluxc.utils.ProductVariationsDbHelper
 import org.wordpress.android.fluxc.utils.ProductsDbHelper
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -57,6 +57,7 @@ class WCProductStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
     private val productsDbHelper: ProductsDbHelper,
+    private val productVariationsDbHelper: ProductVariationsDbHelper,
     private val productCategoriesDbHelper: ProductCategoriesDbHelper,
     private val logger: AppLogWrapper
 ) : Store(dispatcher) {
@@ -931,7 +932,9 @@ class WCProductStore @Inject constructor(
                 wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
                     .asWooResult()
                     .model?.asProductVariationModel()
-                    ?.apply { insertOrUpdateProductVariation(this) }
+                    ?.apply {
+                        productVariationsDbHelper.insertOrUpdateProductVariations(site, this)
+                    }
                     ?.let { WooResult(it) }
             } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
@@ -947,7 +950,9 @@ class WCProductStore @Inject constructor(
                 .let { wcProductRestClient.generateEmptyVariation(site, product.remoteProductId, it) }
                 .asWooResult()
                 .model?.asProductVariationModel()
-                ?.apply { insertOrUpdateProductVariation(this) }
+                ?.apply {
+                    productVariationsDbHelper.insertOrUpdateProductVariations(site, this)
+                }
                 ?.let { WooResult(it) }
                 ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
         }
@@ -961,7 +966,12 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.deleteVariation(site, productId, variationId)
                 .asWooResult()
                 .model?.asProductVariationModel()
-                ?.apply { ProductSqlUtils.deleteVariationsForProduct(site, productId) }
+                ?.apply {
+                    productVariationsDbHelper.deleteAllProductVariationsForProduct(
+                        site,
+                        productId
+                    )
+                }
                 ?.let { WooResult(it) }
                 ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
         }
@@ -1016,7 +1026,7 @@ class WCProductStore @Inject constructor(
                     it.remoteVariationId = result.variation.remoteVariationId
                 }
             } else {
-                insertOrUpdateProductVariation(result.variation)
+                productVariationsDbHelper.insertOrUpdateProductVariations(site, result.variation)
                 OnVariationChanged().also {
                     it.remoteProductId = result.variation.remoteProductId
                     it.remoteVariationId = result.variation.remoteVariationId
@@ -1042,7 +1052,7 @@ class WCProductStore @Inject constructor(
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>): List<WCProductModel>? {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductList") {
-            wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds).result
+            wcProductRestClient.fetchProductsWithSyncRequest(site = site, includedProductIds = productIds).result
         }?.also {
             productsDbHelper.insertOrUpdateProducts(site, it)
         }
@@ -1081,10 +1091,16 @@ class WCProductStore @Inject constructor(
                 // delete product variations for site if this is the first page of results, otherwise
                 // product variations deleted outside of the app will persist
                 if (result.offset == 0) {
-                    ProductSqlUtils.deleteVariationsForProduct(result.site, result.remoteProductId)
+                    productVariationsDbHelper.deleteAllProductVariationsForProduct(
+                        result.site,
+                        result.remoteProductId
+                    )
                 }
 
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(result.variations)
+                val rowsAffected = productVariationsDbHelper.insertOrUpdateProductVariations(
+                    result.site,
+                    result.variations
+                )
                 OnProductChanged(rowsAffected, payload.remoteProductId, canLoadMore = result.canLoadMore)
             }
         }
@@ -1215,7 +1231,10 @@ class WCProductStore @Inject constructor(
                         result.variation.remoteVariationId
                     ).also { it.error = result.error }
                 } else {
-                    val rowsAffected = insertOrUpdateProductVariation(result.variation)
+                    val rowsAffected = productVariationsDbHelper.insertOrUpdateProductVariations(
+                        site,
+                        result.variation
+                    )
                     OnVariationUpdated(
                         rowsAffected,
                         result.variation.remoteProductId,
@@ -1252,7 +1271,10 @@ class WCProductStore @Inject constructor(
                             localSiteId = payload.site.id
                         }
                     } ?: emptyList()
-                    ProductSqlUtils.insertOrUpdateProductVariations(updatedVariations)
+                    productVariationsDbHelper.insertOrUpdateProductVariations(
+                        site,
+                        updatedVariations
+                    )
                     WooResult(result.result)
                 }
             }
@@ -1401,19 +1423,30 @@ class WCProductStore @Inject constructor(
     }
 
     private fun handleUpdateProductImages(payload: RemoteUpdateProductImagesPayload) {
-        val onProductImagesChanged: OnProductImagesChanged
+        coroutineEngine.launch(T.DB, this, "handleUpdateProductImages") {
+            val onProductImagesChanged: OnProductImagesChanged
 
-        if (payload.isError) {
-            onProductImagesChanged = OnProductImagesChanged(0, payload.product.remoteProductId).also {
-                it.error = payload.error
+            if (payload.isError) {
+                onProductImagesChanged = OnProductImagesChanged(
+                    0,
+                    payload.product.remoteProductId
+                ).also {
+                    it.error = payload.error
+                }
+            } else {
+                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
+                    payload.site,
+                    payload.product
+                )
+                onProductImagesChanged = OnProductImagesChanged(
+                    rowsAffected,
+                    payload.product.remoteProductId
+                )
             }
-        } else {
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductImagesChanged = OnProductImagesChanged(rowsAffected, payload.product.remoteProductId)
-        }
 
-        onProductImagesChanged.causeOfChange = WCProductAction.UPDATED_PRODUCT_IMAGES
-        emitChange(onProductImagesChanged)
+            onProductImagesChanged.causeOfChange = WCProductAction.UPDATED_PRODUCT_IMAGES
+            emitChange(onProductImagesChanged)
+        }
     }
 
     private fun handleUpdateProduct(payload: RemoteUpdateProductPayload) {

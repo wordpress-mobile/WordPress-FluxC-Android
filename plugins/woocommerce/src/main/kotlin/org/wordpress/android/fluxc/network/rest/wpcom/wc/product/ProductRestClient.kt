@@ -546,6 +546,23 @@ class ProductRestClient @Inject constructor(
             }
         }
 
+    @JvmName("handleResultFromProductVariationApiResponse")
+    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(site: SiteModel) =
+        when (this) {
+            is JetpackSuccess -> {
+                data
+                    ?.map {
+                        it.asProductVariationModel()
+                            .apply { localSiteId = site.id }
+                    }
+                    .orEmpty()
+                    .let { WooPayload(it.toList()) }
+            }
+            is JetpackError -> {
+                WooPayload(error.toWooError())
+            }
+        }
+
     private suspend fun String.requestCategoryTo(
         site: SiteModel,
         params: Map<String, String>
@@ -579,6 +596,21 @@ class ProductRestClient @Inject constructor(
 
         return params
     }
+
+    private fun buildVariationParametersMap(
+        pageSize: Int,
+        offset: Int,
+        searchQuery: String?,
+        ids: List<Long>,
+        excludedProductIds: List<Long>
+    ) = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "orderby" to "date",
+            "order" to "asc",
+            "offset" to offset.toString()
+        ).putIfNotEmpty("search" to searchQuery)
+            .putIfNotEmpty("include" to ids.map { it }.joinToString())
+            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
 
     private fun ProductSorting.asOrderByParameter() = when (this) {
         TITLE_ASC, TITLE_DESC -> "title"
@@ -726,6 +758,49 @@ class ProductRestClient @Inject constructor(
             }
         }
     }
+
+
+    /**
+     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of variations for the given WooCommerce [SiteModel] and product.
+     *
+     * @param [productId] Unique server id of the product
+     *
+     * but requiring this call to be suspended so the return call be synced within the coroutine job
+     *
+     */
+    suspend fun fetchProductVariationsWithSyncRequest(
+        site: SiteModel,
+        productId: Long,
+        pageSize: Int,
+        offset: Int,
+        includedVariationIds: List<Long> = emptyList(),
+        searchQuery: String? = null,
+        excludedVariationIds: List<Long> = emptyList()
+    ): WooPayload<List<WCProductVariationModel>> {
+        val params = buildVariationParametersMap(
+            pageSize,
+            offset,
+            searchQuery,
+            includedVariationIds,
+            excludedVariationIds
+        )
+
+        return WOOCOMMERCE.products.id(productId).variations.pathV3
+            .requestProductVariationTo(site, params)
+            .handleResultFrom(site)
+    }
+
+    private suspend fun String.requestProductVariationTo(
+        site: SiteModel,
+        params: Map<String, String>
+    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        this@ProductRestClient,
+        site,
+        this,
+        params,
+        Array<ProductVariationApiResponse>::class.java
+    )
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/remoteProductId` to update a product
