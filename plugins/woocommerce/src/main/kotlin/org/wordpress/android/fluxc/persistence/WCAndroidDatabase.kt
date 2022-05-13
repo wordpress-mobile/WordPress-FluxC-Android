@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
+import org.wordpress.android.fluxc.persistence.dao.ProductVariationsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
@@ -31,6 +32,7 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
+import org.wordpress.android.fluxc.persistence.entity.ProductVariationEntity
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
@@ -53,6 +55,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             GlobalAddonGroupEntity::class,
             OrderNoteEntity::class,
             ProductEntity::class,
+            ProductVariationEntity::class,
             ProductCategoryEntity::class,
             OrderEntity::class,
             InboxNoteEntity::class,
@@ -76,6 +79,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val orderNotesDao: OrderNotesDao
     abstract val couponsDao: CouponsDao
     abstract val productsDao: ProductsDao
+    abstract val productVariationsDao: ProductVariationsDao
     abstract val productCategoriesDao: ProductCategoriesDao
     abstract val inboxNotesDao: InboxNotesDao
 

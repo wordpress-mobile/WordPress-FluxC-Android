@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
+import org.wordpress.android.fluxc.persistence.dao.ProductVariationsDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import javax.inject.Singleton
 
@@ -34,6 +35,12 @@ abstract class WCDatabaseModule {
 
         @Provides fun provideProductsDao(database: WCAndroidDatabase): ProductsDao {
             return database.productsDao
+        }
+
+        @Provides fun provideProductVariationsDao(
+            database: WCAndroidDatabase
+        ): ProductVariationsDao {
+            return database.productVariationsDao
         }
 
         @Provides
