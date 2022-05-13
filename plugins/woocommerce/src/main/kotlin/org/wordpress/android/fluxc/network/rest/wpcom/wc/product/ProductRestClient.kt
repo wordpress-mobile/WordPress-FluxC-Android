@@ -450,15 +450,26 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductsWithSyncRequest(
         site: SiteModel,
-        remoteProductIds: List<Long> = emptyList(),
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         offset: Int = 0,
-        searchQuery: String? = null
-    ) = buildParametersMap(pageSize, sortType, offset, searchQuery, remoteProductIds)
-        .let {
-            WOOCOMMERCE.products.pathV3.requestProductTo(site, it)
-        }.handleResultFrom(site)
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        includedProductIds: List<Long> = emptyList(),
+        excludedProductIds: List<Long> = emptyList(),
+        searchQuery: String? = null,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+    ): WooPayload<List<WCProductModel>> {
+        val params = buildProductParametersMap(
+            pageSize,
+            sortType,
+            offset,
+            searchQuery,
+            includedProductIds,
+            excludedProductIds,
+            filterOptions
+        )
+
+        return WOOCOMMERCE.products.pathV3.requestProductTo(site, params).handleResultFrom(site)
+    }
 
     private suspend fun String.requestProductTo(
         site: SiteModel,
@@ -546,20 +557,27 @@ class ProductRestClient @Inject constructor(
         Array<ProductCategoryApiResponse>::class.java
     )
 
-    private fun buildParametersMap(
+    private fun buildProductParametersMap(
         pageSize: Int,
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
-        ids: List<Long>
+        ids: List<Long>,
+        excludedProductIds: List<Long>,
+        filterOptions: Map<ProductFilterOption, String>
     ): MutableMap<String, String> {
-        return mutableMapOf(
+        val params = mutableMapOf(
             "per_page" to pageSize.toString(),
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
             "offset" to offset.toString()
         ).putIfNotEmpty("search" to searchQuery)
-        .putIfNotEmpty("include" to ids.map { it }.joinToString())
+            .putIfNotEmpty("include" to ids.map { it }.joinToString())
+            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
+
+        params.putAll(filterOptions.map { it.key.toString() to it.value })
+
+        return params
     }
 
     private fun ProductSorting.asOrderByParameter() = when (this) {
