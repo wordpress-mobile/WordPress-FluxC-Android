@@ -16,20 +16,21 @@ abstract class ProductsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateProducts(entities: List<ProductEntity>)
 
-    @Query("SELECT * FROM Products WHERE siteId = :siteId ORDER BY id")
+    @Query("SELECT * FROM Products WHERE id = :productId")
+    abstract suspend fun getProduct(productId: Long): ProductEntity?
+
+    @Query("SELECT * FROM Products WHERE id = :productId")
+    abstract fun observeProduct(productId: Long): Flow<ProductEntity?>
+
+    @Query("SELECT * FROM Products WHERE siteId = :siteId ORDER BY name ASC")
     abstract suspend fun getProducts(siteId: Long): List<ProductEntity>
 
-    @Query("SELECT * FROM Products WHERE siteId = :siteId ORDER BY id")
+    @Query("SELECT * FROM Products WHERE siteId = :siteId ORDER BY name ASC")
     abstract fun observeProducts(siteId: Long): Flow<List<ProductEntity>>
-
-    @Transaction
-    @Query("SELECT * FROM Products " +
-        "WHERE siteId = :siteId AND id IN (:productIds) ORDER BY dateCreated DESC")
-    abstract suspend fun getProducts(siteId: Long, productIds: List<Long>): List<ProductEntity>
 
     @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
         "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +
-        "ORDER BY p.id")
+        "ORDER BY p.name ASC")
     abstract fun getCouponProducts(
         siteId: Long,
         couponId: Long,
@@ -38,14 +39,16 @@ abstract class ProductsDao {
 
     @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
         "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +
-        "ORDER BY p.id")
+        "ORDER BY p.name ASC")
     abstract fun observeCouponProducts(
         siteId: Long,
         couponId: Long,
         areExcluded: Boolean
     ): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM Products WHERE siteId = :siteId AND id IN (:productIds) ORDER BY id")
+    @Transaction
+    @Query("SELECT * FROM Products WHERE siteId = :siteId AND id IN (:productIds) " +
+        "ORDER BY name ASC")
     abstract fun getProductsByIds(siteId: Long, productIds: List<Long>): List<ProductEntity>
 
     @Query("DELETE FROM Products WHERE siteId = :siteId")
