@@ -27,8 +27,8 @@ import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.ListItem
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
-import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
+import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.store.CouponStore
 import org.wordpress.android.fluxc.store.ProductCategoryStore
 import org.wordpress.android.fluxc.store.ProductStore
@@ -320,7 +320,7 @@ class WooUpdateCouponFragment : Fragment() {
         .split(",")
         .mapNotNull { it.toLongOrNull() }
 
-    private fun updateCouponProperties(couponModel: CouponDataModel) {
+    private fun updateCouponProperties(couponModel: CouponWithEmails) {
         coupon_code.setText(couponModel.coupon.code ?: "")
         coupon_amount.setText(couponModel.coupon.amount.toString())
         discount_type.text = couponModel.coupon.discountType.toString()
@@ -328,10 +328,10 @@ class WooUpdateCouponFragment : Fragment() {
         expiry_date.setText(couponModel.coupon.dateExpires?.split('T')?.get(0) ?: "")
         minimum_amount.setText(couponModel.coupon.minimumAmount.toString())
         maximum_amount.setText(couponModel.coupon.maximumAmount.toString())
-        product_ids.setText(couponModel.products.joinToString { it.id.toString() })
-        excluded_product_ids.setText(couponModel.excludedProducts.joinToString { it.id.toString() })
-        category_ids.setText(couponModel.categories.joinToString { it.id.toString() })
-        excluded_category_ids.setText(couponModel.excludedCategories.joinToString { it.id.toString() })
+        product_ids.setText(couponModel.coupon.includedProductIds ?: "")
+        excluded_product_ids.setText(couponModel.coupon.excludedProductIds ?: "")
+        category_ids.setText(couponModel.coupon.includedCategoryIds ?: "")
+        excluded_category_ids.setText(couponModel.coupon.excludedCategoryIds ?: "")
         shipping_free.isChecked = couponModel.coupon.isShippingFree ?: false
         individual_use.isChecked = couponModel.coupon.isForIndividualUse ?: false
         sale_item_excluded.isChecked = couponModel.coupon.areSaleItemsExcluded ?: false
