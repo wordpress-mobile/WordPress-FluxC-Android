@@ -54,6 +54,10 @@ data class CouponDto(
             isShippingFree = isShippingFree,
             areSaleItemsExcluded = areSaleItemsExcluded,
             minimumAmount = minimumAmount?.toBigDecimalOrNull(),
-            maximumAmount = maximumAmount?.toBigDecimalOrNull()
+            maximumAmount = maximumAmount?.toBigDecimalOrNull(),
+            includedProductIds = productIds?.joinToString(","),
+            excludedProductIds = excludedProductIds?.joinToString(","),
+            includedCategoryIds = productCategoryIds?.joinToString(","),
+            excludedCategoryIds = excludedProductCategoryIds?.joinToString(",")
         )
 }

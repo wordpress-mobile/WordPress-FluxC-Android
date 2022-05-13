@@ -34,7 +34,11 @@ data class CouponEntity(
     val isShippingFree: Boolean? = null,
     val areSaleItemsExcluded: Boolean? = null,
     val minimumAmount: BigDecimal? = null,
-    val maximumAmount: BigDecimal? = null
+    val maximumAmount: BigDecimal? = null,
+    val includedProductIds: String? = null,
+    val excludedProductIds: String? = null,
+    val includedCategoryIds: String? = null,
+    val excludedCategoryIds: String? = null
 ) {
     sealed class DiscountType(open val value: String) {
         object Percent : DiscountType("percent")
@@ -60,14 +64,5 @@ data class CouponEntity(
 data class CouponWithEmails(
     @Embedded val coupon: CouponEntity,
     @Relation(parentColumn = "id", entityColumn = "couponId")
-    val restrictedEmails: List<CouponEmailEntity>
-)
-
-data class CouponDataModel(
-    val coupon: CouponEntity,
-    val products: List<ProductEntity>,
-    val excludedProducts: List<ProductEntity>,
-    val categories: List<ProductCategoryEntity>,
-    val excludedCategories: List<ProductCategoryEntity>,
     val restrictedEmails: List<CouponEmailEntity>
 )
