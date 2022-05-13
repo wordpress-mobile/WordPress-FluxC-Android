@@ -29,11 +29,17 @@ class ProductStore @Inject constructor(
         const val DEFAULT_PAGE_SIZE = 100
     }
 
-    suspend fun getProducts(siteId: Long): List<ProductEntity> =
+    suspend fun getProducts(siteId: Long) =
         productsDao.getProducts(siteId)
 
-    fun observeProducts(siteId: Long): Flow<List<ProductEntity>> =
+    fun observeProducts(siteId: Long) =
         productsDao.observeProducts(siteId)
+
+    suspend fun getProduct(id: Long) =
+        productsDao.getProduct(id)
+
+    fun observeProduct(id: Long) =
+        productsDao.observeProduct(id)
 
     // Returns a boolean indicating whether more coupons can be fetched
     suspend fun fetchProducts(
