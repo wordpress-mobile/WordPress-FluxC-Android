@@ -58,70 +58,6 @@ class ProductsDaoTest {
         assertThat(observedProduct.first()).isEqualTo(product)
     }
 
-    @Test
-    fun `test insert coupon products`(): Unit = runBlocking {
-        // when
-        val product1 = generateProductEntity(1)
-        val product2 = generateProductEntity(2)
-        val product3 = generateProductEntity(3)
-        val product4 = generateProductEntity(4)
-        productsDao.insertOrUpdateProduct(product1)
-        productsDao.insertOrUpdateProduct(product2)
-        productsDao.insertOrUpdateProduct(product3)
-        productsDao.insertOrUpdateProduct(product4)
-
-        val coupon = CouponsDaoTest.generateCouponEntity()
-        couponsDao.insertOrUpdateCoupon(coupon)
-        couponsDao.insertOrUpdateCouponAndProduct(
-            CouponAndProductEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productId = product1.id,
-                isExcluded = false
-            )
-        )
-        couponsDao.insertOrUpdateCouponAndProduct(
-            CouponAndProductEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productId = product2.id,
-                isExcluded = false
-            )
-        )
-        couponsDao.insertOrUpdateCouponAndProduct(
-            CouponAndProductEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productId = product3.id,
-                isExcluded = true
-            )
-        )
-        couponsDao.insertOrUpdateCouponAndProduct(
-            CouponAndProductEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productId = product4.id,
-                isExcluded = true
-            )
-        )
-
-        val includedProducts = productsDao.getCouponProducts(
-            couponId = coupon.id,
-            siteId = coupon.siteId,
-            areExcluded = false
-        )
-
-        val excludedProducts = productsDao.getCouponProducts(
-            couponId = coupon.id,
-            siteId = coupon.siteId,
-            areExcluded = true
-        )
-
-        // then
-        assertThat(includedProducts).isEqualTo(listOf(product1, product2))
-        assertThat(excludedProducts).isEqualTo(listOf(product3, product4))
-    }
-
     companion object {
         fun generateProductEntity(
             remoteId: Long,
@@ -131,8 +67,7 @@ class ProductsDaoTest {
             siteId: Long = 1,
             stockStatus: String = CoreProductStockStatus.IN_STOCK.value,
             status: String = "publish",
-            stockQuantity: Double = 0.0,
-            categories: String = ""
+            stockQuantity: Double = 0.0
         ) = ProductEntity(
                 id = remoteId,
                 siteId = siteId,
