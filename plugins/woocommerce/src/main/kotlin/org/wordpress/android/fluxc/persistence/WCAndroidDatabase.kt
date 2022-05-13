@@ -21,8 +21,6 @@ import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
 import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
@@ -31,6 +29,7 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
+import org.wordpress.android.fluxc.persistence.migrations.AutoMigration13to14
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
@@ -42,14 +41,12 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-        version = 13,
+        version = 14,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
             CouponEntity::class,
             CouponEmailEntity::class,
-            CouponAndProductEntity::class,
-            CouponAndProductCategoryEntity::class,
             GlobalAddonGroupEntity::class,
             OrderNoteEntity::class,
             ProductEntity::class,
@@ -59,7 +56,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             InboxNoteActionEntity::class
         ],
         autoMigrations = [
-            AutoMigration(from = 12, to = 13)
+            AutoMigration(from = 12, to = 13),
+            AutoMigration(from = 13, to = 14, spec = AutoMigration13to14::class),
         ]
 )
 @TypeConverters(
