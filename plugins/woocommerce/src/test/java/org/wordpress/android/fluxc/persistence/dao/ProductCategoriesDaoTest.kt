@@ -13,7 +13,6 @@ import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 
 @ExperimentalCoroutinesApi
