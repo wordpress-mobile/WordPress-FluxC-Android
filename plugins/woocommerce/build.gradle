@@ -84,14 +84,14 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.7.3'
-    testImplementation 'androidx.test:core:1.4.0'
+    testImplementation "androidx.test:core:$androidxTestCoreVersion"
     testImplementation "org.assertj:assertj-core:$assertJVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
 
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
-    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation "androidx.test:runner:$androidxTestCoreVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation "org.assertj:assertj-core:$assertJVersion"
 }
