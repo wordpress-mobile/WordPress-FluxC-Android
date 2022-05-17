@@ -1260,6 +1260,65 @@ class WCProductStore @Inject constructor(
             }
         }
 
+    // Returns a boolean indicating whether more coupons can be fetched
+    suspend fun fetchProducts(
+        site: SiteModel,
+        offset: Int = 0,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        includedVariationIds: List<Long> = emptyList(),
+        excludedVariationIds: List<Long> = emptyList(),
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
+            val response = wcProductRestClient.fetchProductsWithSyncRequest(
+                site = site,
+                offset = offset,
+                pageSize = pageSize,
+                sortType = sortType,
+                includedProductIds = includedVariationIds,
+                excludedProductIds = excludedVariationIds,
+                filterOptions = filterOptions
+            )
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    ProductSqlUtils.insertOrUpdateProducts(response.result)
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(canLoadMore)
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun searchProducts(
+        site: SiteModel,
+        searchString: String,
+        offset: Int = 0,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE
+    ): WooResult<ProductSearchResult> {
+        return coroutineEngine.withDefaultContext(API, this, "searchProducts") {
+            val response = wcProductRestClient.fetchProductsWithSyncRequest(
+                site = site,
+                offset = offset,
+                pageSize = pageSize,
+                searchQuery = searchString
+            )
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    ProductSqlUtils.insertOrUpdateProducts(response.result)
+                    val productIds = response.result.map { it.remoteProductId }
+                    val products = ProductSqlUtils.getProductsByRemoteIds(site, productIds)
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(ProductSearchResult(products, canLoadMore))
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
             wcProductRestClient.addProduct(site, product)
@@ -1549,4 +1608,9 @@ class WCProductStore @Inject constructor(
             emitChange(onProductChanged)
         }
     }
+
+    data class ProductSearchResult(
+        val products: List<WCProductModel>,
+        val canLoadMore: Boolean
+    )
 }
