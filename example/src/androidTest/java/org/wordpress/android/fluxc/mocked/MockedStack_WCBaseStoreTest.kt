@@ -5,12 +5,10 @@ import com.yarolegovich.wellsql.WellSql
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
-import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
@@ -20,13 +18,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils.WCSettingsBuilder
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
-import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettingsResponsePayload
-import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import java.util.Locale
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
@@ -55,59 +49,6 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         mMockedNetworkAppComponent.inject(this)
         dispatcher.register(this)
         lastAction = null
-    }
-
-    @Test
-    fun testApiVersionFetch() {
-        interceptor.respondWith("jetpack-tunnel-root-response-success.json")
-        wcRestClient.getSupportedWooApiVersion(siteModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCCoreAction.FETCHED_SITE_API_VERSION, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchApiVersionResponsePayload
-        assertNull(payload.error)
-        assertEquals(WooCommerceStore.WOO_API_NAMESPACE_V3, payload.version)
-    }
-
-    @Test
-    fun testWCSiteSettingsGeneralFetch() {
-        interceptor.respondWith("wc-site-settings-general-response-success.json")
-        wcRestClient.getSiteSettingsGeneral(siteModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCCoreAction.FETCHED_SITE_SETTINGS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchWCSiteSettingsResponsePayload
-        assertNull(payload.error)
-        with(payload.settings!!) {
-            assertEquals(siteModel.id, localSiteId)
-            assertEquals("CAD", currencyCode)
-            assertEquals(CurrencyPosition.LEFT, currencyPosition)
-            assertEquals(",", currencyThousandSeparator)
-            assertEquals(".", currencyDecimalSeparator)
-            assertEquals(2, currencyDecimalNumber)
-        }
-    }
-
-    @Test
-    fun testWCProductSettingsFetch() {
-        interceptor.respondWith("wc-fetch-product-settings-response-success.json")
-        wcRestClient.getSiteSettingsProducts(siteModel)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCCoreAction.FETCHED_PRODUCT_SETTINGS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchWCProductSettingsResponsePayload
-        assertNull(payload.error)
-        with(payload.settings!!) {
-            assertEquals(siteModel.id, localSiteId)
-            assertEquals("in", dimensionUnit)
-            assertEquals("oz", weightUnit)
-        }
     }
 
     // This is a connected test instead of a unit test because some of the internals of java.util.Currency seem to be

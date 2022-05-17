@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.store
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -24,12 +26,14 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
-import org.wordpress.android.fluxc.persistence.ProductSqlUtils.deleteVariationsForProduct
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -168,6 +172,84 @@ class WCProductStore @Inject constructor(
         var site: SiteModel,
         val variation: WCProductVariationModel
     ) : Payload<BaseNetworkError>()
+
+    /**
+     * Payload used by [batchUpdateVariations] function.
+     *
+     * @param remoteProductId Id of the product.
+     * @param remoteVariationsIds Ids of variations that are going to be updated.
+     * @param modifiedProperties Map of the properties of variation that are going to be updated.
+     * Keys correspond to the names of variation properties. Values are the updated properties values.
+     */
+    class BatchUpdateVariationsPayload(
+        val site: SiteModel,
+        val remoteProductId: Long,
+        val remoteVariationsIds: Collection<Long>,
+        val modifiedProperties: Map<String, Any>
+    ) : Payload<BaseNetworkError>() {
+        /**
+         * Builder class used for instantiating [BatchUpdateVariationsPayload].
+         */
+        class Builder(
+            private val site: SiteModel,
+            private val remoteProductId: Long,
+            private val variationsIds: Collection<Long>
+        ) {
+            private val variationsModifications = mutableMapOf<String, Any>()
+
+            fun regularPrice(regularPrice: String) = apply {
+                variationsModifications["regular_price"] = regularPrice
+            }
+
+            fun salePrice(salePrice: String) = apply {
+                variationsModifications["sale_price"] = salePrice
+            }
+
+            fun startOfSale(startOfSale: String) = apply {
+                variationsModifications["date_on_sale_from"] = startOfSale
+            }
+
+            fun endOfSale(endOfSale: String) = apply {
+                variationsModifications["date_on_sale_to"] = endOfSale
+            }
+
+            fun stockQuantity(stockQuantity: Int) = apply {
+                variationsModifications["stock_quantity"] = stockQuantity
+            }
+
+            fun stockStatus(stockStatus: CoreProductStockStatus) = apply {
+                variationsModifications["stock_status"] = stockStatus
+            }
+
+            fun weight(weight: String) = apply {
+                variationsModifications["weight"] = weight
+            }
+
+            fun dimensions(length: String, width: String, height: String) = apply {
+                val dimensions = JsonObject().apply {
+                    add("length", JsonPrimitive(length))
+                    add("width", JsonPrimitive(width))
+                    add("height", JsonPrimitive(height))
+                }
+                variationsModifications["dimensions"] = dimensions
+            }
+
+            fun shippingClassId(shippingClassId: String) = apply {
+                variationsModifications["shipping_class_id"] = shippingClassId
+            }
+
+            fun shippingClassSlug(shippingClassSlug: String) = apply {
+                variationsModifications["shipping_class"] = shippingClassSlug
+            }
+
+            fun build() = BatchUpdateVariationsPayload(
+                site,
+                remoteProductId,
+                variationsIds,
+                variationsModifications
+            )
+        }
+    }
 
     class FetchProductCategoriesPayload(
         var site: SiteModel,
@@ -764,8 +846,6 @@ class WCProductStore @Inject constructor(
                 fetchProducts(action.payload as FetchProductsPayload)
             WCProductAction.SEARCH_PRODUCTS ->
                 searchProducts(action.payload as SearchProductsPayload)
-            WCProductAction.FETCH_PRODUCT_VARIATIONS ->
-                fetchProductVariations(action.payload as FetchProductVariationsPayload)
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
             WCProductAction.UPDATE_PRODUCT ->
@@ -798,8 +878,6 @@ class WCProductStore @Inject constructor(
                 handleFetchProductsCompleted(action.payload as RemoteProductListPayload)
             WCProductAction.SEARCHED_PRODUCTS ->
                 handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
-            WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
-                handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
             WCProductAction.UPDATED_PRODUCT ->
@@ -883,7 +961,7 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.deleteVariation(site, productId, variationId)
                 .asWooResult()
                 .model?.asProductVariationModel()
-                ?.apply { deleteVariationsForProduct(site, productId) }
+                ?.apply { ProductSqlUtils.deleteVariationsForProduct(site, productId) }
                 ?.let { WooResult(it) }
                 ?: WooResult(WooError(INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE))
         }
@@ -992,8 +1070,24 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
-        with(payload) { wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset) }
+    suspend fun fetchProductVariations(payload: FetchProductVariationsPayload): OnProductChanged {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductVariations") {
+            val result = with(payload) {
+                    wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset)
+                }
+            return@withDefaultContext if (result.isError) {
+                OnProductChanged(0, payload.remoteProductId).also { it.error = result.error }
+            } else {
+                // delete product variations for site if this is the first page of results, otherwise
+                // product variations deleted outside of the app will persist
+                if (result.offset == 0) {
+                    ProductSqlUtils.deleteVariationsForProduct(result.site, result.remoteProductId)
+                }
+
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(result.variations)
+                OnProductChanged(rowsAffected, payload.remoteProductId, canLoadMore = result.canLoadMore)
+            }
+        }
     }
 
     private fun fetchProductShippingClass(payload: FetchSingleProductShippingClassPayload) {
@@ -1131,6 +1225,38 @@ class WCProductStore @Inject constructor(
             }
         }
     }
+
+    /**
+     * Batch updates variations on the backend and updates variations locally after successful request.
+     *
+     * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using [BatchUpdateVariationsPayload.Builder] class.
+     */
+    suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
+        WooResult<BatchProductVariationsUpdateApiResponse> =
+        coroutineEngine.withDefaultContext(API, this, "batchUpdateVariations") {
+            with(payload) {
+                val result: WooPayload<BatchProductVariationsUpdateApiResponse> =
+                    wcProductRestClient.batchUpdateVariations(
+                        site,
+                        remoteProductId,
+                        remoteVariationsIds,
+                        modifiedProperties
+                    )
+
+                return@withDefaultContext if (result.isError) {
+                    WooResult(result.error)
+                } else {
+                    val updatedVariations = result.result?.updatedVariations?.map { response ->
+                        response.asProductVariationModel().apply {
+                            remoteProductId = payload.remoteProductId
+                            localSiteId = payload.site.id
+                        }
+                    } ?: emptyList()
+                    ProductSqlUtils.insertOrUpdateProductVariations(updatedVariations)
+                    WooResult(result.result)
+                }
+            }
+        }
 
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
@@ -1272,26 +1398,6 @@ class WCProductStore @Inject constructor(
         }
         onProductPasswordUpdated.causeOfChange = WCProductAction.UPDATE_PRODUCT_PASSWORD
         emitChange(onProductPasswordUpdated)
-    }
-
-    private fun handleFetchProductVariationsCompleted(payload: RemoteProductVariationsPayload) {
-        val onProductChanged: OnProductChanged
-
-        if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
-        } else {
-            // delete product variations for site if this is the first page of results, otherwise
-            // product variations deleted outside of the app will persist
-            if (payload.offset == 0) {
-                ProductSqlUtils.deleteVariationsForProduct(payload.site, payload.remoteProductId)
-            }
-
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(payload.variations)
-            onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
-        }
-
-        onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_VARIATIONS
-        emitChange(onProductChanged)
     }
 
     private fun handleUpdateProductImages(payload: RemoteUpdateProductImagesPayload) {

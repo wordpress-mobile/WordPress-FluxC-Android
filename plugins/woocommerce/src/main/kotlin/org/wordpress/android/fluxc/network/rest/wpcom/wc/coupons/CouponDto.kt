@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons
 
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 
 data class CouponDto(
     @SerializedName("id") val id: Long,
@@ -31,17 +32,17 @@ data class CouponDto(
     @SerializedName("email_restrictions") val restrictedEmails: List<String>?,
     @SerializedName("used_by") val usedBy: List<String>?
 ) {
-    fun toDataModel(siteId: Long) =
+    fun toDataModel(siteId: Long): CouponEntity =
         CouponEntity(
             id = id,
             siteId = siteId,
             code = code,
-            amount = amount,
+            amount = amount?.toBigDecimalOrNull(),
             dateCreated = dateCreated,
             dateCreatedGmt = dateCreatedGmt,
             dateModified = dateModified,
             dateModifiedGmt = dateModifiedGmt,
-            discountType = discountType,
+            discountType = discountType?.let { DiscountType.fromString(it) },
             description = description,
             dateExpires = dateExpires,
             dateExpiresGmt = dateExpiresGmt,
@@ -52,7 +53,11 @@ data class CouponDto(
             limitUsageToXItems = limitUsageToXItems,
             isShippingFree = isShippingFree,
             areSaleItemsExcluded = areSaleItemsExcluded,
-            minimumAmount = minimumAmount,
-            maximumAmount = maximumAmount
+            minimumAmount = minimumAmount?.toBigDecimalOrNull(),
+            maximumAmount = maximumAmount?.toBigDecimalOrNull(),
+            includedProductIds = productIds,
+            excludedProductIds = excludedProductIds,
+            includedCategoryIds = productCategoryIds,
+            excludedCategoryIds = excludedProductCategoryIds
         )
 }

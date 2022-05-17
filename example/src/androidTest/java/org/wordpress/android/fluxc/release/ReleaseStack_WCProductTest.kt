@@ -64,7 +64,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
         FETCHED_PRODUCTS,
-        FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
         FETCHED_PRODUCT_PASSWORD,
@@ -198,23 +197,17 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchProductVariations() {
+    fun testFetchProductVariations() = runBlocking {
         // remove all variations for this product and verify there are none
         ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
         assertEquals(ProductSqlUtils.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId).size, 0)
 
-        nextEvent = TestEvent.FETCHED_PRODUCT_VARIATIONS
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder
-                        .newFetchProductVariationsAction(
-                                FetchProductVariationsPayload(
-                                        sSite,
-                                        productModelWithVariations.remoteProductId
-                                )
-                        )
+        productStore.fetchProductVariations(
+            FetchProductVariationsPayload(
+                sSite,
+                productModelWithVariations.remoteProductId
+            )
         )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
         val fetchedVariations = productStore.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
@@ -741,10 +734,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_PRODUCTS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCTS, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCProductAction.FETCH_PRODUCT_VARIATIONS -> {
-                assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

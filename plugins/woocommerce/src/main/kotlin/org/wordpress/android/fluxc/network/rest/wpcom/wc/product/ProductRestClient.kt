@@ -34,6 +34,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -213,7 +214,7 @@ class ProductRestClient @Inject constructor(
      * Makes a POST request to `POST /wp-json/wc/v3/products/tags/batch` to add
      * product tags for a site
      *
-     * Dispatches a WCProductAction.ADDED_PRODUCT_TAGS action with the result
+     * Dispatches a [WCProductAction.ADDED_PRODUCT_TAGS] action with the result
      *
      * @param [site] The site to fetch product shipping class list for
      * @param [tags] The list of tag names that needed to be added to the site
@@ -654,8 +655,6 @@ class ProductRestClient @Inject constructor(
      * Makes a GET request to `POST /wp-json/wc/v3/products/[productId]/variations` to fetch
      * variations for a product
      *
-     * Dispatches a WCProductAction.FETCHED_PRODUCT_VARIATIONS action with the result
-     *
      * @param [productId] Unique server id of the product
      *
      * Variations by default are sorted by `menu_order` with sorting order = desc.
@@ -666,12 +665,12 @@ class ProductRestClient @Inject constructor(
      * preserve the sorting order when fetching multiple pages of variations.
      *
      */
-    fun fetchProductVariations(
+    suspend fun fetchProductVariations(
         site: SiteModel,
         productId: Long,
         pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
         offset: Int = 0
-    ) {
+    ): RemoteProductVariationsPayload {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
         val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
         val params = mutableMapOf(
@@ -681,33 +680,33 @@ class ProductRestClient @Inject constructor(
                 "orderby" to "date"
         )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductVariationApiResponse>? ->
-                    val variationModels = response?.map {
-                        it.asProductVariationModel().apply {
-                            localSiteId = site.id
-                            remoteProductId = productId
-                        }
-                    }.orEmpty()
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this, site, url, params, Array<ProductVariationApiResponse>::class.java
+        )
+        when (response) {
+            is JetpackSuccess -> {
+                val variationModels = response.data?.map {
+                    it.asProductVariationModel().apply {
+                        localSiteId = site.id
+                        remoteProductId = productId
+                    }
+                }.orEmpty()
 
-                    val loadedMore = offset > 0
-                    val canLoadMore = variationModels.size == pageSize
-                    val payload = RemoteProductVariationsPayload(
-                            site, productId, variationModels, offset, loadedMore, canLoadMore
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductVariationsPayload(
-                            productError,
-                            site,
-                            productId
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                val loadedMore = offset > 0
+                val canLoadMore = variationModels.size == pageSize
+                return RemoteProductVariationsPayload(
+                    site, productId, variationModels, offset, loadedMore, canLoadMore
+                )
+            }
+            is JetpackError -> {
+                val productError = networkErrorToProductError(response.error)
+                return RemoteProductVariationsPayload(
+                    productError,
+                    site,
+                    productId
+                )
+            }
+        }
     }
 
     /**
@@ -801,6 +800,38 @@ class ProductRestClient @Inject constructor(
             }
         }
     }
+
+    /**
+     * Makes a POST request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/batch`
+     * to batch update product variations.
+     *
+     * @param productId Id of the product.
+     * @param variationsIds Ids of variations that are going to be updated.
+     * @param modifiedProperties Map of the properties of variation that are going to be updated.
+     * Keys correspond to the names of variation properties. Values are the updated properties values.
+     *
+     * @return Instance of [BatchProductVariationsUpdateApiResponse].
+     */
+    suspend fun batchUpdateVariations(
+        site: SiteModel,
+        productId: Long,
+        variationsIds: Collection<Long>,
+        modifiedProperties: Map<String, Any>
+    ): WooPayload<BatchProductVariationsUpdateApiResponse> = WOOCOMMERCE.products.id(productId).variations.batch.pathV3
+        .let { url ->
+            val variationsUpdates: List<Map<String, Any>> = variationsIds.map { variationId ->
+                modifiedProperties.toMutableMap()
+                    .also { properties -> properties["id"] = variationId }
+                    .toMap()
+            }
+            jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this@ProductRestClient,
+                site,
+                url,
+                mapOf("update" to variationsUpdates),
+                BatchProductVariationsUpdateApiResponse::class.java
+            ).handleResult()
+        }
 
     /**
      * Makes a POST request to `/wp-json/wc/v3/products` to create

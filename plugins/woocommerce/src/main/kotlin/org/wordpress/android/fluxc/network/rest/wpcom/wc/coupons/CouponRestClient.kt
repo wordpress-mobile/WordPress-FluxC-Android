@@ -5,6 +5,7 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -86,6 +87,57 @@ class CouponRestClient @Inject constructor(
         }
     }
 
+    suspend fun createCoupon(
+        site: SiteModel,
+        request: UpdateCouponRequest
+    ): WooPayload<CouponDto> {
+        val url = WOOCOMMERCE.coupons.pathV3
+        val params = request.toNetworkRequest()
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            params,
+            CouponDto::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun updateCoupon(
+        site: SiteModel,
+        couponId: Long,
+        request: UpdateCouponRequest
+    ): WooPayload<CouponDto> {
+        val url = WOOCOMMERCE.coupons.id(couponId).pathV3
+        val params = request.toNetworkRequest()
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            this,
+            site,
+            url,
+            params,
+            CouponDto::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     suspend fun deleteCoupon(
         site: SiteModel,
         couponId: Long,
@@ -151,6 +203,29 @@ class CouponRestClient @Inject constructor(
                 )
                 else -> WooPayload(it.result.first())
             }
+        }
+    }
+
+    private fun UpdateCouponRequest.toNetworkRequest(): Map<String, Any> {
+        return mutableMapOf<String, Any>().apply {
+            code?.let { put("code", it) }
+            amount?.let { put("amount", it) }
+            discountType?.let { put("discount_type", it) }
+            description?.let { put("description", it) }
+            expiryDate?.let { put("date_expires", it) }
+            minimumAmount?.let { put("minimum_amount", it) }
+            maximumAmount?.let { put("maximum_amount", it) }
+            productIds?.let { put("product_ids", it) }
+            excludedProductIds?.let { put("excluded_product_ids", it) }
+            isShippingFree?.let { put("free_shipping", it) }
+            productCategoryIds?.let { put("product_categories", it) }
+            excludedProductCategoryIds?.let { put("excluded_product_categories", it) }
+            usageLimit?.let { put("usage_limit", it) }
+            usageLimitPerUser?.let { put("usage_limit_per_user", it) }
+            limitUsageToXItems?.let { put("limit_usage_to_x_items", it) }
+            restrictedEmails?.let { put("email_restrictions", it) }
+            isForIndividualUse?.let { put("individual_use", it) }
+            areSaleItemsExcluded?.let { put("exclude_sale_items", it) }
         }
     }
 }

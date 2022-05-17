@@ -16,7 +16,9 @@ import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Percent
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
+import java.math.BigDecimal
 
 @ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
@@ -61,6 +63,7 @@ class CouponsDaoTest {
         val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
         val newExpected = CouponWithEmails(newCoupon, listOf(email))
         couponsDao.insertOrUpdateCoupon(newCoupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
         observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
 
         // then
@@ -92,6 +95,7 @@ class CouponsDaoTest {
         val newCoupon = coupon.copy(description = "Updated", usageLimit = 2)
         expected = CouponWithEmails(newCoupon, listOf(email))
         couponsDao.insertOrUpdateCoupon(newCoupon)
+        couponsDao.insertOrUpdateCouponEmail(email)
 
         // then
         assertThat(observedCoupon.first()).isEqualTo(expected)
@@ -129,12 +133,13 @@ class CouponsDaoTest {
         fun generateCouponEntity(id: Long = 0) = CouponEntity(
             id = id,
             siteId = 1,
+            amount = BigDecimal(5),
             code = "code",
             dateCreated = "2007-04-05T14:30Z",
             dateCreatedGmt = "2007-04-05T14:30Z",
             dateModified = "2007-04-05T14:30Z",
             dateModifiedGmt = "2007-04-05T14:30Z",
-            discountType = "percent",
+            discountType = Percent,
             description = "Description",
             dateExpires = "2008-04-05T14:30Z",
             dateExpiresGmt = "2008-04-05T14:30Z",
@@ -145,8 +150,8 @@ class CouponsDaoTest {
             limitUsageToXItems = 5,
             isShippingFree = false,
             areSaleItemsExcluded = true,
-            minimumAmount = "10",
-            maximumAmount = "100"
+            minimumAmount = BigDecimal(1),
+            maximumAmount = BigDecimal(10)
         )
     }
 }

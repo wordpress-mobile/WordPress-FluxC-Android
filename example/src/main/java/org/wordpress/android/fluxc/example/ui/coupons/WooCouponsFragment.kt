@@ -11,10 +11,10 @@ import kotlinx.android.synthetic.main.fragment_woo_coupons.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
@@ -85,11 +85,15 @@ class WooCouponsFragment : StoreSelectingFragment() {
             showSingleLineDialog(activity, "Enter the coupon ID to fetch:") { editText ->
                 editText.text.toString().toLongOrNull()?.let {
                     coroutineScope.launch {
-                        store.fetchCoupon(selectedSite!!, it)
-                        prependToLog(
-                            store.observeCoupon(selectedSite!!, it)
-                                .first()?.coupon?.toString() ?: "Coupon $it not found"
-                        )
+                        val result = store.fetchCoupon(selectedSite!!, it)
+                        if (result.isError) {
+                            prependToLog("Coupon fetching failed: ${result.error.message}")
+                        } else {
+                            prependToLog(
+                                store.getCoupon(selectedSite!!, it)?.coupon?.toString()
+                                    ?: "Coupon $it not found"
+                            )
+                        }
                     }
                 } ?: prependToLog("Invalid coupon ID")
             }
@@ -140,6 +144,14 @@ class WooCouponsFragment : StoreSelectingFragment() {
                     prependToLog("$title\n$results\n")
                 }
             }
+        }
+
+        btnUpdateCoupon.setOnClickListener {
+            replaceFragment(WooUpdateCouponFragment.newInstance(selectedSite!!.siteId))
+        }
+
+        btnCreateCoupon.setOnClickListener {
+            replaceFragment(WooUpdateCouponFragment.newInstance(selectedSite!!.siteId, true))
         }
     }
 }
