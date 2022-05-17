@@ -13,7 +13,6 @@ import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEntity
 import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
 
 @ExperimentalCoroutinesApi
@@ -58,70 +57,6 @@ class ProductCategoriesDaoTest {
         observedProduct = productCategoriesDao
             .getProductCategoriesByIds(category.siteId, listOf(category.id))
         assertThat(observedProduct.first()).isEqualTo(category)
-    }
-
-    @Test
-    fun `test insert coupon products`(): Unit = runBlocking {
-        // when
-        val cat1 = generateProductCategoryEntity(1)
-        val cat2 = generateProductCategoryEntity(2)
-        val cat3 = generateProductCategoryEntity(3)
-        val cat4 = generateProductCategoryEntity(4)
-        productCategoriesDao.insertOrUpdateProductCategory(cat1)
-        productCategoriesDao.insertOrUpdateProductCategory(cat2)
-        productCategoriesDao.insertOrUpdateProductCategory(cat3)
-        productCategoriesDao.insertOrUpdateProductCategory(cat4)
-
-        val coupon = CouponsDaoTest.generateCouponEntity()
-        couponsDao.insertOrUpdateCoupon(coupon)
-        couponsDao.insertOrUpdateCouponAndProductCategory(
-            CouponAndProductCategoryEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productCategoryId = cat1.id,
-                isExcluded = false
-            )
-        )
-        couponsDao.insertOrUpdateCouponAndProductCategory(
-            CouponAndProductCategoryEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productCategoryId = cat2.id,
-                isExcluded = false
-            )
-        )
-        couponsDao.insertOrUpdateCouponAndProductCategory(
-            CouponAndProductCategoryEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productCategoryId = cat3.id,
-                isExcluded = true
-            )
-        )
-        couponsDao.insertOrUpdateCouponAndProductCategory(
-            CouponAndProductCategoryEntity(
-                couponId = coupon.id,
-                siteId = coupon.siteId,
-                productCategoryId = cat4.id,
-                isExcluded = true
-            )
-        )
-
-        val includedCategories = productCategoriesDao.getCouponProductCategories(
-            couponId = coupon.id,
-            siteId = coupon.siteId,
-            areExcluded = false
-        )
-
-        val excludedCategories = productCategoriesDao.getCouponProductCategories(
-            couponId = coupon.id,
-            siteId = coupon.siteId,
-            areExcluded = true
-        )
-
-        // then
-        assertThat(includedCategories).isEqualTo(listOf(cat1, cat2))
-        assertThat(excludedCategories).isEqualTo(listOf(cat3, cat4))
     }
 
     companion object {
