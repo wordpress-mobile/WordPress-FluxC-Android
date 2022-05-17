@@ -1319,6 +1319,36 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    // Returns a boolean indicating whether more coupons can be fetched
+    suspend fun fetchProductsVariations(
+        site: SiteModel,
+        productId: Long,
+        offset: Int = 0,
+        pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
+        includedVariationIds: List<Long> = emptyList(),
+        excludedVariationIds: List<Long> = emptyList()
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(API, this,"fetchProductsVariations") {
+            val response = wcProductRestClient.fetchProductVariationsWithSyncRequest(
+                site = site,
+                productId = productId,
+                offset = offset,
+                pageSize = pageSize,
+                includedVariationIds = includedVariationIds,
+                excludedVariationIds = excludedVariationIds
+            )
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    ProductSqlUtils.insertOrUpdateProductVariations(response.result)
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(canLoadMore)
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
             wcProductRestClient.addProduct(site, product)
