@@ -34,15 +34,13 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils.insertOrUpdateProductVariation
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.AppLogWrapper
-import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
-import org.wordpress.android.fluxc.utils.ProductVariationsDbHelper
-import org.wordpress.android.fluxc.utils.ProductsDbHelper
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
@@ -56,9 +54,6 @@ class WCProductStore @Inject constructor(
     private val wcProductRestClient: ProductRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
-    private val productsDbHelper: ProductsDbHelper,
-    private val productVariationsDbHelper: ProductVariationsDbHelper,
-    private val productCategoriesDbHelper: ProductCategoriesDbHelper,
     private val logger: AppLogWrapper
 ) : Store(dispatcher) {
     companion object {
@@ -917,7 +912,7 @@ class WCProductStore @Inject constructor(
                     .model?.asProductModel()
                     ?.apply {
                         localSiteId = site.id
-                        productsDbHelper.insertOrUpdateProducts(site, this)
+                        ProductSqlUtils.insertOrUpdateProduct(this)
                     }
                     ?.let { WooResult(it) }
             } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
@@ -988,10 +983,7 @@ class WCProductStore @Inject constructor(
                     it.remoteProductId = result.product.remoteProductId
                 }
             } else {
-                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
-                    payload.site,
-                    result.product
-                )
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(result.product)
 
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
@@ -1054,7 +1046,7 @@ class WCProductStore @Inject constructor(
         return coroutineEngine.withDefaultContext(API, this, "fetchProductList") {
             wcProductRestClient.fetchProductsWithSyncRequest(site = site, includedProductIds = productIds).result
         }?.also {
-            productsDbHelper.insertOrUpdateProducts(site, it)
+            ProductSqlUtils.insertOrUpdateProducts(it)
         }
     }
 
@@ -1068,7 +1060,7 @@ class WCProductStore @Inject constructor(
                 remoteCategoryIds = categoryIds
             ).result
         }?.also {
-            productCategoriesDbHelper.insertOrUpdateProductCategories(site, it)
+            ProductSqlUtils.insertOrUpdateProductCategories(it)
         }
     }
 
@@ -1325,13 +1317,10 @@ class WCProductStore @Inject constructor(
                 // or if the remoteProductIds or excludedProductIds are null, otherwise
                 // products deleted outside of the app will persist
                 if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
-                    productsDbHelper.deleteAllProducts(payload.site)
+                    ProductSqlUtils.deleteProductsForSite(payload.site)
                 }
 
-                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
-                    payload.site,
-                    payload.products
-                )
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
                 onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
 
                 // TODO: 18/08/2021 @wzieba add tests
@@ -1359,10 +1348,7 @@ class WCProductStore @Inject constructor(
             emitChange(OnProductsSearched(payload.searchQuery))
         } else {
             coroutineEngine.launch(T.DB, this, "handleSearchProductsCompleted") {
-                productsDbHelper.insertOrUpdateProducts(
-                    payload.site,
-                    payload.products
-                )
+                ProductSqlUtils.insertOrUpdateProducts(payload.products)
                 emitChange(
                     OnProductsSearched(
                         payload.searchQuery,
@@ -1457,10 +1443,7 @@ class WCProductStore @Inject constructor(
                 onProductUpdated = OnProductUpdated(0, payload.product.remoteProductId)
                     .also { it.error = payload.error }
             } else {
-                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
-                    payload.site,
-                    payload.product
-                )
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
                 onProductUpdated = OnProductUpdated(rowsAffected, payload.product.remoteProductId)
             }
 
@@ -1480,10 +1463,9 @@ class WCProductStore @Inject constructor(
                 // This is the simplest way to keep our local categories in sync with remote categories
                 // in case of deletions.
                 if (!payload.loadedMore) {
-                    productCategoriesDbHelper.deleteAllProductCategories(payload.site)
+                    ProductSqlUtils.deleteAllProductCategoriesForSite(payload.site)
                 }
-                val rowsAffected = productCategoriesDbHelper.insertOrUpdateProductCategories(
-                    payload.site,
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProductCategories(
                     payload.categories
                 )
                 onProductCategoryChanged = OnProductCategoryChanged(
@@ -1505,7 +1487,7 @@ class WCProductStore @Inject constructor(
                 onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
             } else {
                 val rowsAffected = payload.category?.let {
-                    productCategoriesDbHelper.insertOrUpdateProductCategories(payload.site, it)
+                    ProductSqlUtils.insertOrUpdateProductCategory(it)
                 } ?: 0
                 onProductCategoryChanged = OnProductCategoryChanged(rowsAffected)
             }
@@ -1555,10 +1537,7 @@ class WCProductStore @Inject constructor(
                     payload.product.remoteProductId
                 ).also { it.error = payload.error }
             } else {
-                val rowsAffected = productsDbHelper.insertOrUpdateProducts(
-                    payload.site,
-                    payload.product
-                )
+                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
                 onProductCreated = OnProductCreated(rowsAffected, payload.product.remoteProductId)
             }
 
@@ -1574,7 +1553,7 @@ class WCProductStore @Inject constructor(
             if (payload.isError) {
                 onProductChanged = OnProductChanged(0).also { it.error = payload.error }
             } else {
-                val rowsAffected = productsDbHelper.deleteProduct(
+                val rowsAffected = ProductSqlUtils.deleteProduct(
                     payload.site,
                     payload.remoteProductId
                 )
