@@ -27,7 +27,6 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
-import org.wordpress.android.fluxc.store.ProductStore
 import org.wordpress.android.fluxc.store.WCAddonsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
@@ -61,7 +60,6 @@ class WooProductsFragment : StoreSelectingFragment() {
     @Inject lateinit var addonsStore: WCAddonsStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
-    @Inject internal lateinit var productStore: ProductStore
 
     private var pendingFetchSingleProductShippingClassRemoteId: Long? = null
 
@@ -169,20 +167,6 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_products_room.setOnClickListener {
-            selectedSite?.let { site ->
-                coroutineScope.launch {
-                    val result = productStore.fetchProducts(site)
-                    val products = productStore.getProducts(site.siteId)
-                    if (result.isError) {
-                        prependToLog("Error searching products - error: " + result.error.type)
-                    } else {
-                        prependToLog("DB contains ${products.size} products")
-                    }
-                }
-            }
-        }
-
         fetch_products_with_filters.setOnClickListener {
             replaceFragment(WooProductFiltersFragment.newInstance(selectedPos))
         }
@@ -195,25 +179,6 @@ class WooProductsFragment : StoreSelectingFragment() {
                 ) { editText ->
                     val payload = SearchProductsPayload(site, editText.text.toString())
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
-                }
-            }
-        }
-
-        search_products_room.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(
-                    activity,
-                    "Enter a search query:"
-                ) { editText ->
-                    coroutineScope.launch {
-                        val searchString = editText.text.toString()
-                        val result = productStore.searchProducts(site, editText.text.toString())
-                        if (result.isError) {
-                            prependToLog("Error searching products - error: " + result.error.type)
-                        } else {
-                            prependToLog("Found ${result.model?.products?.size} products matching $searchString")
-                        }
-                    }
                 }
             }
         }
