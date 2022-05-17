@@ -114,8 +114,7 @@ dependencies {
     implementation sharedLibs.androidx.lifecycle.runtime.ktx
     implementation sharedLibs.apache.commons.lang3
 
-    // WordPress libs
-    implementation("org.wordpress:utils:$wordPressUtilsVersion") {
+    implementation(sharedLibs.wordpress.utils) {
         // Using official volley package
         exclude group: "com.mcxiaoke.volley"
         exclude group: "com.android.support"
