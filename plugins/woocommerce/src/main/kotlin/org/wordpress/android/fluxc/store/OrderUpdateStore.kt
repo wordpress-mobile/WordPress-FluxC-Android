@@ -127,8 +127,8 @@ class OrderUpdateStore @Inject internal constructor(
     suspend fun createSimplePayment(
         site: SiteModel,
         amount: String,
-        status: WCOrderStatusModel,
-        isTaxable: Boolean
+        isTaxable: Boolean,
+        status: WCOrderStatusModel? = null
     ): WooResult<OrderEntity> {
         val createOrderRequest = UpdateOrderRequest(
             status = status,
