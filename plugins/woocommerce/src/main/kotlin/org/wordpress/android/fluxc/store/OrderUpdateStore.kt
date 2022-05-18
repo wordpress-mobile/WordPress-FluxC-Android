@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -36,7 +37,7 @@ class OrderUpdateStore @Inject internal constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDao: OrdersDao,
-    private val siteSqlUtils: SiteSqlUtils
+    private val siteSqlUtils: SiteSqlUtils,
 ) {
     suspend fun updateCustomerOrderNote(
         orderId: Long,
@@ -123,9 +124,15 @@ class OrderUpdateStore @Inject internal constructor(
      * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
      * return a new order with the tax already calculated.
      */
-    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<OrderEntity> {
+    suspend fun createSimplePayment(
+        site: SiteModel,
+        amount: String,
+        status: WCOrderStatusModel,
+        isTaxable: Boolean
+    ): WooResult<OrderEntity> {
         val createOrderRequest = UpdateOrderRequest(
-                feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+            status = status,
+            feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
         )
         return createOrder(site, createOrderRequest)
     }
@@ -136,7 +143,8 @@ class OrderUpdateStore @Inject internal constructor(
         amount: String,
         customerNote: String,
         billingEmail: String,
-        isTaxable: Boolean
+        isTaxable: Boolean,
+        status: WCOrderStatusModel? = null
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
             val initialOrder = ordersDao.getOrder(orderId, site.localId())
@@ -162,24 +170,24 @@ class OrderUpdateStore @Inject internal constructor(
 
                 val billing = if (billingEmail.isNotEmpty()) {
                     Billing(
-
-                            email = billingEmail,
-                            firstName = "",
-                            lastName = "",
-                            company = "",
-                            address1 = "",
-                            address2 = "",
-                            city = "",
-                            state = "",
-                            postcode = "",
-                            country = "",
-                            phone = ""
+                        email = billingEmail,
+                        firstName = "",
+                        lastName = "",
+                        company = "",
+                        address1 = "",
+                        address2 = "",
+                        city = "",
+                        state = "",
+                        postcode = "",
+                        country = "",
+                        phone = ""
                     )
                 } else {
                     null
                 }
 
                 val updateRequest = UpdateOrderRequest(
+                    status = status,
                     customerNote = customerNote,
                     billingAddress = billing,
                     feeLines = generateSimplePaymentFeeLineList(amount, isTaxable, feeId)
