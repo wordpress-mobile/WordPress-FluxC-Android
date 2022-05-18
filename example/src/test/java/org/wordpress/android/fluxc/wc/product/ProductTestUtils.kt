@@ -94,7 +94,7 @@ object ProductTestUtils {
         }
     }
 
-    fun generateProductList(siteId: Int = 6): List<WCProductShippingClassModel> {
+    fun generateProductShippingClassList(siteId: Int = 6): List<WCProductShippingClassModel> {
         with(ArrayList<WCProductShippingClassModel>()) {
             add(generateSampleProductShippingClass(1, siteId = siteId))
             add(generateSampleProductShippingClass(2, siteId = siteId))

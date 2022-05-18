@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -900,6 +901,19 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    fun observeProducts(
+        site: SiteModel,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+    ): Flow<List<WCProductModel>> =
+        ProductSqlUtils.observeProducts(site, sortType, filterOptions)
+
+    fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> =
+        ProductSqlUtils.observeVariations(site, productId)
+
+    fun observeCategories(site: SiteModel): Flow<List<WCProductCategoryModel>> =
+        ProductSqlUtils.observeCategories(site)
+
     suspend fun submitProductAttributeChanges(
         site: SiteModel,
         productId: Long,
@@ -1320,7 +1334,7 @@ class WCProductStore @Inject constructor(
     }
 
     // Returns a boolean indicating whether more coupons can be fetched
-    suspend fun fetchProductsVariations(
+    suspend fun fetchProductVariations(
         site: SiteModel,
         productId: Long,
         offset: Int = 0,
