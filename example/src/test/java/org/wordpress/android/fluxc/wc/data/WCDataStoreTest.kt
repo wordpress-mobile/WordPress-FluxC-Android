@@ -106,6 +106,15 @@ class WCDataStoreTest {
         assertThat(states).isEqualTo(emptyList<WCLocationModel>())
     }
 
+    @Test
+    fun `when empty country code is passed, then empty list is returned when getting states`() = test {
+        fetchCountries()
+
+        val states = store.getStates("")
+
+        assertThat(states).isEqualTo(emptyList<WCLocationModel>())
+    }
+
     private suspend fun fetchCountries(): WooResult<List<WCLocationModel>> {
         val payload = WooPayload(sampleResponse.toTypedArray())
         whenever(restClient.fetchCountries(site)).thenReturn(payload)

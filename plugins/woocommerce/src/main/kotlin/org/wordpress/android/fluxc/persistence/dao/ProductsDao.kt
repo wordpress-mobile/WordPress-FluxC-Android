@@ -21,24 +21,6 @@ abstract class ProductsDao {
     @Query("SELECT * FROM Products WHERE siteId = :siteId ORDER BY id")
     abstract fun observeProducts(siteId: Long): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
-        "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +
-        "ORDER BY p.id")
-    abstract fun getCouponProducts(
-        siteId: Long,
-        couponId: Long,
-        areExcluded: Boolean
-    ): List<ProductEntity>
-
-    @Query("SELECT * FROM Products p JOIN CouponsAndProducts c ON p.id = c.productId " +
-        "WHERE c.isExcluded = :areExcluded AND c.couponId = :couponId AND p.siteId = :siteId " +
-        "ORDER BY p.id")
-    abstract fun observeCouponProducts(
-        siteId: Long,
-        couponId: Long,
-        areExcluded: Boolean
-    ): Flow<List<ProductEntity>>
-
     @Query("SELECT * FROM Products WHERE siteId = :siteId AND id IN (:productIds) ORDER BY id")
     abstract fun getProductsByIds(siteId: Long, productIds: List<Long>): List<ProductEntity>
 
