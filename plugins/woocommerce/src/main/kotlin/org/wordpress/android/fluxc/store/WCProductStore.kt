@@ -1067,7 +1067,7 @@ class WCProductStore @Inject constructor(
         return coroutineEngine.withDefaultContext(API, this, "fetchProductCategoryList") {
             wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
                 site = site,
-                remoteCategoryIds = categoryIds
+                includedCategoryIds = categoryIds
             ).result
         }?.also {
             ProductSqlUtils.insertOrUpdateProductCategories(it)
@@ -1273,6 +1273,35 @@ class WCProductStore @Inject constructor(
                 }
             }
         }
+
+    suspend fun fetchProductCategories(
+        site: SiteModel,
+        offset: Int = 0,
+        pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
+        sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
+        includedCategoryIds: List<Long> = emptyList(),
+        excludedCategoryIds: List<Long> = emptyList()
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductCategories") {
+            val response = wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
+                site = site,
+                offset = offset,
+                pageSize = pageSize,
+                productCategorySorting = sortType,
+                includedCategoryIds = includedCategoryIds,
+                excludedCategoryIds = excludedCategoryIds
+            )
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    ProductSqlUtils.insertOrUpdateProductCategories(response.result)
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(canLoadMore)
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
 
     // Returns a boolean indicating whether more coupons can be fetched
     suspend fun fetchProducts(

@@ -506,7 +506,8 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductsCategoriesWithSyncRequest(
         site: SiteModel,
-        remoteCategoryIds: List<Long>,
+        includedCategoryIds: List<Long> = emptyList(),
+        excludedCategoryIds: List<Long> = emptyList(),
         pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
         productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
         offset: Int = 0
@@ -520,9 +521,14 @@ class ProductRestClient @Inject constructor(
             "per_page" to pageSize.toString(),
             "offset" to offset.toString(),
             "order" to sortOrder,
-            "orderby" to "name",
-            "include" to remoteCategoryIds.map { it }.joinToString()
+            "orderby" to "name"
         )
+        if (includedCategoryIds.isNotEmpty()) {
+            params["include"] = includedCategoryIds.map { it }.joinToString()
+        }
+        if (excludedCategoryIds.isNotEmpty()) {
+            params["exclude"] = excludedCategoryIds.map { it }.joinToString()
+        }
 
         return WOOCOMMERCE.products.categories.pathV3
             .requestCategoryTo(site, params)
