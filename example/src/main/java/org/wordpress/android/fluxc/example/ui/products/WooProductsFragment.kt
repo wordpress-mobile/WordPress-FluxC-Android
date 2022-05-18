@@ -171,6 +171,38 @@ class WooProductsFragment : StoreSelectingFragment() {
             replaceFragment(WooProductFiltersFragment.newInstance(selectedPos))
         }
 
+        fetch_specific_products.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(activity, "Enter remote product IDs, separated by comma:") { editText ->
+                    val ids = editText.text.toString().replace(" ", "").split(",").mapNotNull {
+                        val id = it.toLongOrNull()
+                        if (id == null) {
+                            prependToLog("$it is not a valid remote product ID, ignoring...")
+                        }
+                        id
+                    }
+
+                    if (ids.isNotEmpty()) {
+                        coroutineScope.launch {
+                            val result = wcProductStore.fetchProducts(
+                                site,
+                                includedProductIds = ids
+                            )
+                            if (result.isError) {
+                                prependToLog("Fetching products failed: ${result.error.message}")
+                            } else {
+                                val products = wcProductStore.getProductsByRemoteIds(site, ids)
+                                prependToLog("${products.size} were fetched")
+                                prependToLog("$products")
+                            }
+                        }
+                    } else {
+                        prependToLog("No valid product IDs...doing nothing")
+                    }
+                }
+            }
+        }
+
         search_products.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(

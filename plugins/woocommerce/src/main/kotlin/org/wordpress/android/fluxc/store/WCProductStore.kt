@@ -1266,8 +1266,8 @@ class WCProductStore @Inject constructor(
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        includedVariationIds: List<Long> = emptyList(),
-        excludedVariationIds: List<Long> = emptyList(),
+        includedProductIds: List<Long> = emptyList(),
+        excludedProductIds: List<Long> = emptyList(),
         filterOptions: Map<ProductFilterOption, String> = emptyMap(),
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
@@ -1276,8 +1276,8 @@ class WCProductStore @Inject constructor(
                 offset = offset,
                 pageSize = pageSize,
                 sortType = sortType,
-                includedProductIds = includedVariationIds,
-                excludedProductIds = excludedVariationIds,
+                includedProductIds = includedProductIds,
+                excludedProductIds = excludedProductIds,
                 filterOptions = filterOptions
             )
             when {
