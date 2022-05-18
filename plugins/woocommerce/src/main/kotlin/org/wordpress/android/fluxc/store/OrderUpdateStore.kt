@@ -37,7 +37,7 @@ class OrderUpdateStore @Inject internal constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDao: OrdersDao,
-    private val siteSqlUtils: SiteSqlUtils,
+    private val siteSqlUtils: SiteSqlUtils
 ) {
     suspend fun updateCustomerOrderNote(
         orderId: Long,
