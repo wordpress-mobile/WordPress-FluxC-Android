@@ -105,6 +105,17 @@ object ProductTestUtils {
         }
     }
 
+    fun generateProductList(siteId: Int = 6): List<WCProductModel> {
+        with(ArrayList<WCProductModel>()) {
+            add(generateSampleProduct(1, siteId = siteId))
+            add(generateSampleProduct(2, siteId = siteId))
+            add(generateSampleProduct(3, siteId = siteId))
+            add(generateSampleProduct(4, siteId = siteId))
+            add(generateSampleProduct(5, siteId = siteId))
+            return this
+        }
+    }
+
     fun getProductReviewsFromJsonString(json: String, siteId: Int): List<WCProductReviewModel> {
         val responseType = object : TypeToken<List<ProductReviewApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<ProductReviewApiResponse> ?: emptyList()
@@ -121,6 +132,27 @@ object ProductTestUtils {
                 rating = it.rating
                 verified = it.verified
                 reviewerAvatarsJson = it.reviewer_avatar_urls.toString()
+            }
+        }
+    }
+
+    fun generateCategory(siteId: Int, remoteId: Long) =
+        WCProductCategoryModel().apply {
+            localSiteId = siteId
+            remoteCategoryId = remoteId
+            name = "Category $remoteId"
+            slug = "category$remoteId"
+            parent = 0L
+        }
+
+    fun generateCategoryList(siteId: Int): List<WCProductCategoryModel> {
+        return List(5) {
+            WCProductCategoryModel().apply {
+                localSiteId = siteId
+                remoteCategoryId = it.toLong()
+                name = "Category $it"
+                slug = "category$it"
+                parent = 0L
             }
         }
     }
