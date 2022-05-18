@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_woo_products.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -403,6 +404,15 @@ class WooProductsFragment : StoreSelectingFragment() {
                 prependToLog("Submitting request to fetch product categories for site ${site.id}")
                 val payload = FetchProductCategoriesPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
+            }
+        }
+
+        observe_product_categories.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val categories = wcProductStore.observeCategories(site).first()
+                    prependToLog("Categories: $categories")
+                }
             }
         }
 

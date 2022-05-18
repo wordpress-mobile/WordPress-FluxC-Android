@@ -133,6 +133,13 @@
             android:text="Fetch Product Categories"/>
 
         <Button
+            android:id="@+id/observe_product_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Observe Product Categories"/>
+
+        <Button
             android:id="@+id/load_more_product_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
