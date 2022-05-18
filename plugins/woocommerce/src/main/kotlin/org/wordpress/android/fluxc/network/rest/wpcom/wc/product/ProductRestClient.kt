@@ -456,7 +456,7 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
         searchQuery: String? = null,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
             pageSize,
@@ -758,7 +758,6 @@ class ProductRestClient @Inject constructor(
             }
         }
     }
-
 
     /**
      * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),

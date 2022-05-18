@@ -45,7 +45,7 @@ object ProductSqlUtils {
     fun observeProducts(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
     ): Flow<List<WCProductModel>> {
         return productsUpdatesTrigger
             .onStart { emit(Unit) }

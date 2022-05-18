@@ -904,7 +904,7 @@ class WCProductStore @Inject constructor(
     fun observeProducts(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
     ): Flow<List<WCProductModel>> =
         ProductSqlUtils.observeProducts(site, sortType, filterOptions)
 
@@ -1282,7 +1282,7 @@ class WCProductStore @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
-        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
             val response = wcProductRestClient.fetchProductsWithSyncRequest(
@@ -1342,7 +1342,7 @@ class WCProductStore @Inject constructor(
         includedVariationIds: List<Long> = emptyList(),
         excludedVariationIds: List<Long> = emptyList()
     ): WooResult<Boolean> {
-        return coroutineEngine.withDefaultContext(API, this,"fetchProductsVariations") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductVariations") {
             val response = wcProductRestClient.fetchProductVariationsWithSyncRequest(
                 site = site,
                 productId = productId,
