@@ -94,26 +94,12 @@ object ProductTestUtils {
         }
     }
 
-    fun generateProductShippingClassList(siteId: Int = 6): List<WCProductShippingClassModel> {
-        with(ArrayList<WCProductShippingClassModel>()) {
-            add(generateSampleProductShippingClass(1, siteId = siteId))
-            add(generateSampleProductShippingClass(2, siteId = siteId))
-            add(generateSampleProductShippingClass(3, siteId = siteId))
-            add(generateSampleProductShippingClass(4, siteId = siteId))
-            add(generateSampleProductShippingClass(5, siteId = siteId))
-            return this
-        }
+    fun generateProductShippingClassList(siteId: Int = 6) = List(5) {
+        generateSampleProductShippingClass(it + 1L, siteId = siteId)
     }
 
-    fun generateProductList(siteId: Int = 6): List<WCProductModel> {
-        with(ArrayList<WCProductModel>()) {
-            add(generateSampleProduct(1, siteId = siteId))
-            add(generateSampleProduct(2, siteId = siteId))
-            add(generateSampleProduct(3, siteId = siteId))
-            add(generateSampleProduct(4, siteId = siteId))
-            add(generateSampleProduct(5, siteId = siteId))
-            return this
-        }
+    fun generateProductList(siteId: Int = 6) = List(5) {
+        generateSampleProduct(it + 1L, siteId = siteId)
     }
 
     fun getProductReviewsFromJsonString(json: String, siteId: Int): List<WCProductReviewModel> {
