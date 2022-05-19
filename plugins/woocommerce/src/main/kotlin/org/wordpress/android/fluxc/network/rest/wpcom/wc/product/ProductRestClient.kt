@@ -630,9 +630,9 @@ class ProductRestClient @Inject constructor(
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
-        val body = listOfNotNull(
+        val body = mapOf(
                 "password" to password
-        ).toMap()
+        )
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
