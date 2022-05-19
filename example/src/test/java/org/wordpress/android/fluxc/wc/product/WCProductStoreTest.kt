@@ -32,8 +32,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClie
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
-import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
@@ -44,8 +42,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
-import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
-import org.wordpress.android.fluxc.utils.ProductsDbHelper
 import org.wordpress.android.fluxc.wc.product.ProductTestUtils.generateSampleVariations
 import org.wordpress.android.fluxc.wc.utils.SiteTestUtils
 import kotlin.random.Random
@@ -58,18 +54,12 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
     private val productRestClient: ProductRestClient = mock()
-    private val productsDao: ProductsDao = mock()
-    private val productsDbHelper = ProductsDbHelper(productsDao)
-    private val productCategoriesDao: ProductCategoriesDao = mock()
-    private val productCategoriesDbHelper = ProductCategoriesDbHelper(productCategoriesDao)
     private val productStore = WCProductStore(
             Dispatcher(),
             productRestClient,
             addonsDao = mock(),
             logger = mock(),
-            coroutineEngine = initCoroutineEngine(),
-            productsDbHelper = productsDbHelper,
-            productCategoriesDbHelper = productCategoriesDbHelper
+            coroutineEngine = initCoroutineEngine()
     )
 
     @Before
