@@ -143,7 +143,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
      */
     @Test
     fun testFetchParentProductIdExceedingInteger() = runBlocking {
-        interceptor.respondWith("wc-fetch-product-id-exceeding-integer.json")
+        interceptor.respondWith("wc-fetch-parent-product-id-exceeding-integer.json")
         val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
         assertEquals(5060147738939L, payload.product.parentId)
