@@ -143,7 +143,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         interceptor.respondWith("wc-fetch-product-id-exceeding-integer.json")
         val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
-
         assertEquals(5060147738939L, payload.product.parentId)
     }
 
@@ -955,8 +954,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteAddProductPayload
         assertTrue(payload.isError)
     }
-
-
 
     @Suppress("unused")
     @Subscribe
