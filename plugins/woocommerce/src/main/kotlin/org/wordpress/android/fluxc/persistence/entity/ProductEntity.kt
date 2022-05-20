@@ -66,7 +66,7 @@ data class ProductEntity(
     val averageRating: String? = null,
     val ratingCount: Int? = null,
 
-    val parentId: Int? = null,
+    val parentId: Long? = null,
     val purchaseNote: String? = null,
     val menuOrder: Int? = null
 )
