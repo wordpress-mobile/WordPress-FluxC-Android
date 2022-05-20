@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -19,6 +20,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.AccountModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
@@ -32,8 +34,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClie
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
-import org.wordpress.android.fluxc.persistence.dao.ProductsDao
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
@@ -43,10 +43,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
+import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
-import org.wordpress.android.fluxc.utils.ProductCategoriesDbHelper
-import org.wordpress.android.fluxc.utils.ProductsDbHelper
-import org.wordpress.android.fluxc.wc.product.ProductTestUtils.generateSampleVariations
 import org.wordpress.android.fluxc.wc.utils.SiteTestUtils
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -58,18 +56,12 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
     private val productRestClient: ProductRestClient = mock()
-    private val productsDao: ProductsDao = mock()
-    private val productsDbHelper = ProductsDbHelper(productsDao)
-    private val productCategoriesDao: ProductCategoriesDao = mock()
-    private val productCategoriesDbHelper = ProductCategoriesDbHelper(productCategoriesDao)
     private val productStore = WCProductStore(
             Dispatcher(),
             productRestClient,
             addonsDao = mock(),
             logger = mock(),
-            coroutineEngine = initCoroutineEngine(),
-            productsDbHelper = productsDbHelper,
-            productCategoriesDbHelper = productCategoriesDbHelper
+            coroutineEngine = initCoroutineEngine()
     )
 
     @Before
@@ -80,6 +72,7 @@ class WCProductStoreTest {
                 listOf(
                         WCProductModel::class.java,
                         WCProductVariationModel::class.java,
+                        WCProductCategoryModel::class.java,
                         WCProductReviewModel::class.java,
                         SiteModel::class.java,
                         AccountModel::class.java
@@ -292,6 +285,57 @@ class WCProductStoreTest {
     }
 
     @Test
+    fun `test that product insert emits a flow event`() = test {
+        // given
+        val productModel = ProductTestUtils.generateSampleProduct(remoteId = 0).apply {
+            name = "test new product"
+            description = "test new description"
+        }
+        val productList = ProductTestUtils.generateProductList()
+        ProductSqlUtils.insertOrUpdateProducts(productList)
+        val site = SiteModel().apply { id = productModel.localSiteId }
+
+        var observedProducts = productStore.observeProducts(site).first()
+        assertThat(observedProducts).isEqualTo(productList)
+
+        // when
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+        observedProducts = productStore.observeProducts(site).first()
+
+        // then
+        assertThat(observedProducts).isEqualTo(productList + productModel)
+    }
+
+    @Test
+    fun `test that variation insert emits a flow event`() = test {
+        // given
+        val variation = ProductTestUtils.generateSampleVariation(
+            remoteId = 0,
+            variationId = 1
+        ).apply {
+            description = "test new description"
+        }
+        val site = SiteModel().apply { id = variation.localSiteId }
+        val variations = ProductTestUtils.generateSampleVariations(
+            number = 5,
+            productId = variation.remoteProductId,
+            siteId = site.id
+        )
+        ProductSqlUtils.insertOrUpdateProductVariations(variations)
+
+        var observedVariations = productStore.observeVariations(site, variation.remoteProductId)
+            .first()
+        assertThat(observedVariations).isEqualTo(variations)
+
+        // when
+        ProductSqlUtils.insertOrUpdateProductVariation(variation)
+        observedVariations = productStore.observeVariations(site, variation.remoteProductId).first()
+
+        // then
+        assertThat(observedVariations).isEqualTo(variations + variation)
+    }
+
+    @Test
     fun `given product review exists, when fetch product review, then local database updated`() = runBlocking {
         val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
         val productModel = ProductTestUtils.generateSampleProduct(remoteId = 1).apply {
@@ -319,7 +363,7 @@ class WCProductStoreTest {
             // given
             val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
             val site = SiteModel().apply { id = product.localSiteId }
-            val variations = generateSampleVariations(
+            val variations = ProductTestUtils.generateSampleVariations(
                 number = 64,
                 productId = product.remoteProductId,
                 siteId = site.id
@@ -357,7 +401,7 @@ class WCProductStoreTest {
             // given
             val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
             val site = SiteModel().apply { id = product.localSiteId }
-            val variations = generateSampleVariations(
+            val variations = ProductTestUtils.generateSampleVariations(
                 number = 64,
                 productId = product.remoteProductId,
                 siteId = site.id
@@ -391,7 +435,7 @@ class WCProductStoreTest {
             val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
             ProductSqlUtils.insertOrUpdateProduct(product)
             val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
-            val variations = generateSampleVariations(
+            val variations = ProductTestUtils.generateSampleVariations(
                 number = 64,
                 productId = product.remoteProductId,
                 siteId = site.id
@@ -447,7 +491,7 @@ class WCProductStoreTest {
             val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
             ProductSqlUtils.insertOrUpdateProduct(product)
             val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
-            val variations = generateSampleVariations(
+            val variations = ProductTestUtils.generateSampleVariations(
                 number = 64,
                 productId = product.remoteProductId,
                 siteId = site.id
@@ -490,7 +534,7 @@ class WCProductStoreTest {
         // given
         val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
         val site = SiteModel().apply { id = 23 }
-        val variations = generateSampleVariations(
+        val variations = ProductTestUtils.generateSampleVariations(
             number = 64,
             productId = product.remoteProductId,
             siteId = site.id
