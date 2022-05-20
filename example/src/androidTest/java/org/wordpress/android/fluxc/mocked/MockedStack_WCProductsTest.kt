@@ -139,6 +139,15 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
+    fun testFetchProductIdExceedingInteger() = runBlocking {
+        interceptor.respondWith("wc-fetch-product-id-exceeding-integer.json")
+        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+
+
+        assertEquals(5060147738939L, payload.product.parentId)
+    }
+
+    @Test
     fun testFetchSingleProductManageStock() = runBlocking {
         // check that a product's manage stock field is correctly set to true
         interceptor.respondWith("wc-fetch-product-response-manage-stock-true.json")
@@ -946,6 +955,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteAddProductPayload
         assertTrue(payload.isError)
     }
+
+
 
     @Suppress("unused")
     @Subscribe
