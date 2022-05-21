@@ -14,11 +14,13 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -408,9 +410,10 @@ class OrderUpdateStoreTest {
 //      Simple payments
 
     @Test
-    fun `should create simple payment with correct amount and tax status`(): Unit = runBlocking {
+    fun `should create simple payment with correct amount, tax status, and order status`(): Unit = runBlocking {
         // given
         val newOrder = initialOrder.copy(
+                status = SIMPLE_PAYMENT_ORDER_STATUS.statusKey,
                 feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE,
@@ -429,7 +432,12 @@ class OrderUpdateStoreTest {
         }
 
         // when
-        val result = sut.createSimplePayment(site, SIMPLE_PAYMENT_AMOUNT, SIMPLE_PAYMENT_IS_TAXABLE)
+        val result = sut.createSimplePayment(
+            site,
+            SIMPLE_PAYMENT_AMOUNT,
+            SIMPLE_PAYMENT_IS_TAXABLE,
+            SIMPLE_PAYMENT_ORDER_STATUS
+        )
 
         // then
         assertThat(result.isError).isFalse()
@@ -437,6 +445,7 @@ class OrderUpdateStoreTest {
         assertThat(result.model!!.getFeeLineList()).hasSize(1)
         assertThat(result.model!!.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
         assertThat(result.model!!.getFeeLineList()[0].taxStatus!!.value).isEqualTo(SIMPLE_PAYMENT_TAX_STATUS)
+        assertThat(result.model!!.status).isEqualTo(SIMPLE_PAYMENT_ORDER_STATUS.statusKey)
     }
 
     @Test
@@ -522,6 +531,7 @@ class OrderUpdateStoreTest {
         const val SIMPLE_PAYMENT_CUSTOMER_NOTE = "Simple payment customer note"
         const val SIMPLE_PAYMENT_BILLING_EMAIL = "example@example.com"
         const val SIMPLE_PAYMENT_IS_TAXABLE = true
+        val SIMPLE_PAYMENT_ORDER_STATUS = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
         val SIMPLE_PAYMENT_TAX_STATUS = FeeLineTaxStatus.Taxable.value
 
         val initialOrder = OrderEntity(

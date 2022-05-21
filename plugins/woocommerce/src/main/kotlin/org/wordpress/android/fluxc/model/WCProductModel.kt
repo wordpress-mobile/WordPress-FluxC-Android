@@ -87,7 +87,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var averageRating = ""
     @Column var ratingCount = 0
 
-    @Column var parentId = 0
+    @Column var parentId = 0L
     @Column var purchaseNote = ""
     @Column var menuOrder = 0
 
