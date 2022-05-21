@@ -34,7 +34,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -686,9 +685,9 @@ class ProductRestClient @Inject constructor(
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
-        val body = listOfNotNull(
+        val body = mapOf(
                 "password" to password
-        ).toMap()
+        )
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
@@ -920,7 +919,6 @@ class ProductRestClient @Inject constructor(
             val variationsUpdates: List<Map<String, Any>> = variationsIds.map { variationId ->
                 modifiedProperties.toMutableMap()
                     .also { properties -> properties["id"] = variationId }
-                    .toMap()
             }
             jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this@ProductRestClient,
