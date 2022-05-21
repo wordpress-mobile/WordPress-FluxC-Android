@@ -116,4 +116,41 @@ class WPAndroidDatabaseMigrationTest {
         cursor.close()
         db.close()
     }
+
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate7To8() {
+        val oldVersion = 7
+        val newVersion = 8
+
+        helper.createDatabase(WP_DB_NAME, oldVersion).apply {
+            // populate BloggingReminders with some data
+            execSQL(""" 
+                INSERT INTO BloggingReminders 
+                (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday, hour, minute) 
+                VALUES (1000,1, 1, 0, 0, 1, 0, 1, 10, 33) 
+            """)
+            close()
+        }
+
+        // Re-open the database with the new version and provide migration to check against.
+        val db = helper.runMigrationsAndValidate(WP_DB_NAME, newVersion, true, MIGRATION_7_8)
+
+        // Validate that the data was migrated properly.
+        val cursor = db.query("SELECT * FROM BloggingReminders")
+
+        assertThat(cursor.count).isEqualTo(1)
+        cursor.moveToFirst()
+        assertThat(cursor.getInt(0)).isEqualTo(1000)
+        assertThat(cursor.getInt(2)).isEqualTo(1)
+        assertThat(cursor.getInt(4)).isEqualTo(0)
+        assertThat(cursor.getInt(8)).isEqualTo(10)
+        assertThat(cursor.getInt(9)).isEqualTo(0)
+        assertThat(cursor.getInt(10)).isEqualTo(10)
+        assertThat(cursor.getInt(11)).isEqualTo(33)
+        assertThat(cursor.getInt(12)).isEqualTo(0)
+        cursor.close()
+        db.close()
+    }
 }
