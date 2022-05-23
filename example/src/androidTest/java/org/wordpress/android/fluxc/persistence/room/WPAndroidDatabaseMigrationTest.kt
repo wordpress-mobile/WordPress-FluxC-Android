@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.persistence.WPAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_1_2
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_2_3
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_3_4
+import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.MIGRATION_7_8
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase.Companion.WP_DB_NAME
 import java.io.IOException
 
