@@ -117,7 +117,6 @@ class WPAndroidDatabaseMigrationTest {
         db.close()
     }
 
-
     @Test
     @Throws(IOException::class)
     fun migrate7To8() {
