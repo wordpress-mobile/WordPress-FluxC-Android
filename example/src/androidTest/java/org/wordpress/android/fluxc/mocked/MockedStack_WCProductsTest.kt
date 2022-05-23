@@ -92,7 +92,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getVariationIdList().size, 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
@@ -113,7 +113,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getVariationIdList().size, 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
@@ -189,19 +189,19 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals("10,11,12", products[0].getGroupedProductIdList().joinToString(","))
             assertEquals("10,11,12", products[0].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[0].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[0].getNumVariations())
+            assertEquals(3, products[0].getVariationIdList().size)
 
             // verify that response as json object in product response is handled correctly
             assertEquals("10,11,12", products[1].getGroupedProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[1].getNumVariations())
+            assertEquals(3, products[1].getVariationIdList().size)
 
             // verify that response as null in product response is handled correctly
             assertEquals(0, products[2].getGroupedProductIdList().size)
             assertEquals(0, products[2].getUpsellProductIdList().size)
             assertEquals(0, products[2].getCrossSellProductIdList().size)
-            assertEquals(0, products[2].getNumVariations())
+            assertEquals(0, products[2].getVariationIdList().size)
             assertEquals(0, products[2].getCategoryList().size)
         }
 
