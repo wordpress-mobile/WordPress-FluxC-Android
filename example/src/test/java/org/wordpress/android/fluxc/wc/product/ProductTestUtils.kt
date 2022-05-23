@@ -94,15 +94,12 @@ object ProductTestUtils {
         }
     }
 
-    fun generateProductList(siteId: Int = 6): List<WCProductShippingClassModel> {
-        with(ArrayList<WCProductShippingClassModel>()) {
-            add(generateSampleProductShippingClass(1, siteId = siteId))
-            add(generateSampleProductShippingClass(2, siteId = siteId))
-            add(generateSampleProductShippingClass(3, siteId = siteId))
-            add(generateSampleProductShippingClass(4, siteId = siteId))
-            add(generateSampleProductShippingClass(5, siteId = siteId))
-            return this
-        }
+    fun generateProductShippingClassList(siteId: Int = 6) = List(5) {
+        generateSampleProductShippingClass(it + 1L, siteId = siteId)
+    }
+
+    fun generateProductList(siteId: Int = 6) = List(5) {
+        generateSampleProduct(it + 1L, siteId = siteId)
     }
 
     fun getProductReviewsFromJsonString(json: String, siteId: Int): List<WCProductReviewModel> {
@@ -121,6 +118,27 @@ object ProductTestUtils {
                 rating = it.rating
                 verified = it.verified
                 reviewerAvatarsJson = it.reviewer_avatar_urls.toString()
+            }
+        }
+    }
+
+    fun generateCategory(siteId: Int, remoteId: Long) =
+        WCProductCategoryModel().apply {
+            localSiteId = siteId
+            remoteCategoryId = remoteId
+            name = "Category $remoteId"
+            slug = "category$remoteId"
+            parent = 0L
+        }
+
+    fun generateCategoryList(siteId: Int): List<WCProductCategoryModel> {
+        return List(5) {
+            WCProductCategoryModel().apply {
+                localSiteId = siteId
+                remoteCategoryId = it.toLong()
+                name = "Category $it"
+                slug = "category$it"
+                parent = 0L
             }
         }
     }

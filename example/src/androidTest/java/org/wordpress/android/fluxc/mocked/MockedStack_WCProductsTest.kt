@@ -138,6 +138,17 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(payload.error.type, ProductErrorType.INVALID_PRODUCT_ID)
     }
 
+    /**
+     * ParentId used to be an integer. This test verifies the app correctly parses even long values.
+     */
+    @Test
+    fun testFetchParentProductIdExceedingInteger() = runBlocking {
+        interceptor.respondWith("wc-fetch-parent-product-id-exceeding-integer.json")
+        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+
+        assertEquals(5060147738939L, payload.product.parentId)
+    }
+
     @Test
     fun testFetchSingleProductManageStock() = runBlocking {
         // check that a product's manage stock field is correctly set to true

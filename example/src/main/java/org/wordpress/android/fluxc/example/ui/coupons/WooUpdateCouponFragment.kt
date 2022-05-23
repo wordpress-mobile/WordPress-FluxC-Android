@@ -30,8 +30,7 @@ import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 import org.wordpress.android.fluxc.store.CouponStore
-import org.wordpress.android.fluxc.store.ProductCategoryStore
-import org.wordpress.android.fluxc.store.ProductStore
+import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
@@ -40,8 +39,7 @@ import javax.inject.Inject
 class WooUpdateCouponFragment : Fragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var couponStore: CouponStore
-    @Inject internal lateinit var productStore: ProductStore
-    @Inject internal lateinit var productCategoryStore: ProductCategoryStore
+    @Inject internal lateinit var productStore: WCProductStore
 
     private var siteId: Long = -1
     private var couponId: Long? = null
@@ -196,12 +194,12 @@ class WooUpdateCouponFragment : Fragment() {
         select_product_ids.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
-                    val products = productStore.getProducts(siteId)
+                    val products = productStore.getProductsForSite(it)
                     val selectedIds = product_ids.getText().toIdsList()
                     if (products.isNotEmpty()) {
                         showMultiSelectorDialog(
-                            itemNames = products.map { it.name ?: "[${it.id}]" },
-                            itemIds = products.map { it.id },
+                            itemNames = products.map { it.name },
+                            itemIds = products.map { it.remoteProductId },
                             selectedIds = selectedIds,
                             resultCode = LIST_RESULT_CODE_PRODUCTS
                         )
@@ -215,12 +213,12 @@ class WooUpdateCouponFragment : Fragment() {
         select_excluded_product_ids.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
-                    val products = productStore.getProducts(siteId)
+                    val products = productStore.getProductsForSite(it)
                     val selectedIds = excluded_product_ids.getText().toIdsList()
                     if (products.isNotEmpty()) {
                         showMultiSelectorDialog(
-                            itemNames = products.map { it.name ?: "[${it.id}]" },
-                            itemIds = products.map { it.id },
+                            itemNames = products.map { it.name },
+                            itemIds = products.map { it.remoteProductId },
                             selectedIds = selectedIds,
                             resultCode = LIST_RESULT_CODE_EXCL_PRODUCTS
                         )
@@ -234,12 +232,12 @@ class WooUpdateCouponFragment : Fragment() {
         select_category_ids.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
-                    val categories = productCategoryStore.getCategories(siteId)
+                    val categories = productStore.getProductCategoriesForSite(it)
                     val selectedIds = category_ids.getText().toIdsList()
                     if (categories.isNotEmpty()) {
                         showMultiSelectorDialog(
-                            itemNames = categories.map { it.name ?: "[${it.id}]" },
-                            itemIds = categories.map { it.id },
+                            itemNames = categories.map { it.name },
+                            itemIds = categories.map { it.remoteCategoryId },
                             selectedIds = selectedIds,
                             resultCode = LIST_RESULT_CODE_CATEGORIES
                         )
@@ -253,12 +251,12 @@ class WooUpdateCouponFragment : Fragment() {
         select_excluded_category_ids.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
-                    val categories = productCategoryStore.getCategories(siteId)
+                    val categories = productStore.getProductCategoriesForSite(it)
                     val selectedIds = excluded_category_ids.getText().toIdsList()
                     if (categories.isNotEmpty()) {
                         showMultiSelectorDialog(
-                            itemNames = categories.map { it.name ?: "[${it.id}]" },
-                            itemIds = categories.map { it.id },
+                            itemNames = categories.map { it.name },
+                            itemIds = categories.map { it.remoteCategoryId },
                             selectedIds = selectedIds,
                             resultCode = LIST_RESULT_CODE_EXCL_CATEGORIES
                         )
