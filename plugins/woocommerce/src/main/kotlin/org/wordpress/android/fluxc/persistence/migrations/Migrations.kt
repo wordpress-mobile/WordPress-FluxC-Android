@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.persistence.migrations
 
+import androidx.room.DeleteTable
+import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
@@ -502,3 +504,11 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
         }
     }
 }
+
+@DeleteTable(tableName = "CouponsAndProducts")
+@DeleteTable(tableName = "CouponsAndProductCategories")
+internal class AutoMigration13to14 : AutoMigrationSpec
+
+@DeleteTable(tableName = "Products")
+@DeleteTable(tableName = "ProductCategories")
+internal class AutoMigration14to15 : AutoMigrationSpec
