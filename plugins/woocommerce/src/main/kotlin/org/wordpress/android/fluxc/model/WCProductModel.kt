@@ -409,6 +409,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return productIds
     }
 
+    fun getNumVariations() = getVariationIdList().size
+
     fun getVariationIdList() = parseJson(variations)
 
     fun getGroupedProductIdList() = parseJson(groupedProductIds)
