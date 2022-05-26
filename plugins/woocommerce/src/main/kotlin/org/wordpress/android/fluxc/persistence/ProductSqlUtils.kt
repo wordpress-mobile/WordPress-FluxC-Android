@@ -13,6 +13,7 @@ import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
@@ -38,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DES
 import java.util.Locale
 
 object ProductSqlUtils {
+    private const val DEBOUNCE_DELAY_FOR_OBSERVERS = 50L
     private val productsUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val variationsUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val categoriesUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
@@ -49,6 +51,7 @@ object ProductSqlUtils {
     ): Flow<List<WCProductModel>> {
         return productsUpdatesTrigger
             .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
                 if (filterOptions.isEmpty()) {
                     getProductsForSite(site, sortType)
@@ -62,6 +65,7 @@ object ProductSqlUtils {
     fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> {
         return variationsUpdatesTrigger
             .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
                 getVariationsForProduct(site, productId)
             }
@@ -71,6 +75,7 @@ object ProductSqlUtils {
     fun observeCategories(site: SiteModel): Flow<List<WCProductCategoryModel>> {
         return categoriesUpdatesTrigger
             .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
                 getProductCategoriesForSite(site)
             }
@@ -610,16 +615,12 @@ object ProductSqlUtils {
     fun insertOrUpdateProductCategories(productCategories: List<WCProductCategoryModel>): Int {
         var rowsAffected = 0
         productCategories.forEach {
-            rowsAffected += internalInsertOrUpdateProductCategory(it)
+            rowsAffected += insertOrUpdateProductCategory(it)
         }
-        return rowsAffected.also(::triggerCategoriesUpdateIfNeeded)
+        return rowsAffected
     }
 
-    fun insertOrUpdateProductCategory(productCategory: WCProductCategoryModel) =
-        internalInsertOrUpdateProductCategory(productCategory)
-            .also(::triggerCategoriesUpdateIfNeeded)
-
-    private fun internalInsertOrUpdateProductCategory(productCategory: WCProductCategoryModel): Int {
+    fun insertOrUpdateProductCategory(productCategory: WCProductCategoryModel): Int {
         val result = WellSql.select(WCProductCategoryModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductCategoryModelTable.ID, productCategory.id)
@@ -634,13 +635,15 @@ object ProductSqlUtils {
         return if (result == null) {
             // Insert
             WellSql.insert(productCategory).asSingleTransaction(true).execute()
+            categoriesUpdatesTrigger.tryEmit(Unit)
             1
         } else {
             // Update
             val oldId = result.id
             WellSql.update(WCProductCategoryModel::class.java).whereId(oldId)
-                .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java))
-                .execute()
+                    .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java))
+                    .execute()
+                    .also(::triggerCategoriesUpdateIfNeeded)
         }
     }
 
