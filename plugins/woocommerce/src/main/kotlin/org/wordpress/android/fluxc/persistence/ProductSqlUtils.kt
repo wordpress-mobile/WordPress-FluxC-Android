@@ -72,12 +72,12 @@ object ProductSqlUtils {
             .flowOn(Dispatchers.IO)
     }
 
-    fun observeCategories(site: SiteModel): Flow<List<WCProductCategoryModel>> {
+    fun observeCategories(site: SiteModel, sortType: ProductCategorySorting): Flow<List<WCProductCategoryModel>> {
         return categoriesUpdatesTrigger
             .onStart { emit(Unit) }
             .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
-                getProductCategoriesForSite(site)
+                getProductCategoriesForSite(site, sortType)
             }
             .flowOn(Dispatchers.IO)
     }

@@ -911,8 +911,11 @@ class WCProductStore @Inject constructor(
     fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> =
         ProductSqlUtils.observeVariations(site, productId)
 
-    fun observeCategories(site: SiteModel): Flow<List<WCProductCategoryModel>> =
-        ProductSqlUtils.observeCategories(site)
+    fun observeCategories(
+        site: SiteModel,
+        sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
+    ): Flow<List<WCProductCategoryModel>> =
+        ProductSqlUtils.observeCategories(site, sortType)
 
     suspend fun submitProductAttributeChanges(
         site: SiteModel,
