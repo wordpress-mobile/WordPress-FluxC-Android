@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
@@ -55,7 +56,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
-    private val bogusProductId = -1L
     private val remoteShippingClassId = 34L
     private val searchQuery = "test"
 
@@ -92,7 +92,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getVariationIdList().size, 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
@@ -113,7 +113,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getVariationIdList().size, 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
@@ -189,19 +189,19 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals("10,11,12", products[0].getGroupedProductIdList().joinToString(","))
             assertEquals("10,11,12", products[0].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[0].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[0].getNumVariations())
+            assertEquals(3, products[0].getVariationIdList().size)
 
             // verify that response as json object in product response is handled correctly
             assertEquals("10,11,12", products[1].getGroupedProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[1].getNumVariations())
+            assertEquals(3, products[1].getVariationIdList().size)
 
             // verify that response as null in product response is handled correctly
             assertEquals(0, products[2].getGroupedProductIdList().size)
             assertEquals(0, products[2].getUpsellProductIdList().size)
             assertEquals(0, products[2].getCrossSellProductIdList().size)
-            assertEquals(0, products[2].getNumVariations())
+            assertEquals(0, products[2].getVariationIdList().size)
             assertEquals(0, products[2].getCategoryList().size)
         }
 
@@ -312,6 +312,45 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // now delete all variations for this product and save again
         ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(result.variations), 3)
+
+        // now verify the db stored the variation correctly
+        val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(dbVariations.size, 3)
+        with(dbVariations.first()) {
+            assertEquals(this.remoteProductId, remoteProductId)
+            assertEquals(this.localSiteId, siteModel.id)
+
+            // verify that the variant with the first date created is fetched first
+            assertEquals(this.dateCreated, "2019-03-16T05:14:57")
+        }
+    }
+
+    @Test
+    fun testFetchProductVariationsWithSyncRequestSuccess() = runBlocking {
+        interceptor.respondWith("wc-fetch-product-variations-response-success.json")
+        val result = productRestClient.fetchProductVariationsWithSyncRequest(
+            siteModel,
+            remoteProductId,
+            offset = 0,
+            pageSize = WCProductStore.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
+        )
+
+        assertNull(result.error)
+
+        val variations = result.result!!
+        variations.forEach {
+            assertEquals(remoteProductId, it.remoteProductId)
+        }
+        assertEquals(3, variations.size)
+        assertEquals("null", variations[0].image)
+        assertNotNull(variations[1].image)
+
+        // save the variation to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(variations), 3)
+
+        // now delete all variations for this product and save again
+        ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(variations), 3)
 
         // now verify the db stored the variation correctly
         val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
@@ -561,7 +600,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         }
     }
 
-    fun generateSampleVariation(): WCProductVariationModel {
+    private fun generateSampleVariation(): WCProductVariationModel {
         return WCProductVariationModel().apply {
             remoteProductId = 1
             remoteVariationId = 181

@@ -97,7 +97,7 @@ class WooProductsFragment : StoreSelectingFragment() {
 
                             val product = wcProductStore.getProductByRemoteId(site, result.remoteProductId)
                             product?.let {
-                                val numVariations = it.getNumVariations()
+                                val numVariations = it.getVariationIdList().size
                                 if (numVariations > 0) {
                                     prependToLog("Single product with $numVariations variations fetched! ${it.name}")
                                 } else {
