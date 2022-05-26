@@ -610,12 +610,16 @@ object ProductSqlUtils {
     fun insertOrUpdateProductCategories(productCategories: List<WCProductCategoryModel>): Int {
         var rowsAffected = 0
         productCategories.forEach {
-            rowsAffected += insertOrUpdateProductCategory(it)
+            rowsAffected += internalInsertOrUpdateProductCategory(it)
         }
-        return rowsAffected
+        return rowsAffected.also(::triggerCategoriesUpdateIfNeeded)
     }
 
-    fun insertOrUpdateProductCategory(productCategory: WCProductCategoryModel): Int {
+    fun insertOrUpdateProductCategory(productCategory: WCProductCategoryModel) =
+        internalInsertOrUpdateProductCategory(productCategory)
+            .also(::triggerCategoriesUpdateIfNeeded)
+
+    private fun internalInsertOrUpdateProductCategory(productCategory: WCProductCategoryModel): Int {
         val result = WellSql.select(WCProductCategoryModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductCategoryModelTable.ID, productCategory.id)
@@ -630,15 +634,13 @@ object ProductSqlUtils {
         return if (result == null) {
             // Insert
             WellSql.insert(productCategory).asSingleTransaction(true).execute()
-            categoriesUpdatesTrigger.tryEmit(Unit)
             1
         } else {
             // Update
             val oldId = result.id
             WellSql.update(WCProductCategoryModel::class.java).whereId(oldId)
-                    .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java))
-                    .execute()
-                    .also(::triggerCategoriesUpdateIfNeeded)
+                .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java))
+                .execute()
         }
     }
 
