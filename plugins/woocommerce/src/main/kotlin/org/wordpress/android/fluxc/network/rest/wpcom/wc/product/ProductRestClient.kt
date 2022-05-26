@@ -727,7 +727,6 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0
     ): RemoteProductVariationsPayload {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
-        val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
