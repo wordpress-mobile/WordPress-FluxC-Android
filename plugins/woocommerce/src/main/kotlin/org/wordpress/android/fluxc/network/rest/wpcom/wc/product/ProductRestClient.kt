@@ -797,7 +797,7 @@ class ProductRestClient @Inject constructor(
 
         return WOOCOMMERCE.products.id(productId).variations.pathV3
             .requestProductVariationTo(site, params)
-            .handleResultFrom(site)
+            .handleResultFrom(site, productId)
     }
 
     private suspend fun String.requestProductVariationTo(
