@@ -552,13 +552,19 @@ class ProductRestClient @Inject constructor(
         }
 
     @JvmName("handleResultFromProductVariationApiResponse")
-    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(site: SiteModel) =
+    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(
+        site: SiteModel,
+        productId: Long
+    ) =
         when (this) {
             is JetpackSuccess -> {
                 data
                     ?.map {
                         it.asProductVariationModel()
-                            .apply { localSiteId = site.id }
+                            .apply {
+                                localSiteId = site.id
+                                remoteProductId = productId
+                            }
                     }
                     .orEmpty()
                     .let { WooPayload(it.toList()) }
