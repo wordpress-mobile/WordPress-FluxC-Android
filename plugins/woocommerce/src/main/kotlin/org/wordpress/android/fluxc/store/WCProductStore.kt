@@ -1332,6 +1332,14 @@ class WCProductStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
+                    if (offset == 0 &&
+                        includedProductIds.isEmpty() &&
+                        excludedProductIds.isEmpty() &&
+                        filterOptions.isEmpty()
+                    ) {
+                        ProductSqlUtils.deleteProductsForSite(site)
+                    }
+
                     ProductSqlUtils.insertOrUpdateProducts(response.result)
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
