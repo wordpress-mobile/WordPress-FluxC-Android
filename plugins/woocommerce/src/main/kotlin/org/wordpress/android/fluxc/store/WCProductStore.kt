@@ -911,8 +911,11 @@ class WCProductStore @Inject constructor(
     fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> =
         ProductSqlUtils.observeVariations(site, productId)
 
-    fun observeCategories(site: SiteModel): Flow<List<WCProductCategoryModel>> =
-        ProductSqlUtils.observeCategories(site)
+    fun observeCategories(
+        site: SiteModel,
+        sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
+    ): Flow<List<WCProductCategoryModel>> =
+        ProductSqlUtils.observeCategories(site, sortType)
 
     suspend fun submitProductAttributeChanges(
         site: SiteModel,
@@ -1294,6 +1297,9 @@ class WCProductStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
+                    if (offset == 0 && includedCategoryIds.isEmpty() && excludedCategoryIds.isEmpty()) {
+                        ProductSqlUtils.deleteAllProductCategories()
+                    }
                     ProductSqlUtils.insertOrUpdateProductCategories(response.result)
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
@@ -1326,6 +1332,14 @@ class WCProductStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
+                    if (offset == 0 &&
+                        includedProductIds.isEmpty() &&
+                        excludedProductIds.isEmpty() &&
+                        filterOptions.isEmpty()
+                    ) {
+                        ProductSqlUtils.deleteProductsForSite(site)
+                    }
+
                     ProductSqlUtils.insertOrUpdateProducts(response.result)
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
@@ -1383,6 +1397,13 @@ class WCProductStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
+                    if (offset == 0 &&
+                        includedVariationIds.isEmpty() &&
+                        excludedVariationIds.isEmpty()
+                    ) {
+                        ProductSqlUtils.deleteVariationsForProduct(site, productId)
+                    }
+
                     ProductSqlUtils.insertOrUpdateProductVariations(response.result)
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
