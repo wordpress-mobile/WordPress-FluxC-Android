@@ -350,6 +350,21 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    /**
+     * Observe the changes to number of orders for a given [SiteModel]
+     *
+     * @param site the current site
+     * @param statuses an optional list of statuses to filter the list of orders, pass an empty list to include all
+     *                 orders
+     */
+    fun observeOrderCountForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<Int> {
+        return if (statuses.isEmpty()) {
+            ordersDao.observeOrderCountForSite(site.localId())
+        } else {
+            ordersDao.observeOrderCountForSite(site.localId(), statuses)
+        }
+    }
+
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
         orderIds: List<Long>
