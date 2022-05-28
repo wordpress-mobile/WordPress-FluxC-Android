@@ -351,7 +351,7 @@ class WCOrderStore @Inject constructor(
     }
 
     /**
-     * Observe the changes to number of orders for a given [SiteModel]
+     * Observe the changes to the number of orders for a given [SiteModel]
      *
      * @param site the current site
      * @param statuses an optional list of statuses to filter the list of orders, pass an empty list to include all
