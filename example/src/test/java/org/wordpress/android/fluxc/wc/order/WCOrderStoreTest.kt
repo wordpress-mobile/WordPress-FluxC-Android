@@ -383,11 +383,6 @@ class WCOrderStoreTest {
 
             // Then COMPLETED orders count = 1
             assertThat(count).isEqualTo(1)
-
-            count = orderStore.observeOrderCountForSite(site).first()
-
-            // Then orders count = 4
-            assertThat(count).isEqualTo(4)
         }
     }
 
