@@ -552,13 +552,19 @@ class ProductRestClient @Inject constructor(
         }
 
     @JvmName("handleResultFromProductVariationApiResponse")
-    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(site: SiteModel) =
+    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(
+        site: SiteModel,
+        productId: Long
+    ) =
         when (this) {
             is JetpackSuccess -> {
                 data
                     ?.map {
                         it.asProductVariationModel()
-                            .apply { localSiteId = site.id }
+                            .apply {
+                                localSiteId = site.id
+                                remoteProductId = productId
+                            }
                     }
                     .orEmpty()
                     .let { WooPayload(it.toList()) }
@@ -727,7 +733,6 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0
     ): RemoteProductVariationsPayload {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
-        val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
@@ -792,7 +797,7 @@ class ProductRestClient @Inject constructor(
 
         return WOOCOMMERCE.products.id(productId).variations.pathV3
             .requestProductVariationTo(site, params)
-            .handleResultFrom(site)
+            .handleResultFrom(site, productId)
     }
 
     private suspend fun String.requestProductVariationTo(

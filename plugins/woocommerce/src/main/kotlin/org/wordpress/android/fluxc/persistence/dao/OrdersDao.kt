@@ -58,6 +58,9 @@ abstract class OrdersDao {
     @Query("SELECT COUNT(*) FROM OrderEntity WHERE localSiteId = :localSiteId")
     abstract fun getOrderCountForSite(localSiteId: LocalId): Int
 
+    @Query("SELECT COUNT(*) FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
+    abstract fun observeOrderCountForSite(localSiteId: LocalId, status: List<String>): Flow<Int>
+
     @Query("DELETE FROM OrderEntity WHERE localSiteId = :localSiteId AND orderId = :orderId")
     abstract suspend fun deleteOrder(localSiteId: LocalId, orderId: Long)
 }
