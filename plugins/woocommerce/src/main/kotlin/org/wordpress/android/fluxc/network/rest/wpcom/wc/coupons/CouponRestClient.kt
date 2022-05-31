@@ -220,12 +220,15 @@ class CouponRestClient @Inject constructor(
             isShippingFree?.let { put("free_shipping", it) }
             productCategoryIds?.let { put("product_categories", it) }
             excludedProductCategoryIds?.let { put("excluded_product_categories", it) }
-            usageLimit?.let { put("usage_limit", it) }
-            usageLimitPerUser?.let { put("usage_limit_per_user", it) }
-            limitUsageToXItems?.let { put("limit_usage_to_x_items", it) }
             restrictedEmails?.let { put("email_restrictions", it) }
             isForIndividualUse?.let { put("individual_use", it) }
             areSaleItemsExcluded?.let { put("exclude_sale_items", it) }
+
+            // The following fields are allowed to be empty. When updating their values to be empty,
+            // the REST API accepts and treats `0` as empty.
+            put("usage_limit", usageLimit ?: 0)
+            put("usage_limit_per_user", usageLimitPerUser ?: 0)
+            put("limit_usage_to_x_items", limitUsageToXItems ?: 0)
         }
     }
 }
