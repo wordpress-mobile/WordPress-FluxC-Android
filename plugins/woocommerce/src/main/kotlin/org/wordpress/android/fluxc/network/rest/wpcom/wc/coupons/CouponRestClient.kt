@@ -224,8 +224,8 @@ class CouponRestClient @Inject constructor(
             isForIndividualUse?.let { put("individual_use", it) }
             areSaleItemsExcluded?.let { put("exclude_sale_items", it) }
 
-            // The following fields are allowed to be empty. When updating their values to be empty,
-            // the REST API accepts and treats `0` as empty.
+            // The following fields can have empty value. When updating a Coupon,
+            // the REST API accepts and treats `0` as empty for these fields.
             put("usage_limit", usageLimit ?: 0)
             put("usage_limit_per_user", usageLimitPerUser ?: 0)
             put("limit_usage_to_x_items", limitUsageToXItems ?: 0)
