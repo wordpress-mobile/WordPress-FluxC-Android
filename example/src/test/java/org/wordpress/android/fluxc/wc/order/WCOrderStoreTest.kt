@@ -12,6 +12,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import okhttp3.internal.toImmutableMap
@@ -345,6 +346,44 @@ class WCOrderStoreTest {
         assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)
         Unit
+    }
+
+    @Test
+    fun testObserveOrdersCount() {
+        runBlocking {
+            val siteId = 5
+            val site = SiteModel().apply { id = siteId }
+            // When inserting 3 PROCESSING and 1 COMPLETED orders
+            for (i in 1L..3L) {
+                OrderTestUtils.generateSampleOrder(
+                    siteId = siteId,
+                    orderId = i,
+                    orderStatus = CoreOrderStatus.PROCESSING.value
+                ).saveToDb()
+            }
+
+            OrderTestUtils.generateSampleOrder(
+                siteId = siteId,
+                orderId = 4L,
+                orderStatus = CoreOrderStatus.COMPLETED.value
+            ).saveToDb()
+
+            // Then PROCESSING orders count = 3
+            var count = orderStore.observeOrderCountForSite(
+                site,
+                listOf(CoreOrderStatus.PROCESSING.value)
+            ).first()
+
+            assertThat(count).isEqualTo(3)
+
+            count = orderStore.observeOrderCountForSite(
+                site,
+                listOf(CoreOrderStatus.COMPLETED.value)
+            ).first()
+
+            // Then COMPLETED orders count = 1
+            assertThat(count).isEqualTo(1)
+        }
     }
 
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, OrderEntity?> {
