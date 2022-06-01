@@ -78,7 +78,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
                 "wc-android-database"
         ).allowMainThreadQueries()
                 .fallbackToDestructiveMigrationOnDowngrade()
-                .fallbackToDestructiveMigrationFrom(1, 2)
+                .fallbackToDestructiveMigrationFrom(1, 2, 15)
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
