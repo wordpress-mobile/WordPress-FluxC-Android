@@ -512,3 +512,6 @@ internal class AutoMigration13to14 : AutoMigrationSpec
 @DeleteTable(tableName = "Products")
 @DeleteTable(tableName = "ProductCategories")
 internal class AutoMigration14to15 : AutoMigrationSpec
+
+@DeleteTable(tableName = "OrderEntity")
+internal class AutoMigration15to16 : AutoMigrationSpec

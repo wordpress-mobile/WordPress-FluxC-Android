@@ -53,7 +53,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         autoMigrations = [
             AutoMigration(from = 12, to = 13),
             AutoMigration(from = 13, to = 14, spec = AutoMigration13to14::class),
-            AutoMigration(from = 14, to = 15, spec = AutoMigration14to15::class)
+            AutoMigration(from = 14, to = 15, spec = AutoMigration14to15::class),
+            AutoMigration(from = 15, to = 16, spec = AutoMigration14to15::class)
         ]
 )
 @TypeConverters(
@@ -78,7 +79,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
                 "wc-android-database"
         ).allowMainThreadQueries()
                 .fallbackToDestructiveMigrationOnDowngrade()
-                .fallbackToDestructiveMigrationFrom(1, 2, 15)
+                .fallbackToDestructiveMigrationFrom(1, 2)
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
