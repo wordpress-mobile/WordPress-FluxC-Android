@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration13to14
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration14to15
+import org.wordpress.android.fluxc.persistence.migrations.AutoMigration15to16
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
@@ -54,7 +55,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             AutoMigration(from = 12, to = 13),
             AutoMigration(from = 13, to = 14, spec = AutoMigration13to14::class),
             AutoMigration(from = 14, to = 15, spec = AutoMigration14to15::class),
-            AutoMigration(from = 15, to = 16, spec = AutoMigration14to15::class)
+            AutoMigration(from = 15, to = 16, spec = AutoMigration15to16::class)
         ]
 )
 @TypeConverters(
