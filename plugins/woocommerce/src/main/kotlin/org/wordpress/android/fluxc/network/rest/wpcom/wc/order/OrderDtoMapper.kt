@@ -69,7 +69,7 @@ class OrderDtoMapper @Inject internal constructor(
                     taxLines = this.tax_lines.toString(),
                     metaData = this.meta_data.toString(),
                     paymentUrl = this.payment_url ?: "",
-                    isEditable = this.is_editable ?: ( this.status in EDITABLE_STATUSES )
+                    isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES)
             )
         }
 
