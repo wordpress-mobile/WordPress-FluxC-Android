@@ -69,7 +69,7 @@ data class OrderEntity(
     val metaData: String = "",
     @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = "",
-    @ColumnInfo(name = "isEditable", defaultValue = "true")
+    @ColumnInfo(name = "isEditable", defaultValue = "1")
     val isEditable: Boolean = true
 ) {
     companion object {
