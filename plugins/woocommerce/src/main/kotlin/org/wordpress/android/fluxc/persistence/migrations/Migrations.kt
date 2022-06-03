@@ -83,7 +83,7 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
             execSQL("DROP TABLE OrderEntity")
             execSQL(
                 // language=RoomSql
-                """ CREATE TABLE IF NOT EXISTS OrderEntity (
+                """CREATE TABLE IF NOT EXISTS OrderEntity (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `localSiteId` INTEGER NOT NULL,
                         `remoteOrderId` INTEGER NOT NULL,
@@ -522,7 +522,7 @@ internal val MIGRATION_15_16 = object : Migration(15, 16) {
             // language=RoomSql
             execSQL(
                 """
-                CREATE TABLE `OrderEntity` (
+                CREATE TABLE IF NOT EXISTS  `OrderEntity` (
                   `localSiteId` INTEGER NOT NULL,
                   `orderId` INTEGER NOT NULL,
                   `number` TEXT NOT NULL,
