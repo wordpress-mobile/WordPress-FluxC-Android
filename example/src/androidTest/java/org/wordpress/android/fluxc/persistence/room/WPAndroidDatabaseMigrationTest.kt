@@ -146,10 +146,8 @@ class WPAndroidDatabaseMigrationTest {
         assertThat(cursor.getInt(2)).isEqualTo(1)
         assertThat(cursor.getInt(4)).isEqualTo(0)
         assertThat(cursor.getInt(8)).isEqualTo(10)
-        assertThat(cursor.getInt(9)).isEqualTo(0)
-        assertThat(cursor.getInt(10)).isEqualTo(10)
-        assertThat(cursor.getInt(11)).isEqualTo(33)
-        assertThat(cursor.getInt(12)).isEqualTo(0)
+        assertThat(cursor.getInt(9)).isEqualTo(33)
+        assertThat(cursor.getInt(10)).isEqualTo(0)
         cursor.close()
         db.close()
     }
