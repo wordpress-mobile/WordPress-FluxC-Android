@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
@@ -44,6 +45,7 @@ class OrderUpdateStoreTest {
     private val siteSqlUtils: SiteSqlUtils = mock {
         on { getSiteWithLocalId(any()) } doReturn site
     }
+    private val dispatcher: Dispatcher = mock()
 
     private val ordersDao: OrdersDao = mock {
         onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
@@ -52,6 +54,7 @@ class OrderUpdateStoreTest {
     fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
         sut = OrderUpdateStore(
+                dispatcher = dispatcher,
                 coroutineEngine = CoroutineEngine(
                         TestCoroutineScope().coroutineContext,
                         mock()
