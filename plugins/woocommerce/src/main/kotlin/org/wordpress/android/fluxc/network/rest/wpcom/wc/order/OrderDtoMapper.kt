@@ -68,7 +68,8 @@ class OrderDtoMapper @Inject internal constructor(
                     feeLines = this.fee_lines.toString(),
                     taxLines = this.tax_lines.toString(),
                     metaData = this.meta_data.toString(),
-                    paymentUrl = this.payment_url ?: ""
+                    paymentUrl = this.payment_url ?: "",
+                    isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES)
             )
         }
 
@@ -76,6 +77,7 @@ class OrderDtoMapper @Inject internal constructor(
     }
 
     companion object {
+        val EDITABLE_STATUSES = listOf("pending", "on-hold", "auto-draft")
         fun OrderAddress.Billing.toDto() = OrderDto.Billing(
                 first_name = this.firstName,
                 last_name = this.lastName,
