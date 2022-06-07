@@ -239,6 +239,8 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
+                // Emit a request to refresh the list of order summaries to make sure the added order is
+                // added to the list
                 dispatcher.dispatch(
                     WCOrderActionBuilder.newFetchOrderListAction(
                         FetchOrderListPayload(offset = 0, listDescriptor = WCOrderListDescriptor(site = site))
