@@ -1394,7 +1394,11 @@ class WCProductStore @Inject constructor(
                 response.result != null -> {
                     ProductSqlUtils.insertOrUpdateProductCategories(response.result)
                     val productIds = response.result.map { it.remoteCategoryId }
-                    val categories = ProductSqlUtils.getProductCategoriesByRemoteIds(site, productIds)
+                    val categories = if (productIds.isNotEmpty()) {
+                        ProductSqlUtils.getProductCategoriesByRemoteIds(site, productIds)
+                    } else {
+                        emptyList()
+                    }
                     val canLoadMore = response.result.size == pageSize
                     WooResult(ProductCategorySearchResult(categories, canLoadMore))
                 }
