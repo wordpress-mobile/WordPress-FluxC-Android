@@ -1376,6 +1376,37 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    suspend fun searchProductCategories(
+        site: SiteModel,
+        searchString: String,
+        offset: Int = 0,
+        pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
+    ): WooResult<ProductCategorySearchResult> {
+        return coroutineEngine.withDefaultContext(API, this, "searchProducts") {
+            val response = wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
+                site = site,
+                offset = offset,
+                pageSize = pageSize,
+                searchQuery = searchString
+            )
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    ProductSqlUtils.insertOrUpdateProductCategories(response.result)
+                    val productIds = response.result.map { it.remoteCategoryId }
+                    val categories = if (productIds.isNotEmpty()) {
+                        ProductSqlUtils.getProductCategoriesByRemoteIds(site, productIds)
+                    } else {
+                        emptyList()
+                    }
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(ProductCategorySearchResult(categories, canLoadMore))
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     // Returns a boolean indicating whether more coupons can be fetched
     suspend fun fetchProductVariations(
         site: SiteModel,
@@ -1705,6 +1736,11 @@ class WCProductStore @Inject constructor(
 
     data class ProductSearchResult(
         val products: List<WCProductModel>,
+        val canLoadMore: Boolean
+    )
+
+    data class ProductCategorySearchResult(
+        val categories: List<WCProductCategoryModel>,
         val canLoadMore: Boolean
     )
 }

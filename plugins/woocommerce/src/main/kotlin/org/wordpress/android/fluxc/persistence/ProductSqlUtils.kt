@@ -596,6 +596,19 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getProductCategoriesByRemoteIds(
+        site: SiteModel,
+        categoryIds: List<Long>
+    ): List<WCProductCategoryModel> {
+        return WellSql.select(WCProductCategoryModel::class.java)
+            .where()
+            .beginGroup()
+            .isIn(WCProductCategoryModelTable.REMOTE_CATEGORY_ID, categoryIds)
+            .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, site.id)
+            .endGroup().endWhere()
+            .asModel
+    }
+
     fun getProductCategoryByNameAndParentId(
         localSiteId: Int,
         categoryName: String,

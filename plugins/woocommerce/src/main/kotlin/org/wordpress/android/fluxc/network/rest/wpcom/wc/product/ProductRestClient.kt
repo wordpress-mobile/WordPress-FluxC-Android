@@ -507,6 +507,7 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         includedCategoryIds: List<Long> = emptyList(),
         excludedCategoryIds: List<Long> = emptyList(),
+        searchQuery: String? = null,
         pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
         productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
         offset: Int = 0
@@ -521,7 +522,7 @@ class ProductRestClient @Inject constructor(
             "offset" to offset.toString(),
             "order" to sortOrder,
             "orderby" to "name"
-        )
+        ).putIfNotEmpty("search" to searchQuery)
         if (includedCategoryIds.isNotEmpty()) {
             params["include"] = includedCategoryIds.map { it }.joinToString()
         }
