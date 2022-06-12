@@ -1386,7 +1386,11 @@ class WCProductStore @Inject constructor(
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
     ): WooResult<ProductCategorySearchResult> {
-        return coroutineEngine.withDefaultContext(API, this, "searchProducts") {
+        return coroutineEngine.withDefaultContext(
+            API,
+            this,
+            "searchProductCategories"
+        ) {
             val response = wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
                 site = site,
                 offset = offset,
