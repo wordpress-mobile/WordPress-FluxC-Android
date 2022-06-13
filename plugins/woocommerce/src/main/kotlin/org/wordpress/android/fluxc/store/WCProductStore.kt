@@ -1367,7 +1367,11 @@ class WCProductStore @Inject constructor(
                 response.result != null -> {
                     ProductSqlUtils.insertOrUpdateProducts(response.result)
                     val productIds = response.result.map { it.remoteProductId }
-                    val products = ProductSqlUtils.getProductsByRemoteIds(site, productIds)
+                    val products = if (productIds.isNotEmpty()) {
+                        ProductSqlUtils.getProductsByRemoteIds(site, productIds)
+                    } else {
+                        emptyList()
+                    }
                     val canLoadMore = response.result.size == pageSize
                     WooResult(ProductSearchResult(products, canLoadMore))
                 }
@@ -1382,7 +1386,11 @@ class WCProductStore @Inject constructor(
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
     ): WooResult<ProductCategorySearchResult> {
-        return coroutineEngine.withDefaultContext(API, this, "searchProducts") {
+        return coroutineEngine.withDefaultContext(
+            API,
+            this,
+            "searchProductCategories"
+        ) {
             val response = wcProductRestClient.fetchProductsCategoriesWithSyncRequest(
                 site = site,
                 offset = offset,
@@ -1393,9 +1401,9 @@ class WCProductStore @Inject constructor(
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     ProductSqlUtils.insertOrUpdateProductCategories(response.result)
-                    val productIds = response.result.map { it.remoteCategoryId }
-                    val categories = if (productIds.isNotEmpty()) {
-                        ProductSqlUtils.getProductCategoriesByRemoteIds(site, productIds)
+                    val categoryIds = response.result.map { it.remoteCategoryId }
+                    val categories = if (categoryIds.isNotEmpty()) {
+                        ProductSqlUtils.getProductCategoriesByRemoteIds(site, categoryIds)
                     } else {
                         emptyList()
                     }
