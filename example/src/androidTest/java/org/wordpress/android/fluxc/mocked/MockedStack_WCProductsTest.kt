@@ -182,7 +182,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertNotNull(products)
-            assertEquals(products.size, 3)
+            assertEquals(products.size, 4)
             assertNull(products[0].getFirstImageUrl())
 
             // verify that response as json array in product response is handled correctly
@@ -203,21 +203,27 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(0, products[2].getCrossSellProductIdList().size)
             assertEquals(0, products[2].getVariationIdList().size)
             assertEquals(0, products[2].getCategoryList().size)
+
+            // verify that variations are handled correctly when returned as array of objects
+            assertEquals(2, products[3].getVariationIdList().size)
+            assertEquals(16892, products[3].getVariationIdList()[0])
+            assertEquals(16893, products[3].getVariationIdList()[1])
         }
 
         // delete all products then insert these into the store
         ProductSqlUtils.deleteProductsForSite(siteModel)
-        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 3)
+        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 4)
 
         // now verify the db stored the products correctly
         val productsFromDb = ProductSqlUtils.getProductsForSite(siteModel)
         assertNotNull(productsFromDb)
-        assertEquals(productsFromDb.size, 3)
+        assertEquals(productsFromDb.size, 4)
 
         // verify that the products are correctly sorted
-        assertEquals("aaa test product", productsFromDb[0].name)
-        assertEquals("Booklet", productsFromDb[1].name)
-        assertEquals("Test Product", productsFromDb[2].name)
+        assertEquals("Product 1", productsFromDb[0].name)
+        assertEquals("Product 2", productsFromDb[1].name)
+        assertEquals("Product 3", productsFromDb[2].name)
+        assertEquals("Product 4", productsFromDb[3].name)
     }
 
     @Test

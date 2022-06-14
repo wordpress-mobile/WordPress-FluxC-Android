@@ -24,7 +24,9 @@
       "categories": [
       ],
       "cross_sell_ids": [
-        10, 11, 12
+        10,
+        11,
+        12
       ],
       "date_created": "2019-04-09T15:36:08",
       "date_created_gmt": "2019-04-09T20:36:08",
@@ -55,7 +57,9 @@
       "external_url": "",
       "featured": false,
       "grouped_products": [
-        10, 11, 12
+        10,
+        11,
+        12
       ],
       "id": 202,
       "images": [],
@@ -70,7 +74,7 @@
           "value": "post-new"
         }
       ],
-      "name": "aaa test product",
+      "name": "Product 1",
       "on_sale": false,
       "parent_id": 0,
       "permalink": "https://example.com/product/virtual-test-product/",
@@ -81,7 +85,9 @@
       "rating_count": 1,
       "regular_price": "0.00",
       "related_ids": [
-        10, 11, 12
+        10,
+        11,
+        12
       ],
       "reviews_allowed": true,
       "sale_price": "",
@@ -103,10 +109,14 @@
       "total_sales": 2,
       "type": "simple",
       "upsell_ids": [
-        10, 11, 12
+        10,
+        11,
+        12
       ],
       "variations": [
-        10, 11, 12
+        10,
+        11,
+        12
       ],
       "virtual": true,
       "weight": ""
@@ -254,7 +264,7 @@
           "value": "yes"
         }
       ],
-      "name": "Test Product",
+      "name": "Product 2",
       "on_sale": false,
       "parent_id": 0,
       "permalink": "https://example.com/product/test-product/",
@@ -407,7 +417,7 @@
           "value": "upon_release"
         }
       ],
-      "name": "Booklet",
+      "name": "Product 3",
       "on_sale": false,
       "parent_id": 0,
       "permalink": "https://example.com/product/printed/",
@@ -441,6 +451,138 @@
       "variations": null,
       "virtual": false,
       "weight": "12.30"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/202"
+          }
+        ]
+      },
+      "attributes": [
+      ],
+      "average_rating": "3.00",
+      "backordered": false,
+      "backorders": "no",
+      "backorders_allowed": false,
+      "button_text": "",
+      "catalog_visibility": "hidden",
+      "categories": [
+      ],
+      "cross_sell_ids": [
+        10,
+        11,
+        12
+      ],
+      "date_created": "2019-04-09T15:36:08",
+      "date_created_gmt": "2019-04-09T20:36:08",
+      "date_modified": "2019-04-13T07:18:36",
+      "date_modified_gmt": "2019-04-13T12:18:36",
+      "date_on_sale_from": null,
+      "date_on_sale_from_gmt": null,
+      "date_on_sale_to": null,
+      "date_on_sale_to_gmt": null,
+      "default_attributes": [
+      ],
+      "description": "<p>This is a test product and isn't really for sale.</p>",
+      "dimensions": {
+        "height": "",
+        "length": "",
+        "width": ""
+      },
+      "download_expiry": 90,
+      "download_limit": 3,
+      "downloadable": true,
+      "downloads": [
+        {
+          "file": "https://example.com/wp-content/uploads/2019/04/1350747580204.jpg",
+          "id": "90b1b9a3-3794-4557-8e05-a6a750fd76fd",
+          "name": "1350747580204.jpg"
+        }
+      ],
+      "external_url": "",
+      "featured": false,
+      "grouped_products": [
+        10,
+        11,
+        12
+      ],
+      "id": 203,
+      "images": [],
+      "jetpack_likes_enabled": true,
+      "jetpack_sharing_enabled": true,
+      "manage_stock": false,
+      "menu_order": 0,
+      "meta_data": [
+        {
+          "id": 1648,
+          "key": "_created_via",
+          "value": "post-new"
+        }
+      ],
+      "name": "Product 4",
+      "on_sale": false,
+      "parent_id": 0,
+      "permalink": "https://example.com/product/virtual-test-product/",
+      "price": "0.00",
+      "price_html": "<span class=\"woocommerce-Price-amount amount\"><span class=\"woocommerce-Price-currencySymbol\">&#36;</span>0.00</span>",
+      "purchasable": true,
+      "purchase_note": "",
+      "rating_count": 1,
+      "regular_price": "0.00",
+      "related_ids": [
+        10,
+        11,
+        12
+      ],
+      "reviews_allowed": true,
+      "sale_price": "",
+      "shipping_class": "",
+      "shipping_class_id": 0,
+      "shipping_required": false,
+      "shipping_taxable": false,
+      "short_description": "",
+      "sku": "variable-product-sku",
+      "slug": "variable-test-product",
+      "sold_individually": false,
+      "status": "private",
+      "stock_quantity": null,
+      "stock_status": "instock",
+      "tags": [
+      ],
+      "tax_class": "",
+      "tax_status": "taxable",
+      "total_sales": 2,
+      "type": "simple",
+      "upsell_ids": [
+        10,
+        11,
+        12
+      ],
+      "virtual": false,
+      "weight": "",
+      "variations": [
+        {
+          "id": 16892,
+          "title": "Variation 1",
+          "created_at": "2020-01-06T21:42:09Z",
+          "updated_at": "2022-06-13T12:31:36Z",
+          "type": "variation"
+        },
+        {
+          "id": 16893,
+          "title": "Variation 2",
+          "created_at": "2020-01-06T21:42:10Z",
+          "updated_at": "2022-06-14T10:49:50Z",
+          "type": "variation"
+        }
+      ]
     }
   ]
 }
