@@ -371,19 +371,29 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     /**
      * Returns a list of product IDs from the passed string, assumed to be a JSON array of IDs
-     */
-    /**
+     *
      * Deserializes the [jsonString] passed to the method. This can include:
      * variations, groupedProductIds, upsellIds, crossSellIds
      *
      * There are some instances where the [jsonString] param can be a JsonArray or a JsonElement.
      * https://github.com/woocommerce/woocommerce-android/issues/2374
      *
-     * To address this issue, we check if the [jsonString] param is a JsonArray or a JsonElement
-     * and return a appropriate response, if that's the case.
+     * And there are some instances where the [jsonString] can be a JsonArray of JsonObjects
+     * https://github.com/woocommerce/woocommerce-android/issues/6737
+     *
+     * To address the above issues, we check if the [jsonString] param is a JsonArray or
+     * a JsonElement, then we check each item if it's a JsonPrimitive or JsonObject and return
+     * an appropriate response, if that's the case.
      */
     private fun parseJson(jsonString: String): List<Long> {
-        val productIds = ArrayList<Long>()
+        fun JsonElement.parseId() = when {
+            isJsonObject -> asJsonObject["id"]?.asLong
+                ?: throw JsonParseException("Can't extract element's ID")
+            isJsonPrimitive -> asLong
+            else -> throw JsonParseException("Can't extract element's ID")
+        }
+
+        val ids = ArrayList<Long>()
         try {
             if (jsonString.isNotEmpty()) {
                 val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
@@ -392,13 +402,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                         return emptyList()
                     }
                     jsonElement.isJsonArray -> {
-                        jsonElement.asJsonArray.forEach { jsonArray ->
-                            jsonArray.asLong.let { productIds.add(it) }
+                        jsonElement.asJsonArray.forEach { element ->
+                            element.parseId().let { ids.add(it) }
                         }
                     }
                     jsonElement.isJsonObject -> {
                         jsonElement.asJsonObject.entrySet().forEach {
-                            productIds.add(it.value.asLong)
+                            ids.add(it.value.parseId())
                         }
                     }
                 }
@@ -406,7 +416,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
         }
-        return productIds
+        return ids
     }
 
     fun getNumVariations() = getVariationIdList().size
