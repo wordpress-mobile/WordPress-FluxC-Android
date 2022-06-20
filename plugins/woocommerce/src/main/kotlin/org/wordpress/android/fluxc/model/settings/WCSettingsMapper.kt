@@ -23,6 +23,7 @@ class WCSettingsMapper
             ?.split(":")
         val country = countryAndState?.firstOrNull()
         val state = countryAndState?.getOrNull(1)
+        val isCouponsEnabled = getValueForSettingsField(response, "woocommerce_enable_coupons")
 
         return WCSettingsModel(
             localSiteId = site.id,
@@ -36,7 +37,8 @@ class WCSettingsMapper
             address = address ?: "",
             address2 = address2 ?: "",
             city = city ?: "",
-            postalCode = postalCode ?: ""
+            postalCode = postalCode ?: "",
+            isCouponsEnabled = isCouponsEnabled ?: ""
         )
     }
 
