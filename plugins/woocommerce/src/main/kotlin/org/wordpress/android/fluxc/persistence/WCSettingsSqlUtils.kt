@@ -53,7 +53,7 @@ object WCSettingsSqlUtils {
         @Column var address2: String = "",
         @Column var city: String = "",
         @Column var postalCode: String = "",
-        @Column(name = "IS_COUPONS_ENABLED") var isCouponsEnabled: String = ""
+        @Column var couponsEnabled: String = ""
     ) : Identifiable {
         override fun getId() = id
 
@@ -75,7 +75,7 @@ object WCSettingsSqlUtils {
                     address2 = address2,
                     city = city,
                     postalCode = postalCode,
-                    isCouponsEnabled = isCouponsEnabled
+                    couponsEnabled = couponsEnabled
             )
         }
     }
@@ -94,7 +94,7 @@ object WCSettingsSqlUtils {
                 address2 = address2,
                 city = city,
                 postalCode = postalCode,
-                isCouponsEnabled = isCouponsEnabled
+                couponsEnabled = couponsEnabled
         )
     }
 }
