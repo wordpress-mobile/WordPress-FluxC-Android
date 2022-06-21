@@ -22,17 +22,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponReportDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons.CouponRestClient
 import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
-import org.wordpress.android.fluxc.persistence.dao.ProductCategoriesDao
-import org.wordpress.android.fluxc.persistence.dao.ProductsDao
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductCategoryEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponAndProductEntity
-import org.wordpress.android.fluxc.persistence.entity.CouponDataModel
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
-import org.wordpress.android.fluxc.persistence.entity.ProductCategoryEntity
-import org.wordpress.android.fluxc.persistence.entity.ProductEntity
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.math.BigDecimal
@@ -41,9 +34,6 @@ import java.math.BigDecimal
 class CouponStoreTest {
     @Mock private lateinit var restClient: CouponRestClient
     @Mock private lateinit var couponsDao: CouponsDao
-    @Mock private lateinit var productsDao: ProductsDao
-    @Mock private lateinit var productCategoriesDao: ProductCategoriesDao
-    @Mock private lateinit var productStore: WCProductStore
 
     private val transactionExecutor: TransactionExecutor = mock {
         val blockArg1 = argumentCaptor<suspend () -> Unit>()
@@ -108,7 +98,11 @@ class CouponStoreTest {
         isShippingFree = couponDto.isShippingFree,
         areSaleItemsExcluded = couponDto.areSaleItemsExcluded,
         minimumAmount = couponDto.minimumAmount?.toBigDecimal(),
-        maximumAmount = couponDto.maximumAmount?.toBigDecimal()
+        maximumAmount = couponDto.maximumAmount?.toBigDecimal(),
+        includedProductIds = couponDto.productIds,
+        excludedProductIds = couponDto.excludedProductIds,
+        includedCategoryIds = couponDto.productCategoryIds,
+        excludedCategoryIds = couponDto.excludedProductCategoryIds
     )
 
     private val expectedEmail = CouponEmailEntity(
@@ -117,119 +111,12 @@ class CouponStoreTest {
         email = couponDto.restrictedEmails!!.first()
     )
 
-    private val includedProduct1 = ProductEntity(
-        id = couponDto.productIds!![0],
-        siteId = site.siteId,
-        name = "Included Prod 1"
-    )
-
-    private val includedProduct2 = ProductEntity(
-        id = couponDto.productIds!![1],
-        siteId = site.siteId,
-        name = "Included Prod 2"
-    )
-
-    private val excludedProduct1 = ProductEntity(
-        id = couponDto.excludedProductIds!![0],
-        siteId = site.siteId,
-        name = "Excluded Prod 3"
-    )
-
-    private val excludedProduct2 = ProductEntity(
-        id = couponDto.excludedProductIds!![1],
-        siteId = site.siteId,
-        name = "Excluded Prod 4"
-    )
-
-    private val includedCategory1 = ProductCategoryEntity(
-        id = couponDto.productCategoryIds!![0],
-        siteId = site.siteId,
-        name = "Included Cat 1"
-    )
-
-    private val includedCategory2 = ProductCategoryEntity(
-        id = couponDto.productCategoryIds!![1],
-        siteId = site.siteId,
-        name = "Included Cat 2"
-    )
-
-    private val excludedCategory1 = ProductCategoryEntity(
-        id = couponDto.excludedProductCategoryIds!![0],
-        siteId = site.siteId,
-        name = "Excluded Cat 3"
-    )
-
-    private val excludedCategory2 = ProductCategoryEntity(
-        id = couponDto.excludedProductCategoryIds!![1],
-        siteId = site.siteId,
-        name = "Excluded Cat 4"
-    )
-
-    private val expectedIncludedCouponAndProduct1 = CouponAndProductEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productId = couponDto.productIds!![0],
-        isExcluded = false
-    )
-
-    private val expectedIncludedCouponAndProduct2 = CouponAndProductEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productId = couponDto.productIds!![1],
-        isExcluded = false
-    )
-
-    private val expectedExcludedCouponAndProduct1 = CouponAndProductEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productId = couponDto.excludedProductIds!![0],
-        isExcluded = true
-    )
-
-    private val expectedExcludedCouponAndProduct2 = CouponAndProductEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productId = couponDto.excludedProductIds!![1],
-        isExcluded = true
-    )
-
-    private val expectedIncludedCouponAndCategory1 = CouponAndProductCategoryEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productCategoryId = couponDto.productCategoryIds!![0],
-        isExcluded = false
-    )
-
-    private val expectedIncludedCouponAndCategory2 = CouponAndProductCategoryEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productCategoryId = couponDto.productCategoryIds!![1],
-        isExcluded = false
-    )
-
-    private val expectedExcludedCouponAndCategory1 = CouponAndProductCategoryEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productCategoryId = couponDto.excludedProductCategoryIds!![0],
-        isExcluded = true
-    )
-
-    private val expectedExcludedCouponAndCategory2 = CouponAndProductCategoryEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
-        productCategoryId = couponDto.excludedProductCategoryIds!![1],
-        isExcluded = true
-    )
-
     @Before
     fun setUp() {
         couponStore = CouponStore(
             restClient,
             couponsDao,
-            productsDao,
-            productCategoriesDao,
             initCoroutineEngine(),
-            productStore,
             transactionExecutor
         )
     }
@@ -255,7 +142,7 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
-        couponStore.fetchCoupons(site)
+        couponStore.fetchCoupons(site, page = CouponStore.DEFAULT_PAGE)
 
         verify(couponsDao).insertOrUpdateCoupon(expectedCoupon)
     }
@@ -268,135 +155,21 @@ class CouponStoreTest {
             CouponStore.DEFAULT_PAGE_SIZE
         )).thenReturn(WooPayload(arrayOf(couponDto)))
 
-        insertCategories()
-        insertProducts()
-
         couponStore.fetchCoupons(site)
 
         verify(couponsDao).insertOrUpdateCouponEmail(expectedEmail)
     }
 
     @Test
-    fun `Coupon products are inserted in DB correctly`() = test {
-        whenever(restClient.fetchCoupons(
-            site,
-            CouponStore.DEFAULT_PAGE,
-            CouponStore.DEFAULT_PAGE_SIZE
-        )).thenReturn(WooPayload(arrayOf(couponDto)))
-
-        insertProducts()
-
-        couponStore.fetchCoupons(site)
-
-        verify(couponsDao).insertOrUpdateCouponAndProduct(expectedIncludedCouponAndProduct1)
-        verify(couponsDao).insertOrUpdateCouponAndProduct(expectedIncludedCouponAndProduct2)
-        verify(couponsDao).insertOrUpdateCouponAndProduct(expectedExcludedCouponAndProduct1)
-        verify(couponsDao).insertOrUpdateCouponAndProduct(expectedExcludedCouponAndProduct2)
-    }
-
-    private fun insertProducts() {
-        whenever(
-            productsDao.getProductsByIds(
-                site.siteId,
-                listOf(includedProduct1.id, includedProduct2.id)
-            )
-        ).thenReturn(listOf(includedProduct1, includedProduct2))
-
-        whenever(
-            productsDao.getProductsByIds(
-                site.siteId,
-                listOf(excludedProduct1.id, excludedProduct2.id)
-            )
-        ).thenReturn(listOf(excludedProduct1, excludedProduct2))
-    }
-
-    @Test
-    fun `Coupon categories are inserted in DB correctly`() = test {
-        whenever(restClient.fetchCoupons(
-            site,
-            CouponStore.DEFAULT_PAGE,
-            CouponStore.DEFAULT_PAGE_SIZE
-        )).thenReturn(WooPayload(arrayOf(couponDto)))
-
-        insertCategories()
-        insertProducts()
-
-        couponStore.fetchCoupons(site)
-
-        verify(couponsDao)
-            .insertOrUpdateCouponAndProductCategory(expectedIncludedCouponAndCategory1)
-        verify(couponsDao)
-            .insertOrUpdateCouponAndProductCategory(expectedIncludedCouponAndCategory2)
-        verify(couponsDao)
-            .insertOrUpdateCouponAndProductCategory(expectedExcludedCouponAndCategory1)
-        verify(couponsDao)
-            .insertOrUpdateCouponAndProductCategory(expectedExcludedCouponAndCategory2)
-    }
-
-    private fun insertCategories() {
-        whenever(
-            productCategoriesDao.getProductCategoriesByIds(
-                site.siteId,
-                listOf(includedCategory1.id, includedCategory2.id)
-            )
-        ).thenReturn(listOf(includedCategory1, includedCategory2))
-
-        whenever(
-            productCategoriesDao.getProductCategoriesByIds(
-                site.siteId,
-                listOf(excludedCategory1.id, excludedCategory2.id)
-            )
-        ).thenReturn(listOf(excludedCategory1, excludedCategory2))
-    }
-
-    @Test
     fun `Observing the DB changes returns the correct coupon data model`(): Unit = test {
-        whenever(couponsDao.observeCoupons(site.siteId)).thenReturn(
-            flowOf(listOf(CouponWithEmails(expectedCoupon, listOf(expectedEmail))))
-        )
-
-        // included products
-        val includedProducts = listOf(includedProduct1, includedProduct2)
-        whenever(productsDao.getCouponProducts(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = false
-        )).thenReturn(includedProducts)
-
-        // excluded products
-        val excludedProducts = listOf(excludedProduct1, excludedProduct2)
-        whenever(productsDao.getCouponProducts(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = true
-        )).thenReturn(excludedProducts)
-
-        // included categories
-        val includedCategories = listOf(includedCategory1, includedCategory2)
-        whenever(productCategoriesDao.getCouponProductCategories(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = false
-        )).thenReturn(includedCategories)
-
-        // excluded categories
-        val excludedCategories = listOf(excludedCategory1, excludedCategory2)
-        whenever(productCategoriesDao.getCouponProductCategories(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = true
-        )).thenReturn(excludedCategories)
-
         val expectedDataModel = listOf(
-            CouponDataModel(
+            CouponWithEmails(
                 expectedCoupon,
-                includedProducts,
-                excludedProducts,
-                includedCategories,
-                excludedCategories,
                 listOf(expectedEmail)
             )
         )
+
+        whenever(couponsDao.observeCoupons(site.siteId)).thenReturn(flowOf(expectedDataModel))
 
         val observedDataModel = couponStore.observeCoupons(site).first()
 
@@ -405,49 +178,13 @@ class CouponStoreTest {
 
     @Test
     fun `Observing a specific coupon returns the correct coupon data model`(): Unit = test {
-        whenever(couponsDao.observeCoupon(site.siteId, expectedCoupon.id)).thenReturn(
-            flowOf(CouponWithEmails(expectedCoupon, listOf(expectedEmail)))
+        val expectedDataModel = CouponWithEmails(
+            expectedCoupon,
+            listOf(expectedEmail)
         )
 
-        // included products
-        val includedProducts = listOf(includedProduct1, includedProduct2)
-        whenever(productsDao.getCouponProducts(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = false
-        )).thenReturn(includedProducts)
-
-        // excluded products
-        val excludedProducts = listOf(excludedProduct1, excludedProduct2)
-        whenever(productsDao.getCouponProducts(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = true
-        )).thenReturn(excludedProducts)
-
-        // included categories
-        val includedCategories = listOf(includedCategory1, includedCategory2)
-        whenever(productCategoriesDao.getCouponProductCategories(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = false
-        )).thenReturn(includedCategories)
-
-        // excluded categories
-        val excludedCategories = listOf(excludedCategory1, excludedCategory2)
-        whenever(productCategoriesDao.getCouponProductCategories(
-            siteId = site.siteId,
-            couponId = couponDto.id,
-            areExcluded = true
-        )).thenReturn(excludedCategories)
-
-        val expectedDataModel = CouponDataModel(
-            expectedCoupon,
-            includedProducts,
-            excludedProducts,
-            includedCategories,
-            excludedCategories,
-            listOf(expectedEmail)
+        whenever(couponsDao.observeCoupon(site.siteId, expectedCoupon.id)).thenReturn(
+            flowOf(expectedDataModel)
         )
 
         val observedDataModel = couponStore.observeCoupon(site, expectedCoupon.id).first()

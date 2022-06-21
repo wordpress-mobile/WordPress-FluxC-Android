@@ -350,6 +350,17 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    /**
+     * Observe the changes to the number of orders for a given [SiteModel]
+     *
+     * @param site the current site
+     * @param statuses a list of statuses to filter the list of orders
+     */
+    fun observeOrderCountForSite(
+        site: SiteModel,
+        statuses: List<String>
+    ): Flow<Int> = ordersDao.observeOrderCountForSite(site.localId(), statuses)
+
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
         orderIds: List<Long>

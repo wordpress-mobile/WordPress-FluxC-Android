@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.persistence.migrations
 
+import androidx.room.DeleteTable
+import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
@@ -8,7 +10,7 @@ internal val MIGRATION_3_4 = object : Migration(3, 4) {
         database.apply {
             // language=RoomSql
             execSQL(
-                    """
+                """
                               CREATE TABLE IF NOT EXISTS `OrderEntity` (
                                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                 `localSiteId` INTEGER NOT NULL,
@@ -60,7 +62,7 @@ internal val MIGRATION_3_4 = object : Migration(3, 4) {
             )
             // language=RoomSql
             execSQL(
-                    """
+                """
                             CREATE UNIQUE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_remoteOrderId` 
                             ON `OrderEntity` (`localSiteId`, `remoteOrderId`);
                     """.trimIndent()
@@ -80,8 +82,8 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
         database.apply {
             execSQL("DROP TABLE OrderEntity")
             execSQL(
-                    // language=RoomSql
-                    """ CREATE TABLE IF NOT EXISTS OrderEntity (
+                // language=RoomSql
+                """CREATE TABLE IF NOT EXISTS OrderEntity (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `localSiteId` INTEGER NOT NULL,
                         `remoteOrderId` INTEGER NOT NULL,
@@ -130,8 +132,8 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
                     """.trimIndent()
             )
             execSQL(
-                    // language=RoomSql
-                    """
+                // language=RoomSql
+                """
                             CREATE UNIQUE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_remoteOrderId` 
                             ON `OrderEntity` (`localSiteId`, `remoteOrderId`);
                     """.trimIndent()
@@ -148,7 +150,8 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
 
 internal val MIGRATION_7_8 = object : Migration(7, 8) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("""
+        database.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS OrderNotes (
                 siteId INTEGER NOT NULL,
                 noteId INTEGER NOT NULL,
@@ -159,7 +162,8 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
                 isSystemNote INTEGER NOT NULL,
                 isCustomerNote INTEGER NOT NULL,
                 PRIMARY KEY(`siteId`, `noteId`))
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 }
 
@@ -352,8 +356,8 @@ internal val MIGRATION_9_10 = object : Migration(9, 10) {
         database.apply {
             execSQL("DROP TABLE OrderEntity")
             execSQL(
-                    // language=RoomSql
-                    """ 
+                // language=RoomSql
+                """ 
                         CREATE TABLE IF NOT EXISTS OrderEntity (
                         `localSiteId` INTEGER NOT NULL,
                         `orderId` INTEGER NOT NULL,
@@ -405,8 +409,8 @@ internal val MIGRATION_9_10 = object : Migration(9, 10) {
                     """.trimIndent()
             )
             execSQL(
-                    // language=RoomSql
-                    """
+                // language=RoomSql
+                """
                         CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` 
                         ON `OrderEntity` (`localSiteId`, `orderId`);
                     """.trimIndent()
@@ -498,6 +502,84 @@ internal val MIGRATION_11_12 = object : Migration(11, 12) {
                     FOREIGN KEY(`inboxNoteLocalId`)
                     REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )
                     """.trimIndent()
+            )
+        }
+    }
+}
+
+@DeleteTable(tableName = "CouponsAndProducts")
+@DeleteTable(tableName = "CouponsAndProductCategories")
+internal class AutoMigration13to14 : AutoMigrationSpec
+
+@DeleteTable(tableName = "Products")
+@DeleteTable(tableName = "ProductCategories")
+internal class AutoMigration14to15 : AutoMigrationSpec
+
+internal val MIGRATION_15_16 = object : Migration(15, 16) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE OrderEntity")
+            // language=RoomSql
+            execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS  `OrderEntity` (
+                  `localSiteId` INTEGER NOT NULL,
+                  `orderId` INTEGER NOT NULL,
+                  `number` TEXT NOT NULL,
+                  `status` TEXT NOT NULL,
+                  `currency` TEXT NOT NULL,
+                  `orderKey` TEXT NOT NULL,
+                  `dateCreated` TEXT NOT NULL,
+                  `dateModified` TEXT NOT NULL,
+                  `total` TEXT NOT NULL,
+                  `totalTax` TEXT NOT NULL,
+                  `shippingTotal` TEXT NOT NULL,
+                  `paymentMethod` TEXT NOT NULL,
+                  `paymentMethodTitle` TEXT NOT NULL,
+                  `datePaid` TEXT NOT NULL,
+                  `pricesIncludeTax` INTEGER NOT NULL,
+                  `customerNote` TEXT NOT NULL,
+                  `discountTotal` TEXT NOT NULL,
+                  `discountCodes` TEXT NOT NULL,
+                  `refundTotal` TEXT NOT NULL,
+                  `billingFirstName` TEXT NOT NULL,
+                  `billingLastName` TEXT NOT NULL,
+                  `billingCompany` TEXT NOT NULL,
+                  `billingAddress1` TEXT NOT NULL,
+                  `billingAddress2` TEXT NOT NULL,
+                  `billingCity` TEXT NOT NULL,
+                  `billingState` TEXT NOT NULL,
+                  `billingPostcode` TEXT NOT NULL,
+                  `billingCountry` TEXT NOT NULL,
+                  `billingEmail` TEXT NOT NULL,
+                  `billingPhone` TEXT NOT NULL,
+                  `shippingFirstName` TEXT NOT NULL,
+                  `shippingLastName` TEXT NOT NULL,
+                  `shippingCompany` TEXT NOT NULL,
+                  `shippingAddress1` TEXT NOT NULL,
+                  `shippingAddress2` TEXT NOT NULL,
+                  `shippingCity` TEXT NOT NULL,
+                  `shippingState` TEXT NOT NULL,
+                  `shippingPostcode` TEXT NOT NULL,
+                  `shippingCountry` TEXT NOT NULL,
+                  `shippingPhone` TEXT NOT NULL,
+                  `lineItems` TEXT NOT NULL,
+                  `shippingLines` TEXT NOT NULL,
+                  `feeLines` TEXT NOT NULL,
+                  `taxLines` TEXT NOT NULL,
+                  `metaData` TEXT NOT NULL,
+                  `paymentUrl` TEXT NOT NULL DEFAULT '',
+                  `isEditable` INTEGER NOT NULL DEFAULT 1,
+                  PRIMARY KEY(`localSiteId`, `orderId`)
+                )
+            """.trimIndent()
+            )
+            execSQL(
+                // language=RoomSql
+                """
+                    CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` 
+                    ON `OrderEntity` (`localSiteId`, `orderId`);
+                """.trimIndent()
             )
         }
     }
