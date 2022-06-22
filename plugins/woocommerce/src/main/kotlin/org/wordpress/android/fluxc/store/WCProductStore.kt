@@ -640,8 +640,8 @@ class WCProductStore @Inject constructor(
     }
 
     class OnProductsSearched(
-        var searchQuery: String? = null,
-        var searchSku: String? = null,
+        var searchQuery: String?,
+        var searchSku: String?,
         var searchResults: List<WCProductModel> = emptyList(),
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
@@ -1538,7 +1538,12 @@ class WCProductStore @Inject constructor(
 
     private fun handleSearchProductsCompleted(payload: RemoteSearchProductsPayload) {
         if (payload.isError) {
-            emitChange(OnProductsSearched(payload.searchQuery))
+            emitChange(
+                OnProductsSearched(
+                    searchQuery = payload.searchQuery,
+                    searchSku = payload.searchSku
+                )
+            )
         } else {
             coroutineEngine.launch(T.DB, this, "handleSearchProductsCompleted") {
                 ProductSqlUtils.insertOrUpdateProducts(payload.products)

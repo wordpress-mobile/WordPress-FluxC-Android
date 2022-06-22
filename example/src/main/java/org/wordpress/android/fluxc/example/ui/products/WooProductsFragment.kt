@@ -625,7 +625,8 @@ class WooProductsFragment : StoreSelectingFragment() {
         if (event.isError) {
             prependToLog("Error searching products - error: " + event.error.type)
         } else {
-            prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
+            val query = if (event.searchSku.isNullOrEmpty()) event.searchQuery else event.searchSku
+            prependToLog("Found ${event.searchResults.size} products matching $query")
         }
     }
 
