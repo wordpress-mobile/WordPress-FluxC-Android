@@ -58,7 +58,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private val remoteProductId = 1537L
     private val remoteShippingClassId = 34L
     private val searchQuery = "test"
-    private val searchSku = "sku"
 
     private val siteModel = SiteModel().apply {
         email = "test@example.org"
@@ -245,8 +244,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         interceptor.respondWith("wc-fetch-products-response-success.json")
         productRestClient.searchProducts(
             site = siteModel,
-            searchQuery = searchQuery,
-            searchSku = null
+            searchQuery = searchQuery
         )
 
         countDownLatch = CountDownLatch(1)
@@ -256,6 +254,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNull(payload.error)
         assertEquals(payload.searchQuery, searchQuery)
+        assertEquals(payload.isSkuSearch, false)
     }
 
     @Test
@@ -263,8 +262,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         interceptor.respondWith("wc-fetch-products-response-success.json")
         productRestClient.searchProducts(
             site = siteModel,
-            searchQuery = null,
-            searchSku = searchSku
+            searchQuery = searchQuery,
+            isSkuSearch = true
         )
 
         countDownLatch = CountDownLatch(1)
@@ -273,7 +272,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNull(payload.error)
-        assertEquals(payload.searchSku, searchSku)
+        assertEquals(payload.searchQuery, searchQuery)
+        assertEquals(payload.isSkuSearch, true)
     }
 
     @Test

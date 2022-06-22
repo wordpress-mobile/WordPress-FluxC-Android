@@ -99,7 +99,7 @@ class WCProductStore @Inject constructor(
     class SearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String?,
-        var searchSku: String?,
+        var isSkuSearch: Boolean = false,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -411,16 +411,16 @@ class WCProductStore @Inject constructor(
     class RemoteSearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String?,
-        var searchSku: String?,
+        var isSkuSearch: Boolean = false,
         var products: List<WCProductModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
-        constructor(error: ProductError, site: SiteModel, query: String?, sku: String?) : this(
-            site,
-            query,
-            sku
+        constructor(error: ProductError, site: SiteModel, query: String?, skuSearch: Boolean) : this(
+            site = site,
+            searchQuery = query,
+            isSkuSearch = skuSearch
         ) {
             this.error = error
         }
@@ -641,7 +641,7 @@ class WCProductStore @Inject constructor(
 
     class OnProductsSearched(
         var searchQuery: String?,
-        var searchSku: String?,
+        var isSkuSearch: Boolean = false,
         var searchResults: List<WCProductModel> = emptyList(),
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
@@ -1089,7 +1089,7 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.searchProducts(
                 site = site,
                 searchQuery = searchQuery,
-                searchSku = searchSku,
+                isSkuSearch = isSkuSearch,
                 pageSize = pageSize,
                 offset = offset,
                 sorting = sorting,
@@ -1541,7 +1541,7 @@ class WCProductStore @Inject constructor(
             emitChange(
                 OnProductsSearched(
                     searchQuery = payload.searchQuery,
-                    searchSku = payload.searchSku
+                    isSkuSearch = payload.isSkuSearch
                 )
             )
         } else {
@@ -1550,7 +1550,7 @@ class WCProductStore @Inject constructor(
                 emitChange(
                     OnProductsSearched(
                         searchQuery = payload.searchQuery,
-                        searchSku = payload.searchSku,
+                        isSkuSearch = payload.isSkuSearch,
                         searchResults = payload.products,
                         canLoadMore = payload.canLoadMore
                     )

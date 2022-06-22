@@ -212,8 +212,7 @@ class WooProductsFragment : StoreSelectingFragment() {
                 ) { editText ->
                     val payload = SearchProductsPayload(
                         site = site,
-                        searchQuery = editText.text.toString(),
-                        searchSku = null
+                        searchQuery = editText.text.toString()
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
@@ -228,8 +227,8 @@ class WooProductsFragment : StoreSelectingFragment() {
                 ) { editText ->
                     val payload = SearchProductsPayload(
                         site = site,
-                        searchQuery = null,
-                        searchSku = editText.text.toString()
+                        searchQuery = editText.text.toString(),
+                        isSkuSearch = true
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
@@ -625,8 +624,7 @@ class WooProductsFragment : StoreSelectingFragment() {
         if (event.isError) {
             prependToLog("Error searching products - error: " + event.error.type)
         } else {
-            val query = if (event.searchSku.isNullOrEmpty()) event.searchQuery else event.searchSku
-            prependToLog("Found ${event.searchResults.size} products matching $query")
+            prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
         }
     }
 

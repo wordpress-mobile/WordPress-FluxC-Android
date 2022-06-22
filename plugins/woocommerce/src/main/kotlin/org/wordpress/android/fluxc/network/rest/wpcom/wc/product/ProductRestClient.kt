@@ -352,7 +352,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        searchSku: String? = null,
+        isSkuSearch: Boolean = false,
         remoteProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -368,14 +368,14 @@ class ProductRestClient @Inject constructor(
         }
 
         val url = WOOCOMMERCE.products.pathV3
+        val searchParam = if (isSkuSearch) "search_sku" else "search"
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
             "orderby" to orderBy,
             "order" to sortOrder,
             "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
-            .putIfNotEmpty("search_sku" to searchSku)
+        ).putIfNotEmpty(searchParam to searchQuery)
 
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
@@ -397,7 +397,7 @@ class ProductRestClient @Inject constructor(
 
                     val loadedMore = offset > 0
                     val canLoadMore = productModels.size == pageSize
-                    if (searchQuery == null && searchSku == null) {
+                    if (searchQuery == null) {
                         val payload = RemoteProductListPayload(
                                 site,
                                 productModels,
@@ -412,7 +412,7 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteSearchProductsPayload(
                             site = site,
                             searchQuery = searchQuery,
-                            searchSku = searchSku,
+                            isSkuSearch = isSkuSearch,
                             products = productModels,
                             offset = offset,
                             loadedMore = loadedMore,
@@ -423,7 +423,7 @@ class ProductRestClient @Inject constructor(
                 },
                 { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    if (searchQuery == null && searchSku == null) {
+                    if (searchQuery == null) {
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
@@ -431,7 +431,7 @@ class ProductRestClient @Inject constructor(
                             error = productError,
                             site = site,
                             query = searchQuery,
-                            sku = searchSku
+                            skuSearch = isSkuSearch
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
@@ -443,7 +443,7 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String?,
-        searchSku: String? = null,
+        isSkuSearch: Boolean = false,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -455,7 +455,7 @@ class ProductRestClient @Inject constructor(
             offset = offset,
             sortType = sorting,
             searchQuery = searchQuery,
-            searchSku = searchSku,
+            isSkuSearch = isSkuSearch,
             excludedProductIds = excludedProductIds)
     }
 
