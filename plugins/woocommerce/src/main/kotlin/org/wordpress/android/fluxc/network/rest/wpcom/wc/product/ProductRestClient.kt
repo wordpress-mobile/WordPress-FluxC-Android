@@ -74,11 +74,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
-import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_CORE
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
-import org.wordpress.android.fluxc.utils.semverCompareTo
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -90,8 +87,7 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    private val wooCommerceStore: WooCommerceStore
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -357,6 +353,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         isSkuSearch: Boolean = false,
+        isPartialSkuSearch: Boolean = false,
         remoteProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -371,18 +368,13 @@ class ProductRestClient @Inject constructor(
             TITLE_DESC, DATE_DESC -> "desc"
         }
 
-        val searchParam: String
-        if (isSkuSearch) {
-            // partial sku match was added in v6.6, fall back to using full sku match for older stores
-            val wooCoreVersion =
-                wooCommerceStore.getSitePlugin(site, WOO_CORE)?.version ?: "0.0"
-            if (wooCoreVersion.semverCompareTo("6.6") >= 0) {
-                searchParam = "search_sku"
-            } else {
-                searchParam = "sku"
-            }
+        // partial sku match was added in v6.6, fall back to using full sku match for older stores
+        val searchParam = if (isPartialSkuSearch) {
+            "search_sku"
+        } else if (isSkuSearch) {
+            "sku"
         } else {
-            searchParam = "search"
+            "search"
         }
 
         val url = WOOCOMMERCE.products.pathV3
@@ -461,6 +453,7 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         searchQuery: String?,
         isSkuSearch: Boolean = false,
+        isPartialSkuSearch: Boolean = false,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -473,6 +466,7 @@ class ProductRestClient @Inject constructor(
             sortType = sorting,
             searchQuery = searchQuery,
             isSkuSearch = isSkuSearch,
+            isPartialSkuSearch = isPartialSkuSearch,
             excludedProductIds = excludedProductIds)
     }
 
