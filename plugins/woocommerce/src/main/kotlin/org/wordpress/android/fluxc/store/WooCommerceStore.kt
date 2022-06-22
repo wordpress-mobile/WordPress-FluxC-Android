@@ -296,14 +296,14 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
-    suspend fun updateSiteSetting(
+    suspend fun updateSiteSettingOption(
         site: SiteModel,
         request: UpdateSettingRequest,
         groupId: String,
         optionId: String
     ): WooResult<SiteSettingResponse> {
         return coroutineEngine.withDefaultContext(T.API, this, "updateSiteSetting") {
-            val response = wcCoreRestClient.updateSiteSetting(site, request, groupId, optionId)
+            val response = wcCoreRestClient.updateSiteSettingOption(site, request, groupId, optionId)
             return@withDefaultContext when {
                 response.isError -> {
                     AppLog.w(T.API, "Failed to update site setting for ${site.siteId}")
