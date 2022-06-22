@@ -22,9 +22,11 @@ import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
+import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
@@ -99,6 +101,7 @@ class WooCommerceStoreTest {
 
     private val siteSettingsResponse = WCSettingsTestUtils.getSiteSettingsResponse()
     private val siteProductSettingsResponse = WCSettingsTestUtils.getSiteProductSettingsResponse()
+    private val siteSettingOptionResponse = WCSettingsTestUtils.getSiteSettingOptionResponse()
 
     @Before
     fun setUp() {
@@ -292,6 +295,18 @@ class WooCommerceStoreTest {
         }
     }
 
+    @Test
+    fun `when updating site option succeeds, then success returned`() {
+        runBlocking {
+            val result: WooResult<SiteSettingOptionResponse> = updateSiteSettingOption()
+
+            Assertions.assertThat(result.isError).isFalse
+            Assertions.assertThat(result.model).isNotNull
+            Assertions.assertThat(result.model?.id).isEqualTo("woocommerce_enable_coupons")
+            Assertions.assertThat(result.model?.value).isEqualTo("yes")
+        }
+    }
+
     private suspend fun getPlugin(isError: Boolean = false): WooResult<List<SitePluginModel>> {
         val payload = WooPayload(response)
         if (isError) {
@@ -343,5 +358,21 @@ class WooCommerceStoreTest {
             whenever(wcrestClient.fetchSiteSettingsProducts(site)).thenReturn(payload)
         }
         return wooCommerceStore.fetchSiteProductSettings(site)
+    }
+
+    private suspend fun updateSiteSettingOption(isError: Boolean = false): WooResult<SiteSettingOptionResponse> {
+        val groupId = "general"
+        val optionId = "woocommerce_enable_coupons"
+        val request = UpdateSettingRequest(value = "yes")
+
+        if(isError) {
+            whenever(wcrestClient.updateSiteSettingOption(site, request, groupId, optionId))
+                .thenReturn(WooPayload(error))
+        } else {
+            whenever(wcrestClient.updateSiteSettingOption(site, request, groupId, optionId))
+                .thenReturn(WooPayload(siteSettingOptionResponse))
+        }
+
+        return wooCommerceStore.updateSiteSettingOption(site, request, groupId, optionId)
     }
 }
