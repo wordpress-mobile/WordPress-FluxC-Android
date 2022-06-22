@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.store.CouponStore
 import org.wordpress.android.fluxc.store.CouponStore.Companion.DEFAULT_PAGE
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -29,6 +30,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var couponPage = DEFAULT_PAGE
+    private var isCouponsEnabled = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_coupons, container, false)
@@ -48,6 +50,40 @@ class WooCouponsFragment : StoreSelectingFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        btnDisableCouponsFeature.setOnClickListener {
+            coroutineScope.launch {
+                val result = wooCommerceStore.updateSiteSettingOption(
+                    selectedSite!!,
+                    UpdateSettingRequest("no"),
+                    "general",
+                    "woocommerce_enable_coupons"
+                )
+
+                if (result.isError) {
+                    prependToLog("Coupons disabling failed: ${result.error.message}")
+                } else {
+                    prependToLog("Success: woocommerce_enable_coupons value is ${result.model?.value}")
+                }
+            }
+        }
+
+        btnEnableCouponsFeature.setOnClickListener {
+            coroutineScope.launch {
+                val result = wooCommerceStore.updateSiteSettingOption(
+                    selectedSite!!,
+                    UpdateSettingRequest("yes"),
+                    "general",
+                    "woocommerce_enable_coupons"
+                )
+
+                if (result.isError) {
+                    prependToLog("Coupons enabling failed: ${result.error.message}")
+                } else {
+                    prependToLog("Success: woocommerce_enable_coupons value is ${result.model?.value}")
+                }
+            }
+        }
 
         btnFetchCoupons.setOnClickListener {
             coroutineScope.launch {
