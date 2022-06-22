@@ -410,13 +410,18 @@ class WCProductStore @Inject constructor(
 
     class RemoteSearchProductsPayload(
         var site: SiteModel,
-        var searchQuery: String,
+        var searchQuery: String?,
+        var searchSku: String?,
         var products: List<WCProductModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
-        constructor(error: ProductError, site: SiteModel, query: String) : this(site, query) {
+        constructor(error: ProductError, site: SiteModel, query: String?, sku: String?) : this(
+            site,
+            query,
+            sku
+        ) {
             this.error = error
         }
     }
@@ -635,7 +640,8 @@ class WCProductStore @Inject constructor(
     }
 
     class OnProductsSearched(
-        var searchQuery: String = "",
+        var searchQuery: String? = null,
+        var searchSku: String? = null,
         var searchResults: List<WCProductModel> = emptyList(),
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
@@ -1538,9 +1544,10 @@ class WCProductStore @Inject constructor(
                 ProductSqlUtils.insertOrUpdateProducts(payload.products)
                 emitChange(
                     OnProductsSearched(
-                        payload.searchQuery,
-                        payload.products,
-                        payload.canLoadMore
+                        searchQuery = payload.searchQuery,
+                        searchSku = payload.searchSku,
+                        searchResults = payload.products,
+                        canLoadMore = payload.canLoadMore
                     )
                 )
             }

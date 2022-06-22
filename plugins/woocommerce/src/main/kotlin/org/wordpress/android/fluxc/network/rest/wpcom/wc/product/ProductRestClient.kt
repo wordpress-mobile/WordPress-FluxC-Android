@@ -410,23 +410,29 @@ class ProductRestClient @Inject constructor(
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
                         val payload = RemoteSearchProductsPayload(
-                                site,
-                                searchQuery,
-                                productModels,
-                                offset,
-                                loadedMore,
-                                canLoadMore
+                            site = site,
+                            searchQuery = searchQuery,
+                            searchSku = searchSku,
+                            products = productModels,
+                            offset = offset,
+                            loadedMore = loadedMore,
+                            canLoadMore = canLoadMore
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
                 },
                 { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    if (searchQuery == null) {
+                    if (searchQuery == null && searchSku == null) {
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
-                        val payload = RemoteSearchProductsPayload(productError, site, searchQuery)
+                        val payload = RemoteSearchProductsPayload(
+                            error = productError,
+                            site = site,
+                            query = searchQuery,
+                            sku = searchSku
+                        )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
                 },
@@ -437,7 +443,7 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String?,
-        searchSku: String?,
+        searchSku: String? = null,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
