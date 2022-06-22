@@ -5,6 +5,7 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -79,6 +80,39 @@ class WooCommerceRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data?.toList())
             is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    /**
+     * Updates an option in the Site Setting.
+     * @param groupId Possible group ID's: https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-settings-groups
+     * @param optionId The particular option to be updated.
+     */
+    suspend fun updateSiteSetting(
+        site: SiteModel,
+        request: UpdateSettingRequest,
+        groupId: String,
+        optionId: String
+    ): WooPayload<SiteSettingResponse> {
+        val url = WOOCOMMERCE.settings.group(groupId).id(optionId).pathV3
+        val params = request.toNetworkRequest()
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            this,
+            site,
+            url,
+            params,
+            SiteSettingResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    private fun UpdateSettingRequest.toNetworkRequest(): Map<String, Any> {
+        return mutableMapOf<String, Any>().apply {
+            put("value", value)
         }
     }
 }
