@@ -307,6 +307,16 @@ class WooCommerceStoreTest {
         }
     }
 
+    @Test
+    fun `when updating site option fails, then error returned`() {
+        runBlocking {
+            val result: WooResult<SiteSettingOptionResponse> =
+                updateSiteSettingOption(isError = true)
+
+            Assertions.assertThat(result.error).isEqualTo(error)
+        }
+    }
+
     private suspend fun getPlugin(isError: Boolean = false): WooResult<List<SitePluginModel>> {
         val payload = WooPayload(response)
         if (isError) {
