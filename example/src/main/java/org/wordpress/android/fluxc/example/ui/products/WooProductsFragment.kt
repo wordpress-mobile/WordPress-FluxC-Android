@@ -210,7 +210,27 @@ class WooProductsFragment : StoreSelectingFragment() {
                     activity,
                     "Enter a search query:"
                 ) { editText ->
-                    val payload = SearchProductsPayload(site, editText.text.toString())
+                    val payload = SearchProductsPayload(
+                        site = site,
+                        searchQuery = editText.text.toString(),
+                        searchSku = null
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
+                }
+            }
+        }
+
+        search_products_sku.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                    activity,
+                    "Enter a SKU to search for:"
+                ) { editText ->
+                    val payload = SearchProductsPayload(
+                        site = site,
+                        searchQuery = null,
+                        searchSku = editText.text.toString()
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
             }

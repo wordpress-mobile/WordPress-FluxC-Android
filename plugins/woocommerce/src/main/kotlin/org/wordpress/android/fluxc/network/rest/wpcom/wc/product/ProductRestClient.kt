@@ -434,13 +434,21 @@ class ProductRestClient @Inject constructor(
 
     fun searchProducts(
         site: SiteModel,
-        searchQuery: String,
+        searchQuery: String?,
+        searchSku: String?,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null
     ) {
-        fetchProducts(site, pageSize, offset, sorting, searchQuery, excludedProductIds = excludedProductIds)
+        fetchProducts(
+            site = site,
+            pageSize = pageSize,
+            offset = offset,
+            sortType = sorting,
+            searchQuery = searchQuery,
+            searchSku = searchSku,
+            excludedProductIds = excludedProductIds)
     }
 
     /**

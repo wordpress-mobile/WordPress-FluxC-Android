@@ -98,7 +98,8 @@ class WCProductStore @Inject constructor(
 
     class SearchProductsPayload(
         var site: SiteModel,
-        var searchQuery: String,
+        var searchQuery: String?,
+        var searchSku: String?,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -1080,7 +1081,13 @@ class WCProductStore @Inject constructor(
     private fun searchProducts(payload: SearchProductsPayload) {
         with(payload) {
             wcProductRestClient.searchProducts(
-                    site, searchQuery, pageSize, offset, sorting, excludedProductIds
+                site = site,
+                searchQuery = searchQuery,
+                searchSku = searchSku,
+                pageSize = pageSize,
+                offset = offset,
+                sorting = sorting,
+                excludedProductIds = excludedProductIds
             )
         }
     }
