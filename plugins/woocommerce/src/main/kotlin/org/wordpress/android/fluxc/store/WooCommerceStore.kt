@@ -15,8 +15,10 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_S
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
+import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -290,6 +292,25 @@ open class WooCommerceStore @Inject constructor(
                 else -> {
                     WooResult(WooError(GENERIC_ERROR, UNKNOWN))
                 }
+            }
+        }
+    }
+
+    suspend fun updateSiteSetting(
+        site: SiteModel,
+        request: UpdateSettingRequest,
+        groupId: String,
+        optionId: String
+    ): WooResult<SiteSettingResponse> {
+        return coroutineEngine.withDefaultContext(T.API, this, "updateSiteSetting") {
+            val response = wcCoreRestClient.updateSiteSetting(site, request, groupId, optionId)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(T.API, "Failed to update site setting for ${site.siteId}")
+                    WooResult(response.error)
+                }
+                response.result != null -> WooResult(response.result)
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
