@@ -74,8 +74,11 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_CORE
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
+import org.wordpress.android.fluxc.utils.semverCompareTo
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -87,7 +90,8 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
+    private val wooCommerceStore: WooCommerceStore
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -367,8 +371,21 @@ class ProductRestClient @Inject constructor(
             TITLE_DESC, DATE_DESC -> "desc"
         }
 
+        val searchParam: String
+        if (isSkuSearch) {
+            // partial sku match was added in v6.6, fall back to using full sku match for older stores
+            val wooCoreVersion =
+                wooCommerceStore.getSitePlugin(site, WOO_CORE)?.version ?: "0.0"
+            if (wooCoreVersion.semverCompareTo("6.6") >= 0) {
+                searchParam = "search_sku"
+            } else {
+                searchParam = "sku"
+            }
+        } else {
+            searchParam = "search"
+        }
+
         val url = WOOCOMMERCE.products.pathV3
-        val searchParam = if (isSkuSearch) "search_sku" else "search"
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
