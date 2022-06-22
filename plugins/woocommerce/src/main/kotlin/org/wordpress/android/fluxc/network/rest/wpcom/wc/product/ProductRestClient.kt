@@ -350,6 +350,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
+        searchSku: String? = null,
         remoteProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -367,11 +368,12 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "orderby" to orderBy,
-                "order" to sortOrder,
-                "offset" to offset.toString()
+            "per_page" to pageSize.toString(),
+            "orderby" to orderBy,
+            "order" to sortOrder,
+            "offset" to offset.toString()
         ).putIfNotEmpty("search" to searchQuery)
+            .putIfNotEmpty("search_sku" to searchSku)
 
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
