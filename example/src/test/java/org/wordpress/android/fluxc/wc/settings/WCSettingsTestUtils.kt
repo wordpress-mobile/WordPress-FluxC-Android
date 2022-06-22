@@ -36,5 +36,4 @@ object WCSettingsTestUtils {
             authentication = Authentication()
             namespaces = arrayListOf("wc/v1")
         }
-
 }

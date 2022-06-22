@@ -375,7 +375,7 @@ class WooCommerceStoreTest {
         val optionId = "woocommerce_enable_coupons"
         val request = UpdateSettingRequest(value = "yes")
 
-        if(isError) {
+        if (isError) {
             whenever(wcrestClient.updateSiteSettingOption(site, request, groupId, optionId))
                 .thenReturn(WooPayload(error))
         } else {
