@@ -397,7 +397,7 @@ class ProductRestClient @Inject constructor(
 
                     val loadedMore = offset > 0
                     val canLoadMore = productModels.size == pageSize
-                    if (searchQuery == null) {
+                    if (searchQuery == null && searchSku == null) {
                         val payload = RemoteProductListPayload(
                                 site,
                                 productModels,

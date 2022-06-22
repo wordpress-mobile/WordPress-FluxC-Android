@@ -255,7 +255,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNull(payload.error)
-        assertEquals(payload.searchSku, searchQuery)
+        assertEquals(payload.searchQuery, searchQuery)
     }
 
     @Test
