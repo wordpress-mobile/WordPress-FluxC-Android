@@ -93,7 +93,7 @@ class WooCommerceRestClient @Inject constructor(
         request: UpdateSettingRequest,
         groupId: String,
         optionId: String
-    ): WooPayload<SiteSettingResponse> {
+    ): WooPayload<SiteSettingOptionResponse> {
         val url = WOOCOMMERCE.settings.group(groupId).id(optionId).pathV3
         val params = request.toNetworkRequest()
 
@@ -102,7 +102,7 @@ class WooCommerceRestClient @Inject constructor(
             site,
             url,
             params,
-            SiteSettingResponse::class.java
+            SiteSettingOptionResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data)

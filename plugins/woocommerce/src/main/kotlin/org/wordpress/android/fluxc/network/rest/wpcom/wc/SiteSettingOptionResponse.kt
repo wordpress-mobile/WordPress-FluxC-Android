@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.network.Response
 
-class SiteSettingResponse : Response {
+class SiteSettingOptionResponse : Response {
     @SerializedName("id") val id: String? = null
     @SerializedName("label") val label: String? = null
     @SerializedName("description") val description: String? = null

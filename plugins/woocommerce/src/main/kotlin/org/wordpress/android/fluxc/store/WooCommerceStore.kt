@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -301,7 +301,7 @@ open class WooCommerceStore @Inject constructor(
         request: UpdateSettingRequest,
         groupId: String,
         optionId: String
-    ): WooResult<SiteSettingResponse> {
+    ): WooResult<SiteSettingOptionResponse> {
         return coroutineEngine.withDefaultContext(T.API, this, "updateSiteSetting") {
             val response = wcCoreRestClient.updateSiteSettingOption(site, request, groupId, optionId)
             return@withDefaultContext when {
