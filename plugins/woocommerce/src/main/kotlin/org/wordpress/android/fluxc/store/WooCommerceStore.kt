@@ -309,7 +309,10 @@ open class WooCommerceStore @Inject constructor(
                     AppLog.w(T.API, "Failed to update site setting for ${site.siteId}")
                     WooResult(response.error)
                 }
-                response.result != null -> WooResult(response.result)
+                response.result?.value != null -> {
+                    fetchSiteGeneralSettings(site)
+                    WooResult(response.result)
+                }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }

@@ -3,7 +3,9 @@ package org.wordpress.android.fluxc.wc
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
@@ -21,6 +23,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
@@ -102,6 +105,14 @@ class WooCommerceStoreTest {
     private val siteSettingsResponse = WCSettingsTestUtils.getSiteSettingsResponse()
     private val siteProductSettingsResponse = WCSettingsTestUtils.getSiteProductSettingsResponse()
     private val siteSettingOptionResponse = WCSettingsTestUtils.getSiteSettingOptionResponse()
+    private val siteSettingsModel = WCSettingsModel(
+        localSiteId = 1,
+        currencyCode = "$",
+        currencyPosition = LEFT,
+        currencyThousandSeparator = ".",
+        currencyDecimalSeparator = ",",
+        currencyDecimalNumber = 2
+    )
 
     @Before
     fun setUp() {
@@ -299,7 +310,6 @@ class WooCommerceStoreTest {
     fun `when updating site option succeeds, then success returned`() {
         runBlocking {
             val result: WooResult<SiteSettingOptionResponse> = updateSiteSettingOption()
-
             Assertions.assertThat(result.isError).isFalse
             Assertions.assertThat(result.model).isNotNull
             Assertions.assertThat(result.model?.id).isEqualTo("woocommerce_enable_coupons")
@@ -383,6 +393,21 @@ class WooCommerceStoreTest {
                 .thenReturn(WooPayload(siteSettingOptionResponse))
         }
 
-        return wooCommerceStore.updateSiteSettingOption(site, request, groupId, optionId)
+        val spyStore = spy(
+            WooCommerceStore(
+                appContext = appContext,
+                dispatcher = Dispatcher(),
+                coroutineEngine = initCoroutineEngine(),
+                siteStore = siteStore,
+                systemRestClient = restClient,
+                wcCoreRestClient = wcrestClient,
+                siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
+                settingsMapper = settingsMapper
+            )
+        )
+        doReturn(WooResult(siteSettingsModel))
+            .whenever(spyStore).fetchSiteGeneralSettings(site)
+
+        return spyStore.updateSiteSettingOption(site, request, groupId, optionId)
     }
 }
