@@ -367,7 +367,7 @@ class ProductRestClient @Inject constructor(
             TITLE_DESC, DATE_DESC -> "desc"
         }
 
-       val url = WOOCOMMERCE.products.pathV3
+        val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
