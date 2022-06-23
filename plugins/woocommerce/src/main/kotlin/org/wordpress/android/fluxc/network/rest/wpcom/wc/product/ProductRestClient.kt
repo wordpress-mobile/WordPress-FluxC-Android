@@ -353,7 +353,6 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         isSkuSearch: Boolean = false,
-        isPartialSkuSearch: Boolean = false,
         remoteProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -368,23 +367,23 @@ class ProductRestClient @Inject constructor(
             TITLE_DESC, DATE_DESC -> "desc"
         }
 
-        // partial sku match was added in v6.6, fall back to using full sku match for older stores
-        val searchParam = if (isPartialSkuSearch) {
-            "search_sku"
-        } else if (isSkuSearch) {
-            "sku"
-        } else {
-            "search"
-        }
-
-        val url = WOOCOMMERCE.products.pathV3
+       val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
             "orderby" to orderBy,
             "order" to sortOrder,
             "offset" to offset.toString()
-        ).putIfNotEmpty(searchParam to searchQuery)
+        )
+
+        if (searchQuery?.isNotEmpty() == true) {
+            if (isSkuSearch) {
+                params.put("sku", searchQuery)
+                params.put("search_sku", searchQuery) // partial match, added in WC code 6.6
+            } else {
+                params.put("search", searchQuery)
+            }
+        }
 
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
@@ -453,7 +452,6 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         searchQuery: String?,
         isSkuSearch: Boolean = false,
-        isPartialSkuSearch: Boolean = false,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -466,7 +464,6 @@ class ProductRestClient @Inject constructor(
             sortType = sorting,
             searchQuery = searchQuery,
             isSkuSearch = isSkuSearch,
-            isPartialSkuSearch = isPartialSkuSearch,
             excludedProductIds = excludedProductIds)
     }
 
