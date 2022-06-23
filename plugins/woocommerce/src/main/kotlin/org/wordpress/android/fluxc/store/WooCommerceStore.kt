@@ -296,6 +296,13 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
+    /**
+     * Updates a WooCommerce Site Settings Option then update the DB after success.
+     * Refer to the API documentation https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#update-a-setting-option
+     * @param request The string value to be passed as `value` in API request
+     * @param groupId The group ID of a setting group. List of IDs are available in https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-settings-groups
+     * @param optionId The ID of the option to be updated.  List of IDs are available in https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-setting-options
+     */
     suspend fun updateSiteSettingOption(
         site: SiteModel,
         request: UpdateSettingRequest,
