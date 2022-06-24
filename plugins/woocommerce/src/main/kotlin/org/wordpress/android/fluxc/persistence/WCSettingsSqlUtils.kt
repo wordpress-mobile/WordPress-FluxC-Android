@@ -53,7 +53,7 @@ object WCSettingsSqlUtils {
         @Column var address2: String = "",
         @Column var city: String = "",
         @Column var postalCode: String = "",
-        @Column var couponsEnabled: String = ""
+        @Column var couponsEnabled: Boolean = false
     ) : Identifiable {
         override fun getId() = id
 
