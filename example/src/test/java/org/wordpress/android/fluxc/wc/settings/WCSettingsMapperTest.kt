@@ -31,7 +31,8 @@ class WCSettingsMapperTest {
             address = "60 29th Street #343",
             address2 = "",
             city = "San Francisco",
-            postalCode = "94110"
+            postalCode = "94110",
+            couponsEnabled = true
         )
 
         // when

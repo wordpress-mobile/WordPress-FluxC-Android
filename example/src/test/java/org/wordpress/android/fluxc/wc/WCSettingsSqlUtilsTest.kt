@@ -37,7 +37,8 @@ class WCSettingsSqlUtilsTest {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
-                currencyDecimalNumber = 2
+                currencyDecimalNumber = 2,
+                couponsEnabled = true
         )
 
         // Test inserting settings
@@ -53,7 +54,8 @@ class WCSettingsSqlUtilsTest {
                 currencyPosition = CurrencyPosition.RIGHT_SPACE,
                 currencyThousandSeparator = ".",
                 currencyDecimalSeparator = ",",
-                currencyDecimalNumber = 2
+                currencyDecimalNumber = 2,
+                couponsEnabled = true
         )
         WCSettingsSqlUtils.insertOrUpdateSettings(updatedSettingsModel)
 

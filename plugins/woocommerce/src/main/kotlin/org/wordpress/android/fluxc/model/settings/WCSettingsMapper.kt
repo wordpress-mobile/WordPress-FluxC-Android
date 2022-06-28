@@ -38,7 +38,7 @@ class WCSettingsMapper
             address2 = address2 ?: "",
             city = city ?: "",
             postalCode = postalCode ?: "",
-            couponsEnabled = couponsEnabled ?: ""
+            couponsEnabled = couponsEnabled?.let { it == "yes" } ?: false
         )
     }
 
