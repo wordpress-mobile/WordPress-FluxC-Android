@@ -85,9 +85,11 @@ class WooCommerceRestClient @Inject constructor(
 
     /**
      * Updates an option in the Site Setting.
-     * @param groupId Possible group ID's: https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-settings-groups
-     * @param optionId The particular option to be updated.
-     */
+     * @param groupId The group ID of a setting group. List of IDs are available in
+     * https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-settings-groups
+     * @param optionId The ID of the option to be updated.  List of IDs are available in
+     * https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-setting-options
+     * */
     suspend fun updateSiteSettingOption(
         site: SiteModel,
         request: UpdateSettingRequest,
