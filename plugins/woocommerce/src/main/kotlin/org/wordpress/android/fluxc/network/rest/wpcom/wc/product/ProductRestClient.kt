@@ -378,10 +378,10 @@ class ProductRestClient @Inject constructor(
 
         if (searchQuery?.isNotEmpty() == true) {
             if (isSkuSearch) {
-                params.put("sku", searchQuery)
-                params.put("search_sku", searchQuery) // partial match, added in WC code 6.6
+                params["sku"] = searchQuery
+                params["search_sku"] = searchQuery // partial match, added in WC code 6.6
             } else {
-                params.put("search", searchQuery)
+                params["search"] = searchQuery
             }
         }
 
@@ -481,16 +481,18 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
         searchQuery: String? = null,
+        isSkuSearch: Boolean = false,
         filterOptions: Map<ProductFilterOption, String> = emptyMap()
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
-            pageSize,
-            sortType,
-            offset,
-            searchQuery,
-            includedProductIds,
-            excludedProductIds,
-            filterOptions
+            pageSize = pageSize,
+            sortType = sortType,
+            offset = offset,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            ids = includedProductIds,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
         )
 
         return WOOCOMMERCE.products.pathV3.requestProductTo(site, params).handleResultFrom(site)
@@ -617,6 +619,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
+        isSkuSearch: Boolean,
         ids: List<Long>,
         excludedProductIds: List<Long>,
         filterOptions: Map<ProductFilterOption, String>
@@ -626,9 +629,15 @@ class ProductRestClient @Inject constructor(
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
             "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
-            .putIfNotEmpty("include" to ids.map { it }.joinToString())
+        ).putIfNotEmpty("include" to ids.map { it }.joinToString())
             .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
+
+        if (isSkuSearch) {
+            params.putIfNotEmpty("sku" to searchQuery)
+            params.putIfNotEmpty("search_sku" to searchQuery)
+        } else {
+            params.putIfNotEmpty("search" to searchQuery)
+        }
 
         params.putAll(filterOptions.map { it.key.toString() to it.value })
 

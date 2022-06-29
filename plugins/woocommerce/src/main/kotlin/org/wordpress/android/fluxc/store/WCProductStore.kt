@@ -1365,6 +1365,7 @@ class WCProductStore @Inject constructor(
     suspend fun searchProducts(
         site: SiteModel,
         searchString: String,
+        isSkuSearch: Boolean = false,
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE
     ): WooResult<ProductSearchResult> {
@@ -1373,7 +1374,8 @@ class WCProductStore @Inject constructor(
                 site = site,
                 offset = offset,
                 pageSize = pageSize,
-                searchQuery = searchString
+                searchQuery = searchString,
+                isSkuSearch = isSkuSearch
             )
             when {
                 response.isError -> WooResult(response.error)
