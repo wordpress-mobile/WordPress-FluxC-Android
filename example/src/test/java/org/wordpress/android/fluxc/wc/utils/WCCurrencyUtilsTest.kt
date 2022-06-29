@@ -15,7 +15,9 @@ class WCCurrencyUtilsTest {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
-                currencyDecimalNumber = 2)
+                currencyDecimalNumber = 2,
+                couponsEnabled = true
+        )
 
         val eurSettings = WCSettingsModel(
                 localSiteId = 6,
@@ -23,7 +25,9 @@ class WCCurrencyUtilsTest {
                 currencyPosition = CurrencyPosition.RIGHT_SPACE,
                 currencyThousandSeparator = ".",
                 currencyDecimalSeparator = ",",
-                currencyDecimalNumber = 2)
+                currencyDecimalNumber = 2,
+                couponsEnabled = true
+        )
 
         val jpySettings = WCSettingsModel(
                 localSiteId = 6,
@@ -31,7 +35,9 @@ class WCCurrencyUtilsTest {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = "",
                 currencyDecimalSeparator = "",
-                currencyDecimalNumber = 0)
+                currencyDecimalNumber = 0,
+                couponsEnabled = true
+        )
 
         with(3.22) {
             val cadFormat = formatCurrencyForDisplay(this, cadSettings)
