@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERI
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
-import org.wordpress.android.fluxc.utils.PreferenceUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -32,7 +31,6 @@ import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 class WCStatsStore @Inject constructor(
@@ -50,13 +48,7 @@ class WCStatsStore @Inject constructor(
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
-
-        const val STATS_REVENUE_API_PER_PAGE_PARAM = "STATS_REVENUE_API_PER_PAGE_PARAM_PREF_KEY"
-        const val STATS_REVENUE_API_MIN_PER_PAGE_PARAM = 31
-        const val STATS_REVENUE_API_MAX_PER_PAGE_PARAM = 100
     }
-
-    private val preferences by lazy { PreferenceUtils.getFluxCPreferences(context) }
 
     enum class StatsGranularity {
         DAYS, WEEKS, MONTHS, YEARS;
@@ -651,7 +643,7 @@ class WCStatsStore @Inject constructor(
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
         val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity)
-        val perPage = getRandomPageIntForRevenueStats(payload.forced)
+        val perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
                 site = payload.site,
@@ -712,28 +704,16 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * The default data count in `v4 revenue stats api` is 10.
-     * so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
-     * But, due to caching in the api, if the per_page value static, the api is not providing refreshed data
-     * when a new order is completed.
-     * So this logic is added as a workaround and generates a random value between 31 to 100
-     * only if the [forced] is set to true.
-     * And storing this value locally to be used when the [forced] flag is set to false.
-     * */
-    private fun getRandomPageIntForRevenueStats(forced: Boolean): Int {
-        val randomInt = Random.nextInt(STATS_REVENUE_API_MIN_PER_PAGE_PARAM, STATS_REVENUE_API_MAX_PER_PAGE_PARAM)
-        return if (forced) {
-            preferences.edit().putInt(STATS_REVENUE_API_PER_PAGE_PARAM, randomInt).apply()
-            randomInt
-        } else {
-            val prefsValue = preferences.getInt(STATS_REVENUE_API_PER_PAGE_PARAM, 0)
-            if (prefsValue == 0) {
-                preferences.edit().putInt(STATS_REVENUE_API_PER_PAGE_PARAM, randomInt).apply()
-                randomInt
-            } else {
-                prefsValue
-            }
-        }
+     * Returns the page size in days depending on the provided [granularity],
+     * to use for fetching revenue stats.
+     */
+    private fun getPerPageQuantityForRevenueStatsGranularity(
+        granularity: StatsGranularity
+    ) = when (granularity) {
+        StatsGranularity.DAYS -> 1
+        StatsGranularity.WEEKS -> 7
+        StatsGranularity.MONTHS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+        StatsGranularity.YEARS -> 12
     }
 
     /**
