@@ -342,8 +342,6 @@ class ProductRestClient @Inject constructor(
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of products for the given WooCommerce [SiteModel].
      *
-     * Note that searching by SKU was added in core v6.6
-     *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
     fun fetchProducts(
