@@ -651,7 +651,7 @@ class WCStatsStore @Inject constructor(
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
         val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity)
-        val perPage = getRandomPageIntForRevenueStats(payload.forced)
+        val perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
                 site = payload.site,
@@ -711,6 +711,10 @@ class WCStatsStore @Inject constructor(
         }
     }
 
+    /**
+     * Returns the page size in days depending on the provided [granularity],
+     * to use for fetching revenue stats.
+     */
     private fun getPerPageQuantityForRevenueStatsGranularity(
         granularity: StatsGranularity
     ) = when (granularity) {
