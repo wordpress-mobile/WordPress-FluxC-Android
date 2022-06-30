@@ -376,8 +376,8 @@ class ProductRestClient @Inject constructor(
 
         if (searchQuery?.isNotEmpty() == true) {
             if (isSkuSearch) {
-                params["sku"] = searchQuery
-                params["search_sku"] = searchQuery // partial match, added in WC code 6.6
+                params["sku"] = searchQuery        // full match
+                params["search_sku"] = searchQuery // partial match, added in WC core 6.6
             } else {
                 params["search"] = searchQuery
             }
