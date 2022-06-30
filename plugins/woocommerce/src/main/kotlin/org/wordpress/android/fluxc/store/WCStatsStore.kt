@@ -711,6 +711,15 @@ class WCStatsStore @Inject constructor(
         }
     }
 
+    private fun getPerPageQuantityForRevenueStatsGranularity(
+        granularity: StatsGranularity
+    ) = when (granularity) {
+        StatsGranularity.DAYS -> 1
+        StatsGranularity.WEEKS -> 7
+        StatsGranularity.MONTHS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+        StatsGranularity.YEARS -> 12
+    }
+
     /**
      * The default data count in `v4 revenue stats api` is 10.
      * so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
