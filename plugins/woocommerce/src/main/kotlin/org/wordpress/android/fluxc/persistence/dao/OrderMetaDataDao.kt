@@ -32,18 +32,20 @@ abstract class OrderMetaDataDao {
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = Gson().fromJson(orderDto.meta_data, responseType) as? List<WCMetaData>
             ?: emptyList()
-        metaData.forEach { meta ->
-            insertOrUpdateMetaData(
-                OrderMetaDataEntity(
-                    id = meta.id,
-                    localSiteId = localSiteId,
-                    orderId = orderId,
-                    key = meta.key,
-                    value = meta.value.toString(),
-                    displayKey = meta.displayKey,
-                    displayValue = meta.displayValue.toString()
+        metaData.filter { it.key.startsWith("_").not() }
+            .map {
+                insertOrUpdateMetaData(
+                    OrderMetaDataEntity(
+                        id = it.id,
+                        localSiteId = localSiteId,
+                        orderId = orderId,
+                        key = it.key,
+                        value = it.value.toString(),
+                        displayKey = it.displayKey,
+                        displayValue = it.displayValue.toString()
+                    )
                 )
-            )
-        }
+            }
     }
 }
+
