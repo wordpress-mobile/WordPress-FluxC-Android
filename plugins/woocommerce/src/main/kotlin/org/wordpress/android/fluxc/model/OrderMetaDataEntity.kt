@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model
 import androidx.room.Entity
 import androidx.room.Index
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
 
 @Entity(
     tableName = "OrderMetaDataEntity",
@@ -13,10 +14,32 @@ import com.google.gson.annotations.SerializedName
 )
 data class OrderMetaDataEntity(
     @SerializedName("id") val id: Long,
-    @SerializedName("localSiteId") val localSiteId: Long,
+    @SerializedName("localSiteId") val localSiteId: LocalOrRemoteId,
     @SerializedName("orderId") val orderId: Long,
     @SerializedName("key") val key: String,
     @SerializedName("value") val value: String,
     @SerializedName("display_key") val displayKey: String?,
     @SerializedName("display_value") val displayValue: String?
 )
+
+fun List<Metadata>.fromFatOrder(fatModel: OrderEntity): List<OrderMetaDataEntity> {
+    val metaData = fatModel.getMetaDataList()
+        .filter {
+            it.isInternalAttribute.not()
+        }
+    return ArrayList<OrderMetaDataEntity>().also { list ->
+        metaData.forEach { meta ->
+            list.add(
+                OrderMetaDataEntity(
+                    id = meta.id,
+                    localSiteId = fatModel.localSiteId,
+                    orderId = fatModel.orderId,
+                    key = meta.key,
+                    value = meta.value.toString(),
+                    displayKey = meta.displayKey,
+                    displayValue = meta.displayKey
+                )
+            )
+        }
+    }
+}
