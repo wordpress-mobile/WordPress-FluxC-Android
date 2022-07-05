@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
@@ -49,6 +50,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             GlobalAddonGroupEntity::class,
             OrderNoteEntity::class,
             OrderEntity::class,
+            OrderMetaDataEntity::class,
             InboxNoteEntity::class,
             InboxNoteActionEntity::class
         ],
