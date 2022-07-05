@@ -101,7 +101,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                        orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
@@ -202,7 +202,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                        orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
@@ -273,7 +273,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
-                        orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                        orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
@@ -311,7 +311,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                    orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
@@ -441,7 +441,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                    orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).copy(
                             orderId = orderToUpdate.orderId
                     )
@@ -772,7 +772,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                 WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()))
             } ?: WooPayload(
                     error = WooError(
@@ -803,7 +803,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
+                orderMetaDataDao.updateOrderMetaData(orderDto, site.localId())
                 WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()))
             } ?: WooPayload(
                     error = WooError(

@@ -21,12 +21,14 @@ abstract class OrderMetaDataDao {
     @Query("DELETE FROM OrderMetaDataEntity WHERE localSiteId = :localSiteId AND orderId = :orderId")
     abstract fun deleteOrderMetaData(localSiteId: LocalId, orderId: Long)
 
-    open fun insertOrUpdateOrderMetaData(
+    @Transaction
+    open fun updateOrderMetaData(
         orderDto: OrderDto,
         localSiteId: LocalId
     ) {
         val orderId = orderDto.id ?: 0
         deleteOrderMetaData(localSiteId, orderId)
+
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = Gson().fromJson(orderDto.meta_data, responseType) as? List<WCMetaData>
             ?: emptyList()
