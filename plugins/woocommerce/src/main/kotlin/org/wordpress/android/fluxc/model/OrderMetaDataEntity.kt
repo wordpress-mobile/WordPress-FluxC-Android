@@ -5,6 +5,9 @@ import androidx.room.Index
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
 
+/**
+ * The OrderMetaDataEntity table is used to store viewable order meta data separately from the order
+ */
 @Entity(
     tableName = "OrderMetaDataEntity",
     indices = [Index(
@@ -22,7 +25,11 @@ data class OrderMetaDataEntity(
     @SerializedName("display_value") val displayValue: String?
 )
 
-fun List<Metadata>.fromFatOrder(fatModel: OrderEntity): List<OrderMetaDataEntity> {
+/**
+ * Creates a list of OrderMetaDataEntity from a "fat" order model, which is the order before
+ * calling [StripOrder] to remove most of the metadata
+ */
+fun fromFatOrder(fatModel: OrderEntity): List<OrderMetaDataEntity> {
     val metaData = fatModel.getMetaDataList()
         .filter {
             it.isInternalAttribute.not()
