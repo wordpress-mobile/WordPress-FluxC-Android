@@ -5,7 +5,7 @@ import androidx.room.Index
 import com.google.gson.annotations.SerializedName
 
 @Entity(
-    tableName = "OrderEntity",
+    tableName = "OrderMetaDataEntity",
     indices = [Index(
         value = ["localSiteId", "orderId"]
     )],
