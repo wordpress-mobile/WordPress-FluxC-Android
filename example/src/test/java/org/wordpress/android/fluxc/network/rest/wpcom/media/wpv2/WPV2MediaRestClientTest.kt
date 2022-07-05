@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.store.MediaStore.ProgressPayload
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper
 import java.io.File
 import java.util.concurrent.CountDownLatch
 
@@ -54,7 +55,8 @@ class WPV2MediaRestClientTest {
                 okHttpClient = okHttpClient,
                 requestQueue = requestQueue,
                 accessToken = accessToken,
-                userAgent = userAgent
+                userAgent = userAgent,
+                dateTimeUtilsWrapper = DateTimeUtilsWrapper()
         )
         EventBus.getDefault().register(this)
     }

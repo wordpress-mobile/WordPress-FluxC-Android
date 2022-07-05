@@ -43,10 +43,12 @@ import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType.REQUEST_TOO_LARGE
 import org.wordpress.android.fluxc.store.MediaStore.ProgressPayload
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper
 import org.wordpress.android.fluxc.utils.MimeType
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T.MEDIA
 import java.io.IOException
+import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Named
@@ -56,6 +58,7 @@ import javax.inject.Singleton
 class WPV2MediaRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
+    private val dateTimeUtilsWrapper: DateTimeUtilsWrapper,
     @Named("regular") private val okHttpClient: OkHttpClient,
     appContext: Context?,
     @Named("regular") requestQueue: RequestQueue,
@@ -89,9 +92,10 @@ class WPV2MediaRestClient @Inject constructor(
         }
     }
 
-    fun fetchMediaList(site: SiteModel, number: Int, offset: Int, mimeType: MimeType.Type?) {
+    @JvmOverloads
+    fun fetchMediaList(site: SiteModel, number: Int, offset: Int, mimeType: MimeType.Type?, before: Date? = null, after: Date? = null) {
         coroutineEngine.launch(MEDIA, this, "Fetching Media using WPCom's v2 API") {
-            val payload = syncFetchMediaList(site, number, offset, mimeType)
+            val payload = syncFetchMediaList(site, number, offset, mimeType, before, after)
             mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaListAction(payload))
         }
     }
@@ -180,7 +184,9 @@ class WPV2MediaRestClient @Inject constructor(
         site: SiteModel,
         perPage: Int,
         offset: Int,
-        mimeType: MimeType.Type?
+        mimeType: MimeType.Type?,
+        before: Date? = null,
+        after: Date? = null
     ): FetchMediaListResponsePayload {
         val url = WPAPI.media.getWPComUrl(site.siteId)
         val params = mutableMapOf(
@@ -191,6 +197,12 @@ class WPV2MediaRestClient @Inject constructor(
         }
         if (mimeType != null) {
             params["mime_type"] = mimeType.value
+        }
+        before?.let {
+            params["before"] = dateTimeUtilsWrapper.iso8601UTCEndDateText(it)
+        }
+        after?.let {
+            params["after"] = dateTimeUtilsWrapper.iso8601UTCEndDateText(it)
         }
         val response = WPComGsonRequestBuilder().syncGetRequest(
                 this,
