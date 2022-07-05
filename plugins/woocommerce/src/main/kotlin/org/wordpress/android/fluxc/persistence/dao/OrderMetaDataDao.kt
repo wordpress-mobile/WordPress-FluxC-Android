@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 
 @Dao
@@ -32,7 +33,7 @@ abstract class OrderMetaDataDao {
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = Gson().fromJson(orderDto.meta_data, responseType) as? List<WCMetaData>
             ?: emptyList()
-        metaData.filter { it.key.startsWith("_").not() }
+        metaData.filter { it.isInternalAttribute.not() }
             .map {
                 insertOrUpdateMetaData(
                     OrderMetaDataEntity(
