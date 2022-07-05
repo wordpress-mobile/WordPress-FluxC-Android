@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
@@ -17,6 +18,9 @@ import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 abstract class OrderMetaDataDao {
     @Insert(onConflict = REPLACE)
     abstract fun insertOrUpdateMetaData(metaDataEntity: OrderMetaDataEntity)
+
+    @Query("SELECT * FROM OrderMetaDataEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
+    abstract suspend fun getOrderMetaData(orderId: Long, localSiteId: LocalId): List<OrderMetaDataEntity>
 
     @Transaction
     @Query("DELETE FROM OrderMetaDataEntity WHERE localSiteId = :localSiteId AND orderId = :orderId")
