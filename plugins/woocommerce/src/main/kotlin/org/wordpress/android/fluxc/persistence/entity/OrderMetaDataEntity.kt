@@ -1,9 +1,10 @@
 package org.wordpress.android.fluxc.persistence.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
-import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 
 /**
  * The OrderMetaDataEntity table is used to store viewable order meta data separately from the order
@@ -16,11 +17,12 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId
     primaryKeys = ["localSiteId", "orderId", "id"]
 )
 data class OrderMetaDataEntity(
-    @SerializedName("id") val id: Long,
-    @SerializedName("localSiteId") val localSiteId: LocalOrRemoteId,
-    @SerializedName("orderId") val orderId: Long,
-    @SerializedName("key") val key: String,
-    @SerializedName("value") val value: String,
-    @SerializedName("display_key") val displayKey: String?,
-    @SerializedName("display_value") val displayValue: String?
+    @ColumnInfo(name = "localSiteId")
+    val localSiteId: LocalId,
+    val id: Long,
+    val orderId: Long,
+    val key: String,
+    val value: String,
+    val displayKey: String?,
+    val displayValue: String?
 )
