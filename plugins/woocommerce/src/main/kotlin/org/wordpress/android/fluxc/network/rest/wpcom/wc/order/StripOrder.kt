@@ -24,7 +24,7 @@ internal class StripOrder @Inject constructor(private val gson: Gson) {
                                 .filter {
                                     it.key == CHARGE_ID_KEY ||
                                         it.key == SHIPPING_PHONE_KEY ||
-                                        it.key.startsWith("_").not()
+                                        it.isInternalAttribute.not()
                                 }
                 )
         )
