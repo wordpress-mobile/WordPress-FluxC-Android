@@ -306,6 +306,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
+                    saveOrderMetaData(orderDto, site)
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
