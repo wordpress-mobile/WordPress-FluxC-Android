@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
+import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
@@ -73,6 +74,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val addonsDao: AddonsDao
     abstract val ordersDao: OrdersDao
     abstract val orderNotesDao: OrderNotesDao
+    abstract val orderMetaDataDao: OrderMetaDataDao
     abstract val couponsDao: CouponsDao
     abstract val inboxNotesDao: InboxNotesDao
 
