@@ -36,6 +36,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
@@ -71,6 +72,7 @@ class OrderRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     private val orderDtoMapper: OrderDtoMapper,
+    private val orderMetaDataDao: OrderMetaDataDao,
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
@@ -99,6 +101,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
+                        orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
@@ -199,6 +202,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
+                        orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
@@ -269,6 +273,7 @@ class OrderRestClient @Inject constructor(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderDto>? ->
                     val orderModels = response?.map { orderDto ->
+                        orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
@@ -306,7 +311,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    saveOrderMetaData(orderDto, site)
+                    orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload(newModel, site)
                 } ?: RemoteOrderPayload(
@@ -436,6 +441,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
+                    orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).copy(
                             orderId = orderToUpdate.orderId
                     )
@@ -766,6 +772,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
+                orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                 WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()))
             } ?: WooPayload(
                     error = WooError(
@@ -796,6 +803,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
+                orderMetaDataDao.insertOrUpdateOrderMetaData(orderDto, site.localId())
                 WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()))
             } ?: WooPayload(
                     error = WooError(

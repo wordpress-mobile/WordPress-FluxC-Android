@@ -19,9 +19,9 @@ abstract class OrderMetaDataDao {
 
     @Transaction
     @Query("DELETE FROM OrderMetaDataEntity WHERE localSiteId = :localSiteId AND orderId = :orderId")
-    abstract suspend fun deleteOrderMetaData(localSiteId: LocalId, orderId: Long)
+    abstract fun deleteOrderMetaData(localSiteId: LocalId, orderId: Long)
 
-    open suspend fun insertOrUpdateOrderMetaData(
+    open fun insertOrUpdateOrderMetaData(
         orderDto: OrderDto,
         localSiteId: LocalId
     ) {
@@ -39,7 +39,7 @@ abstract class OrderMetaDataDao {
                     key = meta.key,
                     value = meta.value.toString(),
                     displayKey = meta.displayKey,
-                    displayValue = meta.displayKey
+                    displayValue = meta.displayValue.toString()
                 )
             )
         }
