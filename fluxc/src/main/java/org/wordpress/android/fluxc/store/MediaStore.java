@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.fluxc.store.media.MediaErrorSubType;
 import org.wordpress.android.fluxc.store.media.MediaErrorSubType.MalformedMediaArgSubType;
 import org.wordpress.android.fluxc.store.media.MediaErrorSubType.MalformedMediaArgSubType.Type;
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.fluxc.utils.MimeType;
 import org.wordpress.android.util.AppLog;
@@ -38,6 +39,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -91,8 +93,13 @@ public class MediaStore extends Store {
     public static class FetchMediaListPayload extends Payload<BaseNetworkError> {
         public SiteModel site;
         public boolean loadMore;
+        @Nullable
         public MimeType.Type mimeType;
         public int number = DEFAULT_NUM_MEDIA_PER_FETCH;
+        @Nullable
+        public Long before;
+        @Nullable
+        public Long after;
 
         public FetchMediaListPayload(SiteModel site) {
             this.site = site;
@@ -104,11 +111,37 @@ public class MediaStore extends Store {
             this.number = number;
         }
 
-        public FetchMediaListPayload(SiteModel site, int number, boolean loadMore, MimeType.Type mimeType) {
+        public FetchMediaListPayload(SiteModel site,
+                                     int number,
+                                     boolean loadMore,
+                                     @Nullable Long before,
+                                     @Nullable Long after) {
+            this.site = site;
+            this.loadMore = loadMore;
+            this.number = number;
+            this.before = before;
+            this.after = after;
+        }
+
+        public FetchMediaListPayload(SiteModel site, int number, boolean loadMore, @Nullable MimeType.Type mimeType) {
             this.site = site;
             this.loadMore = loadMore;
             this.mimeType = mimeType;
             this.number = number;
+        }
+
+        public FetchMediaListPayload(SiteModel site,
+                                     int number,
+                                     boolean loadMore,
+                                     @Nullable MimeType.Type mimeType,
+                                     @Nullable Long before,
+                                     @Nullable Long after) {
+            this.site = site;
+            this.loadMore = loadMore;
+            this.mimeType = mimeType;
+            this.number = number;
+            this.before = before;
+            this.after = after;
         }
     }
 
@@ -469,6 +502,7 @@ public class MediaStore extends Store {
     private final MediaRestClient mMediaRestClient;
     private final MediaXMLRPCClient mMediaXmlrpcClient;
     private final WPV2MediaRestClient mWPV2MediaRestClient;
+    private final DateTimeUtilsWrapper mDateTimeUtilsWrapper;
     // Ensures that the UploadStore is initialized whenever the MediaStore is,
     // to ensure actions are shadowed and repeated by the UploadStore
     @SuppressWarnings("unused")
@@ -478,11 +512,13 @@ public class MediaStore extends Store {
             Dispatcher dispatcher,
             MediaRestClient restClient,
             MediaXMLRPCClient xmlrpcClient,
-            WPV2MediaRestClient wpv2MediaRestClient) {
+            WPV2MediaRestClient wpv2MediaRestClient,
+            DateTimeUtilsWrapper dateTimeUtilsWrapper) {
         super(dispatcher);
         mMediaRestClient = restClient;
         mMediaXmlrpcClient = xmlrpcClient;
         mWPV2MediaRestClient = wpv2MediaRestClient;
+        mDateTimeUtilsWrapper = dateTimeUtilsWrapper;
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -805,20 +841,43 @@ public class MediaStore extends Store {
 
     private void performFetchMediaList(FetchMediaListPayload payload) {
         int offset = 0;
+        String beforeText = null;
+        Date beforeDate = null;
+        if (payload.before != null) {
+            beforeText = mDateTimeUtilsWrapper.iso8601UTCFromDate(new Date(payload.before));
+            beforeDate = new Date(payload.before);
+        }
+        String afterText = null;
+        Date afterDate = null;
+        if (payload.after != null) {
+            afterText = mDateTimeUtilsWrapper.iso8601UTCFromDate(new Date(payload.after));
+            afterDate = new Date(payload.after);
+        }
         if (payload.loadMore) {
             List<String> list = new ArrayList<>();
             list.add(MediaUploadState.UPLOADED.toString());
             if (payload.mimeType != null) {
-                offset = MediaSqlUtils.getMediaWithStatesAndMimeType(payload.site, list, payload.mimeType.getValue())
+                offset = MediaSqlUtils.getMediaWithStatesAndMimeType(
+                        payload.site, list, payload.mimeType.getValue(), beforeText, afterText)
                                       .size();
             } else {
-                offset = MediaSqlUtils.getMediaWithStates(payload.site, list).size();
+                offset = MediaSqlUtils.getMediaWithStates(payload.site, list, beforeText, afterText).size();
             }
         }
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
+            mMediaRestClient.fetchMediaList(payload.site,
+                    payload.number,
+                    offset,
+                    payload.mimeType,
+                    beforeDate,
+                    afterDate);
         } else if (payload.site.isJetpackCPConnected()) {
-            mWPV2MediaRestClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
+            mWPV2MediaRestClient.fetchMediaList(payload.site,
+                    payload.number,
+                    offset,
+                    payload.mimeType,
+                    beforeDate,
+                    afterDate);
         } else {
             mMediaXmlrpcClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
         }

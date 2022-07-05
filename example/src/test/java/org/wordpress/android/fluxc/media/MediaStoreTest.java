@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
@@ -44,7 +45,8 @@ public class MediaStoreTest {
     private MediaStore mMediaStore = new MediaStore(new Dispatcher(),
             Mockito.mock(MediaRestClient.class),
             Mockito.mock(MediaXMLRPCClient.class),
-            Mockito.mock(WPV2MediaRestClient.class));
+            Mockito.mock(WPV2MediaRestClient.class),
+            Mockito.mock(DateTimeUtilsWrapper.class));
 
     @Before
     public void setUp() {

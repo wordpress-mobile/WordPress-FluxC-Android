@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
@@ -39,6 +40,7 @@ import org.wordpress.android.fluxc.store.MediaStore.ProgressPayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadStockMediaError;
 import org.wordpress.android.fluxc.store.MediaStore.UploadStockMediaErrorType;
 import org.wordpress.android.fluxc.store.MediaStore.UploadedStockMediaPayload;
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.fluxc.utils.MimeType;
 import org.wordpress.android.util.AppLog;
@@ -47,6 +49,7 @@ import org.wordpress.android.util.StringUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +73,7 @@ import okhttp3.ResponseBody;
  *
  * <ul>
  *     <li>Fetch existing media from a WP.com site
- *     (via {@link #fetchMediaList(SiteModel, int, int, MimeType.Type)} and
+ *     (via {@link #fetchMediaList(SiteModel, int, int, MimeType.Type, Date, Date)} and
  *     {@link #fetchMedia(SiteModel, MediaModel)}</li>
  *     <li>Push new media to a WP.com site
  *     (via {@link #uploadMedia(SiteModel, MediaModel)})</li>
@@ -84,20 +87,23 @@ import okhttp3.ResponseBody;
 public class MediaRestClient extends BaseWPComRestClient implements ProgressListener {
     private OkHttpClient mOkHttpClient;
     private MediaResponseUtils mMediaResponseUtils;
+    private final DateTimeUtilsWrapper mDateTimeUtils;
     // this will hold which media is being uploaded by which call, in order to be able
     // to monitor multiple uploads
     private ConcurrentHashMap<Integer, Call> mCurrentUploadCalls = new ConcurrentHashMap<>();
 
     @Inject public MediaRestClient(Context appContext,
-                           Dispatcher dispatcher,
-                           @Named("regular") RequestQueue requestQueue,
-                           @Named("regular") OkHttpClient okHttpClient,
-                           AccessToken accessToken,
-                           UserAgent userAgent,
-                           MediaResponseUtils mediaResponseUtils) {
+                                   Dispatcher dispatcher,
+                                   @Named("regular") RequestQueue requestQueue,
+                                   @Named("regular") OkHttpClient okHttpClient,
+                                   AccessToken accessToken,
+                                   UserAgent userAgent,
+                                   MediaResponseUtils mediaResponseUtils,
+                                   DateTimeUtilsWrapper dateTimeUtils) {
         super(appContext, dispatcher, requestQueue, accessToken, userAgent);
         mOkHttpClient = okHttpClient;
         mMediaResponseUtils = mediaResponseUtils;
+        mDateTimeUtils = dateTimeUtils;
     }
 
     @Override
@@ -296,13 +302,25 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         });
     }
 
+    public void fetchMediaList(final SiteModel site,
+                               final int number,
+                               final int offset,
+                               final MimeType.Type mimeType) {
+        fetchMediaList(site, number, offset, mimeType, null, null);
+    }
+
     /**
      * Gets a list of media items given the offset on a WP.com site.
      *
      * NOTE: Only media item data is gathered, the actual media file can be downloaded from the URL
      * provided in the response {@link MediaModel}'s (via {@link MediaModel#getUrl()}).
      */
-    public void fetchMediaList(final SiteModel site, final int number, final int offset, final MimeType.Type mimeType) {
+    public void fetchMediaList(final SiteModel site,
+                               final int number,
+                               final int offset,
+                               @Nullable final MimeType.Type mimeType,
+                               @Nullable final Date before,
+                               @Nullable final Date after) {
         final Map<String, String> params = new HashMap<>();
         params.put("number", String.valueOf(number));
         if (offset > 0) {
@@ -310,6 +328,12 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         }
         if (mimeType != null) {
             params.put("mime_type", mimeType.getValue());
+        }
+        if (before != null) {
+            params.put("before", mDateTimeUtils.iso8601UTCEndDateText(before));
+        }
+        if (after != null) {
+            params.put("after", mDateTimeUtils.iso8601UTCStartDateText(after));
         }
         String url = WPCOMREST.sites.site(site.getSiteId()).media.getUrlV1_1();
         add(WPComGsonRequest.buildGetRequest(url, params, MultipleMediaResponse.class,
@@ -341,7 +365,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                         notifyMediaListFetched(site, mediaError, mimeType);
                     }
                 }
-        ));
+                                            ));
     }
 
     /**

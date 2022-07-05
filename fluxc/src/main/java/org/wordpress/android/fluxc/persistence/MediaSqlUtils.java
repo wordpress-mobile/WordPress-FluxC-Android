@@ -2,6 +2,9 @@ package org.wordpress.android.fluxc.persistence;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.wellsql.generated.MediaModelTable;
 import com.yarolegovich.wellsql.ConditionClauseBuilder;
 import com.yarolegovich.wellsql.DeleteQuery;
@@ -22,22 +25,49 @@ public class MediaSqlUtils {
         return getAllSiteMediaQuery(siteModel).getAsModel();
     }
 
-    public static List<MediaModel> getMediaWithStates(SiteModel site, List<String> uploadStates) {
-        return getMediaWithStatesQuery(site, uploadStates).getAsModel();
+    public static List<MediaModel> getMediaWithStates(SiteModel site,
+                                                      List<String> uploadStates) {
+        return getMediaWithStatesQuery(site, uploadStates, null, null).getAsModel();
+    }
+    public static List<MediaModel> getMediaWithStates(SiteModel site,
+                                                      List<String> uploadStates,
+                                                      String before,
+                                                      String after) {
+        return getMediaWithStatesQuery(site, uploadStates, before, after).getAsModel();
     }
 
     public static WellCursor<MediaModel> getMediaWithStatesAsCursor(SiteModel site, List<String> uploadStates) {
-        return getMediaWithStatesQuery(site, uploadStates).getAsCursor();
+        return getMediaWithStatesQuery(site, uploadStates, null, null).getAsCursor();
+    }
+
+    public static WellCursor<MediaModel> getMediaWithStatesAsCursor(SiteModel site, List<String> uploadStates, String before, String after) {
+        return getMediaWithStatesQuery(site, uploadStates, before, after).getAsCursor();
     }
 
     public static List<MediaModel> getMediaWithStatesAndMimeType(SiteModel site,
                                                                  List<String> uploadStates,
                                                                  String mimeType) {
-        return WellSql.select(MediaModel.class)
-                .where().beginGroup()
-                .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
-                .contains(MediaModelTable.MIME_TYPE, mimeType)
-                .isIn(MediaModelTable.UPLOAD_STATE, uploadStates)
+        return getMediaWithStatesAndMimeType(site, uploadStates, mimeType, null, null);
+    }
+
+    public static List<MediaModel> getMediaWithStatesAndMimeType(SiteModel site,
+                                                                 List<String> uploadStates,
+                                                                 @NonNull String mimeType,
+                                                                 @Nullable String before,
+                                                                 @Nullable String after) {
+        ConditionClauseBuilder<SelectQuery<MediaModel>> queryBuilder = WellSql.select(MediaModel.class)
+                                                                    .where().beginGroup()
+                                                                    .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
+                                                                    .contains(MediaModelTable.MIME_TYPE, mimeType)
+                                                                    .isIn(MediaModelTable.UPLOAD_STATE, uploadStates);
+        if (before != null && after != null) {
+            queryBuilder = queryBuilder.isBetween(MediaModelTable.UPLOAD_DATE, after, before);
+        } else if (after != null) {
+            queryBuilder = queryBuilder.greaterThenOrEqual(MediaModelTable.UPLOAD_DATE, after);
+        } else if (before != null) {
+            queryBuilder = queryBuilder.lessThenOrEqual(MediaModelTable.UPLOAD_DATE, before);
+        }
+        return queryBuilder
                 .endGroup().endWhere()
                 .orderBy(MediaModelTable.UPLOAD_DATE, SelectQuery.ORDER_DESCENDING)
                 .getAsModel();
@@ -71,13 +101,24 @@ public class MediaSqlUtils {
                 .orderBy(MediaModelTable.UPLOAD_DATE, SelectQuery.ORDER_DESCENDING);
     }
 
-    private static SelectQuery<MediaModel> getMediaWithStatesQuery(SiteModel site, List<String> uploadStates) {
-        return WellSql.select(MediaModel.class)
-                .where().beginGroup()
-                .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
-                .isIn(MediaModelTable.UPLOAD_STATE, uploadStates)
-                .endGroup().endWhere()
-                .orderBy(MediaModelTable.UPLOAD_DATE, SelectQuery.ORDER_DESCENDING);
+    private static SelectQuery<MediaModel> getMediaWithStatesQuery(SiteModel site,
+                                                                   List<String> uploadStates,
+                                                                   String before,
+                                                                   String after) {
+        ConditionClauseBuilder<SelectQuery<MediaModel>> queryBuilder = WellSql.select(MediaModel.class)
+                                                                    .where().beginGroup()
+                                                                    .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
+                                                                    .isIn(MediaModelTable.UPLOAD_STATE, uploadStates);
+        if (before != null && after != null) {
+            queryBuilder = queryBuilder.isBetween(MediaModelTable.UPLOAD_DATE, after, before);
+        } else if (after != null) {
+            queryBuilder = queryBuilder.greaterThenOrEqual(MediaModelTable.UPLOAD_DATE, after);
+        } else if (before != null) {
+            queryBuilder = queryBuilder.lessThenOrEqual(MediaModelTable.UPLOAD_DATE, before);
+        }
+        return queryBuilder
+                      .endGroup().endWhere()
+                      .orderBy(MediaModelTable.UPLOAD_DATE, SelectQuery.ORDER_DESCENDING);
     }
 
     public static List<MediaModel> getSiteMediaWithId(SiteModel siteModel, long mediaId) {
