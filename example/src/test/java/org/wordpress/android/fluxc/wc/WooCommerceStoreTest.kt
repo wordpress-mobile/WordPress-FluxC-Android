@@ -111,7 +111,8 @@ class WooCommerceStoreTest {
         currencyPosition = LEFT,
         currencyThousandSeparator = ".",
         currencyDecimalSeparator = ",",
-        currencyDecimalNumber = 2
+        currencyDecimalNumber = 2,
+        couponsEnabled = true
     )
 
     @Before
@@ -324,6 +325,25 @@ class WooCommerceStoreTest {
                 updateSiteSettingOption(isError = true)
 
             Assertions.assertThat(result.error).isEqualTo(error)
+        }
+    }
+
+    @Test
+    fun `when enabling coupons succeeds, then true is returned`() {
+        runBlocking {
+            whenever(wcrestClient.enableCoupons(site)).thenReturn(WooPayload(true))
+            val result = wooCommerceStore.enableCoupons(site)
+            Assertions.assertThat(result).isTrue
+        }
+    }
+
+
+    @Test
+    fun `when enabling coupons fails, then false is returned`() {
+        runBlocking {
+            whenever(wcrestClient.enableCoupons(site)).thenReturn(WooPayload(false))
+            val result = wooCommerceStore.enableCoupons(site)
+            Assertions.assertThat(result).isFalse
         }
     }
 
