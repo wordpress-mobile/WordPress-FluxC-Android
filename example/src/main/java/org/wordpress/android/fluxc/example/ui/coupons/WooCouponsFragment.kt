@@ -30,7 +30,6 @@ class WooCouponsFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var couponPage = DEFAULT_PAGE
-    private var isCouponsEnabled = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_coupons, container, false)
