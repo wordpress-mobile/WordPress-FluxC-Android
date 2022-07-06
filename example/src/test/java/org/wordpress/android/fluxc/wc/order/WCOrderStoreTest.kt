@@ -38,6 +38,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderFetcher
@@ -61,6 +62,7 @@ class WCOrderStoreTest {
     private val orderRestClient: OrderRestClient = mock()
     lateinit var ordersDao: OrdersDao
     lateinit var orderNotesDao: OrderNotesDao
+    lateinit var orderMetaDataDao: OrderMetaDataDao
     lateinit var orderStore: WCOrderStore
 
     @Before
@@ -73,6 +75,7 @@ class WCOrderStoreTest {
 
         ordersDao = database.ordersDao
         orderNotesDao = database.orderNotesDao
+        orderMetaDataDao = database.orderMetaDataDao
 
         orderStore = WCOrderStore(
                 dispatcher = Dispatcher(),
@@ -80,7 +83,8 @@ class WCOrderStoreTest {
                 wcOrderFetcher = orderFetcher,
                 coroutineEngine = initCoroutineEngine(),
                 ordersDao = ordersDao,
-                orderNotesDao = orderNotesDao
+                orderNotesDao = orderNotesDao,
+                orderMetaDataDao = orderMetaDataDao
         )
 
         val config = SingleStoreWellSqlConfigForTests(
