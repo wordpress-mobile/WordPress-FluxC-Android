@@ -202,7 +202,7 @@ class WPV2MediaRestClient @Inject constructor(
             params["before"] = dateTimeUtilsWrapper.iso8601UTCEndDateText(it)
         }
         after?.let {
-            params["after"] = dateTimeUtilsWrapper.iso8601UTCEndDateText(it)
+            params["after"] = dateTimeUtilsWrapper.iso8601UTCStartDateText(it)
         }
         val response = WPComGsonRequestBuilder().syncGetRequest(
                 this,
