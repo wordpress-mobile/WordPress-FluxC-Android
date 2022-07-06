@@ -304,7 +304,12 @@ open class WooCommerceStore @Inject constructor(
                     AppLog.w(T.API, "Failed to enable coupons for ${site.siteId}")
                     false
                 }
-                else -> response.result ?: false
+                else -> {
+                    response.result?.let {
+                        WCSettingsSqlUtils.setCouponsEnabled(site, it)
+                        it
+                    } ?: false
+                }
             }
         }
     }
