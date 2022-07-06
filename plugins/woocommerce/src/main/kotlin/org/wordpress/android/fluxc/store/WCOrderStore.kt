@@ -49,7 +49,7 @@ class WCOrderStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val ordersDao: OrdersDao,
     private val orderNotesDao: OrderNotesDao,
-    private val orderMetaDataDao: OrderMetaDataDao    
+    private val orderMetaDataDao: OrderMetaDataDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
