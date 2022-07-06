@@ -296,6 +296,19 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
+    suspend fun enableCoupons(site: SiteModel): Boolean {
+        return coroutineEngine.withDefaultContext(T.API, this, "enableCoupons") {
+            val response = wcCoreRestClient.enableCoupons(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(T.API, "Failed to enable coupons for ${site.siteId}")
+                    false
+                }
+                else -> response.result ?: false
+            }
+        }
+    }
+
     /**
      * Updates a WooCommerce Site Settings Option then update the DB after success.
      * Refer to the API documentation https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#update-a-setting-option
