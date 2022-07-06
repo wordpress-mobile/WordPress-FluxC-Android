@@ -71,9 +71,9 @@ class WooCouponsFragment : StoreSelectingFragment() {
             coroutineScope.launch {
                 val result = wooCommerceStore.enableCoupons(selectedSite!!)
                 if (result) {
-                    prependToLog("Coupons enabling failed.")
-                } else {
                     prependToLog("Coupons enabling succeeded.")
+                } else {
+                    prependToLog("Coupons enabling failed.")
                 }
             }
         }
