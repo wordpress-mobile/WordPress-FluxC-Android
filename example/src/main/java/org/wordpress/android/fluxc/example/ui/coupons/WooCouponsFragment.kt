@@ -69,17 +69,11 @@ class WooCouponsFragment : StoreSelectingFragment() {
 
         btnEnableCouponsFeature.setOnClickListener {
             coroutineScope.launch {
-                val result = wooCommerceStore.updateSiteSettingOption(
-                    selectedSite!!,
-                    UpdateSettingRequest("yes"),
-                    "general",
-                    "woocommerce_enable_coupons"
-                )
-
-                if (result.isError) {
-                    prependToLog("Coupons enabling failed: ${result.error.message}")
+                val result = wooCommerceStore.enableCoupons(selectedSite!!)
+                if (result) {
+                    prependToLog("Coupons enabling failed.")
                 } else {
-                    prependToLog("Success: woocommerce_enable_coupons value is ${result.model?.value}")
+                    prependToLog("Coupons enabling succeeded.")
                 }
             }
         }
