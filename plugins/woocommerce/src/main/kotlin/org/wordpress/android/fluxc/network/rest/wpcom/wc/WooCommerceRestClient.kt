@@ -5,7 +5,6 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -85,41 +84,6 @@ class WooCommerceRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data?.toList())
             is JetpackError -> WooPayload(response.error.toWooError())
-        }
-    }
-
-    /**
-     * Updates an option in the Site Setting.
-     * @param groupId The group ID of a setting group. List of IDs are available in
-     * https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-settings-groups
-     * @param optionId The ID of the option to be updated.  List of IDs are available in
-     * https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-setting-options
-     * */
-    suspend fun updateSiteSettingOption(
-        site: SiteModel,
-        request: UpdateSettingRequest,
-        groupId: String,
-        optionId: String
-    ): WooPayload<SiteSettingOptionResponse> {
-        val url = WOOCOMMERCE.settings.group(groupId).id(optionId).pathV3
-        val params = request.toNetworkRequest()
-
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this,
-            site,
-            url,
-            params,
-            SiteSettingOptionResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
-    }
-
-    private fun UpdateSettingRequest.toNetworkRequest(): Map<String, Any> {
-        return mutableMapOf<String, Any>().apply {
-            put("value", value)
         }
     }
 

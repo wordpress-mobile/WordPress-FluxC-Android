@@ -3,9 +3,7 @@ package org.wordpress.android.fluxc.wc
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
@@ -25,11 +23,9 @@ import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
-import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
@@ -104,16 +100,6 @@ class WooCommerceStoreTest {
 
     private val siteSettingsResponse = WCSettingsTestUtils.getSiteSettingsResponse()
     private val siteProductSettingsResponse = WCSettingsTestUtils.getSiteProductSettingsResponse()
-    private val siteSettingOptionResponse = WCSettingsTestUtils.getSiteSettingOptionResponse()
-    private val siteSettingsModel = WCSettingsModel(
-        localSiteId = 1,
-        currencyCode = "$",
-        currencyPosition = LEFT,
-        currencyThousandSeparator = ".",
-        currencyDecimalSeparator = ",",
-        currencyDecimalNumber = 2,
-        couponsEnabled = true
-    )
 
     @Before
     fun setUp() {
@@ -308,27 +294,6 @@ class WooCommerceStoreTest {
     }
 
     @Test
-    fun `when updating site option succeeds, then success returned`() {
-        runBlocking {
-            val result: WooResult<SiteSettingOptionResponse> = updateSiteSettingOption()
-            Assertions.assertThat(result.isError).isFalse
-            Assertions.assertThat(result.model).isNotNull
-            Assertions.assertThat(result.model?.id).isEqualTo("woocommerce_enable_coupons")
-            Assertions.assertThat(result.model?.value).isEqualTo("yes")
-        }
-    }
-
-    @Test
-    fun `when updating site option fails, then error returned`() {
-        runBlocking {
-            val result: WooResult<SiteSettingOptionResponse> =
-                updateSiteSettingOption(isError = true)
-
-            Assertions.assertThat(result.error).isEqualTo(error)
-        }
-    }
-
-    @Test
     fun `when enabling coupons succeeds, then true is returned`() {
         runBlocking {
             whenever(wcrestClient.enableCoupons(site)).thenReturn(WooPayload(true))
@@ -398,36 +363,5 @@ class WooCommerceStoreTest {
             whenever(wcrestClient.fetchSiteSettingsProducts(site)).thenReturn(payload)
         }
         return wooCommerceStore.fetchSiteProductSettings(site)
-    }
-
-    private suspend fun updateSiteSettingOption(isError: Boolean = false): WooResult<SiteSettingOptionResponse> {
-        val groupId = "general"
-        val optionId = "woocommerce_enable_coupons"
-        val request = UpdateSettingRequest(value = "yes")
-
-        if (isError) {
-            whenever(wcrestClient.updateSiteSettingOption(site, request, groupId, optionId))
-                .thenReturn(WooPayload(error))
-        } else {
-            whenever(wcrestClient.updateSiteSettingOption(site, request, groupId, optionId))
-                .thenReturn(WooPayload(siteSettingOptionResponse))
-        }
-
-        val spyStore = spy(
-            WooCommerceStore(
-                appContext = appContext,
-                dispatcher = Dispatcher(),
-                coroutineEngine = initCoroutineEngine(),
-                siteStore = siteStore,
-                systemRestClient = restClient,
-                wcCoreRestClient = wcrestClient,
-                siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
-                settingsMapper = settingsMapper
-            )
-        )
-        doReturn(WooResult(siteSettingsModel))
-            .whenever(spyStore).fetchSiteGeneralSettings(site)
-
-        return spyStore.updateSiteSettingOption(site, request, groupId, optionId)
     }
 }

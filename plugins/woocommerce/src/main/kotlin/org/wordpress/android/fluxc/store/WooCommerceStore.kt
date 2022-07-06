@@ -15,10 +15,8 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_S
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
-import org.wordpress.android.fluxc.model.settings.UpdateSettingRequest
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -310,37 +308,6 @@ open class WooCommerceStore @Inject constructor(
                         it
                     } ?: false
                 }
-            }
-        }
-    }
-
-    /**
-     * Updates a WooCommerce Site Settings Option then update the DB after success.
-     * Refer to the API documentation https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#update-a-setting-option
-     * @param request The string value to be passed as `value` in API request
-     * @param groupId The group ID of a setting group. List of IDs are available in
-     * https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-settings-groups
-     * @param optionId The ID of the option to be updated.  List of IDs are available in
-     * https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-setting-options
-     */
-    suspend fun updateSiteSettingOption(
-        site: SiteModel,
-        request: UpdateSettingRequest,
-        groupId: String,
-        optionId: String
-    ): WooResult<SiteSettingOptionResponse> {
-        return coroutineEngine.withDefaultContext(T.API, this, "updateSiteSetting") {
-            val response = wcCoreRestClient.updateSiteSettingOption(site, request, groupId, optionId)
-            return@withDefaultContext when {
-                response.isError -> {
-                    AppLog.w(T.API, "Failed to update site setting for ${site.siteId}")
-                    WooResult(response.error)
-                }
-                response.result?.value != null -> {
-                    fetchSiteGeneralSettings(site)
-                    WooResult(response.result)
-                }
-                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
