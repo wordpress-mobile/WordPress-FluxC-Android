@@ -21,6 +21,9 @@ abstract class OrderMetaDataDao {
     @Query("SELECT * FROM OrderMetaDataEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
     abstract suspend fun getOrderMetaData(orderId: Long, localSiteId: LocalId): List<OrderMetaDataEntity>
 
+    @Query("SELECT COUNT(*) FROM OrderMetaDataEntity WHERE orderId = :orderId AND localSiteId = :localSiteId")
+    abstract suspend fun getOrderMetaDataCount(orderId: Long, localSiteId: LocalId): Int
+
     @Transaction
     @Query("DELETE FROM OrderMetaDataEntity WHERE localSiteId = :localSiteId AND orderId = :orderId")
     abstract fun deleteOrderMetaData(localSiteId: LocalId, orderId: Long)
@@ -50,5 +53,9 @@ abstract class OrderMetaDataDao {
                     )
                 )
             }
+    }
+
+    suspend fun hasOrderMetaData(orderId: Long, localSiteId: LocalId): Boolean {
+        return getOrderMetaDataCount(orderId, localSiteId) > 0
     }
 }
