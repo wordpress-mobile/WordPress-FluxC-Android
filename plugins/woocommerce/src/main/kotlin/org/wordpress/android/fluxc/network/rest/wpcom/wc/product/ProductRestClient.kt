@@ -476,11 +476,11 @@ class ProductRestClient @Inject constructor(
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        includedProductIds: List<Long> = emptyList(),
-        excludedProductIds: List<Long> = emptyList(),
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
         isSkuSearch: Boolean = false,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String>? = null
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
             pageSize = pageSize,
@@ -488,7 +488,7 @@ class ProductRestClient @Inject constructor(
             offset = offset,
             searchQuery = searchQuery,
             isSkuSearch = isSkuSearch,
-            ids = includedProductIds,
+            includedProductIds = includedProductIds,
             excludedProductIds = excludedProductIds,
             filterOptions = filterOptions
         )
@@ -618,26 +618,34 @@ class ProductRestClient @Inject constructor(
         offset: Int,
         searchQuery: String?,
         isSkuSearch: Boolean,
-        ids: List<Long>,
-        excludedProductIds: List<Long>,
-        filterOptions: Map<ProductFilterOption, String>
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
     ): MutableMap<String, String> {
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
             "offset" to offset.toString()
-        ).putIfNotEmpty("include" to ids.map { it }.joinToString())
-            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
+        )
+
+        includedProductIds?.let { includedIds ->
+            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
+        }
+        excludedProductIds?.let { excludedIds ->
+            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
+        }
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
+        }
+
 
         if (isSkuSearch) {
-            params.putIfNotEmpty("sku" to searchQuery)
-            params.putIfNotEmpty("search_sku" to searchQuery)
+            params.putIfNotEmpty("sku" to searchQuery) // full SKU match
+            params.putIfNotEmpty("search_sku" to searchQuery) // partial SKU match, added in core v6.6
         } else {
             params.putIfNotEmpty("search" to searchQuery)
         }
-
-        params.putAll(filterOptions.map { it.key.toString() to it.value })
 
         return params
     }
