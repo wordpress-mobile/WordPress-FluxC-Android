@@ -351,49 +351,22 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         isSkuSearch: Boolean = false,
-        remoteProductIds: List<Long>? = null,
+        includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
     ) {
-        // orderBy (string) Options: date, id, include, title and slug. Default is date.
-        val orderBy = when (sortType) {
-            TITLE_ASC, TITLE_DESC -> "title"
-            DATE_ASC, DATE_DESC -> "date"
-        }
-        val sortOrder = when (sortType) {
-            TITLE_ASC, DATE_ASC -> "asc"
-            TITLE_DESC, DATE_DESC -> "desc"
-        }
-
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mutableMapOf(
-            "per_page" to pageSize.toString(),
-            "orderby" to orderBy,
-            "order" to sortOrder,
-            "offset" to offset.toString()
+        val params = buildProductParametersMap(
+            pageSize = pageSize,
+            sortType = sortType,
+            offset = offset,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            includedProductIds = includedProductIds,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
         )
-
-        if (searchQuery?.isNotEmpty() == true) {
-            if (isSkuSearch) {
-                params["sku"] = searchQuery // full match
-                params["search_sku"] = searchQuery // partial match, added in WC core 6.6
-            } else {
-                params["search"] = searchQuery
-            }
-        }
-
-        remoteProductIds?.let { ids ->
-            params.put("include", ids.map { it }.joinToString())
-        }
-
-        filterOptions?.let { filters ->
-            filters.map { params.put(it.key.toString(), it.value) }
-        }
-
-        excludedProductIds?.let { excludedIds ->
-            params.put("exclude", excludedIds.map { it }.joinToString())
-        }
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
@@ -410,7 +383,7 @@ class ProductRestClient @Inject constructor(
                                 offset,
                                 loadedMore,
                                 canLoadMore,
-                                remoteProductIds,
+                                includedProductIds,
                                 excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
