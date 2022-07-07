@@ -292,6 +292,24 @@ class WooCommerceStoreTest {
         }
     }
 
+    @Test
+    fun `when enabling coupons succeeds, then true is returned`() {
+        runBlocking {
+            whenever(wcrestClient.enableCoupons(site)).thenReturn(WooPayload(true))
+            val result = wooCommerceStore.enableCoupons(site)
+            Assertions.assertThat(result).isTrue
+        }
+    }
+
+    @Test
+    fun `when enabling coupons fails, then false is returned`() {
+        runBlocking {
+            whenever(wcrestClient.enableCoupons(site)).thenReturn(WooPayload(false))
+            val result = wooCommerceStore.enableCoupons(site)
+            Assertions.assertThat(result).isFalse
+        }
+    }
+
     private suspend fun getPlugin(isError: Boolean = false): WooResult<List<SitePluginModel>> {
         val payload = WooPayload(response)
         if (isError) {
