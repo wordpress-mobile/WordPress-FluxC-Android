@@ -5,12 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import androidx.room.Transaction
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.WCMetaData
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 
 @Dao
@@ -30,29 +25,14 @@ abstract class OrderMetaDataDao {
 
     @Transaction
     open fun updateOrderMetaData(
-        orderDto: OrderDto,
-        localSiteId: LocalId
+        orderId: Long,
+        localSiteId: LocalId,
+        metaData: List<OrderMetaDataEntity>
     ) {
-        val orderId = orderDto.id ?: 0
         deleteOrderMetaData(localSiteId, orderId)
-
-        val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-        val metaData = Gson().fromJson(orderDto.meta_data, responseType) as? List<WCMetaData>
-            ?: emptyList()
-        metaData.filter { it.isInternalAttribute.not() }
-            .map {
-                insertOrUpdateMetaData(
-                    OrderMetaDataEntity(
-                        id = it.id,
-                        localSiteId = localSiteId,
-                        orderId = orderId,
-                        key = it.key,
-                        value = it.value.toString(),
-                        displayKey = it.displayKey,
-                        displayValue = it.displayValue.toString()
-                    )
-                )
-            }
+        metaData.forEach {
+            insertOrUpdateMetaData(it)
+        }
     }
 
     suspend fun hasOrderMetaData(orderId: Long, localSiteId: LocalId): Boolean {
