@@ -612,7 +612,6 @@ class ProductRestClient @Inject constructor(
             params.putAll(options.map { it.key.toString() to it.value })
         }
 
-
         if (isSkuSearch) {
             params.putIfNotEmpty("sku" to searchQuery) // full SKU match
             params.putIfNotEmpty("search_sku" to searchQuery) // partial SKU match, added in core v6.6

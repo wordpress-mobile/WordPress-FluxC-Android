@@ -1054,8 +1054,11 @@ class WCProductStore @Inject constructor(
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) {
             wcProductRestClient.fetchProducts(
-                    site, pageSize, offset, sorting,
-                    remoteProductIds = remoteProductIds,
+                    site = site,
+                    pageSize = pageSize,
+                    offset = offset,
+                    sortType = sorting,
+                    includedProductIds = remoteProductIds,
                     filterOptions = filterOptions,
                     excludedProductIds = excludedProductIds
             )
