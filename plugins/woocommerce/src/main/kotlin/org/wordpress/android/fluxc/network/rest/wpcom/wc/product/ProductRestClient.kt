@@ -350,6 +350,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
+        isSkuSearch: Boolean = false,
         remoteProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -367,11 +368,20 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "orderby" to orderBy,
-                "order" to sortOrder,
-                "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
+            "per_page" to pageSize.toString(),
+            "orderby" to orderBy,
+            "order" to sortOrder,
+            "offset" to offset.toString()
+        )
+
+        if (searchQuery?.isNotEmpty() == true) {
+            if (isSkuSearch) {
+                params["sku"] = searchQuery // full match
+                params["search_sku"] = searchQuery // partial match, added in WC core 6.6
+            } else {
+                params["search"] = searchQuery
+            }
+        }
 
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
@@ -406,12 +416,13 @@ class ProductRestClient @Inject constructor(
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
                         val payload = RemoteSearchProductsPayload(
-                                site,
-                                searchQuery,
-                                productModels,
-                                offset,
-                                loadedMore,
-                                canLoadMore
+                            site = site,
+                            searchQuery = searchQuery,
+                            isSkuSearch = isSkuSearch,
+                            products = productModels,
+                            offset = offset,
+                            loadedMore = loadedMore,
+                            canLoadMore = canLoadMore
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
@@ -422,7 +433,12 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
-                        val payload = RemoteSearchProductsPayload(productError, site, searchQuery)
+                        val payload = RemoteSearchProductsPayload(
+                            error = productError,
+                            site = site,
+                            query = searchQuery,
+                            skuSearch = isSkuSearch
+                        )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
                 },
@@ -433,12 +449,20 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
+        isSkuSearch: Boolean = false,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null
     ) {
-        fetchProducts(site, pageSize, offset, sorting, searchQuery, excludedProductIds = excludedProductIds)
+        fetchProducts(
+            site = site,
+            pageSize = pageSize,
+            offset = offset,
+            sortType = sorting,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            excludedProductIds = excludedProductIds)
     }
 
     /**
@@ -455,16 +479,18 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
         searchQuery: String? = null,
+        isSkuSearch: Boolean = false,
         filterOptions: Map<ProductFilterOption, String> = emptyMap()
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
-            pageSize,
-            sortType,
-            offset,
-            searchQuery,
-            includedProductIds,
-            excludedProductIds,
-            filterOptions
+            pageSize = pageSize,
+            sortType = sortType,
+            offset = offset,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            ids = includedProductIds,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
         )
 
         return WOOCOMMERCE.products.pathV3.requestProductTo(site, params).handleResultFrom(site)
@@ -591,6 +617,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
+        isSkuSearch: Boolean,
         ids: List<Long>,
         excludedProductIds: List<Long>,
         filterOptions: Map<ProductFilterOption, String>
@@ -600,9 +627,15 @@ class ProductRestClient @Inject constructor(
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
             "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
-            .putIfNotEmpty("include" to ids.map { it }.joinToString())
+        ).putIfNotEmpty("include" to ids.map { it }.joinToString())
             .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
+
+        if (isSkuSearch) {
+            params.putIfNotEmpty("sku" to searchQuery)
+            params.putIfNotEmpty("search_sku" to searchQuery)
+        } else {
+            params.putIfNotEmpty("search" to searchQuery)
+        }
 
         params.putAll(filterOptions.map { it.key.toString() to it.value })
 

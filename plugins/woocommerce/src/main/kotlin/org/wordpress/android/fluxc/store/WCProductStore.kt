@@ -99,6 +99,7 @@ class WCProductStore @Inject constructor(
     class SearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String,
+        var isSkuSearch: Boolean = false,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -409,13 +410,18 @@ class WCProductStore @Inject constructor(
 
     class RemoteSearchProductsPayload(
         var site: SiteModel,
-        var searchQuery: String,
+        var searchQuery: String?,
+        var isSkuSearch: Boolean = false,
         var products: List<WCProductModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
-        constructor(error: ProductError, site: SiteModel, query: String) : this(site, query) {
+        constructor(error: ProductError, site: SiteModel, query: String?, skuSearch: Boolean) : this(
+            site = site,
+            searchQuery = query,
+            isSkuSearch = skuSearch
+        ) {
             this.error = error
         }
     }
@@ -634,7 +640,8 @@ class WCProductStore @Inject constructor(
     }
 
     class OnProductsSearched(
-        var searchQuery: String = "",
+        var searchQuery: String?,
+        var isSkuSearch: Boolean = false,
         var searchResults: List<WCProductModel> = emptyList(),
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
@@ -1080,7 +1087,13 @@ class WCProductStore @Inject constructor(
     private fun searchProducts(payload: SearchProductsPayload) {
         with(payload) {
             wcProductRestClient.searchProducts(
-                    site, searchQuery, pageSize, offset, sorting, excludedProductIds
+                site = site,
+                searchQuery = searchQuery,
+                isSkuSearch = isSkuSearch,
+                pageSize = pageSize,
+                offset = offset,
+                sorting = sorting,
+                excludedProductIds = excludedProductIds
             )
         }
     }
@@ -1352,6 +1365,7 @@ class WCProductStore @Inject constructor(
     suspend fun searchProducts(
         site: SiteModel,
         searchString: String,
+        isSkuSearch: Boolean = false,
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE
     ): WooResult<ProductSearchResult> {
@@ -1360,7 +1374,8 @@ class WCProductStore @Inject constructor(
                 site = site,
                 offset = offset,
                 pageSize = pageSize,
-                searchQuery = searchString
+                searchQuery = searchString,
+                isSkuSearch = isSkuSearch
             )
             when {
                 response.isError -> WooResult(response.error)
@@ -1525,15 +1540,21 @@ class WCProductStore @Inject constructor(
 
     private fun handleSearchProductsCompleted(payload: RemoteSearchProductsPayload) {
         if (payload.isError) {
-            emitChange(OnProductsSearched(payload.searchQuery))
+            emitChange(
+                OnProductsSearched(
+                    searchQuery = payload.searchQuery,
+                    isSkuSearch = payload.isSkuSearch
+                )
+            )
         } else {
             coroutineEngine.launch(T.DB, this, "handleSearchProductsCompleted") {
                 ProductSqlUtils.insertOrUpdateProducts(payload.products)
                 emitChange(
                     OnProductsSearched(
-                        payload.searchQuery,
-                        payload.products,
-                        payload.canLoadMore
+                        searchQuery = payload.searchQuery,
+                        isSkuSearch = payload.isSkuSearch,
+                        searchResults = payload.products,
+                        canLoadMore = payload.canLoadMore
                     )
                 )
             }
