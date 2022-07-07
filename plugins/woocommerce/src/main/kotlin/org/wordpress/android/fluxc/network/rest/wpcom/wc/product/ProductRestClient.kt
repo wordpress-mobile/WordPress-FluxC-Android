@@ -448,7 +448,7 @@ class ProductRestClient @Inject constructor(
 
     fun searchProducts(
         site: SiteModel,
-        searchQuery: String?,
+        searchQuery: String,
         isSkuSearch: Boolean = false,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
