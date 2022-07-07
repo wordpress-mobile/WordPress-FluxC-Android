@@ -294,6 +294,24 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
+    suspend fun enableCoupons(site: SiteModel): Boolean {
+        return coroutineEngine.withDefaultContext(T.API, this, "enableCoupons") {
+            val response = wcCoreRestClient.enableCoupons(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(T.API, "Failed to enable coupons for ${site.siteId}")
+                    false
+                }
+                else -> {
+                    response.result?.let {
+                        WCSettingsSqlUtils.setCouponsEnabled(site, it)
+                        it
+                    } ?: false
+                }
+            }
+        }
+    }
+
     suspend fun fetchSiteGeneralSettings(site: SiteModel): WooResult<WCSettingsModel> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSiteGeneralSettings") {
             val response = wcCoreRestClient.fetchSiteSettingsGeneral(site)
