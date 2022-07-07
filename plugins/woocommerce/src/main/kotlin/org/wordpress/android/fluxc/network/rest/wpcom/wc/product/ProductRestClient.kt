@@ -611,12 +611,13 @@ class ProductRestClient @Inject constructor(
         filterOptions?.let { options ->
             params.putAll(options.map { it.key.toString() to it.value })
         }
-        searchQuery?.let { query ->
+
+        if (searchQuery.isNullOrEmpty().not()) {
             if (isSkuSearch) {
-                params["sku"] = query // full SKU match
-                params["search_sku"] = query // partial SKU match, added in core v6.6
+                params["sku"] = searchQuery!! // full SKU match
+                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
             } else {
-                params.putIfNotEmpty("search" to query)
+                params["search"] = searchQuery!!
             }
         }
 
