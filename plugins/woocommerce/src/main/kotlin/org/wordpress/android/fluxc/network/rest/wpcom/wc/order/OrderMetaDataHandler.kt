@@ -17,6 +17,7 @@ class OrderMetaDataHandler @Inject constructor(
         if (orderDto.id == null) {
             return
         }
+
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = gson.fromJson(orderDto.meta_data, responseType) as? List<WCMetaData>
             ?: emptyList()
