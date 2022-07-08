@@ -8,7 +8,8 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 
 /**
- * The OrderMetaDataEntity table is used to store viewable order meta data separately from the order
+ * The OrderMetaDataEntity table is used to store viewable order metadata. Order metadata
+ * can potentially be quite large, so we keep it separate from the order.
  */
 @Entity(
     tableName = "OrderMetaData",
