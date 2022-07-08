@@ -16,13 +16,7 @@ import org.wordpress.android.fluxc.model.OrderEntity
     indices = [Index(
         value = ["localSiteId", "orderId"]
     )],
-    primaryKeys = ["localSiteId", "orderId", "id"],
-    foreignKeys = [ForeignKey(
-        entity = OrderEntity::class,
-        parentColumns = ["localSiteId", "orderId"],
-        childColumns = ["localSiteId", "orderId"],
-        onDelete = ForeignKey.CASCADE
-    )]
+    primaryKeys = ["localSiteId", "orderId", "id"]
 )
 data class OrderMetaDataEntity(
     @ColumnInfo(name = "localSiteId")
