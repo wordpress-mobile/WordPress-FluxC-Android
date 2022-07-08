@@ -32,6 +32,8 @@ abstract class WCDatabaseModule {
 
         @Provides fun provideOrderNotesDao(database: WCAndroidDatabase) = database.orderNotesDao
 
+        @Provides fun provideOrderMetaDataDao(database: WCAndroidDatabase) = database.orderMetaDataDao
+
         @Provides fun provideInboxNotesDao(database: WCAndroidDatabase) = database.inboxNotesDao
     }
     @Binds abstract fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
