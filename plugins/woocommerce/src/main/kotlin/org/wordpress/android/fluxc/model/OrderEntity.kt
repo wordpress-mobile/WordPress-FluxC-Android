@@ -66,7 +66,7 @@ data class OrderEntity(
     val shippingLines: String = "",
     val feeLines: String = "",
     val taxLines: String = "",
-    val metaData: String = "",
+    val metaData: String = "", // this is a small subset of the metadata, see OrderMetaDataEntity for full metadata
     @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = "",
     @ColumnInfo(name = "isEditable", defaultValue = "1")

@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import android.content.ContentValues
 import com.wellsql.generated.WCSettingsModelTable
 import com.yarolegovich.wellsql.WellSql
 import com.yarolegovich.wellsql.core.Identifiable
@@ -28,6 +29,16 @@ object WCSettingsSqlUtils {
             WellSql.update(WCSettingsBuilder::class.java).whereId(oldId)
                     .put(settings.toBuilder(), UpdateAllExceptId(WCSettingsBuilder::class.java)).execute()
         }
+    }
+
+    fun setCouponsEnabled(site: SiteModel, value: Boolean): Int {
+        return WellSql.update(WCSettingsBuilder::class.java)
+            .whereId(site.id)
+            .put(value) {
+                val cv = ContentValues()
+                cv.put(WCSettingsModelTable.COUPONS_ENABLED, it)
+                cv
+            }.execute()
     }
 
     fun getSettingsForSite(site: SiteModel): WCSettingsModel? {

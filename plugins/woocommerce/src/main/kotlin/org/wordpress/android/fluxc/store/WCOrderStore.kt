@@ -23,8 +23,10 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
@@ -46,7 +48,8 @@ class WCOrderStore @Inject constructor(
     private val wcOrderFetcher: WCOrderFetcher,
     private val coroutineEngine: CoroutineEngine,
     private val ordersDao: OrdersDao,
-    private val orderNotesDao: OrderNotesDao
+    private val orderNotesDao: OrderNotesDao,
+    private val orderMetaDataDao: OrderMetaDataDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
@@ -383,6 +386,22 @@ class WCOrderStore @Inject constructor(
      */
     suspend fun getOrderByIdAndSite(orderId: Long, site: SiteModel): OrderEntity? {
         return ordersDao.getOrder(orderId, site.localId())
+    }
+
+    /**
+     * Given an order id and [SiteModel],
+     * returns the metadata from the database for an order
+     */
+    suspend fun getOrderMetadata(orderId: Long, site: SiteModel): List<OrderMetaDataEntity> {
+        return orderMetaDataDao.getOrderMetaData(orderId, site.localId())
+    }
+
+    /**
+     * Given an order id and [SiteModel],
+     * returns whether there is metadata in the database for an order
+     */
+    suspend fun hasOrderMetadata(orderId: Long, site: SiteModel): Boolean {
+        return orderMetaDataDao.hasOrderMetaData(orderId, site.localId())
     }
 
     /**

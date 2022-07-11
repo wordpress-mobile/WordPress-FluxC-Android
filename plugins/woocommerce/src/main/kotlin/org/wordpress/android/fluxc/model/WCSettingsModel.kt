@@ -15,7 +15,7 @@ data class WCSettingsModel(
     val city: String = "",
     val postalCode: String = "",
     val stateCode: String = "", // The state code for the site in 2-letter format i.e. NY
-    val couponsEnabled: Boolean
+    val couponsEnabled: Boolean = false
 ) {
     enum class CurrencyPosition {
         LEFT, RIGHT, LEFT_SPACE, RIGHT_SPACE;

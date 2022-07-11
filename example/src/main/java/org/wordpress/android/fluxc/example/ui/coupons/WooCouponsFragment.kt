@@ -49,6 +49,17 @@ class WooCouponsFragment : StoreSelectingFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        btnEnableCouponsFeature.setOnClickListener {
+            coroutineScope.launch {
+                val result = wooCommerceStore.enableCoupons(selectedSite!!)
+                if (result) {
+                    prependToLog("Coupons enabling succeeded.")
+                } else {
+                    prependToLog("Coupons enabling failed.")
+                }
+            }
+        }
+
         btnFetchCoupons.setOnClickListener {
             coroutineScope.launch {
                 val result = store.fetchCoupons(selectedSite!!, couponPage++, pageSize = 3)

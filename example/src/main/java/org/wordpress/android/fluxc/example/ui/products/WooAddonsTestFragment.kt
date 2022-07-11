@@ -62,7 +62,7 @@ class WooAddonsTestFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val selectedSiteRemoteId = arguments!!.getLong(SELECTED_SITE_REMOTE_ID)
+        val selectedSiteRemoteId = requireArguments().getLong(SELECTED_SITE_REMOTE_ID)
         val selectedSite = siteStore.getSiteBySiteId(selectedSiteRemoteId)!!
 
         addons_product_remote_id_apply.setOnClickListener {

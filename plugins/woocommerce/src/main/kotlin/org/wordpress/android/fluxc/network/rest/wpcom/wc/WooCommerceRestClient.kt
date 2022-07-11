@@ -26,6 +26,11 @@ class WooCommerceRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    companion object {
+        const val COUPONS_SETTING_GROUP = "general"
+        const val COUPONS_SETTING_ID = "woocommerce_enable_coupons"
+    }
+
     /**
      * Makes a GET call to the root wp-json endpoint (`/`) via the Jetpack tunnel (see [JetpackTunnelGsonRequest])
      * for the given [SiteModel], and parses through the `namespaces` field in the result for supported versions
@@ -79,6 +84,30 @@ class WooCommerceRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data?.toList())
             is JetpackError -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    suspend fun enableCoupons(site: SiteModel): WooPayload<Boolean> {
+        val url = WOOCOMMERCE.settings.group(COUPONS_SETTING_GROUP).id(COUPONS_SETTING_ID).pathV3
+        val param = mapOf("value" to "yes")
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
+            this,
+            site,
+            url,
+            param,
+            SiteSettingOptionResponse::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(
+                    result = response.data?.let { it.value == "yes" } ?: false
+                )
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
         }
     }
 }
