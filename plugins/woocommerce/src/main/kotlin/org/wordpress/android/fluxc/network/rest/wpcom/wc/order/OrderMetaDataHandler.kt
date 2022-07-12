@@ -21,8 +21,9 @@ class OrderMetaDataHandler @Inject constructor(
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = gson.fromJson<List<WCMetaData>?>(orderDto.meta_data, responseType)
                 ?.filter { it.isInternalAttribute.not() }
-                ?.filter { it.value.toString().isNotEmpty() }
                 ?.map { OrderMetaDataEntity(orderDto.id, localSiteId, it) }
+                ?.filter { it.value.isNotEmpty() }
+                ?.map { it.strippedOfHtmlTags }
                 ?: emptyList()
 
         orderMetaDataDao.updateOrderMetaData(
@@ -31,4 +32,7 @@ class OrderMetaDataHandler @Inject constructor(
             metaData = metaData
         )
     }
+
+    private val OrderMetaDataEntity.strippedOfHtmlTags
+        get() = copy(value = value.replace("\\<.*?\\>", ""))
 }
