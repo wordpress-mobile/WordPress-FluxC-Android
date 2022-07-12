@@ -21,6 +21,7 @@ class OrderMetaDataHandler @Inject constructor(
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = gson.fromJson<List<WCMetaData>?>(orderDto.meta_data, responseType)
                 ?.filter { it.isInternalAttribute.not() }
+                ?.filter { it.value.toString().isNotEmpty() }
                 ?.map { OrderMetaDataEntity(orderDto.id, localSiteId, it) }
                 ?: emptyList()
 
