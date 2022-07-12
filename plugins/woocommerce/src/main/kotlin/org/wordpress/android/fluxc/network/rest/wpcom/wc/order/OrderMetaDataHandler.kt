@@ -19,24 +19,15 @@ class OrderMetaDataHandler @Inject constructor(
         }
 
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-        val metaData = gson.fromJson(orderDto.meta_data, responseType) as? List<WCMetaData>
-            ?: emptyList()
+        val metaData = gson.fromJson<List<WCMetaData>?>(orderDto.meta_data, responseType)
+                ?.filter { it.isInternalAttribute.not() }
+                ?.map { OrderMetaDataEntity(orderDto.id, localSiteId, it) }
+                ?: emptyList()
 
         orderMetaDataDao.updateOrderMetaData(
             orderId = orderDto.id,
             localSiteId = localSiteId,
-            metaData = metaData.filter { it.isInternalAttribute.not() }
-                .map {
-                    OrderMetaDataEntity(
-                        id = it.id,
-                        localSiteId = localSiteId,
-                        orderId = orderDto.id,
-                        key = it.key,
-                        value = it.value.toString(),
-                        displayKey = it.displayKey,
-                        displayValue = it.displayValue.toString()
-                    )
-                }
+            metaData = metaData
         )
     }
 }
