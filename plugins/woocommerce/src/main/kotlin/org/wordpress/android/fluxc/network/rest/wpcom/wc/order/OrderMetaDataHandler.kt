@@ -13,6 +13,10 @@ class OrderMetaDataHandler @Inject constructor(
     private val gson: Gson,
     private val orderMetaDataDao: OrderMetaDataDao
 ) {
+    private val htmlRegex by lazy {
+        Regex("<.*?>")
+    }
+
     operator fun invoke(orderDto: OrderDto, localSiteId: LocalId) {
         if (orderDto.id == null) {
             return
@@ -34,5 +38,5 @@ class OrderMetaDataHandler @Inject constructor(
     }
 
     private val OrderMetaDataEntity.strippedOfHtmlTags
-        get() = copy(value = value.replace("\\<.*?\\>", ""))
+        get() = copy(value = value.replace(htmlRegex, ""))
 }
