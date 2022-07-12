@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.WCMetaData
 
 /**
  * The OrderMetaDataEntity table is used to store viewable order metadata. Order metadata
@@ -25,4 +26,14 @@ data class OrderMetaDataEntity(
     val value: String,
     val displayKey: String?,
     val displayValue: String?
-)
+) {
+    constructor(orderId: Long, localSiteId: LocalId, sourceMetadata: WCMetaData): this(
+        localSiteId = localSiteId,
+        id = sourceMetadata.id,
+        orderId = orderId,
+        key = sourceMetadata.key,
+        value = sourceMetadata.value.toString(),
+        displayKey = sourceMetadata.displayKey,
+        displayValue = sourceMetadata.displayValue.toString()
+    )
+}
