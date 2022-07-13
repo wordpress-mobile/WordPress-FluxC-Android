@@ -520,7 +520,7 @@ internal class AutoMigration16to17 : AutoMigrationSpec
 
 @DeleteColumn.Entries(
     DeleteColumn(tableName = "OrderMetaData", columnName = "displayKey"),
-    DeleteColumn(tableName = "OrderMetaData", columnName = "displayValue"),
+    DeleteColumn(tableName = "OrderMetaData", columnName = "displayValue")
 )
 internal class AutoMigration17to18 : AutoMigrationSpec
 
