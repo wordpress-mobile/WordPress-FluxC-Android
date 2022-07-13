@@ -34,7 +34,7 @@ class OrderMetaDataHandler @Inject constructor(
                         key = it.key,
                         value = it.value.toString(),
                         displayKey = it.displayKey,
-                        displayValue = it.displayValue.toString()
+                        displayValue = it.displayValue?.toString()
                     )
                 }
         )
