@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence.migrations
 
+import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
 import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
@@ -516,6 +517,12 @@ internal class AutoMigration13to14 : AutoMigrationSpec
 internal class AutoMigration14to15 : AutoMigrationSpec
 
 internal class AutoMigration16to17 : AutoMigrationSpec
+
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "OrderMetaData", columnName = "displayKey"),
+    DeleteColumn(tableName = "OrderMetaData", columnName = "displayValue"),
+)
+internal class AutoMigration17to18 : AutoMigrationSpec
 
 internal val MIGRATION_15_16 = object : Migration(15, 16) {
     override fun migrate(database: SupportSQLiteDatabase) {
