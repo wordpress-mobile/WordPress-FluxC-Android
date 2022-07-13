@@ -516,14 +516,6 @@ internal class AutoMigration13to14 : AutoMigrationSpec
 @DeleteTable(tableName = "ProductCategories")
 internal class AutoMigration14to15 : AutoMigrationSpec
 
-internal class AutoMigration16to17 : AutoMigrationSpec
-
-@DeleteColumn.Entries(
-    DeleteColumn(tableName = "OrderMetaData", columnName = "displayKey"),
-    DeleteColumn(tableName = "OrderMetaData", columnName = "displayValue")
-)
-internal class AutoMigration17to18 : AutoMigrationSpec
-
 internal val MIGRATION_15_16 = object : Migration(15, 16) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
@@ -593,3 +585,11 @@ internal val MIGRATION_15_16 = object : Migration(15, 16) {
         }
     }
 }
+
+internal class AutoMigration16to17 : AutoMigrationSpec
+
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "OrderMetaData", columnName = "displayKey"),
+    DeleteColumn(tableName = "OrderMetaData", columnName = "displayValue")
+)
+internal class AutoMigration17to18 : AutoMigrationSpec
