@@ -26,14 +26,4 @@ data class OrderMetaDataEntity(
     val value: String,
     val displayKey: String?,
     val displayValue: String?
-) {
-    constructor(orderId: Long, localSiteId: LocalId, sourceMetadata: WCMetaData): this(
-        localSiteId = localSiteId,
-        id = sourceMetadata.id,
-        orderId = orderId,
-        key = sourceMetadata.key,
-        value = sourceMetadata.value.toString(),
-        displayKey = sourceMetadata.displayKey,
-        displayValue = sourceMetadata.displayValue.toString()
-    )
-}
+)
