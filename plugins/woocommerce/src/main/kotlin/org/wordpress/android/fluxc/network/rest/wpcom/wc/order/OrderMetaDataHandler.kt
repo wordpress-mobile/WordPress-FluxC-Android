@@ -17,6 +17,10 @@ class OrderMetaDataHandler @Inject constructor(
         Regex("<.*?>")
     }
 
+    private val jsonRegex by lazy {
+        Regex("""^\s*(?:\{.*}|\[.*])\s*$""")
+    }
+
     operator fun invoke(orderDto: OrderDto, localSiteId: LocalId) {
         if (orderDto.id == null) {
             return
@@ -28,6 +32,7 @@ class OrderMetaDataHandler @Inject constructor(
                 ?.map { OrderMetaDataEntity(orderDto.id, localSiteId, it) }
                 ?.filter { it.value.isNotEmpty() }
                 ?.map { it.strippedOfHtmlTags }
+                ?.filter { it.value.matches(jsonRegex).not() }
                 ?: emptyList()
 
         orderMetaDataDao.updateOrderMetaData(
