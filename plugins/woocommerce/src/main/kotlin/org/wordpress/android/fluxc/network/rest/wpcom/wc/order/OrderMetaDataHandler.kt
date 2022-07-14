@@ -18,7 +18,7 @@ class OrderMetaDataHandler @Inject constructor(
     }
 
     private val jsonRegex by lazy {
-        Regex("""^\s*(?:\{.*}|\[.*])\s*$""")
+        Regex("""^.*(?:\{.*\}|\[.*\]).*$""")
     }
 
     operator fun invoke(orderDto: OrderDto, localSiteId: LocalId) {
@@ -28,8 +28,8 @@ class OrderMetaDataHandler @Inject constructor(
 
         val responseType = object : TypeToken<List<WCMetaData>>() {}.type
         val metaData = gson.fromJson<List<WCMetaData>?>(orderDto.meta_data, responseType)
-            ?.asSequence()
             ?.filter { it.isInternalAttribute.not() }
+            ?.asSequence()
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
             ?.filter { it.value.isNotEmpty() and it.value.matches(jsonRegex).not() }
             ?.toList()
