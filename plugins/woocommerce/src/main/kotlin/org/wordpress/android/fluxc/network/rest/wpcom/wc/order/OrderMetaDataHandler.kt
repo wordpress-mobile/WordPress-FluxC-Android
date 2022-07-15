@@ -28,8 +28,8 @@ class OrderMetaDataHandler @Inject constructor(
         }
 
         val metaData = parseMetaDataJSON(orderDto.meta_data)
-            ?.filter { it.isInternalAttribute.not() }
             ?.asSequence()
+            ?.filter { it.isInternalAttribute.not() }
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
             ?.filter { it.value.isNotEmpty() && it.value.matches(jsonRegex).not() }
             ?.toList()
@@ -42,7 +42,7 @@ class OrderMetaDataHandler @Inject constructor(
         )
     }
 
-    private fun parseMetaDataJSON(metadata: JsonElement?): List<WCMetaData>? =
+    private fun parseMetaDataJSON(metadata: JsonElement?) =
         metadata?.let {
             gson.runCatching {
                 fromJson<List<WCMetaData>?>(
