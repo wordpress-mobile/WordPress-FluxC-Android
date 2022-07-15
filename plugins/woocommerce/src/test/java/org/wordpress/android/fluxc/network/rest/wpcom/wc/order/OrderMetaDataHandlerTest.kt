@@ -2,7 +2,9 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import org.junit.Before
 import org.junit.Test
@@ -62,6 +64,24 @@ class OrderMetaDataHandlerTest {
             orderId = 1,
             localSiteId = LocalId(1),
             metaData = emptyList()
+        )
+    }
+
+    @Test
+    fun `when orderDto has no id, then cancel the operation`() {
+        // Given
+        orderDtoMock = mock {
+            on { id }.thenReturn(null)
+        }
+
+        // When
+        sut(orderDtoMock, LocalId(1))
+
+        // Then
+        verify(orderMetaDataDaoMock, never()).updateOrderMetaData(
+            orderId = any(),
+            localSiteId = any(),
+            metaData = any()
         )
     }
 
