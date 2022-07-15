@@ -60,6 +60,6 @@ class OrderMetaDataHandler @Inject constructor(
             key = key,
             value = value.toString().replace(htmlRegex, ""),
             displayKey = displayKey,
-            displayValue = displayValue.toString()
+            displayValue = displayValue?.toString()
         )
 }
