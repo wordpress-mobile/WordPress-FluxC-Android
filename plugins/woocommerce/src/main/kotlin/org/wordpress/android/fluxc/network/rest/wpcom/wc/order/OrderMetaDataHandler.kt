@@ -14,7 +14,7 @@ class OrderMetaDataHandler @Inject constructor(
     private val orderMetaDataDao: OrderMetaDataDao
 ) {
     private val htmlRegex by lazy {
-        Regex("<.*?>")
+        Regex("<[^>]+>")
     }
 
     private val jsonRegex by lazy {
