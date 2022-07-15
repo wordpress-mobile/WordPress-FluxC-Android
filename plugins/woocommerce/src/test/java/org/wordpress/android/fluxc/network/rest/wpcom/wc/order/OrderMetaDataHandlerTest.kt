@@ -80,9 +80,7 @@ class OrderMetaDataHandlerTest {
                     orderId = 1,
                     localSiteId = LocalId(1),
                     key = "valid key",
-                    value = "valid value",
-                    displayKey = null,
-                    displayValue = null
+                    value = "valid value"
                 )
             )
         )
@@ -161,9 +159,7 @@ class OrderMetaDataHandlerTest {
                     orderId = 1,
                     localSiteId = LocalId(1),
                     key = "key",
-                    value = "value with some HTML",
-                    displayValue = null,
-                    displayKey = null
+                    value = "value with some HTML"
                 )
             )
         )
@@ -209,9 +205,7 @@ class OrderMetaDataHandlerTest {
                     orderId = 1,
                     localSiteId = LocalId(1),
                     key = "valid key",
-                    value = "valid value",
-                    displayKey = null,
-                    displayValue = null
+                    value = "valid value"
                 )
             )
         )
@@ -257,9 +251,7 @@ class OrderMetaDataHandlerTest {
                     orderId = 1,
                     localSiteId = LocalId(1),
                     key = "valid key",
-                    value = "valid value",
-                    displayKey = null,
-                    displayValue = null
+                    value = "valid value"
                 )
             )
         )
