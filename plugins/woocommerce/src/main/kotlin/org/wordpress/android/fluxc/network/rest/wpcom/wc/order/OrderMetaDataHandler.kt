@@ -31,7 +31,7 @@ class OrderMetaDataHandler @Inject constructor(
             ?.filter { it.isInternalAttribute.not() }
             ?.asSequence()
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
-            ?.filter { it.value.isNotEmpty() and it.value.matches(jsonRegex).not() }
+            ?.filter { it.value.isNotEmpty() && it.value.matches(jsonRegex).not() }
             ?.toList()
             ?: emptyList()
 
