@@ -169,8 +169,6 @@ class OrderMetaDataHandlerTest {
         )
     }
 
-
-
     @Test
     fun `when Metadata value contains JSON, then remove it from the list`() {
         // Given
@@ -219,8 +217,51 @@ class OrderMetaDataHandlerTest {
         )
     }
 
-    private fun generateMetadata(
-        amount: Int,
-        constructor: (Int) -> WCMetaData
-    ) = (1..amount).map { constructor(it) }
+    @Test
+    fun `when Metadata value is empty, then remove it from the list`() {
+        // Given
+        val rawMetadata = listOf(
+            WCMetaData(
+                id = 1L,
+                key = "key",
+                value = "",
+                displayKey = null,
+                displayValue = null
+            ),
+            WCMetaData(
+                id = 2,
+                key = "valid key",
+                value = "valid value",
+                displayKey = null,
+                displayValue = null
+            )
+        )
+        gsonMock = mock {
+            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
+            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
+                rawMetadata
+            )
+        }
+        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+
+        // When
+        sut(orderDtoMock, LocalId(1))
+
+        // Then
+        verify(orderMetaDataDaoMock).updateOrderMetaData(
+            orderId = 1,
+            localSiteId = LocalId(1),
+            metaData = listOf(
+                OrderMetaDataEntity(
+                    id = 2L,
+                    orderId = 1,
+                    localSiteId = LocalId(1),
+                    key = "valid key",
+                    value = "valid value",
+                    displayKey = null,
+                    displayValue = null
+                )
+            )
+        )
+    }
 }
