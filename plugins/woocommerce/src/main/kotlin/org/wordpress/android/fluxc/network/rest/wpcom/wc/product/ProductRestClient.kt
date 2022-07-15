@@ -351,49 +351,22 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         isSkuSearch: Boolean = false,
-        remoteProductIds: List<Long>? = null,
+        includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
     ) {
-        // orderBy (string) Options: date, id, include, title and slug. Default is date.
-        val orderBy = when (sortType) {
-            TITLE_ASC, TITLE_DESC -> "title"
-            DATE_ASC, DATE_DESC -> "date"
-        }
-        val sortOrder = when (sortType) {
-            TITLE_ASC, DATE_ASC -> "asc"
-            TITLE_DESC, DATE_DESC -> "desc"
-        }
-
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mutableMapOf(
-            "per_page" to pageSize.toString(),
-            "orderby" to orderBy,
-            "order" to sortOrder,
-            "offset" to offset.toString()
+        val params = buildProductParametersMap(
+            pageSize = pageSize,
+            sortType = sortType,
+            offset = offset,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            includedProductIds = includedProductIds,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
         )
-
-        if (searchQuery?.isNotEmpty() == true) {
-            if (isSkuSearch) {
-                params["sku"] = searchQuery // full match
-                params["search_sku"] = searchQuery // partial match, added in WC core 6.6
-            } else {
-                params["search"] = searchQuery
-            }
-        }
-
-        remoteProductIds?.let { ids ->
-            params.put("include", ids.map { it }.joinToString())
-        }
-
-        filterOptions?.let { filters ->
-            filters.map { params.put(it.key.toString(), it.value) }
-        }
-
-        excludedProductIds?.let { excludedIds ->
-            params.put("exclude", excludedIds.map { it }.joinToString())
-        }
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
@@ -410,7 +383,7 @@ class ProductRestClient @Inject constructor(
                                 offset,
                                 loadedMore,
                                 canLoadMore,
-                                remoteProductIds,
+                                includedProductIds,
                                 excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
@@ -476,11 +449,11 @@ class ProductRestClient @Inject constructor(
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        includedProductIds: List<Long> = emptyList(),
-        excludedProductIds: List<Long> = emptyList(),
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
         isSkuSearch: Boolean = false,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String>? = null
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
             pageSize = pageSize,
@@ -488,7 +461,7 @@ class ProductRestClient @Inject constructor(
             offset = offset,
             searchQuery = searchQuery,
             isSkuSearch = isSkuSearch,
-            ids = includedProductIds,
+            includedProductIds = includedProductIds,
             excludedProductIds = excludedProductIds,
             filterOptions = filterOptions
         )
@@ -618,26 +591,35 @@ class ProductRestClient @Inject constructor(
         offset: Int,
         searchQuery: String?,
         isSkuSearch: Boolean,
-        ids: List<Long>,
-        excludedProductIds: List<Long>,
-        filterOptions: Map<ProductFilterOption, String>
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
     ): MutableMap<String, String> {
         val params = mutableMapOf(
             "per_page" to pageSize.toString(),
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
             "offset" to offset.toString()
-        ).putIfNotEmpty("include" to ids.map { it }.joinToString())
-            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
+        )
 
-        if (isSkuSearch) {
-            params.putIfNotEmpty("sku" to searchQuery)
-            params.putIfNotEmpty("search_sku" to searchQuery)
-        } else {
-            params.putIfNotEmpty("search" to searchQuery)
+        includedProductIds?.let { includedIds ->
+            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
+        }
+        excludedProductIds?.let { excludedIds ->
+            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
+        }
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
         }
 
-        params.putAll(filterOptions.map { it.key.toString() to it.value })
+        if (searchQuery.isNullOrEmpty().not()) {
+            if (isSkuSearch) {
+                params["sku"] = searchQuery!! // full SKU match
+                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+            } else {
+                params["search"] = searchQuery!!
+            }
+        }
 
         return params
     }

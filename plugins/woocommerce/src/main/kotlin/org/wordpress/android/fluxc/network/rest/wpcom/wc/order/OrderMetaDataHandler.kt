@@ -54,12 +54,10 @@ class OrderMetaDataHandler @Inject constructor(
 
     private fun WCMetaData.asOrderMetaDataEntity(orderId: Long, localSiteId: LocalId) =
         OrderMetaDataEntity(
-            orderId = orderId,
-            localSiteId = localSiteId,
             id = id,
+            localSiteId = localSiteId,
+            orderId = orderId,
             key = key,
-            value = value.toString().replace(htmlRegex, ""),
-            displayKey = displayKey,
-            displayValue = displayValue?.toString()
+            value = value.toString().replace(htmlRegex, "")
         )
 }

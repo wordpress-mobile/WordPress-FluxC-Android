@@ -22,7 +22,5 @@ data class OrderMetaDataEntity(
     val id: Long,
     val orderId: Long,
     val key: String,
-    val value: String,
-    val displayKey: String?,
-    val displayValue: String?
+    val value: String
 )
