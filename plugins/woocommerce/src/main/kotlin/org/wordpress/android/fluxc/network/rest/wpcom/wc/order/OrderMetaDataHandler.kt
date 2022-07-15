@@ -32,9 +32,7 @@ class OrderMetaDataHandler @Inject constructor(
                         localSiteId = localSiteId,
                         orderId = orderDto.id,
                         key = it.key,
-                        value = it.value.toString(),
-                        displayKey = it.displayKey,
-                        displayValue = it.displayValue.toString()
+                        value = it.value.toString()
                     )
                 }
         )
