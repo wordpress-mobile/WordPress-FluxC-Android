@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
@@ -26,8 +27,7 @@ class OrderMetaDataHandler @Inject constructor(
             return
         }
 
-        val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-        val metaData = gson.fromJson<List<WCMetaData>?>(orderDto.meta_data, responseType)
+        val metaData = parseMetaDataJSON(orderDto.meta_data)
             ?.filter { it.isInternalAttribute.not() }
             ?.asSequence()
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
@@ -41,6 +41,16 @@ class OrderMetaDataHandler @Inject constructor(
             metaData = metaData
         )
     }
+
+    private fun parseMetaDataJSON(metadata: JsonElement?): List<WCMetaData>? =
+        metadata?.let {
+            gson.runCatching {
+                fromJson<List<WCMetaData>?>(
+                    metadata,
+                    object : TypeToken<List<WCMetaData>>() {}.type
+                )
+            }.getOrNull()
+        }
 
     private fun WCMetaData.asOrderMetaDataEntity(orderId: Long, localSiteId: LocalId) =
         OrderMetaDataEntity(
