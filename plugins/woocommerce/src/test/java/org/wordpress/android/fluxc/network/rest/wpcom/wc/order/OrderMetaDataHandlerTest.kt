@@ -85,6 +85,28 @@ class OrderMetaDataHandlerTest {
         )
     }
 
+    @Test
+    fun `when JSON parsing fails, then set an empty metadata list`() {
+        // Given
+        gsonMock = mock {
+            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
+            on { fromJson<List<WCMetaData>?>(orderDtoMock.meta_data, responseType) }.thenThrow(
+                IllegalStateException()
+            )
+        }
+        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+
+        // When
+        sut(orderDtoMock, LocalId(1))
+
+        // Then
+        verify(orderMetaDataDaoMock).updateOrderMetaData(
+            orderId = 1,
+            localSiteId = LocalId(1),
+            metaData = emptyList()
+        )
+    }
+
     private fun generateMetadata(
         amount: Int,
         constructor: (Int) -> WCMetaData
