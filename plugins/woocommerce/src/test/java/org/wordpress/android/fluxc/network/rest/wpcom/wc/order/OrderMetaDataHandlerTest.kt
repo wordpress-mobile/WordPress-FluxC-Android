@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
@@ -11,12 +12,14 @@ import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
+import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 
 class OrderMetaDataHandlerTest {
     private lateinit var sut: OrderMetaDataHandler
     private lateinit var orderDtoMock: OrderDto
     private lateinit var gsonMock: Gson
     private val orderMetaDataDaoMock = mock<OrderMetaDataDao>()
+    private val jsonObjectMock = mock<JsonObject>()
 
     @Before
     fun setUp() {
@@ -27,10 +30,11 @@ class OrderMetaDataHandlerTest {
     private fun configureMocks() {
         orderDtoMock = mock {
             on { id }.thenReturn(1)
+            on { meta_data }.thenReturn(jsonObjectMock)
         }
         gsonMock = mock {
             val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(orderDtoMock.meta_data, responseType) }.thenReturn(
+            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
                 listOf()
             )
         }
@@ -39,18 +43,25 @@ class OrderMetaDataHandlerTest {
     @Test
     fun `when metadata contains internal keys, should remove all of them`() {
         // Given
-        val rawMetadata = generateMetadata(amount = 100) {
+        val rawMetadata = listOf(
             WCMetaData(
-                id = it.toLong(),
-                key = "_$it key",
-                value = "$it value",
+                id = 1,
+                key = "_internal key",
+                value = "internal value",
+                displayKey = null,
+                displayValue = null
+            ),
+            WCMetaData(
+                id = 2,
+                key = "valid key",
+                value = "valid value",
                 displayKey = null,
                 displayValue = null
             )
-        }
+        )
         gsonMock = mock {
             val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(orderDtoMock.meta_data, responseType) }.thenReturn(
+            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
                 rawMetadata
             )
         }
@@ -63,7 +74,17 @@ class OrderMetaDataHandlerTest {
         verify(orderMetaDataDaoMock).updateOrderMetaData(
             orderId = 1,
             localSiteId = LocalId(1),
-            metaData = emptyList()
+            metaData = listOf(
+                OrderMetaDataEntity(
+                    id = 2L,
+                    orderId = 1,
+                    localSiteId = LocalId(1),
+                    key = "valid key",
+                    value = "valid value",
+                    displayKey = null,
+                    displayValue = null
+                )
+            )
         )
     }
 
@@ -90,7 +111,7 @@ class OrderMetaDataHandlerTest {
         // Given
         gsonMock = mock {
             val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(orderDtoMock.meta_data, responseType) }.thenThrow(
+            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenThrow(
                 IllegalStateException()
             )
         }
@@ -104,6 +125,47 @@ class OrderMetaDataHandlerTest {
             orderId = 1,
             localSiteId = LocalId(1),
             metaData = emptyList()
+        )
+    }
+
+    @Test
+    fun `when Metadata value contains HTML, should strip the HTML tags only and keep the rest`() {
+        // Given
+        val rawMetadata = listOf(
+            WCMetaData(
+                id = 1L,
+                key = "key",
+                value = "<a>value</a> with some <b>HTML</b>",
+                displayKey = null,
+                displayValue = null
+            )
+        )
+        gsonMock = mock {
+            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
+            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
+                rawMetadata
+            )
+        }
+        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+
+        // When
+        sut(orderDtoMock, LocalId(1))
+
+        // Then
+        verify(orderMetaDataDaoMock).updateOrderMetaData(
+            orderId = 1,
+            localSiteId = LocalId(1),
+            metaData = listOf(
+                OrderMetaDataEntity(
+                    id = 1L,
+                    orderId = 1,
+                    localSiteId = LocalId(1),
+                    key = "key",
+                    value = "value with some HTML",
+                    displayValue = null,
+                    displayKey = null
+                )
+            )
         )
     }
 
