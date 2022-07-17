@@ -12,10 +12,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -36,6 +38,7 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.utils.DateUtils;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
@@ -55,6 +58,9 @@ public class MediaFragment extends Fragment {
     private SiteModel mSite;
     private Spinner mMediaList;
     private View mCancelButton;
+
+    private EditText mAfterTextEdit;
+    private EditText mBeforeEditText;
 
     private MediaModel mCurrentUpload;
 
@@ -98,6 +104,9 @@ public class MediaFragment extends Fragment {
                 cancelMediaUpload(mSite, mCurrentUpload);
             }
         });
+
+        mAfterTextEdit = view.findViewById(R.id.fetch_media_list_field_after);
+        mBeforeEditText = view.findViewById(R.id.fetch_media_list_field_before);
 
         view.findViewById(R.id.fetch_media_list).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -265,9 +274,22 @@ public class MediaFragment extends Fragment {
     }
 
     private void fetchMediaList(@NonNull SiteModel site) {
+        Long after, before;
+        try {
+            after = getTimeInMillis(mAfterTextEdit.getText().toString());
+            before = getTimeInMillis(mBeforeEditText.getText().toString());
+        } catch (Exception e) {
+            prependToLog("Invalid date format for fetching media: use YYYY-MM-DD or leave blank");
+            return;
+        }
         FetchMediaListPayload payload = new FetchMediaListPayload(
-                site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
+                site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, before, after);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload));
+    }
+
+    @Nullable
+    private Long getTimeInMillis(String date) {
+        return date.trim().isEmpty() ? null : DateUtils.INSTANCE.getCalendarInstance(date).getTimeInMillis();
     }
 
     private void fetchMedia(@NonNull final SiteModel site, @NonNull MediaModel media) {
