@@ -14,6 +14,28 @@
         android:layout_height="wrap_content"
         android:text="Select Site" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/fetch_media_list_field_after"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:hint="From YYYY-MM-DD"
+            android:inputType="date" />
+
+        <EditText
+            android:id="@+id/fetch_media_list_field_before"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:hint="To YYYY-MM-DD"
+            android:inputType="date" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/fetch_media_list"
         android:layout_width="match_parent"
