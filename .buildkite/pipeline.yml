@@ -72,3 +72,7 @@ steps:
       wget $API_TEST_SITE_URL
       ./gradlew --stacktrace :tests:api:test
     artifact_paths: *artifact_paths
+
+  - label: "Connected Tests"
+    command: .buildkite/connected-tests.sh
+    artifact_paths: *artifact_paths
