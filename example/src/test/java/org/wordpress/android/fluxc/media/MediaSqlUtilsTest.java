@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.wordpress.android.fluxc.media.MediaTestUtils.generateRandomizedMediaList;
+import static org.wordpress.android.fluxc.media.MediaTestUtils.insertMediaIntoDatabase;
 import static org.wordpress.android.fluxc.store.MediaStore.NOT_DELETED_STATES;
 
 @RunWith(RobolectricTestRunner.class)
@@ -77,6 +79,99 @@ public class MediaSqlUtilsTest {
             assertThat(storedMedia.get(i)).isNotNull();
             assertThat(storedMedia.get(i).getMediaId()).isEqualTo(testIds[i]);
         }
+    }
+
+    @Test
+    public void testGetMediaWithStatesDateFiltering() {
+        final List<MediaModel> mediaList = generateRandomizedMediaList(3, TEST_LOCAL_SITE_ID);
+        final List<String> uploadStates = new ArrayList<>();
+        uploadStates.add(MediaUploadState.UPLOADED.toString());
+        String[] dates = new String[]{"2022-10-01", "2022-09-03", "2022-09-01"};
+        mediaList.get(0).setUploadDate(dates[0]);
+        mediaList.get(1).setUploadDate(dates[1]);
+        mediaList.get(2).setUploadDate(dates[2]);
+        for (MediaModel media : mediaList) {
+            media.setUploadState(MediaUploadState.UPLOADED);
+            insertMediaIntoDatabase(media);
+        }
+
+        // after is null - Junit 5 does parameterization, which is a nicer way to test multiple parameter combinations
+        List<MediaModel> results = MediaSqlUtils.getMediaWithStates(getTestSiteWithLocalId(TEST_LOCAL_SITE_ID),
+                uploadStates,
+                "2022-09-03",
+                null);
+        assertAfterNullDateRangeMedia(dates, results);
+
+        // before is null
+        results = MediaSqlUtils.getMediaWithStates(getTestSiteWithLocalId(TEST_LOCAL_SITE_ID),
+                uploadStates,
+                null,
+                "2022-09-02");
+        assertBeforeNullDateRange(dates, results);
+
+        // after and before are not null
+        results = MediaSqlUtils.getMediaWithStates(getTestSiteWithLocalId(TEST_LOCAL_SITE_ID),
+                uploadStates,
+                "2022-09-03",
+                "2022-09-02");
+        assertBeforeAfterDateRange(results, dates, 1, 1);
+    }
+
+    // only testing date filtering
+    @Test
+    public void testGetMediaWithStatesAndMimeTypeDateFiltering() {
+        final List<MediaModel> mediaList = generateRandomizedMediaList(3, TEST_LOCAL_SITE_ID);
+        final List<String> uploadStates = new ArrayList<>();
+        uploadStates.add(MediaUploadState.UPLOADED.toString());
+        String[] dates = new String[]{"2022-10-01", "2022-09-03", "2022-09-01"};
+        mediaList.get(0).setUploadDate(dates[0]);
+        mediaList.get(1).setUploadDate(dates[1]);
+        mediaList.get(2).setUploadDate(dates[2]);
+        for (MediaModel media : mediaList) {
+            media.setUploadState(MediaUploadState.UPLOADED);
+            media.setMimeType(Type.IMAGE.getValue());
+            insertMediaIntoDatabase(media);
+        }
+
+        // after is null - Junit 5 does parameterization, which is a nicer way to test multiple parameter combinations
+        final SiteModel testSite = getTestSiteWithLocalId(TEST_LOCAL_SITE_ID);
+        List<MediaModel> results = MediaSqlUtils.getMediaWithStatesAndMimeType(testSite,
+                uploadStates,
+                Type.IMAGE.getValue(),
+                "2022-09-03",
+                null);
+        assertAfterNullDateRangeMedia(dates, results);
+
+        // before is null
+        results = MediaSqlUtils.getMediaWithStatesAndMimeType(testSite,
+                uploadStates,
+                Type.IMAGE.getValue(),
+                null,
+                "2022-09-02");
+        assertBeforeNullDateRange(dates, results);
+
+        // after and before are not null
+        results = MediaSqlUtils.getMediaWithStatesAndMimeType(testSite,
+                uploadStates,
+                Type.IMAGE.getValue(),
+                "2022-09-03",
+                "2022-09-02");
+        assertBeforeAfterDateRange(results, dates, 1, 1);
+    }
+
+    private void assertBeforeNullDateRange(String[] dates, List<MediaModel> results) {
+        assertBeforeAfterDateRange(results, dates, 2, 0);
+        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[1]);
+    }
+
+    private void assertBeforeAfterDateRange(List<MediaModel> results, String[] dates, int i, int i2) {
+        assertThat(results.size()).isEqualTo(i);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[i2]);
+    }
+
+    private void assertAfterNullDateRangeMedia(String[] dates, List<MediaModel> results) {
+        assertBeforeAfterDateRange(results, dates, 2, 1);
+        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[2]);
     }
 
     // Inserts a media item, verifies it's in the DB, deletes the item, verifies it's not in the DB
