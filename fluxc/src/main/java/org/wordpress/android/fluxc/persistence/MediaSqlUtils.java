@@ -31,8 +31,8 @@ public class MediaSqlUtils {
     }
     public static List<MediaModel> getMediaWithStates(SiteModel site,
                                                       List<String> uploadStates,
-                                                      String before,
-                                                      String after) {
+                                                      @Nullable String before,
+                                                      @Nullable String after) {
         return getMediaWithStatesQuery(site, uploadStates, before, after).getAsModel();
     }
 
@@ -40,7 +40,10 @@ public class MediaSqlUtils {
         return getMediaWithStatesQuery(site, uploadStates, null, null).getAsCursor();
     }
 
-    public static WellCursor<MediaModel> getMediaWithStatesAsCursor(SiteModel site, List<String> uploadStates, String before, String after) {
+    public static WellCursor<MediaModel> getMediaWithStatesAsCursor(SiteModel site,
+                                                                    List<String> uploadStates,
+                                                                    String before,
+                                                                    String after) {
         return getMediaWithStatesQuery(site, uploadStates, before, after).getAsCursor();
     }
 
