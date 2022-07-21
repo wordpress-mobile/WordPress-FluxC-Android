@@ -82,7 +82,6 @@ class WCOrderStore @Inject constructor(
         val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
-
         val orders = ordersWithMeta.map { it.first }
 
         constructor(error: OrderError, site: SiteModel) : this(site) {
@@ -177,7 +176,6 @@ class WCOrderStore @Inject constructor(
             val orderWithMeta: Pair<OrderEntity, List<OrderMetaDataEntity>>,
             override val site: SiteModel
         ) : RemoteOrderPayload() {
-
             override val order = orderWithMeta.first
 
             constructor(
