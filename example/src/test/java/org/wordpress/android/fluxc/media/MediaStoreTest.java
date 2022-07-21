@@ -12,6 +12,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests;
+import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.PostModel;
@@ -22,10 +23,12 @@ import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -33,6 +36,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMedia;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMediaFromPath;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateRandomizedMedia;
@@ -42,11 +47,16 @@ import static org.wordpress.android.fluxc.media.MediaTestUtils.insertRandomMedia
 
 @RunWith(RobolectricTestRunner.class)
 public class MediaStoreTest {
-    private MediaStore mMediaStore = new MediaStore(new Dispatcher(),
-            Mockito.mock(MediaRestClient.class),
-            Mockito.mock(MediaXMLRPCClient.class),
-            Mockito.mock(WPV2MediaRestClient.class),
-            Mockito.mock(DateTimeUtilsWrapper.class));
+    public static final long AFTER_MILLIS = 2000000000;
+    public static final long BEFORE_MILLIS = 2100000000;
+    private final MediaRestClient mMediaRestClient = mock(MediaRestClient.class);
+    private final WPV2MediaRestClient mWPV2MediaRestClient = mock(WPV2MediaRestClient.class);
+    private final DateTimeUtilsWrapper mDateTimeUtilsWrapper = mock(DateTimeUtilsWrapper.class);
+    private final MediaStore mMediaStore = new MediaStore(new Dispatcher(),
+            mMediaRestClient,
+            mock(MediaXMLRPCClient.class),
+            mWPV2MediaRestClient,
+            mDateTimeUtilsWrapper);
 
     @Before
     public void setUp() {
@@ -71,6 +81,47 @@ public class MediaStoreTest {
             assertEquals(testSiteId, media.getLocalSiteId());
             assertTrue(testMedia.contains(media));
         }
+    }
+
+    @Test
+    public void testFetchMediaDateRangeParams() {
+        final int testSiteId = 2;
+        SiteModel site = getTestSiteWithLocalId(testSiteId);
+        final int number = 10;
+        final FetchMediaListPayload fetchMediaListPayload = new FetchMediaListPayload(site,
+                number,
+                false,
+                BEFORE_MILLIS,
+                AFTER_MILLIS);
+
+        // non-jetpack REST
+        site.setIsWPCom(true);
+        invokeFetchMediaActionAndVerifyDateFormatting(fetchMediaListPayload);
+        verify(mMediaRestClient).fetchMediaList(site,
+                number,
+                0,
+                null,
+                new Date(BEFORE_MILLIS),
+                new Date(AFTER_MILLIS));
+
+        // jetpack REST
+        site.setIsWPCom(false);
+        site.setIsJetpackCPConnected(true);
+        Mockito.reset(mDateTimeUtilsWrapper);
+        invokeFetchMediaActionAndVerifyDateFormatting(fetchMediaListPayload);
+        verify(mWPV2MediaRestClient).fetchMediaList(site,
+                number,
+                0,
+                null,
+                new Date(BEFORE_MILLIS),
+                new Date(AFTER_MILLIS));
+    }
+
+    private void invokeFetchMediaActionAndVerifyDateFormatting(FetchMediaListPayload fetchMediaListPayload) {
+        mMediaStore.onAction(MediaActionBuilder.newFetchMediaListAction(fetchMediaListPayload));
+        // can't verify actual database invocation due to use of static methods
+        verify(mDateTimeUtilsWrapper).iso8601UTCFromDate(new Date(AFTER_MILLIS));
+        verify(mDateTimeUtilsWrapper).iso8601UTCFromDate(new Date(BEFORE_MILLIS));
     }
 
     @Test
