@@ -593,3 +593,5 @@ internal class AutoMigration16to17 : AutoMigrationSpec
     DeleteColumn(tableName = "OrderMetaData", columnName = "displayValue")
 )
 internal class AutoMigration17to18 : AutoMigrationSpec
+
+internal class AutoMigration18to19 : AutoMigrationSpec
