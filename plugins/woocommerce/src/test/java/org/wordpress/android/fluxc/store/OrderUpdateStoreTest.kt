@@ -77,7 +77,7 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock {
                 onBlocking { updateCustomerOrderNote(initialOrder, site, UPDATED_CUSTOMER_NOTE) }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 updatedOrder,
                                 site
                         )
@@ -112,7 +112,7 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock {
                 onBlocking { updateCustomerOrderNote(initialOrder, site, UPDATED_CUSTOMER_NOTE) }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 error = OrderError(message = specificOrderError),
                                 initialOrder,
                                 site
@@ -193,7 +193,7 @@ class OrderUpdateStoreTest {
                             emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME),
                             emptyBillingDto.copy(first_name = UPDATED_BILLING_FIRST_NAME)
                     )
-                } doReturn (RemoteOrderPayload(updatedOrder, site))
+                } doReturn (RemoteOrderPayload.Updating(updatedOrder, site))
             }
         }
 
@@ -231,7 +231,7 @@ class OrderUpdateStoreTest {
                             site,
                             emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME)
                     )
-                } doReturn (RemoteOrderPayload(updatedOrder, site))
+                } doReturn (RemoteOrderPayload.Updating(updatedOrder, site))
             }
         }
 
@@ -262,7 +262,7 @@ class OrderUpdateStoreTest {
                             initialOrder, site, emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME)
                     )
                 }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 error = OrderError(),
                                 initialOrder,
                                 site
@@ -360,7 +360,7 @@ class OrderUpdateStoreTest {
                             initialOrder, site, emptyBillingDto
                     )
                 }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 error = OrderError(type = INVALID_PARAM),
                                 initialOrder,
                                 site
@@ -390,7 +390,7 @@ class OrderUpdateStoreTest {
                             initialOrder, site, emptyBillingDto.copy(email = "custom@mail.com")
                     )
                 }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 error = OrderError(type = GENERIC_ERROR),
                                 initialOrder,
                                 site
