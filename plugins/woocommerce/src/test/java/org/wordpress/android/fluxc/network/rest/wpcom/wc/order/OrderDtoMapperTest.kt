@@ -14,8 +14,10 @@ internal class OrderDtoMapperTest {
     private val stripOrder: StripOrder = mock {
         on { invoke(any()) }.then(AdditionalAnswers.returnsFirstArg<OrderEntity>())
     }
+    private val stripOrderMetaData: StripOrderMetaData = mock()
+
     val localSiteId = LocalOrRemoteId.LocalId(0)
-    val sut = OrderDtoMapper(stripOrder)
+    val sut = OrderDtoMapper(stripOrder, stripOrderMetaData)
 
     @Test
     fun `when is_editable is NULL and the status is an editable status the order in Editable`() {
@@ -24,7 +26,7 @@ internal class OrderDtoMapperTest {
                 isEditable = null,
                 status = status
             )
-            val orderEntity = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
+            val (orderEntity, _) = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
             assertThat(orderEntity.isEditable).isEqualTo(true)
         }
     }
@@ -32,14 +34,14 @@ internal class OrderDtoMapperTest {
     @Test
     fun `when is_editable is NULL and the status is not an editable status the order is not Editable`() {
         val oldOrderDTO = getEditableOrder(isEditable = null, status = "")
-        val orderEntity = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
+        val (orderEntity, _) = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
         assertThat(orderEntity.isEditable).isEqualTo(false)
     }
 
     @Test
     fun `when is_editable field is true the order is Editable`() {
         val oldOrderDTO = getEditableOrder(isEditable = true, status = "")
-        val orderEntity = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
+        val (orderEntity, _) = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
         assertThat(orderEntity.isEditable).isEqualTo(true)
     }
 
@@ -48,7 +50,7 @@ internal class OrderDtoMapperTest {
         // We only check for editable statuses if the is_editable field is null
         for (status in OrderDtoMapper.EDITABLE_STATUSES) {
             val oldOrderDTO = getEditableOrder(isEditable = false, status = status)
-            val orderEntity = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
+            val (orderEntity, _) = sut.toDatabaseEntity(oldOrderDTO, localSiteId)
             assertThat(orderEntity.isEditable).isEqualTo(false)
         }
     }
