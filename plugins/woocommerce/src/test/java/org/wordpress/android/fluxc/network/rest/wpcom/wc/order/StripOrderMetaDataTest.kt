@@ -3,28 +3,24 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
-import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 
-class OrderMetaDataHandlerTest {
-    private lateinit var sut: OrderMetaDataHandler
+class StripOrderMetaDataTest {
+    private lateinit var sut: StripOrderMetaData
     private lateinit var orderDtoMock: OrderDto
     private lateinit var gsonMock: Gson
-    private val orderMetaDataDaoMock = mock<OrderMetaDataDao>()
     private val jsonObjectMock = mock<JsonObject>()
 
     @Before
     fun setUp() {
         configureMocks()
-        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+        sut = StripOrderMetaData(gsonMock)
     }
 
     private fun configureMocks() {
@@ -65,16 +61,14 @@ class OrderMetaDataHandlerTest {
                 rawMetadata
             )
         }
-        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+        sut = StripOrderMetaData(gsonMock)
 
         // When
-        sut(orderDtoMock, LocalId(1))
+        val result: List<OrderMetaDataEntity> = sut(orderDtoMock, LocalId(1))
 
         // Then
-        verify(orderMetaDataDaoMock).updateOrderMetaData(
-            orderId = 1,
-            localSiteId = LocalId(1),
-            metaData = listOf(
+        assertThat(result).isEqualTo(
+            listOf(
                 OrderMetaDataEntity(
                     id = 2L,
                     orderId = 1,
@@ -94,14 +88,10 @@ class OrderMetaDataHandlerTest {
         }
 
         // When
-        sut(orderDtoMock, LocalId(1))
+        val result = sut(orderDtoMock, LocalId(1))
 
         // Then
-        verify(orderMetaDataDaoMock, never()).updateOrderMetaData(
-            orderId = any(),
-            localSiteId = any(),
-            metaData = any()
-        )
+        assertThat(result).isEmpty()
     }
 
     @Test
@@ -113,17 +103,13 @@ class OrderMetaDataHandlerTest {
                 IllegalStateException()
             )
         }
-        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+        sut = StripOrderMetaData(gsonMock)
 
         // When
-        sut(orderDtoMock, LocalId(1))
+        val result = sut(orderDtoMock, LocalId(1))
 
         // Then
-        verify(orderMetaDataDaoMock).updateOrderMetaData(
-            orderId = 1,
-            localSiteId = LocalId(1),
-            metaData = emptyList()
-        )
+        assertThat(result).isEmpty()
     }
 
     @Test
@@ -144,16 +130,14 @@ class OrderMetaDataHandlerTest {
                 rawMetadata
             )
         }
-        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+        sut = StripOrderMetaData(gsonMock)
 
         // When
-        sut(orderDtoMock, LocalId(1))
+        val result = sut(orderDtoMock, LocalId(1))
 
         // Then
-        verify(orderMetaDataDaoMock).updateOrderMetaData(
-            orderId = 1,
-            localSiteId = LocalId(1),
-            metaData = listOf(
+        assertThat(result).isEqualTo(
+            listOf(
                 OrderMetaDataEntity(
                     id = 1L,
                     orderId = 1,
@@ -190,16 +174,14 @@ class OrderMetaDataHandlerTest {
                 rawMetadata
             )
         }
-        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+        sut = StripOrderMetaData(gsonMock)
 
         // When
-        sut(orderDtoMock, LocalId(1))
+        val result = sut(orderDtoMock, LocalId(1))
 
         // Then
-        verify(orderMetaDataDaoMock).updateOrderMetaData(
-            orderId = 1,
-            localSiteId = LocalId(1),
-            metaData = listOf(
+        assertThat(result).isEqualTo(
+            listOf(
                 OrderMetaDataEntity(
                     id = 2L,
                     orderId = 1,
@@ -236,16 +218,14 @@ class OrderMetaDataHandlerTest {
                 rawMetadata
             )
         }
-        sut = OrderMetaDataHandler(gsonMock, orderMetaDataDaoMock)
+        sut = StripOrderMetaData(gsonMock)
 
         // When
-        sut(orderDtoMock, LocalId(1))
+        val result = sut(orderDtoMock, LocalId(1))
 
         // Then
-        verify(orderMetaDataDaoMock).updateOrderMetaData(
-            orderId = 1,
-            localSiteId = LocalId(1),
-            metaData = listOf(
+        assertThat(result).isEqualTo(
+            listOf(
                 OrderMetaDataEntity(
                     id = 2L,
                     orderId = 1,

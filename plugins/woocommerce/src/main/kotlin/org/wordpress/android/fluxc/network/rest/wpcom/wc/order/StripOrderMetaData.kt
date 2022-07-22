@@ -6,14 +6,10 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
-import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import javax.inject.Inject
 
-class OrderMetaDataHandler @Inject constructor(
-    private val gson: Gson,
-    private val orderMetaDataDao: OrderMetaDataDao
-) {
+class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
     private val htmlRegex by lazy {
         Regex("<[^>]+>")
     }
@@ -22,35 +18,29 @@ class OrderMetaDataHandler @Inject constructor(
         Regex("""^.*(?:\{.*\}|\[.*\]).*$""")
     }
 
-    operator fun invoke(orderDto: OrderDto, localSiteId: LocalId) {
+    private val type = object : TypeToken<List<WCMetaData>>() {}.type
+
+    operator fun invoke(orderDto: OrderDto, localSiteId: LocalId): List<OrderMetaDataEntity> {
         if (orderDto.id == null) {
-            return
+            return emptyList()
         }
 
-        val metaData = parseMetaDataJSON(orderDto.meta_data)
+        return parseMetaDataJSON(orderDto.meta_data)
             ?.asSequence()
             ?.filter { it.isInternalAttribute.not() }
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
             ?.filter { it.value.isNotEmpty() && it.value.matches(jsonRegex).not() }
             ?.toList()
             ?: emptyList()
-
-        orderMetaDataDao.updateOrderMetaData(
-            orderId = orderDto.id,
-            localSiteId = localSiteId,
-            metaData = metaData
-        )
     }
 
-    private fun parseMetaDataJSON(metadata: JsonElement?) =
-        metadata?.let {
+    private fun parseMetaDataJSON(metadata: JsonElement?): List<WCMetaData>? {
+        return metadata?.let {
             gson.runCatching {
-                fromJson<List<WCMetaData>?>(
-                    metadata,
-                    object : TypeToken<List<WCMetaData>>() {}.type
-                )
+                fromJson<List<WCMetaData>?>(metadata, type)
             }.getOrNull()
         }
+    }
 
     private fun WCMetaData.asOrderMetaDataEntity(orderId: Long, localSiteId: LocalId) =
         OrderMetaDataEntity(

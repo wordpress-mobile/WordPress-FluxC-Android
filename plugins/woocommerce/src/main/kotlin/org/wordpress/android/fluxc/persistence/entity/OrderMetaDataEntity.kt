@@ -2,8 +2,10 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.OrderEntity
 
 /**
  * The OrderMetaDataEntity table is used to store viewable order metadata. Order metadata
@@ -14,7 +16,13 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
     indices = [Index(
         value = ["localSiteId", "orderId"]
     )],
-    primaryKeys = ["localSiteId", "orderId", "id"]
+    primaryKeys = ["localSiteId", "orderId", "id"],
+    foreignKeys = [ForeignKey(
+        entity = OrderEntity::class,
+        parentColumns = ["localSiteId", "orderId"],
+        childColumns = ["localSiteId", "orderId"],
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class OrderMetaDataEntity(
     @ColumnInfo(name = "localSiteId")
