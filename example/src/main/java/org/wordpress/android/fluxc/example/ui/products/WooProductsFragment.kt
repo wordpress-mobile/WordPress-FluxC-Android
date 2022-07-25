@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_woo_products.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -96,7 +97,7 @@ class WooProductsFragment : StoreSelectingFragment() {
 
                             val product = wcProductStore.getProductByRemoteId(site, result.remoteProductId)
                             product?.let {
-                                val numVariations = it.getNumVariations()
+                                val numVariations = it.getVariationIdList().size
                                 if (numVariations > 0) {
                                     prependToLog("Single product with $numVariations variations fetched! ${it.name}")
                                 } else {
@@ -171,13 +172,64 @@ class WooProductsFragment : StoreSelectingFragment() {
             replaceFragment(WooProductFiltersFragment.newInstance(selectedPos))
         }
 
+        fetch_specific_products.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(activity, "Enter remote product IDs, separated by comma:") { editText ->
+                    val ids = editText.text.toString().replace(" ", "").split(",").mapNotNull {
+                        val id = it.toLongOrNull()
+                        if (id == null) {
+                            prependToLog("$it is not a valid remote product ID, ignoring...")
+                        }
+                        id
+                    }
+
+                    if (ids.isNotEmpty()) {
+                        coroutineScope.launch {
+                            val result = wcProductStore.fetchProducts(
+                                site,
+                                includedProductIds = ids
+                            )
+                            if (result.isError) {
+                                prependToLog("Fetching products failed: ${result.error.message}")
+                            } else {
+                                val products = wcProductStore.getProductsByRemoteIds(site, ids)
+                                prependToLog("${products.size} were fetched")
+                                prependToLog("$products")
+                            }
+                        }
+                    } else {
+                        prependToLog("No valid product IDs...doing nothing")
+                    }
+                }
+            }
+        }
+
         search_products.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
-                        activity,
-                        "Enter a search query:"
+                    activity,
+                    "Enter a search query:"
                 ) { editText ->
-                    val payload = SearchProductsPayload(site, editText.text.toString())
+                    val payload = SearchProductsPayload(
+                        site = site,
+                        searchQuery = editText.text.toString()
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
+                }
+            }
+        }
+
+        search_products_sku.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                    activity,
+                    "Enter a SKU to search for:"
+                ) { editText ->
+                    val payload = SearchProductsPayload(
+                        site = site,
+                        searchQuery = editText.text.toString(),
+                        isSkuSearch = true
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
             }
@@ -371,6 +423,15 @@ class WooProductsFragment : StoreSelectingFragment() {
                 prependToLog("Submitting request to fetch product categories for site ${site.id}")
                 val payload = FetchProductCategoriesPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
+            }
+        }
+
+        observe_product_categories.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val categories = wcProductStore.observeCategories(site).first()
+                    prependToLog("Categories: $categories")
+                }
             }
         }
 

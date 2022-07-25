@@ -4,9 +4,13 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCOrderListDescriptor
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -18,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Co
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
@@ -33,6 +38,7 @@ typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(O
 
 @Singleton
 class OrderUpdateStore @Inject internal constructor(
+    private val dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDao: OrdersDao,
@@ -123,9 +129,15 @@ class OrderUpdateStore @Inject internal constructor(
      * Creates a "simple payment," which is an empty order assigned the passed amount. The backend will
      * return a new order with the tax already calculated.
      */
-    suspend fun createSimplePayment(site: SiteModel, amount: String, isTaxable: Boolean): WooResult<OrderEntity> {
+    suspend fun createSimplePayment(
+        site: SiteModel,
+        amount: String,
+        isTaxable: Boolean,
+        status: WCOrderStatusModel? = null
+    ): WooResult<OrderEntity> {
         val createOrderRequest = UpdateOrderRequest(
-                feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+            status = status,
+            feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
         )
         return createOrder(site, createOrderRequest)
     }
@@ -136,7 +148,8 @@ class OrderUpdateStore @Inject internal constructor(
         amount: String,
         customerNote: String,
         billingEmail: String,
-        isTaxable: Boolean
+        isTaxable: Boolean,
+        status: WCOrderStatusModel? = null
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
             val initialOrder = ordersDao.getOrder(orderId, site.localId())
@@ -162,24 +175,24 @@ class OrderUpdateStore @Inject internal constructor(
 
                 val billing = if (billingEmail.isNotEmpty()) {
                     Billing(
-
-                            email = billingEmail,
-                            firstName = "",
-                            lastName = "",
-                            company = "",
-                            address1 = "",
-                            address2 = "",
-                            city = "",
-                            state = "",
-                            postcode = "",
-                            country = "",
-                            phone = ""
+                        email = billingEmail,
+                        firstName = "",
+                        lastName = "",
+                        company = "",
+                        address1 = "",
+                        address2 = "",
+                        city = "",
+                        state = "",
+                        postcode = "",
+                        country = "",
+                        phone = ""
                     )
                 } else {
                     null
                 }
 
                 val updateRequest = UpdateOrderRequest(
+                    status = status,
                     customerNote = customerNote,
                     billingAddress = billing,
                     feeLines = generateSimplePaymentFeeLineList(amount, isTaxable, feeId)
@@ -226,6 +239,13 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
+                // Emit a request to refresh the list of order summaries to make sure the added order is
+                // added to the list
+                dispatcher.dispatch(
+                    WCOrderActionBuilder.newFetchOrderListAction(
+                        FetchOrderListPayload(offset = 0, listDescriptor = WCOrderListDescriptor(site = site))
+                    )
+                )
                 WooResult(model)
             }
         }

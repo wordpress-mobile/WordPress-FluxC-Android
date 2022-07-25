@@ -4,11 +4,13 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_15_16
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
@@ -56,8 +58,8 @@ class MigrationTests {
         helper.apply {
             createDatabase(TEST_DB, 6).apply {
                 execSQL(
-                        // language=RoomSql
-                        """
+                    // language=RoomSql
+                    """
                             INSERT INTO OrderEntity VALUES(1, 2, 3, '123', 'processing', '$', 'key', 'date of creation', 'date of modification', '123', '456', '789', 'card', 'by card', 'date paid', 1, 'sample customer note', '213', 'CODE', 123, 'billing first name', 'billing last name', 'billing company', 'billing address1', 'billing address2', 'billing city', 'billing state', 'billing postcode', 'billing country', 'billing email', 'billing phone', 'shipping first name', 'shipping last name', 'shipping company', 'shipping address1', 'shipping address2', 'shipping city', 'shipping state', 'shipping postcode', 'shipping country', 'shipping phone', 'line items', 'shipping lines', 'fee lines', 'meta data')
                         """.trimIndent()
                 )
@@ -66,8 +68,8 @@ class MigrationTests {
             val migratedDb = runMigrationsAndValidate(TEST_DB, 7, true, MIGRATION_6_7)
 
             migratedDb.query(
-                    // language=RoomSql
-                    """
+                // language=RoomSql
+                """
                         SELECT * FROM OrderEntity
                     """.trimIndent()
             )
@@ -119,6 +121,31 @@ class MigrationTests {
         helper.apply {
             createDatabase(TEST_DB, 12).close()
             runMigrationsAndValidate(TEST_DB, 13, true)
+        }
+    }
+
+    @Test
+    fun testMigrate15to16() {
+        helper.apply {
+            createDatabase(TEST_DB, 15).apply {
+                execSQL(
+                    // language=RoomSql
+                    """
+                    INSERT INTO OrderEntity VALUES(1, 2, 3, '123', 'processing', '$', 'key', 'date of creation', 'date of modification', '123', '456', '789', 'card', 'by card', 'date paid', 1, 'sample customer note', '213', 'CODE', 123, 'billing first name', 'billing last name', 'billing company', 'billing address1', 'billing address2', 'billing city', 'billing state', 'billing postcode', 'billing country', 'billing email', 'billing phone', 'shipping first name', 'shipping last name', 'shipping company', 'shipping address1', 'shipping address2', 'shipping city', 'shipping state', 'shipping postcode', 'shipping country', 'shipping phone', 'line items', 'shipping lines', 'fee lines', 'meta data', 'payment url')
+                    """.trimIndent()
+                )
+            }.close()
+
+            val migratedDb = runMigrationsAndValidate(TEST_DB, 16, true, MIGRATION_15_16)
+            val cursor = migratedDb.query(
+                // language=RoomSql
+                """
+                        SELECT * FROM OrderEntity
+                    """.trimIndent()
+            )
+            // Ensure we delete all saved OrderEntities and use the API as the source of true
+            assertThat(cursor.count).isEqualTo(0)
+            cursor.close()
         }
     }
 

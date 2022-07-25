@@ -70,7 +70,7 @@ class ProductApiResponse : Response {
     var average_rating: String? = null
     var rating_count = 0
 
-    var parent_id = 0
+    var parent_id = 0L
     val menu_order = 0
     var purchase_note: String? = null
 

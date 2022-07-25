@@ -12,6 +12,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import okhttp3.internal.toImmutableMap
@@ -27,9 +28,9 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder.newFetchedOrderListAction
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
-import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -37,8 +38,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.store.InsertOrder
 import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
@@ -60,7 +63,9 @@ class WCOrderStoreTest {
     private val orderRestClient: OrderRestClient = mock()
     lateinit var ordersDao: OrdersDao
     lateinit var orderNotesDao: OrderNotesDao
+    lateinit var orderMetaDataDao: OrderMetaDataDao
     lateinit var orderStore: WCOrderStore
+    private val insertOrder: InsertOrder = mock()
 
     @Before
     fun setUp() {
@@ -72,6 +77,7 @@ class WCOrderStoreTest {
 
         ordersDao = database.ordersDao
         orderNotesDao = database.orderNotesDao
+        orderMetaDataDao = database.orderMetaDataDao
 
         orderStore = WCOrderStore(
                 dispatcher = Dispatcher(),
@@ -79,7 +85,9 @@ class WCOrderStoreTest {
                 wcOrderFetcher = orderFetcher,
                 coroutineEngine = initCoroutineEngine(),
                 ordersDao = ordersDao,
-                orderNotesDao = orderNotesDao
+                orderNotesDao = orderNotesDao,
+                orderMetaDataDao = orderMetaDataDao,
+                insertOrder = insertOrder
         )
 
         val config = SingleStoreWellSqlConfigForTests(
@@ -174,7 +182,7 @@ class WCOrderStoreTest {
         val orderModel = OrderTestUtils.generateSampleOrder(42)
         ordersDao.insertOrUpdateOrder(orderModel)
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
-        val result = RemoteOrderPayload(orderModel.copy(status = CoreOrderStatus.REFUNDED.value), site)
+        val result = RemoteOrderPayload.Updating(orderModel.copy(status = CoreOrderStatus.REFUNDED.value), site)
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
                 .thenReturn(result)
 
@@ -305,7 +313,7 @@ class WCOrderStoreTest {
         val orderModel = OrderTestUtils.generateSampleOrder(42, orderStatus = CoreOrderStatus.PROCESSING.value)
                 .saveToDb()
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
-        val result = RemoteOrderPayload(orderModel.copy(status = CoreOrderStatus.COMPLETED.value), site)
+        val result = RemoteOrderPayload.Updating(orderModel.copy(status = CoreOrderStatus.COMPLETED.value), site)
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.COMPLETED.value))
                 .thenReturn(result)
 
@@ -329,7 +337,7 @@ class WCOrderStoreTest {
                 .saveToDb()
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
         whenever(orderRestClient.updateOrderStatus(any(), any(), any())).thenReturn(
-                RemoteOrderPayload(
+                RemoteOrderPayload.Updating(
                         error = OrderError(),
                         order = orderModel,
                         site = site
@@ -345,6 +353,44 @@ class WCOrderStoreTest {
         assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)
         Unit
+    }
+
+    @Test
+    fun testObserveOrdersCount() {
+        runBlocking {
+            val siteId = 5
+            val site = SiteModel().apply { id = siteId }
+            // When inserting 3 PROCESSING and 1 COMPLETED orders
+            for (i in 1L..3L) {
+                OrderTestUtils.generateSampleOrder(
+                    siteId = siteId,
+                    orderId = i,
+                    orderStatus = CoreOrderStatus.PROCESSING.value
+                ).saveToDb()
+            }
+
+            OrderTestUtils.generateSampleOrder(
+                siteId = siteId,
+                orderId = 4L,
+                orderStatus = CoreOrderStatus.COMPLETED.value
+            ).saveToDb()
+
+            // Then PROCESSING orders count = 3
+            var count = orderStore.observeOrderCountForSite(
+                site,
+                listOf(CoreOrderStatus.PROCESSING.value)
+            ).first()
+
+            assertThat(count).isEqualTo(3)
+
+            count = orderStore.observeOrderCountForSite(
+                site,
+                listOf(CoreOrderStatus.COMPLETED.value)
+            ).first()
+
+            // Then COMPLETED orders count = 1
+            assertThat(count).isEqualTo(1)
+        }
     }
 
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, OrderEntity?> {

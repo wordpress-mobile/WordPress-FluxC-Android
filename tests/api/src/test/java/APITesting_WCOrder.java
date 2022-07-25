@@ -86,7 +86,7 @@ public class APITesting_WCOrder {
             get().
         then().
             statusCode(200).
-            body("data", hasSize(7));
+            body("data", hasSize(8));
     }
 
     @Test

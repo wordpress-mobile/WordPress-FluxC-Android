@@ -99,7 +99,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
-                currencyDecimalNumber = 2)
+                currencyDecimalNumber = 2,
+                couponsEnabled = true)
         WCSettingsSqlUtils.insertOrUpdateSettings(cadSettings)
 
         with(wooCommerceStore) {
@@ -123,7 +124,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.RIGHT_SPACE,
                 currencyThousandSeparator = ".",
                 currencyDecimalSeparator = ",",
-                currencyDecimalNumber = 2)
+                currencyDecimalNumber = 2,
+                couponsEnabled = true)
         WCSettingsSqlUtils.insertOrUpdateSettings(eurSettings)
 
         with(wooCommerceStore) {
@@ -144,7 +146,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = "",
                 currencyDecimalSeparator = "",
-                currencyDecimalNumber = 0)
+                currencyDecimalNumber = 0,
+                couponsEnabled = true)
         WCSettingsSqlUtils.insertOrUpdateSettings(jpySettings)
 
         with(wooCommerceStore) {
@@ -187,7 +190,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
-                currencyDecimalNumber = 2)
+                currencyDecimalNumber = 2,
+                couponsEnabled = true)
         WCSettingsSqlUtils.insertOrUpdateSettings(cadSettings)
 
         with(wooCommerceStore) {
@@ -220,7 +224,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.RIGHT_SPACE,
                 currencyThousandSeparator = ".",
                 currencyDecimalSeparator = ",",
-                currencyDecimalNumber = 2)
+                currencyDecimalNumber = 2,
+                couponsEnabled = true)
         WCSettingsSqlUtils.insertOrUpdateSettings(eurSettings)
 
         with(wooCommerceStore) {
@@ -250,7 +255,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = "",
                 currencyDecimalSeparator = "",
-                currencyDecimalNumber = 0)
+                currencyDecimalNumber = 0,
+                couponsEnabled = true)
         WCSettingsSqlUtils.insertOrUpdateSettings(jpySettings)
 
         with(wooCommerceStore) {
@@ -307,7 +313,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
                 currencyDecimalNumber = 2,
-                countryCode = "CA:QC"
+                countryCode = "CA:QC",
+                couponsEnabled = true
         )
         WCSettingsSqlUtils.insertOrUpdateSettings(cadSettings)
 
@@ -328,7 +335,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyPosition = CurrencyPosition.LEFT,
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
-                currencyDecimalNumber = 2
+                currencyDecimalNumber = 2,
+                couponsEnabled = true
         )
         WCSettingsSqlUtils.insertOrUpdateSettings(siteSettings)
 
@@ -344,7 +352,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
                 currencyDecimalNumber = 2,
-                countryCode = "US"
+                countryCode = "US",
+                couponsEnabled = true
         )
         WCSettingsSqlUtils.insertOrUpdateSettings(usSettings)
 
@@ -360,7 +369,8 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
                 currencyThousandSeparator = ",",
                 currencyDecimalSeparator = ".",
                 currencyDecimalNumber = 2,
-                countryCode = "IN:TN"
+                countryCode = "IN:TN",
+                couponsEnabled = true
         )
         WCSettingsSqlUtils.insertOrUpdateSettings(indSettings)
 

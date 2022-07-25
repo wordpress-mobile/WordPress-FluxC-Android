@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import android.content.ContentValues
 import com.wellsql.generated.WCSettingsModelTable
 import com.yarolegovich.wellsql.WellSql
 import com.yarolegovich.wellsql.core.Identifiable
@@ -30,6 +31,16 @@ object WCSettingsSqlUtils {
         }
     }
 
+    fun setCouponsEnabled(site: SiteModel, value: Boolean): Int {
+        return WellSql.update(WCSettingsBuilder::class.java)
+            .whereId(site.id)
+            .put(value) {
+                val cv = ContentValues()
+                cv.put(WCSettingsModelTable.COUPONS_ENABLED, it)
+                cv
+            }.execute()
+    }
+
     fun getSettingsForSite(site: SiteModel): WCSettingsModel? {
         return WellSql.select(WCSettingsBuilder::class.java)
                 .where()
@@ -52,7 +63,8 @@ object WCSettingsSqlUtils {
         @Column var address: String = "",
         @Column var address2: String = "",
         @Column var city: String = "",
-        @Column var postalCode: String = ""
+        @Column var postalCode: String = "",
+        @Column var couponsEnabled: Boolean = false
     ) : Identifiable {
         override fun getId() = id
 
@@ -73,7 +85,8 @@ object WCSettingsSqlUtils {
                     address = address,
                     address2 = address2,
                     city = city,
-                    postalCode = postalCode
+                    postalCode = postalCode,
+                    couponsEnabled = couponsEnabled
             )
         }
     }
@@ -91,7 +104,8 @@ object WCSettingsSqlUtils {
                 address = address,
                 address2 = address2,
                 city = city,
-                postalCode = postalCode
+                postalCode = postalCode,
+                couponsEnabled = couponsEnabled
         )
     }
 }

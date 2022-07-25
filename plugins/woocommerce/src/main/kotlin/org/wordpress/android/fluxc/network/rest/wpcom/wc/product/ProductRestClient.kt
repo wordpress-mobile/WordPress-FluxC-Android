@@ -34,7 +34,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -351,40 +350,23 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        remoteProductIds: List<Long>? = null,
+        isSkuSearch: Boolean = false,
+        includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
     ) {
-        // orderBy (string) Options: date, id, include, title and slug. Default is date.
-        val orderBy = when (sortType) {
-            TITLE_ASC, TITLE_DESC -> "title"
-            DATE_ASC, DATE_DESC -> "date"
-        }
-        val sortOrder = when (sortType) {
-            TITLE_ASC, DATE_ASC -> "asc"
-            TITLE_DESC, DATE_DESC -> "desc"
-        }
-
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "orderby" to orderBy,
-                "order" to sortOrder,
-                "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
-
-        remoteProductIds?.let { ids ->
-            params.put("include", ids.map { it }.joinToString())
-        }
-
-        filterOptions?.let { filters ->
-            filters.map { params.put(it.key.toString(), it.value) }
-        }
-
-        excludedProductIds?.let { excludedIds ->
-            params.put("exclude", excludedIds.map { it }.joinToString())
-        }
+        val params = buildProductParametersMap(
+            pageSize = pageSize,
+            sortType = sortType,
+            offset = offset,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            includedProductIds = includedProductIds,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
@@ -401,18 +383,19 @@ class ProductRestClient @Inject constructor(
                                 offset,
                                 loadedMore,
                                 canLoadMore,
-                                remoteProductIds,
+                                includedProductIds,
                                 excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
                         val payload = RemoteSearchProductsPayload(
-                                site,
-                                searchQuery,
-                                productModels,
-                                offset,
-                                loadedMore,
-                                canLoadMore
+                            site = site,
+                            searchQuery = searchQuery,
+                            isSkuSearch = isSkuSearch,
+                            products = productModels,
+                            offset = offset,
+                            loadedMore = loadedMore,
+                            canLoadMore = canLoadMore
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
@@ -423,7 +406,12 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
-                        val payload = RemoteSearchProductsPayload(productError, site, searchQuery)
+                        val payload = RemoteSearchProductsPayload(
+                            error = productError,
+                            site = site,
+                            query = searchQuery,
+                            skuSearch = isSkuSearch
+                        )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
                 },
@@ -434,12 +422,20 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
+        isSkuSearch: Boolean = false,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null
     ) {
-        fetchProducts(site, pageSize, offset, sorting, searchQuery, excludedProductIds = excludedProductIds)
+        fetchProducts(
+            site = site,
+            pageSize = pageSize,
+            offset = offset,
+            sortType = sorting,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            excludedProductIds = excludedProductIds)
     }
 
     /**
@@ -450,15 +446,28 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductsWithSyncRequest(
         site: SiteModel,
-        remoteProductIds: List<Long>,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         offset: Int = 0,
-        searchQuery: String? = null
-    ) = buildParametersMap(pageSize, sortType, offset, searchQuery, remoteProductIds)
-            .let {
-                WOOCOMMERCE.products.pathV3.requestProductTo(site, it)
-            }.handleResultFrom(site)
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
+        searchQuery: String? = null,
+        isSkuSearch: Boolean = false,
+        filterOptions: Map<ProductFilterOption, String>? = null
+    ): WooPayload<List<WCProductModel>> {
+        val params = buildProductParametersMap(
+            pageSize = pageSize,
+            sortType = sortType,
+            offset = offset,
+            searchQuery = searchQuery,
+            isSkuSearch = isSkuSearch,
+            includedProductIds = includedProductIds,
+            excludedProductIds = excludedProductIds,
+            filterOptions = filterOptions
+        )
+
+        return WOOCOMMERCE.products.pathV3.requestProductTo(site, params).handleResultFrom(site)
+    }
 
     private suspend fun String.requestProductTo(
         site: SiteModel,
@@ -495,7 +504,9 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductsCategoriesWithSyncRequest(
         site: SiteModel,
-        remoteCategoryIds: List<Long>,
+        includedCategoryIds: List<Long> = emptyList(),
+        excludedCategoryIds: List<Long> = emptyList(),
+        searchQuery: String? = null,
         pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
         productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
         offset: Int = 0
@@ -509,9 +520,14 @@ class ProductRestClient @Inject constructor(
             "per_page" to pageSize.toString(),
             "offset" to offset.toString(),
             "order" to sortOrder,
-            "orderby" to "name",
-            "include" to remoteCategoryIds.map { it }.joinToString()
-        )
+            "orderby" to "name"
+        ).putIfNotEmpty("search" to searchQuery)
+        if (includedCategoryIds.isNotEmpty()) {
+            params["include"] = includedCategoryIds.map { it }.joinToString()
+        }
+        if (excludedCategoryIds.isNotEmpty()) {
+            params["exclude"] = excludedCategoryIds.map { it }.joinToString()
+        }
 
         return WOOCOMMERCE.products.categories.pathV3
             .requestCategoryTo(site, params)
@@ -535,6 +551,29 @@ class ProductRestClient @Inject constructor(
             }
         }
 
+    @JvmName("handleResultFromProductVariationApiResponse")
+    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(
+        site: SiteModel,
+        productId: Long
+    ) =
+        when (this) {
+            is JetpackSuccess -> {
+                data
+                    ?.map {
+                        it.asProductVariationModel()
+                            .apply {
+                                localSiteId = site.id
+                                remoteProductId = productId
+                            }
+                    }
+                    .orEmpty()
+                    .let { WooPayload(it.toList()) }
+            }
+            is JetpackError -> {
+                WooPayload(error.toWooError())
+            }
+        }
+
     private suspend fun String.requestCategoryTo(
         site: SiteModel,
         params: Map<String, String>
@@ -546,21 +585,59 @@ class ProductRestClient @Inject constructor(
         Array<ProductCategoryApiResponse>::class.java
     )
 
-    private fun buildParametersMap(
+    private fun buildProductParametersMap(
         pageSize: Int,
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
-        ids: List<Long>
+        isSkuSearch: Boolean,
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
     ): MutableMap<String, String> {
-        return mutableMapOf(
+        val params = mutableMapOf(
             "per_page" to pageSize.toString(),
             "orderby" to sortType.asOrderByParameter(),
             "order" to sortType.asSortOrderParameter(),
-            "offset" to offset.toString(),
-            "include" to ids.map { it }.joinToString()
-        ).putIfNotEmpty("search" to searchQuery)
+            "offset" to offset.toString()
+        )
+
+        includedProductIds?.let { includedIds ->
+            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
+        }
+        excludedProductIds?.let { excludedIds ->
+            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
+        }
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
+        }
+
+        if (searchQuery.isNullOrEmpty().not()) {
+            if (isSkuSearch) {
+                params["sku"] = searchQuery!! // full SKU match
+                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+            } else {
+                params["search"] = searchQuery!!
+            }
+        }
+
+        return params
     }
+
+    private fun buildVariationParametersMap(
+        pageSize: Int,
+        offset: Int,
+        searchQuery: String?,
+        ids: List<Long>,
+        excludedProductIds: List<Long>
+    ) = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "orderby" to "date",
+            "order" to "asc",
+            "offset" to offset.toString()
+        ).putIfNotEmpty("search" to searchQuery)
+            .putIfNotEmpty("include" to ids.map { it }.joinToString())
+            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
 
     private fun ProductSorting.asOrderByParameter() = when (this) {
         TITLE_ASC, TITLE_DESC -> "title"
@@ -630,9 +707,9 @@ class ProductRestClient @Inject constructor(
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
-        val body = listOfNotNull(
+        val body = mapOf(
                 "password" to password
-        ).toMap()
+        )
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
@@ -672,7 +749,6 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0
     ): RemoteProductVariationsPayload {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
-        val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
@@ -708,6 +784,48 @@ class ProductRestClient @Inject constructor(
             }
         }
     }
+
+    /**
+     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of variations for the given WooCommerce [SiteModel] and product.
+     *
+     * @param [productId] Unique server id of the product
+     *
+     * but requiring this call to be suspended so the return call be synced within the coroutine job
+     *
+     */
+    suspend fun fetchProductVariationsWithSyncRequest(
+        site: SiteModel,
+        productId: Long,
+        pageSize: Int,
+        offset: Int,
+        includedVariationIds: List<Long> = emptyList(),
+        searchQuery: String? = null,
+        excludedVariationIds: List<Long> = emptyList()
+    ): WooPayload<List<WCProductVariationModel>> {
+        val params = buildVariationParametersMap(
+            pageSize,
+            offset,
+            searchQuery,
+            includedVariationIds,
+            excludedVariationIds
+        )
+
+        return WOOCOMMERCE.products.id(productId).variations.pathV3
+            .requestProductVariationTo(site, params)
+            .handleResultFrom(site, productId)
+    }
+
+    private suspend fun String.requestProductVariationTo(
+        site: SiteModel,
+        params: Map<String, String>
+    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        this@ProductRestClient,
+        site,
+        this,
+        params,
+        Array<ProductVariationApiResponse>::class.java
+    )
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/remoteProductId` to update a product
@@ -822,7 +940,6 @@ class ProductRestClient @Inject constructor(
             val variationsUpdates: List<Map<String, Any>> = variationsIds.map { variationId ->
                 modifiedProperties.toMutableMap()
                     .also { properties -> properties["id"] = variationId }
-                    .toMap()
             }
             jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this@ProductRestClient,
