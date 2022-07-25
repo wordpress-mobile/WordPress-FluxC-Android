@@ -49,17 +49,21 @@ import static org.wordpress.android.fluxc.media.MediaTestUtils.insertRandomMedia
 public class MediaStoreTest {
     public static final long AFTER_MILLIS = 2000000000;
     public static final long BEFORE_MILLIS = 2100000000;
-    private final MediaRestClient mMediaRestClient = mock(MediaRestClient.class);
-    private final WPV2MediaRestClient mWPV2MediaRestClient = mock(WPV2MediaRestClient.class);
-    private final DateTimeUtilsWrapper mDateTimeUtilsWrapper = mock(DateTimeUtilsWrapper.class);
-    private final MediaStore mMediaStore = new MediaStore(new Dispatcher(),
-            mMediaRestClient,
-            mock(MediaXMLRPCClient.class),
-            mWPV2MediaRestClient,
-            mDateTimeUtilsWrapper);
+    private MediaRestClient mMediaRestClient ;
+    private WPV2MediaRestClient mWPV2MediaRestClient;
+    private DateTimeUtilsWrapper mDateTimeUtilsWrapper;
+    private MediaStore mMediaStore;
 
     @Before
     public void setUp() {
+        mMediaRestClient = mock(MediaRestClient.class);
+        mWPV2MediaRestClient = mock(WPV2MediaRestClient.class);
+        mDateTimeUtilsWrapper = mock(DateTimeUtilsWrapper.class);
+        mMediaStore = new MediaStore(new Dispatcher(),
+                mMediaRestClient,
+                mock(MediaXMLRPCClient.class),
+                mWPV2MediaRestClient,
+                mDateTimeUtilsWrapper);
         Context context = RuntimeEnvironment.application.getApplicationContext();
         WellSqlConfig config = new SingleStoreWellSqlConfigForTests(context, MediaModel.class);
         WellSql.init(config);
