@@ -81,6 +81,7 @@ public class MediaSqlUtilsTest {
         }
     }
 
+    // only testing date filtering
     @Test
     public void testGetMediaWithStatesDateFiltering() {
         final List<MediaModel> mediaList = generateRandomizedMediaList(3, TEST_LOCAL_SITE_ID);
@@ -100,21 +101,26 @@ public class MediaSqlUtilsTest {
                 uploadStates,
                 "2022-09-03",
                 null);
-        assertAfterNullDateRangeMedia(dates, results);
+        assertThat(results.size()).isEqualTo(2);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[1]);
+        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[2]);
 
         // before is null
         results = MediaSqlUtils.getMediaWithStates(getTestSiteWithLocalId(TEST_LOCAL_SITE_ID),
                 uploadStates,
                 null,
                 "2022-09-02");
-        assertBeforeNullDateRange(dates, results);
+        assertThat(results.size()).isEqualTo(2);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[0]);
+        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[1]);
 
         // after and before are not null
         results = MediaSqlUtils.getMediaWithStates(getTestSiteWithLocalId(TEST_LOCAL_SITE_ID),
                 uploadStates,
                 "2022-09-03",
                 "2022-09-02");
-        assertBeforeAfterDateRange(results, dates, 1, 1);
+        assertThat(results.size()).isEqualTo(1);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[1]);
     }
 
     // only testing date filtering
@@ -140,7 +146,9 @@ public class MediaSqlUtilsTest {
                 Type.IMAGE.getValue(),
                 "2022-09-03",
                 null);
-        assertAfterNullDateRangeMedia(dates, results);
+        assertThat(results.size()).isEqualTo(2);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[1]);
+        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[2]);
 
         // before is null
         results = MediaSqlUtils.getMediaWithStatesAndMimeType(testSite,
@@ -148,7 +156,9 @@ public class MediaSqlUtilsTest {
                 Type.IMAGE.getValue(),
                 null,
                 "2022-09-02");
-        assertBeforeNullDateRange(dates, results);
+        assertThat(results.size()).isEqualTo(2);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[0]);
+        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[1]);
 
         // after and before are not null
         results = MediaSqlUtils.getMediaWithStatesAndMimeType(testSite,
@@ -156,22 +166,8 @@ public class MediaSqlUtilsTest {
                 Type.IMAGE.getValue(),
                 "2022-09-03",
                 "2022-09-02");
-        assertBeforeAfterDateRange(results, dates, 1, 1);
-    }
-
-    private void assertBeforeNullDateRange(String[] dates, List<MediaModel> results) {
-        assertBeforeAfterDateRange(results, dates, 2, 0);
-        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[1]);
-    }
-
-    private void assertBeforeAfterDateRange(List<MediaModel> results, String[] dates, int i, int i2) {
-        assertThat(results.size()).isEqualTo(i);
-        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[i2]);
-    }
-
-    private void assertAfterNullDateRangeMedia(String[] dates, List<MediaModel> results) {
-        assertBeforeAfterDateRange(results, dates, 2, 1);
-        assertThat(results.get(1).getUploadDate()).isEqualTo(dates[2]);
+        assertThat(results.size()).isEqualTo(1);
+        assertThat(results.get(0).getUploadDate()).isEqualTo(dates[1]);
     }
 
     // Inserts a media item, verifies it's in the DB, deletes the item, verifies it's not in the DB
