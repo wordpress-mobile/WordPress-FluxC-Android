@@ -2,7 +2,7 @@
 common_params:
   # Common plugin settings to use with the `plugins` key.
   - &common_plugins
-    - automattic/bash-cache#2.3.0
+    - automattic/bash-cache#add/buildkite-test-analytics
   # Common artifact paths used across steps
   - &artifact_paths
     - build/test-results/**/*
@@ -61,18 +61,16 @@ steps:
     artifact_paths: *artifact_paths
 
   - label: "Unit Test"
-    command: |
-      cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
-      ./gradlew --stacktrace example:testRelease plugins:woocommerce:testRelease
+    command: .buildkite/unit-tests.sh
     artifact_paths: *artifact_paths
+    plugins: *common_plugins
 
   - label: "WooCommerce Tests"
-    command: |
-      cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
-      wget $API_TEST_SITE_URL
-      ./gradlew --stacktrace :tests:api:test
+    command: .buildkite/woocommerce-tests.sh
     artifact_paths: *artifact_paths
+    plugins: *common_plugins
 
   - label: "Connected Tests"
     command: .buildkite/connected-tests.sh
     artifact_paths: *artifact_paths
+    plugins: *common_plugins
