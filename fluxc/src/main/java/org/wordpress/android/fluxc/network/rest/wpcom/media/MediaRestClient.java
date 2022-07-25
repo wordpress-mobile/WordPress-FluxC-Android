@@ -345,7 +345,13 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                         if (mediaList != null) {
                             AppLog.v(T.MEDIA, "Fetched media list for site with size: " + mediaList.size());
                             boolean canLoadMore = mediaList.size() == number;
-                            notifyMediaListFetched(site, mediaList, offset > 0, canLoadMore, mimeType);
+                            notifyMediaListFetched(site,
+                                    mediaList,
+                                    offset > 0,
+                                    canLoadMore,
+                                    mimeType,
+                                    params.get("after"),
+                                    params.get("before"));
                         } else {
                             String errorMessage = "could not parse Fetch all media response: " + response;
                             AppLog.w(T.MEDIA, errorMessage);
@@ -606,9 +612,11 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                                         @NonNull List<MediaModel> media,
                                         boolean loadedMore,
                                         boolean canLoadMore,
-                                        MimeType.Type mimeType) {
+                                        MimeType.Type mimeType,
+                                        @Nullable String after,
+                                        @Nullable String before) {
         FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(site, media,
-                loadedMore, canLoadMore, mimeType);
+                loadedMore, canLoadMore, mimeType, after, before);
         mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 

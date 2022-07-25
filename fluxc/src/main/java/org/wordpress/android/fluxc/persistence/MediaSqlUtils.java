@@ -30,7 +30,7 @@ public class MediaSqlUtils {
         return getMediaWithStatesQuery(site, uploadStates, null, null).getAsModel();
     }
     public static List<MediaModel> getMediaWithStates(SiteModel site,
-                                                      List<String> uploadStates,
+                                                      @Nullable List<String> uploadStates,
                                                       @Nullable String before,
                                                       @Nullable String after) {
         return getMediaWithStatesQuery(site, uploadStates, before, after).getAsModel();
@@ -61,8 +61,10 @@ public class MediaSqlUtils {
         ConditionClauseBuilder<SelectQuery<MediaModel>> queryBuilder = WellSql.select(MediaModel.class)
                                                                     .where().beginGroup()
                                                                     .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
-                                                                    .contains(MediaModelTable.MIME_TYPE, mimeType)
-                                                                    .isIn(MediaModelTable.UPLOAD_STATE, uploadStates);
+                                                                    .contains(MediaModelTable.MIME_TYPE, mimeType);
+        if (uploadStates != null) {
+            queryBuilder = queryBuilder.isIn(MediaModelTable.UPLOAD_STATE, uploadStates);
+        }
         if (before != null && after != null) {
             queryBuilder = queryBuilder.isBetween(MediaModelTable.UPLOAD_DATE, after, before);
         } else if (after != null) {
@@ -105,13 +107,16 @@ public class MediaSqlUtils {
     }
 
     private static SelectQuery<MediaModel> getMediaWithStatesQuery(SiteModel site,
-                                                                   List<String> uploadStates,
-                                                                   String before,
-                                                                   String after) {
+                                                                   @Nullable List<String> uploadStates,
+                                                                   @Nullable String before,
+                                                                   @Nullable String after) {
         ConditionClauseBuilder<SelectQuery<MediaModel>> queryBuilder = WellSql.select(MediaModel.class)
-                                                                    .where().beginGroup()
-                                                                    .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
-                                                                    .isIn(MediaModelTable.UPLOAD_STATE, uploadStates);
+                                                                              .where().beginGroup()
+                                                                              .equals(MediaModelTable.LOCAL_SITE_ID,
+                                                                                      site.getId());
+        if (uploadStates != null) {
+            queryBuilder = queryBuilder.isIn(MediaModelTable.UPLOAD_STATE, uploadStates);
+        }
         if (before != null && after != null) {
             queryBuilder = queryBuilder.isBetween(MediaModelTable.UPLOAD_DATE, after, before);
         } else if (after != null) {
@@ -394,49 +399,35 @@ public class MediaSqlUtils {
                 .endGroup().endWhere().execute();
     }
 
-    public static int deleteAllUploadedSiteMedia(SiteModel siteModel) {
-        return WellSql.delete(MediaModel.class)
-                .where().beginGroup()
-                .equals(MediaModelTable.LOCAL_SITE_ID, siteModel.getId())
-                .equals(MediaModelTable.UPLOAD_STATE, MediaUploadState.UPLOADED.toString())
-                .endGroup().endWhere().execute();
-    }
-
-    public static int deleteAllUploadedSiteMediaWithMimeType(SiteModel siteModel, String mimeType) {
-        return WellSql.delete(MediaModel.class)
-                .where().beginGroup()
-                .equals(MediaModelTable.LOCAL_SITE_ID, siteModel.getId())
-                .equals(MediaModelTable.UPLOAD_STATE, MediaUploadState.UPLOADED.toString())
-                .contains(MediaModelTable.MIME_TYPE, mimeType)
-                .endGroup().endWhere().execute();
-    }
-
     public static int deleteAllMedia() {
         return WellSql.delete(MediaModel.class).execute();
     }
 
-    public static int deleteUploadedSiteMediaNotInList(SiteModel site, List<MediaModel> mediaList, String mimeType) {
-        if (mediaList.isEmpty()) {
-            if (!TextUtils.isEmpty(mimeType)) {
-                return MediaSqlUtils.deleteAllUploadedSiteMediaWithMimeType(site, mimeType);
-            } else {
-                return MediaSqlUtils.deleteAllUploadedSiteMedia(site);
-            }
-        }
-
+    public static int deleteUploadedSiteMediaNotInList(SiteModel site, List<MediaModel> mediaList, String mimeType,
+                                                       @Nullable String after, @Nullable String before) {
         List<Integer> idList = new ArrayList<>();
         for (MediaModel media : mediaList) {
             idList.add(media.getId());
         }
 
         ConditionClauseBuilder<DeleteQuery<MediaModel>> builder = WellSql.delete(MediaModel.class)
-                .where().beginGroup()
-                .isNotIn(MediaModelTable.ID, idList)
-                .equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
+                .where().beginGroup();
+        if (!mediaList.isEmpty()) {
+            builder = builder.isNotIn(MediaModelTable.ID, idList);
+        }
+        builder = builder.equals(MediaModelTable.LOCAL_SITE_ID, site.getId())
                 .equals(MediaModelTable.UPLOAD_STATE, MediaUploadState.UPLOADED.toString());
 
         if (!TextUtils.isEmpty(mimeType)) {
             builder.contains(MediaModelTable.MIME_TYPE, mimeType);
+        }
+
+        if (before != null && after != null) {
+            builder = builder.isBetween(MediaModelTable.UPLOAD_DATE, after, before);
+        } else if (after != null) {
+            builder = builder.greaterThenOrEqual(MediaModelTable.UPLOAD_DATE, after);
+        } else if (before != null) {
+            builder = builder.lessThenOrEqual(MediaModelTable.UPLOAD_DATE, before);
         }
 
         return builder.endGroup().endWhere().execute();

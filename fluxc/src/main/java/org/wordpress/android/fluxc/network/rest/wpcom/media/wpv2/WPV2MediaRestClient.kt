@@ -223,7 +223,15 @@ class WPV2MediaRestClient @Inject constructor(
                 val mediaList = response.data.map { it.toMediaModel(site.id) }
                 AppLog.v(MEDIA, "Fetched media list for site with size: " + mediaList.size)
                 val canLoadMore = mediaList.size == perPage
-                FetchMediaListResponsePayload(site, mediaList, offset > 0, canLoadMore, mimeType)
+                FetchMediaListResponsePayload(
+                        site,
+                        mediaList,
+                        offset > 0,
+                        canLoadMore,
+                        mimeType,
+                        params["after"],
+                        params["before"]
+                )
             }
         }
     }

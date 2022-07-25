@@ -154,16 +154,32 @@ public class MediaStore extends Store {
         public boolean loadedMore;
         public boolean canLoadMore;
         public MimeType.Type mimeType;
+        @Nullable public String after;
+        @Nullable public String before;
+
         public FetchMediaListResponsePayload(SiteModel site,
                                              @NonNull List<MediaModel> mediaList,
                                              boolean loadedMore,
                                              boolean canLoadMore,
                                              MimeType.Type mimeType) {
+            this(site, mediaList, loadedMore, canLoadMore, mimeType, null, null);
+        }
+
+        public FetchMediaListResponsePayload(
+                SiteModel site,
+                @NonNull List<MediaModel> mediaList,
+                boolean loadedMore,
+                boolean canLoadMore,
+                MimeType.Type mimeType,
+                @Nullable String after,
+                @Nullable String before) {
             this.site = site;
             this.mediaList = mediaList;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
             this.mimeType = mimeType;
+            this.after = after;
+            this.before = before;
         }
 
         public FetchMediaListResponsePayload(SiteModel site, MediaError error, MimeType.Type mimeType) {
@@ -608,6 +624,27 @@ public class MediaStore extends Store {
     public List<MediaModel> getAllSiteMedia(SiteModel siteModel) {
         return MediaSqlUtils.getAllSiteMedia(siteModel);
     }
+    public List<MediaModel> getAllSiteMedia(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
+        String afterText = getDateSQLQueryText(after);
+        String beforeText = getDateSQLQueryText(before);
+        if (afterText != null || beforeText != null) {
+            return MediaSqlUtils.getMediaWithStates(siteModel,
+                    null,
+                    beforeText,
+                    afterText);
+        } else {
+            return MediaSqlUtils.getAllSiteMedia(siteModel);
+        }
+    }
+
+    @Nullable
+    private String getDateSQLQueryText(@Nullable Long after) {
+        String dateText = null;
+        if (after != null) {
+            dateText = mDateTimeUtilsWrapper.iso8601UTCFromDate(new Date(after));
+        }
+        return dateText;
+    }
 
     public static final List<String> NOT_DELETED_STATES = new ArrayList<>();
     static {
@@ -640,6 +677,19 @@ public class MediaStore extends Store {
     }
 
     public List<MediaModel> getSiteImages(SiteModel siteModel) {
+        return MediaSqlUtils.getSiteImages(siteModel);
+    }
+
+    public List<MediaModel> getSiteImages(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
+        String afterText = getDateSQLQueryText(after);
+        String beforeText = getDateSQLQueryText(before);
+        if (afterText != null || beforeText != null) {
+            return MediaSqlUtils.getMediaWithStatesAndMimeType(siteModel,
+                    null,
+                    MimeType.Type.IMAGE.getValue(),
+                    beforeText,
+                    afterText);
+        }
         return MediaSqlUtils.getSiteImages(siteModel);
     }
 
@@ -990,7 +1040,7 @@ public class MediaStore extends Store {
             mimeTypeValue = payload.mimeType.getValue();
         }
         MediaSqlUtils.deleteUploadedSiteMediaNotInList(
-                payload.site, existingMediaList, mimeTypeValue);
+                payload.site, existingMediaList, mimeTypeValue, payload.after, payload.before);
 
         // add new media
         for (MediaModel media : newMediaList) {
