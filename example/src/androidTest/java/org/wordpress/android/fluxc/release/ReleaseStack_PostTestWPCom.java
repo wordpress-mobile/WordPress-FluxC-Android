@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -334,7 +335,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(currentStoredPosts <= (PostStore.NUM_POSTS_PER_FETCH * 2));
     }
 
-    @Test
+    @Ignore @Test
     public void testFetchPages() throws InterruptedException {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -679,7 +680,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         testAutoSavePostOrPage(post, false, false);
     }
 
-    @Test
+    @Ignore @Test
     public void testAutoSaveScheduledPost() throws InterruptedException {
         // Arrange
         PostModel post = createNewPost();
@@ -750,7 +751,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getRemoteLastModified());
     }
 
-    @Test
+    @Ignore @Test
     public void testAutoSaveModifiedDateIsDifferentThanPostModifiedDate() throws InterruptedException {
         // Arrange
         PostModel post = createNewPost();
