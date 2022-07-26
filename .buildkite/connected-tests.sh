@@ -13,7 +13,7 @@ echo -e "\n--- :gcloud: Logging into Google Cloud"
 gcloud auth activate-service-account --key-file .configure-files/firebase.secrets.json
 
 echo -e "\n--- :hammer_and_wrench: Building Tests"
-./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
+./gradlew example:assembleDebug example:assembleDebugAndroidTest
 
 echo -e "\n--- :firebase: Run Tests"
 mkdir -p build/test-results
