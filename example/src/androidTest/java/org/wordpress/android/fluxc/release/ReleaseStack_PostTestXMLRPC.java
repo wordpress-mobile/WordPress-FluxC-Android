@@ -348,7 +348,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(currentStoredPosts <= (PostStore.NUM_POSTS_PER_FETCH * 2));
     }
 
-    @Ignore @Test
+    @Test
     public void testFetchPages() throws InterruptedException {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);

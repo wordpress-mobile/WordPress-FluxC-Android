@@ -7,7 +7,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.ActivityLogAction
@@ -75,7 +74,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         this.incomingActions.clear()
     }
 
-    @Ignore @Test
+    @Test
     fun testFetchActivities() {
         val site = authenticate(FreeJetpackSite)
 
@@ -92,7 +91,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(fetchActivities.rowsAffected, activityLogForSite.size)
     }
 
-    @Ignore @Test
+    @Test
     fun testFetchRewindableActivities() {
         val site = authenticate(FreeJetpackSite)
 
@@ -131,7 +130,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertTrue(userActivities != rewindActivities)
     }
 
-    @Ignore @Test
+    @Test
     fun testFetchRewindState() {
         val site = authenticate(FreeJetpackSite)
 
@@ -150,7 +149,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         }
     }
 
-    @Ignore @Test
+    @Test
     fun storeAndRetrieveActivityLogInOrderByDateFromDb() {
         val site = authenticate(FreeJetpackSite)
 
@@ -171,7 +170,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(activityLogForSite[2], firstActivity)
     }
 
-    @Ignore @Test
+    @Test
     fun storeAndRetrieveRewindableActivityLogInOrderByDateFromDb() {
         val site = authenticate(FreeJetpackSite)
 
@@ -191,7 +190,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(activityLogForSite[1], firstActivity)
     }
 
-    @Ignore @Test
+    @Test
     fun updatesActivityWithTheSameActivityId() {
         val site = authenticate(FreeJetpackSite)
 
@@ -217,7 +216,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(updatedActivityLogForSite[0].name, updatedName)
     }
 
-    @Ignore @Test
+    @Test
     fun rewindOperationFailsOnNonexistentId() {
         val site = authenticate(FreeJetpackSite)
 
@@ -230,7 +229,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(rewindResult.error.type, RewindErrorType.GENERIC_ERROR)
     }
 
-    @Ignore @Test
+    @Test
     fun insertAndRetrieveRewindStatus() {
         val site = authenticate(FreeJetpackSite)
         this.mCountDownLatch = CountDownLatch(1)
@@ -256,7 +255,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         }
     }
 
-    @Ignore @Test
+    @Test
     fun testFetchActivityTypes() {
         val site = authenticate(FreeJetpackSite)
         val payload = FetchActivityTypesPayload(site.siteId, null, null)
