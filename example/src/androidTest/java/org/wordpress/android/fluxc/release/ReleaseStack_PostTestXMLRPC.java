@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
