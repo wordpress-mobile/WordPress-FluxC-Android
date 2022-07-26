@@ -624,24 +624,32 @@ public class MediaStore extends Store {
     public List<MediaModel> getAllSiteMedia(SiteModel siteModel) {
         return MediaSqlUtils.getAllSiteMedia(siteModel);
     }
+
     public List<MediaModel> getAllSiteMedia(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
-        String afterText = getDateSQLQueryText(after);
-        String beforeText = getDateSQLQueryText(before);
-        if (afterText != null || beforeText != null) {
+        if (after != null || before != null) {
             return MediaSqlUtils.getMediaWithStates(siteModel,
                     null,
-                    beforeText,
-                    afterText);
+                    getDateBeforeSQLQueryText(before),
+                    getDateAfterSQLQueryText(after));
         } else {
             return MediaSqlUtils.getAllSiteMedia(siteModel);
         }
     }
 
     @Nullable
-    private String getDateSQLQueryText(@Nullable Long after) {
+    private String getDateAfterSQLQueryText(@Nullable Long after) {
         String dateText = null;
         if (after != null) {
-            dateText = mDateTimeUtilsWrapper.iso8601UTCFromDate(new Date(after));
+            dateText = mDateTimeUtilsWrapper.iso8601UTCStartDateText(new Date(after));
+        }
+        return dateText;
+    }
+
+    @Nullable
+    private String getDateBeforeSQLQueryText(@Nullable Long before) {
+        String dateText = null;
+        if (before != null) {
+            dateText = mDateTimeUtilsWrapper.iso8601UTCEndDateText(new Date(before));
         }
         return dateText;
     }
@@ -681,14 +689,12 @@ public class MediaStore extends Store {
     }
 
     public List<MediaModel> getSiteImages(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
-        String afterText = getDateSQLQueryText(after);
-        String beforeText = getDateSQLQueryText(before);
-        if (afterText != null || beforeText != null) {
+        if (after != null || before != null) {
             return MediaSqlUtils.getMediaWithStatesAndMimeType(siteModel,
                     null,
                     MimeType.Type.IMAGE.getValue(),
-                    beforeText,
-                    afterText);
+                    getDateBeforeSQLQueryText(before),
+                    getDateAfterSQLQueryText(after));
         }
         return MediaSqlUtils.getSiteImages(siteModel);
     }
@@ -697,11 +703,44 @@ public class MediaStore extends Store {
         return MediaSqlUtils.getSiteVideos(siteModel);
     }
 
+    public List<MediaModel> getSiteVideos(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
+        if (after != null || before != null) {
+            return MediaSqlUtils.getMediaWithStatesAndMimeType(siteModel,
+                    null,
+                    MimeType.Type.VIDEO.getValue(),
+                    getDateBeforeSQLQueryText(before),
+                    getDateAfterSQLQueryText(after));
+        }
+        return MediaSqlUtils.getSiteVideos(siteModel);
+    }
+
     public List<MediaModel> getSiteAudio(SiteModel siteModel) {
         return MediaSqlUtils.getSiteAudio(siteModel);
     }
 
+    public List<MediaModel> getSiteAudio(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
+        if (after != null || before != null) {
+            return MediaSqlUtils.getMediaWithStatesAndMimeType(siteModel,
+                    null,
+                    MimeType.Type.AUDIO.getValue(),
+                    getDateBeforeSQLQueryText(before),
+                    getDateAfterSQLQueryText(after));
+        }
+        return MediaSqlUtils.getSiteAudio(siteModel);
+    }
+
     public List<MediaModel> getSiteDocuments(SiteModel siteModel) {
+        return MediaSqlUtils.getSiteDocuments(siteModel);
+    }
+
+    public List<MediaModel> getSiteDocuments(SiteModel siteModel, @Nullable Long after, @Nullable Long before) {
+        if (after != null || before != null) {
+            return MediaSqlUtils.getMediaWithStatesAndMimeType(siteModel,
+                    null,
+                    MimeType.Type.APPLICATION.getValue(),
+                    getDateBeforeSQLQueryText(before),
+                    getDateAfterSQLQueryText(after));
+        }
         return MediaSqlUtils.getSiteDocuments(siteModel);
     }
 
@@ -894,13 +933,13 @@ public class MediaStore extends Store {
         String beforeText = null;
         Date beforeDate = null;
         if (payload.before != null) {
-            beforeText = mDateTimeUtilsWrapper.iso8601UTCFromDate(new Date(payload.before));
+            beforeText = mDateTimeUtilsWrapper.iso8601UTCEndDateText(new Date(payload.before));
             beforeDate = new Date(payload.before);
         }
         String afterText = null;
         Date afterDate = null;
         if (payload.after != null) {
-            afterText = mDateTimeUtilsWrapper.iso8601UTCFromDate(new Date(payload.after));
+            afterText = mDateTimeUtilsWrapper.iso8601UTCStartDateText(new Date(payload.after));
             afterDate = new Date(payload.after);
         }
         if (payload.loadMore) {
