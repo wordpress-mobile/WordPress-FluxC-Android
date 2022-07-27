@@ -32,7 +32,7 @@ gcloud firebase test android run \
 
 echo -e "--- :gcloud: Download Test Results"
 TEST_BUCKET=$(cat build/test-results/firebase-test-log.txt | grep -o "gs://test\-lab\-.*/" | head -1)
-gsutil cp "$TEST_BUCKET*test_result*.xml" build/test-results/connected-tests.xml
+gsutil cp "$TEST_BUCKET**/test_result*.xml" build/test-results/connected-tests.xml
 
 echo -e "--- :buildkite: Upload Test Results to Test Analytics"
 upload_buildkite_test_analytics_junit build/test-results/connected-tests.xml $BUILDKITE_ANALYTICS_TOKEN_CONNECTED_TESTS
