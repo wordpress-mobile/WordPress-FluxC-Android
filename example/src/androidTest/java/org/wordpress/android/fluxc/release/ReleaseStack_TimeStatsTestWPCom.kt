@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
@@ -24,6 +25,9 @@ class ReleaseStack_TimeStatsTestWPCom : ReleaseStack_WPComBase() {
         init()
     }
 
+    @Ignore("File download stats are not available for Jetpack sites")
+    // Running the test will fail due to:
+    // {"error":"invalid_blog","message":"File download stats are not available for Jetpack sites"}
     @Test
     fun testFetchFileDownloads() {
         val selectedDate = Calendar.getInstance()
