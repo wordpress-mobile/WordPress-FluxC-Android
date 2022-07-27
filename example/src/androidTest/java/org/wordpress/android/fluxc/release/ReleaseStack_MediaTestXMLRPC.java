@@ -229,14 +229,14 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Upload media attached to remotely saved post
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         testMedia.setLocalPostId(5);
-        testMedia.setPostId(1);
+        testMedia.setPostId(4507);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
         testMedia.setMediaId(mLastUploadedId);
         MediaModel uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
         assertNotNull(uploadedMedia);
-        assertEquals(1, uploadedMedia.getPostId());
+        assertEquals(4507, uploadedMedia.getPostId());
         assertEquals(5, uploadedMedia.getLocalPostId());
 
         mNextEvent = TestEvents.DELETED_MEDIA;
