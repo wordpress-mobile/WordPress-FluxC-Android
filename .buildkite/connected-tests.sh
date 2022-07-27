@@ -28,7 +28,6 @@ gcloud firebase test android run \
 	--no-record-video \
 	--results-history-name "fluxc-connected-tests" \
 	--test-targets "package org.wordpress.android.fluxc" \
-	--num-flaky-test-attempts "1" \
 	|& tee build/test-results/firebase-test-log.txt || EXIT_CODE=$?
 
 echo -e "--- :gcloud: Download Test Results"
