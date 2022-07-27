@@ -3,7 +3,7 @@
 set -euo pipefail
 
 echo "--- :closed_lock_with_key: Installing Secrets"
-cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
+cp gradle.properties-example gradle.properties
 ./gradlew applyConfiguration
 
 echo -e "\n--- :open_file_folder: Merge Properties Files"

@@ -5,8 +5,8 @@ common_params:
     - automattic/bash-cache#2.7.0
   # Common artifact paths used across steps
   - &artifact_paths
-    - build/test-results/**/*
-    - build/reports/**/*
+    - **/build/test-results/**/*
+    - **/build/reports/**/*
 
 agents:
   queue: "android"
