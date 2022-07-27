@@ -2,11 +2,11 @@
 common_params:
   # Common plugin settings to use with the `plugins` key.
   - &common_plugins
-    - automattic/bash-cache#add/buildkite-test-analytics
+    - automattic/bash-cache#2.7.0
   # Common artifact paths used across steps
   - &artifact_paths
-    - build/test-results/**/*
-    - build/reports/**/*
+    - "**/build/test-results/**/*"
+    - "**/build/reports/**/*"
 
 agents:
   queue: "android"
