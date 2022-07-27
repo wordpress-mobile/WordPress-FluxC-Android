@@ -9,7 +9,7 @@ cp gradle.properties-example gradle.properties && cp -a example/properties-examp
 wget $API_TEST_SITE_URL
 
 echo -e "\n--- :gradle: Run Tests"
-./gradlew --stacktrace :tests:api:test  || EXIT_CODE=$?
+./gradlew :tests:api:test  || EXIT_CODE=$?
 
 echo -e "\n--- :buildkite: Upload Test Results to Test Analytics"
 find tests/api/build/test-results/test -name "TEST-*.xml" -exec upload_buildkite_test_analytics_junit {} $BUILDKITE_ANALYTICS_TOKEN_WOO_TESTS \;
