@@ -22,7 +22,7 @@ gcloud firebase test android run \
 	--app "example/build/outputs/apk/debug/example-debug.apk" \
 	--test "example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk" \
 	--timeout "30m" \
-	--device "model=Nexus5X,version=26,locale=en,orientation=portrait" \
+	--device "model=Pixel3,version=30,locale=en,orientation=portrait" \
 	--project "api-project-108380595987" \
 	--verbosity info \
 	--no-record-video \
