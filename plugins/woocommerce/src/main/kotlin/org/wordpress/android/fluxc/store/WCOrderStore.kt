@@ -572,8 +572,8 @@ class WCOrderStore @Inject constructor(
                     revertOrderStatus(remotePayload)
                 } else {
                     ordersDao.insertOrUpdateOrder(remotePayload.order)
-                    OnOrderChanged(causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS)
-                }
+                    OnOrderChanged()
+                }.copy(causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS)
 
                 emit(RemoteUpdateResult(remoteUpdateResult))
                 // Needs to remain here until all event bus observables are removed from the client code
@@ -856,11 +856,12 @@ class WCOrderStore @Inject constructor(
     }
 
     private suspend fun revertOrderStatus(payload: RemoteOrderPayload.Updating): OnOrderChanged {
-        updateOrderStatusLocally(payload.order.orderId, payload.order.localSiteId, payload.order.status)
-        return OnOrderChanged(
-            causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS,
-            orderError = payload.error
+        updateOrderStatusLocally(
+            payload.order.orderId,
+            payload.order.localSiteId,
+            payload.order.status
         )
+        return OnOrderChanged(orderError = payload.error)
     }
 
     private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload) {
