@@ -65,6 +65,28 @@ From there, add and enable the configuration file for FluxC, located at [config/
 
 The FluxC project uses [ktlint](https://github.com/shyiko/ktlint) for Kotlin linting. You can run ktlint using `./gradlew ktlint`, and you can also run `./gradlew ktlintFormat` for auto-formatting. There is no IDEA plugin (like Checkstyle's) at this time.
 
+## Using Detekt
+
+The FluxC project uses [detekt](https://github.com/detekt/detekt) for Kotlin linting and code style check.
+
+You can run detekt using `./gradlew detekt`.
+
+You can also view errors and warnings in realtime with the Detekt plugin.
+
+You can install the detekt plugin in Android Studio here:
+
+`Android Studio > Preferences... > Plugins > detekt`
+
+Once installed, you can configure the plugin here:
+
+`Android Studio > Preferences... > Tools > Detekt`
+
+From there, add and enable the custom configuration file, located at [config/detekt/detekt.yml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/trunk/config/detekt/detekt.yml).
+
+If you want to use the **AutoCorrect** feature of the plugin, make sure that the option `Enable formatting (ktlint) rules` is enabled in the above settings, then you will be able to reformat any file according to detekt's rules using the refactor menu `AutoCorrect by Detekt Rules`
+
+Please don’t add a new suppression line to the [baseline.xml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/trunk/config/detekt/baseline.xml). Consider fixing the issue or suppressing locally if it’s necessary.
+
 ## Contributing
 
 ### Actions
