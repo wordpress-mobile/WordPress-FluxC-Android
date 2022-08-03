@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
+import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.OnStarterDesignsFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
 import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged;
@@ -32,6 +33,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     enum TestEvents {
         NONE,
         FETCHED_WPCOM_THEMES,
+        FETCHED_SITE_THEMES,
         FETCHED_CURRENT_THEME,
         ACTIVATED_THEME,
         FETCHED_STARTER_DESIGNS
@@ -81,12 +83,18 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         ThemeModel currentTheme = fetchCurrentTheme();
         assertNotNull(currentTheme);
 
-        // Fetch wp.com themes to activate a different theme
-        fetchWpComThemes();
+        // Our test site is on a business plan, so it's considered a Jetpack site. Some time ago Jetpack sites were
+        // only self-hosted sites and had only access to themes installed in the site. So, even though at the time of
+        // this comment it's possible to install wp.com themes, ThemeStore is not yet updated to work that way.
+        // It seems WPAndroid is getting around this restriction by using a browser for browsing and activating themes.
+        //
+        // In this test we are using the installed themes as if we can't access the wp.com themes to match the current
+        // ThemeStore behavior.
+        fetchSiteThemes();
 
         // activate a different "Twenty ..." theme
         ThemeModel themeToActivate = getTwentySomethingFreeTheme(currentTheme.getThemeId(),
-                mThemeStore.getWpComThemes());
+                mThemeStore.getThemesForSite(sSite));
         assertNotNull(themeToActivate);
         activateTheme(themeToActivate);
 
@@ -131,6 +139,16 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_WPCOM_THEMES, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteThemesChanged(OnSiteThemesChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_SITE_THEMES, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -207,6 +225,13 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchSiteThemes() throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_SITE_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(sSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
