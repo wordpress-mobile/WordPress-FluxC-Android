@@ -5,6 +5,7 @@ plugins {
     alias(sharedLibs.plugins.android.library).apply(false)
     alias(sharedLibs.plugins.kotlin.android).apply(false)
     alias(sharedLibs.plugins.kotlin.android.extensions).apply(false)
+    alias(sharedLibs.plugins.kotlin.detekt).apply(false)
     alias(sharedLibs.plugins.kotlin.jvm).apply(false)
     alias(sharedLibs.plugins.kotlin.kapt).apply(false)
 
@@ -14,6 +15,7 @@ plugins {
 
 allprojects {
     apply plugin: 'checkstyle'
+    apply plugin: 'io.gitlab.arturbosch.detekt'
 
     repositories {
         maven {
@@ -46,6 +48,16 @@ allprojects {
         toolVersion = '8.3'
         configFile file("${project.rootDir}/config/checkstyle.xml")
     }
+
+    detekt {
+        config = files("${project.rootDir}/config/detekt/detekt.yml")
+        autoCorrect = false
+        buildUponDefaultConfig = true
+        disableDefaultRuleSets = false
+        ignoreFailures = false
+        parallel = true
+        debug = false
+    }
 }
 
 subprojects {
@@ -74,4 +86,8 @@ ext {
     fluxcAnnotationsProjectDependency = project.hasProperty("fluxcAnnotationsVersion") ? "org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}" : project(":fluxc-annotations")
     fluxcProcessorProjectDependency = project.hasProperty("fluxcProcessorVersion") ? "org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}" : project(":fluxc-processor")
     fluxcProjectDependency = project.hasProperty("fluxcVersion") ? "org.wordpress:fluxc:${project.getProperty("fluxcVersion")}" : project(":fluxc")
+}
+
+dependencies {
+    detektPlugins sharedLibs.detekt.formatting
 }
