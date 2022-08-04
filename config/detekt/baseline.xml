@@ -22,7 +22,7 @@
     <ID>ComplexMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: AuthorsResponse, cacheMode: LimitMode): AuthorsModel</ID>
     <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: PostAndPageViewsResponse, cacheMode: LimitMode): PostAndPageViewsModel</ID>
-    <ID>ComplexMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
+    <ID>ComplexMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
     <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val activity_id: String?</ID>
     <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val is_rewindable: Boolean?</ID>
     <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val rewind_id: String?</ID>
@@ -148,7 +148,7 @@
     <ID>LongMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
     <ID>LongMethod:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
     <ID>LongMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
+    <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long, endOfRange: Long )</ID>
@@ -186,183 +186,6 @@
     <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$401</ID>
     <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$404</ID>
     <ID>MagicNumber:SiteXMLRPCClient.kt$SiteXMLRPCClient$3</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$10</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$100</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$101</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$102</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$1024L</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$103</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$104</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$105</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$106</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$107</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$108</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$109</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$11</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$110</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$111</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$112</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$113</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$114</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$115</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$116</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$117</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$118</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$119</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$12</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$120</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$121</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$122</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$123</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$124</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$125</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$126</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$127</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$128</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$129</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$13</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$130</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$131</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$132</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$133</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$134</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$135</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$136</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$137</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$138</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$139</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$14</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$140</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$141</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$142</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$143</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$144</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$145</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$146</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$147</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$148</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$149</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$15</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$150</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$151</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$152</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$153</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$154</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$155</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$156</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$157</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$158</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$159</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$16</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$160</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$161</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$162</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$163</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$164</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$165</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$166</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$167</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$168</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$169</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$17</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$170</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$171</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$172</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$173</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$174</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$175</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$176</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$177</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$18</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$19</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$20</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$21</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$22</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$23</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$24</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$25</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$26</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$27</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$28</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$29</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$3</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$30</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$31</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$32</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$33</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$34</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$35</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$36</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$37</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$38</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$39</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$4</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$40</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$41</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$42</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$43</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$44</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$45</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$46</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$47</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$48</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$49</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$5</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$50</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$51</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$52</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$53</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$54</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$55</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$56</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$57</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$58</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$59</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$5L</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$6</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$60</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$61</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$62</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$63</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$64</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$65</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$66</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$67</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$68</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$69</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$7</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$70</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$71</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$72</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$73</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$74</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$75</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$76</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$77</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$78</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$79</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$8</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$80</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$81</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$82</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$83</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$84</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$85</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$86</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$87</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$88</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$89</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$9</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$90</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$91</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$92</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$93</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$94</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$95</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$96</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$97</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$98</ID>
-    <ID>MagicNumber:WellSqlConfig.kt$WellSqlConfig$99</ID>
     <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$1000</ID>
     <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$60</ID>
     <ID>MaxLineLength:EditorThemeSqlUtils.kt$EditorThemeSqlUtils$// Deleting the row for the EditorThemeTable table row here will cascade to delete the associated rows in the EditorThemeElementTable as well.</ID>
