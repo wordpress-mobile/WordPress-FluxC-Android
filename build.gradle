@@ -8,8 +8,8 @@ plugins {
     alias(sharedLibs.plugins.kotlin.jvm).apply(false)
     alias(sharedLibs.plugins.kotlin.kapt).apply(false)
 
-    id "com.automattic.android.fetchstyle"
-    id "com.automattic.android.configure"
+    alias(sharedLibs.plugins.automattic.fetchstyle)
+    alias(sharedLibs.plugins.automattic.configure)
 }
 
 allprojects {

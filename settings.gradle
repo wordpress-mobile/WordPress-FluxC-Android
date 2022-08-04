@@ -1,26 +1,20 @@
 pluginManagement {
     repositories {
-        maven {
-            url 'https://a8c-libs.s3.amazonaws.com/android' 
-            content {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    url = uri("https://a8c-libs.s3.amazonaws.com/android")
+                }
+            }
+            filter {
                 includeGroup "com.automattic.android"
+                includeGroup "com.automattic.android.configure"
+                includeGroup "com.automattic.android.fetchstyle"
                 includeGroup "com.automattic.android.publish-to-s3"
             }
         }
         gradlePluginPortal()
         google()
-    }
-    resolutionStrategy {
-        eachPlugin {
-            // TODO: Remove this as soon as fetchstyle starts supporting Plugin Marker Artifacts
-            if (requested.id.id == "com.automattic.android.fetchstyle") {
-                useModule("com.automattic.android:fetchstyle:1.1")
-            }
-            // TODO: Remove this as soon as configure starts supporting Plugin Marker Artifacts
-            if (requested.id.id == "com.automattic.android.configure") {
-                useModule("com.automattic.android:configure:0.6.1")
-            }
-        }
     }
 }
 
@@ -29,7 +23,7 @@ plugins {
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
 }
 
-def catalogVersion = "1.2.0"
+def catalogVersion = "1.3.0"
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
