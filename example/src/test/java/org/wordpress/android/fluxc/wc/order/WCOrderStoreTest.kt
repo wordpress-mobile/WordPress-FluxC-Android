@@ -351,6 +351,7 @@ class WCOrderStoreTest {
                 WCOrderStatusModel(CoreOrderStatus.COMPLETED.value)
         ).toList().last()
 
+        // Ensure the error is sent in the response
         assertThat(response.event.error).isEqualTo(error)
 
         assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
