@@ -22,6 +22,7 @@ potential-bugs:
 style:
   DataClassShouldBeImmutable:
     active: true
+    ignoreAnnotated: ['Table']
   MagicNumber:
     ignoreEnums: true
     ignorePropertyDeclaration: true

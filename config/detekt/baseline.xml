@@ -54,59 +54,6 @@
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var activityID: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var actorType: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var avatarURL: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var discarded: Boolean? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var displayName: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var formattableContent: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var gridicon: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var name: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var published: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var rewindID: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var rewindable: Boolean? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var role: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var status: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var summary: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var type: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@Column var wpcomUserID: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var backupPoint: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var downloadCount: Int? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var downloadId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var progress: Int? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var rewindId: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var startedAt: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var url: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@Column var validUntil: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.BackupDownloadStatusBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var host: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var port: Int? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var rewindStateId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var role: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var stillValid: Boolean</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@Column var type: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.CredentialsBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var canAutoconfigure: Boolean? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var currentEntry: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var lastUpdated: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var message: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var reason: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var restoreId: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var rewindId: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var rewindProgress: Int? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var rewindReason: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var rewindStatus: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@Column var state: String</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.RewindStatusBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnActivityLogFetched$var causeOfChange: ActivityLogAction</ID>
     <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownload$var causeOfChange: ActivityLogAction</ID>
     <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownloadStatusFetched$var causeOfChange: ActivityLogAction</ID>
@@ -131,52 +78,12 @@
     <ID>DataClassShouldBeImmutable:CommentsDao.kt$CommentsDao.CommentEntity$@Ignore var level: Int = 0</ID>
     <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var authors: List&lt;Author></ID>
     <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var posts: List&lt;Post></ID>
-    <ID>DataClassShouldBeImmutable:DynamicCardSqlUtils.kt$DynamicCardSqlUtils.DynamicCardBuilder$@Column var dynamicCardType: String?</ID>
-    <ID>DataClassShouldBeImmutable:DynamicCardSqlUtils.kt$DynamicCardSqlUtils.DynamicCardBuilder$@Column var siteId: Int?</ID>
-    <ID>DataClassShouldBeImmutable:DynamicCardSqlUtils.kt$DynamicCardSqlUtils.DynamicCardBuilder$@Column var state: String?</ID>
-    <ID>DataClassShouldBeImmutable:DynamicCardSqlUtils.kt$DynamicCardSqlUtils.DynamicCardBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var galleryWithImageBlocks: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var isFSETheme: Boolean = false @JvmName("isFSETheme") get @JvmName("setIsFSETheme") set</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var localSiteId: Int = -1 @JvmName("getLocalSiteId") get @JvmName("setLocalSiteId") set</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var quoteBlockV2: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var rawFeatures: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var rawStyles: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var stylesheet: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@Column var version: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$@Column var name: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$@Column var slug: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$@Column var themeId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$@Column var type: String = EditorThemeElementType.COLOR.value</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$@Column var value: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:FileDownloadsRestClient.kt$FileDownloadsRestClient.FileDownloadsResponse.File$@SerializedName("downloads") var downloads: Int?</ID>
-    <ID>DataClassShouldBeImmutable:InsightTypeSqlUtils.kt$InsightTypeSqlUtils.InsightTypesBuilder$@Column var insightType: String</ID>
-    <ID>DataClassShouldBeImmutable:InsightTypeSqlUtils.kt$InsightTypeSqlUtils.InsightTypesBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:InsightTypeSqlUtils.kt$InsightTypeSqlUtils.InsightTypesBuilder$@Column var position: Int</ID>
-    <ID>DataClassShouldBeImmutable:InsightTypeSqlUtils.kt$InsightTypeSqlUtils.InsightTypesBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:InsightTypeSqlUtils.kt$InsightTypeSqlUtils.InsightTypesBuilder$@Column var status: String</ID>
-    <ID>DataClassShouldBeImmutable:InsightTypeSqlUtils.kt$InsightTypeSqlUtils.InsightTypesBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnActivateStatsModule$var causeOfChange: JetpackAction</ID>
     <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnJetpackInstalled$var causeOfChange: JetpackAction</ID>
     <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var noteHash: Long = 0L</ID>
     <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var read: Boolean = false</ID>
     <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var remoteSiteId: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var formattableBody: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var formattableMeta: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var formattableSubject: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var icon: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var noteHash: Long</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var noticon: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var read: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var remoteNoteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var subtype: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var timestamp: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var title: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var type: String</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@Column var url: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:NotificationSqlUtils.kt$NotificationSqlUtils.NotificationModelBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var date: Date</ID>
     <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var hasLocalChanges: Boolean</ID>
     <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var parent: PageModel?</ID>
@@ -192,13 +99,6 @@
     <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var id: String?</ID>
     <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var name: String?</ID>
     <ID>DataClassShouldBeImmutable:PostAndPageViewsRestClient.kt$PostAndPageViewsRestClient.PostAndPageViewsResponse$@SerializedName("date") var date: Date? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostFormatModel.kt$PostFormatModel$// Associated local site ID (could be refactored to be a FOREIGN KEY) @Column var siteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:PostFormatModel.kt$PostFormatModel$// Post format attributes @Column var slug: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostFormatModel.kt$PostFormatModel$@Column var displayName: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostFormatModel.kt$PostFormatModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:PostSchedulingNotificationSqlUtils.kt$PostSchedulingNotificationSqlUtils.PostSchedulingReminderBuilder$@Column var postId: Int</ID>
-    <ID>DataClassShouldBeImmutable:PostSchedulingNotificationSqlUtils.kt$PostSchedulingNotificationSqlUtils.PostSchedulingReminderBuilder$@Column var scheduledTime: String</ID>
-    <ID>DataClassShouldBeImmutable:PostSchedulingNotificationSqlUtils.kt$PostSchedulingNotificationSqlUtils.PostSchedulingReminderBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("ID") var revisionId: Long = 0</ID>
     <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("content") var content: String? = null</ID>
     <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("excerpt") var excerpt: String? = null</ID>
@@ -211,18 +111,6 @@
     <ID>DataClassShouldBeImmutable:ProductsStore.kt$ProductsStore.FetchProductsError$var type: FetchProductsErrorType</ID>
     <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Group$var markedAsSpam: Boolean = false</ID>
     <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Referrer$var markedAsSpam: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var duration: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var error: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var hasCloud: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var hasValidCredentials: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var initial: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var progress: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var reason: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var startDate: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@Column var state: String</ID>
-    <ID>DataClassShouldBeImmutable:ScanSqlUtils.kt$ScanSqlUtils.ScanStateBuilder$@PrimaryKey @Column private var id: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStarted$var causeOfChange: ScanAction</ID>
     <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStatusFetched$var causeOfChange: ScanAction</ID>
     <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnIgnoreThreatStarted$var causeOfChange: ScanAction</ID>
@@ -234,59 +122,8 @@
     <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var password: String = ""</ID>
     <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var url: String = ""</ID>
     <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var username: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var blockType: String</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var date: String?</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var postId: Long?</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var requestedItems: Int?</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var statsType: String</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@Column var timeStamp: Long</ID>
-    <ID>DataClassShouldBeImmutable:StatsRequestSqlUtils.kt$StatsRequestSqlUtils.StatsRequestBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@Column var blockType: String</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@Column var date: String?</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@Column var json: String</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@Column var postId: Long?</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@Column var statsType: String</ID>
-    <ID>DataClassShouldBeImmutable:StatsSqlUtils.kt$StatsSqlUtils.StatsBlockBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@Column var date: String?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@Column var itemId: String?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@Column var name: String?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@Column var thumbnail: String?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@Column var title: String?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@Column var url: String?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaPageBuilder$@Column var nextPage: Int?</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaPageBuilder$@Column var page: Int</ID>
-    <ID>DataClassShouldBeImmutable:StockMediaSqlUtils.kt$StockMediaSqlUtils.StockMediaPageBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var context: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var description: String</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var diff: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var extension: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var fileName: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var firstDetected: Long</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var fixableFile: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var fixableFixer: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var fixableTarget: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var fixedOn: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var remoteSiteId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var rows: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var signature: String</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var status: String</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@Column var threatId: Long</ID>
-    <ID>DataClassShouldBeImmutable:ThreatSqlUtils.kt$ThreatSqlUtils.ThreatBuilder$@PrimaryKey @Column private var id: Int = -1</ID>
     <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.CreateShoppingCartError$var type: CreateCartErrorType</ID>
     <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.RedeemShoppingCartError$var type: TransactionErrorType</ID>
-    <ID>DataClassShouldBeImmutable:XPostModel.kt$XPostModel$@Column var sourceSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:XPostModel.kt$XPostModel$@Column var targetSiteId: Int?</ID>
-    <ID>DataClassShouldBeImmutable:XPostModel.kt$XPostModel$@PrimaryKey @Column private var id: Int</ID>
-    <ID>DataClassShouldBeImmutable:XPostSiteModel.kt$XPostSiteModel$@Column var blavatar: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:XPostSiteModel.kt$XPostSiteModel$@Column var subdomain: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:XPostSiteModel.kt$XPostSiteModel$@Column var title: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:XPostSiteModel.kt$XPostSiteModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:XPostSiteModel.kt$XPostSiteModel$@SerializedName("blog_id") @Column var blogId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:XPostSiteModel.kt$XPostSiteModel$@SerializedName("siteurl") @Column var siteUrl: String = ""</ID>
     <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
     <ID>ExplicitItLambdaParameter:NotificationRestClient.kt$NotificationRestClient${ it -> NotificationApiResponse.notificationResponseToNotificationModel(it) }</ID>
     <ID>ForbiddenComment:CommentsMapper.kt$CommentsMapper$// TODO: set authorProfileImageUrl - get the hash from the email address?</ID>
@@ -651,293 +488,7 @@
     <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
     <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$@SerializedName("product_id") var productId: Long? = null</ID>
     <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$var quantity: Float? = null</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var attributeId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var count: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var description: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var localSiteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var menuOrder: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var name: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var remoteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@Column var slug: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCAttributeTermModel.kt$WCAttributeTermModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var avatarUrl: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingAddress1: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingAddress2: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingCity: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingCompany: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingCountry: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingEmail: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingFirstName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingLastName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingPhone: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingPostcode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var billingState: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var dateCreated: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var dateCreatedGmt: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var dateModified: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var dateModifiedGmt: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var email: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var firstName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var isPayingCustomer: Boolean = false @JvmName("setIsPayingCustomer") set</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var lastName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var remoteCustomerId: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var role: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingAddress1: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingAddress2: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingCity: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingCompany: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingCountry: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingFirstName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingLastName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingPostcode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var shippingState: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@Column var username: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCCustomerModel.kt$WCCustomerModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCGatewaySqlUtils.kt$WCGatewaySqlUtils.GatewaysTable$@Column var data: String</ID>
-    <ID>DataClassShouldBeImmutable:WCGatewaySqlUtils.kt$WCGatewaySqlUtils.GatewaysTable$@Column var gatewayId: String</ID>
-    <ID>DataClassShouldBeImmutable:WCGatewaySqlUtils.kt$WCGatewaySqlUtils.GatewaysTable$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:WCGatewaySqlUtils.kt$WCGatewaySqlUtils.GatewaysTable$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var hasArchives: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var localSiteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var name: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var orderBy: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var remoteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var slug: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var termsId: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@Column var type: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCGlobalAttributeModel.kt$WCGlobalAttributeModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCLocationModel.kt$WCLocationModel$@Column var code = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCLocationModel.kt$WCLocationModel$@Column var name = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCLocationModel.kt$WCLocationModel$@Column var parentCode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCLocationModel.kt$WCLocationModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var date = "" // The formatted end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var endDate = "" // The end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var fields = "" // JSON - A map of numerical index to stat name, used to lookup the stat in the data object</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var granularity = "" // The granularity ("days", "weeks", "months", "years")</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var isCustomField = false // to check if the data is for custom stats or default stats @JvmName("setIsCustomField") set</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var quantity = "" // The quantity based on unit. i.e. 30 days, 17 weeks, 12 months, 2 years</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@Column var startDate = "" // The start date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCNewVisitorStatsModel.kt$WCNewVisitorStatsModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentProviderModel.kt$WCOrderShipmentProviderModel$@Column var carrierLink = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentProviderModel.kt$WCOrderShipmentProviderModel$@Column var carrierName = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentProviderModel.kt$WCOrderShipmentProviderModel$@Column var country = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentProviderModel.kt$WCOrderShipmentProviderModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentProviderModel.kt$WCOrderShipmentProviderModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column var dateShipped = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column var remoteTrackingId = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column var trackingLink = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column var trackingNumber = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column var trackingProvider = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@Column(name = "LOCAL_ORDER_ID") var orderId = 0L // The local db unique identifier for the parent order object</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderShipmentTrackingModel.kt$WCOrderShipmentTrackingModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var date = "" // The formatted end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var endDate = "" // The end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var fields = "" // JSON - A map of numerical index to stat name, used to lookup the stat in the data object</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var isCustomField = false // to check if the data is for custom stats or default stats @JvmName("setIsCustomField") set</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var quantity = "" // The quantity based on unit. i.e. 30 days, 17 weeks, 12 months, 2 years</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var startDate = "" // The start date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@Column var unit = "" // The unit ("day", "week", "month", "year")</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatsModel.kt$WCOrderStatsModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatusModel.kt$WCOrderStatusModel$@Column var label = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatusModel.kt$WCOrderStatusModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatusModel.kt$WCOrderStatusModel$@Column var statusCount = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatusModel.kt$WCOrderStatusModel$@Column var statusKey = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStatusModel.kt$WCOrderStatusModel$@PrimaryKey @Column private var id: Int = 0</ID>
     <ID>DataClassShouldBeImmutable:WCOrderStore.kt$WCOrderStore.OnQuickOrderResult$var order: OrderEntity? = null</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderSummaryModel.kt$WCOrderSummaryModel$@Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderSummaryModel.kt$WCOrderSummaryModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderSummaryModel.kt$WCOrderSummaryModel$@Column(name = "REMOTE_ORDER_ID") var orderId = 0L // The unique identifier for this order on the server</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderSummaryModel.kt$WCOrderSummaryModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderSummaryModel.kt$WCOrderSummaryModel$var dateModified = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z</ID>
-    <ID>DataClassShouldBeImmutable:WCProductCategoryModel.kt$WCProductCategoryModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductCategoryModel.kt$WCProductCategoryModel$@Column var name = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductCategoryModel.kt$WCProductCategoryModel$@Column var parent = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductCategoryModel.kt$WCProductCategoryModel$@Column var remoteCategoryId = 0L // The unique identifier for this category on the server</ID>
-    <ID>DataClassShouldBeImmutable:WCProductCategoryModel.kt$WCProductCategoryModel$@Column var slug = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductCategoryModel.kt$WCProductCategoryModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var attributes = "" // array of attributes</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var averageRating = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var backordered = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var backorders = "" // no, notify, yes</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var backordersAllowed = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var buttonText = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var catalogVisibility = "" // visible, catalog, search, hidden</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var categories = "" // array of categories</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var crossSellIds = "" // array of cross-sell product IDs</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var dateCreated = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var dateModified = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var dateOnSaleFrom = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var dateOnSaleFromGmt = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var dateOnSaleTo = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var dateOnSaleToGmt = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var description = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var downloadExpiry = -1</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var downloadLimit = -1L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var downloadable = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var downloads = "" // array of downloadable files</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var externalUrl = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var featured = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var groupedProductIds = "" // array of grouped product IDs</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var height = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var images = "" // array of images</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var length = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var manageStock = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var menuOrder = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var metadata = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var name = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var onSale = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var parentId = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var permalink = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var price = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var purchasable = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var purchaseNote = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var ratingCount = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var regularPrice = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var relatedIds = "" // array of related product IDs</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var remoteProductId = 0L // The unique identifier for this product on the server</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var reviewsAllowed = true</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var salePrice = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var shippingClass = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var shippingClassId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var shippingRequired = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var shippingTaxable = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var shortDescription = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var sku = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var slug = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var soldIndividually = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var status = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var stockQuantity = 0.0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var stockStatus = "" // instock, outofstock, onbackorder</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var tags = "" // array of tags</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var taxClass = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var taxStatus = "" // taxable, shipping, none</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var totalSales = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var type = "" // simple, grouped, external, variable</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var upsellIds = "" // array of up-sell product IDs</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var variations = "" // array of variation IDs</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var virtual = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var weight = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@Column var width = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductModel.kt$WCProductModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * Name of the reviewer */ @SerializedName("reviewer") @Column var reviewerName = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * Remote unique identifier for this product review */ @Column var remoteProductReviewId = 0L // The unique ID for this product review on the server</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * Review rating (0 to 5) */ @Column var rating = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * Reviewer email address */ @Column var reviewerEmail = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * Status of the review. Options: approved, hold, spam, unspam, trash, and untrash. */ @Column var status = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * The content of the review */ @Column var review = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * The date the review was created, in UTC, ISO8601 formatted */ @Column var dateCreated = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * True if the reviewer purchased the product being reviewed, else false */ @Column var verified = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$/** * Unique identifier for the product this review belongs to */ @Column var remoteProductId = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductReviewModel.kt$WCProductReviewModel$@SerializedName("reviewer_avatar_urls") @Column var reviewerAvatarsJson = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductSettingsModel.kt$WCProductSettingsModel$// note that there are many more product settings than this, but for now these are all we need @Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductSettingsModel.kt$WCProductSettingsModel$@Column var dimensionUnit = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductSettingsModel.kt$WCProductSettingsModel$@Column var weightUnit = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductSettingsModel.kt$WCProductSettingsModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var attributes = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var backordered = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var backorders = "" // no, notify, yes</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var backordersAllowed = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var dateCreated = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var dateModified = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var dateOnSaleFrom = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var dateOnSaleFromGmt = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var dateOnSaleTo = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var dateOnSaleToGmt = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var description = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var downloadExpiry = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var downloadLimit = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var downloadable = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var downloads = "" // array of downloadable files</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var height = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var image = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var length = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var manageStock = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var menuOrder = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var onSale = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var permalink = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var price = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var purchasable = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var regularPrice = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var remoteProductId = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var remoteVariationId = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var salePrice = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var shippingClass = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var shippingClassId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var sku = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var status = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var stockQuantity = 0.0</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var stockStatus = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var taxClass = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var taxStatus = "" // taxable, shipping, none</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var virtual = false</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var weight = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@Column var width = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCProductVariationModel.kt$WCProductVariationModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCRefundSqlUtils.kt$WCRefundSqlUtils.RefundBuilder$@Column var data: String</ID>
-    <ID>DataClassShouldBeImmutable:WCRefundSqlUtils.kt$WCRefundSqlUtils.RefundBuilder$@Column var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:WCRefundSqlUtils.kt$WCRefundSqlUtils.RefundBuilder$@Column var orderId: Long</ID>
-    <ID>DataClassShouldBeImmutable:WCRefundSqlUtils.kt$WCRefundSqlUtils.RefundBuilder$@Column var refundId: Long</ID>
-    <ID>DataClassShouldBeImmutable:WCRefundSqlUtils.kt$WCRefundSqlUtils.RefundBuilder$@PrimaryKey @Column private var mId: Int = -1</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@Column var endDate = "" // The end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@Column var interval = "" // The unit ("hour", "day", "week", "month", "year")</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@Column var startDate = "" // The start date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@Column var total = "" // JSON - A map of total stats for a given time period</ID>
-    <ID>DataClassShouldBeImmutable:WCRevenueStatsModel.kt$WCRevenueStatsModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var address2: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var address: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var city: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var countryCode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var couponsEnabled: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var currencyCode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var currencyDecimalNumber: Int = 2</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var currencyDecimalSeparator: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var currencyPosition: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var currencyThousandSeparator: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var localSiteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var postalCode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@Column var stateCode: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCSettingsSqlUtils.kt$WCSettingsSqlUtils.WCSettingsBuilder$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCTaxClassModel.kt$WCTaxClassModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCTaxClassModel.kt$WCTaxClassModel$@Column var name = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCTaxClassModel.kt$WCTaxClassModel$@Column var slug = "" // The unique identifier for the tax class on the server</ID>
-    <ID>DataClassShouldBeImmutable:WCTaxClassModel.kt$WCTaxClassModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@Column var currency: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@Column var localSiteId: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@Column var productInfo: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@Column var quantity: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@Column var total: Double = 0.0</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@Column var unit: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCTopPerformerProductModel.kt$WCTopPerformerProductModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var email: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var firstName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var lastName: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var remoteUserId: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var roles: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@Column var username: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:WCUserModel.kt$WCUserModel$@PrimaryKey @Column private var id: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var date = "" // The formatted end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var endDate = "" // The end date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var fields = "" // JSON - A map of numerical index to stat name, used to lookup the stat in the data object</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var isCustomField = false // to check if the data is for custom stats or default stats @JvmName("setIsCustomField") set</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var localSiteId = 0</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var quantity = "" // The quantity based on unit. i.e. 30 days, 17 weeks, 12 months, 2 years</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var startDate = "" // The start date of the data</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@Column var unit = "" // The unit ("day", "week", "month", "year")</ID>
-    <ID>DataClassShouldBeImmutable:WCVisitorStatsModel.kt$WCVisitorStatsModel$@PrimaryKey @Column private var id: Int = 0</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
     <ID>ForbiddenComment:ProductRestClient.kt$ProductRestClient$// TODO: Once removal is supported, we can remove the extra isNotBlank() condition</ID>
     <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Add error handling</ID>
