@@ -47,12 +47,6 @@ steps:
       ./gradlew checkstyle
     artifact_paths: *artifact_paths
 
-  - label: "ktlint"
-    command: |
-      cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
-      ./gradlew ktlint
-    artifact_paths: *artifact_paths
-
   - label: "detekt"
     command: |
       cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
