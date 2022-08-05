@@ -61,10 +61,6 @@ Once installed, you can configure the plugin here:
 
 From there, add and enable the configuration file for FluxC, located at [config/checkstyle.xml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/trunk/config/checkstyle.xml).
 
-## Using ktlint
-
-The FluxC project uses [ktlint](https://github.com/shyiko/ktlint) for Kotlin linting. You can run ktlint using `./gradlew ktlint`, and you can also run `./gradlew ktlintFormat` for auto-formatting. There is no IDEA plugin (like Checkstyle's) at this time.
-
 ## Using Detekt
 
 The FluxC project uses [detekt](https://github.com/detekt/detekt) for Kotlin linting and code style check.
