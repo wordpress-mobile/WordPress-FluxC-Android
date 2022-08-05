@@ -336,19 +336,23 @@ class WCOrderStoreTest {
         val orderModel = OrderTestUtils.generateSampleOrder(42, orderStatus = CoreOrderStatus.PROCESSING.value)
                 .saveToDb()
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
+        val error = OrderError()
         whenever(orderRestClient.updateOrderStatus(any(), any(), any())).thenReturn(
                 RemoteOrderPayload.Updating(
-                        error = OrderError(),
+                        error = error,
                         order = orderModel,
                         site = site
                 )
         )
 
-        orderStore.updateOrderStatus(
+        val response = orderStore.updateOrderStatus(
                 orderModel.orderId,
                 site,
                 WCOrderStatusModel(CoreOrderStatus.COMPLETED.value)
-        ).toList()
+        ).toList().last()
+
+        // Ensure the error is sent in the response
+        assertThat(response.event.error).isEqualTo(error)
 
         assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)

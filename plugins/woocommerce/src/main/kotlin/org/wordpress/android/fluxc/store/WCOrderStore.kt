@@ -856,8 +856,12 @@ class WCOrderStore @Inject constructor(
     }
 
     private suspend fun revertOrderStatus(payload: RemoteOrderPayload.Updating): OnOrderChanged {
-        updateOrderStatusLocally(payload.order.orderId, payload.order.localSiteId, payload.order.status)
-        return OnOrderChanged().also { it.error = payload.error }
+        updateOrderStatusLocally(
+            payload.order.orderId,
+            payload.order.localSiteId,
+            payload.order.status
+        )
+        return OnOrderChanged(orderError = payload.error)
     }
 
     private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload) {
