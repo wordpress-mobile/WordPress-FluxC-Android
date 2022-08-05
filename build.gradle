@@ -61,28 +61,6 @@ allprojects {
     }
 }
 
-subprojects {
-    configurations {
-        ktlint
-    }
-
-    dependencies {
-        ktlint 'com.github.shyiko:ktlint:0.31.0'
-    }
-
-    task ktlint(type: JavaExec) {
-        main = "com.github.shyiko.ktlint.Main"
-        classpath = configurations.ktlint
-        args "src/**/*.kt"
-    }
-
-    task ktlintFormat(type: JavaExec) {
-        main = "com.github.shyiko.ktlint.Main"
-        classpath = configurations.ktlint
-        args "-F", "src/**/*.kt"
-    }
-}
-
 ext {
     fluxcAnnotationsProjectDependency = project.hasProperty("fluxcAnnotationsVersion") ? "org.wordpress.fluxc:fluxc-annotations:${project.getProperty("fluxcAnnotationsVersion")}" : project(":fluxc-annotations")
     fluxcProcessorProjectDependency = project.hasProperty("fluxcProcessorVersion") ? "org.wordpress.fluxc:fluxc-processor:${project.getProperty("fluxcProcessorVersion")}" : project(":fluxc-processor")
