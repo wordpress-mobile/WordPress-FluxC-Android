@@ -1,0 +1,668 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <!-- fluxc -->
+    <ID>ComplexCondition:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$actorType != null || displayName != null || wpcomUserID != null || avatarURL != null || role != null</ID>
+    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.id != null &amp;&amp; it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null</ID>
+    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null &amp;&amp; it.gravatar != null</ID>
+    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
+    <ID>ComplexCondition:LatestPostInsightsStore.kt$LatestPostInsightsStore$postsFound != null &amp;&amp; postsFound > 0 &amp;&amp; posts != null &amp;&amp; posts.isNotEmpty()</ID>
+    <ID>ComplexCondition:PostDetailStatsMapper.kt$PostDetailStatsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
+    <ID>ComplexMethod:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
+    <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
+    <ID>ComplexMethod:InsightsMapper.kt$InsightsMapper$fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel</ID>
+    <ID>ComplexMethod:LikeModel.kt$LikeModel$fun isEqual(otherLike: LikeModel): Boolean</ID>
+    <ID>ComplexMethod:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
+    <ID>ComplexMethod:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
+    <ID>ComplexMethod:RevisionModel.kt$RevisionModel$override fun equals(other: Any?): Boolean</ID>
+    <ID>ComplexMethod:ScanSqlUtils.kt$ScanSqlUtils$private fun ScanStateModel.toBuilder(site: SiteModel): ScanStateBuilder</ID>
+    <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
+    <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$suspend fun newSite( siteName: String?, siteTitle: String?, language: String, timeZoneId: String?, visibility: SiteVisibility, segmentId: Long?, siteDesign: String?, dryRun: Boolean ): NewSiteResponsePayload</ID>
+    <ID>ComplexMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
+    <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: AuthorsResponse, cacheMode: LimitMode): AuthorsModel</ID>
+    <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: PostAndPageViewsResponse, cacheMode: LimitMode): PostAndPageViewsModel</ID>
+    <ID>ComplexMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val activity_id: String?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val is_rewindable: Boolean?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val rewind_id: String?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Actor$val external_user_id: Long?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Actor$val wpcom_user_id: Long?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Generator$val blog_id: Long?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Generator$val jetpack_version: Float?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindResponse$val restore_id: Long</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse$val can_autoconfigure: Boolean?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse$val last_updated: Date</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Credentials$val still_valid: Boolean</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val restore_id: Long?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val rewind_id: String?</ID>
+    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val site_id: String?</ID>
+    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val domain_name: String?</ID>
+    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val product_id: Int?</ID>
+    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val product_slug: String?</ID>
+    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val supports_privacy: Boolean = false</ID>
+    <ID>ConstructorParameterNaming:PlanOffersRestClient.kt$PlanOffersRestClient.PlanOffersResponse.Plan$val short_name: String?</ID>
+    <ID>ConstructorParameterNaming:PlanOffersRestClient.kt$PlanOffersRestClient.PlanOffersResponse.PlanId$val plan_id: Int</ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.DiffResponseContent$val post_content: List&lt;DiffResponsePart></ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.DiffResponseContent$val post_title: List&lt;DiffResponsePart></ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_author: String</ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_content: String</ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_date_gmt: String</ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_excerpt: String</ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_modified_gmt: String</ID>
+    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_title: String</ID>
+    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
+    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
+    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
+    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnActivityLogFetched$var causeOfChange: ActivityLogAction</ID>
+    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownload$var causeOfChange: ActivityLogAction</ID>
+    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownloadStatusFetched$var causeOfChange: ActivityLogAction</ID>
+    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnDismissBackupDownload$var causeOfChange: ActivityLogAction</ID>
+    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnRewind$var causeOfChange: ActivityLogAction</ID>
+    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnRewindStatusFetched$var causeOfChange: ActivityLogAction</ID>
+    <ID>DataClassShouldBeImmutable:AllTimeInsightsRestClient.kt$AllTimeInsightsRestClient.AllTimeResponse$@SerializedName("date") var date: Date? = null</ID>
+    <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("mappedPosts") var mappedPosts: List&lt;Post>? = null</ID>
+    <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("views") var views: Int?</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$@PrimaryKey var localSiteId: Int</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var friday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var hour: Int = 10</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var isPromptRemindersOptedIn: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var minute: Int = 0</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var monday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var saturday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var sunday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var thursday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var tuesday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var wednesday: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:ClicksRestClient.kt$ClicksRestClient.ClicksResponse.ClickGroup$@SerializedName("clicks") var clicks: List&lt;Click>? = null</ID>
+    <ID>DataClassShouldBeImmutable:CommentsDao.kt$CommentsDao.CommentEntity$@Ignore var level: Int = 0</ID>
+    <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var authors: List&lt;Author></ID>
+    <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var posts: List&lt;Post></ID>
+    <ID>DataClassShouldBeImmutable:FileDownloadsRestClient.kt$FileDownloadsRestClient.FileDownloadsResponse.File$@SerializedName("downloads") var downloads: Int?</ID>
+    <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnActivateStatsModule$var causeOfChange: JetpackAction</ID>
+    <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnJetpackInstalled$var causeOfChange: JetpackAction</ID>
+    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var noteHash: Long = 0L</ID>
+    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var read: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var remoteSiteId: Long = 0L</ID>
+    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var date: Date</ID>
+    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var hasLocalChanges: Boolean</ID>
+    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var parent: PageModel?</ID>
+    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var status: PageStatus</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var description: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var features: List&lt;Feature>?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var iconUrl: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var name: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var planIds: List&lt;Int>?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var shortName: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var tagline: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var description: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var id: String?</ID>
+    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var name: String?</ID>
+    <ID>DataClassShouldBeImmutable:PostAndPageViewsRestClient.kt$PostAndPageViewsRestClient.PostAndPageViewsResponse$@SerializedName("date") var date: Date? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("ID") var revisionId: Long = 0</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("content") var content: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("excerpt") var excerpt: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("modified") var modified: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("preview_URL") var previewUrl: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("title") var title: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("id") var id: Long = 0</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("key") var key: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("value") var value: Any? = null</ID>
+    <ID>DataClassShouldBeImmutable:ProductsStore.kt$ProductsStore.FetchProductsError$var type: FetchProductsErrorType</ID>
+    <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Group$var markedAsSpam: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Referrer$var markedAsSpam: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStarted$var causeOfChange: ScanAction</ID>
+    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStatusFetched$var causeOfChange: ScanAction</ID>
+    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnIgnoreThreatStarted$var causeOfChange: ScanAction</ID>
+    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnScanStarted$var causeOfChange: ScanAction</ID>
+    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnScanStateFetched$var causeOfChange: ScanAction</ID>
+    <ID>DataClassShouldBeImmutable:SiteOptionsStore.kt$SiteOptionsStore.SiteOptionsError$var message: String? = null</ID>
+    <ID>DataClassShouldBeImmutable:SiteOptionsStore.kt$SiteOptionsStore.SiteOptionsError$var type: SiteOptionsErrorType</ID>
+    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.OnURLChecked$var siteError: SiteError? = null</ID>
+    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var password: String = ""</ID>
+    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var url: String = ""</ID>
+    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var username: String = ""</ID>
+    <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.CreateShoppingCartError$var type: CreateCartErrorType</ID>
+    <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.RedeemShoppingCartError$var type: TransactionErrorType</ID>
+    <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
+    <ID>ExplicitItLambdaParameter:NotificationRestClient.kt$NotificationRestClient${ it -> NotificationApiResponse.notificationResponseToNotificationModel(it) }</ID>
+    <ID>ForbiddenComment:CommentsMapper.kt$CommentsMapper$// TODO: set authorProfileImageUrl - get the hash from the email address?</ID>
+    <ID>ForbiddenComment:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$// TODO: Max file size is 10MB - maybe we should just handle that in the error callback?</ID>
+    <ID>ForbiddenComment:ListDescriptor.kt$ListDescriptor$* This is the interface every list descriptor needs to implement for it to work with `ListStore`. It can be used to * describe which site a list belongs to, which filters it has, how to order it or anything and everything else a * feature might need. * * This presents an interesting challenge because if every list can be different, how do we use a generic interface * to save it in the DB and more importantly how do we query it back from it. In a traditional solution, one approach * would be to separate each list descriptor and save them in the DB in separate tables, and another approach would be * to add common fields in one table and try to work off of it. Neither approach is very flexible. * * `ListStore` takes a completely different approach to this problem by shying away from using lists directly and * tying everything to [ListDescriptor]s. For example, there is no way to access a list by its id, `ListSqlUtils` * ensures this. That means, we don't necessarily need to save every bit of information about a list in the DB, * as long as there is a way to identify it. That's where the [uniqueIdentifier] property comes in. * By using a unique identifier, we can save them in the DB and then retrieve them from it as long as we can calculate * the exact same identifier. This also means that we erase the information about a list, and we can no longer access it * even if we queried the list in some other way. However, as previously stated, all the components in `ListStore` is * designed in a way to work with that constraint. * * There is another interesting challenge this decision brings. What if we want to be able to identify lists that * has a certain "type". For example, let's say we are dealing with several post lists all belonging to the same site. * If a post in that site is updated, we'd expect all the post lists for that site to be notified of this change. * That's where the [typeIdentifier] comes in. It gives the class that's implementing this interface a way to group * them so the changes for the items in them notifies all of them together. * * TODO: Please note that "type" is not the correct term for this and should be renamed. * * </ID>
+    <ID>ForbiddenComment:PostListDescriptor.kt$PostListDescriptor$// TODO: need a better hashing algorithm, preferably a perfect hash</ID>
+    <ID>ForbiddenComment:PostListDescriptor.kt$PostListDescriptor.Companion$// TODO: need a better hashing algorithm, preferably a perfect hash</ID>
+    <ID>ForbiddenComment:SiteRestClient.kt$SiteRestClient$// TODO: what other kind of error could we get here?</ID>
+    <ID>ForbiddenComment:SiteStore.kt$SiteStore$* Obtains the site with the given (local) id and returns it as a [SiteModel]. * * NOTE: This method needs to be open because it's mocked in android tests in the WPAndroid project. * TODO: consider adding https://kotlinlang.org/docs/all-open-plugin.html</ID>
+    <ID>ForbiddenComment:SiteStore.kt$SiteStore$* SQLite based only. There is no in memory copy of mapped data, everything is queried from the DB. * * NOTE: This class needs to be open because it's mocked in android tests in the WPAndroid project. * TODO: consider adding https://kotlinlang.org/docs/all-open-plugin.html</ID>
+    <ID>ForbiddenComment:SiteStore.kt$SiteStore$// TODO: what kind of error could we get here?</ID>
+    <ID>ForbiddenComment:SiteXMLRPCClient.kt$SiteXMLRPCClient$// TODO: set a canonical URL here</ID>
+    <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange( fetchRemoteAnnouncements( versionName, appId ) ) }</ID>
+    <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange(fetchCachedAnnouncements()) }</ID>
+    <ID>ImplicitDefaultLocale:SiteStore.kt$SiteStore.ConnectSiteInfoPayload$String.format( "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s", url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects )</ID>
+    <ID>LargeClass:CommentsStore.kt$CommentsStore : Store</ID>
+    <ID>LargeClass:SiteRestClient.kt$SiteRestClient : BaseWPComRestClient</ID>
+    <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
+    <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
+    <ID>LongMethod:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
+    <ID>LongMethod:InsightsMapper.kt$InsightsMapper$fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel</ID>
+    <ID>LongMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
+    <ID>LongMethod:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
+    <ID>LongMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
+    <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
+    <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
+    <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long )</ID>
+    <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long, endOfRange: Long )</ID>
+    <ID>LongParameterList:JetpackTunnelGsonRequest.kt$JetpackTunnelGsonRequest$( wpApiEndpoint: String, siteId: Long, body: Map&lt;String, Any>, type: Type, listener: (T?) -> Unit, errorListener: WPComErrorListener )</ID>
+    <ID>LongParameterList:JetpackTunnelGsonRequest.kt$JetpackTunnelGsonRequest$( wpApiEndpoint: String, siteId: Long, params: Map&lt;String, String>, type: Type, listener: (T?) -> Unit, errorListener: WPComErrorListener )</ID>
+    <ID>LongParameterList:JetpackTunnelGsonRequest.kt$JetpackTunnelGsonRequest$( wpApiEndpoint: String, siteId: Long, params: Map&lt;String, String>, type: Type, listener: (T?) -> Unit, errorListener: WPComErrorListener, jpTimeoutListener: ((WPComGsonRequest&lt;*>) -> Unit)? )</ID>
+    <ID>LongParameterList:JetpackTunnelGsonRequestBuilder.kt$JetpackTunnelGsonRequestBuilder$( site: SiteModel, url: String, body: Map&lt;String, Any>, clazz: Class&lt;T>, listener: (T?) -> Unit, errorListener: WPComErrorListener )</ID>
+    <ID>LongParameterList:JetpackTunnelGsonRequestBuilder.kt$JetpackTunnelGsonRequestBuilder$( site: SiteModel, url: String, params: Map&lt;String, String>, clazz: Class&lt;T>, listener: (T?) -> Unit, errorListener: WPComErrorListener, jpTimeoutListener: ((WPComGsonRequest&lt;*>) -> Unit)? )</ID>
+    <ID>LongParameterList:PagedListWrapper.kt$PagedListWrapper$( val data: LiveData&lt;PagedList&lt;T>>, private val dispatcher: Dispatcher, private val listDescriptor: ListDescriptor, private val lifecycle: Lifecycle, private val refresh: () -> Unit, private val invalidate: () -> Unit, private val parentCoroutineContext: CoroutineContext )</ID>
+    <ID>LongParameterList:ReferrersStore.kt$ReferrersStore$( site: SiteModel, granularity: StatsGranularity, date: Date, domain: String, limitMode: Top, spam: Boolean )</ID>
+    <ID>LongParameterList:RevisionModel.kt$RevisionModel$( var revisionId: Long, var diffFromVersion: Long, var totalAdditions: Int, var totalDeletions: Int, var postContent: String?, var postExcerpt: String?, var postTitle: String?, var postDateGmt: String?, var postModifiedGmt: String?, var postAuthorId: String?, val titleDiffs: ArrayList&lt;Diff>, val contentDiffs: ArrayList&lt;Diff> )</ID>
+    <ID>LongParameterList:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$( val post_date_gmt: String, val post_modified_gmt: String, val post_author: String, val id: Int, val post_content: String, val post_excerpt: String, val post_title: String )</ID>
+    <ID>LongParameterList:RewindStatusModel.kt$RewindStatusModel.Rewind.Companion$( rewindId: String?, restoreId: Long?, stringStatus: String?, progress: Int?, reason: String?, message: String?, currentEntry: String? )</ID>
+    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( query: String, onlyWordpressCom: Boolean?, includeWordpressCom: Boolean?, includeDotBlogSubdomain: Boolean?, segmentId: Long?, quantity: Int, includeVendorDot: Boolean, tlds: String? )</ID>
+    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( site: SiteModel, supportedBlocks: List&lt;String?>?, previewWidth: Float?, previewHeight: Float?, scale: Float?, isBeta: Boolean? )</ID>
+    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( site: SiteModel, url: String, supportedBlocks: List&lt;String?>?, previewWidth: Float?, previewHeight: Float?, scale: Float?, isBeta: Boolean? )</ID>
+    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( siteName: String?, siteTitle: String?, language: String, timeZoneId: String?, visibility: SiteVisibility, segmentId: Long?, siteDesign: String?, dryRun: Boolean )</ID>
+    <ID>LongParameterList:StatsRequestSqlUtils.kt$StatsRequestSqlUtils$( site: SiteModel, blockType: BlockType, statsType: StatsType, date: String?, postId: Long?, after: Long, requestedItems: Int? = null )</ID>
+    <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>? = null, body: Map&lt;String, String> = emptyMap(), clazz: Class&lt;T>, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
+    <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>?, body: Map&lt;String, String>, type: Type, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
+    <ID>LongParameterList:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$( url: String, method: XMLRPC, params: List&lt;Any>, clazz: Class&lt;T>, listener: (T) -> Unit, errorListener: (BaseNetworkError) -> Unit )</ID>
+    <ID>MagicNumber:CommentsXMLRPCClient.kt$CommentsXMLRPCClient$4</ID>
+    <ID>MagicNumber:CommentsXMLRPCClient.kt$CommentsXMLRPCClient$5</ID>
+    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$3000</ID>
+    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$500</ID>
+    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$599</ID>
+    <ID>MagicNumber:InsightsMapper.kt$InsightsMapper$1000</ID>
+    <ID>MagicNumber:JetpackStore.kt$JetpackStore$5000</ID>
+    <ID>MagicNumber:LogEncrypter.kt$LogEncrypter$108</ID>
+    <ID>MagicNumber:LogEncrypter.kt$LogEncrypter$32</ID>
+    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$1000</ID>
+    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$401</ID>
+    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$404</ID>
+    <ID>MagicNumber:PrivateAtomicCookie.kt$PrivateAtomicCookie$1000</ID>
+    <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$401</ID>
+    <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$404</ID>
+    <ID>MagicNumber:SiteXMLRPCClient.kt$SiteXMLRPCClient$3</ID>
+    <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$1000</ID>
+    <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$60</ID>
+    <ID>MaxLineLength:EditorThemeSqlUtils.kt$EditorThemeSqlUtils$// Deleting the row for the EditorThemeTable table row here will cascade to delete the associated rows in the EditorThemeElementTable as well.</ID>
+    <ID>MaxLineLength:EncryptedLogRestClient.kt$EncryptedLogRestClient$// {"error":"invalid-request","message":"Invalid UUID: uuids must only contain letters, numbers, dashes, and curly brackets"}</ID>
+    <ID>MaxLineLength:InternalPagedListDataSource.kt$InternalPagedListDataSource$*</ID>
+    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * Free MIME Types * * The WordPress supported image types based on https://wordpress.com/support/accepted-filetypes/ are: * .pdf (Portable Document Format; Adobe Acrobat), .doc, .docx (Microsoft Word Document), .ppt, .pptx, .pps, .ppsx (Microsoft PowerPoint Presentation), .odt (OpenDocument Text Document), .xls, .xlsx (Microsoft Excel Document), .key (Apple Keynote Presentation), .zip (Archive File Format) * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .pdf - "application/pdf" * .doc - "application/msword", "application/doc", "application/ms-doc" * .docx - "application/vnd.openxmlformats-officedocument.wordprocessingml.document" * .ppt - "application/mspowerpoint", "application/powerpoint", "application/x-mspowerpoint" * .pptx - "application/vnd.openxmlformats-officedocument.presentationml.presentation" * .pps - missing - "application/vnd.ms-powerpoint" * .ppsx - missing - "application/vnd.openxmlformats-officedocument.presentationml.slideshow" * .odt - missing - "application/vnd.oasis.opendocument.text" * .xls - "application/excel", "application/x-excel", "application/x-msexcel", "application/vnd.ms-excel" * .xlsx - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" * * Paid / Self hosted MIME Types * * .key - missing - "application/keynote" * .zip (Archive File Format) * * General comment about each of the properties below. * * wpComFreeDocumentTypes - all MIME types allowed in the free plans. * * wpComPaidAndSelfHostedDocumentTypes - all MIME types allowed for paid plans and self hosted sites. * * documentTypes - all MIME types that are available. */</ID>
+    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * The WordPress supported audio types based on https://wordpress.com/support/accepted-filetypes/ are: * .mp3, .m4a, .ogg, .wav * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .mp3 - "audio/mpeg" * .m4a - "audio/mp4" * .ogg - "audio/ogg", "application/ogg" * .wav - "audio/x-wav" */</ID>
+    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * The WordPress supported image types based on https://wordpress.com/support/accepted-filetypes/ are: * .jpg, .jpeg, .png, .gif, .webp * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .jpg, .jpeg - "image/jpeg" * .png - "image/png" * .gif - "image/gif" * .webp - "image/webp" * .heic - "image/heic" * .heif - "image/heif" */</ID>
+    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * The WordPress supported video types based on https://wordpress.com/support/accepted-filetypes/ are: * .mp4, .m4v (MPEG-4), .mov (QuickTime), .wmv (Windows Media Video), .avi, .mpg, .ogv (Ogg), .3gp (3GPP), .3g2 (3GPP2) * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .mp4, .m4v (MPEG-4) - "video/mp4" * .mov - missing - using "video/quicktime" * .wmv - "video/x-ms-wmv" * .avi - "video/avi" * .mpg - "video/mpeg", "video/mp2p" * .ogv (Ogg) - missing - using "video/ogg" * .3gp (3GPP) - "video/3gpp" * .3g2 (3GPP2) - "video/3gpp2" */</ID>
+    <ID>MaxLineLength:PageStore.kt$PageStore$*</ID>
+    <ID>MaxLineLength:PluginResponseModel.kt$*</ID>
+    <ID>MaxLineLength:PluginWPAPIRestClient.kt$PluginWPAPIRestClient$*</ID>
+    <ID>MaxLineLength:PluginWPAPIRestClient.kt$PluginWPAPIRestClient$DELETE /wp/v2/plugins/akismet/akismet uninstalls the selected plugin. The plugin must be inactive before deleting it.</ID>
+    <ID>MaxLineLength:PluginWPAPIRestClient.kt$PluginWPAPIRestClient$PUT /wp/v2/plugins/akismet/akismet { status: "active" } activates the selected plugin. The status can be set to network-active to network activate the plugin on Multisite. To deactivate the plugin set the status to inactive. There is not a separate network-inactive status, inactive will perform a network deactivation if the plugin was network activated.</ID>
+    <ID>MaxLineLength:WellSqlConfig.kt$WellSqlConfig$// WPOrgPluginModel table. Since these records are only used as cache and would &amp; should be refreshed</ID>
+    <ID>MaxLineLength:WellSqlConfig.kt$WellSqlConfig$// and WPOrgPluginModel tables. Adds `authorName` column and renames `name` column to `displayName` in</ID>
+    <ID>MaxLineLength:WellSqlConfig.kt$WellSqlConfig$// often, there is no real harm to do this other than a slightly longer loading time for the first usage</ID>
+    <ID>NestedBlockDepth:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$override fun deserialize( json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext? )</ID>
+    <ID>NestedBlockDepth:GutenbergLayoutCategoriesModel.kt$fun List&lt;GutenbergLayout>.connections(site: SiteModel): List&lt;GutenbergLayoutCategoriesModel></ID>
+    <ID>NestedBlockDepth:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
+    <ID>NestedBlockDepth:PostWPComRestResponse.kt$PostWPComRestResponse.MetaDataAdapter$@Throws(IOException::class) override fun read(jsonReader: JsonReader): List&lt;PostMetaData></ID>
+    <ID>NestedBlockDepth:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
+    <ID>NestedBlockDepth:SiteSqlUtils.kt$SiteSqlUtils$fun removeWPComRestSitesAbsentFromList(postSqlUtils: PostSqlUtils, sites: List&lt;SiteModel>): Int</ID>
+    <ID>NestedBlockDepth:SiteStore.kt$SiteStore$private fun handleDesignatedMobileEditorForAllSites(payload: DesignateMobileEditorForAllSitesResponsePayload)</ID>
+    <ID>NestedBlockDepth:ThreatContextDeserializer.kt$ThreatContextDeserializer$private fun getHighlightsFromMarks(marksForKey: JsonElement?): List&lt;Pair&lt;Int, Int>>?</ID>
+    <ID>ReturnCount:ActivityLogRestClient.kt$ActivityLogRestClient$private fun buildRewindStatusPayload(response: RewindStatusResponse, site: SiteModel): FetchedRewindStatePayload</ID>
+    <ID>ReturnCount:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
+    <ID>ReturnCount:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
+    <ID>ReturnCount:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$fun toEditorThemeElement(): EditorThemeElement?</ID>
+    <ID>ReturnCount:EncryptedLogRestClient.kt$EncryptedLogRestClient$private fun mapError(error: VolleyError): UploadEncryptedLogError</ID>
+    <ID>ReturnCount:MediaErrorSubType.kt$MediaErrorSubType.Companion$@JvmStatic fun deserialize(name: String?): MediaErrorSubType</ID>
+    <ID>ReturnCount:ScanRestClient.kt$ScanRestClient$private fun buildScanStatePayload(response: ScanStateResponse, site: SiteModel): FetchedScanStatePayload</ID>
+    <ID>ReturnCount:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
+    <ID>ReturnCount:SiteStore.kt$SiteStore.DeleteSiteErrorType.Companion$fun fromString(string: String): DeleteSiteErrorType</ID>
+    <ID>ReturnCount:WPV2MediaRestClient.kt$WPV2MediaRestClient$private fun Response.parseUploadError(): MediaError</ID>
+    <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planFeatures.toTypedArray())</ID>
+    <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
+    <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
+    <ID>SpreadOperator:WellSqlConfig.kt$WellSqlConfig$(*addOns)</ID>
+    <ID>SwallowedException:ActivityTypesDeserializer.kt$ActivityTypesDeserializer$ex: ClassCastException</ID>
+    <ID>SwallowedException:ActivityTypesDeserializer.kt$ActivityTypesDeserializer$ex: IllegalStateException</ID>
+    <ID>SwallowedException:BloggingPromptsStore.kt$BloggingPromptsStore$e: Exception</ID>
+    <ID>SwallowedException:CardsStore.kt$CardsStore$e: Exception</ID>
+    <ID>SwallowedException:EditorTheme.kt$EditorThemeElementListSerializer$e: JsonSyntaxException</ID>
+    <ID>SwallowedException:EncryptedLogStore.kt$EncryptedLogStore$e: UnsatisfiedLinkError</ID>
+    <ID>SwallowedException:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$e: Exception</ID>
+    <ID>SwallowedException:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$ex: ClassCastException</ID>
+    <ID>SwallowedException:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$ex: IllegalStateException</ID>
+    <ID>SwallowedException:FixableDeserializer.kt$FixableDeserializer$e: JsonSyntaxException</ID>
+    <ID>SwallowedException:RowsDeserializer.kt$RowsDeserializer$ex: ClassCastException</ID>
+    <ID>SwallowedException:RowsDeserializer.kt$RowsDeserializer$ex: IllegalStateException</ID>
+    <ID>SwallowedException:SiteRestClient.kt$SiteRestClient$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:SiteRestClient.kt$SiteRestClient$e: JSONException</ID>
+    <ID>SwallowedException:SiteStore.kt$SiteStore$caughtException: DuplicateSiteException</ID>
+    <ID>SwallowedException:SiteStore.kt$SiteStore$e: DuplicateSiteException</ID>
+    <ID>SwallowedException:SiteStore.kt$SiteStore$e: Exception</ID>
+    <ID>SwallowedException:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: ClassCastException</ID>
+    <ID>SwallowedException:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: IllegalStateException</ID>
+    <ID>SwallowedException:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: IndexOutOfBoundsException</ID>
+    <ID>SwallowedException:WPV2MediaRestClient.kt$WPV2MediaRestClient$e: CancellationException</ID>
+    <ID>SwallowedException:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: CancellationException</ID>
+    <ID>SwallowedException:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$e: ClassCastException</ID>
+    <ID>TooGenericExceptionCaught:BloggingPromptsStore.kt$BloggingPromptsStore$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CardsStore.kt$CardsStore$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$jsonParsingError: Throwable</ID>
+    <ID>TooGenericExceptionCaught:PostWPComRestResponse.kt$PostWPComRestResponse.MetaDataAdapter$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:SiteStore.kt$SiteStore$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: IndexOutOfBoundsException</ID>
+    <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
+    <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
+    <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
+    <ID>UnnecessaryAbstractClass:BloggingRemindersDao.kt$BloggingRemindersDao$BloggingRemindersDao</ID>
+    <ID>UnusedPrivateMember:ActivityLogModel.kt$ActivityLogModel.Status$value: String</ID>
+    <ID>UnusedPrivateMember:PagedListWrapper.kt$PagedListWrapper$@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY) private fun onDestroy()</ID>
+    <ID>UnusedPrivateMember:ReactNativeWPAPIRestClient.kt$ReactNativeWPAPIRestClient$private val nonceRestClient: NonceRestClient</ID>
+    <ID>UnusedPrivateMember:StockMediaStore.kt$StockMediaStore.StockMediaErrorType.Companion$baseError: BaseNetworkError?</ID>
+    <ID>UseCheckOrError:ActivityLogRestClient.kt$ActivityLogRestClient$throw IllegalStateException("ActivityTypes parsing failed - one or more items were ignored.")</ID>
+    <ID>UtilityClassWithPublicConstructor:EncryptionUtils.kt$EncryptionUtils</ID>
+    <ID>UtilityClassWithPublicConstructor:WhatsNewAppVersionUtils.kt$WhatsNewAppVersionUtils</ID>
+    <ID>VariableNaming:AuthOptionsResponse.kt$AuthOptionsResponse$var email_verified: Boolean? = null</ID>
+    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_1: String? = null</ID>
+    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_2: String? = null</ID>
+    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var country_code: String? = null</ID>
+    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var first_name: String? = null</ID>
+    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var last_name: String? = null</ID>
+    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var postal_code: String? = null</ID>
+    <ID>VariableNaming:DomainsResponse.kt$BooleanTypeAdapter$private val TRUE_STRINGS: Set&lt;String> = HashSet(listOf("true", "1", "yes"))</ID>
+    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var ID: Long = 0</ID>
+    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var avatar_URL: String? = null</ID>
+    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var date_liked: String? = null</ID>
+    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var preferred_blog: PreferredBlogResponse? = null</ID>
+    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var primary_blog: String? = null</ID>
+    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var site_ID: Long = 0</ID>
+    <ID>VariableNaming:NotificationApiResponse.kt$NotificationApiResponse$val note_hash: Long? = null</ID>
+    <ID>VariableNaming:NotificationHashApiResponse.kt$NotificationHashApiResponse$var note_hash: Long = 0</ID>
+    <ID>VariableNaming:NotificationHashesApiResponse.kt$NotificationHashesApiResponse$val last_seen_time: Long? = null</ID>
+    <ID>VariableNaming:NotificationSeenApiResponse.kt$NotificationSeenApiResponse$val last_seen_time: Long? = null</ID>
+    <ID>VariableNaming:NotificationsApiResponse.kt$NotificationsApiResponse$val last_seen_time: Long? = null</ID>
+    <ID>VariableNaming:ReactNativeStore.kt$ReactNativeStore$private val WPCOM_ENDPOINT = "https://public-api.wordpress.com"</ID>
+    <!-- plugins:woocommerce -->
+    <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
+    <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
+    <ID>ComplexCondition:WCProductStore.kt$WCProductStore$offset == 0 &amp;&amp; includedProductIds.isEmpty() &amp;&amp; excludedProductIds.isEmpty() &amp;&amp; filterOptions.isEmpty()</ID>
+    <ID>ComplexMethod:CouponRestClient.kt$CouponRestClient$private fun UpdateCouponRequest.toNetworkRequest(): Map&lt;String, Any></ID>
+    <ID>ComplexMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
+    <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
+    <ID>ComplexMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
+    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
+    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
+    <ID>ComplexMethod:ProductVariationApiResponse.kt$ProductVariationApiResponse$fun asProductVariationModel()</ID>
+    <ID>ComplexMethod:WCCustomerMapper.kt$WCCustomerMapper$fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel</ID>
+    <ID>ComplexMethod:WCOrderStore.kt$WCOrderStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
+    <ID>ComplexMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_1: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_2: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val first_name: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val last_name: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_1: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_2: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val first_name: String? = null</ID>
+    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
+    <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
+    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$@SerializedName("product_id") var productId: Long? = null</ID>
+    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$var quantity: Float? = null</ID>
+    <ID>DataClassShouldBeImmutable:WCOrderStore.kt$WCOrderStore.OnQuickOrderResult$var order: OrderEntity? = null</ID>
+    <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
+    <ID>ForbiddenComment:ProductRestClient.kt$ProductRestClient$// TODO: Once removal is supported, we can remove the extra isNotBlank() condition</ID>
+    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Add error handling</ID>
+    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Possible add new tracks event to track error fetching order list data "order_list_load_failed"</ID>
+    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Ideally we would have a separate process that prunes the following</ID>
+    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Use the actual error type</ID>
+    <ID>ForbiddenComment:WCProductStore.kt$WCProductStore$// TODO: 18/08/2021 @wzieba add tests</ID>
+    <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
+    <ID>LargeClass:OrderRestClient.kt$OrderRestClient : BaseWPComRestClient</ID>
+    <ID>LargeClass:ProductRestClient.kt$ProductRestClient : BaseWPComRestClient</ID>
+    <ID>LargeClass:ProductSqlUtils.kt$ProductSqlUtils</ID>
+    <ID>LargeClass:WCProductStore.kt$WCProductStore : Store</ID>
+    <ID>LongMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
+    <ID>LongMethod:Migrations.kt$&lt;no name provided>$override fun migrate(database: SupportSQLiteDatabase)</ID>
+    <ID>LongMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
+    <ID>LongMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
+    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$fun fetchProducts( site: SiteModel, pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE, offset: Int = 0, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING, searchQuery: String? = null, isSkuSearch: Boolean = false, includedProductIds: List&lt;Long>? = null, filterOptions: Map&lt;ProductFilterOption, String>? = null, excludedProductIds: List&lt;Long>? = null )</ID>
+    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
+    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
+    <ID>LongMethod:ProvideAddonsIntegrationTests.kt$ProvideAddonsIntegrationTests$@Test fun `should map Checkbox add-on`()</ID>
+    <ID>LongMethod:RemoteAddonMapper.kt$RemoteAddonMapper$fun toDomain(dto: RemoteAddonDto): Addon</ID>
+    <ID>LongMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
+    <ID>LongParameterList:OrderUpdateStore.kt$OrderUpdateStore$( site: SiteModel, orderId: Long, amount: String, customerNote: String, billingEmail: String, isTaxable: Boolean, status: WCOrderStatusModel? = null )</ID>
+    <ID>LongParameterList:RefundRestClient.kt$RefundRestClient$( site: SiteModel, orderId: Long, reason: String, automaticRefund: Boolean, items: List&lt;WCRefundModel.WCRefundItem>, restockItems: Boolean )</ID>
+    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
+    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
+    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
+    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$1000</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$23</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$24</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$59</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$6</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$60</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$7</ID>
+    <ID>MagicNumber:DateUtils.kt$DateUtils$8</ID>
+    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$24</ID>
+    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$48</ID>
+    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$96</ID>
+    <ID>MagicNumber:WCShippingLabelStore.kt$WCShippingLabelStore$2000</ID>
+    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$12</ID>
+    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$2011</ID>
+    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$7</ID>
+    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;a href='https:\/\/mystagingwebsite.com\/wp-admin\/admin.php?page=wc-admin&amp;path=\/analytics\/products&amp;filter=single_product&amp;products=14'>Beanie&lt;\/a>",</ID>
+    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;span class=\"woocommerce-Price-amount amount\">&lt;span class=\"woocommerce-Price-currencySymbol\">&amp;#82;&amp;#36;&lt;\/span>36.000,00&lt;\/span>",</ID>
+    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$*</ID>
+    <ID>MaxLineLength:Migrations.kt$&lt;no name provided>$CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_siteId` ON `InboxNotes` (`remoteId`, `siteId`)</ID>
+    <ID>MaxLineLength:OrderDtoMapper.kt$OrderDtoMapper$// Extract the discount codes from the coupon_lines list and store them as a comma-delimited String</ID>
+    <ID>MaxLineLength:ProductRestClient.kt$ProductRestClient$*</ID>
+    <ID>MaxLineLength:WCOrderStore.kt$WCOrderStore$// This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,</ID>
+    <ID>MaxLineLength:WCProductStore.kt$WCProductStore$*</ID>
+    <ID>MaxLineLength:WCStatsStore.kt$WCStatsStore$*</ID>
+    <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
+    <ID>NestedBlockDepth:OrderStatsRestClient.kt$OrderStatsRestClient$suspend fun fetchNewVisitorStats( site: SiteModel, unit: OrderStatsApiUnit, granularity: StatsGranularity, date: String, quantity: Int, force: Boolean = false, startDate: String? = null, endDate: String? = null ): FetchNewVisitorStatsResponsePayload</ID>
+    <ID>NestedBlockDepth:WCOrderStore.kt$WCOrderStore$private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload)</ID>
+    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$fun getImageList(): ArrayList&lt;WCProductImageModel></ID>
+    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun getTriplets(jsonStr: String): ArrayList&lt;ProductTriplet></ID>
+    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun parseJson(jsonString: String): List&lt;Long></ID>
+    <ID>NestedBlockDepth:WCShippingLabelStore.kt$WCShippingLabelStore$private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List&lt;PredefinedOption></ID>
+    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchProductReviews( site: SiteModel, offset: Int, reviewIds: List&lt;Long>? = null, productIds: List&lt;Long>? = null, filterByStatus: List&lt;String>? = null ): FetchProductReviewsResponsePayload</ID>
+    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchSingleVariation( site: SiteModel, remoteProductId: Long, remoteVariationId: Long ): RemoteVariationPayload</ID>
+    <ID>ReturnCount:ProductSqlUtils.kt$ProductSqlUtils$fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean</ID>
+    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameAttributes(otherProduct: WCProductModel): Boolean</ID>
+    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameCategories(updatedProduct: WCProductModel): Boolean</ID>
+    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameImages(updatedProduct: WCProductModel): Boolean</ID>
+    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameTags(updatedProduct: WCProductModel): Boolean</ID>
+    <ID>ReturnCount:WCProductVariationModel.kt$WCProductVariationModel$fun getImageModel(): WCProductImageModel?</ID>
+    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$@Suppress("UNCHECKED_CAST") private fun &lt;T> getStatsForField( site: SiteModel, field: OrderStatsField, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, T></ID>
+    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getNewVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
+    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getStatsCurrencyForSite(site: SiteModel): String?</ID>
+    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
+    <ID>ReturnCount:WooCommerceStore.kt$WooCommerceStore$suspend fun fetchWooCommerceSite(site: SiteModel): WooResult&lt;SiteModel></ID>
+    <ID>SpacingBetweenPackageAndImports:WCPaymentChargeApiResult.kt$ </ID>
+    <ID>SpreadOperator:WCInboxStore.kt$WCInboxStore$(siteId, *notesWithActions.toTypedArray())</ID>
+    <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*it.result!!.toTypedArray())</ID>
+    <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.fetchedOrders.toTypedArray())</ID>
+    <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.ordersWithMeta.toTypedArray())</ID>
+    <ID>SwallowedException:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
+    <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
+    <ID>UnnecessaryAbstractClass:CouponsDao.kt$CouponsDao$CouponsDao</ID>
+    <ID>UnnecessaryAbstractClass:WCDatabaseModule.kt$WCDatabaseModule$WCDatabaseModule</ID>
+    <ID>UnusedPrivateMember:WCStatsStore.kt$WCStatsStore$private val context: Context</ID>
+    <ID>UseCheckOrError:ToDatabaseAddonsMapper.kt$ToDatabaseAddonsMapper$throw IllegalStateException("Addon has to be identified with a Group or a Product")</ID>
+    <ID>UseCheckOrError:WCOrderStore.kt$WCOrderStore$throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$// Same as shipping_lines, it's a list of objects val fee_lines: JsonElement? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.LineItem val line_items: JsonElement? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.ShippingLines val shipping_lines: JsonElement? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val coupon_lines: List&lt;CouponLine>? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val customer_note: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_created_gmt: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_modified_gmt: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_paid_gmt: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val discount_total: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val is_editable: Boolean? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val meta_data: JsonElement? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val order_key: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_method: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_method_title: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_url: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val prices_include_tax: Boolean = false</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val shipping_total: String? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val tax_lines: JsonElement? = null</ID>
+    <ID>VariableNaming:OrderDto.kt$OrderDto$val total_tax: String? = null</ID>
+    <ID>VariableNaming:OrderNoteApiResponse.kt$OrderNoteApiResponse$// If true, the note will be shown to customers and they will be notified. If false, the note will be for admin // reference only. Default is false. val customer_note: Boolean = false</ID>
+    <ID>VariableNaming:OrderNoteApiResponse.kt$OrderNoteApiResponse$val date_created_gmt: String? = null</ID>
+    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val date_shipped: String? = null</ID>
+    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_id: String? = null</ID>
+    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_link: String? = null</ID>
+    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_number: String? = null</ID>
+    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_provider: String? = null</ID>
+    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private final val STATS_FIELDS = "data,fields"</ID>
+    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private val STATS_DEFAULT_ORDER = "asc"</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val button_text: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val menu_order = 0</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var average_rating: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var backorders_allowed = false</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var catalog_visibility: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var cross_sell_ids: JsonElement? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_created: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_modified: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_from: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_from_gmt: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_to: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_to_gmt: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var download_expiry = 0</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var download_limit = 0L</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var external_url: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var grouped_products: JsonElement? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var manage_stock: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var on_sale = false</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var parent_id = 0L</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var purchase_note: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var rating_count = 0</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var regular_price: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var related_ids: JsonElement? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var reviews_allowed = true</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var sale_price: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_class: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_class_id = 0</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_required = false</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_taxable = false</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var short_description: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var sold_individually = false</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var stock_quantity = 0.0</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var stock_status: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var tax_class: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var tax_status: String? = null</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var total_sales = 0L</ID>
+    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var upsell_ids: JsonElement? = null</ID>
+    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val date_created_gmt: String? = null</ID>
+    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val product_id: Long = 0L</ID>
+    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val reviewer_avatar_urls: JsonElement? = null</ID>
+    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val reviewer_email: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$val menu_order: Int = 0</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var backorders_allowed = false</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_created: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_modified: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_from: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_from_gmt: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_to: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_to_gmt: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var download_expiry = 0</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var download_limit = 0L</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var manage_stock = false</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var on_sale = false</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var regular_price: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var sale_price: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var shipping_class: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var shipping_class_id = 0</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var stock_quantity = 0.0</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var stock_status: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_class: String? = null</ID>
+    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_status: String? = null</ID>
+    <!-- example -->
+    <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$boxId == null || height == null || width == null || length == null || weight == null</ID>
+    <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$height == null || width == null || length == null || weight == null</ID>
+    <ID>ComplexMethod:CommentsMapperTest.kt$CommentsMapperTest$private fun assertModelsEqual(mappedModel: CommentModel, commentModel: CommentModel): Boolean</ID>
+    <ID>ComplexMethod:NotificationsFragment.kt$NotificationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WCOrderListActivity.kt$WCOrderListItemDataSource$override fun getItemIdentifiers( listDescriptor: WCOrderListDescriptor, itemIds: List&lt;RemoteId>, isListFullyFetched: Boolean ): List&lt;WCOrderListItemIdentifier></ID>
+    <ID>ComplexMethod:WCOrderListActivity.kt$WCOrderListItemUIType$override fun equals(other: Any?): Boolean</ID>
+    <ID>ComplexMethod:WooBatchUpdateVariationsFragment.kt$WooBatchUpdateVariationsFragment$private fun buildPayload(): BatchUpdateVariationsPayload</ID>
+    <ID>ComplexMethod:WooCommerceFragment.kt$WooCommerceFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooCouponsFragment.kt$WooCouponsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooOrdersFragment.kt$WooOrdersFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onOrderChanged(event: OnOrderChanged)</ID>
+    <ID>ComplexMethod:WooOrdersFragment.kt$WooOrdersFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooProductsFragment.kt$WooProductsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooRevenueStatsFragment.kt$WooRevenueStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooShippingLabelFragment.kt$WooShippingLabelFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)</ID>
+    <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>ComplexMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>DataClassShouldBeImmutable:WooProductCategoriesAdapter.kt$WooProductCategoriesAdapter.ProductCategoryViewHolderModel$var isSelected: Boolean = false</ID>
+    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var name: String</ID>
+    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var url: String</ID>
+    <ID>DataClassShouldBeImmutable:WooProductTagsAdapter.kt$WooProductTagsAdapter.ProductTagViewHolderModel$var isSelected: Boolean = false</ID>
+    <ID>EmptyFunctionBlock:EditTextExt.kt$&lt;no name provided>${}</ID>
+    <ID>EmptyFunctionBlock:ExperimentsFragment.kt$ExperimentsFragment.&lt;no name provided>${}</ID>
+    <ID>EmptyFunctionBlock:RetryOnRedirectBasicNetworkTest.kt$RetryOnRedirectBasicNetworkTest.MockedRequest${}</ID>
+    <ID>GlobalCoroutineUsage:ExperimentsFragment.kt$ExperimentsFragment$GlobalScope.launch(Dispatchers.Default) { val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId) withContext(Dispatchers.Main) { onAssignmentsFetched(result) } }</ID>
+    <ID>GlobalCoroutineUsage:JavaCoroutineHelper.kt$JavaCoroutineHelper$GlobalScope.launch(Dispatchers.Main) { val response = xPostsStore.fetchXPosts(site) consumer.accept(response.toString()) }</ID>
+    <ID>GlobalCoroutineUsage:ReactNativeFragment.kt$ReactNativeFragment$GlobalScope.launch(Dispatchers.Main) { val path = path_field.text.toString() prependToLog("Making request: $path") val response = withContext(Dispatchers.IO) { site?.let { reactNativeStore.executeRequest(it, path) } } when (response) { is Success -> { prependToLog("Request succeeded") AppLog.i(AppLog.T.API, "Request result: ${response.result}") } is Error -> prependToLog("Request to '$path' failed: ${response.error.message}") } }</ID>
+    <ID>GlobalCoroutineUsage:WooGatewaysFragment.kt$WooGatewaysFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { gatewayStore.fetchAllGateways(site) } response.error?.let { prependToLog("${it.type}: ${it.message}") } response.model?.let { prependToLog("Site has ${it.size} gateways") it.forEach { gateway -> prependToLog("Gateway: $gateway") } } } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
+    <ID>GlobalCoroutineUsage:WooGatewaysFragment.kt$WooGatewaysFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { gatewayStore.fetchGateway(site, gatewayEditText.text.toString()) } printGateway(response) } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
+    <ID>GlobalCoroutineUsage:WooRefundsFragment.kt$WooRefundsFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { refundsStore.fetchAllRefunds( site, orderEditText.text.toString().toLong() ) } response.error?.let { prependToLog("${it.type}: ${it.message}") } response.model?.let { prependToLog("Order ${orderEditText.text} has ${it.size} refunds") it.forEach { refund -> prependToLog("Refund: $refund") } } } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
+    <ID>GlobalCoroutineUsage:WooRefundsFragment.kt$WooRefundsFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { refundsStore.fetchRefund( site, orderEditText.text.toString().toLong(), refundEditText.text.toString().toLong() ) } printRefund(response) } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
+    <ID>GlobalCoroutineUsage:WooRefundsFragment.kt$WooRefundsFragment$GlobalScope.launch(Dispatchers.Main) { try { val response = withContext(Dispatchers.Default) { refundsStore.createAmountRefund( site, orderEditText.text.toString().toLong(), amountEditText.text.toString().toBigDecimal(), reasonEditText.text.toString() ) } printRefund(response) } catch (e: Exception) { prependToLog("Error: ${e.message}") } }</ID>
+    <ID>GlobalCoroutineUsage:WooTaxFragment.kt$WooTaxFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { wcTaxStore.fetchTaxClassList(site) } response.error?.let { prependToLog("${it.type}: ${it.message}") } response.model?.let { prependToLog("Site has ${it.size} tax classes") } } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
+    <ID>LargeClass:ProductSqlUtilsTest.kt$ProductSqlUtilsTest</ID>
+    <ID>LargeClass:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest</ID>
+    <ID>LargeClass:WCStatsStoreTest.kt$WCStatsStoreTest</ID>
+    <ID>LargeClass:WooOrdersFragment.kt$WooOrdersFragment : StoreSelectingFragmentListener</ID>
+    <ID>LargeClass:WooProductsFragment.kt$WooProductsFragment : StoreSelectingFragment</ID>
+    <ID>LargeClass:WooShippingLabelFragment.kt$WooShippingLabelFragment : StoreSelectingFragment</ID>
+    <ID>LargeClass:WooUpdateProductFragment.kt$WooUpdateProductFragment : Fragment</ID>
+    <ID>LongMethod:AddressEditDialogFragment.kt$AddressEditDialogFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:InsightsRestClientTest.kt$InsightsRestClientTest$@Before fun setUp()</ID>
+    <ID>LongMethod:NotificationSqlUtilsTest.kt$NotificationSqlUtilsTest$@Test fun testGetNotificationsForSite_storeOrder()</ID>
+    <ID>LongMethod:NotificationsFragment.kt$NotificationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:PostListDescriptorTest.kt$PostListDescriptorTest.Companion$@JvmStatic @Parameters fun testCases(): List&lt;PostListDescriptorTestCase></ID>
+    <ID>LongMethod:ThemeFragment.kt$ThemeFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WCCurrencyUtilsTest.kt$WCCurrencyUtilsTest$@Test fun testDecimalFormat()</ID>
+    <ID>LongMethod:WCCustomerMapperTest.kt$WCCustomerMapperTest$@Test fun `mapper maps to correct customer dto`()</ID>
+    <ID>LongMethod:WCCustomerMapperTest.kt$WCCustomerMapperTest$@Test fun `mapper maps to correct customer model`()</ID>
+    <ID>LongMethod:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$@Test fun `get shipping rates`()</ID>
+    <ID>LongMethod:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$@Test fun `purchase shipping labels with polling`()</ID>
+    <ID>LongMethod:WCStatsSqlUtilsTest.kt$WCStatsSqlUtilsTest$@Test fun testGetRawRevenueStatsForSiteAndUnit()</ID>
+    <ID>LongMethod:WCStatsSqlUtilsTest.kt$WCStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfRevenueStats()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetCustomStatsForDaysGranularity()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetRevenueAndOrderStatsForSite()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForCurrentDayGranularity()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForDaysGranularity()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForThisWeekGranularity()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForWeeksGranularity()</ID>
+    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testInsertionAndRetrievalForCustomStats()</ID>
+    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfCustomVisitorStats()</ID>
+    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfNewCustomVisitorStats()</ID>
+    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfNewVisitorStats()</ID>
+    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfVisitorStats()</ID>
+    <ID>LongMethod:WooBatchUpdateVariationsFragment.kt$WooBatchUpdateVariationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooCommerceFragment.kt$WooCommerceFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooCouponsFragment.kt$WooCouponsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooOrdersFragment.kt$WooOrdersFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooProductsFragment.kt$WooProductsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooRefundsFragment.kt$WooRefundsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooRevenueStatsFragment.kt$WooRevenueStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooShippingLabelFragment.kt$WooShippingLabelFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooStatsFragment.kt$WooStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
+    <ID>MagicNumber:CustomStatsDialog.kt$CustomStatsDialog.Companion$100</ID>
+    <ID>MagicNumber:WCAddOrderShipmentTrackingDialog.kt$WCAddOrderShipmentTrackingDialog.Companion$200</ID>
+    <ID>MagicNumber:WCOrderListActivity.kt$TimeGroup.Companion$2</ID>
+    <ID>MagicNumber:WooOrdersFragment.kt$WooOrdersFragment$5</ID>
+    <ID>MagicNumber:WooShippingLabelFragment.kt$WooShippingLabelFragment$5000</ID>
+    <ID>MagicNumber:WooStatsFragment.kt$WooStatsFragment$10</ID>
+    <ID>MaxLineLength:CommentSqlUtilsTest.kt$CommentSqlUtilsTest$// from 65 comments in DB we expect to have only 22 remote comments (remove first 3, 3 from the middle and all the comments that go after last comment in remoteComments</ID>
+    <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>date_created_gmt&lt;/name>&lt;value>&lt;dateTime.iso8601>20210727T20:33:41&lt;/dateTime.iso8601>&lt;/value>&lt;/member></ID>
+    <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>link&lt;/name>&lt;value>&lt;string>http://test-debug.org/index.php/2021/04/01/no-jp/#comment-34&lt;/string>&lt;/value>&lt;/member></ID>
+    <ID>NestedBlockDepth:WooProductsFragment.kt$WooProductsFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged)</ID>
+    <ID>NestedBlockDepth:WooShippingLabelFragment.kt$WooShippingLabelFragment$private fun downloadUrl(url: String): File?</ID>
+    <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>
+    <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$ex</ID>
+    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areContentsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
+    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areItemsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
+    <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
+    <ID>SwallowedException:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
+    <ID>SwallowedException:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooCommerceFragment.kt$WooCommerceFragment$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooGatewaysFragment.kt$WooGatewaysFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooLeaderboardsFragment.kt$WooLeaderboardsFragment$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooProductAttributeFragment.kt$WooProductAttributeFragment$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooRefundsFragment.kt$WooRefundsFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
+    <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
+    <ID>UnnecessaryAbstractClass:FragmentsModule.kt$FragmentsModule$FragmentsModule</ID>
+    <ID>UnnecessaryAbstractClass:MainActivityModule.kt$MainActivityModule$MainActivityModule</ID>
+    <ID>UnnecessaryAbstractClass:WCOrderListActivityModule.kt$WCOrderListActivityModule$WCOrderListActivityModule</ID>
+    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var accessToken: AccessToken</ID>
+    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var wpComGsonRequestBuilder: WPComGsonRequestBuilder</ID>
+    <ID>UnusedPrivateMember:InsightsRestClientTest.kt$InsightsRestClientTest$val date = Date()</ID>
+    <ID>UnusedPrivateMember:PageStoreTest.kt$PageStoreTest$private fun assertPage(map: Map&lt;PageStatus, List&lt;PageModel>>, position: Int, status: PageStatus)</ID>
+    <ID>UnusedPrivateMember:SiteHomepageRestClientTest.kt$SiteHomepageRestClientTest$@Mock private lateinit var siteHomepageSettingsMapper: SiteHomepageSettingsMapper</ID>
+    <ID>UnusedPrivateMember:WCProductStoreTest.kt$WCProductStoreTest$val modifications = variationsUpdatePayload.modifiedProperties</ID>
+    <ID>UnusedPrivateMember:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$private val sampleListOfTwoIdenticalPredefinedPackages = listOf( PredefinedOption( title = "USPS Priority Mail Flat Rate Boxes", carrier = "usps", predefinedPackages = listOf( PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ), PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ) ) ) )</ID>
+    <ID>UnusedPrivateMember:WCStatsStoreTest.kt$WCStatsStoreTest$val missingDataPayload = FetchRevenueStatsResponsePayload(site, StatsGranularity.YEARS, null)</ID>
+    <ID>UnusedPrivateMember:WCUserTestUtils.kt$WCUserTestUtils$private fun generateSampleUser( firstName: String = "", lastName: String = "", username: String = "", email: String = "", roles: String = "", siteId: Int = 6 ): WCUserModel</ID>
+    <ID>UnusedPrivateMember:WooProductAttributeFragment.kt$WooProductAttributeFragment$view: View</ID>
+    <ID>UnusedPrivateMember:WooUpdateProductFragment.kt$WooUpdateProductFragment$view: View</ID>
+    <ID>UseArrayLiteralsInAnnotations:MainActivityModule.kt$MainActivityModule$modules = arrayOf(FragmentsModule::class)</ID>
+    <ID>UseCheckOrError:ListSelectorDialog.kt$ListSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
+    <ID>UseCheckOrError:OrderListAdapter.kt$OrderListAdapter$throw IllegalStateException("The view type '$viewType' needs to be handled")</ID>
+    <ID>UseCheckOrError:SiteSelectorDialog.kt$SiteSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
+    <ID>UseCheckOrError:StoreSelectorDialog.kt$StoreSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
+    <ID>UseCheckOrError:ThreeEditTextDialog.kt$ThreeEditTextDialog$throw IllegalStateException("Not attached to an activity!")</ID>
+    <ID>UseCheckOrError:WooCustomersSearchAdapter.kt$WooCustomersSearchAdapter$throw IllegalStateException("View type $viewType is not supported")</ID>
+    <ID>UtilityClassWithPublicConstructor:ReactNativeStoreWPAPITest.kt$ReactNativeStoreWPAPITest$StatusCode</ID>
+    <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
+    <ID>WildcardImport:AddressEditDialogFragment.kt$import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*</ID>
+    <ID>WildcardImport:CustomStatsDialog.kt$import kotlinx.android.synthetic.main.dialog_custom_stats.*</ID>
+    <ID>WildcardImport:EditorThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_editor_theme.*</ID>
+    <ID>WildcardImport:ExperimentsFragment.kt$import kotlinx.android.synthetic.main.fragment_experiments.*</ID>
+    <ID>WildcardImport:FloatingLabelEditText.kt$import kotlinx.android.synthetic.main.view_floating_edittext.view.*</ID>
+    <ID>WildcardImport:MainExampleActivity.kt$import kotlinx.android.synthetic.main.activity_example.*</ID>
+    <ID>WildcardImport:MainFragment.kt$import kotlinx.android.synthetic.main.fragment_main.*</ID>
+    <ID>WildcardImport:NotificationTypeSubtypeDialog.kt$import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*</ID>
+    <ID>WildcardImport:NotificationsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
+    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
+    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_plugins.*</ID>
+    <ID>WildcardImport:PostsFragment.kt$import kotlinx.android.synthetic.main.fragment_posts.*</ID>
+    <ID>WildcardImport:ReactNativeFragment.kt$import kotlinx.android.synthetic.main.fragment_reactnative.*</ID>
+    <ID>WildcardImport:StoreSelectingFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
+    <ID>WildcardImport:ThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_themes.*</ID>
+    <ID>WildcardImport:WCAddOrderShipmentTrackingDialog.kt$import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*</ID>
+    <ID>WildcardImport:WCOrderListActivity.kt$import kotlinx.android.synthetic.main.activity_wc_order_list.*</ID>
+    <ID>WildcardImport:WooAddonsTestFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_addons.*</ID>
+    <ID>WildcardImport:WooBatchUpdateVariationsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.*</ID>
+    <ID>WildcardImport:WooCommerceFragment.kt$import kotlinx.android.synthetic.main.fragment_woocommerce.*</ID>
+    <ID>WildcardImport:WooCouponsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_coupons.*</ID>
+    <ID>WildcardImport:WooCustomerCreationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer_creation.*</ID>
+    <ID>WildcardImport:WooCustomersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer.*</ID>
+    <ID>WildcardImport:WooCustomersSearchAdapter.kt$import kotlinx.android.synthetic.main.list_item_woo_customer.view.*</ID>
+    <ID>WildcardImport:WooCustomersSearchBuilderFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search_builder.*</ID>
+    <ID>WildcardImport:WooCustomersSearchFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search.*</ID>
+    <ID>WildcardImport:WooGatewaysFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_gateways.*</ID>
+    <ID>WildcardImport:WooHelpSupportFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_help_support.*</ID>
+    <ID>WildcardImport:WooLeaderboardsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*</ID>
+    <ID>WildcardImport:WooOrdersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_orders.*</ID>
+    <ID>WildcardImport:WooProductAttributeFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*</ID>
+    <ID>WildcardImport:WooProductCategoriesAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
+    <ID>WildcardImport:WooProductCategoriesFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
+    <ID>WildcardImport:WooProductDownloadsAdapter.kt$import kotlinx.android.synthetic.main.product_downloadable_file_list_item.view.*</ID>
+    <ID>WildcardImport:WooProductDownloadsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_downloads.*</ID>
+    <ID>WildcardImport:WooProductFiltersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_filters.*</ID>
+    <ID>WildcardImport:WooProductTagsAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
+    <ID>WildcardImport:WooProductTagsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
+    <ID>WildcardImport:WooProductsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
+    <ID>WildcardImport:WooRefundsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_refunds.*</ID>
+    <ID>WildcardImport:WooRevenueStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_revenue_stats.*</ID>
+    <ID>WildcardImport:WooShippingLabelFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*</ID>
+    <ID>WildcardImport:WooStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_stats.*</ID>
+    <ID>WildcardImport:WooTaxFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_taxes.*</ID>
+    <ID>WildcardImport:WooUpdateCouponFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_coupon.*</ID>
+    <ID>WildcardImport:WooUpdateProductFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_product.*</ID>
+    <ID>WildcardImport:WooUpdateVariationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_variation.*</ID>
+    <ID>WildcardImport:WooVerifyAddressFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_verify_address.*</ID>
+  </CurrentIssues>
+</SmellBaseline>
