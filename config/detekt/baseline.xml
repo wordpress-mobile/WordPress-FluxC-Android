@@ -54,9 +54,6 @@
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
-    <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("mappedPosts") var mappedPosts: List&lt;Post>? = null</ID>
-    <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("views") var views: Int?</ID>
-    <ID>DataClassShouldBeImmutable:ClicksRestClient.kt$ClicksRestClient.ClicksResponse.ClickGroup$@SerializedName("clicks") var clicks: List&lt;Click>? = null</ID>
     <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
     <ID>ExplicitItLambdaParameter:NotificationRestClient.kt$NotificationRestClient${ it -> NotificationApiResponse.notificationResponseToNotificationModel(it) }</ID>
     <ID>ForbiddenComment:CommentsMapper.kt$CommentsMapper$// TODO: set authorProfileImageUrl - get the hash from the email address?</ID>
