@@ -54,76 +54,9 @@
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnActivityLogFetched$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownload$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownloadStatusFetched$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnDismissBackupDownload$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnRewind$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnRewindStatusFetched$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:AllTimeInsightsRestClient.kt$AllTimeInsightsRestClient.AllTimeResponse$@SerializedName("date") var date: Date? = null</ID>
     <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("mappedPosts") var mappedPosts: List&lt;Post>? = null</ID>
     <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("views") var views: Int?</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$@PrimaryKey var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var friday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var hour: Int = 10</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var isPromptRemindersOptedIn: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var minute: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var monday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var saturday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var sunday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var thursday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var tuesday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var wednesday: Boolean = false</ID>
     <ID>DataClassShouldBeImmutable:ClicksRestClient.kt$ClicksRestClient.ClicksResponse.ClickGroup$@SerializedName("clicks") var clicks: List&lt;Click>? = null</ID>
-    <ID>DataClassShouldBeImmutable:CommentsDao.kt$CommentsDao.CommentEntity$@Ignore var level: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var authors: List&lt;Author></ID>
-    <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var posts: List&lt;Post></ID>
-    <ID>DataClassShouldBeImmutable:FileDownloadsRestClient.kt$FileDownloadsRestClient.FileDownloadsResponse.File$@SerializedName("downloads") var downloads: Int?</ID>
-    <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnActivateStatsModule$var causeOfChange: JetpackAction</ID>
-    <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnJetpackInstalled$var causeOfChange: JetpackAction</ID>
-    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var noteHash: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var read: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var remoteSiteId: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var date: Date</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var hasLocalChanges: Boolean</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var parent: PageModel?</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var status: PageStatus</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var description: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var features: List&lt;Feature>?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var iconUrl: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var name: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var planIds: List&lt;Int>?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var shortName: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var tagline: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var description: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var id: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var name: String?</ID>
-    <ID>DataClassShouldBeImmutable:PostAndPageViewsRestClient.kt$PostAndPageViewsRestClient.PostAndPageViewsResponse$@SerializedName("date") var date: Date? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("ID") var revisionId: Long = 0</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("content") var content: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("excerpt") var excerpt: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("modified") var modified: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("preview_URL") var previewUrl: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("title") var title: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("id") var id: Long = 0</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("key") var key: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("value") var value: Any? = null</ID>
-    <ID>DataClassShouldBeImmutable:ProductsStore.kt$ProductsStore.FetchProductsError$var type: FetchProductsErrorType</ID>
-    <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Group$var markedAsSpam: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Referrer$var markedAsSpam: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStarted$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStatusFetched$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnIgnoreThreatStarted$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnScanStarted$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnScanStateFetched$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:SiteOptionsStore.kt$SiteOptionsStore.SiteOptionsError$var message: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:SiteOptionsStore.kt$SiteOptionsStore.SiteOptionsError$var type: SiteOptionsErrorType</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.OnURLChecked$var siteError: SiteError? = null</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var password: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var url: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var username: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.CreateShoppingCartError$var type: CreateCartErrorType</ID>
-    <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.RedeemShoppingCartError$var type: TransactionErrorType</ID>
     <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
     <ID>ExplicitItLambdaParameter:NotificationRestClient.kt$NotificationRestClient${ it -> NotificationApiResponse.notificationResponseToNotificationModel(it) }</ID>
     <ID>ForbiddenComment:CommentsMapper.kt$CommentsMapper$// TODO: set authorProfileImageUrl - get the hash from the email address?</ID>
