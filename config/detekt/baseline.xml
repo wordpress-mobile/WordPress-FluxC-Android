@@ -89,21 +89,6 @@
     <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>? = null, body: Map&lt;String, String> = emptyMap(), clazz: Class&lt;T>, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
     <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>?, body: Map&lt;String, String>, type: Type, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
     <ID>LongParameterList:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$( url: String, method: XMLRPC, params: List&lt;Any>, clazz: Class&lt;T>, listener: (T) -> Unit, errorListener: (BaseNetworkError) -> Unit )</ID>
-    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$3000</ID>
-    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$500</ID>
-    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$599</ID>
-    <ID>MagicNumber:InsightsMapper.kt$InsightsMapper$1000</ID>
-    <ID>MagicNumber:JetpackStore.kt$JetpackStore$5000</ID>
-    <ID>MagicNumber:LogEncrypter.kt$LogEncrypter$108</ID>
-    <ID>MagicNumber:LogEncrypter.kt$LogEncrypter$32</ID>
-    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$1000</ID>
-    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$401</ID>
-    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$404</ID>
-    <ID>MagicNumber:PrivateAtomicCookie.kt$PrivateAtomicCookie$1000</ID>
-    <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$401</ID>
-    <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$404</ID>
-    <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$1000</ID>
-    <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$60</ID>
     <ID>MaxLineLength:EditorThemeSqlUtils.kt$EditorThemeSqlUtils$// Deleting the row for the EditorThemeTable table row here will cascade to delete the associated rows in the EditorThemeElementTable as well.</ID>
     <ID>MaxLineLength:EncryptedLogRestClient.kt$EncryptedLogRestClient$// {"error":"invalid-request","message":"Invalid UUID: uuids must only contain letters, numbers, dashes, and curly brackets"}</ID>
     <ID>MaxLineLength:InternalPagedListDataSource.kt$InternalPagedListDataSource$*</ID>
