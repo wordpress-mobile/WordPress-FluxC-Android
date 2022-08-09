@@ -42,7 +42,6 @@
     <ID>LargeClass:SiteRestClient.kt$SiteRestClient : BaseWPComRestClient</ID>
     <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
     <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
-    <ID>LongMethod:InsightsMapper.kt$InsightsMapper$fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long, endOfRange: Long )</ID>
