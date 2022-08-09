@@ -3,13 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <!-- fluxc -->
-    <ID>ComplexCondition:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$actorType != null || displayName != null || wpcomUserID != null || avatarURL != null || role != null</ID>
-    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.id != null &amp;&amp; it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null</ID>
-    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null &amp;&amp; it.gravatar != null</ID>
-    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
-    <ID>ComplexCondition:PostDetailStatsMapper.kt$PostDetailStatsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
     <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
-    <ID>ComplexMethod:InsightsMapper.kt$InsightsMapper$fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel</ID>
     <ID>ComplexMethod:LikeModel.kt$LikeModel$fun isEqual(otherLike: LikeModel): Boolean</ID>
     <ID>ComplexMethod:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
     <ID>ComplexMethod:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
