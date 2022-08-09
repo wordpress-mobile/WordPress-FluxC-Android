@@ -100,7 +100,6 @@
     <ID>ReturnCount:ActivityLogRestClient.kt$ActivityLogRestClient$private fun buildRewindStatusPayload(response: RewindStatusResponse, site: SiteModel): FetchedRewindStatePayload</ID>
     <ID>ReturnCount:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
     <ID>ReturnCount:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
-    <ID>ReturnCount:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$fun toEditorThemeElement(): EditorThemeElement?</ID>
     <ID>ReturnCount:EncryptedLogRestClient.kt$EncryptedLogRestClient$private fun mapError(error: VolleyError): UploadEncryptedLogError</ID>
     <ID>ReturnCount:MediaErrorSubType.kt$MediaErrorSubType.Companion$@JvmStatic fun deserialize(name: String?): MediaErrorSubType</ID>
     <ID>ReturnCount:ScanRestClient.kt$ScanRestClient$private fun buildScanStatePayload(response: ScanStateResponse, site: SiteModel): FetchedScanStatePayload</ID>
