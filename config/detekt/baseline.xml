@@ -131,8 +131,6 @@
     <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
-    <ID>UtilityClassWithPublicConstructor:EncryptionUtils.kt$EncryptionUtils</ID>
-    <ID>UtilityClassWithPublicConstructor:WhatsNewAppVersionUtils.kt$WhatsNewAppVersionUtils</ID>
     <ID>VariableNaming:AuthOptionsResponse.kt$AuthOptionsResponse$var email_verified: Boolean? = null</ID>
     <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_1: String? = null</ID>
     <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_2: String? = null</ID>
