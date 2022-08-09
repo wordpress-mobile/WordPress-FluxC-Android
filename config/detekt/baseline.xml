@@ -131,7 +131,6 @@
     <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
-    <ID>UseCheckOrError:ActivityLogRestClient.kt$ActivityLogRestClient$throw IllegalStateException("ActivityTypes parsing failed - one or more items were ignored.")</ID>
     <ID>UtilityClassWithPublicConstructor:EncryptionUtils.kt$EncryptionUtils</ID>
     <ID>UtilityClassWithPublicConstructor:WhatsNewAppVersionUtils.kt$WhatsNewAppVersionUtils</ID>
     <ID>VariableNaming:AuthOptionsResponse.kt$AuthOptionsResponse$var email_verified: Boolean? = null</ID>
