@@ -3,17 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <!-- fluxc -->
-    <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
-    <ID>ComplexMethod:LikeModel.kt$LikeModel$fun isEqual(otherLike: LikeModel): Boolean</ID>
-    <ID>ComplexMethod:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
-    <ID>ComplexMethod:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
-    <ID>ComplexMethod:RevisionModel.kt$RevisionModel$override fun equals(other: Any?): Boolean</ID>
-    <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
-    <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$suspend fun newSite( siteName: String?, siteTitle: String?, language: String, timeZoneId: String?, visibility: SiteVisibility, segmentId: Long?, siteDesign: String?, dryRun: Boolean ): NewSiteResponsePayload</ID>
-    <ID>ComplexMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: AuthorsResponse, cacheMode: LimitMode): AuthorsModel</ID>
-    <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: PostAndPageViewsResponse, cacheMode: LimitMode): PostAndPageViewsModel</ID>
-    <ID>ComplexMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
     <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val activity_id: String?</ID>
     <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val is_rewindable: Boolean?</ID>
     <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val rewind_id: String?</ID>
@@ -54,9 +43,6 @@
     <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
     <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
     <ID>LongMethod:InsightsMapper.kt$InsightsMapper$fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel</ID>
-    <ID>LongMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
-    <ID>LongMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long, endOfRange: Long )</ID>
@@ -80,9 +66,7 @@
     <ID>LongParameterList:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$( url: String, method: XMLRPC, params: List&lt;Any>, clazz: Class&lt;T>, listener: (T) -> Unit, errorListener: (BaseNetworkError) -> Unit )</ID>
     <ID>NestedBlockDepth:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$override fun deserialize( json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext? )</ID>
     <ID>NestedBlockDepth:GutenbergLayoutCategoriesModel.kt$fun List&lt;GutenbergLayout>.connections(site: SiteModel): List&lt;GutenbergLayoutCategoriesModel></ID>
-    <ID>NestedBlockDepth:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
     <ID>NestedBlockDepth:PostWPComRestResponse.kt$PostWPComRestResponse.MetaDataAdapter$@Throws(IOException::class) override fun read(jsonReader: JsonReader): List&lt;PostMetaData></ID>
-    <ID>NestedBlockDepth:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
     <ID>NestedBlockDepth:SiteSqlUtils.kt$SiteSqlUtils$fun removeWPComRestSitesAbsentFromList(postSqlUtils: PostSqlUtils, sites: List&lt;SiteModel>): Int</ID>
     <ID>NestedBlockDepth:SiteStore.kt$SiteStore$private fun handleDesignatedMobileEditorForAllSites(payload: DesignateMobileEditorForAllSitesResponsePayload)</ID>
     <ID>NestedBlockDepth:ThreatContextDeserializer.kt$ThreatContextDeserializer$private fun getHighlightsFromMarks(marksForKey: JsonElement?): List&lt;Pair&lt;Int, Int>>?</ID>
