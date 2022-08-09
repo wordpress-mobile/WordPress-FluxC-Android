@@ -9,7 +9,6 @@
     <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
     <ID>ComplexCondition:LatestPostInsightsStore.kt$LatestPostInsightsStore$postsFound != null &amp;&amp; postsFound > 0 &amp;&amp; posts != null &amp;&amp; posts.isNotEmpty()</ID>
     <ID>ComplexCondition:PostDetailStatsMapper.kt$PostDetailStatsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
-    <ID>ComplexMethod:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
     <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
     <ID>ComplexMethod:InsightsMapper.kt$InsightsMapper$fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel</ID>
     <ID>ComplexMethod:LikeModel.kt$LikeModel$fun isEqual(otherLike: LikeModel): Boolean</ID>
@@ -62,10 +61,8 @@
     <ID>LargeClass:SiteRestClient.kt$SiteRestClient : BaseWPComRestClient</ID>
     <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
     <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
-    <ID>LongMethod:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
     <ID>LongMethod:InsightsMapper.kt$InsightsMapper$fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel</ID>
     <ID>LongMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
-    <ID>LongMethod:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
     <ID>LongMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
@@ -97,15 +94,6 @@
     <ID>NestedBlockDepth:SiteSqlUtils.kt$SiteSqlUtils$fun removeWPComRestSitesAbsentFromList(postSqlUtils: PostSqlUtils, sites: List&lt;SiteModel>): Int</ID>
     <ID>NestedBlockDepth:SiteStore.kt$SiteStore$private fun handleDesignatedMobileEditorForAllSites(payload: DesignateMobileEditorForAllSitesResponsePayload)</ID>
     <ID>NestedBlockDepth:ThreatContextDeserializer.kt$ThreatContextDeserializer$private fun getHighlightsFromMarks(marksForKey: JsonElement?): List&lt;Pair&lt;Int, Int>>?</ID>
-    <ID>ReturnCount:ActivityLogRestClient.kt$ActivityLogRestClient$private fun buildRewindStatusPayload(response: RewindStatusResponse, site: SiteModel): FetchedRewindStatePayload</ID>
-    <ID>ReturnCount:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
-    <ID>ReturnCount:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
-    <ID>ReturnCount:EncryptedLogRestClient.kt$EncryptedLogRestClient$private fun mapError(error: VolleyError): UploadEncryptedLogError</ID>
-    <ID>ReturnCount:MediaErrorSubType.kt$MediaErrorSubType.Companion$@JvmStatic fun deserialize(name: String?): MediaErrorSubType</ID>
-    <ID>ReturnCount:ScanRestClient.kt$ScanRestClient$private fun buildScanStatePayload(response: ScanStateResponse, site: SiteModel): FetchedScanStatePayload</ID>
-    <ID>ReturnCount:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
-    <ID>ReturnCount:SiteStore.kt$SiteStore.DeleteSiteErrorType.Companion$fun fromString(string: String): DeleteSiteErrorType</ID>
-    <ID>ReturnCount:WPV2MediaRestClient.kt$WPV2MediaRestClient$private fun Response.parseUploadError(): MediaError</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planFeatures.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
