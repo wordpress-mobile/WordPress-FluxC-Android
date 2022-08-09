@@ -8,7 +8,6 @@
     <ID>ComplexMethod:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
     <ID>ComplexMethod:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
     <ID>ComplexMethod:RevisionModel.kt$RevisionModel$override fun equals(other: Any?): Boolean</ID>
-    <ID>ComplexMethod:ScanSqlUtils.kt$ScanSqlUtils$private fun ScanStateModel.toBuilder(site: SiteModel): ScanStateBuilder</ID>
     <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
     <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$suspend fun newSite( siteName: String?, siteTitle: String?, language: String, timeZoneId: String?, visibility: SiteVisibility, segmentId: Long?, siteDesign: String?, dryRun: Boolean ): NewSiteResponsePayload</ID>
     <ID>ComplexMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
