@@ -131,7 +131,6 @@
     <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
-    <ID>UnnecessaryAbstractClass:BloggingRemindersDao.kt$BloggingRemindersDao$BloggingRemindersDao</ID>
     <ID>UnusedPrivateMember:ActivityLogModel.kt$ActivityLogModel.Status$value: String</ID>
     <ID>UnusedPrivateMember:PagedListWrapper.kt$PagedListWrapper$@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY) private fun onDestroy()</ID>
     <ID>UnusedPrivateMember:ReactNativeWPAPIRestClient.kt$ReactNativeWPAPIRestClient$private val nonceRestClient: NonceRestClient</ID>
