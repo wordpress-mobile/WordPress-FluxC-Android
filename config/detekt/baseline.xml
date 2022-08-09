@@ -7,7 +7,6 @@
     <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.id != null &amp;&amp; it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null</ID>
     <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null &amp;&amp; it.gravatar != null</ID>
     <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
-    <ID>ComplexCondition:LatestPostInsightsStore.kt$LatestPostInsightsStore$postsFound != null &amp;&amp; postsFound > 0 &amp;&amp; posts != null &amp;&amp; posts.isNotEmpty()</ID>
     <ID>ComplexCondition:PostDetailStatsMapper.kt$PostDetailStatsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
     <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
     <ID>ComplexMethod:InsightsMapper.kt$InsightsMapper$fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel</ID>
