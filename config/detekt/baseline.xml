@@ -132,8 +132,6 @@
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
     <ID>UnusedPrivateMember:PagedListWrapper.kt$PagedListWrapper$@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY) private fun onDestroy()</ID>
-    <ID>UnusedPrivateMember:ReactNativeWPAPIRestClient.kt$ReactNativeWPAPIRestClient$private val nonceRestClient: NonceRestClient</ID>
-    <ID>UnusedPrivateMember:StockMediaStore.kt$StockMediaStore.StockMediaErrorType.Companion$baseError: BaseNetworkError?</ID>
     <ID>UseCheckOrError:ActivityLogRestClient.kt$ActivityLogRestClient$throw IllegalStateException("ActivityTypes parsing failed - one or more items were ignored.")</ID>
     <ID>UtilityClassWithPublicConstructor:EncryptionUtils.kt$EncryptionUtils</ID>
     <ID>UtilityClassWithPublicConstructor:WhatsNewAppVersionUtils.kt$WhatsNewAppVersionUtils</ID>
