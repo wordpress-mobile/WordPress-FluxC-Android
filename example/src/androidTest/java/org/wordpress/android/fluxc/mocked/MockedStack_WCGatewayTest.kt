@@ -48,25 +48,3 @@ class MockedStack_WCGatewayTest: MockedStack_Base() {
         interceptor.respondWith("")
     }
 }
-
-//@Test
-//fun testOrderNotePostSuccess() = runBlocking {
-//    val orderModel = OrderEntity(orderId = 5, localSiteId = siteModel.localId())
-//
-//    interceptor.respondWith("wc-order-note-post-response-success.json")
-//    val payload = orderRestClient.postOrderNote(
-//        site = siteModel,
-//        orderId = orderModel.orderId,
-//        note = "Test rest note",
-//        isCustomerNote = true
-//    )
-//
-//    with(payload) {
-//        org.junit.Assert.assertNull(error)
-//        org.junit.Assert.assertEquals("Test rest note", result!!.note)
-//        org.junit.Assert.assertEquals(true, result!!.isCustomerNote)
-//        org.junit.Assert.assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
-//        org.junit.Assert.assertEquals(orderModel.orderId, result!!.orderId.value)
-//        org.junit.Assert.assertEquals(siteModel.remoteId(), result!!.siteId)
-//    }
-//}
