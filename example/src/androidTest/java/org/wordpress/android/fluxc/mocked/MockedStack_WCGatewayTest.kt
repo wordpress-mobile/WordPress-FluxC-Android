@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.mocked
 
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -37,14 +38,26 @@ class MockedStack_WCGatewayTest: MockedStack_Base() {
     fun testGatewayPostSuccess() = runBlocking {
         val gatewayResponse = GatewayResponse(
             "cod",
-            "Cash on Delivery",
-            "Description",
-            "5",
+            "Payment on Delivery",
+            "",
+            "",
             true,
             "",
             "",
             listOf()
         )
-        interceptor.respondWith("")
+        interceptor.respondWith("wc-orders-response-success.json")
+
+        val payload = gatewayRestClient.postCashOnDelivery(
+            site = siteModel,
+            enabled = true,
+            title = "Payment on Delivery"
+        )
+        with(payload) {
+            Assert.assertNull(error)
+            Assert.assertEquals("cod", result!!.gatewayId)
+            Assert.assertEquals("Payment on Delivery", result!!.title)
+            Assert.assertEquals(true, result!!.enabled)
+        }
     }
 }
