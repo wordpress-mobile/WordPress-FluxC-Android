@@ -63,7 +63,6 @@
     <ID>VariableNaming:NotificationHashesApiResponse.kt$NotificationHashesApiResponse$val last_seen_time: Long? = null</ID>
     <ID>VariableNaming:NotificationSeenApiResponse.kt$NotificationSeenApiResponse$val last_seen_time: Long? = null</ID>
     <ID>VariableNaming:NotificationsApiResponse.kt$NotificationsApiResponse$val last_seen_time: Long? = null</ID>
-    <ID>VariableNaming:ReactNativeStore.kt$ReactNativeStore$private val WPCOM_ENDPOINT = "https://public-api.wordpress.com"</ID>
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
