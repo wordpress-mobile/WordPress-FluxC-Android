@@ -38,10 +38,6 @@
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange( fetchRemoteAnnouncements( versionName, appId ) ) }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange(fetchCachedAnnouncements()) }</ID>
     <ID>ImplicitDefaultLocale:SiteStore.kt$SiteStore.ConnectSiteInfoPayload$String.format( "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s", url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects )</ID>
-    <ID>LargeClass:CommentsStore.kt$CommentsStore : Store</ID>
-    <ID>LargeClass:SiteRestClient.kt$SiteRestClient : BaseWPComRestClient</ID>
-    <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
-    <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long )</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long, endOfRange: Long )</ID>
