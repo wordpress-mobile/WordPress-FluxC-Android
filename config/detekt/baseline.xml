@@ -9,7 +9,6 @@
     <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
     <ID>ComplexCondition:LatestPostInsightsStore.kt$LatestPostInsightsStore$postsFound != null &amp;&amp; postsFound > 0 &amp;&amp; posts != null &amp;&amp; posts.isNotEmpty()</ID>
     <ID>ComplexCondition:PostDetailStatsMapper.kt$PostDetailStatsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
-    <ID>ComplexMethod:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
     <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
     <ID>ComplexMethod:InsightsMapper.kt$InsightsMapper$fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel</ID>
     <ID>ComplexMethod:LikeModel.kt$LikeModel$fun isEqual(otherLike: LikeModel): Boolean</ID>
@@ -54,88 +53,7 @@
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
     <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnActivityLogFetched$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownload$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnBackupDownloadStatusFetched$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnDismissBackupDownload$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnRewind$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:ActivityLogStore.kt$ActivityLogStore.OnRewindStatusFetched$var causeOfChange: ActivityLogAction</ID>
-    <ID>DataClassShouldBeImmutable:AllTimeInsightsRestClient.kt$AllTimeInsightsRestClient.AllTimeResponse$@SerializedName("date") var date: Date? = null</ID>
-    <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("mappedPosts") var mappedPosts: List&lt;Post>? = null</ID>
-    <ID>DataClassShouldBeImmutable:AuthorsRestClient.kt$AuthorsRestClient.AuthorsResponse.Author$@SerializedName("views") var views: Int?</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$@PrimaryKey var localSiteId: Int</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var friday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var hour: Int = 10</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var isPromptRemindersOptedIn: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var minute: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var monday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var saturday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var sunday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var thursday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var tuesday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:BloggingRemindersDao.kt$BloggingRemindersDao.BloggingReminders$var wednesday: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ClicksRestClient.kt$ClicksRestClient.ClicksResponse.ClickGroup$@SerializedName("clicks") var clicks: List&lt;Click>? = null</ID>
-    <ID>DataClassShouldBeImmutable:CommentsDao.kt$CommentsDao.CommentEntity$@Ignore var level: Int = 0</ID>
-    <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var authors: List&lt;Author></ID>
-    <ID>DataClassShouldBeImmutable:CommentsModel.kt$CommentsModel$var posts: List&lt;Post></ID>
-    <ID>DataClassShouldBeImmutable:FileDownloadsRestClient.kt$FileDownloadsRestClient.FileDownloadsResponse.File$@SerializedName("downloads") var downloads: Int?</ID>
-    <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnActivateStatsModule$var causeOfChange: JetpackAction</ID>
-    <ID>DataClassShouldBeImmutable:JetpackStore.kt$JetpackStore.OnJetpackInstalled$var causeOfChange: JetpackAction</ID>
-    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var noteHash: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var read: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:NotificationModel.kt$NotificationModel$var remoteSiteId: Long = 0L</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var date: Date</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var hasLocalChanges: Boolean</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var parent: PageModel?</ID>
-    <ID>DataClassShouldBeImmutable:PageModel.kt$PageModel$var status: PageStatus</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var description: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var features: List&lt;Feature>?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var iconUrl: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var name: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var planIds: List&lt;Int>?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var shortName: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel$var tagline: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var description: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var id: String?</ID>
-    <ID>DataClassShouldBeImmutable:PlanOffersModel.kt$PlanOffersModel.Feature$var name: String?</ID>
-    <ID>DataClassShouldBeImmutable:PostAndPageViewsRestClient.kt$PostAndPageViewsRestClient.PostAndPageViewsResponse$@SerializedName("date") var date: Date? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("ID") var revisionId: Long = 0</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("content") var content: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("excerpt") var excerpt: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("modified") var modified: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("preview_URL") var previewUrl: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMeta.PostData.PostAutoSave$@SerializedName("title") var title: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("id") var id: Long = 0</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("key") var key: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:PostWPComRestResponse.kt$PostWPComRestResponse.PostMetaData$@SerializedName("value") var value: Any? = null</ID>
-    <ID>DataClassShouldBeImmutable:ProductsStore.kt$ProductsStore.FetchProductsError$var type: FetchProductsErrorType</ID>
-    <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Group$var markedAsSpam: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ReferrersModel.kt$ReferrersModel.Referrer$var markedAsSpam: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStarted$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnFixThreatsStatusFetched$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnIgnoreThreatStarted$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnScanStarted$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:ScanStore.kt$ScanStore.OnScanStateFetched$var causeOfChange: ScanAction</ID>
-    <ID>DataClassShouldBeImmutable:SiteOptionsStore.kt$SiteOptionsStore.SiteOptionsError$var message: String? = null</ID>
-    <ID>DataClassShouldBeImmutable:SiteOptionsStore.kt$SiteOptionsStore.SiteOptionsError$var type: SiteOptionsErrorType</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.OnURLChecked$var siteError: SiteError? = null</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var password: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var url: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:SiteStore.kt$SiteStore.RefreshSitesXMLRPCPayload$@JvmField var username: String = ""</ID>
-    <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.CreateShoppingCartError$var type: CreateCartErrorType</ID>
-    <ID>DataClassShouldBeImmutable:TransactionsStore.kt$TransactionsStore.RedeemShoppingCartError$var type: TransactionErrorType</ID>
     <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
-    <ID>ExplicitItLambdaParameter:NotificationRestClient.kt$NotificationRestClient${ it -> NotificationApiResponse.notificationResponseToNotificationModel(it) }</ID>
-    <ID>ForbiddenComment:CommentsMapper.kt$CommentsMapper$// TODO: set authorProfileImageUrl - get the hash from the email address?</ID>
-    <ID>ForbiddenComment:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$// TODO: Max file size is 10MB - maybe we should just handle that in the error callback?</ID>
-    <ID>ForbiddenComment:ListDescriptor.kt$ListDescriptor$* This is the interface every list descriptor needs to implement for it to work with `ListStore`. It can be used to * describe which site a list belongs to, which filters it has, how to order it or anything and everything else a * feature might need. * * This presents an interesting challenge because if every list can be different, how do we use a generic interface * to save it in the DB and more importantly how do we query it back from it. In a traditional solution, one approach * would be to separate each list descriptor and save them in the DB in separate tables, and another approach would be * to add common fields in one table and try to work off of it. Neither approach is very flexible. * * `ListStore` takes a completely different approach to this problem by shying away from using lists directly and * tying everything to [ListDescriptor]s. For example, there is no way to access a list by its id, `ListSqlUtils` * ensures this. That means, we don't necessarily need to save every bit of information about a list in the DB, * as long as there is a way to identify it. That's where the [uniqueIdentifier] property comes in. * By using a unique identifier, we can save them in the DB and then retrieve them from it as long as we can calculate * the exact same identifier. This also means that we erase the information about a list, and we can no longer access it * even if we queried the list in some other way. However, as previously stated, all the components in `ListStore` is * designed in a way to work with that constraint. * * There is another interesting challenge this decision brings. What if we want to be able to identify lists that * has a certain "type". For example, let's say we are dealing with several post lists all belonging to the same site. * If a post in that site is updated, we'd expect all the post lists for that site to be notified of this change. * That's where the [typeIdentifier] comes in. It gives the class that's implementing this interface a way to group * them so the changes for the items in them notifies all of them together. * * TODO: Please note that "type" is not the correct term for this and should be renamed. * * </ID>
-    <ID>ForbiddenComment:PostListDescriptor.kt$PostListDescriptor$// TODO: need a better hashing algorithm, preferably a perfect hash</ID>
-    <ID>ForbiddenComment:PostListDescriptor.kt$PostListDescriptor.Companion$// TODO: need a better hashing algorithm, preferably a perfect hash</ID>
-    <ID>ForbiddenComment:SiteRestClient.kt$SiteRestClient$// TODO: what other kind of error could we get here?</ID>
-    <ID>ForbiddenComment:SiteStore.kt$SiteStore$* Obtains the site with the given (local) id and returns it as a [SiteModel]. * * NOTE: This method needs to be open because it's mocked in android tests in the WPAndroid project. * TODO: consider adding https://kotlinlang.org/docs/all-open-plugin.html</ID>
-    <ID>ForbiddenComment:SiteStore.kt$SiteStore$* SQLite based only. There is no in memory copy of mapped data, everything is queried from the DB. * * NOTE: This class needs to be open because it's mocked in android tests in the WPAndroid project. * TODO: consider adding https://kotlinlang.org/docs/all-open-plugin.html</ID>
-    <ID>ForbiddenComment:SiteStore.kt$SiteStore$// TODO: what kind of error could we get here?</ID>
-    <ID>ForbiddenComment:SiteXMLRPCClient.kt$SiteXMLRPCClient$// TODO: set a canonical URL here</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange( fetchRemoteAnnouncements( versionName, appId ) ) }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange(fetchCachedAnnouncements()) }</ID>
     <ID>ImplicitDefaultLocale:SiteStore.kt$SiteStore.ConnectSiteInfoPayload$String.format( "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s", url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects )</ID>
@@ -143,10 +61,8 @@
     <ID>LargeClass:SiteRestClient.kt$SiteRestClient : BaseWPComRestClient</ID>
     <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
     <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
-    <ID>LongMethod:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
     <ID>LongMethod:InsightsMapper.kt$InsightsMapper$fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel</ID>
     <ID>LongMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
-    <ID>LongMethod:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
     <ID>LongMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
     <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
@@ -170,39 +86,6 @@
     <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>? = null, body: Map&lt;String, String> = emptyMap(), clazz: Class&lt;T>, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
     <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>?, body: Map&lt;String, String>, type: Type, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
     <ID>LongParameterList:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$( url: String, method: XMLRPC, params: List&lt;Any>, clazz: Class&lt;T>, listener: (T) -> Unit, errorListener: (BaseNetworkError) -> Unit )</ID>
-    <ID>MagicNumber:CommentsXMLRPCClient.kt$CommentsXMLRPCClient$4</ID>
-    <ID>MagicNumber:CommentsXMLRPCClient.kt$CommentsXMLRPCClient$5</ID>
-    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$3000</ID>
-    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$500</ID>
-    <ID>MagicNumber:EncryptedLogStore.kt$EncryptedLogStore$599</ID>
-    <ID>MagicNumber:InsightsMapper.kt$InsightsMapper$1000</ID>
-    <ID>MagicNumber:JetpackStore.kt$JetpackStore$5000</ID>
-    <ID>MagicNumber:LogEncrypter.kt$LogEncrypter$108</ID>
-    <ID>MagicNumber:LogEncrypter.kt$LogEncrypter$32</ID>
-    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$1000</ID>
-    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$401</ID>
-    <ID>MagicNumber:PluginCoroutineStore.kt$PluginCoroutineStore$404</ID>
-    <ID>MagicNumber:PrivateAtomicCookie.kt$PrivateAtomicCookie$1000</ID>
-    <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$401</ID>
-    <ID>MagicNumber:ReactNativeStore.kt$ReactNativeStore$404</ID>
-    <ID>MagicNumber:SiteXMLRPCClient.kt$SiteXMLRPCClient$3</ID>
-    <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$1000</ID>
-    <ID>MagicNumber:XPostsRestClient.kt$XPostsRestClient$60</ID>
-    <ID>MaxLineLength:EditorThemeSqlUtils.kt$EditorThemeSqlUtils$// Deleting the row for the EditorThemeTable table row here will cascade to delete the associated rows in the EditorThemeElementTable as well.</ID>
-    <ID>MaxLineLength:EncryptedLogRestClient.kt$EncryptedLogRestClient$// {"error":"invalid-request","message":"Invalid UUID: uuids must only contain letters, numbers, dashes, and curly brackets"}</ID>
-    <ID>MaxLineLength:InternalPagedListDataSource.kt$InternalPagedListDataSource$*</ID>
-    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * Free MIME Types * * The WordPress supported image types based on https://wordpress.com/support/accepted-filetypes/ are: * .pdf (Portable Document Format; Adobe Acrobat), .doc, .docx (Microsoft Word Document), .ppt, .pptx, .pps, .ppsx (Microsoft PowerPoint Presentation), .odt (OpenDocument Text Document), .xls, .xlsx (Microsoft Excel Document), .key (Apple Keynote Presentation), .zip (Archive File Format) * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .pdf - "application/pdf" * .doc - "application/msword", "application/doc", "application/ms-doc" * .docx - "application/vnd.openxmlformats-officedocument.wordprocessingml.document" * .ppt - "application/mspowerpoint", "application/powerpoint", "application/x-mspowerpoint" * .pptx - "application/vnd.openxmlformats-officedocument.presentationml.presentation" * .pps - missing - "application/vnd.ms-powerpoint" * .ppsx - missing - "application/vnd.openxmlformats-officedocument.presentationml.slideshow" * .odt - missing - "application/vnd.oasis.opendocument.text" * .xls - "application/excel", "application/x-excel", "application/x-msexcel", "application/vnd.ms-excel" * .xlsx - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" * * Paid / Self hosted MIME Types * * .key - missing - "application/keynote" * .zip (Archive File Format) * * General comment about each of the properties below. * * wpComFreeDocumentTypes - all MIME types allowed in the free plans. * * wpComPaidAndSelfHostedDocumentTypes - all MIME types allowed for paid plans and self hosted sites. * * documentTypes - all MIME types that are available. */</ID>
-    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * The WordPress supported audio types based on https://wordpress.com/support/accepted-filetypes/ are: * .mp3, .m4a, .ogg, .wav * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .mp3 - "audio/mpeg" * .m4a - "audio/mp4" * .ogg - "audio/ogg", "application/ogg" * .wav - "audio/x-wav" */</ID>
-    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * The WordPress supported image types based on https://wordpress.com/support/accepted-filetypes/ are: * .jpg, .jpeg, .png, .gif, .webp * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .jpg, .jpeg - "image/jpeg" * .png - "image/png" * .gif - "image/gif" * .webp - "image/webp" * .heic - "image/heic" * .heif - "image/heif" */</ID>
-    <ID>MaxLineLength:MimeTypes.kt$MimeTypes$/* * The WordPress supported video types based on https://wordpress.com/support/accepted-filetypes/ are: * .mp4, .m4v (MPEG-4), .mov (QuickTime), .wmv (Windows Media Video), .avi, .mpg, .ogv (Ogg), .3gp (3GPP), .3g2 (3GPP2) * This translates (based on https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java) to: * .mp4, .m4v (MPEG-4) - "video/mp4" * .mov - missing - using "video/quicktime" * .wmv - "video/x-ms-wmv" * .avi - "video/avi" * .mpg - "video/mpeg", "video/mp2p" * .ogv (Ogg) - missing - using "video/ogg" * .3gp (3GPP) - "video/3gpp" * .3g2 (3GPP2) - "video/3gpp2" */</ID>
-    <ID>MaxLineLength:PageStore.kt$PageStore$*</ID>
-    <ID>MaxLineLength:PluginResponseModel.kt$*</ID>
-    <ID>MaxLineLength:PluginWPAPIRestClient.kt$PluginWPAPIRestClient$*</ID>
-    <ID>MaxLineLength:PluginWPAPIRestClient.kt$PluginWPAPIRestClient$DELETE /wp/v2/plugins/akismet/akismet uninstalls the selected plugin. The plugin must be inactive before deleting it.</ID>
-    <ID>MaxLineLength:PluginWPAPIRestClient.kt$PluginWPAPIRestClient$PUT /wp/v2/plugins/akismet/akismet { status: "active" } activates the selected plugin. The status can be set to network-active to network activate the plugin on Multisite. To deactivate the plugin set the status to inactive. There is not a separate network-inactive status, inactive will perform a network deactivation if the plugin was network activated.</ID>
-    <ID>MaxLineLength:WellSqlConfig.kt$WellSqlConfig$// WPOrgPluginModel table. Since these records are only used as cache and would &amp; should be refreshed</ID>
-    <ID>MaxLineLength:WellSqlConfig.kt$WellSqlConfig$// and WPOrgPluginModel tables. Adds `authorName` column and renames `name` column to `displayName` in</ID>
-    <ID>MaxLineLength:WellSqlConfig.kt$WellSqlConfig$// often, there is no real harm to do this other than a slightly longer loading time for the first usage</ID>
     <ID>NestedBlockDepth:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$override fun deserialize( json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext? )</ID>
     <ID>NestedBlockDepth:GutenbergLayoutCategoriesModel.kt$fun List&lt;GutenbergLayout>.connections(site: SiteModel): List&lt;GutenbergLayoutCategoriesModel></ID>
     <ID>NestedBlockDepth:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
@@ -211,16 +94,6 @@
     <ID>NestedBlockDepth:SiteSqlUtils.kt$SiteSqlUtils$fun removeWPComRestSitesAbsentFromList(postSqlUtils: PostSqlUtils, sites: List&lt;SiteModel>): Int</ID>
     <ID>NestedBlockDepth:SiteStore.kt$SiteStore$private fun handleDesignatedMobileEditorForAllSites(payload: DesignateMobileEditorForAllSitesResponsePayload)</ID>
     <ID>NestedBlockDepth:ThreatContextDeserializer.kt$ThreatContextDeserializer$private fun getHighlightsFromMarks(marksForKey: JsonElement?): List&lt;Pair&lt;Int, Int>>?</ID>
-    <ID>ReturnCount:ActivityLogRestClient.kt$ActivityLogRestClient$private fun buildRewindStatusPayload(response: RewindStatusResponse, site: SiteModel): FetchedRewindStatePayload</ID>
-    <ID>ReturnCount:CommentsStore.kt$CommentsStore$private suspend fun removeCommentGaps( site: SiteModel?, commentsList: CommentEntityList?, maxEntriesInResponse: Int, requestOffset: Int, vararg statuses: CommentStatus ): Int</ID>
-    <ID>ReturnCount:CommentsStore.kt$CommentsStore$suspend fun deleteComment( site: SiteModel, remoteCommentId: Long, comment: CommentEntity? ): CommentsActionPayload&lt;CommentsActionData></ID>
-    <ID>ReturnCount:EditorThemeSqlUtils.kt$EditorThemeSqlUtils.EditorThemeElementBuilder$fun toEditorThemeElement(): EditorThemeElement?</ID>
-    <ID>ReturnCount:EncryptedLogRestClient.kt$EncryptedLogRestClient$private fun mapError(error: VolleyError): UploadEncryptedLogError</ID>
-    <ID>ReturnCount:MediaErrorSubType.kt$MediaErrorSubType.Companion$@JvmStatic fun deserialize(name: String?): MediaErrorSubType</ID>
-    <ID>ReturnCount:ScanRestClient.kt$ScanRestClient$private fun buildScanStatePayload(response: ScanStateResponse, site: SiteModel): FetchedScanStatePayload</ID>
-    <ID>ReturnCount:SiteSqlUtils.kt$SiteSqlUtils$@Throws(DuplicateSiteException::class) fun insertOrUpdateSite(site: SiteModel?): Int</ID>
-    <ID>ReturnCount:SiteStore.kt$SiteStore.DeleteSiteErrorType.Companion$fun fromString(string: String): DeleteSiteErrorType</ID>
-    <ID>ReturnCount:WPV2MediaRestClient.kt$WPV2MediaRestClient$private fun Response.parseUploadError(): MediaError</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planFeatures.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
@@ -258,14 +131,6 @@
     <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
-    <ID>UnnecessaryAbstractClass:BloggingRemindersDao.kt$BloggingRemindersDao$BloggingRemindersDao</ID>
-    <ID>UnusedPrivateMember:ActivityLogModel.kt$ActivityLogModel.Status$value: String</ID>
-    <ID>UnusedPrivateMember:PagedListWrapper.kt$PagedListWrapper$@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY) private fun onDestroy()</ID>
-    <ID>UnusedPrivateMember:ReactNativeWPAPIRestClient.kt$ReactNativeWPAPIRestClient$private val nonceRestClient: NonceRestClient</ID>
-    <ID>UnusedPrivateMember:StockMediaStore.kt$StockMediaStore.StockMediaErrorType.Companion$baseError: BaseNetworkError?</ID>
-    <ID>UseCheckOrError:ActivityLogRestClient.kt$ActivityLogRestClient$throw IllegalStateException("ActivityTypes parsing failed - one or more items were ignored.")</ID>
-    <ID>UtilityClassWithPublicConstructor:EncryptionUtils.kt$EncryptionUtils</ID>
-    <ID>UtilityClassWithPublicConstructor:WhatsNewAppVersionUtils.kt$WhatsNewAppVersionUtils</ID>
     <ID>VariableNaming:AuthOptionsResponse.kt$AuthOptionsResponse$var email_verified: Boolean? = null</ID>
     <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_1: String? = null</ID>
     <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_2: String? = null</ID>
