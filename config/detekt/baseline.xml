@@ -3,7 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <!-- fluxc -->
-    <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
     <ID>ImplicitDefaultLocale:SiteStore.kt$SiteStore.ConnectSiteInfoPayload$String.format( "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s", url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects )</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planFeatures.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
