@@ -38,9 +38,6 @@
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange( fetchRemoteAnnouncements( versionName, appId ) ) }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange(fetchCachedAnnouncements()) }</ID>
     <ID>ImplicitDefaultLocale:SiteStore.kt$SiteStore.ConnectSiteInfoPayload$String.format( "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s", url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects )</ID>
-    <ID>NestedBlockDepth:GutenbergLayoutCategoriesModel.kt$fun List&lt;GutenbergLayout>.connections(site: SiteModel): List&lt;GutenbergLayoutCategoriesModel></ID>
-    <ID>NestedBlockDepth:PostWPComRestResponse.kt$PostWPComRestResponse.MetaDataAdapter$@Throws(IOException::class) override fun read(jsonReader: JsonReader): List&lt;PostMetaData></ID>
-    <ID>NestedBlockDepth:SiteSqlUtils.kt$SiteSqlUtils$fun removeWPComRestSitesAbsentFromList(postSqlUtils: PostSqlUtils, sites: List&lt;SiteModel>): Int</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planFeatures.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
