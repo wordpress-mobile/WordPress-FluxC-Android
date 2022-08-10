@@ -8,14 +8,6 @@
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
     <ID>SpreadOperator:WellSqlConfig.kt$WellSqlConfig$(*addOns)</ID>
-    <ID>TooGenericExceptionCaught:BloggingPromptsStore.kt$BloggingPromptsStore$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:CardsStore.kt$CardsStore$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$jsonParsingError: Throwable</ID>
-    <ID>TooGenericExceptionCaught:PostWPComRestResponse.kt$PostWPComRestResponse.MetaDataAdapter$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:SiteStore.kt$SiteStore$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: IndexOutOfBoundsException</ID>
-    <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
     <!-- plugins:woocommerce -->
