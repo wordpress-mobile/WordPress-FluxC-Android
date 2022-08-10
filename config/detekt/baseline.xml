@@ -3,37 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <!-- fluxc -->
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val activity_id: String?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val is_rewindable: Boolean?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val rewind_id: String?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Actor$val external_user_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Actor$val wpcom_user_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Generator$val blog_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Generator$val jetpack_version: Float?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindResponse$val restore_id: Long</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse$val can_autoconfigure: Boolean?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse$val last_updated: Date</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Credentials$val still_valid: Boolean</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val restore_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val rewind_id: String?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val site_id: String?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val domain_name: String?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val product_id: Int?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val product_slug: String?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val supports_privacy: Boolean = false</ID>
-    <ID>ConstructorParameterNaming:PlanOffersRestClient.kt$PlanOffersRestClient.PlanOffersResponse.Plan$val short_name: String?</ID>
-    <ID>ConstructorParameterNaming:PlanOffersRestClient.kt$PlanOffersRestClient.PlanOffersResponse.PlanId$val plan_id: Int</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.DiffResponseContent$val post_content: List&lt;DiffResponsePart></ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.DiffResponseContent$val post_title: List&lt;DiffResponsePart></ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_author: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_content: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_date_gmt: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_excerpt: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_modified_gmt: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_title: String</ID>
-    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
-    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
-    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
     <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange( fetchRemoteAnnouncements( versionName, appId ) ) }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange(fetchCachedAnnouncements()) }</ID>
