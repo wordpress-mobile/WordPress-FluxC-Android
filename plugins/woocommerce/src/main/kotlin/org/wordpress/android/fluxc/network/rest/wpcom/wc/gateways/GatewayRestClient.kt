@@ -50,7 +50,7 @@ class GatewayRestClient @Inject constructor(
         }
     }
 
-    suspend fun enableCashOnDelivery(
+    suspend fun postCashOnDelivery(
         site: SiteModel,
         gatewayId: String = "cod",
         enabled: Boolean,
