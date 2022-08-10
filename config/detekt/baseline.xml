@@ -8,29 +8,6 @@
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
     <ID>SpreadOperator:WellSqlConfig.kt$WellSqlConfig$(*addOns)</ID>
-    <ID>SwallowedException:ActivityTypesDeserializer.kt$ActivityTypesDeserializer$ex: ClassCastException</ID>
-    <ID>SwallowedException:ActivityTypesDeserializer.kt$ActivityTypesDeserializer$ex: IllegalStateException</ID>
-    <ID>SwallowedException:BloggingPromptsStore.kt$BloggingPromptsStore$e: Exception</ID>
-    <ID>SwallowedException:CardsStore.kt$CardsStore$e: Exception</ID>
-    <ID>SwallowedException:EditorTheme.kt$EditorThemeElementListSerializer$e: JsonSyntaxException</ID>
-    <ID>SwallowedException:EncryptedLogStore.kt$EncryptedLogStore$e: UnsatisfiedLinkError</ID>
-    <ID>SwallowedException:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$e: Exception</ID>
-    <ID>SwallowedException:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$ex: ClassCastException</ID>
-    <ID>SwallowedException:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$ex: IllegalStateException</ID>
-    <ID>SwallowedException:FixableDeserializer.kt$FixableDeserializer$e: JsonSyntaxException</ID>
-    <ID>SwallowedException:RowsDeserializer.kt$RowsDeserializer$ex: ClassCastException</ID>
-    <ID>SwallowedException:RowsDeserializer.kt$RowsDeserializer$ex: IllegalStateException</ID>
-    <ID>SwallowedException:SiteRestClient.kt$SiteRestClient$e: IllegalArgumentException</ID>
-    <ID>SwallowedException:SiteRestClient.kt$SiteRestClient$e: JSONException</ID>
-    <ID>SwallowedException:SiteStore.kt$SiteStore$caughtException: DuplicateSiteException</ID>
-    <ID>SwallowedException:SiteStore.kt$SiteStore$e: DuplicateSiteException</ID>
-    <ID>SwallowedException:SiteStore.kt$SiteStore$e: Exception</ID>
-    <ID>SwallowedException:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: ClassCastException</ID>
-    <ID>SwallowedException:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: IllegalStateException</ID>
-    <ID>SwallowedException:ThreatContextDeserializer.kt$ThreatContextDeserializer$ex: IndexOutOfBoundsException</ID>
-    <ID>SwallowedException:WPV2MediaRestClient.kt$WPV2MediaRestClient$e: CancellationException</ID>
-    <ID>SwallowedException:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: CancellationException</ID>
-    <ID>SwallowedException:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$e: ClassCastException</ID>
     <ID>TooGenericExceptionCaught:BloggingPromptsStore.kt$BloggingPromptsStore$e: Exception</ID>
     <ID>TooGenericExceptionCaught:CardsStore.kt$CardsStore$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EncryptedLogUploadRequest.kt$EncryptedLogUploadRequest$e: Exception</ID>
