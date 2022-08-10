@@ -8,8 +8,6 @@
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
     <ID>SpreadOperator:WellSqlConfig.kt$WellSqlConfig$(*addOns)</ID>
-    <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
-    <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
