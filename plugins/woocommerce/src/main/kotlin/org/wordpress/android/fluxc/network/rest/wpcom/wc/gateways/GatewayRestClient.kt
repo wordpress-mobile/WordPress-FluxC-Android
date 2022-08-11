@@ -132,7 +132,7 @@ class GatewayRestClient @Inject constructor(
         @SerializedName("method_supports") val features: List<String>?
     )
 
-    enum class GatewayId {
-        COD
+    enum class GatewayId(val apiKey: String) {
+        CASH_ON_DELIVERY("cod")
     }
 }
