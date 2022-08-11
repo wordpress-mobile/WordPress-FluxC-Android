@@ -174,8 +174,6 @@
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val first_name: String? = null</ID>
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
     <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
-    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$@SerializedName("product_id") var productId: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$var quantity: Float? = null</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
     <ID>ForbiddenComment:ProductRestClient.kt$ProductRestClient$// TODO: Once removal is supported, we can remove the extra isNotBlank() condition</ID>
     <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Add error handling</ID>
