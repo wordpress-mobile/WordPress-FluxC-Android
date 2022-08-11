@@ -96,6 +96,7 @@ open class WooCommerceStore @Inject constructor(
         return WooResult(getWooCommerceSites())
     }
 
+    @Suppress("ReturnCount")
     suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
         if (!site.isJetpackCPConnected) {
             siteStore.fetchSite(site).let {
