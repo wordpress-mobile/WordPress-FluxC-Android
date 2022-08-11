@@ -160,7 +160,6 @@
     <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
     <ID>ComplexMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
     <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
     <ID>ComplexMethod:ProductVariationApiResponse.kt$ProductVariationApiResponse$fun asProductVariationModel()</ID>
     <ID>ComplexMethod:WCCustomerMapper.kt$WCCustomerMapper$fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel</ID>
     <ID>ComplexMethod:WCOrderStore.kt$WCOrderStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
@@ -175,12 +174,6 @@
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
     <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
-    <ID>ForbiddenComment:ProductRestClient.kt$ProductRestClient$// TODO: Once removal is supported, we can remove the extra isNotBlank() condition</ID>
-    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Add error handling</ID>
-    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Possible add new tracks event to track error fetching order list data "order_list_load_failed"</ID>
-    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Ideally we would have a separate process that prunes the following</ID>
-    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Use the actual error type</ID>
-    <ID>ForbiddenComment:WCProductStore.kt$WCProductStore$// TODO: 18/08/2021 @wzieba add tests</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
     <ID>LargeClass:OrderRestClient.kt$OrderRestClient : BaseWPComRestClient</ID>
     <ID>LargeClass:ProductRestClient.kt$ProductRestClient : BaseWPComRestClient</ID>
@@ -192,7 +185,6 @@
     <ID>LongMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
     <ID>LongMethod:ProductRestClient.kt$ProductRestClient$fun fetchProducts( site: SiteModel, pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE, offset: Int = 0, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING, searchQuery: String? = null, isSkuSearch: Boolean = false, includedProductIds: List&lt;Long>? = null, filterOptions: Map&lt;ProductFilterOption, String>? = null, excludedProductIds: List&lt;Long>? = null )</ID>
     <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
     <ID>LongMethod:ProvideAddonsIntegrationTests.kt$ProvideAddonsIntegrationTests$@Test fun `should map Checkbox add-on`()</ID>
     <ID>LongMethod:RemoteAddonMapper.kt$RemoteAddonMapper$fun toDomain(dto: RemoteAddonDto): Addon</ID>
     <ID>LongMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>

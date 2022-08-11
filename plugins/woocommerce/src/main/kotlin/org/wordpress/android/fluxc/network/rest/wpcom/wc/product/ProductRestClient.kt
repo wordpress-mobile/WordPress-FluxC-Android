@@ -1609,6 +1609,7 @@ class ProductRestClient @Inject constructor(
      * and verifies that the [updatedVariationModel] has fields that are different from the default
      * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
+    @Suppress("ForbiddenComment", "LongMethod", "ComplexMethod")
     private fun variantModelToProductJsonBody(
         variationModel: WCProductVariationModel?,
         updatedVariationModel: WCProductVariationModel

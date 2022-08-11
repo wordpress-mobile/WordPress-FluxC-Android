@@ -739,6 +739,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Ideally we would have a separate process that prunes the following
         // tables of defunct records:

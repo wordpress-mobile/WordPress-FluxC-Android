@@ -993,6 +993,7 @@ class WCProductStore @Inject constructor(
 
     override fun onRegister() = AppLog.d(API, "WCProductStore onRegister")
 
+    @Suppress("ForbiddenComment")
     suspend fun fetchSingleProduct(payload: FetchSingleProductPayload): OnProductChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchSingleProduct") {
             val result = with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
@@ -1504,6 +1505,7 @@ class WCProductStore @Inject constructor(
         emitChange(onProductSkuAvailabilityChanged)
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleFetchProductsCompleted(payload: RemoteProductListPayload) {
         coroutineEngine.launch(T.DB, this, "handleFetchProductsCompleted") {
             val onProductChanged: OnProductChanged
