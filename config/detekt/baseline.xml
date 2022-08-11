@@ -209,8 +209,6 @@
     <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
-    <ID>UnnecessaryAbstractClass:CouponsDao.kt$CouponsDao$CouponsDao</ID>
-    <ID>UnnecessaryAbstractClass:WCDatabaseModule.kt$WCDatabaseModule$WCDatabaseModule</ID>
     <ID>UnusedPrivateMember:WCStatsStore.kt$WCStatsStore$private val context: Context</ID>
     <ID>UseCheckOrError:ToDatabaseAddonsMapper.kt$ToDatabaseAddonsMapper$throw IllegalStateException("Addon has to be identified with a Group or a Product")</ID>
     <ID>UseCheckOrError:WCOrderStore.kt$WCOrderStore$throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")</ID>

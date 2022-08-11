@@ -12,7 +12,7 @@ import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import javax.inject.Singleton
 
 @Module
-abstract class WCDatabaseModule {
+interface WCDatabaseModule {
     companion object {
         @Singleton @Provides fun provideDatabase(context: Context): WCAndroidDatabase {
             return WCAndroidDatabase.buildDb(context)
@@ -36,5 +36,5 @@ abstract class WCDatabaseModule {
 
         @Provides fun provideInboxNotesDao(database: WCAndroidDatabase) = database.inboxNotesDao
     }
-    @Binds abstract fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
+    @Binds fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
 }
