@@ -322,11 +322,6 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    // TODO nbradbury this and related code can be removed
-    data class OnQuickOrderResult(
-        var order: OrderEntity? = null
-    ) : OnChanged<OrderError>()
-
     /**
      * Emitted after fetching a list of Order summaries from the network.
      */
