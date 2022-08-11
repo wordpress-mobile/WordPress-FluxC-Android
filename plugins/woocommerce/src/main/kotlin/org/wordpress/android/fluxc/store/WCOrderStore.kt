@@ -460,6 +460,7 @@ class WCOrderStore @Inject constructor(
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
         OrderSqlUtils.getOrderShipmentProvidersForSite(site)
 
+    @Suppress("ComplexMethod", "UseCheckOrError")
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return

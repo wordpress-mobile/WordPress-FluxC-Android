@@ -162,7 +162,6 @@
     <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
     <ID>ComplexMethod:ProductVariationApiResponse.kt$ProductVariationApiResponse$fun asProductVariationModel()</ID>
     <ID>ComplexMethod:WCCustomerMapper.kt$WCCustomerMapper$fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel</ID>
-    <ID>ComplexMethod:WCOrderStore.kt$WCOrderStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>ComplexMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_1: String? = null</ID>
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_2: String? = null</ID>
@@ -209,7 +208,6 @@
     <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
-    <ID>UseCheckOrError:WCOrderStore.kt$WCOrderStore$throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")</ID>
     <ID>VariableNaming:OrderDto.kt$OrderDto$// Same as shipping_lines, it's a list of objects val fee_lines: JsonElement? = null</ID>
     <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.LineItem val line_items: JsonElement? = null</ID>
     <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.ShippingLines val shipping_lines: JsonElement? = null</ID>
