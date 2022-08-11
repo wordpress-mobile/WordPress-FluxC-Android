@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import android.content.Context
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -35,7 +34,6 @@ import javax.inject.Singleton
 @Singleton
 class WCStatsStore @Inject constructor(
     dispatcher: Dispatcher,
-    private val context: Context,
     private val wcOrderStatsClient: OrderStatsRestClient,
     private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
