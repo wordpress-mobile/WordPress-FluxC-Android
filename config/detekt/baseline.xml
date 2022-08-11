@@ -201,18 +201,11 @@
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun getTriplets(jsonStr: String): ArrayList&lt;ProductTriplet></ID>
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun parseJson(jsonString: String): List&lt;Long></ID>
     <ID>NestedBlockDepth:WCShippingLabelStore.kt$WCShippingLabelStore$private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List&lt;PredefinedOption></ID>
-    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchProductReviews( site: SiteModel, offset: Int, reviewIds: List&lt;Long>? = null, productIds: List&lt;Long>? = null, filterByStatus: List&lt;String>? = null ): FetchProductReviewsResponsePayload</ID>
-    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchSingleVariation( site: SiteModel, remoteProductId: Long, remoteVariationId: Long ): RemoteVariationPayload</ID>
-    <ID>ReturnCount:ProductSqlUtils.kt$ProductSqlUtils$fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean</ID>
     <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameAttributes(otherProduct: WCProductModel): Boolean</ID>
     <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameCategories(updatedProduct: WCProductModel): Boolean</ID>
     <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameImages(updatedProduct: WCProductModel): Boolean</ID>
     <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameTags(updatedProduct: WCProductModel): Boolean</ID>
     <ID>ReturnCount:WCProductVariationModel.kt$WCProductVariationModel$fun getImageModel(): WCProductImageModel?</ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$@Suppress("UNCHECKED_CAST") private fun &lt;T> getStatsForField( site: SiteModel, field: OrderStatsField, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, T></ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getNewVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getStatsCurrencyForSite(site: SiteModel): String?</ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
     <ID>ReturnCount:WooCommerceStore.kt$WooCommerceStore$suspend fun fetchWooCommerceSite(site: SiteModel): WooResult&lt;SiteModel></ID>
     <ID>SpacingBetweenPackageAndImports:WCPaymentChargeApiResult.kt$ </ID>
     <ID>SpreadOperator:WCInboxStore.kt$WCInboxStore$(siteId, *notesWithActions.toTypedArray())</ID>

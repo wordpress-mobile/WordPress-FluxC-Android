@@ -309,25 +309,29 @@ class ProductRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = it.asProductVariationModel().apply {
-                        this.remoteProductId = remoteProductId
-                        localSiteId = site.id
-                    }
-                    return RemoteVariationPayload(newModel, site)
-                } ?: RemoteVariationPayload(
-                    ProductError(GENERIC_ERROR, "Success response with empty data"),
-                    WCProductVariationModel().apply {
-                        this.remoteProductId = remoteProductId
-                        this.remoteVariationId = remoteVariationId
-                    },
-                    site
-                )
+                val productData = response.data
+                if (productData != null) {
+                    RemoteVariationPayload(
+                        productData.asProductVariationModel().apply {
+                            this.remoteProductId = remoteProductId
+                            localSiteId = site.id
+                        },
+                        site
+                    )
+                } else {
+                    RemoteVariationPayload(
+                        ProductError(GENERIC_ERROR, "Success response with empty data"),
+                        WCProductVariationModel().apply {
+                            this.remoteProductId = remoteProductId
+                            this.remoteVariationId = remoteVariationId
+                        },
+                        site
+                    )
+                }
             }
             is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
-                return RemoteVariationPayload(
-                    productError,
+                RemoteVariationPayload(
+                    networkErrorToProductError(response.error),
                     WCProductVariationModel().apply {
                         this.remoteProductId = remoteProductId
                         this.remoteVariationId = remoteVariationId
@@ -1229,25 +1233,34 @@ class ProductRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let {
-                    val reviews = it.map { review ->
+                val productData = response.data
+                if (productData != null) {
+                    val reviews = productData.map { review ->
                         productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
                     }
-                    val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
-                    val loadedMore = offset > 0
-                    return FetchProductReviewsResponsePayload(
-                            site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                    FetchProductReviewsResponsePayload(
+                        site,
+                        reviews,
+                        productIds,
+                        filterByStatus,
+                        offset > 0,
+                        reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                     )
-                } ?: FetchProductReviewsResponsePayload(
+                } else {
+                    FetchProductReviewsResponsePayload(
                         ProductError(
-                                GENERIC_ERROR,
-                                "Success response with empty data"
-                        ), site
-                )
+                            GENERIC_ERROR,
+                            "Success response with empty data"
+                        ),
+                        site
+                    )
+                }
             }
             is JetpackError -> {
-                val productReviewError = networkErrorToProductError(response.error)
-                return FetchProductReviewsResponsePayload(productReviewError, site)
+                FetchProductReviewsResponsePayload(
+                    networkErrorToProductError(response.error),
+                    site
+                )
             }
         }
     }
