@@ -786,8 +786,9 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of variations for the given WooCommerce [SiteModel] and product.
+     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of variations for the given WooCommerce [SiteModel]
+     * and product.
      *
      * @param [productId] Unique server id of the product
      *
@@ -1095,8 +1096,8 @@ class ProductRestClient @Inject constructor(
      * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of product categories for a given WooCommerce [SiteModel].
      *
-     * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE], and retrieving older
-     * categories is done by passing an [offset].
+     * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE],
+     * and retrieving older categories is done by passing an [offset].
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCT_CATEGORIES]
      *
@@ -1607,7 +1608,8 @@ class ProductRestClient @Inject constructor(
      * This method checks if there is a cached version of the product stored locally.
      * If not, it generates a new product model for the same product ID, with default fields
      * and verifies that the [updatedVariationModel] has fields that are different from the default
-     * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any changes
+     * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any
+     * changes.
      */
     @Suppress("ForbiddenComment", "LongMethod", "ComplexMethod")
     private fun variantModelToProductJsonBody(

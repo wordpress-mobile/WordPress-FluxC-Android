@@ -1265,7 +1265,8 @@ class WCProductStore @Inject constructor(
     /**
      * Batch updates variations on the backend and updates variations locally after successful request.
      *
-     * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using [BatchUpdateVariationsPayload.Builder] class.
+     * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using
+     * [BatchUpdateVariationsPayload.Builder] class.
      */
     suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
         WooResult<BatchProductVariationsUpdateApiResponse> =

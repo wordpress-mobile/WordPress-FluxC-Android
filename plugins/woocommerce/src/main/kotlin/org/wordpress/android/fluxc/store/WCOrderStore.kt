@@ -722,8 +722,8 @@ class WCOrderStore @Inject constructor(
                 OnOrderChanged(orderError = payload.error)
             } else {
                 // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
-                // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
-                // or if the user manual changed some order IDs)
+                // This is the simplest way of keeping our local orders in sync with remote orders
+                // (in case of deletions, or if the user manual changed some order IDs).
                 if (!payload.loadedMore) {
                     ordersDao.deleteOrdersForSite(payload.site.localId())
                     orderNotesDao.deleteOrderNotesForSite(payload.site.remoteId())

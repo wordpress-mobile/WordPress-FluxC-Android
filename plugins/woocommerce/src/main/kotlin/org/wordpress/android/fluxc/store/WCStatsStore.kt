@@ -287,7 +287,8 @@ class WCStatsStore @Inject constructor(
      * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
      * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
      *
-     * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
+     * The start date is the current day/week/month/year, relative to the site's own timezone
+     * (not the current device's).
      *
      * The format of the date key in the returned map depends on the [granularity]:
      * [StatsGranularity.DAYS]: "2018-05-01"
