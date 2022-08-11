@@ -94,13 +94,14 @@ object DateUtils {
      * The end date time is set to 23:59:59
      *
      */
+    @Suppress("MagicNumber", "ForbiddenComment")
     fun getEndDateCalendar(endDate: Date, locale: Locale = Locale.getDefault()): Calendar {
         val cal2 = Calendar.getInstance(locale)
         cal2.time = endDate
         cal2.set(Calendar.HOUR_OF_DAY, 23)
         cal2.set(Calendar.MINUTE, 59)
         cal2.set(Calendar.SECOND, 59)
-        cal2.set(Calendar.MILLISECOND, 59)
+        cal2.set(Calendar.MILLISECOND, 59) // TODO: (@anitaa) Why '59' instead of '999'?
         return cal2
     }
 
