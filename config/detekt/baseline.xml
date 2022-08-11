@@ -194,21 +194,6 @@
     <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
     <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
     <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$1000</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$23</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$24</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$59</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$6</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$60</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$7</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$8</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$24</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$48</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$96</ID>
-    <ID>MagicNumber:WCShippingLabelStore.kt$WCShippingLabelStore$2000</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$12</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$2011</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$7</ID>
     <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;a href='https:\/\/mystagingwebsite.com\/wp-admin\/admin.php?page=wc-admin&amp;path=\/analytics\/products&amp;filter=single_product&amp;products=14'>Beanie&lt;\/a>",</ID>
     <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;span class=\"woocommerce-Price-amount amount\">&lt;span class=\"woocommerce-Price-currencySymbol\">&amp;#82;&amp;#36;&lt;\/span>36.000,00&lt;\/span>",</ID>
     <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$*</ID>

@@ -40,9 +40,14 @@ class WCStatsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
+        const val WOO_COMMERCE_INITIAL_RELEASE = 2011
+
         const val STATS_QUANTITY_DAYS = 30
         const val STATS_QUANTITY_WEEKS = 17
         const val STATS_QUANTITY_MONTHS = 12
+
+        const val STATS_GRANULARITY_DAYS = 1
+        const val STATS_GRANULARITY_YEARS = 12
 
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
@@ -411,7 +416,7 @@ class WCStatsStore @Inject constructor(
             OrderStatsApiUnit.MONTH -> STATS_QUANTITY_MONTHS
             OrderStatsApiUnit.YEAR -> {
                 // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
+                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - WOO_COMMERCE_INITIAL_RELEASE + 1
             }
             else -> STATS_QUANTITY_DAYS
         }
@@ -710,10 +715,10 @@ class WCStatsStore @Inject constructor(
     private fun getPerPageQuantityForRevenueStatsGranularity(
         granularity: StatsGranularity
     ) = when (granularity) {
-        StatsGranularity.DAYS -> 1
-        StatsGranularity.WEEKS -> 7
+        StatsGranularity.DAYS -> STATS_GRANULARITY_DAYS
+        StatsGranularity.WEEKS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_WEEK)
         StatsGranularity.MONTHS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
-        StatsGranularity.YEARS -> 12
+        StatsGranularity.YEARS -> STATS_GRANULARITY_YEARS
     }
 
     /**
