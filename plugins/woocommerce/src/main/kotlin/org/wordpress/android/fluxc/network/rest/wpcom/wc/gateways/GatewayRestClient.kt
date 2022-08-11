@@ -80,7 +80,7 @@ class GatewayRestClient @Inject constructor(
         title: String
     ): WooPayload<GatewayResponse> {
         val url = WOOCOMMERCE.payment_gateways.gateway(title).pathV3
-        val params = mapOf("Cash on Delivery" to title)
+        val params = mapOf("title" to title)
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
             this,
             site,
