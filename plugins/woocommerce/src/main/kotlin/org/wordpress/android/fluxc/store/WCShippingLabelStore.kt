@@ -238,6 +238,7 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun getShippingRates(
         site: SiteModel,
         orderId: Long,
@@ -409,6 +410,7 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun purchaseShippingLabels(
         site: SiteModel,
         orderId: Long,

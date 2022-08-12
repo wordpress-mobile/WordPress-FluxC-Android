@@ -16,12 +16,6 @@
     <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
-    <ID>LongParameterList:OrderUpdateStore.kt$OrderUpdateStore$( site: SiteModel, orderId: Long, amount: String, customerNote: String, billingEmail: String, isTaxable: Boolean, status: WCOrderStatusModel? = null )</ID>
-    <ID>LongParameterList:RefundRestClient.kt$RefundRestClient$( site: SiteModel, orderId: Long, reason: String, automaticRefund: Boolean, items: List&lt;WCRefundModel.WCRefundItem>, restockItems: Boolean )</ID>
-    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
-    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
-    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
     <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
     <ID>NestedBlockDepth:OrderStatsRestClient.kt$OrderStatsRestClient$suspend fun fetchNewVisitorStats( site: SiteModel, unit: OrderStatsApiUnit, granularity: StatsGranularity, date: String, quantity: Int, force: Boolean = false, startDate: String? = null, endDate: String? = null ): FetchNewVisitorStatsResponsePayload</ID>
     <ID>NestedBlockDepth:WCOrderStore.kt$WCOrderStore$private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload)</ID>
