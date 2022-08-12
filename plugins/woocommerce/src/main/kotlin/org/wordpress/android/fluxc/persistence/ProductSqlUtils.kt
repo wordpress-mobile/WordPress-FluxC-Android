@@ -38,6 +38,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import java.util.Locale
 
+@Suppress("LargeClass")
 object ProductSqlUtils {
     private const val DEBOUNCE_DELAY_FOR_OBSERVERS = 50L
     private val productsUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)

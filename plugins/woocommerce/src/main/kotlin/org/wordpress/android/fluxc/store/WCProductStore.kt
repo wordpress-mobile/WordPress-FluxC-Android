@@ -48,6 +48,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
 class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,

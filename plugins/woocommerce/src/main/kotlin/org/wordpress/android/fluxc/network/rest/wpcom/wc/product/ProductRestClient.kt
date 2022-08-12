@@ -80,6 +80,7 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
 class ProductRestClient @Inject constructor(
     appContext: Context,
