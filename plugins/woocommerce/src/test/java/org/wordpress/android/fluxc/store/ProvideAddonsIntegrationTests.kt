@@ -349,6 +349,7 @@ class ProvideAddonsIntegrationTests {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `should map Checkbox add-on`() {
         runBlocking {
             whenever(restClient.fetchGlobalAddOnGroups(any())).thenReturn(

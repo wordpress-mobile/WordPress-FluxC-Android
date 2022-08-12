@@ -348,6 +348,7 @@ class ProductRestClient @Inject constructor(
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
+    @Suppress("LongMethod")
     fun fetchProducts(
         site: SiteModel,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
