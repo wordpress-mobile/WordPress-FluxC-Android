@@ -17,8 +17,6 @@
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
     <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
-    <ID>NestedBlockDepth:OrderStatsRestClient.kt$OrderStatsRestClient$suspend fun fetchNewVisitorStats( site: SiteModel, unit: OrderStatsApiUnit, granularity: StatsGranularity, date: String, quantity: Int, force: Boolean = false, startDate: String? = null, endDate: String? = null ): FetchNewVisitorStatsResponsePayload</ID>
-    <ID>NestedBlockDepth:WCOrderStore.kt$WCOrderStore$private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload)</ID>
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$fun getImageList(): ArrayList&lt;WCProductImageModel></ID>
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun getTriplets(jsonStr: String): ArrayList&lt;ProductTriplet></ID>
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun parseJson(jsonString: String): List&lt;Long></ID>
