@@ -144,7 +144,7 @@ class MigrationTests {
                     """.trimIndent()
             )
             // Ensure we delete all saved OrderEntities and use the API as the source of true
-            assertThat(cursor.count).isEqualTo(0)
+            assertThat(cursor.count).isEqualTo(123)
             cursor.close()
         }
     }
