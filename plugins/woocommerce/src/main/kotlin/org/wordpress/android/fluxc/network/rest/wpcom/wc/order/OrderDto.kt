@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.network.Response
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class OrderDto : Response {
     @Suppress("ConstructorParameterNaming")
     data class Billing(

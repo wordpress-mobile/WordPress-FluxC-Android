@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.utils.getString
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class ProductVariationApiResponse : Response {
     var id: Long = 0L
 

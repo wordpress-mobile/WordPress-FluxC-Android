@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.utils.getString
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class ProductApiResponse : Response {
     val id: Long? = null
     var localSiteId = 0
