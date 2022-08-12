@@ -23,7 +23,6 @@
     <ID>LongMethod:Migrations.kt$&lt;no name provided>$override fun migrate(database: SupportSQLiteDatabase)</ID>
     <ID>LongMethod:ProductRestClient.kt$ProductRestClient$fun fetchProducts( site: SiteModel, pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE, offset: Int = 0, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING, searchQuery: String? = null, isSkuSearch: Boolean = false, includedProductIds: List&lt;Long>? = null, filterOptions: Map&lt;ProductFilterOption, String>? = null, excludedProductIds: List&lt;Long>? = null )</ID>
     <ID>LongMethod:ProvideAddonsIntegrationTests.kt$ProvideAddonsIntegrationTests$@Test fun `should map Checkbox add-on`()</ID>
-    <ID>LongMethod:RemoteAddonMapper.kt$RemoteAddonMapper$fun toDomain(dto: RemoteAddonDto): Addon</ID>
     <ID>LongParameterList:OrderUpdateStore.kt$OrderUpdateStore$( site: SiteModel, orderId: Long, amount: String, customerNote: String, billingEmail: String, isTaxable: Boolean, status: WCOrderStatusModel? = null )</ID>
     <ID>LongParameterList:RefundRestClient.kt$RefundRestClient$( site: SiteModel, orderId: Long, reason: String, automaticRefund: Boolean, items: List&lt;WCRefundModel.WCRefundItem>, restockItems: Boolean )</ID>
     <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
