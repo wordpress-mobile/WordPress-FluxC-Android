@@ -3,97 +3,10 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <!-- fluxc -->
-    <ID>ComplexCondition:ActivityLogSqlUtils.kt$ActivityLogSqlUtils.ActivityLogBuilder$actorType != null || displayName != null || wpcomUserID != null || avatarURL != null || role != null</ID>
-    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.id != null &amp;&amp; it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null</ID>
-    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$it.name != null &amp;&amp; it.comments != null &amp;&amp; it.link != null &amp;&amp; it.gravatar != null</ID>
-    <ID>ComplexCondition:InsightsMapper.kt$InsightsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
-    <ID>ComplexCondition:LatestPostInsightsStore.kt$LatestPostInsightsStore$postsFound != null &amp;&amp; postsFound > 0 &amp;&amp; posts != null &amp;&amp; posts.isNotEmpty()</ID>
-    <ID>ComplexCondition:PostDetailStatsMapper.kt$PostDetailStatsMapper$postStatsResponse.fields != null &amp;&amp; postStatsResponse.data != null &amp;&amp; postStatsResponse.fields.size > 1 &amp;&amp; postStatsResponse.fields[0] == "period" &amp;&amp; postStatsResponse.fields[1] == "views"</ID>
-    <ID>ComplexMethod:FormattableContentMapper.kt$FormattableRangeType.Companion$fun fromString(value: String?): FormattableRangeType</ID>
-    <ID>ComplexMethod:InsightsMapper.kt$InsightsMapper$fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel</ID>
-    <ID>ComplexMethod:LikeModel.kt$LikeModel$fun isEqual(otherLike: LikeModel): Boolean</ID>
-    <ID>ComplexMethod:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
-    <ID>ComplexMethod:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
-    <ID>ComplexMethod:RevisionModel.kt$RevisionModel$override fun equals(other: Any?): Boolean</ID>
-    <ID>ComplexMethod:ScanSqlUtils.kt$ScanSqlUtils$private fun ScanStateModel.toBuilder(site: SiteModel): ScanStateBuilder</ID>
-    <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
-    <ID>ComplexMethod:SiteRestClient.kt$SiteRestClient$suspend fun newSite( siteName: String?, siteTitle: String?, language: String, timeZoneId: String?, visibility: SiteVisibility, segmentId: Long?, siteDesign: String?, dryRun: Boolean ): NewSiteResponsePayload</ID>
-    <ID>ComplexMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: AuthorsResponse, cacheMode: LimitMode): AuthorsModel</ID>
-    <ID>ComplexMethod:TimeStatsMapper.kt$TimeStatsMapper$fun map(response: PostAndPageViewsResponse, cacheMode: LimitMode): PostAndPageViewsModel</ID>
-    <ID>ComplexMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val activity_id: String?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val is_rewindable: Boolean?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.ActivityResponse$val rewind_id: String?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Actor$val external_user_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Actor$val wpcom_user_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Generator$val blog_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.ActivitiesResponse.Generator$val jetpack_version: Float?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindResponse$val restore_id: Long</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse$val can_autoconfigure: Boolean?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse$val last_updated: Date</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Credentials$val still_valid: Boolean</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val restore_id: Long?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val rewind_id: String?</ID>
-    <ID>ConstructorParameterNaming:ActivityLogRestClient.kt$ActivityLogRestClient.RewindStatusResponse.Rewind$val site_id: String?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val domain_name: String?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val product_id: Int?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val product_slug: String?</ID>
-    <ID>ConstructorParameterNaming:DomainAvailabilityResponse.kt$DomainAvailabilityResponse$val supports_privacy: Boolean = false</ID>
-    <ID>ConstructorParameterNaming:PlanOffersRestClient.kt$PlanOffersRestClient.PlanOffersResponse.Plan$val short_name: String?</ID>
-    <ID>ConstructorParameterNaming:PlanOffersRestClient.kt$PlanOffersRestClient.PlanOffersResponse.PlanId$val plan_id: Int</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.DiffResponseContent$val post_content: List&lt;DiffResponsePart></ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.DiffResponseContent$val post_title: List&lt;DiffResponsePart></ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_author: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_content: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_date_gmt: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_excerpt: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_modified_gmt: String</ID>
-    <ID>ConstructorParameterNaming:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$val post_title: String</ID>
-    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val blog_id: Int</ID>
-    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse$val cart_key: String?</ID>
-    <ID>ConstructorParameterNaming:TransactionsRestClient.kt$TransactionsRestClient.CreateShoppingCartResponse.Product$val product_id: Int</ID>
     <ID>EmptyFunctionBlock:QuickStartStore.kt$QuickStartStore${ }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange( fetchRemoteAnnouncements( versionName, appId ) ) }</ID>
     <ID>GlobalCoroutineUsage:WhatsNewStore.kt$WhatsNewStore$GlobalScope.launch(coroutineContext) { emitChange(fetchCachedAnnouncements()) }</ID>
     <ID>ImplicitDefaultLocale:SiteStore.kt$SiteStore.ConnectSiteInfoPayload$String.format( "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s", url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects )</ID>
-    <ID>LargeClass:CommentsStore.kt$CommentsStore : Store</ID>
-    <ID>LargeClass:SiteRestClient.kt$SiteRestClient : BaseWPComRestClient</ID>
-    <ID>LargeClass:SiteStore.kt$SiteStore : Store</ID>
-    <ID>LargeClass:WellSqlConfig.kt$WellSqlConfig : DefaultWellConfig</ID>
-    <ID>LongMethod:InsightsMapper.kt$InsightsMapper$fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel</ID>
-    <ID>LongMethod:SiteRestClient.kt$SiteRestClient$private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel</ID>
-    <ID>LongMethod:SiteStore.kt$SiteStore$@Subscribe(threadMode = ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>LongMethod:WellSqlConfig.kt$WellSqlConfig$@Suppress("CheckStyle", "MagicNumber") override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int)</ID>
-    <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, endOfRange: Long )</ID>
-    <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long )</ID>
-    <ID>LongParameterList:CommentsDao.kt$CommentsDao$( localSiteId: Int, filterByStatuses: Boolean, statuses: List&lt;String>, filterByIds: Boolean, remoteIds: List&lt;Long>, startOfRange: Long, endOfRange: Long )</ID>
-    <ID>LongParameterList:JetpackTunnelGsonRequest.kt$JetpackTunnelGsonRequest$( wpApiEndpoint: String, siteId: Long, body: Map&lt;String, Any>, type: Type, listener: (T?) -> Unit, errorListener: WPComErrorListener )</ID>
-    <ID>LongParameterList:JetpackTunnelGsonRequest.kt$JetpackTunnelGsonRequest$( wpApiEndpoint: String, siteId: Long, params: Map&lt;String, String>, type: Type, listener: (T?) -> Unit, errorListener: WPComErrorListener )</ID>
-    <ID>LongParameterList:JetpackTunnelGsonRequest.kt$JetpackTunnelGsonRequest$( wpApiEndpoint: String, siteId: Long, params: Map&lt;String, String>, type: Type, listener: (T?) -> Unit, errorListener: WPComErrorListener, jpTimeoutListener: ((WPComGsonRequest&lt;*>) -> Unit)? )</ID>
-    <ID>LongParameterList:JetpackTunnelGsonRequestBuilder.kt$JetpackTunnelGsonRequestBuilder$( site: SiteModel, url: String, body: Map&lt;String, Any>, clazz: Class&lt;T>, listener: (T?) -> Unit, errorListener: WPComErrorListener )</ID>
-    <ID>LongParameterList:JetpackTunnelGsonRequestBuilder.kt$JetpackTunnelGsonRequestBuilder$( site: SiteModel, url: String, params: Map&lt;String, String>, clazz: Class&lt;T>, listener: (T?) -> Unit, errorListener: WPComErrorListener, jpTimeoutListener: ((WPComGsonRequest&lt;*>) -> Unit)? )</ID>
-    <ID>LongParameterList:PagedListWrapper.kt$PagedListWrapper$( val data: LiveData&lt;PagedList&lt;T>>, private val dispatcher: Dispatcher, private val listDescriptor: ListDescriptor, private val lifecycle: Lifecycle, private val refresh: () -> Unit, private val invalidate: () -> Unit, private val parentCoroutineContext: CoroutineContext )</ID>
-    <ID>LongParameterList:ReferrersStore.kt$ReferrersStore$( site: SiteModel, granularity: StatsGranularity, date: Date, domain: String, limitMode: Top, spam: Boolean )</ID>
-    <ID>LongParameterList:RevisionModel.kt$RevisionModel$( var revisionId: Long, var diffFromVersion: Long, var totalAdditions: Int, var totalDeletions: Int, var postContent: String?, var postExcerpt: String?, var postTitle: String?, var postDateGmt: String?, var postModifiedGmt: String?, var postAuthorId: String?, val titleDiffs: ArrayList&lt;Diff>, val contentDiffs: ArrayList&lt;Diff> )</ID>
-    <ID>LongParameterList:RevisionsResponse.kt$RevisionsResponse.RevisionResponse$( val post_date_gmt: String, val post_modified_gmt: String, val post_author: String, val id: Int, val post_content: String, val post_excerpt: String, val post_title: String )</ID>
-    <ID>LongParameterList:RewindStatusModel.kt$RewindStatusModel.Rewind.Companion$( rewindId: String?, restoreId: Long?, stringStatus: String?, progress: Int?, reason: String?, message: String?, currentEntry: String? )</ID>
-    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( query: String, onlyWordpressCom: Boolean?, includeWordpressCom: Boolean?, includeDotBlogSubdomain: Boolean?, segmentId: Long?, quantity: Int, includeVendorDot: Boolean, tlds: String? )</ID>
-    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( site: SiteModel, supportedBlocks: List&lt;String?>?, previewWidth: Float?, previewHeight: Float?, scale: Float?, isBeta: Boolean? )</ID>
-    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( site: SiteModel, url: String, supportedBlocks: List&lt;String?>?, previewWidth: Float?, previewHeight: Float?, scale: Float?, isBeta: Boolean? )</ID>
-    <ID>LongParameterList:SiteRestClient.kt$SiteRestClient$( siteName: String?, siteTitle: String?, language: String, timeZoneId: String?, visibility: SiteVisibility, segmentId: Long?, siteDesign: String?, dryRun: Boolean )</ID>
-    <ID>LongParameterList:StatsRequestSqlUtils.kt$StatsRequestSqlUtils$( site: SiteModel, blockType: BlockType, statsType: StatsType, date: String?, postId: Long?, after: Long, requestedItems: Int? = null )</ID>
-    <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>? = null, body: Map&lt;String, String> = emptyMap(), clazz: Class&lt;T>, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
-    <ID>LongParameterList:WPAPIGsonRequestBuilder.kt$WPAPIGsonRequestBuilder$( method: Int, url: String, params: Map&lt;String, String>?, body: Map&lt;String, String>, type: Type, cont: CancellableContinuation&lt;WPAPIResponse&lt;T>>, enableCaching: Boolean, cacheTimeToLive: Int, nonce: String?, restClient: BaseWPAPIRestClient )</ID>
-    <ID>LongParameterList:XMLRPCRequestBuilder.kt$XMLRPCRequestBuilder$( url: String, method: XMLRPC, params: List&lt;Any>, clazz: Class&lt;T>, listener: (T) -> Unit, errorListener: (BaseNetworkError) -> Unit )</ID>
-    <ID>NestedBlockDepth:FixThreatsStatusDeserializer.kt$FixThreatsStatusDeserializer$override fun deserialize( json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext? )</ID>
-    <ID>NestedBlockDepth:GutenbergLayoutCategoriesModel.kt$fun List&lt;GutenbergLayout>.connections(site: SiteModel): List&lt;GutenbergLayoutCategoriesModel></ID>
-    <ID>NestedBlockDepth:PluginCoroutineStore.kt$PluginCoroutineStore$private suspend fun &lt;T : Payload&lt;BaseNetworkError?>> executeWPAPIRequest( site: SiteModel, enableCaching: Boolean, fetchMethod: suspend (SiteModel, Nonce?, enableCaching: Boolean) -> T ): T</ID>
-    <ID>NestedBlockDepth:PostWPComRestResponse.kt$PostWPComRestResponse.MetaDataAdapter$@Throws(IOException::class) override fun read(jsonReader: JsonReader): List&lt;PostMetaData></ID>
-    <ID>NestedBlockDepth:ReactNativeStore.kt$ReactNativeStore$private suspend fun executeWPAPIRequest( site: SiteModel, path: String, params: Map&lt;String, String>, enableCaching: Boolean ): ReactNativeFetchResponse</ID>
-    <ID>NestedBlockDepth:SiteSqlUtils.kt$SiteSqlUtils$fun removeWPComRestSitesAbsentFromList(postSqlUtils: PostSqlUtils, sites: List&lt;SiteModel>): Int</ID>
-    <ID>NestedBlockDepth:SiteStore.kt$SiteStore$private fun handleDesignatedMobileEditorForAllSites(payload: DesignateMobileEditorForAllSitesResponsePayload)</ID>
-    <ID>NestedBlockDepth:ThreatContextDeserializer.kt$ThreatContextDeserializer$private fun getHighlightsFromMarks(marksForKey: JsonElement?): List&lt;Pair&lt;Int, Int>>?</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planFeatures.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersDao.kt$PlanOffersDao$(*it.planIds.toTypedArray())</ID>
     <ID>SpreadOperator:PlanOffersSqlUtils.kt$PlanOffersSqlUtils$( *(planOffers.mapIndexed { index, planOffersModel -> planOffersMapper.toDatabaseModel(index, planOffersModel) }).toTypedArray() )</ID>
@@ -131,26 +44,6 @@
     <ID>TooGenericExceptionCaught:WPV2MediaRestClient.kt$WPV2MediaRestClient.&lt;no name provided>$e: NullPointerException</ID>
     <ID>TooGenericExceptionThrown:ScanStore.kt$ScanStore$throw RuntimeException(msg)</ID>
     <ID>TooGenericExceptionThrown:WPAPIEncodedBodyRequest.kt$WPAPIEncodedBodyRequest$throw RuntimeException("Encoding not supported: $paramsEncoding", uee)</ID>
-    <ID>VariableNaming:AuthOptionsResponse.kt$AuthOptionsResponse$var email_verified: Boolean? = null</ID>
-    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_1: String? = null</ID>
-    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var address_2: String? = null</ID>
-    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var country_code: String? = null</ID>
-    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var first_name: String? = null</ID>
-    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var last_name: String? = null</ID>
-    <ID>VariableNaming:DomainContactResponse.kt$DomainContactResponse$var postal_code: String? = null</ID>
-    <ID>VariableNaming:DomainsResponse.kt$BooleanTypeAdapter$private val TRUE_STRINGS: Set&lt;String> = HashSet(listOf("true", "1", "yes"))</ID>
-    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var ID: Long = 0</ID>
-    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var avatar_URL: String? = null</ID>
-    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var date_liked: String? = null</ID>
-    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var preferred_blog: PreferredBlogResponse? = null</ID>
-    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var primary_blog: String? = null</ID>
-    <ID>VariableNaming:LikeWPComRestResponse.kt$LikeWPComRestResponse$var site_ID: Long = 0</ID>
-    <ID>VariableNaming:NotificationApiResponse.kt$NotificationApiResponse$val note_hash: Long? = null</ID>
-    <ID>VariableNaming:NotificationHashApiResponse.kt$NotificationHashApiResponse$var note_hash: Long = 0</ID>
-    <ID>VariableNaming:NotificationHashesApiResponse.kt$NotificationHashesApiResponse$val last_seen_time: Long? = null</ID>
-    <ID>VariableNaming:NotificationSeenApiResponse.kt$NotificationSeenApiResponse$val last_seen_time: Long? = null</ID>
-    <ID>VariableNaming:NotificationsApiResponse.kt$NotificationsApiResponse$val last_seen_time: Long? = null</ID>
-    <ID>VariableNaming:ReactNativeStore.kt$ReactNativeStore$private val WPCOM_ENDPOINT = "https://public-api.wordpress.com"</ID>
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
