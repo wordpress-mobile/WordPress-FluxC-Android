@@ -56,6 +56,7 @@ class ProductVariationApiResponse : Response {
     var attributes: JsonElement? = null
     var downloads: JsonElement? = null
 
+    @Suppress("ComplexMethod")
     fun asProductVariationModel() =
         WCProductVariationModel().apply {
             val response = this@ProductVariationApiResponse

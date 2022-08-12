@@ -87,6 +87,7 @@ class ProductApiResponse : Response {
     @SerializedName("meta_data")
     var metadata: JsonArray? = null
 
+    @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
         val response = this
         return WCProductModel().apply {
