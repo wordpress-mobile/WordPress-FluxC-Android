@@ -100,8 +100,7 @@ object RemoteAddonMapper {
         required = dto.required.asBoolean(),
         position = dto.position,
         price = dto.mapPrice(),
-        quantityRange =
-        if (dto.max == 0L) null else (dto.min..dto.max)
+        quantityRange = prepareRange(dto.min, dto.max)
     )
 
     private fun heading(dto: RemoteAddonDto) = Addon.Heading(
