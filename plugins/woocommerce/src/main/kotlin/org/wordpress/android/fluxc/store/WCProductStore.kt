@@ -1328,6 +1328,7 @@ class WCProductStore @Inject constructor(
     }
 
     // Returns a boolean indicating whether more coupons can be fetched
+    @Suppress("ComplexCondition")
     suspend fun fetchProducts(
         site: SiteModel,
         offset: Int = 0,

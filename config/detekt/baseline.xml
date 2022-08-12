@@ -5,7 +5,6 @@
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
-    <ID>ComplexCondition:WCProductStore.kt$WCProductStore$offset == 0 &amp;&amp; includedProductIds.isEmpty() &amp;&amp; excludedProductIds.isEmpty() &amp;&amp; filterOptions.isEmpty()</ID>
     <ID>ComplexMethod:CouponRestClient.kt$CouponRestClient$private fun UpdateCouponRequest.toNetworkRequest(): Map&lt;String, Any></ID>
     <ID>ComplexMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
     <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
