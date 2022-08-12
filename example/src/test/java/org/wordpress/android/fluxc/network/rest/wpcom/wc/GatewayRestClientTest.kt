@@ -9,13 +9,12 @@ import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient.GatewayId.COD
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient.GatewayId.CASH_ON_DELIVERY
 
 class GatewayRestClientTest {
     private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
@@ -41,177 +40,6 @@ class GatewayRestClientTest {
     }
 
     @Test
-    fun `given success response, when post gateway, return success`() {
-        runBlocking {
-            whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>()
-                )
-            ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
-                    GatewayRestClient.GatewayResponse(
-                        gatewayId = COD.toString(),
-                        title = "",
-                        description = "",
-                        order = "",
-                        enabled = false,
-                        methodTitle = "",
-                        methodDescription = "",
-                        features = emptyList()
-                    )
-                )
-            )
-
-            val actualResponse = gatewayRestClient.postPaymentGateway(
-                SiteModel(),
-                COD,
-                enabled = false
-            )
-
-            Assertions.assertThat(actualResponse).isEqualTo(
-                WooPayload(
-                    result = GatewayRestClient.GatewayResponse(
-                        gatewayId = COD.toString(),
-                        title = "",
-                        description = "",
-                        order = "",
-                        enabled = false,
-                        methodTitle = "",
-                        methodDescription = "",
-                        features = emptyList()
-                    )
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `given error response, when post gateway, return error`() {
-        runBlocking {
-            whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>(),
-                )
-            ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(
-                    WPComGsonRequest.WPComGsonNetworkError(
-                        BaseRequest.BaseNetworkError(
-                            BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
-                        )
-                    )
-                )
-            )
-
-            val actualResponse = gatewayRestClient.postPaymentGateway(
-                SiteModel(),
-                COD,
-                enabled = true
-            )
-
-            Assertions.assertThat(actualResponse).isEqualTo(
-                WooPayload<WooError>(
-                    error = WooError(
-                        type = WooErrorType.AUTHORIZATION_REQUIRED,
-                        original = BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
-                    ),
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `given success response, when post COD title, return success`() {
-        runBlocking {
-            whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>()
-                )
-            ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
-                    GatewayRestClient.GatewayResponse(
-                        gatewayId = "",
-                        title = "Cash on Delivery",
-                        description = "",
-                        order = "",
-                        enabled = false,
-                        methodTitle = "",
-                        methodDescription = "",
-                        features = emptyList()
-                    )
-                )
-            )
-            val actualResponse = gatewayRestClient.postCashOnDeliveryTitle(
-                site = SiteModel(),
-                title = "Cash on Delivery"
-            )
-
-            Assertions.assertThat(actualResponse).isEqualTo(
-                WooPayload(
-                    result = GatewayRestClient.GatewayResponse(
-                        gatewayId = "",
-                        title = "Cash on Delivery",
-                        description = "",
-                        order = "",
-                        enabled = false,
-                        methodTitle = "",
-                        methodDescription = "",
-                        features = emptyList()
-                    )
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `given error response, when post COD title, return error`() {
-        runBlocking {
-            whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>(),
-                )
-            ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(
-                    WPComGsonRequest.WPComGsonNetworkError(
-                        BaseRequest.BaseNetworkError(
-                            BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
-                        )
-                    )
-                )
-            )
-
-            val actualResponse = gatewayRestClient.postCashOnDeliveryTitle(
-                SiteModel(),
-                title = "Cash on Delivery"
-            )
-
-            Assertions.assertThat(actualResponse).isEqualTo(
-                WooPayload<WooError>(
-                    error = WooError(
-                        type = WooErrorType.AUTHORIZATION_REQUIRED,
-                        original = BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
-                    ),
-                )
-            )
-        }
-    }
-
-    @Test
     fun `given success response, when fetch gateway, return success`() {
         runBlocking {
             whenever(
@@ -226,42 +54,24 @@ class GatewayRestClientTest {
                     any()
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
-                    GatewayRestClient.GatewayResponse(
-                        gatewayId = "",
-                        title = "",
-                        description = "",
-                        order = "",
-                        enabled = false,
-                        methodTitle = "",
-                        methodDescription = "",
-                        features = emptyList()
-                    )
-                )
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(mock())
             )
 
-            val actualResponse = gatewayRestClient.fetchGateway(SiteModel(), "")
-
-            Assertions.assertThat(actualResponse).isEqualTo(
-                WooPayload(
-                    result = GatewayRestClient.GatewayResponse(
-                        gatewayId = "",
-                        title = "",
-                        description = "",
-                        order = "",
-                        enabled = false,
-                        methodTitle = "",
-                        methodDescription = "",
-                        features = emptyList()
-                    )
-                )
+            val actualResponse = gatewayRestClient.fetchGateway(
+                SiteModel(),
+            ""
             )
+
+            Assertions.assertThat(actualResponse.isError).isFalse
+            Assertions.assertThat(actualResponse.result).isNotNull
         }
     }
 
     @Test
     fun `given error response, when fetch gateway, return error`() {
         runBlocking {
+            val expectedError = mock<WPComGsonNetworkError>().apply { type = mock()
+            }
             whenever(
                 jetpackTunnelGsonRequestBuilder.syncGetRequest(
                     any(),
@@ -274,25 +84,70 @@ class GatewayRestClientTest {
                     any()
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(
-                    WPComGsonRequest.WPComGsonNetworkError(
-                        BaseRequest.BaseNetworkError(
-                            BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
-                        )
-                    )
-                )
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
             )
 
             val actualResponse = gatewayRestClient.fetchGateway(SiteModel(), "")
 
-            Assertions.assertThat(actualResponse).isEqualTo(
-                WooPayload<WooError>(
-                    error = WooError(
-                        type = WooErrorType.AUTHORIZATION_REQUIRED,
-                        original = BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
-                    ),
+            Assertions.assertThat(actualResponse.isError).isTrue
+            Assertions.assertThat(actualResponse.error).isNotNull
+        }
+    }
+
+    @Test
+    fun `given success response, when update gateway, return success`() {
+        runBlocking {
+            whenever(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any<Class<GatewayRestClient.GatewayResponse>>()
                 )
+            ).thenReturn(
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(mock())
             )
+
+            val actualResponse = gatewayRestClient.updatePaymentGateway(
+                SiteModel(),
+                CASH_ON_DELIVERY,
+                enabled = false,
+                title = "title"
+            )
+
+            Assertions.assertThat(actualResponse.isError).isFalse
+            Assertions.assertThat(actualResponse.result).isNotNull
+        }
+    }
+
+    @Test
+    fun `given error response, when update gateway, return error`() {
+        runBlocking {
+            val expectedError = mock<WPComGsonNetworkError>().apply {
+                type = mock()
+            }
+            whenever(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any<Class<GatewayRestClient.GatewayResponse>>(),
+                )
+            ).thenReturn(
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+            )
+
+            val actualResponse = gatewayRestClient.updatePaymentGateway(
+                SiteModel(),
+                CASH_ON_DELIVERY,
+                enabled = true,
+                title = "title"
+            )
+
+            Assertions.assertThat(actualResponse.isError).isTrue
+            Assertions.assertThat(actualResponse.error).isNotNull
         }
     }
 }
