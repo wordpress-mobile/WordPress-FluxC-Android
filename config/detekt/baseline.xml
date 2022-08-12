@@ -41,8 +41,6 @@
     <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_link: String? = null</ID>
     <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_number: String? = null</ID>
     <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_provider: String? = null</ID>
-    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private final val STATS_FIELDS = "data,fields"</ID>
-    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private val STATS_DEFAULT_ORDER = "asc"</ID>
     <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val button_text: String? = null</ID>
     <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val menu_order = 0</ID>
     <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var average_rating: String? = null</ID>

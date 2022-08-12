@@ -102,9 +102,6 @@ class OrderStatsRestClient @Inject constructor(
         override fun toString() = name.toLowerCase()
     }
 
-    private final val STATS_FIELDS = "data,fields"
-    private val STATS_DEFAULT_ORDER = "asc"
-
     /**
      * Makes a GET call to `/wpcom/v2/sites/$site/data/orders/`, retrieving data for the given
      * WooCommerce [SiteModel].
@@ -132,7 +129,8 @@ class OrderStatsRestClient @Inject constructor(
                 "unit" to unit.toString(),
                 "date" to date,
                 "quantity" to quantity.toString(),
-                "_fields" to STATS_FIELDS)
+                "_fields" to "data,fields"
+        )
 
         val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
                 { apiResponse ->
@@ -197,7 +195,8 @@ class OrderStatsRestClient @Inject constructor(
                 "after" to startDate,
                 "before" to endDate,
                 "per_page" to perPage.toString(),
-                "order" to STATS_DEFAULT_ORDER)
+                "order" to "asc"
+        )
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
