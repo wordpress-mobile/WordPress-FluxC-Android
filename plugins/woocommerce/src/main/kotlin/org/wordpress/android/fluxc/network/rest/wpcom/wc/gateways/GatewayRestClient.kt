@@ -34,11 +34,11 @@ class GatewayRestClient @Inject constructor(
         val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                GatewayResponse::class.java
+            this,
+            site,
+            url,
+            emptyMap(),
+            GatewayResponse::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
@@ -85,11 +85,11 @@ class GatewayRestClient @Inject constructor(
         val url = WOOCOMMERCE.payment_gateways.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                Array<GatewayResponse>::class.java
+            this,
+            site,
+            url,
+            emptyMap(),
+            Array<GatewayResponse>::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
