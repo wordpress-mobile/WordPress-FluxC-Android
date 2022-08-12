@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName")
 class OrderDto : Response {
+    @Suppress("ConstructorParameterNaming")
     data class Billing(
         val first_name: String? = null,
         val last_name: String? = null,
@@ -19,6 +20,7 @@ class OrderDto : Response {
         val phone: String? = null
     )
 
+    @Suppress("ConstructorParameterNaming")
     data class Shipping(
         val first_name: String? = null,
         val last_name: String? = null,

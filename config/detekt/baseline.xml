@@ -5,15 +5,6 @@
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_1: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_2: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val first_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val last_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_1: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_2: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val first_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
     <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
