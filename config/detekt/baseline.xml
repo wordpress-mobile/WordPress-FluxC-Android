@@ -6,7 +6,6 @@
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
     <ID>ComplexMethod:CouponRestClient.kt$CouponRestClient$private fun UpdateCouponRequest.toNetworkRequest(): Map&lt;String, Any></ID>
-    <ID>ComplexMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
     <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
     <ID>ComplexMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
     <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
@@ -28,7 +27,6 @@
     <ID>LargeClass:ProductRestClient.kt$ProductRestClient : BaseWPComRestClient</ID>
     <ID>LargeClass:ProductSqlUtils.kt$ProductSqlUtils</ID>
     <ID>LargeClass:WCProductStore.kt$WCProductStore : Store</ID>
-    <ID>LongMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
     <ID>LongMethod:Migrations.kt$&lt;no name provided>$override fun migrate(database: SupportSQLiteDatabase)</ID>
     <ID>LongMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
     <ID>LongMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
