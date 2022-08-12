@@ -70,7 +70,7 @@ object FromDatabaseAddonsMapper {
         position = entity.addon.position,
         restrictions = entity.addon.mapRestrictions(),
         price = entity.addon.mapPrice(),
-        characterLength = lengthRange(entity)
+        characterLength = prepareRange(entity.addon.min, entity.addon.max)
     )
 
     private fun customTextArea(entity: AddonWithOptions) = Addon.CustomTextArea(
@@ -80,7 +80,7 @@ object FromDatabaseAddonsMapper {
         required = entity.addon.required,
         position = entity.addon.position,
         price = entity.addon.mapPrice(),
-        characterLength = lengthRange(entity)
+        characterLength = prepareRange(entity.addon.min, entity.addon.max)
     )
 
     private fun fileUpload(entity: AddonWithOptions) = Addon.FileUpload(
@@ -98,7 +98,7 @@ object FromDatabaseAddonsMapper {
         description = entity.addon.description,
         required = entity.addon.required,
         position = entity.addon.position,
-        priceRange = lengthRange(entity)
+        priceRange = prepareRange(entity.addon.min, entity.addon.max)
     )
 
     private fun inputMultiplier(entity: AddonWithOptions) = Addon.InputMultiplier(
@@ -108,7 +108,7 @@ object FromDatabaseAddonsMapper {
         required = entity.addon.required,
         position = entity.addon.position,
         price = entity.addon.mapPrice(),
-        quantityRange = lengthRange(entity)
+        quantityRange = prepareRange(entity.addon.min, entity.addon.max)
     )
 
     private fun heading(entity: AddonWithOptions) = Addon.Heading(
@@ -119,10 +119,10 @@ object FromDatabaseAddonsMapper {
         position = entity.addon.position
     )
 
-    private fun lengthRange(entity: AddonWithOptions) = if (entity.addon.max == null || entity.addon.max == 0L) {
+    private fun prepareRange(min: Long?, max: Long?) = if (max == null || max == 0L) {
         null
     } else {
-        (entity.addon.min ?: 0)..entity.addon.max
+        (min ?: 0)..max
     }
 
     private fun AddonWithOptions.mapOptions(): List<Addon.HasOptions.Option> {
