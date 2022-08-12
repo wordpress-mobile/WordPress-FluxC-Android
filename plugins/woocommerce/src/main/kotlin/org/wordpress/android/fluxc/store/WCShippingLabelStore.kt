@@ -308,6 +308,7 @@ class WCShippingLabelStore @Inject constructor(
         }.flatten() // Flat it
     }
 
+    @Suppress("NestedBlockDepth")
     private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
         val predefinedOptions = mutableListOf<PredefinedOption>()
         result.formSchema.predefinedSchema.entries.forEach { provider ->

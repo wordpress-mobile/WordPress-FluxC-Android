@@ -263,6 +263,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     /**
      * Parses the images json array into a list of product images
      */
+    @Suppress("NestedBlockDepth")
     fun getImageList(): ArrayList<WCProductImageModel> {
         val imageList = ArrayList<WCProductImageModel>()
         if (images.isNotEmpty()) {
@@ -386,6 +387,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * a JsonElement, then we check each item if it's a JsonPrimitive or JsonObject and return
      * an appropriate response, if that's the case.
      */
+    @Suppress("NestedBlockDepth")
     private fun parseJson(jsonString: String): List<Long> {
         fun JsonElement.parseId() = when {
             isJsonObject -> asJsonObject["id"]?.asLong
@@ -451,6 +453,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return commaSeparatedNames
     }
 
+    @Suppress("NestedBlockDepth")
     private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
         try {
