@@ -11,5 +11,5 @@ object OrderMappingConst {
      * @return true otherwise
      */
     internal val WCMetaData.isDisplayableAttribute
-        get() = key?.startsWith('_') ?: false
+        get() = key?.startsWith('_')?.not() ?: false
 }
