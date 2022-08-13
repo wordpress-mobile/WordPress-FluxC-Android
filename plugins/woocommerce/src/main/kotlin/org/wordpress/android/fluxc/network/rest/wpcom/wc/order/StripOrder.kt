@@ -13,7 +13,8 @@ internal class StripOrder @Inject constructor(private val gson: Gson) {
         return fatModel.copy(
                 lineItems = gson.toJson(fatModel.getLineItemList().map { lineItemDto: LineItem ->
                     lineItemDto.copy(
-                        metaData = lineItemDto.metaData?.filter { it.isInternalAttribute.not() }
+                        metaData = lineItemDto.metaData
+                            ?.filter { it.isInternalAttribute?.not() ?: false }
                     )
                 }),
                 shippingLines = gson.toJson(fatModel.getShippingLineList()),

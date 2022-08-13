@@ -27,7 +27,7 @@ class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
 
         return parseMetaDataJSON(orderDto.meta_data)
             ?.asSequence()
-            ?.filter { it.isInternalAttribute.not() }
+            ?.filter { it.isInternalAttribute?.not() ?: false }
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
             ?.filter { it.value.isNotEmpty() && it.value.matches(jsonRegex).not() }
             ?.toList()
@@ -47,7 +47,7 @@ class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
             id = id,
             localSiteId = localSiteId,
             orderId = orderId,
-            key = key,
+            key = key.orEmpty(),
             value = value.toString().replace(htmlRegex, "")
         )
 }
