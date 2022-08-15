@@ -238,7 +238,7 @@ class StripOrderMetaDataTest {
     }
 
     @Test
-    fun `when Metadata key is null, then remove it from the list`() {
+    fun `when Metadata key is invalid, then remove it from the list`() {
         // Given
         val rawMetadata = listOf(
             WCMetaData(
@@ -249,7 +249,14 @@ class StripOrderMetaDataTest {
                 displayValue = null
             ),
             WCMetaData(
-                id = 2,
+                id = 2L,
+                key = "_internal key",
+                value = "valid value",
+                displayKey = null,
+                displayValue = null
+            ),
+            WCMetaData(
+                id = 3L,
                 key = "valid key",
                 value = "valid value",
                 displayKey = null,
@@ -271,7 +278,7 @@ class StripOrderMetaDataTest {
         assertThat(result).isEqualTo(
             listOf(
                 OrderMetaDataEntity(
-                    id = 2L,
+                    id = 3L,
                     orderId = 1,
                     localSiteId = LocalId(1),
                     key = "valid key",
