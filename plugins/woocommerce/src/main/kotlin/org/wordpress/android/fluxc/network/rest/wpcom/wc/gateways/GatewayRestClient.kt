@@ -34,12 +34,41 @@ class GatewayRestClient @Inject constructor(
         val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                GatewayResponse::class.java
+            this,
+            site,
+            url,
+            emptyMap(),
+            GatewayResponse::class.java
         )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun updatePaymentGateway(
+        site: SiteModel,
+        gatewayId: GatewayId,
+        enabled: Boolean? = null,
+        title: String? = null
+    ): WooPayload<GatewayResponse> {
+        val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.toString()).pathV3
+        val params = mutableMapOf<String, Any>().apply {
+            enabled?.let { put("enabled", enabled) }
+            title?.let { put("title", title) }
+        }
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            params,
+            GatewayResponse::class.java
+        )
+
         return when (response) {
             is JetpackSuccess -> {
                 WooPayload(response.data)
@@ -56,11 +85,11 @@ class GatewayRestClient @Inject constructor(
         val url = WOOCOMMERCE.payment_gateways.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                Array<GatewayResponse>::class.java
+            this,
+            site,
+            url,
+            emptyMap(),
+            Array<GatewayResponse>::class.java
         )
         return when (response) {
             is JetpackSuccess -> {
@@ -82,4 +111,8 @@ class GatewayRestClient @Inject constructor(
         @SerializedName("method_description") val methodDescription: String?,
         @SerializedName("method_supports") val features: List<String>?
     )
+
+    enum class GatewayId(val apiKey: String) {
+        CASH_ON_DELIVERY("cod")
+    }
 }
