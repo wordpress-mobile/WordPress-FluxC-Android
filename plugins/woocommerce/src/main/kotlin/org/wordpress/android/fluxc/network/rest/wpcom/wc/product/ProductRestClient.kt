@@ -1544,7 +1544,7 @@ class ProductRestClient @Inject constructor(
             body["short_description"] = updatedProductModel.shortDescription
         }
         if (!storedWCProductModel.hasSameImages(updatedProductModel)) {
-            val updatedImages = updatedProductModel.getImageList()
+            val updatedImages = updatedProductModel.getImageListOrEmpty()
             body["images"] = JsonArray().also {
                 for (image in updatedImages) {
                     it.add(image.toJson())

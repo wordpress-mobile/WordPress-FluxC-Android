@@ -264,7 +264,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * Parses the images json array into a list of product images
      */
     @Suppress("NestedBlockDepth")
-    fun getImageList(): ArrayList<WCProductImageModel> {
+    fun getImageListOrEmpty(): ArrayList<WCProductImageModel> {
         val imageList = ArrayList<WCProductImageModel>()
         if (images.isNotEmpty()) {
             try {
@@ -474,8 +474,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     @Suppress("ReturnCount")
     fun hasSameImages(updatedProduct: WCProductModel): Boolean {
-        val updatedImages = updatedProduct.getImageList()
-        val thisImages = getImageList()
+        val updatedImages = updatedProduct.getImageListOrEmpty()
+        val thisImages = getImageListOrEmpty()
         if (thisImages.size != updatedImages.size) {
             return false
         }

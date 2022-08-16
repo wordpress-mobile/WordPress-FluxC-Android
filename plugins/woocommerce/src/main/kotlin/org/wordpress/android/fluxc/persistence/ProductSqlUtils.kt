@@ -462,12 +462,12 @@ object ProductSqlUtils {
 
         // build a new image list containing all the product images except the passed one
         val imageList = ArrayList<WCProductImageModel>()
-        product.getImageList().forEach { image ->
+        product.getImageListOrEmpty().forEach { image ->
             if (image.id != remoteMediaId) {
                 imageList.add(image)
             }
         }
-        return if (imageList.size == product.getImageList().size) {
+        return if (imageList.size == product.getImageListOrEmpty().size) {
             false
         } else {
             updateProductImages(product, imageList) > 0
