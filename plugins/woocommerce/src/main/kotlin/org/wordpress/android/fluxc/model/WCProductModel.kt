@@ -452,28 +452,34 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return commaSeparatedNames
     }
 
-    @Suppress("NestedBlockDepth")
-    private fun getTripletsOrEmpty(jsonStr: String): ArrayList<ProductTriplet> {
-        val triplets = ArrayList<ProductTriplet>()
-        try {
-            if (jsonStr.isNotEmpty()) {
-                val jsonElement = Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java)
-                if (jsonElement.isJsonArray) {
-                    jsonElement.asJsonArray.forEach { jsonArray ->
-                        with(jsonArray.asJsonObject) {
-                            triplets.add(
-                                    ProductTriplet(
-                                            id = this.getLong("id"),
-                                            name = this.getString("name") ?: "",
-                                            slug = this.getString("slug") ?: ""
-                                    )
-                            )
-                        }
-                    }
+    private fun getTripletsOrEmpty(jsonStr: String): List<ProductTriplet> {
+        return if (jsonStr.isNotEmpty()) {
+            try {
+                val jsonElement = Gson().fromJson(jsonStr, JsonElement::class.java)
+                getTriplets(jsonElement)
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun getTriplets(tripletsAsJsonElement: JsonElement): List<ProductTriplet> {
+        val triplets = arrayListOf<ProductTriplet>()
+        if (tripletsAsJsonElement.isJsonArray) {
+            tripletsAsJsonElement.asJsonArray.forEach { jsonArray ->
+                with(jsonArray.asJsonObject) {
+                    triplets.add(
+                        ProductTriplet(
+                            id = this.getLong("id"),
+                            name = this.getString("name") ?: "",
+                            slug = this.getString("slug") ?: ""
+                        )
+                    )
                 }
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
         }
         return triplets
     }
