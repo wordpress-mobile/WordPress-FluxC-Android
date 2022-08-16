@@ -431,11 +431,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     fun getCrossSellProductIdList() = parseJson(crossSellIds)
 
-    fun getCategoryList() = getTriplets(categories)
+    fun getCategoryList() = getTripletsOrEmpty(categories)
 
     fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategoryList())
 
-    fun getTagList() = getTriplets(tags)
+    fun getTagList() = getTripletsOrEmpty(tags)
 
     fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTagList())
 
@@ -453,7 +453,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     @Suppress("NestedBlockDepth")
-    private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
+    private fun getTripletsOrEmpty(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
         try {
             if (jsonStr.isNotEmpty()) {
