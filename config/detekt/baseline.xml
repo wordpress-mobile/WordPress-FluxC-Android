@@ -239,7 +239,6 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UtilityClassWithPublicConstructor:ReactNativeStoreWPAPITest.kt$ReactNativeStoreWPAPITest$StatusCode</ID>
     <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
     <ID>WildcardImport:AddressEditDialogFragment.kt$import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*</ID>
     <ID>WildcardImport:CustomStatsDialog.kt$import kotlinx.android.synthetic.main.dialog_custom_stats.*</ID>
