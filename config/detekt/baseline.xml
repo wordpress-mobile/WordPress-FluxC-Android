@@ -239,11 +239,7 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UseCheckOrError:ListSelectorDialog.kt$ListSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
     <ID>UseCheckOrError:OrderListAdapter.kt$OrderListAdapter$throw IllegalStateException("The view type '$viewType' needs to be handled")</ID>
-    <ID>UseCheckOrError:SiteSelectorDialog.kt$SiteSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:StoreSelectorDialog.kt$StoreSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:ThreeEditTextDialog.kt$ThreeEditTextDialog$throw IllegalStateException("Not attached to an activity!")</ID>
     <ID>UseCheckOrError:WooCustomersSearchAdapter.kt$WooCustomersSearchAdapter$throw IllegalStateException("View type $viewType is not supported")</ID>
     <ID>UtilityClassWithPublicConstructor:ReactNativeStoreWPAPITest.kt$ReactNativeStoreWPAPITest$StatusCode</ID>
     <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
