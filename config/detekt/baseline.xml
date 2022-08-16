@@ -167,10 +167,6 @@
     <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)</ID>
     <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>ComplexMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>DataClassShouldBeImmutable:WooProductCategoriesAdapter.kt$WooProductCategoriesAdapter.ProductCategoryViewHolderModel$var isSelected: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var name: String</ID>
-    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var url: String</ID>
-    <ID>DataClassShouldBeImmutable:WooProductTagsAdapter.kt$WooProductTagsAdapter.ProductTagViewHolderModel$var isSelected: Boolean = false</ID>
     <ID>EmptyFunctionBlock:EditTextExt.kt$&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:ExperimentsFragment.kt$ExperimentsFragment.&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:RetryOnRedirectBasicNetworkTest.kt$RetryOnRedirectBasicNetworkTest.MockedRequest${}</ID>
