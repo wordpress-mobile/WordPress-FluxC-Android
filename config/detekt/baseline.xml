@@ -226,8 +226,6 @@
     <ID>NestedBlockDepth:WooShippingLabelFragment.kt$WooShippingLabelFragment$private fun downloadUrl(url: String): File?</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$ex</ID>
-    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areContentsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
-    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areItemsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
     <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
     <ID>SwallowedException:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
     <ID>SwallowedException:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
