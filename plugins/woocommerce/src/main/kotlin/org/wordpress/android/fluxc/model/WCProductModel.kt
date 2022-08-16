@@ -384,8 +384,21 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * a JsonElement, then we check each item if it's a JsonPrimitive or JsonObject and return
      * an appropriate response, if that's the case.
      */
-    @Suppress("NestedBlockDepth")
     private fun parseJson(jsonString: String): List<Long> {
+        return if (jsonString.isNotEmpty()) {
+            try {
+                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
+                parseJsonIfNotEmpty(jsonElement)
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun parseJsonIfNotEmpty(jsonElement: JsonElement): List<Long> {
         fun JsonElement.parseId() = when {
             isJsonObject -> asJsonObject["id"]?.asLong
                 ?: throw JsonParseException("Can't extract element's ID")
@@ -393,30 +406,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             else -> throw JsonParseException("Can't extract element's ID")
         }
 
-        val ids = ArrayList<Long>()
-        try {
-            if (jsonString.isNotEmpty()) {
-                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
-                when {
-                    jsonElement.isJsonNull -> {
-                        return emptyList()
-                    }
-                    jsonElement.isJsonArray -> {
-                        jsonElement.asJsonArray.forEach { element ->
-                            element.parseId().let { ids.add(it) }
-                        }
-                    }
-                    jsonElement.isJsonObject -> {
-                        jsonElement.asJsonObject.entrySet().forEach {
-                            ids.add(it.value.parseId())
-                        }
-                    }
-                }
+        val ids = arrayListOf<Long>()
+        return when {
+            jsonElement.isJsonNull -> emptyList()
+            jsonElement.isJsonArray -> {
+                jsonElement.asJsonArray.forEach { element -> element.parseId().let { ids.add(it) } }
+                ids
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
+            jsonElement.isJsonObject -> {
+                jsonElement.asJsonObject.entrySet().forEach { ids.add(it.value.parseId()) }
+                ids
+            }
+            else -> emptyList()
         }
-        return ids
     }
 
     fun getNumVariations() = getVariationIdList().size
