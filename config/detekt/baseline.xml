@@ -222,12 +222,7 @@
     <ID>LongMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>MagicNumber:CustomStatsDialog.kt$CustomStatsDialog.Companion$100</ID>
-    <ID>MagicNumber:WCAddOrderShipmentTrackingDialog.kt$WCAddOrderShipmentTrackingDialog.Companion$200</ID>
     <ID>MagicNumber:WCOrderListActivity.kt$TimeGroup.Companion$2</ID>
-    <ID>MagicNumber:WooOrdersFragment.kt$WooOrdersFragment$5</ID>
-    <ID>MagicNumber:WooShippingLabelFragment.kt$WooShippingLabelFragment$5000</ID>
-    <ID>MagicNumber:WooStatsFragment.kt$WooStatsFragment$10</ID>
     <ID>MaxLineLength:CommentSqlUtilsTest.kt$CommentSqlUtilsTest$// from 65 comments in DB we expect to have only 22 remote comments (remove first 3, 3 from the middle and all the comments that go after last comment in remoteComments</ID>
     <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>date_created_gmt&lt;/name>&lt;value>&lt;dateTime.iso8601>20210727T20:33:41&lt;/dateTime.iso8601>&lt;/value>&lt;/member></ID>
     <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>link&lt;/name>&lt;value>&lt;string>http://test-debug.org/index.php/2021/04/01/no-jp/#comment-34&lt;/string>&lt;/value>&lt;/member></ID>
