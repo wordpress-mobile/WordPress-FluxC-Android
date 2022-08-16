@@ -303,17 +303,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return null
     }
 
-    /**
-     * Extract all image urls from the json array of images
-     */
-    fun getImageUrls(): List<String> {
-        val imageUrls = ArrayList<String>()
-        getImageList().forEach {
-            imageUrls.add(it.src)
-        }
-        return imageUrls
-    }
-
     fun getAttributeList(): List<ProductAttribute> {
         fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
