@@ -239,8 +239,6 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UseCheckOrError:OrderListAdapter.kt$OrderListAdapter$throw IllegalStateException("The view type '$viewType' needs to be handled")</ID>
-    <ID>UseCheckOrError:WooCustomersSearchAdapter.kt$WooCustomersSearchAdapter$throw IllegalStateException("View type $viewType is not supported")</ID>
     <ID>UtilityClassWithPublicConstructor:ReactNativeStoreWPAPITest.kt$ReactNativeStoreWPAPITest$StatusCode</ID>
     <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
     <ID>WildcardImport:AddressEditDialogFragment.kt$import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*</ID>

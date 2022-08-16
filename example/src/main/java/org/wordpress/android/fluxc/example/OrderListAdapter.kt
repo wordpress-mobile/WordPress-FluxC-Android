@@ -31,6 +31,7 @@ class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(Ord
         }
     }
 
+    @Suppress("UseCheckOrError")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (viewType) {
             VIEW_TYPE_ORDER_ITEM -> WCOrderItemUIViewHolder(R.layout.list_item_woo_order, parent)

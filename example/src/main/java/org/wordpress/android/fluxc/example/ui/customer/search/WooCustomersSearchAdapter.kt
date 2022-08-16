@@ -19,10 +19,12 @@ import javax.inject.Inject
 private const val VIEW_TYPE_ITEM = 0
 private const val VIEW_TYPE_LOADING = 1
 
-class WooCustomersSearchAdapter @Inject constructor(context: MainExampleActivity) :
-        PagedListAdapter<CustomerListItemType, ViewHolder>(customerListDiffItemCallback) {
+class WooCustomersSearchAdapter @Inject constructor(
+    context: MainExampleActivity
+) : PagedListAdapter<CustomerListItemType, ViewHolder>(customerListDiffItemCallback) {
     private val layoutInflater = LayoutInflater.from(context)
 
+    @Suppress("UseCheckOrError")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (viewType) {
             VIEW_TYPE_ITEM -> CustomerItemViewHolder(inflateView(R.layout.list_item_woo_customer, parent))
