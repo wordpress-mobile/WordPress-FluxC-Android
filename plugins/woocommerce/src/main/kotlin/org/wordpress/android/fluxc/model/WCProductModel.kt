@@ -263,25 +263,33 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     /**
      * Parses the images json array into a list of product images
      */
-    @Suppress("NestedBlockDepth")
-    fun getImageListOrEmpty(): ArrayList<WCProductImageModel> {
-        val imageList = ArrayList<WCProductImageModel>()
-        if (images.isNotEmpty()) {
+    fun getImageListOrEmpty(): List<WCProductImageModel> {
+        return if (images.isNotEmpty()) {
             try {
-                Gson().fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    with(jsonElement.asJsonObject) {
-                        WCProductImageModel(this.getLong("id")).also {
-                            it.name = this.getString("name") ?: ""
-                            it.src = this.getString("src") ?: ""
-                            it.alt = this.getString("alt") ?: ""
-                            imageList.add(it)
-                        }
-                    }
-                }
+                val jsonElement = Gson().fromJson(images, JsonElement::class.java)
+                getImageList(jsonElement.asJsonArray)
             } catch (e: JsonParseException) {
                 AppLog.e(T.API, e)
+                emptyList()
             } catch (e: IllegalStateException) {
                 AppLog.e(T.API, e)
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun getImageList(imagesAsJsonArray: JsonArray): List<WCProductImageModel> {
+        val imageList = arrayListOf<WCProductImageModel>()
+        imagesAsJsonArray.forEach { jsonElement ->
+            with(jsonElement.asJsonObject) {
+                WCProductImageModel(this.getLong("id")).also {
+                    it.name = this.getString("name") ?: ""
+                    it.src = this.getString("src") ?: ""
+                    it.alt = this.getString("alt") ?: ""
+                    imageList.add(it)
+                }
             }
         }
         return imageList
