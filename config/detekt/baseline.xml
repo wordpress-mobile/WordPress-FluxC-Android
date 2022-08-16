@@ -239,9 +239,6 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UnnecessaryAbstractClass:FragmentsModule.kt$FragmentsModule$FragmentsModule</ID>
-    <ID>UnnecessaryAbstractClass:MainActivityModule.kt$MainActivityModule$MainActivityModule</ID>
-    <ID>UnnecessaryAbstractClass:WCOrderListActivityModule.kt$WCOrderListActivityModule$WCOrderListActivityModule</ID>
     <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var accessToken: AccessToken</ID>
     <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var wpComGsonRequestBuilder: WPComGsonRequestBuilder</ID>
     <ID>UnusedPrivateMember:InsightsRestClientTest.kt$InsightsRestClientTest$val date = Date()</ID>

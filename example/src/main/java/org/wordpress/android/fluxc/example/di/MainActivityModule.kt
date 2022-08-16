@@ -5,7 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.MainExampleActivity
 
 @Module
-internal abstract class MainActivityModule {
+internal interface MainActivityModule {
     @ContributesAndroidInjector(modules = arrayOf(FragmentsModule::class))
-    abstract fun provideMainActivityInjector(): MainExampleActivity
+    fun provideMainActivityInjector(): MainExampleActivity
 }
