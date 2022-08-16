@@ -239,54 +239,5 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
-    <ID>WildcardImport:AddressEditDialogFragment.kt$import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*</ID>
-    <ID>WildcardImport:CustomStatsDialog.kt$import kotlinx.android.synthetic.main.dialog_custom_stats.*</ID>
-    <ID>WildcardImport:EditorThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_editor_theme.*</ID>
-    <ID>WildcardImport:ExperimentsFragment.kt$import kotlinx.android.synthetic.main.fragment_experiments.*</ID>
-    <ID>WildcardImport:FloatingLabelEditText.kt$import kotlinx.android.synthetic.main.view_floating_edittext.view.*</ID>
-    <ID>WildcardImport:MainExampleActivity.kt$import kotlinx.android.synthetic.main.activity_example.*</ID>
-    <ID>WildcardImport:MainFragment.kt$import kotlinx.android.synthetic.main.fragment_main.*</ID>
-    <ID>WildcardImport:NotificationTypeSubtypeDialog.kt$import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*</ID>
-    <ID>WildcardImport:NotificationsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
-    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
-    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_plugins.*</ID>
-    <ID>WildcardImport:PostsFragment.kt$import kotlinx.android.synthetic.main.fragment_posts.*</ID>
-    <ID>WildcardImport:ReactNativeFragment.kt$import kotlinx.android.synthetic.main.fragment_reactnative.*</ID>
-    <ID>WildcardImport:StoreSelectingFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
-    <ID>WildcardImport:ThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_themes.*</ID>
-    <ID>WildcardImport:WCAddOrderShipmentTrackingDialog.kt$import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*</ID>
-    <ID>WildcardImport:WCOrderListActivity.kt$import kotlinx.android.synthetic.main.activity_wc_order_list.*</ID>
-    <ID>WildcardImport:WooAddonsTestFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_addons.*</ID>
-    <ID>WildcardImport:WooBatchUpdateVariationsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.*</ID>
-    <ID>WildcardImport:WooCommerceFragment.kt$import kotlinx.android.synthetic.main.fragment_woocommerce.*</ID>
-    <ID>WildcardImport:WooCouponsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_coupons.*</ID>
-    <ID>WildcardImport:WooCustomerCreationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer_creation.*</ID>
-    <ID>WildcardImport:WooCustomersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer.*</ID>
-    <ID>WildcardImport:WooCustomersSearchAdapter.kt$import kotlinx.android.synthetic.main.list_item_woo_customer.view.*</ID>
-    <ID>WildcardImport:WooCustomersSearchBuilderFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search_builder.*</ID>
-    <ID>WildcardImport:WooCustomersSearchFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search.*</ID>
-    <ID>WildcardImport:WooGatewaysFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_gateways.*</ID>
-    <ID>WildcardImport:WooHelpSupportFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_help_support.*</ID>
-    <ID>WildcardImport:WooLeaderboardsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*</ID>
-    <ID>WildcardImport:WooOrdersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_orders.*</ID>
-    <ID>WildcardImport:WooProductAttributeFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*</ID>
-    <ID>WildcardImport:WooProductCategoriesAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductCategoriesFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
-    <ID>WildcardImport:WooProductDownloadsAdapter.kt$import kotlinx.android.synthetic.main.product_downloadable_file_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductDownloadsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_downloads.*</ID>
-    <ID>WildcardImport:WooProductFiltersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_filters.*</ID>
-    <ID>WildcardImport:WooProductTagsAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductTagsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
-    <ID>WildcardImport:WooProductsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
-    <ID>WildcardImport:WooRefundsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_refunds.*</ID>
-    <ID>WildcardImport:WooRevenueStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_revenue_stats.*</ID>
-    <ID>WildcardImport:WooShippingLabelFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*</ID>
-    <ID>WildcardImport:WooStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_stats.*</ID>
-    <ID>WildcardImport:WooTaxFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_taxes.*</ID>
-    <ID>WildcardImport:WooUpdateCouponFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_coupon.*</ID>
-    <ID>WildcardImport:WooUpdateProductFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_product.*</ID>
-    <ID>WildcardImport:WooUpdateVariationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_variation.*</ID>
-    <ID>WildcardImport:WooVerifyAddressFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_verify_address.*</ID>
   </CurrentIssues>
 </SmellBaseline>
