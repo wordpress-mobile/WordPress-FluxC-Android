@@ -466,11 +466,11 @@ object ProductSqlUtils {
                 imageList.add(image)
             }
         }
-        if (imageList.size == product.getImageList().size) {
-            return false
+        return if (imageList.size == product.getImageList().size) {
+            false
+        } else {
+            updateProductImages(product, imageList) > 0
         }
-
-        return updateProductImages(product, imageList) > 0
     }
 
     fun deleteProduct(site: SiteModel, remoteProductId: Long): Int {

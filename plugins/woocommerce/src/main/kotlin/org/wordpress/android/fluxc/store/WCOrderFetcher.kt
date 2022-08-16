@@ -58,7 +58,7 @@ class WCOrderFetcher @Inject constructor(private val dispatcher: Dispatcher) {
         }
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "ForbiddenComment")
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onOrdersFetchedById(event: OnOrdersFetchedByIds) {
         if (event.isError) {

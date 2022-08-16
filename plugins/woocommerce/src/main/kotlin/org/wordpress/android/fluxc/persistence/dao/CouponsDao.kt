@@ -11,36 +11,36 @@ import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 
 @Dao
-abstract class CouponsDao {
+interface CouponsDao {
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId ORDER BY dateCreated DESC")
-    abstract fun observeCoupons(siteId: Long): Flow<List<CouponWithEmails>>
+    fun observeCoupons(siteId: Long): Flow<List<CouponWithEmails>>
 
     @Transaction
     @Query("SELECT * FROM Coupons " +
         "WHERE siteId = :siteId AND id IN (:couponIds) ORDER BY dateCreated DESC")
-    abstract suspend fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
+    suspend fun getCoupons(siteId: Long, couponIds: List<Long>): List<CouponWithEmails>
 
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
-    abstract fun observeCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails?>
+    fun observeCoupon(siteId: Long, couponId: Long): Flow<CouponWithEmails?>
 
     @Transaction
     @Query("SELECT * FROM Coupons WHERE siteId = :siteId AND id = :couponId")
-    abstract suspend fun getCoupon(siteId: Long, couponId: Long): CouponWithEmails?
+    suspend fun getCoupon(siteId: Long, couponId: Long): CouponWithEmails?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertOrUpdateCoupon(entity: CouponEntity): Long
+    suspend fun insertOrUpdateCoupon(entity: CouponEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertOrUpdateCouponEmail(entity: CouponEmailEntity): Long
+    suspend fun insertOrUpdateCouponEmail(entity: CouponEmailEntity): Long
 
     @Query("DELETE FROM Coupons WHERE siteId = :siteId AND id = :couponId")
-    abstract suspend fun deleteCoupon(siteId: Long, couponId: Long)
+    suspend fun deleteCoupon(siteId: Long, couponId: Long)
 
     @Query("DELETE FROM Coupons WHERE siteId = :siteId")
-    abstract suspend fun deleteAllCoupons(siteId: Long)
+    suspend fun deleteAllCoupons(siteId: Long)
 
     @Query("SELECT COUNT(*) FROM CouponEmails WHERE siteId = :siteId AND couponId = :couponId")
-    abstract suspend fun getEmailCount(siteId: Long, couponId: Long): Int
+    suspend fun getEmailCount(siteId: Long, couponId: Long): Int
 }

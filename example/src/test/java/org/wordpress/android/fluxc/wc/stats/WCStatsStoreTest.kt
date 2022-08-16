@@ -55,7 +55,7 @@ import org.hamcrest.CoreMatchers.`is` as isEqual
 class WCStatsStoreTest {
     private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
     private val appContext = RuntimeEnvironment.application.applicationContext
-    private val wcStatsStore = WCStatsStore(Dispatcher(), appContext, mockOrderStatsRestClient, initCoroutineEngine())
+    private val wcStatsStore = WCStatsStore(Dispatcher(), mockOrderStatsRestClient, initCoroutineEngine())
 
     @Before
     fun setUp() {

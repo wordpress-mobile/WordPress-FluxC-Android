@@ -461,6 +461,7 @@ internal val MIGRATION_10_11 = object : Migration(10, 11) {
 }
 
 internal val MIGRATION_11_12 = object : Migration(11, 12) {
+    @Suppress("MaxLineLength")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL(

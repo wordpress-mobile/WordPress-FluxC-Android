@@ -11,10 +11,8 @@
     <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
     <ID>ComplexMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
     <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
     <ID>ComplexMethod:ProductVariationApiResponse.kt$ProductVariationApiResponse$fun asProductVariationModel()</ID>
     <ID>ComplexMethod:WCCustomerMapper.kt$WCCustomerMapper$fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel</ID>
-    <ID>ComplexMethod:WCOrderStore.kt$WCOrderStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>ComplexMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_1: String? = null</ID>
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_2: String? = null</ID>
@@ -25,16 +23,7 @@
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val first_name: String? = null</ID>
     <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
     <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
-    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$@SerializedName("product_id") var productId: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$var quantity: Float? = null</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStore.kt$WCOrderStore.OnQuickOrderResult$var order: OrderEntity? = null</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
-    <ID>ForbiddenComment:ProductRestClient.kt$ProductRestClient$// TODO: Once removal is supported, we can remove the extra isNotBlank() condition</ID>
-    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Add error handling</ID>
-    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Possible add new tracks event to track error fetching order list data "order_list_load_failed"</ID>
-    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Ideally we would have a separate process that prunes the following</ID>
-    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Use the actual error type</ID>
-    <ID>ForbiddenComment:WCProductStore.kt$WCProductStore$// TODO: 18/08/2021 @wzieba add tests</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
     <ID>LargeClass:OrderRestClient.kt$OrderRestClient : BaseWPComRestClient</ID>
     <ID>LargeClass:ProductRestClient.kt$ProductRestClient : BaseWPComRestClient</ID>
@@ -46,7 +35,6 @@
     <ID>LongMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
     <ID>LongMethod:ProductRestClient.kt$ProductRestClient$fun fetchProducts( site: SiteModel, pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE, offset: Int = 0, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING, searchQuery: String? = null, isSkuSearch: Boolean = false, includedProductIds: List&lt;Long>? = null, filterOptions: Map&lt;ProductFilterOption, String>? = null, excludedProductIds: List&lt;Long>? = null )</ID>
     <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
     <ID>LongMethod:ProvideAddonsIntegrationTests.kt$ProvideAddonsIntegrationTests$@Test fun `should map Checkbox add-on`()</ID>
     <ID>LongMethod:RemoteAddonMapper.kt$RemoteAddonMapper$fun toDomain(dto: RemoteAddonDto): Addon</ID>
     <ID>LongMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
@@ -56,30 +44,6 @@
     <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
     <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
     <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$1000</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$23</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$24</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$59</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$6</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$60</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$7</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$8</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$24</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$48</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$96</ID>
-    <ID>MagicNumber:WCShippingLabelStore.kt$WCShippingLabelStore$2000</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$12</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$2011</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$7</ID>
-    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;a href='https:\/\/mystagingwebsite.com\/wp-admin\/admin.php?page=wc-admin&amp;path=\/analytics\/products&amp;filter=single_product&amp;products=14'>Beanie&lt;\/a>",</ID>
-    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;span class=\"woocommerce-Price-amount amount\">&lt;span class=\"woocommerce-Price-currencySymbol\">&amp;#82;&amp;#36;&lt;\/span>36.000,00&lt;\/span>",</ID>
-    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$*</ID>
-    <ID>MaxLineLength:Migrations.kt$&lt;no name provided>$CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_siteId` ON `InboxNotes` (`remoteId`, `siteId`)</ID>
-    <ID>MaxLineLength:OrderDtoMapper.kt$OrderDtoMapper$// Extract the discount codes from the coupon_lines list and store them as a comma-delimited String</ID>
-    <ID>MaxLineLength:ProductRestClient.kt$ProductRestClient$*</ID>
-    <ID>MaxLineLength:WCOrderStore.kt$WCOrderStore$// This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,</ID>
-    <ID>MaxLineLength:WCProductStore.kt$WCProductStore$*</ID>
-    <ID>MaxLineLength:WCStatsStore.kt$WCStatsStore$*</ID>
     <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
     <ID>NestedBlockDepth:OrderStatsRestClient.kt$OrderStatsRestClient$suspend fun fetchNewVisitorStats( site: SiteModel, unit: OrderStatsApiUnit, granularity: StatsGranularity, date: String, quantity: Int, force: Boolean = false, startDate: String? = null, endDate: String? = null ): FetchNewVisitorStatsResponsePayload</ID>
     <ID>NestedBlockDepth:WCOrderStore.kt$WCOrderStore$private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload)</ID>
@@ -87,20 +51,6 @@
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun getTriplets(jsonStr: String): ArrayList&lt;ProductTriplet></ID>
     <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun parseJson(jsonString: String): List&lt;Long></ID>
     <ID>NestedBlockDepth:WCShippingLabelStore.kt$WCShippingLabelStore$private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List&lt;PredefinedOption></ID>
-    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchProductReviews( site: SiteModel, offset: Int, reviewIds: List&lt;Long>? = null, productIds: List&lt;Long>? = null, filterByStatus: List&lt;String>? = null ): FetchProductReviewsResponsePayload</ID>
-    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchSingleVariation( site: SiteModel, remoteProductId: Long, remoteVariationId: Long ): RemoteVariationPayload</ID>
-    <ID>ReturnCount:ProductSqlUtils.kt$ProductSqlUtils$fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameAttributes(otherProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameCategories(updatedProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameImages(updatedProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameTags(updatedProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductVariationModel.kt$WCProductVariationModel$fun getImageModel(): WCProductImageModel?</ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$@Suppress("UNCHECKED_CAST") private fun &lt;T> getStatsForField( site: SiteModel, field: OrderStatsField, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, T></ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getNewVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getStatsCurrencyForSite(site: SiteModel): String?</ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
-    <ID>ReturnCount:WooCommerceStore.kt$WooCommerceStore$suspend fun fetchWooCommerceSite(site: SiteModel): WooResult&lt;SiteModel></ID>
-    <ID>SpacingBetweenPackageAndImports:WCPaymentChargeApiResult.kt$ </ID>
     <ID>SpreadOperator:WCInboxStore.kt$WCInboxStore$(siteId, *notesWithActions.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*it.result!!.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.fetchedOrders.toTypedArray())</ID>
@@ -109,11 +59,6 @@
     <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
-    <ID>UnnecessaryAbstractClass:CouponsDao.kt$CouponsDao$CouponsDao</ID>
-    <ID>UnnecessaryAbstractClass:WCDatabaseModule.kt$WCDatabaseModule$WCDatabaseModule</ID>
-    <ID>UnusedPrivateMember:WCStatsStore.kt$WCStatsStore$private val context: Context</ID>
-    <ID>UseCheckOrError:ToDatabaseAddonsMapper.kt$ToDatabaseAddonsMapper$throw IllegalStateException("Addon has to be identified with a Group or a Product")</ID>
-    <ID>UseCheckOrError:WCOrderStore.kt$WCOrderStore$throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")</ID>
     <ID>VariableNaming:OrderDto.kt$OrderDto$// Same as shipping_lines, it's a list of objects val fee_lines: JsonElement? = null</ID>
     <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.LineItem val line_items: JsonElement? = null</ID>
     <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.ShippingLines val shipping_lines: JsonElement? = null</ID>

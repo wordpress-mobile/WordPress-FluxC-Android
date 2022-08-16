@@ -322,11 +322,6 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    // TODO nbradbury this and related code can be removed
-    data class OnQuickOrderResult(
-        var order: OrderEntity? = null
-    ) : OnChanged<OrderError>()
-
     /**
      * Emitted after fetching a list of Order summaries from the network.
      */
@@ -465,6 +460,7 @@ class WCOrderStore @Inject constructor(
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
         OrderSqlUtils.getOrderShipmentProvidersForSite(site)
 
+    @Suppress("ComplexMethod", "UseCheckOrError")
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
@@ -727,8 +723,8 @@ class WCOrderStore @Inject constructor(
                 OnOrderChanged(orderError = payload.error)
             } else {
                 // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
-                // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
-                // or if the user manual changed some order IDs)
+                // This is the simplest way of keeping our local orders in sync with remote orders
+                // (in case of deletions, or if the user manual changed some order IDs).
                 if (!payload.loadedMore) {
                     ordersDao.deleteOrdersForSite(payload.site.localId())
                     orderNotesDao.deleteOrderNotesForSite(payload.site.remoteId())
@@ -744,6 +740,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Ideally we would have a separate process that prunes the following
         // tables of defunct records:
