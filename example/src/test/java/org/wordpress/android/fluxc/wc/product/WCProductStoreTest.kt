@@ -451,7 +451,6 @@ class WCProductStoreTest {
                     .regularPrice(newRegularPrice)
                     .salePrice(newSalePrice)
                     .build()
-            val modifications = variationsUpdatePayload.modifiedProperties
             val variationsReturnedFromBackend = variations.map {
                 ProductVariationApiResponse().apply {
                     id = it.remoteVariationId

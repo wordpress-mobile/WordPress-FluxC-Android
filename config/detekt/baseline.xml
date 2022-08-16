@@ -239,17 +239,6 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var accessToken: AccessToken</ID>
-    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var wpComGsonRequestBuilder: WPComGsonRequestBuilder</ID>
-    <ID>UnusedPrivateMember:InsightsRestClientTest.kt$InsightsRestClientTest$val date = Date()</ID>
-    <ID>UnusedPrivateMember:PageStoreTest.kt$PageStoreTest$private fun assertPage(map: Map&lt;PageStatus, List&lt;PageModel>>, position: Int, status: PageStatus)</ID>
-    <ID>UnusedPrivateMember:SiteHomepageRestClientTest.kt$SiteHomepageRestClientTest$@Mock private lateinit var siteHomepageSettingsMapper: SiteHomepageSettingsMapper</ID>
-    <ID>UnusedPrivateMember:WCProductStoreTest.kt$WCProductStoreTest$val modifications = variationsUpdatePayload.modifiedProperties</ID>
-    <ID>UnusedPrivateMember:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$private val sampleListOfTwoIdenticalPredefinedPackages = listOf( PredefinedOption( title = "USPS Priority Mail Flat Rate Boxes", carrier = "usps", predefinedPackages = listOf( PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ), PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ) ) ) )</ID>
-    <ID>UnusedPrivateMember:WCStatsStoreTest.kt$WCStatsStoreTest$val missingDataPayload = FetchRevenueStatsResponsePayload(site, StatsGranularity.YEARS, null)</ID>
-    <ID>UnusedPrivateMember:WCUserTestUtils.kt$WCUserTestUtils$private fun generateSampleUser( firstName: String = "", lastName: String = "", username: String = "", email: String = "", roles: String = "", siteId: Int = 6 ): WCUserModel</ID>
-    <ID>UnusedPrivateMember:WooProductAttributeFragment.kt$WooProductAttributeFragment$view: View</ID>
-    <ID>UnusedPrivateMember:WooUpdateProductFragment.kt$WooUpdateProductFragment$view: View</ID>
     <ID>UseArrayLiteralsInAnnotations:MainActivityModule.kt$MainActivityModule$modules = arrayOf(FragmentsModule::class)</ID>
     <ID>UseCheckOrError:ListSelectorDialog.kt$ListSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
     <ID>UseCheckOrError:OrderListAdapter.kt$OrderListAdapter$throw IllegalStateException("The view type '$viewType' needs to be handled")</ID>
