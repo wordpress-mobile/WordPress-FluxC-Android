@@ -23,7 +23,11 @@ class WooProductTagsAdapter(
         fun onProductTagClick(productTagViewHolderModel: ProductTagViewHolderModel)
     }
 
-    data class ProductTagViewHolderModel(val tag: ProductTag, var isSelected: Boolean = false)
+    @Suppress("DataClassShouldBeImmutable")
+    data class ProductTagViewHolderModel(
+        val tag: ProductTag,
+        var isSelected: Boolean = false
+    )
 
     override fun getItemCount() = productTagList.size
 

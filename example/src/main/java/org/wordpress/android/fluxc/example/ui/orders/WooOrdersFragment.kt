@@ -59,6 +59,8 @@ import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
+private const val NUMBER_OF_FIRST_ORDERS_TO_PRINT = 5
+
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject lateinit var dispatcher: Dispatcher
     @Inject lateinit var wcOrderStore: WCOrderStore
@@ -671,9 +673,13 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                 val completedOrders = wcOrderStore.getOrdersForSite(site, "completed")
                                 prependToLog("Fetched ${completedOrders.size} completed orders from ${site.name}")
                             } else {
-                                prependToLog("printing the first 5 remoteOrderId's from result:")
+                                prependToLog(
+                                    "printing the first $NUMBER_OF_FIRST_ORDERS_TO_PRINT remoteOrderId's from result:"
+                                )
                                 val orders = wcOrderStore.getOrdersForSite(site)
-                                orders.take(5).forEach { prependToLog("- remoteOrderId [${it.orderId}]") }
+                                orders.take(NUMBER_OF_FIRST_ORDERS_TO_PRINT).forEach {
+                                    prependToLog("- remoteOrderId [${it.orderId}]")
+                                }
                             }
                         }
                         FETCH_ORDERS_COUNT -> {

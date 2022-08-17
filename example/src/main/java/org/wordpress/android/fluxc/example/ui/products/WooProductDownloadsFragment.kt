@@ -72,6 +72,7 @@ class WooProductDownloadsFragment : Fragment() {
     }
 
     @Parcelize
+    @Suppress("DataClassShouldBeImmutable")
     data class ProductFile(
         val id: String?,
         var name: String,

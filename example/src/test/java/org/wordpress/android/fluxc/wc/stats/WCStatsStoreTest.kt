@@ -1456,7 +1456,6 @@ class WCStatsStoreTest {
         assertTrue(nonExistentOrderStats.isEmpty())
 
         // missing data
-        val missingDataPayload = FetchRevenueStatsResponsePayload(site, StatsGranularity.YEARS, null)
         whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any()))
                 .thenReturn(nonExistentPayload)
         wcStatsStore.fetchRevenueStats(

@@ -58,6 +58,8 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.ceil
 
+private const val LOAD_DATA_DELAY = 5000L // 5 seconds
+
 class WooShippingLabelFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
@@ -738,7 +740,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         val payload = FetchOrdersByIdsPayload(site, listOf(orderId))
         dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
 
-        delay(5000)
+        delay(LOAD_DATA_DELAY)
 
         val origin = wooCommerceStore.fetchSiteGeneralSettings(site).model?.let {
             ShippingLabelAddress(

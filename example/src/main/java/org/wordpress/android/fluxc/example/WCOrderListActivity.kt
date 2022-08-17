@@ -214,6 +214,7 @@ enum class TimeGroup {
     GROUP_OLDER_MONTH;
 
     companion object {
+        @Suppress("MagicNumber")
         fun getTimeGroupForDate(date: Date): TimeGroup {
             val dateToday = Date()
             return when {
