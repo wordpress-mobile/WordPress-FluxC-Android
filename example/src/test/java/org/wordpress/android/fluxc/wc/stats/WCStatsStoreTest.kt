@@ -710,6 +710,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testInsertionAndRetrievalForCustomStats() {
         /*
          * Test Scenario - I
@@ -995,6 +996,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetCustomStatsForDaysGranularity() {
         /*
          * Test Scenario - I
@@ -1292,6 +1294,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetRevenueAndOrderStatsForSite() = runBlocking {
         // revenue stats model for current day
         val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
@@ -1478,6 +1481,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetVisitorStatsForDaysGranularity() {
         // Test Scenario - 1: Generate default visitor stats i.e. isCustomField - false
         // Get visitor Stats of the same site and granularity and assert not null
@@ -1577,6 +1581,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetVisitorStatsForWeeksGranularity() {
         // Test Scenario - 1: Generate default visitor stats i.e. isCustomField - false
         // Get visitor Stats of the same site and granularity and assert not null
@@ -1685,6 +1690,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetVisitorStatsForCurrentDayGranularity() {
         // Test Scenario - 1: Generate default visitor stats i.e. isCustomField - false
         // Get visitor Stats of the same site and granularity and assert not null
@@ -1786,6 +1792,7 @@ class WCStatsStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetVisitorStatsForThisWeekGranularity() {
         // Test Scenario - 1: Generate default visitor stats i.e. isCustomField - false
         // Get visitor Stats of the same site and granularity and assert not null

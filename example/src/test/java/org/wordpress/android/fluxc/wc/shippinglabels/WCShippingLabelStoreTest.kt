@@ -292,6 +292,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `get shipping rates`() = test {
         val expectedRatesResult = WCShippingRatesResult(
             listOf(
@@ -475,6 +476,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `purchase shipping labels with polling`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
         whenever(restClient.purchaseShippingLabels(

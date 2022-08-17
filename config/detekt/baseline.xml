@@ -161,32 +161,6 @@
     <ID>GlobalCoroutineUsage:WooRefundsFragment.kt$WooRefundsFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { refundsStore.fetchRefund( site, orderEditText.text.toString().toLong(), refundEditText.text.toString().toLong() ) } printRefund(response) } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
     <ID>GlobalCoroutineUsage:WooRefundsFragment.kt$WooRefundsFragment$GlobalScope.launch(Dispatchers.Main) { try { val response = withContext(Dispatchers.Default) { refundsStore.createAmountRefund( site, orderEditText.text.toString().toLong(), amountEditText.text.toString().toBigDecimal(), reasonEditText.text.toString() ) } printRefund(response) } catch (e: Exception) { prependToLog("Error: ${e.message}") } }</ID>
     <ID>GlobalCoroutineUsage:WooTaxFragment.kt$WooTaxFragment$GlobalScope.launch(Dispatchers.Main) { supervisorScope { try { val response = withContext(Dispatchers.Default) { wcTaxStore.fetchTaxClassList(site) } response.error?.let { prependToLog("${it.type}: ${it.message}") } response.model?.let { prependToLog("Site has ${it.size} tax classes") } } catch (e: Exception) { prependToLog("Error: ${e.message}") } } }</ID>
-    <ID>LongMethod:AddressEditDialogFragment.kt$AddressEditDialogFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:InsightsRestClientTest.kt$InsightsRestClientTest$@Before fun setUp()</ID>
-    <ID>LongMethod:NotificationSqlUtilsTest.kt$NotificationSqlUtilsTest$@Test fun testGetNotificationsForSite_storeOrder()</ID>
-    <ID>LongMethod:PostListDescriptorTest.kt$PostListDescriptorTest.Companion$@JvmStatic @Parameters fun testCases(): List&lt;PostListDescriptorTestCase></ID>
-    <ID>LongMethod:ThemeFragment.kt$ThemeFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WCCurrencyUtilsTest.kt$WCCurrencyUtilsTest$@Test fun testDecimalFormat()</ID>
-    <ID>LongMethod:WCCustomerMapperTest.kt$WCCustomerMapperTest$@Test fun `mapper maps to correct customer dto`()</ID>
-    <ID>LongMethod:WCCustomerMapperTest.kt$WCCustomerMapperTest$@Test fun `mapper maps to correct customer model`()</ID>
-    <ID>LongMethod:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$@Test fun `get shipping rates`()</ID>
-    <ID>LongMethod:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$@Test fun `purchase shipping labels with polling`()</ID>
-    <ID>LongMethod:WCStatsSqlUtilsTest.kt$WCStatsSqlUtilsTest$@Test fun testGetRawRevenueStatsForSiteAndUnit()</ID>
-    <ID>LongMethod:WCStatsSqlUtilsTest.kt$WCStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfRevenueStats()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetCustomStatsForDaysGranularity()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetRevenueAndOrderStatsForSite()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForCurrentDayGranularity()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForDaysGranularity()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForThisWeekGranularity()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testGetVisitorStatsForWeeksGranularity()</ID>
-    <ID>LongMethod:WCStatsStoreTest.kt$WCStatsStoreTest$@Test fun testInsertionAndRetrievalForCustomStats()</ID>
-    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfCustomVisitorStats()</ID>
-    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfNewCustomVisitorStats()</ID>
-    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfNewVisitorStats()</ID>
-    <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfVisitorStats()</ID>
-    <ID>LongMethod:WooBatchUpdateVariationsFragment.kt$WooBatchUpdateVariationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooRefundsFragment.kt$WooRefundsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooStatsFragment.kt$WooStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>NestedBlockDepth:WooProductsFragment.kt$WooProductsFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged)</ID>
     <ID>NestedBlockDepth:WooShippingLabelFragment.kt$WooShippingLabelFragment$private fun downloadUrl(url: String): File?</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>

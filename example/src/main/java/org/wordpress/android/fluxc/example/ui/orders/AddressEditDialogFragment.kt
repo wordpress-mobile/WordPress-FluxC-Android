@@ -68,6 +68,7 @@ class AddressEditDialogFragment : DaggerFragment() {
         savedInstanceState: Bundle?
     ): View = FragmentAddressEditDialogBinding.inflate(inflater).root
 
+    @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentAddressEditDialogBinding.bind(view)

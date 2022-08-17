@@ -57,6 +57,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
     ): View? =
         inflater.inflate(layout.fragment_woo_batch_update_variations, container, false)
 
+    @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         update_product_info.setOnClickListener {
             val site = getWCSite()
