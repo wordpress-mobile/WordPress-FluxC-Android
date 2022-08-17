@@ -149,8 +149,6 @@
     <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_class: String? = null</ID>
     <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_status: String? = null</ID>
     <!-- example -->
-    <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$boxId == null || height == null || width == null || length == null || weight == null</ID>
-    <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$height == null || width == null || length == null || weight == null</ID>
     <ID>ComplexMethod:CommentsMapperTest.kt$CommentsMapperTest$private fun assertModelsEqual(mappedModel: CommentModel, commentModel: CommentModel): Boolean</ID>
     <ID>ComplexMethod:NotificationsFragment.kt$NotificationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>ComplexMethod:WCOrderListActivity.kt$WCOrderListItemDataSource$override fun getItemIdentifiers( listDescriptor: WCOrderListDescriptor, itemIds: List&lt;RemoteId>, isListFullyFetched: Boolean ): List&lt;WCOrderListItemIdentifier></ID>

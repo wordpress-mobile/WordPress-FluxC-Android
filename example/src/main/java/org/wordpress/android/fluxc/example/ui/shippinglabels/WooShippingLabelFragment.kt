@@ -454,6 +454,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                                         weight = t.text.toString().toFloatOrNull()
 
                                         val box: ShippingLabelPackage?
+                                        @Suppress("ComplexCondition")
                                         if (height == null || width == null || length == null || weight == null) {
                                             prependToLog(
                                                     "Invalid package parameters:\n" +
@@ -530,6 +531,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                             ?.toFloat()
                     val weight = showSingleLineDialog(requireActivity(), "Enter weight:", isNumeric = true)
                             ?.toFloat()
+                    @Suppress("ComplexCondition")
                     if (boxId == null || height == null || width == null || length == null || weight == null) {
                         prependToLog(
                                 "Invalid package parameters:\n" +
