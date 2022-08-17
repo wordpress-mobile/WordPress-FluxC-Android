@@ -175,6 +175,5 @@
     <ID>TooGenericExceptionCaught:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
-    <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
   </CurrentIssues>
 </SmellBaseline>
