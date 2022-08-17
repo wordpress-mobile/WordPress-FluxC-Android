@@ -60,6 +60,7 @@ import kotlin.math.ceil
 
 private const val LOAD_DATA_DELAY = 5000L // 5 seconds
 
+@Suppress("LargeClass")
 class WooShippingLabelFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore

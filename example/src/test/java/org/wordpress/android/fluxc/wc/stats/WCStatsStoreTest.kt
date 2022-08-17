@@ -50,6 +50,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.hamcrest.CoreMatchers.`is` as isEqual
 
+@Suppress("LargeClass")
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCStatsStoreTest {

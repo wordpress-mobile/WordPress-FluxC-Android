@@ -55,6 +55,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPaylo
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
+@Suppress("LargeClass")
 class WooProductsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore

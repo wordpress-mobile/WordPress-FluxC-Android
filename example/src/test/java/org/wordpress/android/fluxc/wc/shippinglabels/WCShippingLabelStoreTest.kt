@@ -58,6 +58,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
+@Suppress("LargeClass")
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCShippingLabelStoreTest {

@@ -24,6 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+@Suppress("LargeClass")
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class ProductSqlUtilsTest {

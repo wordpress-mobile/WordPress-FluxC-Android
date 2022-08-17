@@ -61,6 +61,7 @@ import kotlin.coroutines.resume
 
 private const val NUMBER_OF_FIRST_ORDERS_TO_PRINT = 5
 
+@Suppress("LargeClass")
 class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject lateinit var dispatcher: Dispatcher
     @Inject lateinit var wcOrderStore: WCOrderStore

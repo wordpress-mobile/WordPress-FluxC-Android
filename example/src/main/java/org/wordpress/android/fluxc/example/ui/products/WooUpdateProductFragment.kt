@@ -65,6 +65,7 @@ import org.wordpress.android.util.StringUtils
 import java.util.Calendar
 import javax.inject.Inject
 
+@Suppress("LargeClass")
 class WooUpdateProductFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
