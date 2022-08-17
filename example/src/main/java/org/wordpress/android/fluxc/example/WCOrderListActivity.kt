@@ -180,6 +180,7 @@ sealed class WCOrderListItemUIType {
         val dateCreated: String
     ) : WCOrderListItemUIType()
 
+    @Suppress("ComplexMethod")
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
@@ -271,6 +272,7 @@ private class WCOrderListItemDataSource(
         }
     }
 
+    @Suppress("ComplexMethod")
     override fun getItemIdentifiers(
         listDescriptor: WCOrderListDescriptor,
         itemIds: List<RemoteId>,

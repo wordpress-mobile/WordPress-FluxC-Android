@@ -101,6 +101,7 @@ class WooUpdateVariationFragment : Fragment() {
         selectedRemoteVariationId?.let { outState.putLong(ARG_SELECTED_VARIATION_ID, it) }
     }
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

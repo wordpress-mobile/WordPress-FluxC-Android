@@ -76,6 +76,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_orders, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -637,7 +638,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         dispatcher.unregister(this)
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "ComplexMethod")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         if (event.isError) {

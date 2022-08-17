@@ -149,22 +149,6 @@
     <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_class: String? = null</ID>
     <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_status: String? = null</ID>
     <!-- example -->
-    <ID>ComplexMethod:CommentsMapperTest.kt$CommentsMapperTest$private fun assertModelsEqual(mappedModel: CommentModel, commentModel: CommentModel): Boolean</ID>
-    <ID>ComplexMethod:NotificationsFragment.kt$NotificationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WCOrderListActivity.kt$WCOrderListItemDataSource$override fun getItemIdentifiers( listDescriptor: WCOrderListDescriptor, itemIds: List&lt;RemoteId>, isListFullyFetched: Boolean ): List&lt;WCOrderListItemIdentifier></ID>
-    <ID>ComplexMethod:WCOrderListActivity.kt$WCOrderListItemUIType$override fun equals(other: Any?): Boolean</ID>
-    <ID>ComplexMethod:WooBatchUpdateVariationsFragment.kt$WooBatchUpdateVariationsFragment$private fun buildPayload(): BatchUpdateVariationsPayload</ID>
-    <ID>ComplexMethod:WooCommerceFragment.kt$WooCommerceFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooCouponsFragment.kt$WooCouponsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooOrdersFragment.kt$WooOrdersFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onOrderChanged(event: OnOrderChanged)</ID>
-    <ID>ComplexMethod:WooOrdersFragment.kt$WooOrdersFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooProductsFragment.kt$WooProductsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooRevenueStatsFragment.kt$WooRevenueStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooShippingLabelFragment.kt$WooShippingLabelFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)</ID>
-    <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>ComplexMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>EmptyFunctionBlock:EditTextExt.kt$&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:ExperimentsFragment.kt$ExperimentsFragment.&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:RetryOnRedirectBasicNetworkTest.kt$RetryOnRedirectBasicNetworkTest.MockedRequest${}</ID>
@@ -187,7 +171,6 @@
     <ID>LongMethod:AddressEditDialogFragment.kt$AddressEditDialogFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:InsightsRestClientTest.kt$InsightsRestClientTest$@Before fun setUp()</ID>
     <ID>LongMethod:NotificationSqlUtilsTest.kt$NotificationSqlUtilsTest$@Test fun testGetNotificationsForSite_storeOrder()</ID>
-    <ID>LongMethod:NotificationsFragment.kt$NotificationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:PostListDescriptorTest.kt$PostListDescriptorTest.Companion$@JvmStatic @Parameters fun testCases(): List&lt;PostListDescriptorTestCase></ID>
     <ID>LongMethod:ThemeFragment.kt$ThemeFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WCCurrencyUtilsTest.kt$WCCurrencyUtilsTest$@Test fun testDecimalFormat()</ID>
@@ -209,17 +192,8 @@
     <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfNewVisitorStats()</ID>
     <ID>LongMethod:WCVisitorStatsSqlUtilsTest.kt$WCVisitorStatsSqlUtilsTest$@Test fun testSimpleInsertionAndRetrievalOfVisitorStats()</ID>
     <ID>LongMethod:WooBatchUpdateVariationsFragment.kt$WooBatchUpdateVariationsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooCommerceFragment.kt$WooCommerceFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooCouponsFragment.kt$WooCouponsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooOrdersFragment.kt$WooOrdersFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooProductsFragment.kt$WooProductsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooRefundsFragment.kt$WooRefundsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooRevenueStatsFragment.kt$WooRevenueStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooShippingLabelFragment.kt$WooShippingLabelFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooStatsFragment.kt$WooStatsFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>NestedBlockDepth:WooProductsFragment.kt$WooProductsFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged)</ID>
     <ID>NestedBlockDepth:WooShippingLabelFragment.kt$WooShippingLabelFragment$private fun downloadUrl(url: String): File?</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>

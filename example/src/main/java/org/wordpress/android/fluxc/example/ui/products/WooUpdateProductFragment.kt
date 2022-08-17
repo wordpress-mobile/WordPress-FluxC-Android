@@ -145,6 +145,7 @@ class WooUpdateProductFragment : Fragment() {
         selectedProductDownloads.let { outState.putParcelableArrayList(ARG_SELECTED_DOWNLOADS, it as ArrayList) }
     }
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -459,6 +460,7 @@ class WooUpdateProductFragment : Fragment() {
         selectedRemoteProductId?.let { updateSelectedProductId(it) }
     }
 
+    @Suppress("ComplexMethod")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == LIST_SELECTOR_REQUEST_CODE) {
