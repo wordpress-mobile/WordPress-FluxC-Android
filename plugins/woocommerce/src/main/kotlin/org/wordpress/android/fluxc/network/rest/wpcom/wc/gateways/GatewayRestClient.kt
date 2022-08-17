@@ -56,7 +56,7 @@ class GatewayRestClient @Inject constructor(
         enabled: Boolean? = null,
         title: String? = null
     ): WooPayload<GatewayResponse> {
-        val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.toString()).pathV3
+        val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.apiKey).pathV3
         val params = mutableMapOf<String, Any>().apply {
             enabled?.let { put("enabled", enabled) }
             title?.let { put("title", title) }
