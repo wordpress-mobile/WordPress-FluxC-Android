@@ -233,7 +233,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
 
                     prependToLog("Downloading the commercial invoice")
                     val invoiceFile = withContext(Dispatchers.IO) {
-                        downloadUrl(label.commercialInvoiceUrl!!)
+                        downloadUrlOrLog(label.commercialInvoiceUrl!!)
                     }
                     invoiceFile?.let {
                         openPdfReader(it)
@@ -823,20 +823,25 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         startActivity(sendIntent)
     }
 
-    private fun downloadUrl(url: String): File? {
+    private fun downloadUrlOrLog(url: String): File? {
         return try {
-            URL(url).openConnection().inputStream.use { inputStream ->
-                createTempPdfFile(requireContext())?.let { file ->
-                    file.outputStream().use { output ->
-                        inputStream.copyTo(output)
-                    }
-                    file
-                }
-            }
+            downloadUrl(url)
         } catch (e: Exception) {
             e.printStackTrace()
             prependToLog("Error downloading the file: ${e.message}")
             null
         }
+    }
+
+    private fun downloadUrl(url: String): File? {
+        val file = URL(url).openConnection().inputStream.use { inputStream ->
+            createTempPdfFile(requireContext())?.let { file ->
+                file.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+                file
+            }
+        }
+        return file
     }
 }
