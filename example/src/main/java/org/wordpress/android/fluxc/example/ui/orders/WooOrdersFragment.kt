@@ -639,7 +639,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         dispatcher.unregister(this)
     }
 
-    @Suppress("unused", "ComplexMethod")
+    @Suppress("unused", "ComplexMethod", "SpreadOperator")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         if (event.isError) {
