@@ -48,6 +48,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
 class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,
@@ -838,6 +839,7 @@ class WCProductStore @Inject constructor(
         parentId: Long = 0L
     ) = ProductSqlUtils.getProductCategoryByNameAndParentId(site.id, categoryName, parentId)
 
+    @Suppress("LongMethod", "ComplexMethod")
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return
@@ -1328,6 +1330,7 @@ class WCProductStore @Inject constructor(
     }
 
     // Returns a boolean indicating whether more coupons can be fetched
+    @Suppress("ComplexCondition")
     suspend fun fetchProducts(
         site: SiteModel,
         offset: Int = 0,

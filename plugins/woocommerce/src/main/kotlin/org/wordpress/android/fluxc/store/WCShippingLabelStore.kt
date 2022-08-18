@@ -238,6 +238,7 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun getShippingRates(
         site: SiteModel,
         orderId: Long,
@@ -307,6 +308,7 @@ class WCShippingLabelStore @Inject constructor(
         }.flatten() // Flat it
     }
 
+    @Suppress("NestedBlockDepth")
     private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
         val predefinedOptions = mutableListOf<PredefinedOption>()
         result.formSchema.predefinedSchema.entries.forEach { provider ->
@@ -409,6 +411,7 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun purchaseShippingLabels(
         site: SiteModel,
         orderId: Long,

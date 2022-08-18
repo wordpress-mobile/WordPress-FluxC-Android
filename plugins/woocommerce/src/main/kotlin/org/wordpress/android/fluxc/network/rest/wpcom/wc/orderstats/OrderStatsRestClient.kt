@@ -102,9 +102,6 @@ class OrderStatsRestClient @Inject constructor(
         override fun toString() = name.toLowerCase()
     }
 
-    private final val STATS_FIELDS = "data,fields"
-    private val STATS_DEFAULT_ORDER = "asc"
-
     /**
      * Makes a GET call to `/wpcom/v2/sites/$site/data/orders/`, retrieving data for the given
      * WooCommerce [SiteModel].
@@ -132,7 +129,8 @@ class OrderStatsRestClient @Inject constructor(
                 "unit" to unit.toString(),
                 "date" to date,
                 "quantity" to quantity.toString(),
-                "_fields" to STATS_FIELDS)
+                "_fields" to "data,fields"
+        )
 
         val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
                 { apiResponse ->
@@ -197,7 +195,8 @@ class OrderStatsRestClient @Inject constructor(
                 "after" to startDate,
                 "before" to endDate,
                 "per_page" to perPage.toString(),
-                "order" to STATS_DEFAULT_ORDER)
+                "order" to "asc"
+        )
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
@@ -331,38 +330,38 @@ class OrderStatsRestClient @Inject constructor(
     ): FetchNewVisitorStatsResponsePayload {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
-                "unit" to unit.toString(),
-                "date" to date,
-                "quantity" to quantity.toString(),
-                "stat_fields" to "visitors")
+            "unit" to unit.toString(),
+            "date" to date,
+            "quantity" to quantity.toString(),
+            "stat_fields" to "visitors"
+        )
 
         val response = wpComGsonRequestBuilder.syncGetRequest(
-                this,
-                url,
-                params,
-                VisitorStatsApiResponse::class.java,
-                forced = force
+            this,
+            url,
+            params,
+            VisitorStatsApiResponse::class.java,
+            forced = force
         )
 
         return when (response) {
             is Success -> {
-                response.data?.let {
-                    val model = WCNewVisitorStatsModel().apply {
-                        this.localSiteId = site.id
-                        this.granularity = granularity.toString()
-                        this.fields = it.fields.toString()
-                        this.data = it.data.toString()
-                        this.quantity = quantity.toString()
-                        this.date = date
-                        endDate?.let { this.endDate = it }
-                        startDate?.let {
-                            this.startDate = startDate
-                            this.isCustomField = true
-                        }
+                val statsData = response.data
+                val model = WCNewVisitorStatsModel().apply {
+                    this.localSiteId = site.id
+                    this.granularity = granularity.toString()
+                    this.fields = statsData.fields.toString()
+                    this.data = statsData.data.toString()
+                    this.quantity = quantity.toString()
+                    this.date = date
+                    endDate?.let { this.endDate = it }
+                    startDate?.let {
+                        this.startDate = startDate
+                        this.isCustomField = true
                     }
-
-                    FetchNewVisitorStatsResponsePayload(site, granularity, model)
                 }
+
+                FetchNewVisitorStatsResponsePayload(site, granularity, model)
             }
 
             is Error -> {
