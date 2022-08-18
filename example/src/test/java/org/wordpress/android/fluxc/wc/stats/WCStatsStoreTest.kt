@@ -55,7 +55,7 @@ import org.hamcrest.CoreMatchers.`is` as isEqual
 class WCStatsStoreTest {
     private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
     private val appContext = RuntimeEnvironment.application.applicationContext
-    private val wcStatsStore = WCStatsStore(Dispatcher(), appContext, mockOrderStatsRestClient, initCoroutineEngine())
+    private val wcStatsStore = WCStatsStore(Dispatcher(), mockOrderStatsRestClient, initCoroutineEngine())
 
     @Before
     fun setUp() {
@@ -1456,7 +1456,6 @@ class WCStatsStoreTest {
         assertTrue(nonExistentOrderStats.isEmpty())
 
         // missing data
-        val missingDataPayload = FetchRevenueStatsResponsePayload(site, StatsGranularity.YEARS, null)
         whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any()))
                 .thenReturn(nonExistentPayload)
         wcStatsStore.fetchRevenueStats(

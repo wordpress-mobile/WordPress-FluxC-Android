@@ -38,6 +38,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import java.util.Locale
 
+@Suppress("LargeClass")
 object ProductSqlUtils {
     private const val DEBOUNCE_DELAY_FOR_OBSERVERS = 50L
     private val productsUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
@@ -461,16 +462,16 @@ object ProductSqlUtils {
 
         // build a new image list containing all the product images except the passed one
         val imageList = ArrayList<WCProductImageModel>()
-        product.getImageList().forEach { image ->
+        product.getImageListOrEmpty().forEach { image ->
             if (image.id != remoteMediaId) {
                 imageList.add(image)
             }
         }
-        if (imageList.size == product.getImageList().size) {
-            return false
+        return if (imageList.size == product.getImageListOrEmpty().size) {
+            false
+        } else {
+            updateProductImages(product, imageList) > 0
         }
-
-        return updateProductImages(product, imageList) > 0
     }
 
     fun deleteProduct(site: SiteModel, remoteProductId: Long): Int {

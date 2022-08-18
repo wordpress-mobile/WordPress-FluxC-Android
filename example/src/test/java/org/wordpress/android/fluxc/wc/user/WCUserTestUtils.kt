@@ -29,22 +29,4 @@ object WCUserTestUtils {
             localSiteId = siteModel.id
         }
     }
-
-    private fun generateSampleUser(
-        firstName: String = "",
-        lastName: String = "",
-        username: String = "",
-        email: String = "",
-        roles: String = "",
-        siteId: Int = 6
-    ): WCUserModel {
-        return WCUserModel().apply {
-            localSiteId = siteId
-            this.firstName = firstName
-            this.lastName = lastName
-            this.username = username
-            this.email = email
-            this.roles = roles
-        }
-    }
 }

@@ -60,37 +60,35 @@ class ListSelectorDialog : DialogFragment() {
             selectedListItem = it.getString(ARG_LIST_SELECTED_ITEM)
         }
 
-        return activity?.let { fragmentActivity ->
-            val builder = AlertDialog.Builder(fragmentActivity)
+        val builder = AlertDialog.Builder(requireActivity())
 
-            if (isSingleChoice) {
-                builder.setTitle("Select a list item")
-                    .setSingleChoiceItems(listItems?.toTypedArray(), getListIndex()) { dialog, which ->
-                        val intent = activity?.intent
-                        intent?.putExtra(ARG_LIST_SELECTED_ITEM, listItems?.get(which))
-                        targetFragment?.onActivityResult(LIST_SELECTOR_REQUEST_CODE, resultCode, intent)
-                        dialog.dismiss()
-                    }
-            } else {
-                val checked = items.map { item -> item.isSelected }.toBooleanArray()
-                builder.setTitle("Select multiple items")
-                    .setMultiChoiceItems(items.map { it.title }.toTypedArray(), checked) { _, which, isChecked ->
-                        items[which] = items[which].copy(isSelected = isChecked)
-                    }
-                    .setPositiveButton("OK") { dialog, _ ->
-                        val intent = activity?.intent
-                        val selectedIds = items.filter { it.isSelected }.map { it.id }.toLongArray()
-                        intent?.putExtra(ARG_LIST_SELECTED_ITEMS, selectedIds)
-                        targetFragment?.onActivityResult(LIST_MULTI_SELECTOR_REQUEST_CODE, resultCode, intent)
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-            }
+        if (isSingleChoice) {
+            builder.setTitle("Select a list item")
+                .setSingleChoiceItems(listItems?.toTypedArray(), getListIndex()) { dialog, which ->
+                    val intent = activity?.intent
+                    intent?.putExtra(ARG_LIST_SELECTED_ITEM, listItems?.get(which))
+                    targetFragment?.onActivityResult(LIST_SELECTOR_REQUEST_CODE, resultCode, intent)
+                    dialog.dismiss()
+                }
+        } else {
+            val checked = items.map { item -> item.isSelected }.toBooleanArray()
+            builder.setTitle("Select multiple items")
+                .setMultiChoiceItems(items.map { it.title }.toTypedArray(), checked) { _, which, isChecked ->
+                    items[which] = items[which].copy(isSelected = isChecked)
+                }
+                .setPositiveButton("OK") { dialog, _ ->
+                    val intent = activity?.intent
+                    val selectedIds = items.filter { it.isSelected }.map { it.id }.toLongArray()
+                    intent?.putExtra(ARG_LIST_SELECTED_ITEMS, selectedIds)
+                    targetFragment?.onActivityResult(LIST_MULTI_SELECTOR_REQUEST_CODE, resultCode, intent)
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }
+        }
 
-            builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
+        return builder.create()
     }
 
     private fun getListIndex(): Int {

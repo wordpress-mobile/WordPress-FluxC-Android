@@ -241,6 +241,7 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun getShippingRates(
         site: SiteModel,
         orderId: Long,
@@ -277,6 +278,7 @@ class ShippingLabelRestClient @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun purchaseShippingLabels(
         site: SiteModel,
         orderId: Long,

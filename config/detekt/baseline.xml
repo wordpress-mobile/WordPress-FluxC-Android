@@ -5,102 +5,8 @@
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
-    <ID>ComplexCondition:WCProductStore.kt$WCProductStore$offset == 0 &amp;&amp; includedProductIds.isEmpty() &amp;&amp; excludedProductIds.isEmpty() &amp;&amp; filterOptions.isEmpty()</ID>
-    <ID>ComplexMethod:CouponRestClient.kt$CouponRestClient$private fun UpdateCouponRequest.toNetworkRequest(): Map&lt;String, Any></ID>
-    <ID>ComplexMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
-    <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
-    <ID>ComplexMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
-    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
-    <ID>ComplexMethod:ProductVariationApiResponse.kt$ProductVariationApiResponse$fun asProductVariationModel()</ID>
-    <ID>ComplexMethod:WCCustomerMapper.kt$WCCustomerMapper$fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel</ID>
-    <ID>ComplexMethod:WCOrderStore.kt$WCOrderStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>ComplexMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_1: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_2: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val first_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val last_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_1: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_2: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val first_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
-    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$@SerializedName("product_id") var productId: Long? = null</ID>
-    <ID>DataClassShouldBeImmutable:LineItem.kt$LineItem$var quantity: Float? = null</ID>
-    <ID>DataClassShouldBeImmutable:WCOrderStore.kt$WCOrderStore.OnQuickOrderResult$var order: OrderEntity? = null</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
-    <ID>ForbiddenComment:ProductRestClient.kt$ProductRestClient$// TODO: Once removal is supported, we can remove the extra isNotBlank() condition</ID>
-    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Add error handling</ID>
-    <ID>ForbiddenComment:WCOrderFetcher.kt$WCOrderFetcher$// FIXME: Possible add new tracks event to track error fetching order list data "order_list_load_failed"</ID>
-    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Ideally we would have a separate process that prunes the following</ID>
-    <ID>ForbiddenComment:WCOrderStore.kt$WCOrderStore$// TODO: Use the actual error type</ID>
-    <ID>ForbiddenComment:WCProductStore.kt$WCProductStore$// TODO: 18/08/2021 @wzieba add tests</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
-    <ID>LargeClass:OrderRestClient.kt$OrderRestClient : BaseWPComRestClient</ID>
-    <ID>LargeClass:ProductRestClient.kt$ProductRestClient : BaseWPComRestClient</ID>
-    <ID>LargeClass:ProductSqlUtils.kt$ProductSqlUtils</ID>
-    <ID>LargeClass:WCProductStore.kt$WCProductStore : Store</ID>
-    <ID>LongMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
-    <ID>LongMethod:Migrations.kt$&lt;no name provided>$override fun migrate(database: SupportSQLiteDatabase)</ID>
-    <ID>LongMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
-    <ID>LongMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$fun fetchProducts( site: SiteModel, pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE, offset: Int = 0, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING, searchQuery: String? = null, isSkuSearch: Boolean = false, includedProductIds: List&lt;Long>? = null, filterOptions: Map&lt;ProductFilterOption, String>? = null, excludedProductIds: List&lt;Long>? = null )</ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun variantModelToProductJsonBody( variationModel: WCProductVariationModel?, updatedVariationModel: WCProductVariationModel ): HashMap&lt;String, Any></ID>
-    <ID>LongMethod:ProvideAddonsIntegrationTests.kt$ProvideAddonsIntegrationTests$@Test fun `should map Checkbox add-on`()</ID>
-    <ID>LongMethod:RemoteAddonMapper.kt$RemoteAddonMapper$fun toDomain(dto: RemoteAddonDto): Addon</ID>
-    <ID>LongMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>LongParameterList:OrderUpdateStore.kt$OrderUpdateStore$( site: SiteModel, orderId: Long, amount: String, customerNote: String, billingEmail: String, isTaxable: Boolean, status: WCOrderStatusModel? = null )</ID>
-    <ID>LongParameterList:RefundRestClient.kt$RefundRestClient$( site: SiteModel, orderId: Long, reason: String, automaticRefund: Boolean, items: List&lt;WCRefundModel.WCRefundItem>, restockItems: Boolean )</ID>
-    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
-    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
-    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$1000</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$23</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$24</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$59</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$6</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$60</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$7</ID>
-    <ID>MagicNumber:DateUtils.kt$DateUtils$8</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$24</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$48</ID>
-    <ID>MagicNumber:WCProductReviewModel.kt$WCProductReviewModel.AvatarSize.Companion$96</ID>
-    <ID>MagicNumber:WCShippingLabelStore.kt$WCShippingLabelStore$2000</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$12</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$2011</ID>
-    <ID>MagicNumber:WCStatsStore.kt$WCStatsStore$7</ID>
-    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;a href='https:\/\/mystagingwebsite.com\/wp-admin\/admin.php?page=wc-admin&amp;path=\/analytics\/products&amp;filter=single_product&amp;products=14'>Beanie&lt;\/a>",</ID>
-    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$"display": "&lt;span class=\"woocommerce-Price-amount amount\">&lt;span class=\"woocommerce-Price-currencySymbol\">&amp;#82;&amp;#36;&lt;\/span>36.000,00&lt;\/span>",</ID>
-    <ID>MaxLineLength:LeaderboardProductItem.kt$LeaderboardProductItem$*</ID>
-    <ID>MaxLineLength:Migrations.kt$&lt;no name provided>$CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_siteId` ON `InboxNotes` (`remoteId`, `siteId`)</ID>
-    <ID>MaxLineLength:OrderDtoMapper.kt$OrderDtoMapper$// Extract the discount codes from the coupon_lines list and store them as a comma-delimited String</ID>
-    <ID>MaxLineLength:ProductRestClient.kt$ProductRestClient$*</ID>
-    <ID>MaxLineLength:WCOrderStore.kt$WCOrderStore$// This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,</ID>
-    <ID>MaxLineLength:WCProductStore.kt$WCProductStore$*</ID>
-    <ID>MaxLineLength:WCStatsStore.kt$WCStatsStore$*</ID>
-    <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
-    <ID>NestedBlockDepth:OrderStatsRestClient.kt$OrderStatsRestClient$suspend fun fetchNewVisitorStats( site: SiteModel, unit: OrderStatsApiUnit, granularity: StatsGranularity, date: String, quantity: Int, force: Boolean = false, startDate: String? = null, endDate: String? = null ): FetchNewVisitorStatsResponsePayload</ID>
-    <ID>NestedBlockDepth:WCOrderStore.kt$WCOrderStore$private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload)</ID>
-    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$fun getImageList(): ArrayList&lt;WCProductImageModel></ID>
-    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun getTriplets(jsonStr: String): ArrayList&lt;ProductTriplet></ID>
-    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun parseJson(jsonString: String): List&lt;Long></ID>
-    <ID>NestedBlockDepth:WCShippingLabelStore.kt$WCShippingLabelStore$private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List&lt;PredefinedOption></ID>
-    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchProductReviews( site: SiteModel, offset: Int, reviewIds: List&lt;Long>? = null, productIds: List&lt;Long>? = null, filterByStatus: List&lt;String>? = null ): FetchProductReviewsResponsePayload</ID>
-    <ID>ReturnCount:ProductRestClient.kt$ProductRestClient$suspend fun fetchSingleVariation( site: SiteModel, remoteProductId: Long, remoteVariationId: Long ): RemoteVariationPayload</ID>
-    <ID>ReturnCount:ProductSqlUtils.kt$ProductSqlUtils$fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameAttributes(otherProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameCategories(updatedProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameImages(updatedProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductModel.kt$WCProductModel$fun hasSameTags(updatedProduct: WCProductModel): Boolean</ID>
-    <ID>ReturnCount:WCProductVariationModel.kt$WCProductVariationModel$fun getImageModel(): WCProductImageModel?</ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$@Suppress("UNCHECKED_CAST") private fun &lt;T> getStatsForField( site: SiteModel, field: OrderStatsField, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, T></ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getNewVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getStatsCurrencyForSite(site: SiteModel): String?</ID>
-    <ID>ReturnCount:WCStatsStore.kt$WCStatsStore$fun getVisitorStats( site: SiteModel, granularity: StatsGranularity, quantity: String? = null, date: String? = null, isCustomField: Boolean = false ): Map&lt;String, Int></ID>
-    <ID>ReturnCount:WooCommerceStore.kt$WooCommerceStore$suspend fun fetchWooCommerceSite(site: SiteModel): WooResult&lt;SiteModel></ID>
-    <ID>SpacingBetweenPackageAndImports:WCPaymentChargeApiResult.kt$ </ID>
     <ID>SpreadOperator:WCInboxStore.kt$WCInboxStore$(siteId, *notesWithActions.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*it.result!!.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.fetchedOrders.toTypedArray())</ID>
@@ -109,100 +15,6 @@
     <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
-    <ID>UnnecessaryAbstractClass:CouponsDao.kt$CouponsDao$CouponsDao</ID>
-    <ID>UnnecessaryAbstractClass:WCDatabaseModule.kt$WCDatabaseModule$WCDatabaseModule</ID>
-    <ID>UnusedPrivateMember:WCStatsStore.kt$WCStatsStore$private val context: Context</ID>
-    <ID>UseCheckOrError:ToDatabaseAddonsMapper.kt$ToDatabaseAddonsMapper$throw IllegalStateException("Addon has to be identified with a Group or a Product")</ID>
-    <ID>UseCheckOrError:WCOrderStore.kt$WCOrderStore$throw IllegalStateException("Invalid action. Use suspendable updateOrderStatus(..) directly")</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$// Same as shipping_lines, it's a list of objects val fee_lines: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.LineItem val line_items: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.ShippingLines val shipping_lines: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val coupon_lines: List&lt;CouponLine>? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val customer_note: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_created_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_modified_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_paid_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val discount_total: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val is_editable: Boolean? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val meta_data: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val order_key: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_method: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_method_title: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_url: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val prices_include_tax: Boolean = false</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val shipping_total: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val tax_lines: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val total_tax: String? = null</ID>
-    <ID>VariableNaming:OrderNoteApiResponse.kt$OrderNoteApiResponse$// If true, the note will be shown to customers and they will be notified. If false, the note will be for admin // reference only. Default is false. val customer_note: Boolean = false</ID>
-    <ID>VariableNaming:OrderNoteApiResponse.kt$OrderNoteApiResponse$val date_created_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val date_shipped: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_id: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_link: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_number: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_provider: String? = null</ID>
-    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private final val STATS_FIELDS = "data,fields"</ID>
-    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private val STATS_DEFAULT_ORDER = "asc"</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val button_text: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val menu_order = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var average_rating: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var backorders_allowed = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var catalog_visibility: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var cross_sell_ids: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_created: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_modified: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_from: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_from_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_to: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_to_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var download_expiry = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var download_limit = 0L</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var external_url: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var grouped_products: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var manage_stock: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var on_sale = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var parent_id = 0L</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var purchase_note: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var rating_count = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var regular_price: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var related_ids: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var reviews_allowed = true</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var sale_price: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_class: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_class_id = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_required = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_taxable = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var short_description: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var sold_individually = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var stock_quantity = 0.0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var stock_status: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var tax_class: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var tax_status: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var total_sales = 0L</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var upsell_ids: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val date_created_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val product_id: Long = 0L</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val reviewer_avatar_urls: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val reviewer_email: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$val menu_order: Int = 0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var backorders_allowed = false</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_created: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_modified: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_from: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_from_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_to: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_to_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var download_expiry = 0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var download_limit = 0L</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var manage_stock = false</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var on_sale = false</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var regular_price: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var sale_price: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var shipping_class: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var shipping_class_id = 0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var stock_quantity = 0.0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var stock_status: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_class: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_status: String? = null</ID>
     <!-- example -->
     <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$boxId == null || height == null || width == null || length == null || weight == null</ID>
     <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$height == null || width == null || length == null || weight == null</ID>
@@ -222,10 +34,6 @@
     <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)</ID>
     <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>ComplexMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>DataClassShouldBeImmutable:WooProductCategoriesAdapter.kt$WooProductCategoriesAdapter.ProductCategoryViewHolderModel$var isSelected: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var name: String</ID>
-    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var url: String</ID>
-    <ID>DataClassShouldBeImmutable:WooProductTagsAdapter.kt$WooProductTagsAdapter.ProductTagViewHolderModel$var isSelected: Boolean = false</ID>
     <ID>EmptyFunctionBlock:EditTextExt.kt$&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:ExperimentsFragment.kt$ExperimentsFragment.&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:RetryOnRedirectBasicNetworkTest.kt$RetryOnRedirectBasicNetworkTest.MockedRequest${}</ID>
@@ -281,21 +89,10 @@
     <ID>LongMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>MagicNumber:CustomStatsDialog.kt$CustomStatsDialog.Companion$100</ID>
-    <ID>MagicNumber:WCAddOrderShipmentTrackingDialog.kt$WCAddOrderShipmentTrackingDialog.Companion$200</ID>
-    <ID>MagicNumber:WCOrderListActivity.kt$TimeGroup.Companion$2</ID>
-    <ID>MagicNumber:WooOrdersFragment.kt$WooOrdersFragment$5</ID>
-    <ID>MagicNumber:WooShippingLabelFragment.kt$WooShippingLabelFragment$5000</ID>
-    <ID>MagicNumber:WooStatsFragment.kt$WooStatsFragment$10</ID>
-    <ID>MaxLineLength:CommentSqlUtilsTest.kt$CommentSqlUtilsTest$// from 65 comments in DB we expect to have only 22 remote comments (remove first 3, 3 from the middle and all the comments that go after last comment in remoteComments</ID>
-    <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>date_created_gmt&lt;/name>&lt;value>&lt;dateTime.iso8601>20210727T20:33:41&lt;/dateTime.iso8601>&lt;/value>&lt;/member></ID>
-    <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>link&lt;/name>&lt;value>&lt;string>http://test-debug.org/index.php/2021/04/01/no-jp/#comment-34&lt;/string>&lt;/value>&lt;/member></ID>
     <ID>NestedBlockDepth:WooProductsFragment.kt$WooProductsFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged)</ID>
     <ID>NestedBlockDepth:WooShippingLabelFragment.kt$WooShippingLabelFragment$private fun downloadUrl(url: String): File?</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$ex</ID>
-    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areContentsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
-    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areItemsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
     <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
     <ID>SwallowedException:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
     <ID>SwallowedException:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
@@ -309,76 +106,5 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UnnecessaryAbstractClass:FragmentsModule.kt$FragmentsModule$FragmentsModule</ID>
-    <ID>UnnecessaryAbstractClass:MainActivityModule.kt$MainActivityModule$MainActivityModule</ID>
-    <ID>UnnecessaryAbstractClass:WCOrderListActivityModule.kt$WCOrderListActivityModule$WCOrderListActivityModule</ID>
-    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var accessToken: AccessToken</ID>
-    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var wpComGsonRequestBuilder: WPComGsonRequestBuilder</ID>
-    <ID>UnusedPrivateMember:InsightsRestClientTest.kt$InsightsRestClientTest$val date = Date()</ID>
-    <ID>UnusedPrivateMember:PageStoreTest.kt$PageStoreTest$private fun assertPage(map: Map&lt;PageStatus, List&lt;PageModel>>, position: Int, status: PageStatus)</ID>
-    <ID>UnusedPrivateMember:SiteHomepageRestClientTest.kt$SiteHomepageRestClientTest$@Mock private lateinit var siteHomepageSettingsMapper: SiteHomepageSettingsMapper</ID>
-    <ID>UnusedPrivateMember:WCProductStoreTest.kt$WCProductStoreTest$val modifications = variationsUpdatePayload.modifiedProperties</ID>
-    <ID>UnusedPrivateMember:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$private val sampleListOfTwoIdenticalPredefinedPackages = listOf( PredefinedOption( title = "USPS Priority Mail Flat Rate Boxes", carrier = "usps", predefinedPackages = listOf( PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ), PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ) ) ) )</ID>
-    <ID>UnusedPrivateMember:WCStatsStoreTest.kt$WCStatsStoreTest$val missingDataPayload = FetchRevenueStatsResponsePayload(site, StatsGranularity.YEARS, null)</ID>
-    <ID>UnusedPrivateMember:WCUserTestUtils.kt$WCUserTestUtils$private fun generateSampleUser( firstName: String = "", lastName: String = "", username: String = "", email: String = "", roles: String = "", siteId: Int = 6 ): WCUserModel</ID>
-    <ID>UnusedPrivateMember:WooProductAttributeFragment.kt$WooProductAttributeFragment$view: View</ID>
-    <ID>UnusedPrivateMember:WooUpdateProductFragment.kt$WooUpdateProductFragment$view: View</ID>
-    <ID>UseArrayLiteralsInAnnotations:MainActivityModule.kt$MainActivityModule$modules = arrayOf(FragmentsModule::class)</ID>
-    <ID>UseCheckOrError:ListSelectorDialog.kt$ListSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:OrderListAdapter.kt$OrderListAdapter$throw IllegalStateException("The view type '$viewType' needs to be handled")</ID>
-    <ID>UseCheckOrError:SiteSelectorDialog.kt$SiteSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:StoreSelectorDialog.kt$StoreSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:ThreeEditTextDialog.kt$ThreeEditTextDialog$throw IllegalStateException("Not attached to an activity!")</ID>
-    <ID>UseCheckOrError:WooCustomersSearchAdapter.kt$WooCustomersSearchAdapter$throw IllegalStateException("View type $viewType is not supported")</ID>
-    <ID>UtilityClassWithPublicConstructor:ReactNativeStoreWPAPITest.kt$ReactNativeStoreWPAPITest$StatusCode</ID>
-    <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
-    <ID>WildcardImport:AddressEditDialogFragment.kt$import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*</ID>
-    <ID>WildcardImport:CustomStatsDialog.kt$import kotlinx.android.synthetic.main.dialog_custom_stats.*</ID>
-    <ID>WildcardImport:EditorThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_editor_theme.*</ID>
-    <ID>WildcardImport:ExperimentsFragment.kt$import kotlinx.android.synthetic.main.fragment_experiments.*</ID>
-    <ID>WildcardImport:FloatingLabelEditText.kt$import kotlinx.android.synthetic.main.view_floating_edittext.view.*</ID>
-    <ID>WildcardImport:MainExampleActivity.kt$import kotlinx.android.synthetic.main.activity_example.*</ID>
-    <ID>WildcardImport:MainFragment.kt$import kotlinx.android.synthetic.main.fragment_main.*</ID>
-    <ID>WildcardImport:NotificationTypeSubtypeDialog.kt$import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*</ID>
-    <ID>WildcardImport:NotificationsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
-    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
-    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_plugins.*</ID>
-    <ID>WildcardImport:PostsFragment.kt$import kotlinx.android.synthetic.main.fragment_posts.*</ID>
-    <ID>WildcardImport:ReactNativeFragment.kt$import kotlinx.android.synthetic.main.fragment_reactnative.*</ID>
-    <ID>WildcardImport:StoreSelectingFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
-    <ID>WildcardImport:ThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_themes.*</ID>
-    <ID>WildcardImport:WCAddOrderShipmentTrackingDialog.kt$import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*</ID>
-    <ID>WildcardImport:WCOrderListActivity.kt$import kotlinx.android.synthetic.main.activity_wc_order_list.*</ID>
-    <ID>WildcardImport:WooAddonsTestFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_addons.*</ID>
-    <ID>WildcardImport:WooBatchUpdateVariationsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.*</ID>
-    <ID>WildcardImport:WooCommerceFragment.kt$import kotlinx.android.synthetic.main.fragment_woocommerce.*</ID>
-    <ID>WildcardImport:WooCouponsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_coupons.*</ID>
-    <ID>WildcardImport:WooCustomerCreationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer_creation.*</ID>
-    <ID>WildcardImport:WooCustomersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer.*</ID>
-    <ID>WildcardImport:WooCustomersSearchAdapter.kt$import kotlinx.android.synthetic.main.list_item_woo_customer.view.*</ID>
-    <ID>WildcardImport:WooCustomersSearchBuilderFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search_builder.*</ID>
-    <ID>WildcardImport:WooCustomersSearchFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search.*</ID>
-    <ID>WildcardImport:WooGatewaysFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_gateways.*</ID>
-    <ID>WildcardImport:WooHelpSupportFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_help_support.*</ID>
-    <ID>WildcardImport:WooLeaderboardsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*</ID>
-    <ID>WildcardImport:WooOrdersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_orders.*</ID>
-    <ID>WildcardImport:WooProductAttributeFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*</ID>
-    <ID>WildcardImport:WooProductCategoriesAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductCategoriesFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
-    <ID>WildcardImport:WooProductDownloadsAdapter.kt$import kotlinx.android.synthetic.main.product_downloadable_file_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductDownloadsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_downloads.*</ID>
-    <ID>WildcardImport:WooProductFiltersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_filters.*</ID>
-    <ID>WildcardImport:WooProductTagsAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductTagsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
-    <ID>WildcardImport:WooProductsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
-    <ID>WildcardImport:WooRefundsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_refunds.*</ID>
-    <ID>WildcardImport:WooRevenueStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_revenue_stats.*</ID>
-    <ID>WildcardImport:WooShippingLabelFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*</ID>
-    <ID>WildcardImport:WooStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_stats.*</ID>
-    <ID>WildcardImport:WooTaxFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_taxes.*</ID>
-    <ID>WildcardImport:WooUpdateCouponFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_coupon.*</ID>
-    <ID>WildcardImport:WooUpdateProductFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_product.*</ID>
-    <ID>WildcardImport:WooUpdateVariationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_variation.*</ID>
-    <ID>WildcardImport:WooVerifyAddressFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_verify_address.*</ID>
   </CurrentIssues>
 </SmellBaseline>

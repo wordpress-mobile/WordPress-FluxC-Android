@@ -12,6 +12,7 @@ class OrderDtoMapper @Inject internal constructor(
     private val stripOrder: StripOrder,
     private val stripOrderMetaData: StripOrderMetaData
 ) {
+    @Suppress("LongMethod", "ComplexMethod")
     fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair<OrderEntity, List<OrderMetaDataEntity>> {
         fun convertDateToUTCString(date: String?): String =
                 date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
@@ -36,13 +37,15 @@ class OrderDtoMapper @Inject internal constructor(
                     customerNote = this.customer_note ?: "",
                     discountTotal = this.discount_total ?: "",
                     discountCodes = this.coupon_lines?.let { couponLines ->
-                        // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
+                        // Extract the discount codes from the coupon lines list and
+                        // store them as a comma-delimited 'String'.
                         couponLines
                                 .filter { !it.code.isNullOrEmpty() }
                                 .joinToString { it.code!! }
                     }.orEmpty(),
                     refundTotal = this.refunds?.let { refunds ->
-                        // Extract the individual refund totals from the refunds list and store their sum as a Double,
+                        // Extract the individual refund totals from the refunds list and
+                        // store their sum as a 'Double'.
                         refunds.sumOf { it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO }
                     } ?: BigDecimal.ZERO,
                     billingFirstName = this.billing?.first_name ?: "",

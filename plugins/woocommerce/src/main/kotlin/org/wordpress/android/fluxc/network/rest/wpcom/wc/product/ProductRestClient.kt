@@ -80,6 +80,7 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
 class ProductRestClient @Inject constructor(
     appContext: Context,
@@ -309,25 +310,29 @@ class ProductRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let {
-                    val newModel = it.asProductVariationModel().apply {
-                        this.remoteProductId = remoteProductId
-                        localSiteId = site.id
-                    }
-                    return RemoteVariationPayload(newModel, site)
-                } ?: RemoteVariationPayload(
-                    ProductError(GENERIC_ERROR, "Success response with empty data"),
-                    WCProductVariationModel().apply {
-                        this.remoteProductId = remoteProductId
-                        this.remoteVariationId = remoteVariationId
-                    },
-                    site
-                )
+                val productData = response.data
+                if (productData != null) {
+                    RemoteVariationPayload(
+                        productData.asProductVariationModel().apply {
+                            this.remoteProductId = remoteProductId
+                            localSiteId = site.id
+                        },
+                        site
+                    )
+                } else {
+                    RemoteVariationPayload(
+                        ProductError(GENERIC_ERROR, "Success response with empty data"),
+                        WCProductVariationModel().apply {
+                            this.remoteProductId = remoteProductId
+                            this.remoteVariationId = remoteVariationId
+                        },
+                        site
+                    )
+                }
             }
             is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
-                return RemoteVariationPayload(
-                    productError,
+                RemoteVariationPayload(
+                    networkErrorToProductError(response.error),
                     WCProductVariationModel().apply {
                         this.remoteProductId = remoteProductId
                         this.remoteVariationId = remoteVariationId
@@ -344,6 +349,7 @@ class ProductRestClient @Inject constructor(
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
+    @Suppress("LongMethod")
     fun fetchProducts(
         site: SiteModel,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
@@ -786,8 +792,9 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of variations for the given WooCommerce [SiteModel] and product.
+     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of variations for the given WooCommerce [SiteModel]
+     * and product.
      *
      * @param [productId] Unique server id of the product
      *
@@ -1095,8 +1102,8 @@ class ProductRestClient @Inject constructor(
      * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of product categories for a given WooCommerce [SiteModel].
      *
-     * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE], and retrieving older
-     * categories is done by passing an [offset].
+     * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE],
+     * and retrieving older categories is done by passing an [offset].
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCT_CATEGORIES]
      *
@@ -1228,25 +1235,34 @@ class ProductRestClient @Inject constructor(
 
         return when (response) {
             is JetpackSuccess -> {
-                response.data?.let {
-                    val reviews = it.map { review ->
+                val productData = response.data
+                if (productData != null) {
+                    val reviews = productData.map { review ->
                         productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
                     }
-                    val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
-                    val loadedMore = offset > 0
-                    return FetchProductReviewsResponsePayload(
-                            site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                    FetchProductReviewsResponsePayload(
+                        site,
+                        reviews,
+                        productIds,
+                        filterByStatus,
+                        offset > 0,
+                        reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                     )
-                } ?: FetchProductReviewsResponsePayload(
+                } else {
+                    FetchProductReviewsResponsePayload(
                         ProductError(
-                                GENERIC_ERROR,
-                                "Success response with empty data"
-                        ), site
-                )
+                            GENERIC_ERROR,
+                            "Success response with empty data"
+                        ),
+                        site
+                    )
+                }
             }
             is JetpackError -> {
-                val productReviewError = networkErrorToProductError(response.error)
-                return FetchProductReviewsResponsePayload(productReviewError, site)
+                FetchProductReviewsResponsePayload(
+                    networkErrorToProductError(response.error),
+                    site
+                )
             }
         }
     }
@@ -1424,6 +1440,7 @@ class ProductRestClient @Inject constructor(
      * and verifies that the [updatedProductModel] has fields that are different from the default
      * fields of [productModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
+    @Suppress("LongMethod", "ComplexMethod")
     private fun productModelToProductJsonBody(
         productModel: WCProductModel?,
         updatedProductModel: WCProductModel
@@ -1527,7 +1544,7 @@ class ProductRestClient @Inject constructor(
             body["short_description"] = updatedProductModel.shortDescription
         }
         if (!storedWCProductModel.hasSameImages(updatedProductModel)) {
-            val updatedImages = updatedProductModel.getImageList()
+            val updatedImages = updatedProductModel.getImageListOrEmpty()
             body["images"] = JsonArray().also {
                 for (image in updatedImages) {
                     it.add(image.toJson())
@@ -1607,8 +1624,10 @@ class ProductRestClient @Inject constructor(
      * This method checks if there is a cached version of the product stored locally.
      * If not, it generates a new product model for the same product ID, with default fields
      * and verifies that the [updatedVariationModel] has fields that are different from the default
-     * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any changes
+     * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any
+     * changes.
      */
+    @Suppress("ForbiddenComment", "LongMethod", "ComplexMethod")
     private fun variantModelToProductJsonBody(
         variationModel: WCProductVariationModel?,
         updatedVariationModel: WCProductVariationModel

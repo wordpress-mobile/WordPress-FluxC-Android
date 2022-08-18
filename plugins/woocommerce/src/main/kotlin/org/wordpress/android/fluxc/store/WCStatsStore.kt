@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import android.content.Context
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -35,14 +34,18 @@ import javax.inject.Singleton
 @Singleton
 class WCStatsStore @Inject constructor(
     dispatcher: Dispatcher,
-    private val context: Context,
     private val wcOrderStatsClient: OrderStatsRestClient,
     private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
+        const val WOO_COMMERCE_INITIAL_RELEASE = 2011
+
         const val STATS_QUANTITY_DAYS = 30
         const val STATS_QUANTITY_WEEKS = 17
         const val STATS_QUANTITY_MONTHS = 12
+
+        const val STATS_GRANULARITY_DAYS = 1
+        const val STATS_GRANULARITY_YEARS = 12
 
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
@@ -282,7 +285,8 @@ class WCStatsStore @Inject constructor(
      * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
      * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
      *
-     * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
+     * The start date is the current day/week/month/year, relative to the site's own timezone
+     * (not the current device's).
      *
      * The format of the date key in the returned map depends on the [granularity]:
      * [StatsGranularity.DAYS]: "2018-05-01"
@@ -336,18 +340,19 @@ class WCStatsStore @Inject constructor(
     ): Map<String, Int> {
         val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
         val rawStats = WCVisitorStatsSqlUtils.getRawVisitorStatsForSiteUnitQuantityAndDate(
-                site, apiUnit, quantity, date, isCustomField)
+            site, apiUnit, quantity, date, isCustomField
+        )
         rawStats?.let { visitorStatsModel ->
             val periodIndex = visitorStatsModel.getIndexForField(VisitorStatsField.PERIOD)
             val fieldIndex = visitorStatsModel.getIndexForField(VisitorStatsField.VISITORS)
-            if (periodIndex == -1 || fieldIndex == -1) {
-                return mapOf()
+            return if (periodIndex == -1 || fieldIndex == -1) {
+                mapOf()
+            } else {
+                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+                visitorStatsModel.dataList.map {
+                    it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
+                }.toMap()
             }
-
-            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-            return visitorStatsModel.dataList.map {
-                it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
-            }.toMap()
         } ?: return mapOf()
     }
 
@@ -363,18 +368,19 @@ class WCStatsStore @Inject constructor(
         isCustomField: Boolean = false
     ): Map<String, Int> {
         val rawStats = WCVisitorStatsSqlUtils.getNewRawVisitorStatsForSiteGranularityQuantityAndDate(
-                site, granularity, quantity, date, isCustomField)
+            site, granularity, quantity, date, isCustomField
+        )
         rawStats?.let { visitorStatsModel ->
             val periodIndex = visitorStatsModel.getIndexForField(WCNewVisitorStatsModel.VisitorStatsField.PERIOD)
             val fieldIndex = visitorStatsModel.getIndexForField(WCNewVisitorStatsModel.VisitorStatsField.VISITORS)
-            if (periodIndex == -1 || fieldIndex == -1) {
-                return mapOf()
+            return if (periodIndex == -1 || fieldIndex == -1) {
+                mapOf()
+            } else {
+                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+                visitorStatsModel.dataList.map {
+                    it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
+                }.toMap()
             }
-
-            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-            return visitorStatsModel.dataList.map {
-                it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
-            }.toMap()
         } ?: return mapOf()
     }
 
@@ -386,12 +392,13 @@ class WCStatsStore @Inject constructor(
         rawStats?.let { statsModel ->
             statsModel.dataList.firstOrNull()?.let {
                 val currencyIndex = statsModel.getIndexForField(OrderStatsField.CURRENCY)
-                if (currencyIndex == -1) {
+                return if (currencyIndex == -1) {
                     // The server didn't return the currency field
                     reportMissingFieldError(statsModel, OrderStatsField.CURRENCY)
-                    return null
+                    null
+                } else {
+                    it[currencyIndex] as String
                 }
-                return it[currencyIndex] as String
             }
         } ?: return null
     }
@@ -411,7 +418,7 @@ class WCStatsStore @Inject constructor(
             OrderStatsApiUnit.MONTH -> STATS_QUANTITY_MONTHS
             OrderStatsApiUnit.YEAR -> {
                 // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
+                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - WOO_COMMERCE_INITIAL_RELEASE + 1
             }
             else -> STATS_QUANTITY_DAYS
         }
@@ -602,18 +609,19 @@ class WCStatsStore @Inject constructor(
     ): Map<String, T> {
         val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
         val rawStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(
-                site, apiUnit, quantity, date, isCustomField)
+            site, apiUnit, quantity, date, isCustomField
+        )
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val fieldIndex = it.getIndexForField(field)
-            if (periodIndex == -1 || fieldIndex == -1) {
+            return if (periodIndex == -1 || fieldIndex == -1) {
                 // One of the fields we need wasn't returned by the server
                 reportMissingFieldError(it, field)
-                return mapOf()
+                mapOf()
+            } else {
+                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+                it.dataList.map { it[periodIndex].toString().removeSuffix(".0") to it[fieldIndex] as T }.toMap()
             }
-
-            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-            return it.dataList.map { it[periodIndex].toString().removeSuffix(".0") to it[fieldIndex] as T }.toMap()
         } ?: return mapOf()
     }
 
@@ -710,10 +718,10 @@ class WCStatsStore @Inject constructor(
     private fun getPerPageQuantityForRevenueStatsGranularity(
         granularity: StatsGranularity
     ) = when (granularity) {
-        StatsGranularity.DAYS -> 1
-        StatsGranularity.WEEKS -> 7
+        StatsGranularity.DAYS -> STATS_GRANULARITY_DAYS
+        StatsGranularity.WEEKS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_WEEK)
         StatsGranularity.MONTHS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
-        StatsGranularity.YEARS -> 12
+        StatsGranularity.YEARS -> STATS_GRANULARITY_YEARS
     }
 
     /**
