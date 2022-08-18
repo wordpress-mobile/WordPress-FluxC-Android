@@ -162,6 +162,11 @@ open class WooCommerceStore @Inject constructor(
         return PluginSqlUtils.getSitePluginByName(site, plugin.pluginName)
     }
 
+    fun getSitePlugins(site: SiteModel, plugins: List<WooPlugin>): List<SitePluginModel> {
+        val pluginNames = plugins.map { it.pluginName }
+        return PluginSqlUtils.getSitePluginByNames(site, pluginNames)
+    }
+
     suspend fun getSitePlugins(site: SiteModel): List<SitePluginModel> {
         return coroutineEngine.withDefaultContext(T.DB, this, "getSitePlugins") {
             PluginSqlUtils.getSitePlugins(site)
