@@ -405,10 +405,10 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.virtual = isChecked
         }
 
-        attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
-        detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
-        generate_variation.setOnClickListener(::onGenerateVariationButtonClicked)
-        delete_variation.setOnClickListener(::onDeleteVariationButtonClicked)
+        attach_attribute.setOnClickListener { onAttachAttributeToProductButtonClicked() }
+        detach_attribute.setOnClickListener { onDetachAttributeFromProductButtonClicked() }
+        generate_variation.setOnClickListener { onGenerateVariationButtonClicked() }
+        delete_variation.setOnClickListener { onDeleteVariationButtonClicked() }
 
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
 
@@ -539,7 +539,7 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
-    private fun onAttachAttributeToProductButtonClicked(view: View) {
+    private fun onAttachAttributeToProductButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -567,7 +567,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun onDetachAttributeFromProductButtonClicked(view: View) {
+    private fun onDetachAttributeFromProductButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -593,7 +593,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun onGenerateVariationButtonClicked(view: View) {
+    private fun onGenerateVariationButtonClicked() {
         try {
             coroutineScope.launch {
                 takeAsyncRequestWithValidSite { site ->
@@ -606,7 +606,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun onDeleteVariationButtonClicked(view: View) {
+    private fun onDeleteVariationButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,

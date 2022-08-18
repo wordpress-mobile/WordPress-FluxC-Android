@@ -34,10 +34,6 @@
     <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)</ID>
     <ID>ComplexMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>ComplexMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>DataClassShouldBeImmutable:WooProductCategoriesAdapter.kt$WooProductCategoriesAdapter.ProductCategoryViewHolderModel$var isSelected: Boolean = false</ID>
-    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var name: String</ID>
-    <ID>DataClassShouldBeImmutable:WooProductDownloadsFragment.kt$WooProductDownloadsFragment.ProductFile$var url: String</ID>
-    <ID>DataClassShouldBeImmutable:WooProductTagsAdapter.kt$WooProductTagsAdapter.ProductTagViewHolderModel$var isSelected: Boolean = false</ID>
     <ID>EmptyFunctionBlock:EditTextExt.kt$&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:ExperimentsFragment.kt$ExperimentsFragment.&lt;no name provided>${}</ID>
     <ID>EmptyFunctionBlock:RetryOnRedirectBasicNetworkTest.kt$RetryOnRedirectBasicNetworkTest.MockedRequest${}</ID>
@@ -93,21 +89,10 @@
     <ID>LongMethod:WooUpdateCouponFragment.kt$WooUpdateCouponFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooUpdateProductFragment.kt$WooUpdateProductFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:WooUpdateVariationFragment.kt$WooUpdateVariationFragment$override fun onViewCreated(view: View, savedInstanceState: Bundle?)</ID>
-    <ID>MagicNumber:CustomStatsDialog.kt$CustomStatsDialog.Companion$100</ID>
-    <ID>MagicNumber:WCAddOrderShipmentTrackingDialog.kt$WCAddOrderShipmentTrackingDialog.Companion$200</ID>
-    <ID>MagicNumber:WCOrderListActivity.kt$TimeGroup.Companion$2</ID>
-    <ID>MagicNumber:WooOrdersFragment.kt$WooOrdersFragment$5</ID>
-    <ID>MagicNumber:WooShippingLabelFragment.kt$WooShippingLabelFragment$5000</ID>
-    <ID>MagicNumber:WooStatsFragment.kt$WooStatsFragment$10</ID>
-    <ID>MaxLineLength:CommentSqlUtilsTest.kt$CommentSqlUtilsTest$// from 65 comments in DB we expect to have only 22 remote comments (remove first 3, 3 from the middle and all the comments that go after last comment in remoteComments</ID>
-    <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>date_created_gmt&lt;/name>&lt;value>&lt;dateTime.iso8601>20210727T20:33:41&lt;/dateTime.iso8601>&lt;/value>&lt;/member></ID>
-    <ID>MaxLineLength:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$ &lt;member>&lt;name>link&lt;/name>&lt;value>&lt;string>http://test-debug.org/index.php/2021/04/01/no-jp/#comment-34&lt;/string>&lt;/value>&lt;/member></ID>
     <ID>NestedBlockDepth:WooProductsFragment.kt$WooProductsFragment$@Suppress("unused") @Subscribe(threadMode = ThreadMode.MAIN) fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged)</ID>
     <ID>NestedBlockDepth:WooShippingLabelFragment.kt$WooShippingLabelFragment$private fun downloadUrl(url: String): File?</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$ex</ID>
-    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areContentsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
-    <ID>ReturnCount:OrderListAdapter.kt$&lt;no name provided>$override fun areItemsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean</ID>
     <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
     <ID>SwallowedException:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
     <ID>SwallowedException:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
@@ -121,76 +106,5 @@
     <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
     <ID>TopLevelPropertyNaming:JsonObjectExtensionsTests.kt$private const val sampleJson = """ { "string": "Some string", "escaped_string": "\\ \" '", "number": 37, "nullstring": null, "object": { "name": "Object name" } } """</ID>
-    <ID>UnnecessaryAbstractClass:FragmentsModule.kt$FragmentsModule$FragmentsModule</ID>
-    <ID>UnnecessaryAbstractClass:MainActivityModule.kt$MainActivityModule$MainActivityModule</ID>
-    <ID>UnnecessaryAbstractClass:WCOrderListActivityModule.kt$WCOrderListActivityModule$WCOrderListActivityModule</ID>
-    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var accessToken: AccessToken</ID>
-    <ID>UnusedPrivateMember:CommentsXMLRPCClientTest.kt$CommentsXMLRPCClientTest$private lateinit var wpComGsonRequestBuilder: WPComGsonRequestBuilder</ID>
-    <ID>UnusedPrivateMember:InsightsRestClientTest.kt$InsightsRestClientTest$val date = Date()</ID>
-    <ID>UnusedPrivateMember:PageStoreTest.kt$PageStoreTest$private fun assertPage(map: Map&lt;PageStatus, List&lt;PageModel>>, position: Int, status: PageStatus)</ID>
-    <ID>UnusedPrivateMember:SiteHomepageRestClientTest.kt$SiteHomepageRestClientTest$@Mock private lateinit var siteHomepageSettingsMapper: SiteHomepageSettingsMapper</ID>
-    <ID>UnusedPrivateMember:WCProductStoreTest.kt$WCProductStoreTest$val modifications = variationsUpdatePayload.modifiedProperties</ID>
-    <ID>UnusedPrivateMember:WCShippingLabelStoreTest.kt$WCShippingLabelStoreTest$private val sampleListOfTwoIdenticalPredefinedPackages = listOf( PredefinedOption( title = "USPS Priority Mail Flat Rate Boxes", carrier = "usps", predefinedPackages = listOf( PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ), PredefinedPackage( id = "small_flat_box", title = "Small Flat Box", isLetter = false, dimensions = "10 x 10 x 10", boxWeight = 1.0f ) ) ) )</ID>
-    <ID>UnusedPrivateMember:WCStatsStoreTest.kt$WCStatsStoreTest$val missingDataPayload = FetchRevenueStatsResponsePayload(site, StatsGranularity.YEARS, null)</ID>
-    <ID>UnusedPrivateMember:WCUserTestUtils.kt$WCUserTestUtils$private fun generateSampleUser( firstName: String = "", lastName: String = "", username: String = "", email: String = "", roles: String = "", siteId: Int = 6 ): WCUserModel</ID>
-    <ID>UnusedPrivateMember:WooProductAttributeFragment.kt$WooProductAttributeFragment$view: View</ID>
-    <ID>UnusedPrivateMember:WooUpdateProductFragment.kt$WooUpdateProductFragment$view: View</ID>
-    <ID>UseArrayLiteralsInAnnotations:MainActivityModule.kt$MainActivityModule$modules = arrayOf(FragmentsModule::class)</ID>
-    <ID>UseCheckOrError:ListSelectorDialog.kt$ListSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:OrderListAdapter.kt$OrderListAdapter$throw IllegalStateException("The view type '$viewType' needs to be handled")</ID>
-    <ID>UseCheckOrError:SiteSelectorDialog.kt$SiteSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:StoreSelectorDialog.kt$StoreSelectorDialog$throw IllegalStateException("Activity cannot be null")</ID>
-    <ID>UseCheckOrError:ThreeEditTextDialog.kt$ThreeEditTextDialog$throw IllegalStateException("Not attached to an activity!")</ID>
-    <ID>UseCheckOrError:WooCustomersSearchAdapter.kt$WooCustomersSearchAdapter$throw IllegalStateException("View type $viewType is not supported")</ID>
-    <ID>UtilityClassWithPublicConstructor:ReactNativeStoreWPAPITest.kt$ReactNativeStoreWPAPITest$StatusCode</ID>
-    <ID>WildcardImport:AccountFragment.kt$import kotlinx.android.synthetic.main.fragment_account.*</ID>
-    <ID>WildcardImport:AddressEditDialogFragment.kt$import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*</ID>
-    <ID>WildcardImport:CustomStatsDialog.kt$import kotlinx.android.synthetic.main.dialog_custom_stats.*</ID>
-    <ID>WildcardImport:EditorThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_editor_theme.*</ID>
-    <ID>WildcardImport:ExperimentsFragment.kt$import kotlinx.android.synthetic.main.fragment_experiments.*</ID>
-    <ID>WildcardImport:FloatingLabelEditText.kt$import kotlinx.android.synthetic.main.view_floating_edittext.view.*</ID>
-    <ID>WildcardImport:MainExampleActivity.kt$import kotlinx.android.synthetic.main.activity_example.*</ID>
-    <ID>WildcardImport:MainFragment.kt$import kotlinx.android.synthetic.main.fragment_main.*</ID>
-    <ID>WildcardImport:NotificationTypeSubtypeDialog.kt$import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*</ID>
-    <ID>WildcardImport:NotificationsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
-    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_notifications.*</ID>
-    <ID>WildcardImport:PluginsFragment.kt$import kotlinx.android.synthetic.main.fragment_plugins.*</ID>
-    <ID>WildcardImport:PostsFragment.kt$import kotlinx.android.synthetic.main.fragment_posts.*</ID>
-    <ID>WildcardImport:ReactNativeFragment.kt$import kotlinx.android.synthetic.main.fragment_reactnative.*</ID>
-    <ID>WildcardImport:StoreSelectingFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
-    <ID>WildcardImport:ThemeFragment.kt$import kotlinx.android.synthetic.main.fragment_themes.*</ID>
-    <ID>WildcardImport:WCAddOrderShipmentTrackingDialog.kt$import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*</ID>
-    <ID>WildcardImport:WCOrderListActivity.kt$import kotlinx.android.synthetic.main.activity_wc_order_list.*</ID>
-    <ID>WildcardImport:WooAddonsTestFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_addons.*</ID>
-    <ID>WildcardImport:WooBatchUpdateVariationsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.*</ID>
-    <ID>WildcardImport:WooCommerceFragment.kt$import kotlinx.android.synthetic.main.fragment_woocommerce.*</ID>
-    <ID>WildcardImport:WooCouponsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_coupons.*</ID>
-    <ID>WildcardImport:WooCustomerCreationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer_creation.*</ID>
-    <ID>WildcardImport:WooCustomersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customer.*</ID>
-    <ID>WildcardImport:WooCustomersSearchAdapter.kt$import kotlinx.android.synthetic.main.list_item_woo_customer.view.*</ID>
-    <ID>WildcardImport:WooCustomersSearchBuilderFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search_builder.*</ID>
-    <ID>WildcardImport:WooCustomersSearchFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_customers_search.*</ID>
-    <ID>WildcardImport:WooGatewaysFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_gateways.*</ID>
-    <ID>WildcardImport:WooHelpSupportFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_help_support.*</ID>
-    <ID>WildcardImport:WooLeaderboardsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*</ID>
-    <ID>WildcardImport:WooOrdersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_orders.*</ID>
-    <ID>WildcardImport:WooProductAttributeFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*</ID>
-    <ID>WildcardImport:WooProductCategoriesAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductCategoriesFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
-    <ID>WildcardImport:WooProductDownloadsAdapter.kt$import kotlinx.android.synthetic.main.product_downloadable_file_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductDownloadsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_downloads.*</ID>
-    <ID>WildcardImport:WooProductFiltersFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_filters.*</ID>
-    <ID>WildcardImport:WooProductTagsAdapter.kt$import kotlinx.android.synthetic.main.product_category_list_item.view.*</ID>
-    <ID>WildcardImport:WooProductTagsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_product_categories.*</ID>
-    <ID>WildcardImport:WooProductsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_products.*</ID>
-    <ID>WildcardImport:WooRefundsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_refunds.*</ID>
-    <ID>WildcardImport:WooRevenueStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_revenue_stats.*</ID>
-    <ID>WildcardImport:WooShippingLabelFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*</ID>
-    <ID>WildcardImport:WooStatsFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_stats.*</ID>
-    <ID>WildcardImport:WooTaxFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_taxes.*</ID>
-    <ID>WildcardImport:WooUpdateCouponFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_coupon.*</ID>
-    <ID>WildcardImport:WooUpdateProductFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_product.*</ID>
-    <ID>WildcardImport:WooUpdateVariationFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_update_variation.*</ID>
-    <ID>WildcardImport:WooVerifyAddressFragment.kt$import kotlinx.android.synthetic.main.fragment_woo_verify_address.*</ID>
   </CurrentIssues>
 </SmellBaseline>
