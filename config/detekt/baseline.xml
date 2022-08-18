@@ -4,10 +4,6 @@
   <CurrentIssues>
     <!-- plugins:woocommerce -->
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
-    <ID>SpreadOperator:WCInboxStore.kt$WCInboxStore$(siteId, *notesWithActions.toTypedArray())</ID>
-    <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*it.result!!.toTypedArray())</ID>
-    <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.fetchedOrders.toTypedArray())</ID>
-    <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.ordersWithMeta.toTypedArray())</ID>
     <!-- example -->
     <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$boxId == null || height == null || width == null || length == null || weight == null</ID>
     <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$height == null || width == null || length == null || weight == null</ID>
