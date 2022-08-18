@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_reactnative.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
@@ -68,19 +68,18 @@ class ReactNativeFragment : Fragment() {
     }
 
     private fun onClick(@Suppress("UNUSED_PARAMETER") view: View?) {
-        GlobalScope.launch(Dispatchers.Main) {
-            val path = path_field.text.toString()
-            prependToLog("Making request: $path")
-            val response = withContext(Dispatchers.IO) {
-                site?.let { reactNativeStore.executeRequest(it, path) }
-            }
-
-            when (response) {
-                is Success -> {
-                    prependToLog("Request succeeded")
-                    AppLog.i(AppLog.T.API, "Request result: ${response.result}")
+        val path = path_field.text.toString()
+        prependToLog("Making request: $path")
+        lifecycleScope.launch(Dispatchers.IO) {
+            val response = site?.let { reactNativeStore.executeRequest(it, path) }
+            withContext(Dispatchers.Main) {
+                when (response) {
+                    is Success -> {
+                        prependToLog("Request succeeded")
+                        AppLog.i(AppLog.T.API, "Request result: ${response.result}")
+                    }
+                    is Error -> prependToLog("Request to '$path' failed: ${response.error.message}")
                 }
-                is Error -> prependToLog("Request to '$path' failed: ${response.error.message}")
             }
         }
     }
