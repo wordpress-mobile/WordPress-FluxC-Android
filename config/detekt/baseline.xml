@@ -17,14 +17,5 @@
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <!-- example -->
     <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
-    <ID>TooGenericExceptionCaught:WooCommerceFragment.kt$WooCommerceFragment$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooGatewaysFragment.kt$WooGatewaysFragment$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooLeaderboardsFragment.kt$WooLeaderboardsFragment$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooProductAttributeFragment.kt$WooProductAttributeFragment$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooRefundsFragment.kt$WooRefundsFragment$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooTaxFragment.kt$WooTaxFragment$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:WooUpdateProductFragment.kt$WooUpdateProductFragment$ex: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -214,6 +214,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun launchCountriesRequest() {
         coroutineScope.launch {
             try {
