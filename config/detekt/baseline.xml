@@ -16,8 +16,6 @@
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <!-- example -->
-    <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>
-    <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$ex</ID>
     <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
     <ID>SwallowedException:WooCustomersSearchBuilderFragment.kt$WooCustomersSearchBuilderFragment$e: Exception</ID>
     <ID>SwallowedException:WooShippingLabelFragment.kt$WooShippingLabelFragment$e: Exception</ID>

@@ -775,6 +775,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     /**
      * Creates a temporary file for storing captured photos
      */
+    @Suppress("PrintStackTrace")
     private fun createTempPdfFile(context: Context): File? {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir = context.externalCacheDir
@@ -791,6 +792,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("PrintStackTrace")
     private fun writePDFToFile(base64Content: String): File? {
         return try {
             createTempPdfFile(requireContext())?.let { file ->
@@ -823,6 +825,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         startActivity(sendIntent)
     }
 
+    @Suppress("PrintStackTrace")
     private fun downloadUrlOrLog(url: String): File? {
         return try {
             downloadUrl(url)
