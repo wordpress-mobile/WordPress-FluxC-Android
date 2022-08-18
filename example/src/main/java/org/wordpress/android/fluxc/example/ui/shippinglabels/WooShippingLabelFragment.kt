@@ -72,7 +72,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_shippinglabels, container, false)
 
-    @Suppress("LongMethod", "ComplexMethod")
+    @Suppress("LongMethod", "ComplexMethod", "SwallowedException")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
