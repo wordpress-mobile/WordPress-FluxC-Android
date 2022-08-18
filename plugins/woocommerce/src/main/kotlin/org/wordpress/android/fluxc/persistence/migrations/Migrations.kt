@@ -7,6 +7,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 internal val MIGRATION_3_4 = object : Migration(3, 4) {
+    @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             // language=RoomSql
@@ -79,6 +80,7 @@ internal val MIGRATION_4_5 = object : Migration(4, 5) {
 }
 
 internal val MIGRATION_5_6 = object : Migration(5, 6) {
+    @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL("DROP TABLE OrderEntity")
@@ -169,6 +171,7 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
 }
 
 internal val MIGRATION_8_9 = object : Migration(8, 9) {
+    @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL(
@@ -353,6 +356,7 @@ internal val MIGRATION_8_9 = object : Migration(8, 9) {
 }
 
 internal val MIGRATION_9_10 = object : Migration(9, 10) {
+    @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL("DROP TABLE OrderEntity")
@@ -518,6 +522,7 @@ internal class AutoMigration13to14 : AutoMigrationSpec
 internal class AutoMigration14to15 : AutoMigrationSpec
 
 internal val MIGRATION_15_16 = object : Migration(15, 16) {
+    @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
             execSQL("DROP TABLE OrderEntity")

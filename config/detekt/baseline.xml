@@ -5,52 +5,8 @@
     <!-- plugins:woocommerce -->
     <ID>ArrayPrimitive:CouponRestClient.kt$CouponRestClient$Array&lt;Long></ID>
     <ID>ArrayPrimitive:JsonObjectBuilder.kt$JsonObjectBuilder$Array&lt;Int></ID>
-    <ID>ComplexCondition:WCProductStore.kt$WCProductStore$offset == 0 &amp;&amp; includedProductIds.isEmpty() &amp;&amp; excludedProductIds.isEmpty() &amp;&amp; filterOptions.isEmpty()</ID>
-    <ID>ComplexMethod:CouponRestClient.kt$CouponRestClient$private fun UpdateCouponRequest.toNetworkRequest(): Map&lt;String, Any></ID>
-    <ID>ComplexMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
-    <ID>ComplexMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
-    <ID>ComplexMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
-    <ID>ComplexMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>ComplexMethod:ProductVariationApiResponse.kt$ProductVariationApiResponse$fun asProductVariationModel()</ID>
-    <ID>ComplexMethod:WCCustomerMapper.kt$WCCustomerMapper$fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel</ID>
-    <ID>ComplexMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_1: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val address_2: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val first_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Billing$val last_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_1: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val address_2: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val first_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:OrderDto.kt$OrderDto.Shipping$val last_name: String? = null</ID>
-    <ID>ConstructorParameterNaming:WCPaymentChargeApiResult.kt$WCPaymentChargeApiResult.Refunds$@SerializedName("data") val `data`: List&lt;Any?>?</ID>
     <ID>EmptyFunctionBlock:WooCommerceStore.kt$WooCommerceStore${ }</ID>
     <ID>ImplicitDefaultLocale:DateUtils.kt$DateUtils$String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)</ID>
-    <ID>LargeClass:OrderRestClient.kt$OrderRestClient : BaseWPComRestClient</ID>
-    <ID>LargeClass:ProductRestClient.kt$ProductRestClient : BaseWPComRestClient</ID>
-    <ID>LargeClass:ProductSqlUtils.kt$ProductSqlUtils</ID>
-    <ID>LargeClass:WCProductStore.kt$WCProductStore : Store</ID>
-    <ID>LongMethod:FromDatabaseAddonsMapper.kt$FromDatabaseAddonsMapper$fun toDomainModel(entity: AddonWithOptions): Addon</ID>
-    <ID>LongMethod:Migrations.kt$&lt;no name provided>$override fun migrate(database: SupportSQLiteDatabase)</ID>
-    <ID>LongMethod:OrderDtoMapper.kt$OrderDtoMapper$fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair&lt;OrderEntity, List&lt;OrderMetaDataEntity>></ID>
-    <ID>LongMethod:ProductApiResponse.kt$ProductApiResponse$fun asProductModel(): WCProductModel</ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$fun fetchProducts( site: SiteModel, pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE, offset: Int = 0, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING, searchQuery: String? = null, isSkuSearch: Boolean = false, includedProductIds: List&lt;Long>? = null, filterOptions: Map&lt;ProductFilterOption, String>? = null, excludedProductIds: List&lt;Long>? = null )</ID>
-    <ID>LongMethod:ProductRestClient.kt$ProductRestClient$private fun productModelToProductJsonBody( productModel: WCProductModel?, updatedProductModel: WCProductModel ): HashMap&lt;String, Any></ID>
-    <ID>LongMethod:ProvideAddonsIntegrationTests.kt$ProvideAddonsIntegrationTests$@Test fun `should map Checkbox add-on`()</ID>
-    <ID>LongMethod:RemoteAddonMapper.kt$RemoteAddonMapper$fun toDomain(dto: RemoteAddonDto): Addon</ID>
-    <ID>LongMethod:WCProductStore.kt$WCProductStore$@Subscribe(threadMode = ThreadMode.ASYNC) override fun onAction(action: Action&lt;*>)</ID>
-    <ID>LongParameterList:OrderUpdateStore.kt$OrderUpdateStore$( site: SiteModel, orderId: Long, amount: String, customerNote: String, billingEmail: String, isTaxable: Boolean, status: WCOrderStatusModel? = null )</ID>
-    <ID>LongParameterList:RefundRestClient.kt$RefundRestClient$( site: SiteModel, orderId: Long, reason: String, automaticRefund: Boolean, items: List&lt;WCRefundModel.WCRefundItem>, restockItems: Boolean )</ID>
-    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
-    <ID>LongParameterList:ShippingLabelRestClient.kt$ShippingLabelRestClient$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packages: List&lt;ShippingLabelPackage>, customsData: List&lt;WCShippingPackageCustoms>? )</ID>
-    <ID>LongParameterList:WCShippingLabelStore.kt$WCShippingLabelStore$( site: SiteModel, orderId: Long, origin: ShippingLabelAddress, destination: ShippingLabelAddress, packagesData: List&lt;WCShippingLabelPackageData>, customsData: List&lt;WCShippingPackageCustoms>?, emailReceipts: Boolean = false )</ID>
-    <ID>MemberNameEqualsClassName:WCRevenueStatsModel.kt$WCRevenueStatsModel.Interval$val interval: String? = null</ID>
-    <ID>NestedBlockDepth:OrderStatsRestClient.kt$OrderStatsRestClient$suspend fun fetchNewVisitorStats( site: SiteModel, unit: OrderStatsApiUnit, granularity: StatsGranularity, date: String, quantity: Int, force: Boolean = false, startDate: String? = null, endDate: String? = null ): FetchNewVisitorStatsResponsePayload</ID>
-    <ID>NestedBlockDepth:WCOrderStore.kt$WCOrderStore$private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload)</ID>
-    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$fun getImageList(): ArrayList&lt;WCProductImageModel></ID>
-    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun getTriplets(jsonStr: String): ArrayList&lt;ProductTriplet></ID>
-    <ID>NestedBlockDepth:WCProductModel.kt$WCProductModel$private fun parseJson(jsonString: String): List&lt;Long></ID>
-    <ID>NestedBlockDepth:WCShippingLabelStore.kt$WCShippingLabelStore$private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List&lt;PredefinedOption></ID>
     <ID>SpreadOperator:WCInboxStore.kt$WCInboxStore$(siteId, *notesWithActions.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*it.result!!.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.fetchedOrders.toTypedArray())</ID>
@@ -59,95 +15,6 @@
     <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$// Same as shipping_lines, it's a list of objects val fee_lines: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.LineItem val line_items: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$// This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand. // See OrderEntity.ShippingLines val shipping_lines: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val coupon_lines: List&lt;CouponLine>? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val customer_note: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_created_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_modified_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val date_paid_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val discount_total: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val is_editable: Boolean? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val meta_data: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val order_key: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_method: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_method_title: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val payment_url: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val prices_include_tax: Boolean = false</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val shipping_total: String? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val tax_lines: JsonElement? = null</ID>
-    <ID>VariableNaming:OrderDto.kt$OrderDto$val total_tax: String? = null</ID>
-    <ID>VariableNaming:OrderNoteApiResponse.kt$OrderNoteApiResponse$// If true, the note will be shown to customers and they will be notified. If false, the note will be for admin // reference only. Default is false. val customer_note: Boolean = false</ID>
-    <ID>VariableNaming:OrderNoteApiResponse.kt$OrderNoteApiResponse$val date_created_gmt: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val date_shipped: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_id: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_link: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_number: String? = null</ID>
-    <ID>VariableNaming:OrderShipmentTrackingApiResponse.kt$OrderShipmentTrackingApiResponse$val tracking_provider: String? = null</ID>
-    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private final val STATS_FIELDS = "data,fields"</ID>
-    <ID>VariableNaming:OrderStatsRestClient.kt$OrderStatsRestClient$private val STATS_DEFAULT_ORDER = "asc"</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val button_text: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$val menu_order = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var average_rating: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var backorders_allowed = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var catalog_visibility: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var cross_sell_ids: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_created: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_modified: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_from: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_from_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_to: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var date_on_sale_to_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var download_expiry = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var download_limit = 0L</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var external_url: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var grouped_products: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var manage_stock: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var on_sale = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var parent_id = 0L</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var purchase_note: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var rating_count = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var regular_price: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var related_ids: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var reviews_allowed = true</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var sale_price: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_class: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_class_id = 0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_required = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var shipping_taxable = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var short_description: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var sold_individually = false</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var stock_quantity = 0.0</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var stock_status: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var tax_class: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var tax_status: String? = null</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var total_sales = 0L</ID>
-    <ID>VariableNaming:ProductApiResponse.kt$ProductApiResponse$var upsell_ids: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val date_created_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val product_id: Long = 0L</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val reviewer_avatar_urls: JsonElement? = null</ID>
-    <ID>VariableNaming:ProductReviewApiResponse.kt$ProductReviewApiResponse$val reviewer_email: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$val menu_order: Int = 0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var backorders_allowed = false</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_created: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_modified: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_from: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_from_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_to: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var date_on_sale_to_gmt: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var download_expiry = 0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var download_limit = 0L</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var manage_stock = false</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var on_sale = false</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var regular_price: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var sale_price: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var shipping_class: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var shipping_class_id = 0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var stock_quantity = 0.0</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var stock_status: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_class: String? = null</ID>
-    <ID>VariableNaming:ProductVariationApiResponse.kt$ProductVariationApiResponse$var tax_status: String? = null</ID>
     <!-- example -->
     <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$boxId == null || height == null || width == null || length == null || weight == null</ID>
     <ID>ComplexCondition:WooShippingLabelFragment.kt$WooShippingLabelFragment$height == null || width == null || length == null || weight == null</ID>

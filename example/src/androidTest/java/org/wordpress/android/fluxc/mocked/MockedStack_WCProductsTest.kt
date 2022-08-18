@@ -87,7 +87,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(remoteProductId, product.remoteProductId)
             assertEquals(product.getCategoryList().size, 2)
             assertEquals(product.getTagList().size, 2)
-            assertEquals(product.getImageList().size, 2)
+            assertEquals(product.getImageListOrEmpty().size, 2)
             assertNotNull(product.getFirstImageUrl())
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
@@ -108,7 +108,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.remoteProductId, remoteProductId)
             assertEquals(product.getCategoryList().size, 2)
             assertEquals(product.getTagList().size, 2)
-            assertEquals(product.getImageList().size, 2)
+            assertEquals(product.getImageListOrEmpty().size, 2)
             assertNotNull(product.getFirstImageUrl())
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
@@ -663,7 +663,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getImageList().size, 2)
+            assertEquals(product.getImageListOrEmpty().size, 2)
         }
     }
 
@@ -749,7 +749,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
             assertEquals(updatedProduct.virtual, product.virtual)
-            assertEquals(updatedProduct.getImageList().size, 2)
+            assertEquals(updatedProduct.getImageListOrEmpty().size, 2)
             assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
             assertEquals(updatedProduct.getCrossSellProductIdList().size, 3)
             assertEquals(updatedProduct.getUpsellProductIdList().size, 4)
@@ -834,7 +834,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // make sure two images are attached to the product
         val productBefore = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productBefore)
-        assertEquals(productBefore!!.getImageList().size, 2)
+        assertEquals(productBefore!!.getImageListOrEmpty().size, 2)
 
         // remove one of the images
         val didDelete = ProductSqlUtils.deleteProductImage(siteModel, remoteProductId, 1)
@@ -843,7 +843,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // now make sure only one image is attached to the product
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
-        assertEquals(productAfter!!.getImageList().size, 1)
+        assertEquals(productAfter!!.getImageListOrEmpty().size, 1)
     }
 
     @Test

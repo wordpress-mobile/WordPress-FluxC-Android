@@ -263,24 +263,33 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     /**
      * Parses the images json array into a list of product images
      */
-    fun getImageList(): ArrayList<WCProductImageModel> {
-        val imageList = ArrayList<WCProductImageModel>()
-        if (images.isNotEmpty()) {
+    fun getImageListOrEmpty(): List<WCProductImageModel> {
+        return if (images.isNotEmpty()) {
             try {
-                Gson().fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                    with(jsonElement.asJsonObject) {
-                        WCProductImageModel(this.getLong("id")).also {
-                            it.name = this.getString("name") ?: ""
-                            it.src = this.getString("src") ?: ""
-                            it.alt = this.getString("alt") ?: ""
-                            imageList.add(it)
-                        }
-                    }
-                }
+                val jsonElement = Gson().fromJson(images, JsonElement::class.java)
+                getImageList(jsonElement.asJsonArray)
             } catch (e: JsonParseException) {
                 AppLog.e(T.API, e)
+                emptyList()
             } catch (e: IllegalStateException) {
                 AppLog.e(T.API, e)
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun getImageList(imagesAsJsonArray: JsonArray): List<WCProductImageModel> {
+        val imageList = arrayListOf<WCProductImageModel>()
+        imagesAsJsonArray.forEach { jsonElement ->
+            with(jsonElement.asJsonObject) {
+                WCProductImageModel(this.getLong("id")).also {
+                    it.name = this.getString("name") ?: ""
+                    it.src = this.getString("src") ?: ""
+                    it.alt = this.getString("alt") ?: ""
+                    imageList.add(it)
+                }
             }
         }
         return imageList
@@ -300,17 +309,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             AppLog.e(T.API, e)
         }
         return null
-    }
-
-    /**
-     * Extract all image urls from the json array of images
-     */
-    fun getImageUrls(): List<String> {
-        val imageUrls = ArrayList<String>()
-        getImageList().forEach {
-            imageUrls.add(it.src)
-        }
-        return imageUrls
     }
 
     fun getAttributeList(): List<ProductAttribute> {
@@ -387,6 +385,20 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * an appropriate response, if that's the case.
      */
     private fun parseJson(jsonString: String): List<Long> {
+        return if (jsonString.isNotEmpty()) {
+            try {
+                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
+                parseJsonIfNotEmpty(jsonElement)
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun parseJsonIfNotEmpty(jsonElement: JsonElement): List<Long> {
         fun JsonElement.parseId() = when {
             isJsonObject -> asJsonObject["id"]?.asLong
                 ?: throw JsonParseException("Can't extract element's ID")
@@ -394,30 +406,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             else -> throw JsonParseException("Can't extract element's ID")
         }
 
-        val ids = ArrayList<Long>()
-        try {
-            if (jsonString.isNotEmpty()) {
-                val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
-                when {
-                    jsonElement.isJsonNull -> {
-                        return emptyList()
-                    }
-                    jsonElement.isJsonArray -> {
-                        jsonElement.asJsonArray.forEach { element ->
-                            element.parseId().let { ids.add(it) }
-                        }
-                    }
-                    jsonElement.isJsonObject -> {
-                        jsonElement.asJsonObject.entrySet().forEach {
-                            ids.add(it.value.parseId())
-                        }
-                    }
-                }
+        val ids = arrayListOf<Long>()
+        return when {
+            jsonElement.isJsonNull -> emptyList()
+            jsonElement.isJsonArray -> {
+                jsonElement.asJsonArray.forEach { element -> element.parseId().let { ids.add(it) } }
+                ids
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
+            jsonElement.isJsonObject -> {
+                jsonElement.asJsonObject.entrySet().forEach { ids.add(it.value.parseId()) }
+                ids
+            }
+            else -> emptyList()
         }
-        return ids
     }
 
     fun getNumVariations() = getVariationIdList().size
@@ -430,11 +431,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     fun getCrossSellProductIdList() = parseJson(crossSellIds)
 
-    fun getCategoryList() = getTriplets(categories)
+    fun getCategoryList() = getTripletsOrEmpty(categories)
 
     fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategoryList())
 
-    fun getTagList() = getTriplets(tags)
+    fun getTagList() = getTripletsOrEmpty(tags)
 
     fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTagList())
 
@@ -451,27 +452,34 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return commaSeparatedNames
     }
 
-    private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
-        val triplets = ArrayList<ProductTriplet>()
-        try {
-            if (jsonStr.isNotEmpty()) {
-                val jsonElement = Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java)
-                if (jsonElement.isJsonArray) {
-                    jsonElement.asJsonArray.forEach { jsonArray ->
-                        with(jsonArray.asJsonObject) {
-                            triplets.add(
-                                    ProductTriplet(
-                                            id = this.getLong("id"),
-                                            name = this.getString("name") ?: "",
-                                            slug = this.getString("slug") ?: ""
-                                    )
-                            )
-                        }
-                    }
+    private fun getTripletsOrEmpty(jsonStr: String): List<ProductTriplet> {
+        return if (jsonStr.isNotEmpty()) {
+            try {
+                val jsonElement = Gson().fromJson(jsonStr, JsonElement::class.java)
+                getTriplets(jsonElement)
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun getTriplets(tripletsAsJsonElement: JsonElement): List<ProductTriplet> {
+        val triplets = arrayListOf<ProductTriplet>()
+        if (tripletsAsJsonElement.isJsonArray) {
+            tripletsAsJsonElement.asJsonArray.forEach { jsonArray ->
+                with(jsonArray.asJsonObject) {
+                    triplets.add(
+                        ProductTriplet(
+                            id = this.getLong("id"),
+                            name = this.getString("name") ?: "",
+                            slug = this.getString("slug") ?: ""
+                        )
+                    )
                 }
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
         }
         return triplets
     }
@@ -482,8 +490,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     @Suppress("ReturnCount")
     fun hasSameImages(updatedProduct: WCProductModel): Boolean {
-        val updatedImages = updatedProduct.getImageList()
-        val thisImages = getImageList()
+        val updatedImages = updatedProduct.getImageListOrEmpty()
+        val thisImages = getImageListOrEmpty()
         if (thisImages.size != updatedImages.size) {
             return false
         }

@@ -206,6 +206,7 @@ class CouponRestClient @Inject constructor(
         }
     }
 
+    @Suppress("ComplexMethod")
     private fun UpdateCouponRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
             code?.let { put("code", it) }

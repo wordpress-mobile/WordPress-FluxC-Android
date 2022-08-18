@@ -80,6 +80,7 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
 class ProductRestClient @Inject constructor(
     appContext: Context,
@@ -348,6 +349,7 @@ class ProductRestClient @Inject constructor(
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
+    @Suppress("LongMethod")
     fun fetchProducts(
         site: SiteModel,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
@@ -1438,6 +1440,7 @@ class ProductRestClient @Inject constructor(
      * and verifies that the [updatedProductModel] has fields that are different from the default
      * fields of [productModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
+    @Suppress("LongMethod", "ComplexMethod")
     private fun productModelToProductJsonBody(
         productModel: WCProductModel?,
         updatedProductModel: WCProductModel
@@ -1541,7 +1544,7 @@ class ProductRestClient @Inject constructor(
             body["short_description"] = updatedProductModel.shortDescription
         }
         if (!storedWCProductModel.hasSameImages(updatedProductModel)) {
-            val updatedImages = updatedProductModel.getImageList()
+            val updatedImages = updatedProductModel.getImageListOrEmpty()
             body["images"] = JsonArray().also {
                 for (image in updatedImages) {
                     it.add(image.toJson())

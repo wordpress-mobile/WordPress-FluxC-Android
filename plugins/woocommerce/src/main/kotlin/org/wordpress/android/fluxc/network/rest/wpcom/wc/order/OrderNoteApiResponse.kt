@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.util.DateTimeUtils
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class OrderNoteApiResponse : Response {
     val id: Long? = null
     val date_created_gmt: String? = null

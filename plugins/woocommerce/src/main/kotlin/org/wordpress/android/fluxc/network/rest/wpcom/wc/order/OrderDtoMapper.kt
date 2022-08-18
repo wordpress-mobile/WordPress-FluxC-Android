@@ -12,6 +12,7 @@ class OrderDtoMapper @Inject internal constructor(
     private val stripOrder: StripOrder,
     private val stripOrderMetaData: StripOrderMetaData
 ) {
+    @Suppress("LongMethod", "ComplexMethod")
     fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair<OrderEntity, List<OrderMetaDataEntity>> {
         fun convertDateToUTCString(date: String?): String =
                 date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format

@@ -867,39 +867,63 @@ class WCOrderStore @Inject constructor(
         if (payload.isError) {
             onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(0).also { it.error = payload.error }
         } else {
-            val existingOptions = OrderSqlUtils.getOrderStatusOptionsForSite(payload.site)
-            val deleteOptions = mutableListOf<WCOrderStatusModel>()
-            val addOrUpdateOptions = mutableListOf<WCOrderStatusModel>()
-            existingOptions.iterator().forEach { existingOption ->
-                var exists = false
-                payload.labels.iterator().forEach noi@{ newOption ->
-                    if (newOption.statusKey == existingOption.statusKey) {
-                        exists = true
-                        return@noi
-                    }
-                }
-                if (!exists) deleteOptions.add(existingOption)
-            }
-            payload.labels.iterator().forEach { newOption ->
-                var exists = false
-                existingOptions.iterator().forEach eoi@{ existingOption ->
-                    if (newOption.statusKey == existingOption.statusKey) {
-                        exists = true
-                        if (newOption.label != existingOption.label ||
-                            newOption.statusCount != existingOption.statusCount) {
-                            addOrUpdateOptions.add(newOption)
-                        }
-                        return@eoi
-                    }
-                }
-                if (!exists) addOrUpdateOptions.add(newOption)
-            }
-
-            var rowsAffected = addOrUpdateOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
-            rowsAffected += deleteOptions.sumBy { OrderSqlUtils.deleteOrderStatusOption(it) }
-            onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(rowsAffected)
+            onOrderStatusLabelsChanged = onOrderStatusOptionsChanged(payload)
         }
 
         emitChange(onOrderStatusLabelsChanged)
+    }
+
+    private fun onOrderStatusOptionsChanged(
+        payload: FetchOrderStatusOptionsResponsePayload
+    ): OnOrderStatusOptionsChanged {
+        val existingOptions = OrderSqlUtils.getOrderStatusOptionsForSite(payload.site)
+        var rowsAffected = addOrUpdateOptions(payload, existingOptions).sumBy {
+            OrderSqlUtils.insertOrUpdateOrderStatusOption(it)
+        }
+        rowsAffected += deleteOptions(payload, existingOptions).sumBy {
+            OrderSqlUtils.deleteOrderStatusOption(it)
+        }
+        return OnOrderStatusOptionsChanged(rowsAffected)
+    }
+
+    @Suppress("NestedBlockDepth")
+    private fun addOrUpdateOptions(
+        payload: FetchOrderStatusOptionsResponsePayload,
+        existingOptions: List<WCOrderStatusModel>
+    ): List<WCOrderStatusModel> {
+        val addOrUpdateOptions = mutableListOf<WCOrderStatusModel>()
+        payload.labels.iterator().forEach { newOption ->
+            var exists = false
+            existingOptions.iterator().forEach eoi@{ existingOption ->
+                if (newOption.statusKey == existingOption.statusKey) {
+                    exists = true
+                    if (newOption.label != existingOption.label ||
+                        newOption.statusCount != existingOption.statusCount) {
+                        addOrUpdateOptions.add(newOption)
+                    }
+                    return@eoi
+                }
+            }
+            if (!exists) addOrUpdateOptions.add(newOption)
+        }
+        return addOrUpdateOptions
+    }
+
+    private fun deleteOptions(
+        payload: FetchOrderStatusOptionsResponsePayload,
+        existingOptions: List<WCOrderStatusModel>
+    ): List<WCOrderStatusModel> {
+        val deleteOptions = mutableListOf<WCOrderStatusModel>()
+        existingOptions.iterator().forEach { existingOption ->
+            var exists = false
+            payload.labels.iterator().forEach noi@{ newOption ->
+                if (newOption.statusKey == existingOption.statusKey) {
+                    exists = true
+                    return@noi
+                }
+            }
+            if (!exists) deleteOptions.add(existingOption)
+        }
+        return deleteOptions
     }
 }

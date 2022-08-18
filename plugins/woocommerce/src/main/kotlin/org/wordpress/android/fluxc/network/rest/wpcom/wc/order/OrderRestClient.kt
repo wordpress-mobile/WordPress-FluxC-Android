@@ -64,6 +64,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
+@Suppress("LargeClass")
 @Singleton
 class OrderRestClient @Inject constructor(
     appContext: Context,
