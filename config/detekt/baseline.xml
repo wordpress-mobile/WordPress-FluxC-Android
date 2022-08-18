@@ -10,8 +10,6 @@
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*it.result!!.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.fetchedOrders.toTypedArray())</ID>
     <ID>SpreadOperator:WCOrderStore.kt$WCOrderStore$(*payload.ordersWithMeta.toTypedArray())</ID>
-    <ID>SwallowedException:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
-    <ID>SwallowedException:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <!-- example -->

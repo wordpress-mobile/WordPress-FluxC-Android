@@ -116,7 +116,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             ?.find { it.key == ADDONS_METADATA_KEY }
             ?.addons
 
-    private val WCMetaData.addons
+    @Suppress("SwallowedException") private val WCMetaData.addons
         get() =
             try {
                 Gson().run {
