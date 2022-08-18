@@ -49,7 +49,7 @@ class ExperimentsFragment : Fragment() {
                 selectedPlatform = Platform.fromValue(parent.getItemAtPosition(pos) as String)
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit // Do nothing (ignore)
         }
         generate_anon_id_button.setOnClickListener { anon_id_edit_text.setText(UUID.randomUUID().toString()) }
         fetch_assignments.setOnClickListener {

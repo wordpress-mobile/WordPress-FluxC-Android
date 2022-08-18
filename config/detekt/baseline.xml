@@ -16,9 +16,6 @@
     <ID>TooGenericExceptionCaught:ProductRestClient.kt$ProductRestClient$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:WCProductModel.kt$WCProductModel$ex: Exception</ID>
     <!-- example -->
-    <ID>EmptyFunctionBlock:EditTextExt.kt$&lt;no name provided>${}</ID>
-    <ID>EmptyFunctionBlock:ExperimentsFragment.kt$ExperimentsFragment.&lt;no name provided>${}</ID>
-    <ID>EmptyFunctionBlock:RetryOnRedirectBasicNetworkTest.kt$RetryOnRedirectBasicNetworkTest.MockedRequest${}</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$e</ID>
     <ID>PrintStackTrace:WooShippingLabelFragment.kt$WooShippingLabelFragment$ex</ID>
     <ID>SpreadOperator:WooOrdersFragment.kt$WooOrdersFragment$(site, *filter.toTypedArray())</ID>
