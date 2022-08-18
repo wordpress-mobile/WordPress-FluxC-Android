@@ -55,6 +55,7 @@ open class WooCommerceStore @Inject constructor(
         WOO_SERVICES("woocommerce-services/woocommerce-services"),
         WOO_PAYMENTS("woocommerce-payments/woocommerce-payments"),
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
+        WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking")
     }
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
