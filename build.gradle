@@ -50,7 +50,6 @@ allprojects {
     }
 
     detekt {
-        baseline = file("${project.rootDir}/config/detekt/baseline.xml")
         config = files("${project.rootDir}/config/detekt/detekt.yml")
         autoCorrect = false
         buildUponDefaultConfig = true
