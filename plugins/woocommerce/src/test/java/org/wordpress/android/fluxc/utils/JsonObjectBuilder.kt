@@ -40,7 +40,7 @@ internal class JsonObjectBuilder {
         )
     }
 
-    infix fun String.To(value: Array<Int>) {
+    infix fun String.To(value: IntArray) {
         deque.peek().add(this,
                 JsonArray().apply {
                     value.forEach { item ->
