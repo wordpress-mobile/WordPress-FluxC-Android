@@ -72,7 +72,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_shippinglabels, container, false)
 
-    @Suppress("LongMethod", "ComplexMethod")
+    @Suppress("LongMethod", "ComplexMethod", "SwallowedException", "TooGenericExceptionCaught")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -775,6 +775,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     /**
      * Creates a temporary file for storing captured photos
      */
+    @Suppress("PrintStackTrace")
     private fun createTempPdfFile(context: Context): File? {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir = context.externalCacheDir
@@ -791,6 +792,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     private fun writePDFToFile(base64Content: String): File? {
         return try {
             createTempPdfFile(requireContext())?.let { file ->
@@ -823,6 +825,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         startActivity(sendIntent)
     }
 
+    @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     private fun downloadUrlOrLog(url: String): File? {
         return try {
             downloadUrl(url)

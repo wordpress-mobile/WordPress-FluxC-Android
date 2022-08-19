@@ -12,8 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.*
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R.layout
@@ -173,11 +172,11 @@ class WooBatchUpdateVariationsFragment : Fragment() {
     }
 
     private fun runBatchUpdate(payload: BatchUpdateVariationsPayload) {
-        lifecycleScope.launch(IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val result: WooResult<BatchProductVariationsUpdateApiResponse> =
                 wcProductStore.batchUpdateVariations(payload)
 
-            withContext(Main) {
+            withContext(Dispatchers.Main) {
                 if (result.isError) {
                     prependToLog("Error: ${result.error.message}")
                 } else {

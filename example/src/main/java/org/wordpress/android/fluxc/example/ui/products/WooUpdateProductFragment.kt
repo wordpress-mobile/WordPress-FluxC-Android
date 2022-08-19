@@ -542,6 +542,7 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onAttachAttributeToProductButtonClicked() {
         try {
             showSingleLineDialog(
@@ -570,6 +571,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onDetachAttributeFromProductButtonClicked() {
         try {
             showSingleLineDialog(
@@ -596,6 +598,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onGenerateVariationButtonClicked() {
         try {
             coroutineScope.launch {
@@ -609,6 +612,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onDeleteVariationButtonClicked() {
         try {
             showSingleLineDialog(

@@ -9,10 +9,10 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_experiments.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.experiments.Assignments
@@ -49,7 +49,7 @@ class ExperimentsFragment : Fragment() {
                 selectedPlatform = Platform.fromValue(parent.getItemAtPosition(pos) as String)
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit // Do nothing (ignore)
         }
         generate_anon_id_button.setOnClickListener { anon_id_edit_text.setText(UUID.randomUUID().toString()) }
         fetch_assignments.setOnClickListener {
@@ -58,7 +58,7 @@ class ExperimentsFragment : Fragment() {
             val anonymousId = anon_id_edit_text.text.toString()
             prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, " +
                     "anonymousId=$anonymousId")
-            GlobalScope.launch(Dispatchers.Default) {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
                 withContext(Dispatchers.Main) {
                     onAssignmentsFetched(result)
