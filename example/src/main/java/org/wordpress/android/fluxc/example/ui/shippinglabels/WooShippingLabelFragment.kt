@@ -60,6 +60,7 @@ import kotlin.math.ceil
 
 private const val LOAD_DATA_DELAY = 5000L // 5 seconds
 
+@Suppress("LargeClass")
 class WooShippingLabelFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
@@ -71,6 +72,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_shippinglabels, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -231,7 +233,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
 
                     prependToLog("Downloading the commercial invoice")
                     val invoiceFile = withContext(Dispatchers.IO) {
-                        downloadUrl(label.commercialInvoiceUrl!!)
+                        downloadUrlOrLog(label.commercialInvoiceUrl!!)
                     }
                     invoiceFile?.let {
                         openPdfReader(it)
@@ -454,6 +456,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                                         weight = t.text.toString().toFloatOrNull()
 
                                         val box: ShippingLabelPackage?
+                                        @Suppress("ComplexCondition")
                                         if (height == null || width == null || length == null || weight == null) {
                                             prependToLog(
                                                     "Invalid package parameters:\n" +
@@ -530,6 +533,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                             ?.toFloat()
                     val weight = showSingleLineDialog(requireActivity(), "Enter weight:", isNumeric = true)
                             ?.toFloat()
+                    @Suppress("ComplexCondition")
                     if (boxId == null || height == null || width == null || length == null || weight == null) {
                         prependToLog(
                                 "Invalid package parameters:\n" +
@@ -819,20 +823,25 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         startActivity(sendIntent)
     }
 
-    private fun downloadUrl(url: String): File? {
+    private fun downloadUrlOrLog(url: String): File? {
         return try {
-            URL(url).openConnection().inputStream.use { inputStream ->
-                createTempPdfFile(requireContext())?.let { file ->
-                    file.outputStream().use { output ->
-                        inputStream.copyTo(output)
-                    }
-                    file
-                }
-            }
+            downloadUrl(url)
         } catch (e: Exception) {
             e.printStackTrace()
             prependToLog("Error downloading the file: ${e.message}")
             null
         }
+    }
+
+    private fun downloadUrl(url: String): File? {
+        val file = URL(url).openConnection().inputStream.use { inputStream ->
+            createTempPdfFile(requireContext())?.let { file ->
+                file.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+                file
+            }
+        }
+        return file
     }
 }

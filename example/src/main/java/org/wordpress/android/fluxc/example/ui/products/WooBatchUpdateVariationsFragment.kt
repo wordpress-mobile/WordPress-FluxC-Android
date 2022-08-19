@@ -57,6 +57,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
     ): View? =
         inflater.inflate(layout.fragment_woo_batch_update_variations, container, false)
 
+    @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         update_product_info.setOnClickListener {
             val site = getWCSite()
@@ -142,34 +143,34 @@ class WooBatchUpdateVariationsFragment : Fragment() {
         emptyList()
     }
 
-    private fun buildPayload(): BatchUpdateVariationsPayload =
-        with(variationsUpdatePayloadBuilder) {
-            with(regular_price.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.regularPrice(this)
-            }
-            with(sale_price.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.salePrice(this)
-            }
-            with(stock_quantity.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.stockQuantity(this.toInt())
-            }
-            with(weight.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.weight(this)
-            }
-            val length = length.getText()
-            val width = width.getText()
-            val height = height.getText()
-            if (length.isNotEmpty() || width.isNotEmpty() || height.isNotEmpty()) {
-                variationsUpdatePayloadBuilder.dimensions(length = length, width = width, height = height)
-            }
-            with(shipping_class_id.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassId(this)
-            }
-            with(shipping_class.getText()) {
-                if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassSlug(this)
-            }
-            build()
+    @Suppress("ComplexMethod")
+    private fun buildPayload(): BatchUpdateVariationsPayload = with(variationsUpdatePayloadBuilder) {
+        with(regular_price.getText()) {
+            if (isNotEmpty()) variationsUpdatePayloadBuilder.regularPrice(this)
         }
+        with(sale_price.getText()) {
+            if (isNotEmpty()) variationsUpdatePayloadBuilder.salePrice(this)
+        }
+        with(stock_quantity.getText()) {
+            if (isNotEmpty()) variationsUpdatePayloadBuilder.stockQuantity(this.toInt())
+        }
+        with(weight.getText()) {
+            if (isNotEmpty()) variationsUpdatePayloadBuilder.weight(this)
+        }
+        val length = length.getText()
+        val width = width.getText()
+        val height = height.getText()
+        if (length.isNotEmpty() || width.isNotEmpty() || height.isNotEmpty()) {
+            variationsUpdatePayloadBuilder.dimensions(length = length, width = width, height = height)
+        }
+        with(shipping_class_id.getText()) {
+            if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassId(this)
+        }
+        with(shipping_class.getText()) {
+            if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassSlug(this)
+        }
+        build()
+    }
 
     private fun runBatchUpdate(payload: BatchUpdateVariationsPayload) {
         lifecycleScope.launch(IO) {

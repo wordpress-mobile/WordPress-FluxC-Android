@@ -58,6 +58,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
+@Suppress("LargeClass")
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCShippingLabelStoreTest {
@@ -291,6 +292,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `get shipping rates`() = test {
         val expectedRatesResult = WCShippingRatesResult(
             listOf(
@@ -474,6 +476,7 @@ class WCShippingLabelStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `purchase shipping labels with polling`() = test {
         val response = WooPayload(samplePurchaseShippingLabelsResponse)
         whenever(restClient.purchaseShippingLabels(

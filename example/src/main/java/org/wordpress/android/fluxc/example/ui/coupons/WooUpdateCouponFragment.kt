@@ -90,6 +90,7 @@ class WooUpdateCouponFragment : Fragment() {
         couponId?.let { outState.putLong(ARG_SELECTED_COUPON_ID, it) }
     }
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

@@ -8,6 +8,7 @@ import kotlin.test.assertEquals
 
 class WCCurrencyUtilsTest {
     @Test
+    @Suppress("LongMethod")
     fun testDecimalFormat() {
         val cadSettings = WCSettingsModel(
                 localSiteId = 6,
