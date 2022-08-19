@@ -1440,7 +1440,7 @@ class ProductRestClient @Inject constructor(
      * and verifies that the [updatedProductModel] has fields that are different from the default
      * fields of [productModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
-    @Suppress("LongMethod", "ComplexMethod")
+    @Suppress("LongMethod", "ComplexMethod", "SwallowedException", "TooGenericExceptionCaught")
     private fun productModelToProductJsonBody(
         productModel: WCProductModel?,
         updatedProductModel: WCProductModel
@@ -1627,7 +1627,7 @@ class ProductRestClient @Inject constructor(
      * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any
      * changes.
      */
-    @Suppress("ForbiddenComment", "LongMethod", "ComplexMethod")
+    @Suppress("ForbiddenComment", "LongMethod", "ComplexMethod", "SwallowedException", "TooGenericExceptionCaught")
     private fun variantModelToProductJsonBody(
         variationModel: WCProductVariationModel?,
         updatedVariationModel: WCProductVariationModel

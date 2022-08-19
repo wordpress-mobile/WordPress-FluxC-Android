@@ -236,4 +236,55 @@ class StripOrderMetaDataTest {
             )
         )
     }
+
+    @Test
+    fun `when Metadata key is invalid, then remove it from the list`() {
+        // Given
+        val rawMetadata = listOf(
+            WCMetaData(
+                id = 1L,
+                key = null,
+                value = "valid value",
+                displayKey = null,
+                displayValue = null
+            ),
+            WCMetaData(
+                id = 2L,
+                key = "_internal key",
+                value = "valid value",
+                displayKey = null,
+                displayValue = null
+            ),
+            WCMetaData(
+                id = 3L,
+                key = "valid key",
+                value = "valid value",
+                displayKey = null,
+                displayValue = null
+            )
+        )
+        gsonMock = mock {
+            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
+            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
+                rawMetadata
+            )
+        }
+        sut = StripOrderMetaData(gsonMock)
+
+        // When
+        val result = sut(orderDtoMock, LocalId(1))
+
+        // Then
+        assertThat(result).isEqualTo(
+            listOf(
+                OrderMetaDataEntity(
+                    id = 3L,
+                    orderId = 1,
+                    localSiteId = LocalId(1),
+                    key = "valid key",
+                    value = "valid value"
+                )
+            )
+        )
+    }
 }
