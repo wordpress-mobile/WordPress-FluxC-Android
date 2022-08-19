@@ -594,6 +594,7 @@ class WCOrderStore @Inject constructor(
         ordersDao.insertOrUpdateOrder(updatedOrder)
     }
 
+    @Suppress("SpreadOperator")
     suspend fun fetchOrderNotes(
         site: SiteModel,
         orderId: Long
@@ -717,6 +718,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    @Suppress("SpreadOperator")
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
         coroutineEngine.launch(API, this, "handleFetchOrdersCompleted") {
             val onOrderChanged: OnOrderChanged = if (payload.isError) {
@@ -800,6 +802,7 @@ class WCOrderStore @Inject constructor(
         )
     }
 
+    @Suppress("SpreadOperator")
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
         coroutineEngine.launch(API, this, "handleFetchOrderByIdsCompleted") {
             val onOrdersFetchedByIds = if (payload.isError) {

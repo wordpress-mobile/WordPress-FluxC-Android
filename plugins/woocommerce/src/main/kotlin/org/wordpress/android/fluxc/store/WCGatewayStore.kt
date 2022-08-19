@@ -42,10 +42,11 @@ class WCGatewayStore @Inject constructor(
         site: SiteModel,
         gatewayId: GatewayId,
         enabled: Boolean? = null,
-        title: String? = null
+        title: String? = null,
+        description: String? = null,
     ): WooResult<WCGatewayModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "updatePaymentGateway") {
-            val response = restClient.updatePaymentGateway(site, gatewayId, enabled, title)
+            val response = restClient.updatePaymentGateway(site, gatewayId, enabled, title, description)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)

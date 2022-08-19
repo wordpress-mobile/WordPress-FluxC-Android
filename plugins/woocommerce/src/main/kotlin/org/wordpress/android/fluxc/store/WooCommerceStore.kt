@@ -65,7 +65,7 @@ open class WooCommerceStore @Inject constructor(
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    override fun onAction(action: Action<*>) { }
+    override fun onAction(action: Action<*>) = Unit // Do nothing (ignore)
 
     suspend fun fetchWooCommerceSites(): WooResult<List<SiteModel>> {
         val fetchResult = siteStore.fetchSites(FetchSitesPayload())

@@ -246,7 +246,7 @@ object DateUtils {
      *
      */
     fun getFormattedDateString(year: Int, month: Int, dayOfMonth: Int): String {
-        return String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)
+        return String.format(Locale.US, "%d-%02d-%02d", year, (month + 1), dayOfMonth)
     }
 
     /**
