@@ -48,6 +48,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
 class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,
@@ -838,6 +839,7 @@ class WCProductStore @Inject constructor(
         parentId: Long = 0L
     ) = ProductSqlUtils.getProductCategoryByNameAndParentId(site.id, categoryName, parentId)
 
+    @Suppress("LongMethod", "ComplexMethod")
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return
@@ -993,6 +995,7 @@ class WCProductStore @Inject constructor(
 
     override fun onRegister() = AppLog.d(API, "WCProductStore onRegister")
 
+    @Suppress("ForbiddenComment")
     suspend fun fetchSingleProduct(payload: FetchSingleProductPayload): OnProductChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchSingleProduct") {
             val result = with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
@@ -1264,7 +1267,8 @@ class WCProductStore @Inject constructor(
     /**
      * Batch updates variations on the backend and updates variations locally after successful request.
      *
-     * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using [BatchUpdateVariationsPayload.Builder] class.
+     * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using
+     * [BatchUpdateVariationsPayload.Builder] class.
      */
     suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
         WooResult<BatchProductVariationsUpdateApiResponse> =
@@ -1326,6 +1330,7 @@ class WCProductStore @Inject constructor(
     }
 
     // Returns a boolean indicating whether more coupons can be fetched
+    @Suppress("ComplexCondition")
     suspend fun fetchProducts(
         site: SiteModel,
         offset: Int = 0,
@@ -1504,6 +1509,7 @@ class WCProductStore @Inject constructor(
         emitChange(onProductSkuAvailabilityChanged)
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleFetchProductsCompleted(payload: RemoteProductListPayload) {
         coroutineEngine.launch(T.DB, this, "handleFetchProductsCompleted") {
             val onProductChanged: OnProductChanged

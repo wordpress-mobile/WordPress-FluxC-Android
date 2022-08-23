@@ -32,7 +32,8 @@ style:
     active: true
   WildcardImport:
     active: true
-    excludeImports: []
+    excludeImports:
+      - 'kotlinx.android.synthetic.*' # For the 'example' module.
   ForbiddenSuppress:
     active: true
     rules: ['MaximumLineLength']

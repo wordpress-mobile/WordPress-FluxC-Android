@@ -26,6 +26,8 @@ class CustomStatsDialog : DialogFragment() {
     }
 
     companion object {
+        private const val CUSTOM_STATS_REQUEST_CODE = 100
+
         @JvmStatic
         fun newInstance(
             fragment: Fragment,
@@ -34,7 +36,7 @@ class CustomStatsDialog : DialogFragment() {
             unit: String?,
             wcOrderStatsAction: WCOrderStatsAction
         ) = CustomStatsDialog().apply {
-            setTargetFragment(fragment, 100)
+            setTargetFragment(fragment, CUSTOM_STATS_REQUEST_CODE)
             this.startDate = startDate
             this.endDate = endDate
             this.granularity = unit

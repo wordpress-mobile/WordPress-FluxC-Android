@@ -161,7 +161,7 @@ class CouponRestClient @Inject constructor(
 
     suspend fun fetchCouponsReports(
         site: SiteModel,
-        couponsIds: Array<Long> = emptyArray(),
+        couponsIds: LongArray = longArrayOf(),
         after: Date
     ): WooPayload<List<CouponReportDto>> {
         val url = WOOCOMMERCE.reports.coupons.pathV4Analytics
@@ -193,7 +193,7 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<CouponReportDto> {
         return fetchCouponsReports(
             site = site,
-            couponsIds = arrayOf(couponId),
+            couponsIds = longArrayOf(couponId),
             after = after
         ).let {
             when {
@@ -206,6 +206,7 @@ class CouponRestClient @Inject constructor(
         }
     }
 
+    @Suppress("ComplexMethod")
     private fun UpdateCouponRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
             code?.let { put("code", it) }

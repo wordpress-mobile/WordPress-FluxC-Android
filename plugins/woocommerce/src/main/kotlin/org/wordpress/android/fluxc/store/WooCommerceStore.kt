@@ -55,6 +55,7 @@ open class WooCommerceStore @Inject constructor(
         WOO_SERVICES("woocommerce-services/woocommerce-services"),
         WOO_PAYMENTS("woocommerce-payments/woocommerce-payments"),
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
+        WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking")
     }
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
@@ -65,7 +66,7 @@ open class WooCommerceStore @Inject constructor(
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    override fun onAction(action: Action<*>) { }
+    override fun onAction(action: Action<*>) = Unit // Do nothing (ignore)
 
     suspend fun fetchWooCommerceSites(): WooResult<List<SiteModel>> {
         val fetchResult = siteStore.fetchSites(FetchSitesPayload())
@@ -96,6 +97,7 @@ open class WooCommerceStore @Inject constructor(
         return WooResult(getWooCommerceSites())
     }
 
+    @Suppress("ReturnCount")
     suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
         if (!site.isJetpackCPConnected) {
             siteStore.fetchSite(site).let {
@@ -158,6 +160,13 @@ open class WooCommerceStore @Inject constructor(
 
     fun getSitePlugin(site: SiteModel, plugin: WooPlugin): SitePluginModel? {
         return PluginSqlUtils.getSitePluginByName(site, plugin.pluginName)
+    }
+
+    suspend fun getSitePlugins(site: SiteModel, plugins: List<WooPlugin>): List<SitePluginModel> {
+        return coroutineEngine.withDefaultContext(T.DB, this, "getSitePlugins"){
+            val pluginNames = plugins.map { it.pluginName }
+            PluginSqlUtils.getSitePluginByNames(site, pluginNames)
+        }
     }
 
     suspend fun getSitePlugins(site: SiteModel): List<SitePluginModel> {

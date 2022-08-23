@@ -54,12 +54,14 @@ class GatewayRestClient @Inject constructor(
         site: SiteModel,
         gatewayId: GatewayId,
         enabled: Boolean? = null,
-        title: String? = null
+        title: String? = null,
+        description: String? = null,
     ): WooPayload<GatewayResponse> {
-        val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.toString()).pathV3
+        val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.apiKey).pathV3
         val params = mutableMapOf<String, Any>().apply {
             enabled?.let { put("enabled", enabled) }
             title?.let { put("title", title) }
+            description?.let { put("description", description) }
         }
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
             this,

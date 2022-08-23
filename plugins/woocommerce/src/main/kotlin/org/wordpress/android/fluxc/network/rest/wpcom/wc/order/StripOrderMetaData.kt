@@ -5,7 +5,7 @@ import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isInternalAttribute
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isDisplayableAttribute
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import javax.inject.Inject
 
@@ -27,7 +27,7 @@ class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
 
         return parseMetaDataJSON(orderDto.meta_data)
             ?.asSequence()
-            ?.filter { it.isInternalAttribute.not() }
+            ?.filter { it.isDisplayableAttribute }
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
             ?.filter { it.value.isNotEmpty() && it.value.matches(jsonRegex).not() }
             ?.toList()
@@ -47,7 +47,7 @@ class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
             id = id,
             localSiteId = localSiteId,
             orderId = orderId,
-            key = key,
+            key = key.orEmpty(),
             value = value.toString().replace(htmlRegex, "")
         )
 }

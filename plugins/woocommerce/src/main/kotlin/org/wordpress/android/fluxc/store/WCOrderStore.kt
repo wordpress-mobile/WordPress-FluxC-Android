@@ -322,11 +322,6 @@ class WCOrderStore @Inject constructor(
         }
     }
 
-    // TODO nbradbury this and related code can be removed
-    data class OnQuickOrderResult(
-        var order: OrderEntity? = null
-    ) : OnChanged<OrderError>()
-
     /**
      * Emitted after fetching a list of Order summaries from the network.
      */
@@ -465,6 +460,7 @@ class WCOrderStore @Inject constructor(
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
         OrderSqlUtils.getOrderShipmentProvidersForSite(site)
 
+    @Suppress("ComplexMethod", "UseCheckOrError")
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
@@ -598,6 +594,7 @@ class WCOrderStore @Inject constructor(
         ordersDao.insertOrUpdateOrder(updatedOrder)
     }
 
+    @Suppress("SpreadOperator")
     suspend fun fetchOrderNotes(
         site: SiteModel,
         orderId: Long
@@ -721,14 +718,15 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    @Suppress("SpreadOperator")
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
         coroutineEngine.launch(API, this, "handleFetchOrdersCompleted") {
             val onOrderChanged: OnOrderChanged = if (payload.isError) {
                 OnOrderChanged(orderError = payload.error)
             } else {
                 // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
-                // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
-                // or if the user manual changed some order IDs)
+                // This is the simplest way of keeping our local orders in sync with remote orders
+                // (in case of deletions, or if the user manual changed some order IDs).
                 if (!payload.loadedMore) {
                     ordersDao.deleteOrdersForSite(payload.site.localId())
                     orderNotesDao.deleteOrderNotesForSite(payload.site.remoteId())
@@ -744,6 +742,7 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Ideally we would have a separate process that prunes the following
         // tables of defunct records:
@@ -803,6 +802,7 @@ class WCOrderStore @Inject constructor(
         )
     }
 
+    @Suppress("SpreadOperator")
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
         coroutineEngine.launch(API, this, "handleFetchOrderByIdsCompleted") {
             val onOrdersFetchedByIds = if (payload.isError) {
@@ -870,39 +870,63 @@ class WCOrderStore @Inject constructor(
         if (payload.isError) {
             onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(0).also { it.error = payload.error }
         } else {
-            val existingOptions = OrderSqlUtils.getOrderStatusOptionsForSite(payload.site)
-            val deleteOptions = mutableListOf<WCOrderStatusModel>()
-            val addOrUpdateOptions = mutableListOf<WCOrderStatusModel>()
-            existingOptions.iterator().forEach { existingOption ->
-                var exists = false
-                payload.labels.iterator().forEach noi@{ newOption ->
-                    if (newOption.statusKey == existingOption.statusKey) {
-                        exists = true
-                        return@noi
-                    }
-                }
-                if (!exists) deleteOptions.add(existingOption)
-            }
-            payload.labels.iterator().forEach { newOption ->
-                var exists = false
-                existingOptions.iterator().forEach eoi@{ existingOption ->
-                    if (newOption.statusKey == existingOption.statusKey) {
-                        exists = true
-                        if (newOption.label != existingOption.label ||
-                            newOption.statusCount != existingOption.statusCount) {
-                            addOrUpdateOptions.add(newOption)
-                        }
-                        return@eoi
-                    }
-                }
-                if (!exists) addOrUpdateOptions.add(newOption)
-            }
-
-            var rowsAffected = addOrUpdateOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
-            rowsAffected += deleteOptions.sumBy { OrderSqlUtils.deleteOrderStatusOption(it) }
-            onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(rowsAffected)
+            onOrderStatusLabelsChanged = onOrderStatusOptionsChanged(payload)
         }
 
         emitChange(onOrderStatusLabelsChanged)
+    }
+
+    private fun onOrderStatusOptionsChanged(
+        payload: FetchOrderStatusOptionsResponsePayload
+    ): OnOrderStatusOptionsChanged {
+        val existingOptions = OrderSqlUtils.getOrderStatusOptionsForSite(payload.site)
+        var rowsAffected = addOrUpdateOptions(payload, existingOptions).sumBy {
+            OrderSqlUtils.insertOrUpdateOrderStatusOption(it)
+        }
+        rowsAffected += deleteOptions(payload, existingOptions).sumBy {
+            OrderSqlUtils.deleteOrderStatusOption(it)
+        }
+        return OnOrderStatusOptionsChanged(rowsAffected)
+    }
+
+    @Suppress("NestedBlockDepth")
+    private fun addOrUpdateOptions(
+        payload: FetchOrderStatusOptionsResponsePayload,
+        existingOptions: List<WCOrderStatusModel>
+    ): List<WCOrderStatusModel> {
+        val addOrUpdateOptions = mutableListOf<WCOrderStatusModel>()
+        payload.labels.iterator().forEach { newOption ->
+            var exists = false
+            existingOptions.iterator().forEach eoi@{ existingOption ->
+                if (newOption.statusKey == existingOption.statusKey) {
+                    exists = true
+                    if (newOption.label != existingOption.label ||
+                        newOption.statusCount != existingOption.statusCount) {
+                        addOrUpdateOptions.add(newOption)
+                    }
+                    return@eoi
+                }
+            }
+            if (!exists) addOrUpdateOptions.add(newOption)
+        }
+        return addOrUpdateOptions
+    }
+
+    private fun deleteOptions(
+        payload: FetchOrderStatusOptionsResponsePayload,
+        existingOptions: List<WCOrderStatusModel>
+    ): List<WCOrderStatusModel> {
+        val deleteOptions = mutableListOf<WCOrderStatusModel>()
+        existingOptions.iterator().forEach { existingOption ->
+            var exists = false
+            payload.labels.iterator().forEach noi@{ newOption ->
+                if (newOption.statusKey == existingOption.statusKey) {
+                    exists = true
+                    return@noi
+                }
+            }
+            if (!exists) deleteOptions.add(existingOption)
+        }
+        return deleteOptions
     }
 }

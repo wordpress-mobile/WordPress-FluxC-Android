@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.XPostsStore
 
 object JavaCoroutineHelper {
+    @Suppress("GlobalCoroutineUsage")
     fun fetchXposts(
         xPostsStore: XPostsStore,
         site: SiteModel,

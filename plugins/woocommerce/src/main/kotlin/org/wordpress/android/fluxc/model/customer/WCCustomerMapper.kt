@@ -7,6 +7,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WCCustomerMapper @Inject constructor() {
+    @Suppress("ComplexMethod")
     fun mapToModel(site: SiteModel, dto: CustomerDTO): WCCustomerModel {
         return WCCustomerModel().apply {
             localSiteId = site.id

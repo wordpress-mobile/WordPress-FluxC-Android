@@ -6,12 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_refunds.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R.layout
@@ -38,6 +37,7 @@ class WooRefundsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_refunds, container, false)
 
+    @Suppress("LongMethod", "TooGenericExceptionCaught")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -46,19 +46,21 @@ class WooRefundsFragment : Fragment() {
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
                     showSingleLineDialog(activity, "Enter the refund amount:") { amountEditText ->
                         showSingleLineDialog(activity, "Enter refund reason:") { reasonEditText ->
-                            GlobalScope.launch(Dispatchers.Main) {
+                            lifecycleScope.launch(Dispatchers.IO) {
                                 try {
-                                    val response = withContext(Dispatchers.Default) {
-                                        refundsStore.createAmountRefund(
-                                                site,
-                                                orderEditText.text.toString().toLong(),
-                                                amountEditText.text.toString().toBigDecimal(),
-                                                reasonEditText.text.toString()
-                                        )
+                                    val response = refundsStore.createAmountRefund(
+                                        site,
+                                        orderEditText.text.toString().toLong(),
+                                        amountEditText.text.toString().toBigDecimal(),
+                                        reasonEditText.text.toString()
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        printRefund(response)
                                     }
-                                    printRefund(response)
                                 } catch (e: Exception) {
-                                    prependToLog("Error: ${e.message}")
+                                    withContext(Dispatchers.Main) {
+                                        prependToLog("Error: ${e.message}")
+                                    }
                                 }
                             }
                         }
@@ -71,18 +73,18 @@ class WooRefundsFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
                     showSingleLineDialog(activity, "Enter the refund ID:") { refundEditText ->
-                        GlobalScope.launch(Dispatchers.Main) {
-                            supervisorScope {
-                                try {
-                                    val response = withContext(Dispatchers.Default) {
-                                        refundsStore.fetchRefund(
-                                                site,
-                                                orderEditText.text.toString().toLong(),
-                                                refundEditText.text.toString().toLong()
-                                        )
-                                    }
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val response = refundsStore.fetchRefund(
+                                    site,
+                                    orderEditText.text.toString().toLong(),
+                                    refundEditText.text.toString().toLong()
+                                )
+                                withContext(Dispatchers.Main) {
                                     printRefund(response)
-                                } catch (e: Exception) {
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
                                     prependToLog("Error: ${e.message}")
                                 }
                             }
@@ -95,15 +97,13 @@ class WooRefundsFragment : Fragment() {
         fetch_all_refunds.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
-                    GlobalScope.launch(Dispatchers.Main) {
-                        supervisorScope {
-                            try {
-                                val response = withContext(Dispatchers.Default) {
-                                    refundsStore.fetchAllRefunds(
-                                            site,
-                                            orderEditText.text.toString().toLong()
-                                    )
-                                }
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            val response = refundsStore.fetchAllRefunds(
+                                site,
+                                orderEditText.text.toString().toLong()
+                            )
+                            withContext(Dispatchers.Main) {
                                 response.error?.let {
                                     prependToLog("${it.type}: ${it.message}")
                                 }
@@ -113,7 +113,9 @@ class WooRefundsFragment : Fragment() {
                                         prependToLog("Refund: $refund")
                                     }
                                 }
-                            } catch (e: Exception) {
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
                                 prependToLog("Error: ${e.message}")
                             }
                         }

@@ -30,17 +30,18 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fetch_product_attributes.setOnClickListener(::onFetchAttributesListClicked)
-        fetch_product_attributes_from_db.setOnClickListener(::onFetchCachedAttributesListClicked)
-        create_product_attributes.setOnClickListener(::onCreateAttributeButtonClicked)
-        delete_product_attributes.setOnClickListener(::onDeleteAttributeButtonClicked)
-        update_product_attributes.setOnClickListener(::onUpdateAttributeButtonClicked)
-        fetch_product_single_attribute.setOnClickListener(::onFetchAttributeButtonClicked)
-        fetch_term_for_attribute.setOnClickListener(::onFetchAttributeTermsButtonClicked)
-        create_term_for_attribute.setOnClickListener(::onCreateAttributeTermButtonClicked)
+        fetch_product_attributes.setOnClickListener { onFetchAttributesListClicked() }
+        fetch_product_attributes_from_db.setOnClickListener { onFetchCachedAttributesListClicked() }
+        create_product_attributes.setOnClickListener { onCreateAttributeButtonClicked() }
+        delete_product_attributes.setOnClickListener { onDeleteAttributeButtonClicked() }
+        update_product_attributes.setOnClickListener { onUpdateAttributeButtonClicked() }
+        fetch_product_single_attribute.setOnClickListener { onFetchAttributeButtonClicked() }
+        fetch_term_for_attribute.setOnClickListener { onFetchAttributeTermsButtonClicked() }
+        create_term_for_attribute.setOnClickListener { onCreateAttributeTermButtonClicked() }
     }
 
-    private fun onCreateAttributeButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onCreateAttributeButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -63,7 +64,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onDeleteAttributeButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onDeleteAttributeButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -89,7 +91,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onUpdateAttributeButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onUpdateAttributeButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -121,7 +124,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onFetchAttributeButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onFetchAttributeButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -147,7 +151,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onFetchAttributeTermsButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onFetchAttributeTermsButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -174,7 +179,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onCreateAttributeTermButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onCreateAttributeTermButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -206,7 +212,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onFetchAttributesListClicked(view: View) = coroutineScope.launch {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onFetchAttributesListClicked() = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite {
                     wcAttributesStore.fetchStoreAttributes(it)
@@ -218,7 +225,8 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun onFetchCachedAttributesListClicked(view: View) = coroutineScope.launch {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onFetchCachedAttributesListClicked() = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite {
                 wcAttributesStore.loadCachedStoreAttributes(it)

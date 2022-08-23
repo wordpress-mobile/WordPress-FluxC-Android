@@ -42,6 +42,8 @@ import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val PURCHASE_SHIPPING_LABELS_DELAY = 2000L
+
 @Singleton
 class WCShippingLabelStore @Inject constructor(
     private val restClient: ShippingLabelRestClient,
@@ -236,6 +238,7 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun getShippingRates(
         site: SiteModel,
         orderId: Long,
@@ -305,6 +308,7 @@ class WCShippingLabelStore @Inject constructor(
         }.flatten() // Flat it
     }
 
+    @Suppress("NestedBlockDepth")
     private fun getActivePredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
         val predefinedOptions = mutableListOf<PredefinedOption>()
         result.formSchema.predefinedSchema.entries.forEach { provider ->
@@ -407,6 +411,7 @@ class WCShippingLabelStore @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     suspend fun purchaseShippingLabels(
         site: SiteModel,
         orderId: Long,
@@ -429,7 +434,7 @@ class WCShippingLabelStore @Inject constructor(
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result?.labels != null -> {
-                    delay(2000)
+                    delay(PURCHASE_SHIPPING_LABELS_DELAY)
                     val labelsStatusResponse = pollShippingLabelsForPurchase(
                             site,
                             orderId,

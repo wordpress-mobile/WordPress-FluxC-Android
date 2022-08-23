@@ -22,6 +22,8 @@ import java.util.Date
 
 class WCAddOrderShipmentTrackingDialog : DialogFragment() {
     companion object {
+        private const val WC_ADD_ORDER_SHIPMENT_TRACKING_REQUEST_CODE = 200
+
         @JvmStatic
         fun newInstance(
             fragment: Fragment,
@@ -29,7 +31,7 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
             order: OrderEntity,
             providers: List<String>
         ) = WCAddOrderShipmentTrackingDialog().apply {
-            setTargetFragment(fragment, 200)
+            setTargetFragment(fragment, WC_ADD_ORDER_SHIPMENT_TRACKING_REQUEST_CODE)
             this.site = site
             this.order = order
             this.providers = providers

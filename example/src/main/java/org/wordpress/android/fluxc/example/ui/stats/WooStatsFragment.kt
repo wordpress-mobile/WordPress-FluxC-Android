@@ -32,6 +32,8 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
+private const val TOP_EARNERS_STATS_PAYLOAD_LIMIT = 10
+
 class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcStatsStore: WCStatsStore
@@ -49,6 +51,7 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_stats, container, false)
 
+    @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -136,14 +139,24 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_top_earners_stats.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, false)
+                val payload = FetchTopEarnersStatsPayload(
+                    it,
+                    StatsGranularity.DAYS,
+                    TOP_EARNERS_STATS_PAYLOAD_LIMIT,
+                    false
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
             }
         }
 
         fetch_top_earners_stats_forced.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, true)
+                val payload = FetchTopEarnersStatsPayload(
+                    it,
+                    StatsGranularity.DAYS,
+                    TOP_EARNERS_STATS_PAYLOAD_LIMIT,
+                    true
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
             }
         }

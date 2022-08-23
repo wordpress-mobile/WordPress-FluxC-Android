@@ -65,6 +65,7 @@ import org.wordpress.android.util.StringUtils
 import java.util.Calendar
 import javax.inject.Inject
 
+@Suppress("LargeClass")
 class WooUpdateProductFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
@@ -145,6 +146,7 @@ class WooUpdateProductFragment : Fragment() {
         selectedProductDownloads.let { outState.putParcelableArrayList(ARG_SELECTED_DOWNLOADS, it as ArrayList) }
     }
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -405,10 +407,10 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.virtual = isChecked
         }
 
-        attach_attribute.setOnClickListener(::onAttachAttributeToProductButtonClicked)
-        detach_attribute.setOnClickListener(::onDetachAttributeFromProductButtonClicked)
-        generate_variation.setOnClickListener(::onGenerateVariationButtonClicked)
-        delete_variation.setOnClickListener(::onDeleteVariationButtonClicked)
+        attach_attribute.setOnClickListener { onAttachAttributeToProductButtonClicked() }
+        detach_attribute.setOnClickListener { onDetachAttributeFromProductButtonClicked() }
+        generate_variation.setOnClickListener { onGenerateVariationButtonClicked() }
+        delete_variation.setOnClickListener { onDeleteVariationButtonClicked() }
 
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
 
@@ -459,6 +461,7 @@ class WooUpdateProductFragment : Fragment() {
         selectedRemoteProductId?.let { updateSelectedProductId(it) }
     }
 
+    @Suppress("ComplexMethod")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == LIST_SELECTOR_REQUEST_CODE) {
@@ -539,7 +542,8 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
-    private fun onAttachAttributeToProductButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onAttachAttributeToProductButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -567,7 +571,8 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun onDetachAttributeFromProductButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onDetachAttributeFromProductButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,
@@ -593,7 +598,8 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun onGenerateVariationButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onGenerateVariationButtonClicked() {
         try {
             coroutineScope.launch {
                 takeAsyncRequestWithValidSite { site ->
@@ -606,7 +612,8 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun onDeleteVariationButtonClicked(view: View) {
+    @Suppress("TooGenericExceptionCaught")
+    private fun onDeleteVariationButtonClicked() {
         try {
             showSingleLineDialog(
                     activity,

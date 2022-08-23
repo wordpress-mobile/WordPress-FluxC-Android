@@ -81,8 +81,6 @@ From there, add and enable the custom configuration file, located at [config/det
 
 If you want to use the **AutoCorrect** feature of the plugin, make sure that the option `Enable formatting (ktlint) rules` is enabled in the above settings, then you will be able to reformat any file according to detekt's rules using the refactor menu `AutoCorrect by Detekt Rules`
 
-Please don’t add a new suppression line to the [baseline.xml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/trunk/config/detekt/baseline.xml). Consider fixing the issue or suppressing locally if it’s necessary.
-
 ## Contributing
 
 ### Actions
