@@ -2,16 +2,17 @@ package org.wordpress.android.fluxc.mocked
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient.GatewayId.CASH_ON_DELIVERY
 import javax.inject.Inject
 
-
-class MockedStack_WCGatewayTest: MockedStack_Base() {
+class MockedStack_WCGatewayTest : MockedStack_Base() {
     @Inject internal lateinit var restClient: GatewayRestClient
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
@@ -22,13 +23,86 @@ class MockedStack_WCGatewayTest: MockedStack_Base() {
     }
 
     @Test
-    fun givenSiteHasCodEnabledThenSuccessReturned() = runBlocking {
-        interceptor.respondWith("wc-pay-fetch-cod-enabled-response-success.json")
+    fun whenFetchGatewaySuccessReturnSuccess(): Unit = runBlocking {
+        interceptor.respondWith("wc-pay-fetch-gateway-response-success.json")
+
+        val result = restClient.fetchGateway(
+            SiteModel().apply { siteId = 123L },
+            "cod"
+        )
+
+        assertTrue(result.result != null)
+        Assert.assertFalse(result.isError)
+
+    }
+
+    @Test
+    fun whenFetchGatewayErrorReturnError() = runBlocking {
+        interceptor.respondWithError("wc-pay-fetch-gateway-response-error.json", 500)
+
+        val result = restClient.fetchGateway(
+            SiteModel().apply { siteId = 123L },
+            "cod"
+        )
+
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
+
+    }
+
+    @Test
+    fun whenValidDataProvidedUpdateGatewayThenSuccessReturned() = runBlocking {
+        interceptor.respondWith("wc-pay-update-gateway-response-success.json")
 
         val result = restClient.updatePaymentGateway(
             SiteModel().apply { siteId = 123L },
             CASH_ON_DELIVERY,
-            enabled = true
+            enabled = true,
+            title = "Pay on Delivery",
+            description = "Pay by cash or card on delivery"
         )
+
+        Assert.assertFalse(result.isError)
+        assertTrue(result.result != null)
+    }
+
+    @Test
+    fun whenInalidDataProvidedUpdateGatewayThenSErrorReturned() = runBlocking {
+        interceptor.respondWithError("wc-pay-update-gateway-response-error.json", 500)
+
+        val result = restClient.updatePaymentGateway(
+            SiteModel().apply { siteId = 123L },
+            CASH_ON_DELIVERY,
+            enabled = true,
+            title = "Pay on Delivery",
+            description = "Pay by cash or card on delivery"
+        )
+
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
+    }
+
+    @Test
+    fun whenFetchAllGatewaysSucceedsReturnSuccess() = runBlocking {
+        interceptor.respondWith("wc-pay-fetch-all-gateways-response-success.json")
+
+        val result = restClient.fetchAllGateways(
+            SiteModel().apply { siteId = 123L }
+        )
+
+        Assert.assertFalse(result.isError)
+        assertTrue(result.result != null)
+    }
+
+    @Test
+    fun whenFetchAllGatewaysErrorReturnError() = runBlocking {
+        interceptor.respondWithError("wc-pay-fetch-all-gateways-response-error.json", 500)
+
+        val result = restClient.fetchAllGateways(
+            SiteModel().apply { siteId = 123L }
+        )
+
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
     }
 }
