@@ -23,7 +23,7 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenFetchGatewaySuccessReturnSuccess(): Unit = runBlocking {
+    fun whenFetchGatewaySuccessReturnSuccess() = runBlocking {
         interceptor.respondWith("wc-pay-fetch-gateway-response-success.json")
 
         val result = restClient.fetchGateway(
@@ -67,7 +67,7 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenInalidDataProvidedUpdateGatewayThenSErrorReturned() = runBlocking {
+    fun whenInvalidDataProvidedUpdateGatewayThenSErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-update-gateway-response-error.json", 500)
 
         val result = restClient.updatePaymentGateway(
