@@ -67,15 +67,31 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenInvalidDataProvidedUpdateGatewayThenSErrorReturned() = runBlocking {
+    fun whenUpdateGatewayFailsDueToUnexpectedServerErrorThenServerErrorReturned() = runBlocking {
         interceptor.respondWithError("wc-pay-update-gateway-response-error.json", 500)
 
         val result = restClient.updatePaymentGateway(
             SiteModel().apply { siteId = 123L },
             CASH_ON_DELIVERY,
-            enabled = true,
+            enabled = false,
             title = "Pay on Delivery",
             description = "Pay by cash or card on delivery"
+        )
+
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
+    }
+
+    @Test
+    fun whenInvalidDataProvidedUpdateGatewayThenInvalidParamReturned() = runBlocking {
+        interceptor.respondWithError("wc-pay-update-gateway-invalid-data-response-error.json", 500)
+
+        val result = restClient.updatePaymentGateway(
+            SiteModel().apply { siteId = 123L },
+            enabled = true,
+            title = "THIS IS INVALID TITLE",
+            description = "THIS IS INVALID DESCRIPTION",
+            gatewayId = CASH_ON_DELIVERY
         )
 
         assertTrue(result.isError)
