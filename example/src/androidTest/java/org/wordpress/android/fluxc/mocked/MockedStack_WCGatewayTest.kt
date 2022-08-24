@@ -33,7 +33,6 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
 
         assertTrue(result.result != null)
         Assert.assertFalse(result.isError)
-
     }
 
     @Test
@@ -47,7 +46,6 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
 
         assertTrue(result.isError)
         assertEquals(API_ERROR, result.error.type)
-
     }
 
     @Test
