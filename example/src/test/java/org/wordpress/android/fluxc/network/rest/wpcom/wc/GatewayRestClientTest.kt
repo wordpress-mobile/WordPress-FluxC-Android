@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
 import com.android.volley.RequestQueue
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
@@ -51,7 +52,8 @@ class GatewayRestClientTest {
                     any<Class<GatewayRestClient.GatewayResponse>>(),
                     any(),
                     any(),
-                    any()
+                    any(),
+                    anyOrNull()
                 )
             ).thenReturn(
                 JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(mock())
@@ -59,7 +61,7 @@ class GatewayRestClientTest {
 
             val actualResponse = gatewayRestClient.fetchGateway(
                 SiteModel(),
-            ""
+                ""
             )
 
             Assertions.assertThat(actualResponse.isError).isFalse
@@ -70,7 +72,8 @@ class GatewayRestClientTest {
     @Test
     fun `given error response, when fetch gateway, return error`() {
         runBlocking {
-            val expectedError = mock<WPComGsonNetworkError>().apply { type = mock()
+            val expectedError = mock<WPComGsonNetworkError>().apply {
+                type = mock()
             }
             whenever(
                 jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -81,7 +84,8 @@ class GatewayRestClientTest {
                     any<Class<GatewayRestClient.GatewayResponse>>(),
                     any(),
                     any(),
-                    any()
+                    any(),
+                    anyOrNull()
                 )
             ).thenReturn(
                 JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
