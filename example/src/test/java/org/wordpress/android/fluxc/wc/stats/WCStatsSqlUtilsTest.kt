@@ -32,6 +32,7 @@ class WCStatsSqlUtilsTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testSimpleInsertionAndRetrievalOfRevenueStats() {
         // insert a first stats entry and verify that it is stored correctly
         val revenueStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
@@ -121,6 +122,7 @@ class WCStatsSqlUtilsTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testGetRawRevenueStatsForSiteAndUnit() {
         // revenue stats model for current day
         val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()

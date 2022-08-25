@@ -119,6 +119,7 @@ class WCInboxStore @Inject constructor(
         return numberOfPagesToDelete
     }
 
+    @Suppress("SpreadOperator")
     private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
         val notesWithActions = result.map { it.toInboxNoteWithActionsEntity(siteId) }
         inboxNotesDao.deleteAllAndInsertInboxNotes(siteId, *notesWithActions.toTypedArray())

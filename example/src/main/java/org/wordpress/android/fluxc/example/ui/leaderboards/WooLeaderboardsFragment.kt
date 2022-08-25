@@ -70,6 +70,7 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun launchProductLeaderboardsRequest(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
@@ -83,6 +84,7 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun launchProductLeaderboardsCacheRetrieval(unit: StatsGranularity) {
         coroutineScope.launch {
             try {

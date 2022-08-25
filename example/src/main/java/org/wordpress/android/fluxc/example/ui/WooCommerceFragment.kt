@@ -44,6 +44,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_woocommerce, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -213,6 +214,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun launchCountriesRequest() {
         coroutineScope.launch {
             try {

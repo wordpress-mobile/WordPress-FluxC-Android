@@ -40,6 +40,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         create_term_for_attribute.setOnClickListener { onCreateAttributeTermButtonClicked() }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onCreateAttributeButtonClicked() {
         try {
             showSingleLineDialog(
@@ -63,6 +64,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onDeleteAttributeButtonClicked() {
         try {
             showSingleLineDialog(
@@ -89,6 +91,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onUpdateAttributeButtonClicked() {
         try {
             showSingleLineDialog(
@@ -121,6 +124,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onFetchAttributeButtonClicked() {
         try {
             showSingleLineDialog(
@@ -147,6 +151,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onFetchAttributeTermsButtonClicked() {
         try {
             showSingleLineDialog(
@@ -174,6 +179,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onCreateAttributeTermButtonClicked() {
         try {
             showSingleLineDialog(
@@ -206,6 +212,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onFetchAttributesListClicked() = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite {
@@ -218,6 +225,7 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun onFetchCachedAttributesListClicked() = coroutineScope.launch {
         try {
             takeAsyncRequestWithValidSite {

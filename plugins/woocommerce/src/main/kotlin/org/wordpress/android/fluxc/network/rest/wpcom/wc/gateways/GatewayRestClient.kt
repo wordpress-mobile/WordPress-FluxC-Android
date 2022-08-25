@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.store.Settings
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -56,12 +57,14 @@ class GatewayRestClient @Inject constructor(
         enabled: Boolean? = null,
         title: String? = null,
         description: String? = null,
+        settings: Settings? = null
     ): WooPayload<GatewayResponse> {
         val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.apiKey).pathV3
         val params = mutableMapOf<String, Any>().apply {
             enabled?.let { put("enabled", enabled) }
             title?.let { put("title", title) }
             description?.let { put("description", description) }
+            settings?.let { put("settings", settings) }
         }
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
             this,

@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
@@ -55,6 +56,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPaylo
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
+@Suppress("LargeClass")
 class WooProductsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
@@ -79,6 +81,7 @@ class WooProductsFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_products, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -691,29 +694,35 @@ class WooProductsFragment : StoreSelectingFragment() {
 
         selectedSite?.let { site ->
             when (event.causeOfChange) {
-                FETCH_SINGLE_PRODUCT_SHIPPING_CLASS -> {
-                    pendingFetchSingleProductShippingClassRemoteId?.let { remoteId ->
-                        pendingFetchSingleProductShippingClassRemoteId = null
-                        val productShippingClass = wcProductStore.getShippingClassByRemoteId(site, remoteId)
-                        productShippingClass?.let {
-                            prependToLog("Single product shipping class fetched! ${it.name}")
-                        } ?: prependToLog("WARNING: Fetched shipping class not found in the local database!")
-                    }
-                }
-                else -> {
-                    prependToLog("Fetched ${event.rowsAffected} product shipping classes. " +
-                            "More shipping classes available ${event.canLoadMore}")
-
-                    if (event.canLoadMore) {
-                        pendingFetchProductShippingClassListOffset += event.rowsAffected
-                        load_more_product_shipping_classes.visibility = View.VISIBLE
-                        load_more_product_shipping_classes.isEnabled = true
-                    } else {
-                        pendingFetchProductShippingClassListOffset = 0
-                        load_more_product_shipping_classes.isEnabled = false
-                    }
-                }
+                FETCH_SINGLE_PRODUCT_SHIPPING_CLASS -> logFetchSingleProductShippingClass(site)
+                else -> checkProductShippingClassesAndLoadMore(event)
             }
+        }
+    }
+
+    private fun logFetchSingleProductShippingClass(site: SiteModel) {
+        pendingFetchSingleProductShippingClassRemoteId?.let { remoteId ->
+            pendingFetchSingleProductShippingClassRemoteId = null
+            val productShippingClass = wcProductStore.getShippingClassByRemoteId(site, remoteId)
+            productShippingClass?.let {
+                prependToLog("Single product shipping class fetched! ${it.name}")
+            } ?: prependToLog("WARNING: Fetched shipping class not found in the local database!")
+        }
+    }
+
+    private fun checkProductShippingClassesAndLoadMore(event: OnProductShippingClassesChanged) {
+        prependToLog(
+            "Fetched ${event.rowsAffected} product shipping classes. " +
+                "More shipping classes available ${event.canLoadMore}"
+        )
+
+        if (event.canLoadMore) {
+            pendingFetchProductShippingClassListOffset += event.rowsAffected
+            load_more_product_shipping_classes.visibility = View.VISIBLE
+            load_more_product_shipping_classes.isEnabled = true
+        } else {
+            pendingFetchProductShippingClassListOffset = 0
+            load_more_product_shipping_classes.isEnabled = false
         }
     }
 
