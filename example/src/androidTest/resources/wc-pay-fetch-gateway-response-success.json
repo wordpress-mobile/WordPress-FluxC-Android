@@ -1,0 +1,11 @@
+{
+  "data":{
+    "id": "cod",
+    "title": "Pay in Person",
+    "description": "Pay by card or another accepted payment method",
+    "order": "",
+    "enabled": true,
+    "method_title": "Cash on delivery",
+    "method_description": "Have your customers pay with cash (or by other means) upon delivery."
+  }
+}
