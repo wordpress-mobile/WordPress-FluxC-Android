@@ -68,6 +68,7 @@ class OrderDtoMapper @Inject internal constructor(
                     shippingState = this.shipping?.state ?: "",
                     shippingPostcode = this.shipping?.postcode ?: "",
                     shippingCountry = this.shipping?.country ?: "",
+                    shippingPhone = this.shipping?.phone ?: "",
                     lineItems = this.line_items.toString(),
                     shippingLines = this.shipping_lines.toString(),
                     feeLines = this.fee_lines.toString(),
