@@ -23,12 +23,18 @@ steps:
           cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
           ./gradlew checkstyle
         artifact_paths: *artifact_paths
+        notify:
+          - github_commit_status:
+              context: "checkstyle"
 
       - label: "🕵️ detekt"
         command: |
           cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
           ./gradlew detekt
         artifact_paths: *artifact_paths
+        notify:
+          - github_commit_status:
+              context: "detekt"
 
       - label: "🕵️ Lint"
         command: |
@@ -36,6 +42,9 @@ steps:
           ./gradlew lintRelease || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1);
           find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || exit 0;
         artifact_paths: *artifact_paths
+        notify:
+          - github_commit_status:
+              context: "Lint"
 
   ############################
   # Unit Tests
@@ -47,11 +56,17 @@ steps:
         command: .buildkite/unit-tests.sh
         artifact_paths: *artifact_paths
         plugins: *common_plugins
+        notify:
+          - github_commit_status:
+              context: "Unit Test"
 
       - label: "🔬 WooCommerce Tests"
         command: .buildkite/woocommerce-tests.sh
         artifact_paths: *artifact_paths
         plugins: *common_plugins
+        notify:
+          - github_commit_status:
+              context: "WooCommerce Tests"
 
   ############################
   # Connected Tests
@@ -61,6 +76,10 @@ steps:
     command: .buildkite/connected-tests.sh
     artifact_paths: *artifact_paths
     plugins: *common_plugins
+    # The connected tests are currently failing. We want to keep running these tests to collect
+    # data about the failures. However, we don't want to publish the GitHub status to avoid confusion.
+    # That's why we don't have a `notify` block for this step.
+    # See: https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2515
 
   ############################
   # Publish artefacts to S3
@@ -77,6 +96,9 @@ steps:
         key: "publish-fluxc-annotations"
         command: .buildkite/publish-fluxc-annotations.sh
         plugins: *common_plugins
+        notify:
+          - github_commit_status:
+              context: "Publish :fluxc-annotations"
 
       - label: "🚀 Publish :fluxc-processor"
         key: "publish-fluxc-processor"
@@ -84,6 +106,9 @@ steps:
           - "publish-fluxc-annotations"
         command: .buildkite/publish-fluxc-processor.sh
         plugins: *common_plugins
+        notify:
+          - github_commit_status:
+              context: "Publish :fluxc-processor"
 
       - label: "🚀 Publish :fluxc"
         key: "publish-fluxc"
@@ -92,6 +117,9 @@ steps:
           - "publish-fluxc-annotations"
         command: .buildkite/publish-fluxc.sh
         plugins: *common_plugins
+        notify:
+          - github_commit_status:
+              context: "Publish :fluxc"
 
       - label: "🚀 Publish :plugins:woocommerce"
         key: "publish-plugins-woocommerce"
@@ -101,3 +129,6 @@ steps:
           - "publish-fluxc"
         command: .buildkite/publish-plugins-woocommerce.sh
         plugins: *common_plugins
+        notify:
+        - github_commit_status:
+            context: "Publish :plugins:woocommerce"
