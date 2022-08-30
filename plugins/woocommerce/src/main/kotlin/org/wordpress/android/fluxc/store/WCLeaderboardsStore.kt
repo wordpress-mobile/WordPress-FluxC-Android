@@ -24,30 +24,32 @@ class WCLeaderboardsStore @Inject constructor(
     private val restClient: LeaderboardsRestClient,
     private val productStore: WCProductStore,
     private val mapper: WCProductLeaderboardsMapper,
-    private val coroutineEngine: CoroutineEngine
-) {
+    private val coroutineEngine: CoroutineEngine,
+
+    ) {
     suspend fun fetchProductLeaderboards(
         site: SiteModel,
         unit: StatsGranularity = DAYS,
         queryTimeRange: LongRange? = null,
-        quantity: Int? = null
+        quantity: Int? = null,
+        addProductsPath: Boolean = false
     ): WooResult<List<WCTopPerformerProductModel>> =
-            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
-                fetchAllLeaderboards(site, unit, queryTimeRange, quantity)
-                        .model
-                        ?.firstOrNull { it.type == PRODUCTS }
-                        ?.run { mapper.map(this, site, productStore, unit) }
-                        ?.let {
-                            insertNewLeaderboards(it, site.id, unit)
-                            getCurrentLeaderboards(site.id, unit)
-                        }
-                        ?.distinctBy { it.product.remoteProductId }
-                        ?.let { WooResult(it) }
-                        ?: getCurrentLeaderboards(site.id, unit)
-                                .takeIf { it.isNotEmpty() }
-                                ?.let { WooResult(it) }
-                        ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-            }
+        coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
+            fetchAllLeaderboards(site, unit, queryTimeRange, quantity, addProductsPath)
+                .model
+                ?.firstOrNull { it.type == PRODUCTS }
+                ?.run { mapper.map(this, site, productStore, unit) }
+                ?.let {
+                    insertNewLeaderboards(it, site.id, unit)
+                    getCurrentLeaderboards(site.id, unit)
+                }
+                ?.distinctBy { it.product.remoteProductId }
+                ?.let { WooResult(it) }
+                ?: getCurrentLeaderboards(site.id, unit)
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { WooResult(it) }
+                ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+        }
 
     fun fetchCachedProductLeaderboards(
         site: SiteModel,
@@ -58,13 +60,14 @@ class WCLeaderboardsStore @Inject constructor(
         site: SiteModel,
         unit: StatsGranularity? = null,
         queryTimeRange: LongRange? = null,
-        quantity: Int? = null
+        quantity: Int? = null,
+        addProductsPath: Boolean = false
     ): WooResult<List<LeaderboardsApiResponse>> =
-            with(restClient.fetchLeaderboards(site, unit, queryTimeRange, quantity)) {
-                return when {
-                    isError -> WooResult(error)
-                    result != null -> WooResult(result.toList())
-                    else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-                }
+        with(restClient.fetchLeaderboards(site, unit, queryTimeRange, quantity, addProductsPath)) {
+            return when {
+                isError -> WooResult(error)
+                result != null -> WooResult(result.toList())
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
+        }
 }
