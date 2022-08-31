@@ -30,10 +30,12 @@ class LeaderboardsRestClient @Inject constructor(
         site: SiteModel,
         unit: StatsGranularity?,
         queryTimeRange: LongRange?,
-        quantity: Int?
-    ) = WOOCOMMERCE.leaderboards.pathV4Analytics
-            .requestTo(site, unit, queryTimeRange, quantity)
-            .handleResult()
+        quantity: Int?,
+        addProductsPath: Boolean = false
+    ) = when (addProductsPath) {
+        true -> WOOCOMMERCE.leaderboards.products.pathV4Analytics
+        else -> WOOCOMMERCE.leaderboards.pathV4Analytics
+    }.requestTo(site, unit, queryTimeRange, quantity).handleResult()
 
     private suspend fun String.requestTo(
         site: SiteModel,
@@ -41,11 +43,11 @@ class LeaderboardsRestClient @Inject constructor(
         queryTimeRange: LongRange?,
         quantity: Int?
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this@LeaderboardsRestClient,
-            site,
-            this,
-            createParameters(site, unit, queryTimeRange, quantity),
-            Array<LeaderboardsApiResponse>::class.java
+        this@LeaderboardsRestClient,
+        site,
+        this,
+        createParameters(site, unit, queryTimeRange, quantity),
+        Array<LeaderboardsApiResponse>::class.java
     )
 
     private fun createParameters(
@@ -54,16 +56,16 @@ class LeaderboardsRestClient @Inject constructor(
         queryTimeRange: LongRange?,
         quantity: Int?
     ) = mapOf(
-            "before" to (
-                    queryTimeRange?.endInclusive
-                            ?: DateUtils.getEndDateForSite(site))
-                    .toString(),
-            "after" to (
-                    queryTimeRange?.start
-                            ?: unit?.startDateTime(site)
-                            ?: "")
-                    .toString(),
-            "per_page" to quantity?.toString().orEmpty(),
-            "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
+        "before" to (
+                queryTimeRange?.endInclusive
+                    ?: DateUtils.getEndDateForSite(site))
+            .toString(),
+        "after" to (
+                queryTimeRange?.start
+                    ?: unit?.startDateTime(site)
+                    ?: "")
+            .toString(),
+        "per_page" to quantity?.toString().orEmpty(),
+        "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
     ).filter { it.value.isNotEmpty() }
 }
