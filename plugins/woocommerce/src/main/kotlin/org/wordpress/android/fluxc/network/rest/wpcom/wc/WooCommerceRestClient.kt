@@ -39,7 +39,7 @@ class WooCommerceRestClient @Inject constructor(
      */
     suspend fun fetchSupportedWooApiVersion(
         site: SiteModel,
-        overrideRetryPolicy: Boolean
+        overrideRetryPolicy: Boolean = false
     ): WooPayload<RootWPAPIRestResponse> {
         val url = "/"
         val retryPolicy = when (overrideRetryPolicy) {

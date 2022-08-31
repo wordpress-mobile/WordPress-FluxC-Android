@@ -275,7 +275,7 @@ open class WooCommerceStore @Inject constructor(
 
     suspend fun fetchSupportedApiVersion(
         site: SiteModel,
-        overrideRetryPolicy: Boolean
+        overrideRetryPolicy: Boolean = false
     ): WooResult<WCApiVersionResponse> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSupportedWooApiVersion") {
             val response = wcCoreRestClient.fetchSupportedWooApiVersion(site, overrideRetryPolicy)

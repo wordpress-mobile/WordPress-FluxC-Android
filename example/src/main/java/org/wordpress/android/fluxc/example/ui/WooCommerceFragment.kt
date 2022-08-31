@@ -67,7 +67,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
             for (site in wooCommerceStore.getWooCommerceSites()) {
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooCommerceStore.fetchSupportedApiVersion(site, overrideRetryPolicy = false)
+                        wooCommerceStore.fetchSupportedApiVersion(site)
                     }
                     result.error?.let {
                         prependToLog("Error in onApiVersionFetched: ${it.type} - ${it.message}")

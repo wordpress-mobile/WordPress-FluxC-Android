@@ -340,7 +340,7 @@ class WooCommerceStoreTest {
         } else {
             whenever(wcrestClient.fetchSupportedWooApiVersion(any(), any())).thenReturn(payload)
         }
-        return wooCommerceStore.fetchSupportedApiVersion(site, overrideRetryPolicy = false)
+        return wooCommerceStore.fetchSupportedApiVersion(site)
     }
 
     private suspend fun fetchSiteSettings(isError: Boolean = false): WooResult<WCSettingsModel> {
