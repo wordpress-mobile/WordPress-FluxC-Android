@@ -17,12 +17,12 @@ import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -187,15 +187,16 @@ class OrderStatsRestClient @Inject constructor(
         startDate: String,
         endDate: String,
         perPage: Int,
-        force: Boolean = false
+        forceRefresh: Boolean = false
     ): FetchRevenueStatsResponsePayload {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val params = mapOf(
-                "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
-                "after" to startDate,
-                "before" to endDate,
-                "per_page" to perPage.toString(),
-                "order" to "asc"
+            "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
+            "after" to startDate,
+            "before" to endDate,
+            "per_page" to perPage.toString(),
+            "order" to "asc",
+            "force_cache_refresh" to forceRefresh.toString()
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -205,7 +206,7 @@ class OrderStatsRestClient @Inject constructor(
                 params = params,
                 clazz = RevenueStatsApiResponse::class.java,
                 enableCaching = true,
-                forced = force
+            forced = forceRefresh
         )
 
         return when (response) {
