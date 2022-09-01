@@ -37,15 +37,22 @@ class WooCommerceRestClient @Inject constructor(
      * of the Woo API.
      *
      */
-    suspend fun fetchSupportedWooApiVersion(site: SiteModel): WooPayload<RootWPAPIRestResponse> {
+    suspend fun fetchSupportedWooApiVersion(
+        site: SiteModel,
+        overrideRetryPolicy: Boolean = false
+    ): WooPayload<RootWPAPIRestResponse> {
         val url = "/"
+        val retryPolicy = when (overrideRetryPolicy) {
+            true -> jetpackTunnelGsonRequestBuilder.buildDefaultTimeoutRetryPolicy()
+            false -> null
+        }
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
             site,
             url,
             mapOf("_fields" to "authentication,namespaces"),
             RootWPAPIRestResponse::class.java,
-            retryPolicy = jetpackTunnelGsonRequestBuilder.buildDefaultTimeoutRetryPolicy()
+            retryPolicy = retryPolicy
         )
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data)
