@@ -32,7 +32,7 @@ class WCLeaderboardsStore @Inject constructor(
         queryTimeRange: LongRange? = null,
         quantity: Int? = null,
         addProductsPath: Boolean = false,
-        forceRefresh: Boolean
+        forceRefresh: Boolean = false
     ): WooResult<List<WCTopPerformerProductModel>> =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
             fetchAllLeaderboards(site, unit, queryTimeRange, quantity, addProductsPath, forceRefresh)
