@@ -25,8 +25,7 @@ class WCLeaderboardsStore @Inject constructor(
     private val productStore: WCProductStore,
     private val mapper: WCProductLeaderboardsMapper,
     private val coroutineEngine: CoroutineEngine,
-
-    ) {
+) {
     suspend fun fetchProductLeaderboards(
         site: SiteModel,
         unit: StatsGranularity = DAYS,
