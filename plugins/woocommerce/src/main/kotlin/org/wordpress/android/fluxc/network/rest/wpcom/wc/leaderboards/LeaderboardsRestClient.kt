@@ -31,22 +31,24 @@ class LeaderboardsRestClient @Inject constructor(
         unit: StatsGranularity?,
         queryTimeRange: LongRange?,
         quantity: Int?,
-        addProductsPath: Boolean = false
+        addProductsPath: Boolean = false,
+        forceRefresh: Boolean
     ) = when (addProductsPath) {
         true -> WOOCOMMERCE.leaderboards.products.pathV4Analytics
         else -> WOOCOMMERCE.leaderboards.pathV4Analytics
-    }.requestTo(site, unit, queryTimeRange, quantity).handleResult()
+    }.requestTo(site, unit, queryTimeRange, quantity, forceRefresh).handleResult()
 
     private suspend fun String.requestTo(
         site: SiteModel,
         unit: StatsGranularity?,
         queryTimeRange: LongRange?,
-        quantity: Int?
+        quantity: Int?,
+        forceRefresh: Boolean
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
         this@LeaderboardsRestClient,
         site,
         this,
-        createParameters(site, unit, queryTimeRange, quantity),
+        createParameters(site, unit, queryTimeRange, quantity, forceRefresh),
         Array<LeaderboardsApiResponse>::class.java
     )
 
@@ -54,7 +56,8 @@ class LeaderboardsRestClient @Inject constructor(
         site: SiteModel,
         unit: StatsGranularity?,
         queryTimeRange: LongRange?,
-        quantity: Int?
+        quantity: Int?,
+        forceRefresh: Boolean
     ) = mapOf(
         "before" to (
                 queryTimeRange?.endInclusive
@@ -66,6 +69,7 @@ class LeaderboardsRestClient @Inject constructor(
                     ?: "")
             .toString(),
         "per_page" to quantity?.toString().orEmpty(),
-        "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
+        "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: ""),
+        "force_cache_refresh" to forceRefresh.toString()
     ).filter { it.value.isNotEmpty() }
 }

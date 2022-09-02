@@ -34,12 +34,12 @@ class LeaderboardsRestClientTest {
         jetpackSuccessResponse = mock()
         jetpackErrorResponse = mock()
         restClientUnderTest = LeaderboardsRestClient(
-                mock(),
-                mock(),
-                mock(),
-                mock(),
-                mock(),
-                requestBuilder
+            mock(),
+            mock(),
+            mock(),
+            mock(),
+            mock(),
+            requestBuilder
         )
     }
 
@@ -47,19 +47,26 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should call syncGetRequest with correct parameters and return expected response`() = test {
         val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
+        val response = restClientUnderTest.fetchLeaderboards(
+            stubSite,
+            DAYS,
+            queryTimeRange = 1L..22L,
+            quantity = 5,
+            forceRefresh = false
+        )
 
-        val response = restClientUnderTest.fetchLeaderboards(stubSite, DAYS, 1L..22L, 5)
         verify(requestBuilder, times(1)).syncGetRequest(
-                restClientUnderTest,
-                stubSite,
-                WOOCOMMERCE.leaderboards.pathV4Analytics,
-                mapOf(
-                        "before" to "22",
-                        "after" to "1",
-                        "per_page" to "5",
-                        "interval" to "day"
-                ),
-                Array<LeaderboardsApiResponse>::class.java
+            restClientUnderTest,
+            stubSite,
+            WOOCOMMERCE.leaderboards.pathV4Analytics,
+            mapOf(
+                "before" to "22",
+                "after" to "1",
+                "per_page" to "5",
+                "interval" to "day",
+                "force_cache_refresh" to "false",
+            ),
+            Array<LeaderboardsApiResponse>::class.java
         )
         assertThat(response).isNotNull
         assertThat(response.result).isNotNull
@@ -71,10 +78,11 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should correctly return failure as WooError`() = test {
         configureErrorRequest()
         val response = restClientUnderTest.fetchLeaderboards(
-                stubSite,
-                DAYS,
-                1L..22L,
-                5
+            stubSite,
+            DAYS,
+            1L..22L,
+            5,
+            forceRefresh = false
         )
 
         assertThat(response).isNotNull
@@ -86,36 +94,38 @@ class LeaderboardsRestClientTest {
     private suspend fun configureSuccessRequest(expectedResult: Array<LeaderboardsApiResponse>) {
         whenever(jetpackSuccessResponse.data).thenReturn(expectedResult)
         whenever(
-                requestBuilder.syncGetRequest(
-                        restClientUnderTest,
-                        stubSite,
-                        WOOCOMMERCE.leaderboards.pathV4Analytics,
-                        mapOf(
-                                "after" to "1",
-                                "before" to "22",
-                                "per_page" to "5",
-                                "interval" to "day"
-                        ),
-                        Array<LeaderboardsApiResponse>::class.java
-                )
+            requestBuilder.syncGetRequest(
+                restClientUnderTest,
+                stubSite,
+                WOOCOMMERCE.leaderboards.pathV4Analytics,
+                mapOf(
+                    "after" to "1",
+                    "before" to "22",
+                    "per_page" to "5",
+                    "interval" to "day",
+                    "force_cache_refresh" to "false",
+                ),
+                Array<LeaderboardsApiResponse>::class.java
+            )
         ).thenReturn(jetpackSuccessResponse)
     }
 
     private suspend fun configureErrorRequest() {
         whenever(jetpackErrorResponse.error).thenReturn(WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR)))
         whenever(
-                requestBuilder.syncGetRequest(
-                        restClientUnderTest,
-                        stubSite,
-                        WOOCOMMERCE.leaderboards.pathV4Analytics,
-                        mapOf(
-                                "after" to "1",
-                                "before" to "22",
-                                "per_page" to "5",
-                                "interval" to "day"
-                        ),
-                        Array<LeaderboardsApiResponse>::class.java
-                )
+            requestBuilder.syncGetRequest(
+                restClientUnderTest,
+                stubSite,
+                WOOCOMMERCE.leaderboards.pathV4Analytics,
+                mapOf(
+                    "after" to "1",
+                    "before" to "22",
+                    "per_page" to "5",
+                    "interval" to "day",
+                    "force_cache_refresh" to "false",
+                ),
+                Array<LeaderboardsApiResponse>::class.java
+            )
         ).thenReturn(jetpackErrorResponse)
     }
 }

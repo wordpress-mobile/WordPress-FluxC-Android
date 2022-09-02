@@ -4,7 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_day
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_month
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_week
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_year
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_day
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_month
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_week
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_year
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,7 +81,13 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
     private fun launchProductLeaderboardsRequest(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchProductLeaderboards(it, unit) }
+                takeAsyncRequestWithValidSite {
+                    wcLeaderboardsStore.fetchProductLeaderboards(
+                        it,
+                        unit,
+                        forceRefresh = false
+                    )
+                }
                         ?.model
                         ?.let { logLeaderboardResponse(it, unit) }
                         ?: prependToLog("Couldn't fetch Products Leaderboards.")

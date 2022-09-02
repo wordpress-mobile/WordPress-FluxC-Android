@@ -25,17 +25,17 @@ class WCLeaderboardsStore @Inject constructor(
     private val productStore: WCProductStore,
     private val mapper: WCProductLeaderboardsMapper,
     private val coroutineEngine: CoroutineEngine,
-
-    ) {
+) {
     suspend fun fetchProductLeaderboards(
         site: SiteModel,
         unit: StatsGranularity = DAYS,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null,
-        addProductsPath: Boolean = false
+        addProductsPath: Boolean = false,
+        forceRefresh: Boolean = false
     ): WooResult<List<WCTopPerformerProductModel>> =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
-            fetchAllLeaderboards(site, unit, queryTimeRange, quantity, addProductsPath)
+            fetchAllLeaderboards(site, unit, queryTimeRange, quantity, addProductsPath, forceRefresh)
                 .model
                 ?.firstOrNull { it.type == PRODUCTS }
                 ?.run { mapper.map(this, site, productStore, unit) }
@@ -61,9 +61,19 @@ class WCLeaderboardsStore @Inject constructor(
         unit: StatsGranularity? = null,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null,
-        addProductsPath: Boolean = false
+        addProductsPath: Boolean = false,
+        forceRefresh: Boolean
     ): WooResult<List<LeaderboardsApiResponse>> =
-        with(restClient.fetchLeaderboards(site, unit, queryTimeRange, quantity, addProductsPath)) {
+        with(
+            restClient.fetchLeaderboards(
+                site,
+                unit,
+                queryTimeRange,
+                quantity,
+                addProductsPath,
+                forceRefresh
+            )
+        ) {
             return when {
                 isError -> WooResult(error)
                 result != null -> WooResult(result.toList())
