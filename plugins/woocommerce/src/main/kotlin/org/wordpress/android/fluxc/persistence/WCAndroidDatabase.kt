@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
@@ -27,6 +28,7 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
+import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration13to14
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration14to15
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration16to17
@@ -55,7 +57,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             OrderEntity::class,
             OrderMetaDataEntity::class,
             InboxNoteEntity::class,
-            InboxNoteActionEntity::class
+            InboxNoteActionEntity::class,
+            TopPerformerProductEntity::class
         ],
         autoMigrations = [
             AutoMigration(from = 12, to = 13),
@@ -81,6 +84,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val orderMetaDataDao: OrderMetaDataDao
     abstract val couponsDao: CouponsDao
     abstract val inboxNotesDao: InboxNotesDao
+    abstract val topPerformerProductsDao: TopPerformerProductsDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(
