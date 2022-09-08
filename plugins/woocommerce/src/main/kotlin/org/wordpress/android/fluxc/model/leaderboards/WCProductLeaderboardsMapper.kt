@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.geProductExistsByRemoteId
+import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import javax.inject.Inject
@@ -20,14 +21,29 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         productStore: WCProductStore,
         unit: StatsGranularity
     ) = response.products
-            ?.takeIf { it.isNotEmpty() }
-            ?.mapNotNull { it.productId }
-            ?.asProductList(site, productStore)
-            ?.mapNotNull { product ->
-                response.products
-                        ?.find { it.productId == product.remoteProductId }
-                        ?.let { product.toWCTopPerformerProductModel(it, site, unit) }
-            }.orEmpty()
+        ?.takeIf { it.isNotEmpty() }
+        ?.mapNotNull { it.productId }
+        ?.asProductList(site, productStore)
+        ?.mapNotNull { product ->
+            response.products
+                ?.find { it.productId == product.remoteProductId }
+                ?.let { product.toWCTopPerformerProductModel(it, site, unit) }
+        }.orEmpty()
+
+    suspend fun mapTopPerformerProductsEntity(
+        response: LeaderboardsApiResponse,
+        site: SiteModel,
+        productStore: WCProductStore,
+        granularity: StatsGranularity
+    ): List<TopPerformerProductEntity> = response.products
+        ?.takeIf { it.isNotEmpty() }
+        ?.mapNotNull { it.productId }
+        ?.asProductList(site, productStore)
+        ?.mapNotNull { product ->
+            response.products
+                ?.find { it.productId == product.remoteProductId }
+                ?.let { product.toTopPerformerProductEntity(it, site, granularity) }
+        }.orEmpty()
 
     /**
      * This method fetch and request all Products from the IDs described by the
@@ -71,5 +87,21 @@ class WCProductLeaderboardsMapper @Inject constructor() {
             productItem.total?.toDoubleOrNull() ?: 0.0,
             site.id,
             unit.toString()
+    )
+
+    private fun WCProductModel.toTopPerformerProductEntity(
+        productItem: LeaderboardProductItem,
+        site: SiteModel,
+        granularity: StatsGranularity
+    ) = TopPerformerProductEntity(
+        siteId = site.siteId,
+        granularity = granularity.toString(),
+        productId = id,
+        name = name,
+        imageUrl = getFirstImageUrl(),
+        quantity = productItem.quantity?.toIntOrNull() ?: 0,
+        currency = productItem.currency.toString(),
+        total = productItem.total?.toDoubleOrNull() ?: 0.0,
+        millisSinceLastUpdated = System.currentTimeMillis()
     )
 }
