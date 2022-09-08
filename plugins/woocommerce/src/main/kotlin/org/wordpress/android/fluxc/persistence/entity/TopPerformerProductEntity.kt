@@ -9,7 +9,7 @@ import androidx.room.Entity
 data class TopPerformerProductEntity(
     val siteId: Long,
     val granularity: String,
-    val productId: Int,
+    val productId: Long,
     val name: String,
     val imageUrl: String?,
     val quantity: Int,

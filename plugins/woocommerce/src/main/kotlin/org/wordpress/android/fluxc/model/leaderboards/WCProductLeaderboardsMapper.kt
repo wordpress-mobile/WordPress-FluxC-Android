@@ -96,7 +96,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
     ) = TopPerformerProductEntity(
         siteId = site.siteId,
         granularity = granularity.toString(),
-        productId = id,
+        productId = remoteProductId,
         name = name,
         imageUrl = getFirstImageUrl(),
         quantity = productItem.quantity?.toIntOrNull() ?: 0,
