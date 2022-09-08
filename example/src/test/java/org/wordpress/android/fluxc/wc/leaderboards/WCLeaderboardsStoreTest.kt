@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
@@ -36,10 +37,18 @@ import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.st
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCLeaderboardsStoreTest {
-    private lateinit var storeUnderTest: WCLeaderboardsStore
-    private lateinit var restClient: LeaderboardsRestClient
-    private lateinit var productStore: WCProductStore
-    private lateinit var mapper: WCProductLeaderboardsMapper
+    private val restClient: LeaderboardsRestClient = mock()
+    private val productStore: WCProductStore = mock()
+    private var mapper: WCProductLeaderboardsMapper = mock()
+    private val topPerformersDao: TopPerformerProductsDao = mock()
+
+    private var storeUnderTest = WCLeaderboardsStore(
+        restClient,
+        productStore,
+        mapper,
+        initCoroutineEngine(),
+        topPerformersDao
+    )
 
     @Before
     fun setUp() {
@@ -51,8 +60,6 @@ class WCLeaderboardsStoreTest {
         )
         WellSql.init(config)
         config.reset()
-        initMocks()
-        createStoreUnderTest()
     }
 
     @Test
@@ -145,17 +152,12 @@ class WCLeaderboardsStoreTest {
         assertThat(result.error).isNull()
     }
 
-    private fun initMocks() {
-        restClient = mock()
-        productStore = mock()
-        mapper = mock()
-    }
-
     private fun createStoreUnderTest() =
-            WCLeaderboardsStore(
-                    restClient,
-                    productStore,
-                    mapper,
-                    initCoroutineEngine()
-            ).apply { storeUnderTest = this }
+        WCLeaderboardsStore(
+            restClient,
+            productStore,
+            mapper,
+            initCoroutineEngine(),
+            topPerformersDao
+        ).apply { storeUnderTest = this }
 }
