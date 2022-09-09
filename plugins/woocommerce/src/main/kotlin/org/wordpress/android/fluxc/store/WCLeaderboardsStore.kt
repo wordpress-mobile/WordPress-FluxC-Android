@@ -87,11 +87,17 @@ class WCLeaderboardsStore @Inject constructor(
         }
 
     fun observeTopPerformerProducts(
-        granularity: StatsGranularity,
-        siteId: Long
+        siteId: Long,
+        granularity: StatsGranularity
     ): Flow<List<TopPerformerProductEntity>> =
-        topPerformersDao.observeTopPerformerProducts(siteId, granularity.name)
+        topPerformersDao
+            .observeTopPerformerProducts(siteId, granularity.toString())
             .distinctUntilChanged()
+
+    fun getCachedTopPerformerProducts(
+        siteId: Long,
+        granularity: StatsGranularity
+    ): List<TopPerformerProductEntity> = topPerformersDao.getTopPerformerProductsFor(siteId, granularity.toString())
 
     suspend fun fetchProductLeaderboardsNew(
         site: SiteModel,

@@ -17,6 +17,13 @@ abstract class TopPerformerProductsDao {
         granularity: String
     ): Flow<List<TopPerformerProductEntity>>
 
+    @Transaction
+    @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
+    abstract fun getTopPerformerProductsFor(
+        siteId: Long,
+        granularity: String
+    ): List<TopPerformerProductEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(entity: TopPerformerProductEntity)
 
