@@ -24,6 +24,12 @@ abstract class TopPerformerProductsDao {
         granularity: String
     ): List<TopPerformerProductEntity>
 
+    @Transaction
+    @Query("SELECT * FROM TopPerformerProducts WHERE siteId = :siteId")
+    abstract fun getTopPerformerProductsForSite(
+        siteId: Long
+    ): List<TopPerformerProductEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(entity: TopPerformerProductEntity)
 
@@ -42,6 +48,16 @@ abstract class TopPerformerProductsDao {
         topPerformerProducts: List<TopPerformerProductEntity>
     ) {
         deleteAllFor(siteId, granularity)
+        topPerformerProducts.forEach { topPerformerProduct ->
+            insert(topPerformerProduct)
+        }
+    }
+
+    @Transaction
+    open suspend fun updateTopPerformerProductsForSite(
+        siteId: Long,
+        topPerformerProducts: List<TopPerformerProductEntity>
+    ) {
         topPerformerProducts.forEach { topPerformerProduct ->
             insert(topPerformerProduct)
         }

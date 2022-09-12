@@ -103,4 +103,13 @@ class WCLeaderboardsStore @Inject constructor(
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
+
+    fun invalidateTopPerformers(siteId: Long) {
+        coroutineEngine.launch(AppLog.T.DB, this, "Invalidating top performer products") {
+            val invalidatedTopPerformers =
+                topPerformersDao.getTopPerformerProductsForSite(siteId)
+                    .map { it.copy(millisSinceLastUpdated = 0) }
+            topPerformersDao.updateTopPerformerProductsForSite(siteId, invalidatedTopPerformers)
+        }
+    }
 }
