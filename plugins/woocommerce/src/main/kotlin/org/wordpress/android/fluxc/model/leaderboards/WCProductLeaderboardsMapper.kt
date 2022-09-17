@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.model.leaderboards
 
-import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardProductItem
@@ -13,7 +12,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import javax.inject.Inject
 
 class WCProductLeaderboardsMapper @Inject constructor() {
-
     suspend fun mapTopPerformerProductsEntity(
         response: LeaderboardsApiResponse,
         site: SiteModel,

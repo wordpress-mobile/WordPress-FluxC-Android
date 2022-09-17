@@ -156,7 +156,6 @@ class WCLeaderboardsStoreTest {
                     DAYS.toString(),
                     TOP_PERFORMER_ENTITY_LIST
                 )
-
         }
 
     @Test

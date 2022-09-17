@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.wc.leaderboards
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductApiResponse
 
@@ -26,5 +25,4 @@ object WCLeaderboardsTestFixtures {
                     ?.run { Gson().fromJson(this, Array<LeaderboardsApiResponse>::class.java) }
 
     val generateStubbedProductIdList = listOf(14L, 22L, 15L)
-
 }
