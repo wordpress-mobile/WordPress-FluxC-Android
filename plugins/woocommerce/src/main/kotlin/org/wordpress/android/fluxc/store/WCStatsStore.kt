@@ -659,7 +659,7 @@ class WCStatsStore @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 perPage = perPage,
-                force = payload.forced
+                forceRefresh = payload.forced
             )
 
             with(result) {

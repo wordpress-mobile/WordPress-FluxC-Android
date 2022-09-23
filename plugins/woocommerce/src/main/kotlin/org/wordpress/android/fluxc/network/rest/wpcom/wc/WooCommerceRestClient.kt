@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class WooCommerceRestClient @Inject constructor(
     appContext: Context,
-    private val dispatcher: Dispatcher,
+    dispatcher: Dispatcher,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
@@ -37,14 +37,22 @@ class WooCommerceRestClient @Inject constructor(
      * of the Woo API.
      *
      */
-    suspend fun fetchSupportedWooApiVersion(site: SiteModel): WooPayload<RootWPAPIRestResponse> {
+    suspend fun fetchSupportedWooApiVersion(
+        site: SiteModel,
+        overrideRetryPolicy: Boolean = false
+    ): WooPayload<RootWPAPIRestResponse> {
         val url = "/"
+        val retryPolicy = when (overrideRetryPolicy) {
+            true -> jetpackTunnelGsonRequestBuilder.buildDefaultTimeoutRetryPolicy()
+            false -> null
+        }
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
             site,
             url,
             mapOf("_fields" to "authentication,namespaces"),
-            RootWPAPIRestResponse::class.java
+            RootWPAPIRestResponse::class.java,
+            retryPolicy = retryPolicy
         )
         return when (response) {
             is JetpackSuccess -> WooPayload(response.data)
