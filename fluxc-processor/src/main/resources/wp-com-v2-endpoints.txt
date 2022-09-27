@@ -26,6 +26,8 @@
 /sites/$site/stats/orders/
 /sites/$site/stats/top-earners
 
+/sites/$site/blogging-prompts/settings
+
 /sites/$site/block-layouts
 /common-block-layouts
 /common-starter-site-designs
