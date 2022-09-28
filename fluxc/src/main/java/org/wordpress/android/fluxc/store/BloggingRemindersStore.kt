@@ -39,7 +39,10 @@ class BloggingRemindersStore
         }
     }
 
-    suspend fun setBloggingReminders(site: SiteModel, reminders: BloggingRemindersModel): BloggingReminderSettingsResult<BloggingReminders> {
+    suspend fun setBloggingReminders(
+        site: SiteModel,
+        reminders: BloggingRemindersModel
+    ): BloggingReminderSettingsResult<BloggingReminders> {
         return coroutineEngine.withDefaultContext(T.SETTINGS, this, "fetch blogging reminder settings") {
             val payload = restClient.setBloggingReminders(site, mapper.toDatabaseModel(reminders))
             storeSettings(site, payload)
@@ -72,6 +75,7 @@ class BloggingRemindersStore
         else -> BloggingReminderSettingsResult(error)
     }
 
+    @Suppress("SwallowedException", "TooGenericExceptionCaught")
     private suspend fun handlePayloadResponse(
         site: SiteModel,
         response: BloggingRemindersResponse
