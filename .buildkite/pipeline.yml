@@ -23,6 +23,7 @@ steps:
           cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
           ./gradlew checkstyle
         artifact_paths: *artifact_paths
+        plugins: *common_plugins
         notify:
           - github_commit_status:
               context: "checkstyle"
@@ -32,6 +33,7 @@ steps:
           cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
           ./gradlew detekt
         artifact_paths: *artifact_paths
+        plugins: *common_plugins
         notify:
           - github_commit_status:
               context: "detekt"
@@ -42,6 +44,7 @@ steps:
           ./gradlew lintRelease || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1);
           find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || exit 0;
         artifact_paths: *artifact_paths
+        plugins: *common_plugins
         notify:
           - github_commit_status:
               context: "Lint"
