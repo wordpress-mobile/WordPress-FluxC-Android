@@ -33,9 +33,6 @@ abstract class TopPerformerProductsDao {
     @Query("DELETE FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
     abstract suspend fun deleteAllFor(siteId: Long, granularity: String)
 
-    @Query("DELETE FROM TopPerformerProducts WHERE siteId = :siteId")
-    abstract suspend fun deleteAllFor(siteId: Long)
-
     @Transaction
     open suspend fun updateTopPerformerProductsFor(
         siteId: Long,
