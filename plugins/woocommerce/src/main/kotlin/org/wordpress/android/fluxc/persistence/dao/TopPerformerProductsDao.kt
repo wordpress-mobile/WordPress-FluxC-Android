@@ -19,14 +19,14 @@ abstract class TopPerformerProductsDao {
 
     @Transaction
     @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
-    abstract fun getTopPerformerProductsFor(
+    abstract suspend fun getTopPerformerProductsFor(
         siteId: Long,
         granularity: String
     ): List<TopPerformerProductEntity>
 
     @Transaction
     @Query("SELECT * FROM TopPerformerProducts WHERE siteId = :siteId")
-    abstract fun getTopPerformerProductsForSite(
+    abstract suspend fun getTopPerformerProductsForSite(
         siteId: Long
     ): List<TopPerformerProductEntity>
 
@@ -39,7 +39,7 @@ abstract class TopPerformerProductsDao {
 
     @Transaction
     @Query("DELETE FROM TopPerformerProducts WHERE siteId = :siteId")
-    abstract fun deleteAllFor(siteId: Long)
+    abstract suspend fun deleteAllFor(siteId: Long)
 
     @Transaction
     open suspend fun updateTopPerformerProductsFor(
