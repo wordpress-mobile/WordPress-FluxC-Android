@@ -10,21 +10,18 @@ import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 
 @Dao
 abstract class TopPerformerProductsDao {
-    @Transaction
     @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
     abstract fun observeTopPerformerProducts(
         siteId: Long,
         granularity: String
     ): Flow<List<TopPerformerProductEntity>>
 
-    @Transaction
     @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
     abstract suspend fun getTopPerformerProductsFor(
         siteId: Long,
         granularity: String
     ): List<TopPerformerProductEntity>
 
-    @Transaction
     @Query("SELECT * FROM TopPerformerProducts WHERE siteId = :siteId")
     abstract suspend fun getTopPerformerProductsForSite(
         siteId: Long
@@ -33,11 +30,9 @@ abstract class TopPerformerProductsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(entity: TopPerformerProductEntity)
 
-    @Transaction
     @Query("DELETE FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
     abstract suspend fun deleteAllFor(siteId: Long, granularity: String)
 
-    @Transaction
     @Query("DELETE FROM TopPerformerProducts WHERE siteId = :siteId")
     abstract suspend fun deleteAllFor(siteId: Long)
 
