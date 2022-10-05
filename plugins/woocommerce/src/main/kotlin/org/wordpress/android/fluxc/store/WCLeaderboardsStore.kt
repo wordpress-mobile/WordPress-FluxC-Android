@@ -36,7 +36,7 @@ class WCLeaderboardsStore @Inject constructor(
             .observeTopPerformerProducts(siteId, granularity.toString())
             .distinctUntilChanged()
 
-    fun getCachedTopPerformerProducts(
+    suspend fun getCachedTopPerformerProducts(
         siteId: Long,
         granularity: StatsGranularity
     ): List<TopPerformerProductEntity> =
