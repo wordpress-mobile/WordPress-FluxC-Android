@@ -8,7 +8,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -42,16 +41,11 @@ class WCLeaderboardsStoreTest {
     private var mapper: WCProductLeaderboardsMapper = mock()
     private val topPerformersDao: TopPerformerProductsDao = mock()
 
-    private var storeUnderTest = WCLeaderboardsStore(
-        restClient,
-        productStore,
-        mapper,
-        initCoroutineEngine(),
-        topPerformersDao
-    )
+    private lateinit var storeUnderTest: WCLeaderboardsStore
 
-    @Before
-    fun setUp() {
+    fun setup(prepareMocks: () -> Unit = {}) {
+        prepareMocks()
+        createStoreUnderTest()
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
             appContext,
@@ -68,6 +62,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch top performer products with empty result should return WooError`() = test {
+        setup()
         givenFetchLeaderBoardsReturns(emptyArray())
 
         val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
@@ -78,8 +73,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch top performer products should filter leaderboards by PRODUCTS type`() = test {
-        mapper = spy()
-        createStoreUnderTest()
+        setup { mapper = spy() }
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
@@ -95,7 +89,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch top performer products should call mapper once`() = test {
-        createStoreUnderTest()
+        setup()
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
@@ -107,6 +101,7 @@ class WCLeaderboardsStoreTest {
     @Test
     fun `fetch top performer products should return mapped top performer entities correctly`() =
         test {
+            setup()
             val response = generateSampleLeaderboardsApiResponse()
             givenFetchLeaderBoardsReturns(response)
             givenTopPerformersMapperReturns(
@@ -124,6 +119,7 @@ class WCLeaderboardsStoreTest {
     @Test
     fun `fetch top performer products from a invalid site ID should return WooResult with error`() =
         test {
+            setup()
             val response = generateSampleLeaderboardsApiResponse()
             givenFetchLeaderBoardsReturns(response)
             givenTopPerformersMapperReturns(
@@ -141,6 +137,7 @@ class WCLeaderboardsStoreTest {
     @Test
     fun `fetching top performer products should update database with new data`() =
         test {
+            setup()
             val response = generateSampleLeaderboardsApiResponse()
             givenFetchLeaderBoardsReturns(response)
             givenTopPerformersMapperReturns(
@@ -161,6 +158,7 @@ class WCLeaderboardsStoreTest {
     @Test
     fun `invalidating top performer products should update database`() =
         test {
+            setup()
             givenCachedTopPerformers()
 
             storeUnderTest.invalidateTopPerformers(stubSite.siteId)
@@ -174,9 +172,9 @@ class WCLeaderboardsStoreTest {
                 )
         }
 
-    private fun givenCachedTopPerformers() {
+    private suspend fun givenCachedTopPerformers() {
         whenever(
-                topPerformersDao.getTopPerformerProductsForSite(stubSite.siteId)
+            topPerformersDao.getTopPerformerProductsForSite(stubSite.siteId)
         ).thenReturn(TOP_PERFORMER_ENTITY_LIST)
     }
 
@@ -185,14 +183,15 @@ class WCLeaderboardsStoreTest {
             .thenReturn(WooPayload(response))
     }
 
-    private fun createStoreUnderTest() =
-        WCLeaderboardsStore(
+    private fun createStoreUnderTest() {
+        storeUnderTest = WCLeaderboardsStore(
             restClient,
             productStore,
             mapper,
             initCoroutineEngine(),
             topPerformersDao
-        ).apply { storeUnderTest = this }
+        )
+    }
 
     private suspend fun givenTopPerformersMapperReturns(
         givenResponse: LeaderboardsApiResponse,
