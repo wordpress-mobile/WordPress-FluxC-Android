@@ -9,32 +9,32 @@ import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 
 @Dao
-abstract class TopPerformerProductsDao {
+interface TopPerformerProductsDao {
     @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
-    abstract fun observeTopPerformerProducts(
+    fun observeTopPerformerProducts(
         siteId: Long,
         granularity: String
     ): Flow<List<TopPerformerProductEntity>>
 
     @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
-    abstract suspend fun getTopPerformerProductsFor(
+    suspend fun getTopPerformerProductsFor(
         siteId: Long,
         granularity: String
     ): List<TopPerformerProductEntity>
 
     @Query("SELECT * FROM TopPerformerProducts WHERE siteId = :siteId")
-    abstract suspend fun getTopPerformerProductsForSite(
+    suspend fun getTopPerformerProductsForSite(
         siteId: Long
     ): List<TopPerformerProductEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insert(entity: TopPerformerProductEntity)
+    suspend fun insert(entity: TopPerformerProductEntity)
 
     @Query("DELETE FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
-    abstract suspend fun deleteAllFor(siteId: Long, granularity: String)
+    suspend fun deleteAllFor(siteId: Long, granularity: String)
 
     @Transaction
-    open suspend fun updateTopPerformerProductsFor(
+    suspend fun updateTopPerformerProductsFor(
         siteId: Long,
         granularity: String,
         topPerformerProducts: List<TopPerformerProductEntity>
@@ -46,7 +46,7 @@ abstract class TopPerformerProductsDao {
     }
 
     @Transaction
-    open suspend fun updateTopPerformerProductsForSite(
+    suspend fun updateTopPerformerProductsForSite(
         siteId: Long,
         topPerformerProducts: List<TopPerformerProductEntity>
     ) {
