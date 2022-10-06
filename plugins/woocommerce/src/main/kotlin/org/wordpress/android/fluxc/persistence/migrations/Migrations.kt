@@ -601,3 +601,5 @@ internal class AutoMigration16to17 : AutoMigrationSpec
 internal class AutoMigration17to18 : AutoMigrationSpec
 
 internal class AutoMigration18to19 : AutoMigrationSpec
+
+internal class AutoMigration19to20 : AutoMigrationSpec

@@ -52,7 +52,7 @@ class WCProductLeaderboardsMapperTest {
     @Test
     fun `map should request and parse all products from id`() = test {
         configureProductStoreMock()
-        val result = mapperUnderTest.map(
+        val result = mapperUnderTest.mapTopPerformerProductsEntity(
                 productApiResponse!!,
                 stubSite,
                 productStore,
@@ -66,7 +66,7 @@ class WCProductLeaderboardsMapperTest {
     fun `map should request and parse all products from id removing failing ones`() = test {
         configureProductStoreMock()
         configureExactFailingProductStoreMock(15)
-        val result = mapperUnderTest.map(
+        val result = mapperUnderTest.mapTopPerformerProductsEntity(
                 productApiResponse!!,
                 stubSite,
                 productStore,
@@ -79,7 +79,7 @@ class WCProductLeaderboardsMapperTest {
     @Test
     fun `map should remove any failing product response from the result`() = test {
         configureFailingProductStoreMock()
-        val result = mapperUnderTest.map(
+        val result = mapperUnderTest.mapTopPerformerProductsEntity(
                 productApiResponse!!,
                 stubSite,
                 productStore,
