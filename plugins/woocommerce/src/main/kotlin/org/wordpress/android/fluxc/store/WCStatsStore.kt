@@ -481,13 +481,8 @@ class WCStatsStore @Inject constructor(
 
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
         val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
-        val startDate = payload.startDate ?: when (payload.granularity) {
-            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-            StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek(Calendar.getInstance(Locale.getDefault()))
-            StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
-            StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
-        }
-        val endDate = payload.endDate ?: DateUtils.getStartOfCurrentDay()
+        val startDate = payload.startDate ?: getStartDate(payload.granularity)
+        val endDate = payload.endDate ?: getEndDate(payload.granularity, payload.site)
         val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, startDate, endDate)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchNewVisitorStats") {
             val result = wcOrderStatsClient.fetchNewVisitorStats(
@@ -519,6 +514,22 @@ class WCStatsStore @Inject constructor(
             }
         }
     }
+
+    private fun getStartDate(granularity: StatsGranularity) =
+        when (granularity) {
+            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
+            StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek(Calendar.getInstance(Locale.getDefault()))
+            StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
+            StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
+        }
+
+    private fun getEndDate(granularity: StatsGranularity, site: SiteModel) =
+        when (granularity) {
+            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
+            StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+            StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
+            StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
+        }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
         wcOrderStatsClient.fetchTopEarnersStats(

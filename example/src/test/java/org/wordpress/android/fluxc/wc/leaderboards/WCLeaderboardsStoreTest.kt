@@ -8,7 +8,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -20,142 +19,223 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
 import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
+import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
-import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.duplicatedTopPerformersList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
-import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubbedTopPerformersList
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCLeaderboardsStoreTest {
-    private lateinit var storeUnderTest: WCLeaderboardsStore
-    private lateinit var restClient: LeaderboardsRestClient
-    private lateinit var productStore: WCProductStore
-    private lateinit var mapper: WCProductLeaderboardsMapper
+    private val restClient: LeaderboardsRestClient = mock()
+    private val productStore: WCProductStore = mock()
+    private var mapper: WCProductLeaderboardsMapper = mock()
+    private val topPerformersDao: TopPerformerProductsDao = mock()
 
-    @Before
-    fun setUp() {
+    private lateinit var storeUnderTest: WCLeaderboardsStore
+
+    fun setup(prepareMocks: () -> Unit = {}) {
+        prepareMocks()
+        createStoreUnderTest()
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
-                appContext,
-                listOf(SiteModel::class.java, WCTopPerformerProductModel::class.java, WCProductModel::class.java),
-                WellSqlConfig.ADDON_WOOCOMMERCE
+            appContext,
+            listOf(
+                SiteModel::class.java,
+                WCTopPerformerProductModel::class.java,
+                WCProductModel::class.java
+            ),
+            WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
         config.reset()
-        initMocks()
-        createStoreUnderTest()
     }
 
     @Test
-    fun `fetch product leaderboards with empty result should return WooError`() = test {
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
-                .thenReturn(WooPayload(emptyArray()))
+    fun `fetch top performer products with empty result should return WooError`() = test {
+        setup()
+        givenFetchLeaderBoardsReturns(emptyArray())
 
-        val result = storeUnderTest.fetchProductLeaderboards(stubSite)
+        val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
+
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
     }
 
     @Test
-    fun `fetch product leaderboards should filter leaderboards by PRODUCTS type`() = test {
-        mapper = spy()
-        createStoreUnderTest()
+    fun `fetch top performer products should filter leaderboards by PRODUCTS type`() = test {
+        setup { mapper = spy() }
         val response = generateSampleLeaderboardsApiResponse()
-        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+        givenFetchLeaderBoardsReturns(response)
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
-                .thenReturn(WooPayload(response))
+        storeUnderTest.fetchTopPerformerProducts(stubSite)
 
-        storeUnderTest.fetchProductLeaderboards(stubSite)
-        verify(mapper).map(filteredResponse!!, stubSite, productStore, DAYS)
+        verify(mapper).mapTopPerformerProductsEntity(
+            response?.firstOrNull { it.type == PRODUCTS }!!,
+            stubSite,
+            productStore,
+            DAYS
+        )
     }
 
     @Test
-    fun `fetch product leaderboards should call mapper once`() = test {
-        mapper = spy()
-        createStoreUnderTest()
+    fun `fetch top performer products should call mapper once`() = test {
+        setup()
         val response = generateSampleLeaderboardsApiResponse()
+        givenFetchLeaderBoardsReturns(response)
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
-                .thenReturn(WooPayload(response))
+        storeUnderTest.fetchTopPerformerProducts(stubSite)
 
-        storeUnderTest.fetchProductLeaderboards(stubSite)
-        verify(mapper, times(1)).map(any(), any(), any(), any())
+        verify(mapper, times(1)).mapTopPerformerProductsEntity(any(), any(), any(), any())
     }
 
     @Test
-    fun `fetch product leaderboards should return WooResult correctly`() = test {
-        val response = generateSampleLeaderboardsApiResponse()
-        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+    fun `fetch top performer products should return mapped top performer entities correctly`() =
+        test {
+            setup()
+            val response = generateSampleLeaderboardsApiResponse()
+            givenFetchLeaderBoardsReturns(response)
+            givenTopPerformersMapperReturns(
+                givenResponse = response?.firstOrNull { it.type == PRODUCTS }!!,
+                returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
+            )
 
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
-                .thenReturn(WooPayload(response))
+            val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
 
-        whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(stubbedTopPerformersList)
-
-        val result = storeUnderTest.fetchProductLeaderboards(stubSite)
-        assertThat(result.model).isNotNull
-        assertThat(result.model).isEqualTo(stubbedTopPerformersList)
-        assertThat(result.error).isNull()
-    }
+            assertThat(result.model).isNotNull
+            assertThat(result.model).isEqualTo(TOP_PERFORMER_ENTITY_LIST)
+            assertThat(result.error).isNull()
+        }
 
     @Test
-    fun `fetch product leaderboards from a invalid site ID should return WooResult with error`() = test {
-        val response = generateSampleLeaderboardsApiResponse()
-        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
-
-        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
-                .thenReturn(WooPayload(response))
-
-        whenever(mapper.map(
-                filteredResponse!!,
+    fun `fetch top performer products from a invalid site ID should return WooResult with error`() =
+        test {
+            setup()
+            val response = generateSampleLeaderboardsApiResponse()
+            givenFetchLeaderBoardsReturns(response)
+            givenTopPerformersMapperReturns(
+                givenResponse = response?.firstOrNull { it.type == PRODUCTS }!!,
+                returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST,
                 SiteModel().apply { id = 100 },
-                productStore,
-                DAYS))
-                .thenReturn(stubbedTopPerformersList)
+            )
 
-        val result = storeUnderTest.fetchProductLeaderboards(stubSite)
-        assertThat(result.model).isNull()
-        assertThat(result.error).isNotNull
-    }
+            val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
+
+            assertThat(result.model).isNull()
+            assertThat(result.error).isNotNull
+        }
 
     @Test
-    fun `fetch product leaderboards should distinct duplicate items`() = test {
-        val response = generateSampleLeaderboardsApiResponse()
-        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+    fun `fetching top performer products should update database with new data`() =
+        test {
+            setup()
+            val response = generateSampleLeaderboardsApiResponse()
+            givenFetchLeaderBoardsReturns(response)
+            givenTopPerformersMapperReturns(
+                givenResponse = response?.firstOrNull { it.type == PRODUCTS }!!,
+                returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
+            )
 
+            storeUnderTest.fetchTopPerformerProducts(stubSite)
+
+            verify(topPerformersDao, times(1))
+                .updateTopPerformerProductsFor(
+                    stubSite.siteId,
+                    DAYS.toString(),
+                    TOP_PERFORMER_ENTITY_LIST
+                )
+        }
+
+    @Test
+    fun `invalidating top performer products should update database`() =
+        test {
+            setup()
+            givenCachedTopPerformers()
+
+            storeUnderTest.invalidateTopPerformers(stubSite.siteId)
+
+            verify(topPerformersDao, times(1))
+                .getTopPerformerProductsForSite(stubSite.siteId)
+            verify(topPerformersDao, times(1))
+                .updateTopPerformerProductsForSite(
+                    stubSite.siteId,
+                    INVALIDATED_TOP_PERFORMER_ENTITY_LIST
+                )
+        }
+
+    private suspend fun givenCachedTopPerformers() {
+        whenever(
+            topPerformersDao.getTopPerformerProductsForSite(stubSite.siteId)
+        ).thenReturn(TOP_PERFORMER_ENTITY_LIST)
+    }
+
+    private suspend fun givenFetchLeaderBoardsReturns(response: Array<LeaderboardsApiResponse>?) {
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
-                .thenReturn(WooPayload(response))
-
-        whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(duplicatedTopPerformersList)
-
-        val result = storeUnderTest.fetchProductLeaderboards(stubSite)
-        assertThat(result.model).isNotNull
-        assertThat(result.model!!.size).isEqualTo(1)
-        assertThat(result.model).isNotEqualTo(stubbedTopPerformersList)
-        assertThat(result.error).isNull()
+            .thenReturn(WooPayload(response))
     }
 
-    private fun initMocks() {
-        restClient = mock()
-        productStore = mock()
-        mapper = mock()
+    private fun createStoreUnderTest() {
+        storeUnderTest = WCLeaderboardsStore(
+            restClient,
+            productStore,
+            mapper,
+            initCoroutineEngine(),
+            topPerformersDao
+        )
     }
 
-    private fun createStoreUnderTest() =
-            WCLeaderboardsStore(
-                    restClient,
-                    productStore,
-                    mapper,
-                    initCoroutineEngine()
-            ).apply { storeUnderTest = this }
+    private suspend fun givenTopPerformersMapperReturns(
+        givenResponse: LeaderboardsApiResponse,
+        returnedTopPerformersList: List<TopPerformerProductEntity>,
+        siteModel: SiteModel = stubSite
+    ) {
+        whenever(
+            mapper.mapTopPerformerProductsEntity(
+                givenResponse,
+                siteModel,
+                productStore,
+                DAYS
+            )
+        ).thenReturn(returnedTopPerformersList)
+    }
+
+    companion object {
+        val TOP_PERFORMER_ENTITY_LIST =
+            listOf(
+                TopPerformerProductEntity(
+                    siteId = 1,
+                    granularity = "Today",
+                    productId = 123,
+                    name = "product",
+                    imageUrl = null,
+                    quantity = 5,
+                    currency = "USD",
+                    total = 10.5,
+                    millisSinceLastUpdated = 100
+                )
+            )
+        val INVALIDATED_TOP_PERFORMER_ENTITY_LIST =
+            listOf(
+                TopPerformerProductEntity(
+                    siteId = 1,
+                    granularity = "Today",
+                    productId = 123,
+                    name = "product",
+                    imageUrl = null,
+                    quantity = 5,
+                    currency = "USD",
+                    total = 10.5,
+                    millisSinceLastUpdated = 0
+                )
+            )
+    }
 }
