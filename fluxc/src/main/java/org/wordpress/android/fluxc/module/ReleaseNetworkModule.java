@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.module;
 
 import android.content.Context;
+import android.webkit.CookieManager;
 
 import com.android.volley.Network;
 import com.android.volley.RequestQueue;
@@ -9,6 +10,7 @@ import com.android.volley.toolbox.DiskBasedCache;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.wordpress.android.fluxc.network.AndroidWebKitCookieJar;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.OkHttpStack;
 import org.wordpress.android.fluxc.network.RetryOnRedirectBasicNetwork;
@@ -18,8 +20,6 @@ import org.wordpress.android.fluxc.network.rest.JsonObjectOrFalse;
 import org.wordpress.android.fluxc.network.rest.JsonObjectOrFalseDeserializer;
 
 import java.io.File;
-import java.net.CookieHandler;
-import java.net.CookieManager;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -29,7 +29,6 @@ import dagger.Provides;
 import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.CookieJar;
-import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 
 @Module
@@ -84,22 +83,16 @@ public class ReleaseNetworkModule {
         return new MemorizingTrustManager();
     }
 
-    /**
-     * This sets a {@link CookieManager} as the system-wide {@link CookieHandler} and exposes it to the Dagger graph,
-     * allowing it to be shared with {@link OkHttpClient} via its {@link CookieJar}.
-     */
     @Provides
     @Singleton
     public CookieManager provideCookieManager() {
-        CookieManager cookieManager = new CookieManager();
-        CookieHandler.setDefault(cookieManager);
-        return cookieManager;
+        return CookieManager.getInstance();
     }
 
     @Provides
     @Singleton
     public CookieJar provideCookieJar(CookieManager cookieManager) {
-        return new JavaNetCookieJar(cookieManager);
+        return new AndroidWebKitCookieJar(cookieManager);
     }
 
     @Singleton
