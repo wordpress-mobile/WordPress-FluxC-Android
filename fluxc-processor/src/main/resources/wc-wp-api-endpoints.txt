@@ -1,4 +1,5 @@
 /orders/
+/orders/batch/
 /orders/<id>/
 /orders/<id>/notes/
 /orders/<id>/shipment-trackings/

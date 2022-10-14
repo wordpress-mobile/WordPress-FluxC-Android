@@ -756,6 +756,43 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun updateOrdersBatch(
+        site: SiteModel,
+        createRequest: List<UpdateOrderRequest>,
+        updateRequest: List<UpdateOrderRequest>,
+        deleteRequest: List<Long>
+    ): WooPayload<OrderEntity> {
+        val url = WOOCOMMERCE.orders.batch.pathV3
+
+        val body = OrdersBatchUpdateRequest.buildBody(
+            createRequest.map { it.toNetworkRequest() },
+            updateRequest.map { it.toNetworkRequest() },
+            deleteRequest
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            body,
+            OrdersBatchDto::class.java
+        )
+
+        return when (response) {
+            is JetpackError -> WooPayload(response.error.toWooError())
+            is JetpackSuccess -> response.data?.let { ordersBatchDto ->
+                // TODO Map to database entity
+                WooPayload(null)
+            } ?: WooPayload(
+                error = WooError(
+                    type = WooErrorType.GENERIC_ERROR,
+                    original = GenericErrorType.UNKNOWN,
+                    message = "Success response with empty data"
+                )
+            )
+        }
+    }
+
     suspend fun createOrder(
         site: SiteModel,
         request: UpdateOrderRequest
