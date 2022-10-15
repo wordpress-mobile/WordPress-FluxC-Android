@@ -4,11 +4,11 @@ import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName", "VariableNaming")
-class OrdersBatchDto : Response {
-    val create: List<OrderDto> = emptyList()
-    val delete: List<OrderDto> = emptyList()
+data class OrdersBatchDto(
+    val create: List<OrderDto> = emptyList(),
+    val delete: List<OrderDto> = emptyList(),
     val update: List<OrderDto> = emptyList()
-}
+) : Response
 
 class OrdersBatchUpdateRequest {
     companion object {

@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLine
@@ -246,7 +246,6 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
 
-                // TODO Still needs to be tested
                 if(createRequest.isNotEmpty()) {
                     model.createdEntities.map { ordersDao.insertOrUpdateOrder(it) }
                     requestListRefresh(site)

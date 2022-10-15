@@ -55,7 +55,7 @@ class OrderRestClientTest {
 
 
     @Test
-    fun updateOrdersBatch(): Unit = runBlocking {
+    fun `updateOrdersBatch should call gson builder request with expected params`(): Unit = runBlocking {
         val createRequest = listOf(
             buildOrderRequest("create1"), buildOrderRequest("create2")
         )
@@ -83,7 +83,11 @@ class OrderRestClientTest {
             deleteRequest = deleteRequest
         )
 
-        Assertions.assertThat(response).isEqualTo(WooPayload(null))
+        Assertions.assertThat(response).isEqualTo(WooPayload(OrdersDatabaseBatch(
+            createdEntities = emptyList(),
+            updatedEntities = emptyList(),
+            deletedEntities = emptyList()
+        )))
     }
 
     private fun buildOrderRequest(orderId: String) = UpdateOrderRequest(
