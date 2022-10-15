@@ -2,6 +2,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
+import android.util.Log
 import com.android.volley.RequestQueue
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
@@ -442,8 +443,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let { orderDto ->
-                    val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
-                        .first
+                    val newModel = buildOrderEntity(orderDto, site)
                         .copy(
                             orderId = orderToUpdate.orderId
                         )
@@ -761,7 +761,7 @@ class OrderRestClient @Inject constructor(
         createRequest: List<UpdateOrderRequest>,
         updateRequest: List<UpdateOrderRequest>,
         deleteRequest: List<Long>
-    ): WooPayload<OrderEntity> {
+    ): WooPayload<OrdersDatabaseBatch> {
         val url = WOOCOMMERCE.orders.batch.pathV3
 
         val body = OrdersBatchUpdateRequest.buildBody(
@@ -781,8 +781,11 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { ordersBatchDto ->
-                // TODO Map to database entity
-                WooPayload(null)
+                WooPayload(OrdersDatabaseBatch(
+                    createdEntities = ordersBatchDto.create.map { buildOrderEntity(it, site) },
+                    updatedEntities = ordersBatchDto.update.map { buildOrderEntity(it, site) },
+                    deletedEntities = ordersBatchDto.delete.map { buildOrderEntity(it, site) },
+                ))
             } ?: WooPayload(
                 error = WooError(
                     type = WooErrorType.GENERIC_ERROR,
@@ -811,7 +814,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
+                WooPayload(buildOrderEntity(orderDto, site))
             } ?: WooPayload(
                     error = WooError(
                             type = WooErrorType.GENERIC_ERROR,
@@ -841,7 +844,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
+                WooPayload(buildOrderEntity(orderDto, site))
             } ?: WooPayload(
                     error = WooError(
                             type = WooErrorType.GENERIC_ERROR,
@@ -851,6 +854,13 @@ class OrderRestClient @Inject constructor(
             )
         }
     }
+
+    private fun buildOrderEntity(
+        orderDto: OrderDto,
+        site: SiteModel
+    ) = orderDtoMapper.toDatabaseEntity(
+        orderDto, site.localId()
+    ).first
 
     suspend fun deleteOrder(
         site: SiteModel,

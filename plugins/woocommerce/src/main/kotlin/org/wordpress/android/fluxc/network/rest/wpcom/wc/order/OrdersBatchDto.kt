@@ -1,12 +1,13 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName", "VariableNaming")
 class OrdersBatchDto : Response {
-    val create: List<OrderDto>? = null
-    val delete: List<OrderDto>? = null
-    val update: List<OrderDto>? = null
+    val create: List<OrderDto> = emptyList()
+    val delete: List<OrderDto> = emptyList()
+    val update: List<OrderDto> = emptyList()
 }
 
 class OrdersBatchUpdateRequest {
@@ -22,3 +23,9 @@ class OrdersBatchUpdateRequest {
         }
     }
 }
+
+data class OrdersDatabaseBatch (
+    val createdEntities: List<OrderEntity>,
+    val updatedEntities: List<OrderEntity>,
+    val deletedEntities: List<OrderEntity>
+)

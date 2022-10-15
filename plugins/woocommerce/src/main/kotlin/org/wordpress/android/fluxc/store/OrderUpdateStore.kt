@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrdersDatabaseBatch
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
@@ -231,6 +232,36 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    suspend fun updateOrdersBatch(
+        site: SiteModel,
+        createRequest: List<UpdateOrderRequest> = emptyList(),
+        updateRequest: List<UpdateOrderRequest> = emptyList(),
+        deleteRequest: List<Long> = emptyList()
+    ): WooResult<OrdersDatabaseBatch> {
+        return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
+            val result = wcOrderRestClient.updateOrdersBatch(site, createRequest, updateRequest, deleteRequest)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                val model = result.result!!
+
+                // TODO Still needs to be tested
+                if(createRequest.isNotEmpty()) {
+                    model.createdEntities.map { ordersDao.insertOrUpdateOrder(it) }
+                    requestListRefresh(site)
+                }
+                if(updateRequest.isNotEmpty()) {
+                    model.updatedEntities.map { ordersDao.insertOrUpdateOrder(it) }
+                }
+                if(deleteRequest.isNotEmpty()) {
+                    deleteRequest.map { ordersDao.deleteOrder(site.localId(), it) }
+                }
+                WooResult(model)
+            }
+        }
+    }
+
     suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<OrderEntity> {
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
             val result = wcOrderRestClient.createOrder(site, createOrderRequest)
@@ -240,16 +271,23 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
-                // Emit a request to refresh the list of order summaries to make sure the added order is
-                // added to the list
-                dispatcher.dispatch(
-                    WCOrderActionBuilder.newFetchOrderListAction(
-                        FetchOrderListPayload(offset = 0, listDescriptor = WCOrderListDescriptor(site = site))
-                    )
-                )
+                requestListRefresh(site)
                 WooResult(model)
             }
         }
+    }
+
+    // Emit a request to refresh the list of order summaries to make sure the added order is
+    // added to the list
+    private fun requestListRefresh(site: SiteModel) {
+        dispatcher.dispatch(
+            WCOrderActionBuilder.newFetchOrderListAction(
+                FetchOrderListPayload(
+                    offset = 0,
+                    listDescriptor = WCOrderListDescriptor(site = site)
+                )
+            )
+        )
     }
 
     suspend fun updateOrder(

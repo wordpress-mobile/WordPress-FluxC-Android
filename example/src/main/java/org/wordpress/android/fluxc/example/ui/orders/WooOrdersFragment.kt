@@ -597,6 +597,62 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 }
             }
         }
+
+        update_order_batch.setOnClickListener {
+            selectedSite?.let { site ->
+                lifecycleScope.launch {
+                    val products = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please type a comma separated list of product IDs",
+                        isNumeric = false
+                    )?.split(",")?.map { it.toLongOrNull() }
+
+                    if (products == null || products.any { it == null }) {
+                        prependToLog("Error while parsing the entered product IDs")
+                        return@launch
+                    }
+
+                    val customerNote = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please enter a customer note?",
+                        isNumeric = false
+                    )
+
+                    val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
+                    val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
+
+                    val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
+
+                    val ordersToDelete = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please type a comma separated order IDs to delete",
+                        isNumeric = false
+                    )?.split(",")?.map { it.toLong() } ?: emptyList()
+
+                    val result = orderUpdateStore.updateOrdersBatch(
+                        site,
+                        createRequest = listOf(UpdateOrderRequest(
+                            status = status,
+                            lineItems = products.map {
+                                LineItem(productId = it, quantity = 1f)
+                            },
+                            shippingAddress = shippingAddress,
+                            billingAddress = billingAddress,
+                            customerNote = customerNote
+                        )),
+                        updateRequest = emptyList(),
+                        deleteRequest = ordersToDelete
+                    )
+                    if (result.isError) {
+                        prependToLog("Order creation failed, error ${result.error.type} ${result.error.message}")
+                    } else {
+                        prependToLog("Created orders ${result.model?.createdEntities?.map { it.orderId }}")
+                        prependToLog("Updated orders ${result.model?.updatedEntities?.map { it.orderId }}")
+                        prependToLog("Deleted orders ${result.model?.deletedEntities?.map { it.orderId }}")
+                    }
+                }
+            }
+        }
     }
 
     private fun fetchOrderShipmentProviders(
