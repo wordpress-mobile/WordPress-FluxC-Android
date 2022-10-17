@@ -637,6 +637,22 @@ class OrderUpdateStoreTest {
         )
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun `updateOrdersBatch throws IllegalArgumentException if all request params are empty`() {
+        runBlocking {
+            setUp {
+                orderRestClient = mock()
+            }
+
+            sut.updateOrdersBatch(
+                site = site,
+                createRequest = emptyList(),
+                updateRequest = emptyList(),
+                deleteRequest = emptyList()
+            )
+        }
+    }
+
     private companion object {
         const val TEST_REMOTE_ORDER_ID = 321L
         val TEST_LOCAL_SITE_ID = LocalId(654)

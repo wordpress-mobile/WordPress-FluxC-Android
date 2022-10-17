@@ -238,6 +238,12 @@ class OrderUpdateStore @Inject internal constructor(
         updateRequest: List<UpdateOrderRequest> = emptyList(),
         deleteRequest: List<Long> = emptyList()
     ): WooResult<OrdersDatabaseBatch> {
+        require(
+            createRequest.isNotEmpty() || updateRequest.isNotEmpty() || deleteRequest.isNotEmpty()
+        ) {
+            "At least one of Request params must contain an UpdateOrderRequest object"
+        }
+
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
             val result = wcOrderRestClient.updateOrdersBatch(site, createRequest, updateRequest, deleteRequest)
 
