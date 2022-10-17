@@ -246,14 +246,14 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
 
-                if(createRequest.isNotEmpty()) {
+                if (createRequest.isNotEmpty()) {
                     model.createdEntities.map { ordersDao.insertOrUpdateOrder(it) }
                     requestListRefresh(site)
                 }
-                if(updateRequest.isNotEmpty()) {
+                if (updateRequest.isNotEmpty()) {
                     model.updatedEntities.map { ordersDao.insertOrUpdateOrder(it) }
                 }
-                if(deleteRequest.isNotEmpty()) {
+                if (deleteRequest.isNotEmpty()) {
                     deleteRequest.map { ordersDao.deleteOrder(site.localId(), it) }
                 }
                 WooResult(model)

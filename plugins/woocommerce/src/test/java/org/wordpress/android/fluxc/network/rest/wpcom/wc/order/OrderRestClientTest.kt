@@ -17,17 +17,17 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.LineItem
-import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
+import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 
 @RunWith(MockitoJUnitRunner::class)
 class OrderRestClientTest {
-
     @Mock private lateinit var dispatcher: Dispatcher
     @Mock private lateinit var requestQueue: RequestQueue
     @Mock private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
@@ -53,7 +53,6 @@ class OrderRestClientTest {
         )
     }
 
-
     @Test
     fun `updateOrdersBatch should call gson builder request with expected params`(): Unit = runBlocking {
         val createRequest = listOf(
@@ -66,14 +65,16 @@ class OrderRestClientTest {
             1.toLong(), 2.toLong(), 3.toLong()
         )
 
-        whenever(jetpackTunnelGsonRequestBuilder.syncPostRequest(
-            eq(orderRestClient),
-            site = eq(site),
-            url = eq(WOOCOMMERCE.orders.batch.pathV3),
-            body = any(),
-            clazz = eq(OrdersBatchDto::class.java)
-        )).thenReturn(
-            JetpackResponse.JetpackSuccess(OrdersBatchDto()) // TODO to be updated with actual response
+        whenever(
+            jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                eq(orderRestClient),
+                site = eq(site),
+                url = eq(WOOCOMMERCE.orders.batch.pathV3),
+                body = any(),
+                clazz = eq(OrdersBatchDto::class.java)
+            )
+        ).thenReturn(
+            JetpackSuccess(OrdersBatchDto())
         )
 
         val response = orderRestClient.updateOrdersBatch(
@@ -83,11 +84,17 @@ class OrderRestClientTest {
             deleteRequest = deleteRequest
         )
 
-        Assertions.assertThat(response).isEqualTo(WooPayload(OrdersDatabaseBatch(
-            createdEntities = emptyList(),
-            updatedEntities = emptyList(),
-            deletedEntities = emptyList()
-        )))
+        Assertions.assertThat(
+            response
+        ).isEqualTo(
+            WooPayload(
+                OrdersDatabaseBatch(
+                    createdEntities = emptyList(),
+                    updatedEntities = emptyList(),
+                    deletedEntities = emptyList()
+                )
+            )
+        )
     }
 
     private fun buildOrderRequest(orderId: String) = UpdateOrderRequest(
@@ -109,7 +116,7 @@ class OrderRestClientTest {
         quantity = 1f
     )
 
-    private fun buildAddressModel() = OrderAddress.Shipping(
+    private fun buildAddressModel() = Shipping(
         firstName = "firstName",
         lastName = "lastName",
         company = "company",
@@ -122,7 +129,7 @@ class OrderRestClientTest {
         phone = "phone"
     )
 
-    private fun buildBillingModel() = OrderAddress.Billing(
+    private fun buildBillingModel() = Billing(
         email = "email@email.com",
         firstName = "firstName",
         lastName = "lastName",

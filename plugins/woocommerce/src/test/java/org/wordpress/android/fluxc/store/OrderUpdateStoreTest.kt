@@ -534,14 +534,16 @@ class OrderUpdateStoreTest {
                         deleteRequest = listOf(1.toLong(), 2.toLong())
                     )
                 }.doReturn(
-                    WooPayload(OrdersDatabaseBatch(
-                        createdEntities = emptyList(),
-                        updatedEntities = emptyList(),
-                        deletedEntities = listOf(
-                            OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
-                            OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
+                    WooPayload(
+                        OrdersDatabaseBatch(
+                            createdEntities = emptyList(),
+                            updatedEntities = emptyList(),
+                            deletedEntities = listOf(
+                                OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
+                                OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
+                            )
                         )
-                    ))
+                    )
                 )
             }
         }
@@ -557,7 +559,7 @@ class OrderUpdateStoreTest {
 
     @Test
     fun `should update local copy of orders when bulky update request succeeds`(): Unit = runBlocking {
-        val mockedListOfUpdatedOrders : List<UpdateOrderRequest> = mock()
+        val mockedListOfUpdatedOrders: List<UpdateOrderRequest> = mock()
         setUp {
             orderRestClient = mock {
                 onBlocking {
@@ -568,14 +570,16 @@ class OrderUpdateStoreTest {
                         deleteRequest = emptyList()
                     )
                 }.doReturn(
-                    WooPayload(OrdersDatabaseBatch(
-                        createdEntities = emptyList(),
-                        updatedEntities = listOf(
-                            OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
-                            OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
-                        ),
-                        deletedEntities = emptyList()
-                    ))
+                    WooPayload(
+                        OrdersDatabaseBatch(
+                            createdEntities = emptyList(),
+                            updatedEntities = listOf(
+                                OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
+                                OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
+                            ),
+                            deletedEntities = emptyList()
+                        )
+                    )
                 )
             }
         }
@@ -595,7 +599,7 @@ class OrderUpdateStoreTest {
 
     @Test
     fun `should create new orders when bulky update request succeeds`(): Unit = runBlocking {
-        val mockedListOfUpdatedOrders : List<UpdateOrderRequest> = mock()
+        val mockedListOfUpdatedOrders: List<UpdateOrderRequest> = mock()
         setUp {
             orderRestClient = mock {
                 onBlocking {
@@ -606,14 +610,16 @@ class OrderUpdateStoreTest {
                         deleteRequest = emptyList()
                     )
                 }.doReturn(
-                    WooPayload(OrdersDatabaseBatch(
-                        createdEntities = emptyList(),
-                        updatedEntities = listOf(
-                            OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
-                            OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
-                        ),
-                        deletedEntities = emptyList()
-                    ))
+                    WooPayload(
+                        OrdersDatabaseBatch(
+                            createdEntities = emptyList(),
+                            updatedEntities = listOf(
+                                OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
+                                OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
+                            ),
+                            deletedEntities = emptyList()
+                        )
+                    )
                 )
             }
         }

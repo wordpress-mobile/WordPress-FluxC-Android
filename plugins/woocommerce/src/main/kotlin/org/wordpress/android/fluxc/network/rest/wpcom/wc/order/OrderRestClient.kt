@@ -780,11 +780,13 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackError -> WooPayload(response.error.toWooError())
             is JetpackSuccess -> response.data?.let { ordersBatchDto ->
-                WooPayload(OrdersDatabaseBatch(
-                    createdEntities = ordersBatchDto.create.map { buildOrderEntity(it, site) },
-                    updatedEntities = ordersBatchDto.update.map { buildOrderEntity(it, site) },
-                    deletedEntities = ordersBatchDto.delete.map { buildOrderEntity(it, site) },
-                ))
+                WooPayload(
+                    OrdersDatabaseBatch(
+                        createdEntities = ordersBatchDto.create.toEntityListOrEmpty(site),
+                        updatedEntities = ordersBatchDto.update.toEntityListOrEmpty(site),
+                        deletedEntities = ordersBatchDto.delete.toEntityListOrEmpty(site),
+                    )
+                )
             } ?: WooPayload(
                 error = WooError(
                     type = WooErrorType.GENERIC_ERROR,
@@ -794,6 +796,12 @@ class OrderRestClient @Inject constructor(
             )
         }
     }
+
+    private fun List<OrderDto>?.toEntityListOrEmpty(
+        site: SiteModel
+    ) = this?.map {
+        buildOrderEntity(it, site)
+    } ?: emptyList()
 
     suspend fun createOrder(
         site: SiteModel,
