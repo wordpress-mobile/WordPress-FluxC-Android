@@ -29,8 +29,8 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.showTwoButtonsDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.LineItem
@@ -623,24 +623,50 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
                     val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
 
+                    val duplicatesCount = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please type a how many duplicates of this Order are needed",
+                        isNumeric = true
+                    )?.toInt() ?: 1
+
                     val ordersToDelete = showSingleLineDialog(
                         activity = requireActivity(),
                         message = "Please type a comma separated order IDs to delete",
                         isNumeric = false
                     )?.split(",")?.map { it.toLong() } ?: emptyList()
 
+                    val ordersToUpdate = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please type a comma separated order IDs to update",
+                        isNumeric = false
+                    )?.split(",")?.map { it.toLong() }?.map {
+                        val newCostumerNote = showSingleLineDialog(
+                            activity = requireActivity(),
+                            message = "Please type new costumer note for Order ID $it",
+                            isNumeric = false
+                        )
+                        UpdateOrderRequest(
+                            id = it,
+                            customerNote = "$newCostumerNote"
+                        )
+                    } ?: emptyList()
+
+                    val orderToCreate = UpdateOrderRequest(
+                        status = status,
+                        lineItems = products.map {
+                            LineItem(productId = it, quantity = 1f)
+                        },
+                        shippingAddress = shippingAddress,
+                        billingAddress = billingAddress,
+                        customerNote = customerNote
+                    )
+
                     val result = orderUpdateStore.updateOrdersBatch(
                         site,
-                        createRequest = listOf(UpdateOrderRequest(
-                            status = status,
-                            lineItems = products.map {
-                                LineItem(productId = it, quantity = 1f)
-                            },
-                            shippingAddress = shippingAddress,
-                            billingAddress = billingAddress,
-                            customerNote = customerNote
-                        )),
-                        updateRequest = emptyList(),
+                        createRequest = mutableListOf<UpdateOrderRequest>().apply {
+                            repeat(duplicatesCount) { this.add(orderToCreate) }
+                        },
+                        updateRequest = ordersToUpdate,
                         deleteRequest = ordersToDelete
                     )
                     if (result.isError) {
