@@ -27,6 +27,8 @@ class LeaderboardsRestClient @Inject constructor(
     userAgent: UserAgent,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+
+    @Suppress("LongParameterList")
     suspend fun fetchLeaderboards(
         site: SiteModel,
         unit: StatsGranularity?,
@@ -41,6 +43,7 @@ class LeaderboardsRestClient @Inject constructor(
     }.requestTo(site, unit, startDate, endDate, quantity, forceRefresh)
         .handleResult()
 
+    @Suppress("LongParameterList")
     private suspend fun String.requestTo(
         site: SiteModel,
         unit: StatsGranularity?,
@@ -56,6 +59,7 @@ class LeaderboardsRestClient @Inject constructor(
         Array<LeaderboardsApiResponse>::class.java
     )
 
+    @Suppress("LongParameterList")
     private fun createParameters(
         site: SiteModel,
         unit: StatsGranularity?,
