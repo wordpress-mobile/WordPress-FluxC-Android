@@ -1,8 +1,11 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.network.Response
+import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
+import org.wordpress.android.util.DateTimeUtils
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class OrderNoteApiResponse : Response {
     val id: Long? = null
     val date_created_gmt: String? = null
@@ -12,3 +15,14 @@ class OrderNoteApiResponse : Response {
     // reference only. Default is false.
     val customer_note: Boolean = false
 }
+
+fun OrderNoteApiResponse.toDataModel(siteId: RemoteId, orderId: RemoteId) = OrderNoteEntity(
+    siteId = siteId,
+    noteId = RemoteId(id ?: 0),
+    orderId = orderId,
+    dateCreated = date_created_gmt?.let { DateTimeUtils.dateUTCFromIso8601("${it}Z") },
+    note = note,
+    isSystemNote = author == "system" || author == "WooCommerce",
+    author = author ?: "",
+    isCustomerNote = customer_note
+)

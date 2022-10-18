@@ -26,12 +26,9 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
-import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.shippinglabels.WCContentType
 import org.wordpress.android.fluxc.model.shippinglabels.WCCustomsItem
 import org.wordpress.android.fluxc.model.shippinglabels.WCNonDeliveryOption
@@ -61,6 +58,9 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.ceil
 
+private const val LOAD_DATA_DELAY = 5000L // 5 seconds
+
+@Suppress("LargeClass")
 class WooShippingLabelFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
@@ -72,6 +72,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_shippinglabels, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod", "SwallowedException", "TooGenericExceptionCaught")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -232,7 +233,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
 
                     prependToLog("Downloading the commercial invoice")
                     val invoiceFile = withContext(Dispatchers.IO) {
-                        downloadUrl(label.commercialInvoiceUrl!!)
+                        downloadUrlOrLog(label.commercialInvoiceUrl!!)
                     }
                     invoiceFile?.let {
                         openPdfReader(it)
@@ -455,6 +456,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                                         weight = t.text.toString().toFloatOrNull()
 
                                         val box: ShippingLabelPackage?
+                                        @Suppress("ComplexCondition")
                                         if (height == null || width == null || length == null || weight == null) {
                                             prependToLog(
                                                     "Invalid package parameters:\n" +
@@ -476,7 +478,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                                             coroutineScope.launch {
                                                 val result = wcShippingLabelStore.getShippingRates(
                                                         site,
-                                                        order.remoteOrderId.value,
+                                                        order.orderId,
                                                         origin,
                                                         destination,
                                                         listOf(box),
@@ -531,6 +533,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                             ?.toFloat()
                     val weight = showSingleLineDialog(requireActivity(), "Enter weight:", isNumeric = true)
                             ?.toFloat()
+                    @Suppress("ComplexCondition")
                     if (boxId == null || height == null || width == null || length == null || weight == null) {
                         prependToLog(
                                 "Invalid package parameters:\n" +
@@ -581,7 +584,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
 
                     val ratesResult = wcShippingLabelStore.getShippingRates(
                             site,
-                            order.remoteOrderId.value,
+                            order.orderId,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(box),
@@ -619,7 +622,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                     prependToLog("Purchasing label")
                     val result = wcShippingLabelStore.purchaseShippingLabels(
                             site,
-                            order.remoteOrderId.value,
+                            order.orderId,
                             if (isInternational) origin.copy(phone = "0000000000") else origin,
                             if (isInternational) destination.copy(phone = "0000000000") else destination,
                             listOf(packageData),
@@ -655,7 +658,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                     }
                     val plugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
                     plugin?.let {
-                        prependToLog("$it")
+                        prependToLog("${it.displayName} ${it.version}")
                     }
                 }
             }
@@ -735,17 +738,15 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     }
 
     private suspend fun loadData(site: SiteModel, orderId: Long):
-            Triple<WCOrderModel?, ShippingLabelAddress?, ShippingLabelAddress?> {
+            Triple<OrderEntity?, ShippingLabelAddress?, ShippingLabelAddress?> {
         prependToLog("Loading shipping data...")
 
-        dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(site))
-
-        val payload = FetchOrdersByIdsPayload(site, listOf(RemoteId(orderId)))
+        val payload = FetchOrdersByIdsPayload(site, listOf(orderId))
         dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
 
-        delay(5000)
+        delay(LOAD_DATA_DELAY)
 
-        val origin = wooCommerceStore.getSiteSettings(site)?.let {
+        val origin = wooCommerceStore.fetchSiteGeneralSettings(site).model?.let {
             ShippingLabelAddress(
                     name = "Test Name",
                     address = it.address,
@@ -756,7 +757,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
             )
         }
 
-        val order = wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, orderId))
+        val order = wcOrderStore.getOrderByIdAndSite(orderId, site)
         val destination = order?.getShippingAddress()?.let {
             ShippingLabelAddress(
                     name = "${it.firstName} ${it.lastName}",
@@ -774,6 +775,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
     /**
      * Creates a temporary file for storing captured photos
      */
+    @Suppress("PrintStackTrace")
     private fun createTempPdfFile(context: Context): File? {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir = context.externalCacheDir
@@ -790,6 +792,7 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     private fun writePDFToFile(base64Content: String): File? {
         return try {
             createTempPdfFile(requireContext())?.let { file ->
@@ -822,20 +825,26 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
         startActivity(sendIntent)
     }
 
-    private fun downloadUrl(url: String): File? {
+    @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
+    private fun downloadUrlOrLog(url: String): File? {
         return try {
-            URL(url).openConnection().inputStream.use { inputStream ->
-                createTempPdfFile(requireContext())?.let { file ->
-                    file.outputStream().use { output ->
-                        inputStream.copyTo(output)
-                    }
-                    file
-                }
-            }
+            downloadUrl(url)
         } catch (e: Exception) {
             e.printStackTrace()
             prependToLog("Error downloading the file: ${e.message}")
             null
         }
+    }
+
+    private fun downloadUrl(url: String): File? {
+        val file = URL(url).openConnection().inputStream.use { inputStream ->
+            createTempPdfFile(requireContext())?.let { file ->
+                file.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+                file
+            }
+        }
+        return file
     }
 }

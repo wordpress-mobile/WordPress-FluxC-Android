@@ -99,14 +99,19 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val fetchActivities = runBlocking { activityLogStore.fetchActivities(payload) }
 
         val activityLogForSite = activityLogStore.getActivityLogForSite(
-                site = site,
-                ascending = true,
-                rewindableOnly = true
+            site = site,
+            ascending = true,
+            rewindableOnly = false
+        )
+        val activityLogForSiteRewindable = activityLogStore.getActivityLogForSite(
+            site = site,
+            ascending = true,
+            rewindableOnly = true
         )
 
         assertNotNull(fetchActivities)
-        assertEquals(fetchActivities.rowsAffected, ALL_SITE_ACTIVITIES) // All activities are persisted.
-        assertEquals(activityLogForSite.size, 0) // Non retrieved, all activities are non-rewindable.
+        assertEquals(fetchActivities.rowsAffected, activityLogForSite.size) // All activities are persisted.
+        assertEquals(activityLogForSiteRewindable.size, 0) // Non retrieved, all activities are non-rewindable.
     }
 
     @Test
@@ -362,9 +367,5 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
                 wpPassword = BuildConfig.TEST_WPCOM_PASSWORD_JETPACK,
                 siteUrl = BuildConfig.TEST_WPORG_URL_JETPACK_COMPLETE
         )
-    }
-
-    companion object {
-        private const val ALL_SITE_ACTIVITIES = 20
     }
 }

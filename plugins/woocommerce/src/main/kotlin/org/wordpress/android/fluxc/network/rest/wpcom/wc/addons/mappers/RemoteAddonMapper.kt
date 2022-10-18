@@ -21,80 +21,95 @@ import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteType.Multip
 object RemoteAddonMapper {
     fun toDomain(dto: RemoteAddonDto): Addon {
         return when (dto.type) {
-            MultipleChoice -> Addon.MultipleChoice(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    options = dto.mapOptions(),
-                    display = dto.display?.toDomainModel() ?: throw MappingRemoteException(
-                                    "MultipleChoice add-on type has to have `display` defined."
-                            )
-            )
-            Checkbox -> Addon.Checkbox(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    options = dto.mapOptions()
-            )
-            CustomText -> Addon.CustomText(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    restrictions = dto.mapRestrictions(),
-                    price = dto.mapPrice(),
-                    characterLength = prepareRange(dto.min, dto.max)
-            )
-            CustomTextArea -> Addon.CustomTextArea(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    price = dto.mapPrice(),
-                    characterLength = prepareRange(dto.min, dto.max)
-            )
-            FileUpload -> Addon.FileUpload(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    price = dto.mapPrice()
-            )
-            CustomPrice -> Addon.CustomPrice(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    priceRange = prepareRange(dto.min, dto.max)
-            )
-            InputMultiplier -> Addon.InputMultiplier(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position,
-                    price = dto.mapPrice(),
-                    quantityRange =
-                    if (dto.max == 0L) null else (dto.min..dto.max)
-            )
-            Heading -> Addon.Heading(
-                    name = dto.name,
-                    titleFormat = dto.titleFormat.toDomainModel(),
-                    description = dto.mapDescription(),
-                    required = dto.required.asBoolean(),
-                    position = dto.position
-            )
+            MultipleChoice -> multipleChoice(dto)
+            Checkbox -> checkbox(dto)
+            CustomText -> customText(dto)
+            CustomTextArea -> customTextArea(dto)
+            FileUpload -> fileUpload(dto)
+            CustomPrice -> customPrice(dto)
+            InputMultiplier -> inputMultiplier(dto)
+            Heading -> heading(dto)
             else -> throw MappingRemoteException("Add-on has to have type")
         }
     }
+
+    private fun multipleChoice(dto: RemoteAddonDto) = Addon.MultipleChoice(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        options = dto.mapOptions(),
+        display = dto.display?.toDomainModel() ?: throw MappingRemoteException(
+            "MultipleChoice add-on type has to have `display` defined."
+        )
+    )
+
+    private fun checkbox(dto: RemoteAddonDto) = Addon.Checkbox(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        options = dto.mapOptions()
+    )
+
+    private fun customText(dto: RemoteAddonDto) = Addon.CustomText(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        restrictions = dto.mapRestrictions(),
+        price = dto.mapPrice(),
+        characterLength = prepareRange(dto.min, dto.max)
+    )
+
+    private fun customTextArea(dto: RemoteAddonDto) = Addon.CustomTextArea(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        price = dto.mapPrice(),
+        characterLength = prepareRange(dto.min, dto.max)
+    )
+
+    private fun fileUpload(dto: RemoteAddonDto) = Addon.FileUpload(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        price = dto.mapPrice()
+    )
+
+    private fun customPrice(dto: RemoteAddonDto) = Addon.CustomPrice(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        priceRange = prepareRange(dto.min, dto.max)
+    )
+
+    private fun inputMultiplier(dto: RemoteAddonDto) = Addon.InputMultiplier(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position,
+        price = dto.mapPrice(),
+        quantityRange = prepareRange(dto.min, dto.max)
+    )
+
+    private fun heading(dto: RemoteAddonDto) = Addon.Heading(
+        name = dto.name,
+        titleFormat = dto.titleFormat.toDomainModel(),
+        description = dto.mapDescription(),
+        required = dto.required.asBoolean(),
+        position = dto.position
+    )
 
     private fun RemoteAddonDto.mapDescription(): String? {
         return if (descriptionEnabled.asBoolean()) {
@@ -144,8 +159,8 @@ object RemoteAddonMapper {
     private fun RemoteAddonDto.mapPrice(): Addon.HasAdjustablePrice.Price {
         return if (this.priceType != null) {
             Addon.HasAdjustablePrice.Price.Adjusted(
-                    priceType = this.priceType.mapToDomain(),
-                    value = this.price.orEmpty()
+                priceType = this.priceType.mapToDomain(),
+                value = this.price.orEmpty()
             )
         } else {
             Addon.HasAdjustablePrice.Price.NotAdjusted

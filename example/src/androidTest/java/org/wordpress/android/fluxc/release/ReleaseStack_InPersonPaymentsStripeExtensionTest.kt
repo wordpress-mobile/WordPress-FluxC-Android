@@ -9,6 +9,9 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.STRIPE
 import javax.inject.Inject
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import java.util.Locale
 
 class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
@@ -32,10 +35,9 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasStripeExtensionWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.fetchConnectionToken(sSite)
-//
-//        assertTrue(result.model?.token?.isNotEmpty() == true)
+        val result = store.fetchConnectionToken(STRIPE, sSite)
+
+        assertTrue(result.model?.token?.isNotEmpty() == true)
     }
 
     @Test
@@ -45,7 +47,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
         assertEquals("US", result.model?.country)
         assertEquals(false, result.model?.hasPendingRequirements)
         assertEquals(false, result.model?.hasOverdueRequirements)
-        assertEquals("", result.model?.statementDescriptor)
+        assertEquals(result.model?.statementDescriptor?.toLowerCase(Locale.ROOT), "custom descriptor")
         assertEquals("US", result.model?.country)
         assertEquals("usd", result.model?.storeCurrencies?.default)
         assertEquals(listOf("usd"), result.model?.storeCurrencies?.supportedCurrencies)
@@ -53,40 +55,17 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasStripeExtensionAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.createCustomerByOrderId(
-//                sSite,
-//                17L
-//        )
-//
-//        assertEquals("cus_JyzaCUE61Qmy8y", result.model?.customerId)
-    }
-
-    @Test
-    fun givenSiteHasStripeExtensionAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.createCustomerByOrderId(
-//                sSite,
-//                1L
-//        )
-//
-//        assertTrue(result.isError)
-    }
-
-    @Test
     fun givenSiteHasStripeExtensionAndStripeAddressThenLocationDataReturned() = runBlocking {
-        // TODO cardreader Update when we add support for Stripe Extension endpoint
-//        val result = store.getStoreLocationForSite(sSite)
-//
-//        assertFalse(result.isError)
-//        assertEquals("tml_EUZ4bQQTxLWMq2", result.locationId)
-//        assertEquals("Woo WCPay", result.displayName)
-//        assertEquals("San Francisco", result.address?.city)
-//        assertEquals("US", result.address?.country)
-//        assertEquals("1230 Lawton St", result.address?.line1)
-//        assertEquals("71", result.address?.line2)
-//        assertEquals("94122", result.address?.postalCode)
-//        assertEquals("CA", result.address?.state)
+        val result = store.getStoreLocationForSite(STRIPE, sSite)
+
+        assertFalse(result.isError)
+        assertEquals("tml_EbIYQbo6EsyAee", result.locationId)
+        assertEquals("Woo Jetpack Stripe Extension", result.displayName)
+        assertEquals("San Francisco", result.address?.city)
+        assertEquals("US", result.address?.country)
+        assertEquals("1230 Lawton St", result.address?.line1)
+        assertEquals("", result.address?.line2)
+        assertEquals("94122", result.address?.postalCode)
+        assertEquals("CA", result.address?.state)
     }
 }

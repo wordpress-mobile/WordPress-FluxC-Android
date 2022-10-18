@@ -9,17 +9,16 @@ data class LineItem(
     @SerializedName("parent_name")
     val parentName: String? = null,
     @SerializedName("product_id")
-    var productId: Long? = null,
+    val productId: Long? = null,
     @SerializedName("variation_id")
     val variationId: Long? = null,
-    var quantity: Float? = null,
+    val quantity: Float? = null,
     val subtotal: String? = null,
     val total: String? = null, // Price x quantity
     @SerializedName("total_tax")
     val totalTax: String? = null,
     val sku: String? = null,
     val price: String? = null, // The per-item price
-
     @SerializedName("meta_data")
     val metaData: List<WCMetaData>? = null
 ) {

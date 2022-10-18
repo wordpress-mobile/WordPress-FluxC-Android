@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.R.layout
-import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.WCAddonsStore
@@ -63,7 +62,7 @@ class WooAddonsTestFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val selectedSiteRemoteId = arguments!!.getLong(SELECTED_SITE_REMOTE_ID)
+        val selectedSiteRemoteId = requireArguments().getLong(SELECTED_SITE_REMOTE_ID)
         val selectedSite = siteStore.getSiteBySiteId(selectedSiteRemoteId)!!
 
         addons_product_remote_id_apply.setOnClickListener {
@@ -74,14 +73,14 @@ class WooAddonsTestFragment : DialogFragment() {
         }
 
         addons_fetch_product.setOnClickListener {
-            dispatcher.dispatch(
-                    WCProductActionBuilder.newFetchSingleProductAction(
-                            FetchSingleProductPayload(
-                                    selectedSite,
-                                    selectedProduct.remoteProductId
-                            )
-                    )
-            )
+            coroutineScope.launch {
+                wcProductStore.fetchSingleProduct(
+                        FetchSingleProductPayload(
+                                selectedSite,
+                                selectedProduct.remoteProductId
+                        )
+                )
+            }
         }
 
         addons_fetch_global.setOnClickListener {

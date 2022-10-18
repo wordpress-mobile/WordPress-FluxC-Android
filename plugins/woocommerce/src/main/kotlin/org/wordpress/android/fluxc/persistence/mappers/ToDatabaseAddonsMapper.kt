@@ -16,8 +16,8 @@ object ToDatabaseAddonsMapper {
         globalGroupLocalId: Long? = null,
         productBasedIdentification: ProductBasedIdentification? = null
     ): AddonEntity {
-        if (globalGroupLocalId == null && productBasedIdentification == null) {
-            throw IllegalStateException("Addon has to be identified with a Group or a Product")
+        check(globalGroupLocalId != null || productBasedIdentification != null) {
+            "Addon has to be identified with a Group or a Product"
         }
 
         val range = domain.mapRange()

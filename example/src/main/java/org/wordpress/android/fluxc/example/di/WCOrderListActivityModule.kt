@@ -5,7 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.WCOrderListActivity
 
 @Module
-internal abstract class WCOrderListActivityModule {
+internal interface WCOrderListActivityModule {
     @ContributesAndroidInjector
-    abstract fun provideWCOrderListActivityInjector(): WCOrderListActivity
+    fun provideWCOrderListActivityInjector(): WCOrderListActivity
 }

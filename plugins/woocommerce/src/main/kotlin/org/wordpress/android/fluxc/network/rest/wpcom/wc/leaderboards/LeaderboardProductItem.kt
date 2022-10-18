@@ -32,6 +32,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 
  This class represents one Single Top Performer item response as a Product type one
  */
+@Suppress("MaxLineLength")
 class LeaderboardProductItem(
     private val itemRows: Array<LeaderboardItemRow>? = null
 ) {
@@ -78,7 +79,7 @@ class LeaderboardProductItem(
      *  fromHtmlWithSafeApiCall
      *      Output: R$
      */
-    val currency by lazy {
+    @Suppress("MaxLineLength") val currency by lazy {
         priceAmountHtmlTag
                 ?.split(">")
                 ?.firstOrNull { it.contains("&#") }
@@ -105,7 +106,7 @@ class LeaderboardProductItem(
      *  regex filter with replace
      *      Output: DKK
      */
-    private val plainTextCurrency by lazy {
+    @Suppress("MaxLineLength") private val plainTextCurrency by lazy {
         fromHtmlWithSafeApiCall(priceAmountHtmlTag)
                 .toString()
                 .replace(Regex("[0-9.,]"), "")
@@ -137,8 +138,7 @@ class LeaderboardProductItem(
      *  try to convert to long
      *      Output: 14 as Long
      */
-
-    val productId by lazy {
+    @Suppress("MaxLineLength") val productId by lazy {
         link
                 ?.split("&")
                 ?.firstOrNull { it.contains("${PRODUCTS.value}=", true) }
@@ -151,7 +151,6 @@ class LeaderboardProductItem(
      * This property will operate and transform a HTML tag in order to retrieve the inner URL out of the <a href/> tag
      * using the [SpannableStringBuilder] implementation in order to parse it
      */
-
     private val link by lazy {
         fromHtmlWithSafeApiCall(itemHtmlTag)
                 .run { this as? SpannableStringBuilder }

@@ -114,6 +114,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     /**
      * Parses the images json array into a list of product images
      */
+    @Suppress("ReturnCount")
     fun getImageModel(): WCProductImageModel? {
         if (image.isNotBlank()) {
             try {

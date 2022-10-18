@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import android.annotation.SuppressLint
 import android.content.Context
 import com.yarolegovich.wellsql.SelectQuery.ORDER_DESCENDING
+import kotlinx.coroutines.flow.Flow
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -230,6 +231,13 @@ class NotificationStore @Inject constructor(
     ): List<NotificationModel> =
             notificationSqlUtils.getNotificationsForSite(site, ORDER_DESCENDING, filterByType, filterBySubtype)
 
+    fun observeNotificationsForSite(
+        site: SiteModel,
+        filterByType: List<String>? = null,
+        filterBySubtype: List<String>? = null
+    ): Flow<List<NotificationModel>> =
+            notificationSqlUtils.observeNotificationsForSite(site, ORDER_DESCENDING, filterByType, filterBySubtype)
+
     /**
      * Returns true if the given site has unread notifications
      *
@@ -265,6 +273,36 @@ class NotificationStore @Inject constructor(
     fun getNotificationByLocalId(noteId: Int) =
             notificationSqlUtils.getNotificationByIdSet(NoteIdSet(noteId, 0, 0))
 
+    suspend fun registerDevice(token: String, appKey: NotificationAppKey): RegisterDeviceResponsePayload {
+        return coroutineEngine.withDefaultContext(T.API, this, "registerDevice") {
+            val uuid = preferences.getString(WPCOM_PUSH_DEVICE_UUID, null) ?: generateAndStoreUUID()
+
+            notificationRestClient.registerDevice(
+                    fcmToken = token,
+                    appKey = appKey,
+                    uuid = uuid
+            ).apply {
+                if (isError || deviceId.isNullOrEmpty()) {
+                    when (error.type) {
+                        DeviceRegistrationErrorType.MISSING_DEVICE_ID ->
+                            AppLog.e(T.NOTIFS, "Server response missing device_id - registration skipped!")
+                        DeviceRegistrationErrorType.GENERIC_ERROR ->
+                            AppLog.e(T.NOTIFS, "Error trying to register device: ${error.type} - ${error.message}")
+                        DeviceRegistrationErrorType.INVALID_RESPONSE ->
+                            AppLog.e(
+                                    T.NOTIFS,
+                                    "Server response missing response object: ${error.type} - ${error.message}"
+                            )
+                    }
+                } else {
+                    preferences.edit().putString(WPCOM_PUSH_DEVICE_SERVER_ID, deviceId).apply()
+                    AppLog.i(T.NOTIFS, "Server response OK. Device ID: $deviceId")
+                }
+            }
+        }
+    }
+
+    @Deprecated("EventBus is deprecated.", ReplaceWith("registerDevice(token, appKey)"))
     private fun registerDevice(payload: RegisterDevicePayload) {
         val uuid = preferences.getString(WPCOM_PUSH_DEVICE_UUID, null) ?: generateAndStoreUUID()
 
@@ -464,8 +502,9 @@ class NotificationStore @Inject constructor(
             var rowsAffected = 0
             if (result.success) {
                 result.notifications?.forEach {
-                    it.read = true // Just in case it wasn't set by the calling client
-                    rowsAffected += notificationSqlUtils.insertOrUpdateNotification(it)
+                    // Just in case it wasn't set by the calling client
+                    val note = it.copy(read = true)
+                    rowsAffected += notificationSqlUtils.insertOrUpdateNotification(note)
                 }
             }
 

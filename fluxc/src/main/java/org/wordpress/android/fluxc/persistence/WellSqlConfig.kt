@@ -1,3 +1,5 @@
+@file:Suppress("UnusedImports")
+
 package org.wordpress.android.fluxc.persistence
 
 import android.content.Context
@@ -11,17 +13,22 @@ import com.yarolegovich.wellsql.DefaultWellConfig
 import com.yarolegovich.wellsql.WellSql
 import com.yarolegovich.wellsql.WellTableManager
 import org.wordpress.android.fluxc.BuildConfig
+import org.wordpress.android.fluxc.model.plugin.SitePluginModel
+import org.wordpress.android.fluxc.model.plugin.WPOrgPluginModel
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import kotlin.annotation.AnnotationRetention.SOURCE
 import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
 
+@Suppress("LargeClass")
 open class WellSqlConfig : DefaultWellConfig {
     companion object {
         const val ADDON_WOOCOMMERCE = "WC"
     }
 
     constructor(context: Context) : super(context)
+
+    @Suppress("SpreadOperator")
     constructor(context: Context, @AddOn vararg addOns: String) : super(context, mutableSetOf(*addOns))
 
     @Retention(SOURCE)
@@ -30,7 +37,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 167
+        return 179
     }
 
     override fun getDbName(): String {
@@ -41,7 +48,7 @@ open class WellSqlConfig : DefaultWellConfig {
         mTables.forEach { table -> helper.createTable(table) }
     }
 
-    @Suppress("CheckStyle")
+    @Suppress("CheckStyle", "LongMethod", "ComplexMethod", "MagicNumber")
     override fun onUpgrade(db: SQLiteDatabase, helper: WellTableManager, oldVersion: Int, newVersion: Int) {
         AppLog.d(T.DB, "Upgrading database from version $oldVersion to $newVersion")
 
@@ -319,11 +326,14 @@ open class WellSqlConfig : DefaultWellConfig {
                     )
                 }
                 24 -> migrate(version) {
-                    // Start with a clean slate for Plugins. This migration adds unique constraints for SitePluginModel
-                    // and WPOrgPluginModel tables. Adds `authorName` column and renames `name` column to `displayName` in
-                    // WPOrgPluginModel table. Since these records are only used as cache and would & should be refreshed
-                    // often, there is no real harm to do this other than a slightly longer loading time for the first usage
-                    // after the migration. This migration would be much more complicated otherwise.
+                    /**
+                     * Start with a clean slate for Plugins. This migration adds unique constraints for
+                     * [SitePluginModel] and [WPOrgPluginModel] tables. Adds `authorName` column and renames `name`
+                     * column to `displayName` in [WPOrgPluginModel] table. Since these records are only used as cache
+                     * and would & should be refreshed often, there is no real harm to do this other than a slightly
+                     * longer loading time for the first usage after the migration. This migration would be much more
+                     * complicated otherwise.
+                     */
                     db.execSQL("DELETE FROM PluginDirectoryModel")
                     db.execSQL("DROP TABLE IF EXISTS SitePluginModel")
                     db.execSQL("DROP TABLE IF EXISTS WPOrgPluginModel")
@@ -1832,6 +1842,53 @@ open class WellSqlConfig : DefaultWellConfig {
                 167 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
                     db.execSQL("DROP TABLE IF EXISTS WCOrderModel")
                 }
+                168 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
+                    db.execSQL("ALTER TABLE WCProductModel ADD PURCHASABLE INTEGER")
+                }
+                169 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
+                    db.execSQL("DROP TABLE IF EXISTS WCPlugins")
+                }
+                170 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
+                    db.execSQL("DROP TABLE IF EXISTS WCOrderNoteModel")
+                }
+                171 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
+                    db.execSQL("DELETE FROM WCOrderSummaryModel")
+                    db.execSQL("DELETE FROM WCOrderShipmentTrackingModel")
+                }
+                172 -> migrate(version) {
+                    db.execSQL("ALTER TABLE EditorTheme ADD QUOTE_BLOCK_V2 BOOLEAN")
+                }
+                173 -> migrate(version) {
+                    db.execSQL("DELETE FROM QuickStartTaskModel WHERE TASK_NAME='explore_plans' " +
+                        "AND TASK_TYPE='grow';")
+                }
+                174 -> migrate(version) {
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_PROMPTS_OPTED_IN BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_PROMPTS_CARD_OPTED_IN BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_POTENTIAL_BLOGGING_SITE BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_MONDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_TUESDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_WEDNESDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_THURSDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_FRIDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_SATURDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD IS_BLOGGING_REMINDER_ON_SUNDAY BOOLEAN")
+                    db.execSQL("ALTER TABLE SiteModel ADD BLOGGING_REMINDER_HOUR INTEGER")
+                    db.execSQL("ALTER TABLE SiteModel ADD BLOGGING_REMINDER_MINUTE INTEGER")
+                }
+                175 -> migrate(version) {
+                    db.execSQL("ALTER TABLE PostModel ADD ANSWERED_PROMPT_ID INTEGER")
+                }
+                176 -> migrate(version) {
+                    db.execSQL("DELETE FROM QuickStartTaskModel WHERE TASK_NAME='edit_homepage' " +
+                        "AND TASK_TYPE='customize';")
+                }
+                177 -> migrateAddOn(ADDON_WOOCOMMERCE, version) {
+                    db.execSQL("ALTER TABLE WCSettingsModel ADD COUPONS_ENABLED BOOLEAN NOT NULL DEFAULT 0")
+                }
+                178 -> migrate(version) {
+                    db.execSQL("ALTER TABLE EditorTheme ADD LIST_BLOCK_V2 BOOLEAN")
+                }
             }
         }
         db.setTransactionSuccessful()
@@ -1876,6 +1933,7 @@ open class WellSqlConfig : DefaultWellConfig {
      * reduce the number of SQLiteBlobTooBigExceptions. Note that this is only called on API 28 and
      * above since earlier versions don't allow adjusting the cursor window size.
      */
+    @Suppress("MagicNumber")
     override fun getCursorWindowSize() = if (BuildConfig.DEBUG) (1024L * 1024L * 5L) else 0L
 
     /**

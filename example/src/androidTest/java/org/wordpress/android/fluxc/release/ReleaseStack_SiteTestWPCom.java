@@ -352,7 +352,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Get the first site
         SiteModel firstSite = mSiteStore.getSites().get(0);
         // Default quota for a wpcom site is 3Gb
-        assertEquals(firstSite.getSpaceAllowed(), 3L * 1024 * 1024 * 1024);
+        assertTrue(firstSite.getSpaceAllowed() > 3L * 1024 * 1024 * 1024);
     }
 
     @Test

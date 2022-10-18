@@ -122,7 +122,7 @@ class SiteRestClientTest {
 
         initSitesResponse(data = sitesResponse)
 
-        val responseModel = restClient.fetchSites(listOf(WPCOM))
+        val responseModel = restClient.fetchSites(listOf(WPCOM), false)
         assertThat(responseModel.sites).hasSize(1)
         assertThat(responseModel.sites[0].name).isEqualTo(name)
         assertThat(responseModel.sites[0].siteId).isEqualTo(siteId)
@@ -140,6 +140,26 @@ class SiteRestClientTest {
     }
 
     @Test
+    fun `fetched sites can filter JP connected package sites`() = test {
+        val response = SiteWPComRestResponse()
+        response.ID = siteId
+        val name = "Updated name"
+        response.name = name
+        response.URL = "site.com"
+        response.jetpack = false
+        response.jetpack_connection = true
+
+        val sitesResponse = SitesResponse()
+        sitesResponse.sites = listOf(response)
+
+        initSitesResponse(data = sitesResponse)
+
+        val responseModel = restClient.fetchSites(listOf(WPCOM), true)
+
+        assertThat(responseModel.sites).hasSize(0)
+    }
+
+    @Test
     fun `fetchSites returns error when API call fails`() = test {
         val errorMessage = "message"
         initSitesResponse(
@@ -151,7 +171,7 @@ class SiteRestClientTest {
                         )
                 )
         )
-        val errorResponse = restClient.fetchSites(listOf())
+        val errorResponse = restClient.fetchSites(listOf(), false)
 
         assertThat(errorResponse.error).isNotNull()
         assertThat(errorResponse.error.type).isEqualTo(GenericErrorType.NETWORK_ERROR)
@@ -173,12 +193,23 @@ class SiteRestClientTest {
 
         val dryRun = false
         val siteName = "Site name"
+        val siteTitle = "site title"
         val language = "CZ"
         val visibility = PUBLIC
         val segmentId = 123L
         val siteDesign = "design"
+        val timeZoneId = "Europe/London"
 
-        val result = restClient.newSite(siteName, language, visibility, segmentId, siteDesign, dryRun)
+        val result = restClient.newSite(
+            siteName,
+            siteTitle,
+            language,
+            timeZoneId,
+            visibility,
+            segmentId,
+            siteDesign,
+            dryRun
+        )
 
         assertThat(result.newSiteRemoteId).isEqualTo(siteId)
         assertThat(result.dryRun).isEqualTo(dryRun)
@@ -188,13 +219,133 @@ class SiteRestClientTest {
         assertThat(bodyCaptor.lastValue).isEqualTo(
                 mapOf(
                         "blog_name" to siteName,
+                        "blog_title" to siteTitle,
                         "lang_id" to language,
                         "public" to "1",
                         "validate" to "0",
                         "client_id" to appId,
                         "client_secret" to appSecret,
-                        "options" to mapOf<String, Any>("site_segment" to segmentId, "template" to siteDesign)
+                        "options" to mapOf<String, Any>(
+                                "site_segment" to segmentId,
+                                "template" to siteDesign,
+                                "timezone_string" to timeZoneId
+                        )
                 )
+        )
+    }
+
+    @Test
+    fun `creates new site without a site name`() = test {
+        val data = NewSiteResponse()
+        val blogDetails = BlogDetails()
+        blogDetails.blogid = siteId.toString()
+        data.blog_details = blogDetails
+        val appId = "app_id"
+        whenever(appSecrets.appId).thenReturn(appId)
+        val appSecret = "app_secret"
+        whenever(appSecrets.appSecret).thenReturn(appSecret)
+
+        initNewSiteResponse(data)
+
+        val dryRun = false
+        val siteName = null
+        val siteTitle = "site title"
+        val language = "CZ"
+        val visibility = PUBLIC
+        val segmentId = 123L
+        val siteDesign = "design"
+        val timeZoneId = "Europe/London"
+
+        val result = restClient.newSite(
+            siteName,
+            siteTitle,
+            language,
+            timeZoneId,
+            visibility,
+            segmentId,
+            siteDesign,
+            dryRun
+        )
+
+        assertThat(result.newSiteRemoteId).isEqualTo(siteId)
+        assertThat(result.dryRun).isEqualTo(dryRun)
+
+        assertThat(urlCaptor.lastValue)
+            .isEqualTo("https://public-api.wordpress.com/rest/v1.1/sites/new/")
+        assertThat(bodyCaptor.lastValue).isEqualTo(
+            mapOf(
+                "blog_name" to siteTitle,
+                "blog_title" to siteTitle,
+                "lang_id" to language,
+                "public" to "1",
+                "validate" to "0",
+                "find_available_url" to "1",
+                "client_id" to appId,
+                "client_secret" to appSecret,
+                "options" to mapOf<String, Any>(
+                    "site_segment" to segmentId,
+                    "template" to siteDesign,
+                    "site_creation_flow" to "with-design-picker",
+                    "timezone_string" to timeZoneId
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `creates new site without a site name and site title`() = test {
+        val data = NewSiteResponse()
+        val blogDetails = BlogDetails()
+        blogDetails.blogid = siteId.toString()
+        data.blog_details = blogDetails
+        val appId = "app_id"
+        whenever(appSecrets.appId).thenReturn(appId)
+        val appSecret = "app_secret"
+        whenever(appSecrets.appSecret).thenReturn(appSecret)
+
+        initNewSiteResponse(data)
+
+        val dryRun = false
+        val siteName = null
+        val siteTitle = null
+        val language = "CZ"
+        val visibility = PUBLIC
+        val segmentId = 123L
+        val siteDesign = "design"
+        val timeZoneId = "Europe/London"
+
+        val result = restClient.newSite(
+            siteName,
+            siteTitle,
+            language,
+            timeZoneId,
+            visibility,
+            segmentId,
+            siteDesign,
+            dryRun
+        )
+
+        assertThat(result.newSiteRemoteId).isEqualTo(siteId)
+        assertThat(result.dryRun).isEqualTo(dryRun)
+
+        assertThat(urlCaptor.lastValue)
+            .isEqualTo("https://public-api.wordpress.com/rest/v1.1/sites/new/")
+        assertThat(bodyCaptor.lastValue).isEqualTo(
+            mapOf(
+                "blog_name" to "",
+                "lang_id" to language,
+                "public" to "1",
+                "validate" to "0",
+                "find_available_url" to "1",
+                "client_id" to appId,
+                "client_secret" to appSecret,
+                "options" to mapOf<String, Any>(
+                    "site_segment" to segmentId,
+                    "template" to siteDesign,
+                    "site_creation_flow" to "with-design-picker",
+                    "timezone_string" to timeZoneId
+                )
+            )
         )
     }
 
@@ -213,10 +364,21 @@ class SiteRestClientTest {
 
         val dryRun = true
         val siteName = "Site name"
+        val siteTitle = null
         val language = "CZ"
         val visibility = SiteVisibility.PRIVATE
+        val timeZoneId = "Europe/London"
 
-        val result = restClient.newSite(siteName, language, visibility, null, null, dryRun)
+        val result = restClient.newSite(
+            siteName,
+            siteTitle,
+            language,
+            timeZoneId,
+            visibility,
+            null,
+            null,
+            dryRun
+        )
 
         assertThat(result.newSiteRemoteId).isEqualTo(siteId)
         assertThat(result.dryRun).isEqualTo(dryRun)
@@ -230,7 +392,8 @@ class SiteRestClientTest {
                         "public" to "-1",
                         "validate" to "1",
                         "client_id" to appId,
-                        "client_secret" to appSecret
+                        "client_secret" to appSecret,
+                        "options" to mapOf<String, Any>("timezone_string" to timeZoneId)
                 )
         )
     }

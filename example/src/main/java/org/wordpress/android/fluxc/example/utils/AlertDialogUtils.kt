@@ -49,3 +49,25 @@ suspend fun showSingleLineDialog(
     }
     alert.show()
 }
+
+suspend fun showTwoButtonsDialog(
+    activity: FragmentActivity,
+    message: String,
+    positiveButtonText: String = "Yes",
+    negativeButtonText: String = "No"
+): Boolean = suspendCancellableCoroutine { continuation ->
+    val dialog = AlertDialog.Builder(activity)
+            .setMessage(message)
+            .setPositiveButton(positiveButtonText) { _, _ ->
+                continuation.resume(true)
+            }
+            .setNegativeButton(negativeButtonText) { _, _ ->
+                continuation.resume(false)
+            }
+            .setCancelable(false)
+            .show()
+
+    continuation.invokeOnCancellation {
+        dialog.dismiss()
+    }
+}

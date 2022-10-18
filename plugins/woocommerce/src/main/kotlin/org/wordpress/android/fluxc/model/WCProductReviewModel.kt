@@ -101,9 +101,9 @@ data class WCProductReviewModel(@PrimaryKey @Column private var id: Int = 0) : I
         companion object {
             fun getAvatarSizeForValue(size: Int): AvatarSize {
                 return when (size) {
-                    24 -> SMALL
-                    48 -> MEDIUM
-                    96 -> LARGE
+                    SMALL.size -> SMALL
+                    MEDIUM.size -> MEDIUM
+                    LARGE.size -> LARGE
                     else -> MEDIUM
                 }
             }

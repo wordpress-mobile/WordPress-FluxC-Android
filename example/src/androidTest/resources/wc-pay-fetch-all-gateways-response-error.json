@@ -1,0 +1,7 @@
+{
+  "error": "wcpay_server_error",
+  "message": "Unexpected server error",
+  "data": {
+    "status": 500
+  }
+}

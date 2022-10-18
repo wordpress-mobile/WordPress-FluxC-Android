@@ -10,6 +10,13 @@ import com.wellsql.generated.WCProductTagModelTable
 import com.wellsql.generated.WCProductVariationModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -31,7 +38,51 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import java.util.Locale
 
+@Suppress("LargeClass")
 object ProductSqlUtils {
+    private const val DEBOUNCE_DELAY_FOR_OBSERVERS = 50L
+    private val productsUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val variationsUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val categoriesUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    fun observeProducts(
+        site: SiteModel,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+    ): Flow<List<WCProductModel>> {
+        return productsUpdatesTrigger
+            .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
+            .mapLatest {
+                if (filterOptions.isEmpty()) {
+                    getProductsForSite(site, sortType)
+                } else {
+                    getProductsByFilterOptions(site, filterOptions, sortType)
+                }
+            }
+            .flowOn(Dispatchers.IO)
+    }
+
+    fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> {
+        return variationsUpdatesTrigger
+            .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
+            .mapLatest {
+                getVariationsForProduct(site, productId)
+            }
+            .flowOn(Dispatchers.IO)
+    }
+
+    fun observeCategories(site: SiteModel, sortType: ProductCategorySorting): Flow<List<WCProductCategoryModel>> {
+        return categoriesUpdatesTrigger
+            .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
+            .mapLatest {
+                getProductCategoriesForSite(site, sortType)
+            }
+            .flowOn(Dispatchers.IO)
+    }
+
     fun insertOrUpdateProduct(product: WCProductModel): Int {
         val productResult = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -47,6 +98,7 @@ object ProductSqlUtils {
         return if (productResult == null) {
             // Insert
             WellSql.insert(product).asSingleTransaction(true).execute()
+            productsUpdatesTrigger.tryEmit(Unit)
             1
         } else {
             // Update
@@ -55,7 +107,9 @@ object ProductSqlUtils {
                     .equals(WCProductModelTable.REMOTE_PRODUCT_ID, productResult.remoteProductId)
                     .equals(WCProductModelTable.LOCAL_SITE_ID, productResult.localSiteId)
                     .endGroup().endWhere()
-                    .put(product, UpdateAllExceptId(WCProductModel::class.java)).execute()
+                    .put(product, UpdateAllExceptId(WCProductModel::class.java))
+                    .execute()
+                    .also(::triggerProductsUpdateIfNeeded)
         }
     }
 
@@ -233,6 +287,7 @@ object ProductSqlUtils {
                 .endGroup()
                 .endWhere()
                 .execute()
+                .also(::triggerProductsUpdateIfNeeded)
     }
 
     fun insertOrUpdateProductVariation(variation: WCProductVariationModel): Int {
@@ -251,12 +306,15 @@ object ProductSqlUtils {
         return if (result == null) {
             // Insert
             WellSql.insert(variation).asSingleTransaction(true).execute()
+            variationsUpdatesTrigger.tryEmit(Unit)
             1
         } else {
             // Update
             val oldId = result.id
             WellSql.update(WCProductVariationModel::class.java).whereId(oldId)
-                    .put(variation, UpdateAllExceptId(WCProductVariationModel::class.java)).execute()
+                    .put(variation, UpdateAllExceptId(WCProductVariationModel::class.java))
+                    .execute()
+                    .also(::triggerVariationsUpdateIfNeeded)
         }
     }
 
@@ -287,6 +345,7 @@ object ProductSqlUtils {
                 .endGroup()
                 .endWhere()
                 .execute()
+                .also(::triggerVariationsUpdateIfNeeded)
     }
 
     fun getProductCountForSite(site: SiteModel): Long {
@@ -403,16 +462,16 @@ object ProductSqlUtils {
 
         // build a new image list containing all the product images except the passed one
         val imageList = ArrayList<WCProductImageModel>()
-        product.getImageList().forEach { image ->
+        product.getImageListOrEmpty().forEach { image ->
             if (image.id != remoteMediaId) {
                 imageList.add(image)
             }
         }
-        if (imageList.size == product.getImageList().size) {
-            return false
+        return if (imageList.size == product.getImageListOrEmpty().size) {
+            false
+        } else {
+            updateProductImages(product, imageList) > 0
         }
-
-        return updateProductImages(product, imageList) > 0
     }
 
     fun deleteProduct(site: SiteModel, remoteProductId: Long): Int {
@@ -420,7 +479,9 @@ object ProductSqlUtils {
                 .where()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
-                .endWhere().execute()
+                .endWhere()
+                .execute()
+                .also(::triggerProductsUpdateIfNeeded)
     }
 
     fun getProductShippingClassListForSite(
@@ -536,6 +597,19 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getProductCategoriesByRemoteIds(
+        site: SiteModel,
+        categoryIds: List<Long>
+    ): List<WCProductCategoryModel> {
+        return WellSql.select(WCProductCategoryModel::class.java)
+            .where()
+            .beginGroup()
+            .isIn(WCProductCategoryModelTable.REMOTE_CATEGORY_ID, categoryIds)
+            .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, site.id)
+            .endGroup().endWhere()
+            .asModel
+    }
+
     fun getProductCategoryByNameAndParentId(
         localSiteId: Int,
         categoryName: String,
@@ -575,12 +649,15 @@ object ProductSqlUtils {
         return if (result == null) {
             // Insert
             WellSql.insert(productCategory).asSingleTransaction(true).execute()
+            categoriesUpdatesTrigger.tryEmit(Unit)
             1
         } else {
             // Update
             val oldId = result.id
             WellSql.update(WCProductCategoryModel::class.java).whereId(oldId)
-                    .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java)).execute()
+                    .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java))
+                    .execute()
+                    .also(::triggerCategoriesUpdateIfNeeded)
         }
     }
 
@@ -590,10 +667,14 @@ object ProductSqlUtils {
                 .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, site.id)
                 .or()
                 .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, 0) // Should never happen, but sanity cleanup
-                .endWhere().execute()
+                .endWhere()
+                .execute()
+                .also(::triggerCategoriesUpdateIfNeeded)
     }
 
-    fun deleteAllProductCategories() = WellSql.delete(WCProductCategoryModel::class.java).execute()
+    fun deleteAllProductCategories() = WellSql.delete(WCProductCategoryModel::class.java)
+        .execute()
+        .also(::triggerCategoriesUpdateIfNeeded)
 
     fun getProductTagsForSite(
         localSiteId: Int
@@ -680,5 +761,17 @@ object ProductSqlUtils {
             WellSql.update(WCProductTagModel::class.java).whereId(oldId)
                     .put(tag, UpdateAllExceptId(WCProductTagModel::class.java)).execute()
         }
+    }
+
+    private fun triggerProductsUpdateIfNeeded(affectedRows: Int) {
+        if (affectedRows != 0) productsUpdatesTrigger.tryEmit(Unit)
+    }
+
+    private fun triggerVariationsUpdateIfNeeded(affectedRows: Int) {
+        if (affectedRows != 0) variationsUpdatesTrigger.tryEmit(Unit)
+    }
+
+    private fun triggerCategoriesUpdateIfNeeded(affectedRows: Int) {
+        if (affectedRows != 0) categoriesUpdatesTrigger.tryEmit(Unit)
     }
 }

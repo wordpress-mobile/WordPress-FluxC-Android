@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import org.wordpress.android.fluxc.network.Response
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class OrderShipmentTrackingApiResponse : Response {
     val tracking_id: String? = null
     val tracking_provider: String? = null

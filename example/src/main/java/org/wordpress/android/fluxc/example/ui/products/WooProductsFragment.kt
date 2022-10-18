@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_woo_products.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -17,17 +18,14 @@ import org.wordpress.android.fluxc.action.WCProductAction.DELETED_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_VARIATION
-import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
@@ -46,7 +44,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
@@ -54,12 +51,12 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClasses
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductSkuAvailabilityChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
-import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
+@Suppress("LargeClass")
 class WooProductsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
@@ -67,8 +64,6 @@ class WooProductsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
 
-    private var pendingFetchSingleProductRemoteId: Long? = null
-    private var pendingFetchSingleVariationRemoteId: Long? = null
     private var pendingFetchSingleProductShippingClassRemoteId: Long? = null
 
     private var pendingFetchProductVariationsProductRemoteId: Long? = null
@@ -86,17 +81,33 @@ class WooProductsFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_products, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         fetch_single_product.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
-                    pendingFetchSingleProductRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchSingleProductRemoteId?.let { id ->
-                        prependToLog("Submitting request to fetch product by remoteProductID $id")
-                        val payload = FetchSingleProductPayload(site, id)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
+                    editText.text.toString().toLongOrNull()?.let { remoteProductId ->
+                        prependToLog("Submitting request to fetch product by remoteProductID $remoteProductId")
+                        coroutineScope.launch {
+                            val result = wcProductStore.fetchSingleProduct(
+                                    FetchSingleProductPayload(
+                                            site,
+                                            remoteProductId
+                                    )
+                            )
+
+                            val product = wcProductStore.getProductByRemoteId(site, result.remoteProductId)
+                            product?.let {
+                                val numVariations = it.getVariationIdList().size
+                                if (numVariations > 0) {
+                                    prependToLog("Single product with $numVariations variations fetched! ${it.name}")
+                                } else {
+                                    prependToLog("Single product fetched! ${it.name}")
+                                }
+                            } ?: prependToLog("WARNING: Fetched product not found in the local database!")
+                        }
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
             }
@@ -108,19 +119,32 @@ class WooProductsFragment : StoreSelectingFragment() {
                         activity,
                         "Enter the remoteProductId of variation to fetch:"
                 ) { productIdText ->
-                    pendingFetchSingleProductRemoteId = productIdText.text.toString().toLongOrNull()
-                    pendingFetchSingleProductRemoteId?.let { productId ->
+                    val productRemoteId = productIdText.text.toString().toLongOrNull()
+                    productRemoteId?.let { productId ->
                         showSingleLineDialog(
                                 activity,
                                 "Enter the remoteVariationId of variation to fetch:"
                         ) { variationIdText ->
-                            pendingFetchSingleVariationRemoteId = variationIdText.text.toString().toLongOrNull()
-                            pendingFetchSingleVariationRemoteId?.let { variationId ->
-                                prependToLog("Submitting request to fetch product by " +
-                                        "remoteProductId $pendingFetchSingleProductRemoteId, " +
-                                        "remoteVariationProductID $variationId")
-                                val payload = FetchSingleVariationPayload(site, productId, variationId)
-                                dispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(payload))
+                            variationIdText.text.toString().toLongOrNull()?.let { variationId ->
+                                coroutineScope.launch {
+                                    prependToLog(
+                                        "Submitting request to fetch product by " +
+                                            "remoteProductId $productRemoteId, " +
+                                            "remoteVariationProductID $variationId"
+                                    )
+                                    val result = wcProductStore.fetchSingleVariation(site, productId, variationId)
+                                    prependToLog("Fetching single variation " +
+                                        "${result.error?.let { "failed" } ?: "was successful"}"
+                                    )
+                                    val variation = wcProductStore.getVariationByRemoteId(
+                                        site,
+                                        result.remoteProductId,
+                                        result.remoteVariationId
+                                    )
+                                    variation?.let {
+                                        prependToLog("Variation with id! ${it.remoteVariationId} found in local db")
+                                    } ?: prependToLog("WARNING: Fetched product not found in the local database!")
+                                }
                             } ?: prependToLog("No valid remoteVariationId defined...doing nothing")
                         }
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
@@ -151,13 +175,64 @@ class WooProductsFragment : StoreSelectingFragment() {
             replaceFragment(WooProductFiltersFragment.newInstance(selectedPos))
         }
 
+        fetch_specific_products.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(activity, "Enter remote product IDs, separated by comma:") { editText ->
+                    val ids = editText.text.toString().replace(" ", "").split(",").mapNotNull {
+                        val id = it.toLongOrNull()
+                        if (id == null) {
+                            prependToLog("$it is not a valid remote product ID, ignoring...")
+                        }
+                        id
+                    }
+
+                    if (ids.isNotEmpty()) {
+                        coroutineScope.launch {
+                            val result = wcProductStore.fetchProducts(
+                                site,
+                                includedProductIds = ids
+                            )
+                            if (result.isError) {
+                                prependToLog("Fetching products failed: ${result.error.message}")
+                            } else {
+                                val products = wcProductStore.getProductsByRemoteIds(site, ids)
+                                prependToLog("${products.size} were fetched")
+                                prependToLog("$products")
+                            }
+                        }
+                    } else {
+                        prependToLog("No valid product IDs...doing nothing")
+                    }
+                }
+            }
+        }
+
         search_products.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
-                        activity,
-                        "Enter a search query:"
+                    activity,
+                    "Enter a search query:"
                 ) { editText ->
-                    val payload = SearchProductsPayload(site, editText.text.toString())
+                    val payload = SearchProductsPayload(
+                        site = site,
+                        searchQuery = editText.text.toString()
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
+                }
+            }
+        }
+
+        search_products_sku.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                    activity,
+                    "Enter a SKU to search for:"
+                ) { editText ->
+                    val payload = SearchProductsPayload(
+                        site = site,
+                        searchQuery = editText.text.toString(),
+                        isSkuSearch = true
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
             }
@@ -169,11 +244,24 @@ class WooProductsFragment : StoreSelectingFragment() {
                         activity,
                         "Enter the remoteProductId of product to fetch variations:"
                 ) { editText ->
-                    pendingFetchProductVariationsProductRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchProductVariationsProductRemoteId?.let { id ->
-                        prependToLog("Submitting request to fetch product variations by remoteProductID $id")
-                        val payload = FetchProductVariationsPayload(site, id)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                    editText.text.toString().toLongOrNull()?.let { id ->
+                        coroutineScope.launch {
+                            pendingFetchProductVariationsProductRemoteId = id
+                            prependToLog("Submitting request to fetch product variations by remoteProductID $id")
+                            val result = wcProductStore.fetchProductVariations(FetchProductVariationsPayload(site, id))
+                            prependToLog(
+                                "Fetched ${result.rowsAffected} product variants. " +
+                                        "More variants available ${result.canLoadMore}"
+                            )
+                            if (result.canLoadMore) {
+                                pendingFetchSingleProductVariationOffset += result.rowsAffected
+                                load_more_product_variations.visibility = View.VISIBLE
+                                load_more_product_variations.isEnabled = true
+                            } else {
+                                pendingFetchSingleProductVariationOffset = 0
+                                load_more_product_variations.isEnabled = false
+                            }
+                        }
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
             }
@@ -182,11 +270,25 @@ class WooProductsFragment : StoreSelectingFragment() {
         load_more_product_variations.setOnClickListener {
             selectedSite?.let { site ->
                 pendingFetchProductVariationsProductRemoteId?.let { id ->
-                    prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
-                    val payload = FetchProductVariationsPayload(
+                    coroutineScope.launch {
+                        prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
+                        val payload = FetchProductVariationsPayload(
                             site, id, offset = pendingFetchSingleProductVariationOffset
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                        )
+                        val result = wcProductStore.fetchProductVariations(payload)
+                        prependToLog(
+                            "Fetched ${result.rowsAffected} product variants. " +
+                                    "More variants available ${result.canLoadMore}"
+                        )
+                        if (result.canLoadMore) {
+                            pendingFetchSingleProductVariationOffset += result.rowsAffected
+                            load_more_product_variations.visibility = View.VISIBLE
+                            load_more_product_variations.isEnabled = true
+                        } else {
+                            pendingFetchSingleProductVariationOffset = 0
+                            load_more_product_variations.isEnabled = false
+                        }
+                    }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
@@ -248,6 +350,43 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
+        update_review_status.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val id = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter the remoteReviewId of the review",
+                        isNumeric = true
+                    )?.toLongOrNull()
+                    if (id == null) {
+                        prependToLog("Please enter a valid id")
+                        return@launch
+                    }
+                    val newStatus = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter the new status: (approved|hold|spam|trash)"
+                    )
+                    if (newStatus == null) {
+                        prependToLog("Please enter a valid status")
+                        return@launch
+                    }
+
+                    val result = wcProductStore.updateProductReviewStatus(
+                        site = site, reviewId = id, newStatus = newStatus
+                    )
+
+                    if (!result.isError) {
+                        prependToLog("Product Review status updated successfully")
+                    } else {
+                        prependToLog(
+                            "Product Review status update failed, " +
+                                "${result.error.type} ${result.error.message}"
+                        )
+                    }
+                }
+            }
+        }
+
         fetch_product_shipping_class.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
@@ -287,6 +426,15 @@ class WooProductsFragment : StoreSelectingFragment() {
                 prependToLog("Submitting request to fetch product categories for site ${site.id}")
                 val payload = FetchProductCategoriesPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
+            }
+        }
+
+        observe_product_categories.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val categories = wcProductStore.observeCategories(site).first()
+                    prependToLog("Categories: $categories")
+                }
             }
         }
 
@@ -418,6 +566,10 @@ class WooProductsFragment : StoreSelectingFragment() {
                 }
             }
         }
+
+        batch_update_variations.setOnClickListener {
+            replaceFragment(WooBatchUpdateVariationsFragment.newInstance(selectedPos))
+        }
     }
 
     /**
@@ -458,67 +610,11 @@ class WooProductsFragment : StoreSelectingFragment() {
 
         selectedSite?.let { site ->
             when (event.causeOfChange) {
-                FETCH_SINGLE_PRODUCT -> {
-                    pendingFetchSingleProductRemoteId?.let { remoteId ->
-                        pendingFetchSingleProductRemoteId = null
-                        val product = wcProductStore.getProductByRemoteId(site, remoteId)
-                        product?.let {
-                            val numVariations = it.getNumVariations()
-                            if (numVariations > 0) {
-                                prependToLog("Single product with $numVariations variations fetched! ${it.name}")
-                            } else {
-                                prependToLog("Single product fetched! ${it.name}")
-                            }
-                        } ?: prependToLog("WARNING: Fetched product not found in the local database!")
-                    }
-                }
                 FETCH_PRODUCTS -> {
                     prependToLog("Fetched ${event.rowsAffected} products")
                 }
-                FETCH_PRODUCT_VARIATIONS -> {
-                    prependToLog("Fetched ${event.rowsAffected} product variants. " +
-                            "More variants available ${event.canLoadMore}")
-                    if (event.canLoadMore) {
-                        pendingFetchSingleProductVariationOffset += event.rowsAffected
-                        load_more_product_variations.visibility = View.VISIBLE
-                        load_more_product_variations.isEnabled = true
-                    } else {
-                        pendingFetchSingleProductVariationOffset = 0
-                        load_more_product_variations.isEnabled = false
-                    }
-                }
-                UPDATE_PRODUCT_REVIEW_STATUS -> {
-                    prependToLog("${event.rowsAffected} product reviews updated")
-                }
                 DELETED_PRODUCT -> {
                     prependToLog("${event.rowsAffected} product deleted")
-                }
-                else -> prependToLog("Product store was updated from a " + event.causeOfChange)
-            }
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onVariationChanged(event: OnVariationChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        selectedSite?.let { site ->
-            when (event.causeOfChange) {
-                FETCH_SINGLE_VARIATION -> {
-                    pendingFetchSingleVariationRemoteId = null
-                    pendingFetchSingleProductRemoteId = null
-                    val variation = wcProductStore.getVariationByRemoteId(
-                            site,
-                            event.remoteProductId,
-                            event.remoteVariationId
-                    )
-                    variation?.let {
-                        prependToLog("Single variation fetched! ${it.remoteVariationId}")
-                    } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
@@ -598,29 +694,35 @@ class WooProductsFragment : StoreSelectingFragment() {
 
         selectedSite?.let { site ->
             when (event.causeOfChange) {
-                FETCH_SINGLE_PRODUCT_SHIPPING_CLASS -> {
-                    pendingFetchSingleProductShippingClassRemoteId?.let { remoteId ->
-                        pendingFetchSingleProductShippingClassRemoteId = null
-                        val productShippingClass = wcProductStore.getShippingClassByRemoteId(site, remoteId)
-                        productShippingClass?.let {
-                            prependToLog("Single product shipping class fetched! ${it.name}")
-                        } ?: prependToLog("WARNING: Fetched shipping class not found in the local database!")
-                    }
-                }
-                else -> {
-                    prependToLog("Fetched ${event.rowsAffected} product shipping classes. " +
-                            "More shipping classes available ${event.canLoadMore}")
-
-                    if (event.canLoadMore) {
-                        pendingFetchProductShippingClassListOffset += event.rowsAffected
-                        load_more_product_shipping_classes.visibility = View.VISIBLE
-                        load_more_product_shipping_classes.isEnabled = true
-                    } else {
-                        pendingFetchProductShippingClassListOffset = 0
-                        load_more_product_shipping_classes.isEnabled = false
-                    }
-                }
+                FETCH_SINGLE_PRODUCT_SHIPPING_CLASS -> logFetchSingleProductShippingClass(site)
+                else -> checkProductShippingClassesAndLoadMore(event)
             }
+        }
+    }
+
+    private fun logFetchSingleProductShippingClass(site: SiteModel) {
+        pendingFetchSingleProductShippingClassRemoteId?.let { remoteId ->
+            pendingFetchSingleProductShippingClassRemoteId = null
+            val productShippingClass = wcProductStore.getShippingClassByRemoteId(site, remoteId)
+            productShippingClass?.let {
+                prependToLog("Single product shipping class fetched! ${it.name}")
+            } ?: prependToLog("WARNING: Fetched shipping class not found in the local database!")
+        }
+    }
+
+    private fun checkProductShippingClassesAndLoadMore(event: OnProductShippingClassesChanged) {
+        prependToLog(
+            "Fetched ${event.rowsAffected} product shipping classes. " +
+                "More shipping classes available ${event.canLoadMore}"
+        )
+
+        if (event.canLoadMore) {
+            pendingFetchProductShippingClassListOffset += event.rowsAffected
+            load_more_product_shipping_classes.visibility = View.VISIBLE
+            load_more_product_shipping_classes.isEnabled = true
+        } else {
+            pendingFetchProductShippingClassListOffset = 0
+            load_more_product_shipping_classes.isEnabled = false
         }
     }
 

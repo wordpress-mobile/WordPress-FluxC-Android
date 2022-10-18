@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import android.text.TextUtils
+import androidx.annotation.VisibleForTesting
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.ASYNC
 import org.wordpress.android.fluxc.Dispatcher
@@ -99,6 +100,7 @@ import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityErrorType.I
 import org.wordpress.android.fluxc.store.SiteStore.DomainSupportedStatesErrorType.INVALID_COUNTRY_CODE
 import org.wordpress.android.fluxc.store.SiteStore.ExportSiteErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType.NOT_AVAILABLE
+import org.wordpress.android.fluxc.store.SiteStore.SelfHostedErrorType.NOT_SET
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType.DUPLICATE_SITE
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType.UNAUTHORIZED
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType.UNKNOWN_SITE
@@ -107,7 +109,6 @@ import org.wordpress.android.fluxc.utils.SiteErrorUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
-import java.util.ArrayList
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -118,9 +119,9 @@ import javax.inject.Singleton
  * NOTE: This class needs to be open because it's mocked in android tests in the WPAndroid project.
  *       TODO: consider adding https://kotlinlang.org/docs/all-open-plugin.html
  */
+@Suppress("LargeClass", "ForbiddenComment")
 @Singleton
-open class SiteStore
-@Inject constructor(
+open class SiteStore @Inject constructor(
     dispatcher: Dispatcher?,
     private val postSqlUtils: PostSqlUtils,
     private val siteRestClient: SiteRestClient,
@@ -136,37 +137,69 @@ open class SiteStore
     ) : Payload<BaseNetworkError>()
 
     data class RefreshSitesXMLRPCPayload(
-        @JvmField var username: String = "",
-        @JvmField var password: String = "",
-        @JvmField var url: String = ""
+        @JvmField val username: String = "",
+        @JvmField val password: String = "",
+        @JvmField val url: String = ""
     ) : Payload<BaseNetworkError>()
 
-    data class FetchSitesPayload(@JvmField val filters: List<SiteFilter> = ArrayList()) : Payload<BaseNetworkError>()
+    data class FetchSitesPayload @JvmOverloads constructor(
+        @JvmField val filters: List<SiteFilter> = ArrayList(),
+        @JvmField val filterJetpackConnectedPackageSite: Boolean = false
+    ) : Payload<BaseNetworkError>()
 
+    /**
+     * Holds the new site parameters for site creation
+     *
+     * @param siteName The domain of the site
+     * @param siteTitle The title of the site
+     * @param language The language of the site
+     * @param timeZoneId The timezone of the site
+     * @param visibility The visibility of the site (public or private)
+     * @param segmentId The segment that the site belongs to
+     * @param siteDesign The design template of the site
+     * @param dryRun If set to true the call only validates the parameters passed
+     */
     data class NewSitePayload(
-        @JvmField val siteName: String,
+        @JvmField val siteName: String?,
+        @JvmField val siteTitle: String?,
         @JvmField val language: String,
+        @JvmField val timeZoneId: String?,
         @JvmField val visibility: SiteVisibility,
         @JvmField val segmentId: Long? = null,
         @JvmField val siteDesign: String? = null,
         @JvmField val dryRun: Boolean
     ) : Payload<BaseNetworkError>() {
-        constructor(siteName: String, language: String, visibility: SiteVisibility, dryRun: Boolean) : this(
-                siteName,
-                language,
-                visibility,
-                null,
-                null,
-                dryRun
-        )
+        constructor(
+            siteName: String?,
+            language: String,
+            visibility: SiteVisibility,
+            dryRun: Boolean
+        ) : this(siteName, null, language, null, visibility, null, null, dryRun)
 
         constructor(
-            siteName: String,
+            siteName: String?,
             language: String,
             visibility: SiteVisibility,
             segmentId: Long?,
             dryRun: Boolean
-        ) : this(siteName, language, visibility, segmentId, null, dryRun)
+        ) : this(siteName, null, language, null, visibility, segmentId, null, dryRun)
+
+        constructor(
+            siteName: String?,
+            language: String,
+            timeZoneId: String,
+            visibility: SiteVisibility,
+            dryRun: Boolean
+        ) : this(siteName, null, language, timeZoneId, visibility, null, null, dryRun)
+
+        constructor(
+            siteName: String?,
+            siteTitle: String?,
+            language: String,
+            timeZoneId: String,
+            visibility: SiteVisibility,
+            dryRun: Boolean
+        ) : this(siteName, siteTitle, language, timeZoneId, visibility, null, null, dryRun)
     }
 
     data class FetchedPostFormatsPayload(
@@ -321,8 +354,9 @@ open class SiteStore
 
         fun description(): String {
             return String.format(
-                    "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s",
-                    url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects
+                Locale.US,
+                "url: %s, e: %b, wp: %b, jp: %b, wpcom: %b, urlAfterRedirects: %s",
+                url, exists, isWordPress, hasJetpack, isWPCom, urlAfterRedirects
             )
         }
     }
@@ -394,7 +428,8 @@ open class SiteStore
 
     data class SiteError @JvmOverloads constructor(
         @JvmField val type: SiteErrorType,
-        @JvmField val message: String? = null
+        @JvmField val message: String? = null,
+        @JvmField val selfHostedErrorType: SelfHostedErrorType = NOT_SET
     ) : OnChangedError
 
     data class SiteEditorsError internal constructor(
@@ -485,9 +520,14 @@ open class SiteStore
 
     data class OnNewSiteCreated(
         @JvmField val dryRun: Boolean = false,
+        @JvmField val url: String? = null,
         @JvmField val newSiteRemoteId: Long = 0
     ) : OnChanged<NewSiteError>() {
-        constructor(dryRun: Boolean, newSiteRemoteId: Long, error: NewSiteError?) : this(dryRun, newSiteRemoteId) {
+        constructor(dryRun: Boolean, url: String?, newSiteRemoteId: Long, error: NewSiteError?) : this(
+                dryRun,
+                url,
+                newSiteRemoteId
+        ) {
             this.error = error
         }
     }
@@ -552,7 +592,7 @@ open class SiteStore
     data class OnURLChecked(
         @JvmField val url: String,
         @JvmField val isWPCom: Boolean = false,
-        var siteError: SiteError? = null
+        val siteError: SiteError? = null
     ) : OnChanged<SiteError>() {
         init {
             this.error = siteError
@@ -799,12 +839,19 @@ open class SiteStore
         GENERIC_ERROR
     }
 
+    enum class SelfHostedErrorType {
+        NOT_SET,
+        XML_RPC_SERVICES_DISABLED,
+        UNABLE_TO_READ_SITE
+    }
+
     enum class DeleteSiteErrorType {
         INVALID_SITE, UNAUTHORIZED, // user don't have permission to delete
         AUTHORIZATION_REQUIRED, // missing access token
         GENERIC_ERROR;
 
         companion object {
+            @Suppress("ReturnCount")
             fun fromString(string: String): DeleteSiteErrorType {
                 if (!TextUtils.isEmpty(string)) {
                     if (string == "unauthorized") {
@@ -963,6 +1010,7 @@ open class SiteStore
      * NOTE: This method needs to be open because it's mocked in android tests in the WPAndroid project.
      *       TODO: consider adding https://kotlinlang.org/docs/all-open-plugin.html
      */
+    @Suppress("ForbiddenComment")
     open fun getSiteByLocalId(id: Int): SiteModel? {
         val result = siteSqlUtils.getSitesWithLocalId(id)
         return if (result.isNotEmpty()) {
@@ -1164,7 +1212,9 @@ open class SiteStore
         return siteSqlUtils.getUserRoles(site!!)
     }
 
-    @Subscribe(threadMode = ASYNC) override fun onAction(action: Action<*>) {
+    @Subscribe(threadMode = ASYNC)
+    @Suppress("LongMethod", "ComplexMethod")
+    override fun onAction(action: Action<*>) {
         val actionType = action.type as? SiteAction ?: return
         when (actionType) {
             FETCH_PROFILE_XML_RPC -> fetchProfileXmlRpc(action.payload as SiteModel)
@@ -1273,14 +1323,17 @@ open class SiteStore
     }
 
     suspend fun fetchSites(payload: FetchSitesPayload): OnSiteChanged {
-        val result = siteRestClient.fetchSites(payload.filters)
-        return handleFetchedSitesWPComRest(result)
+        return coroutineEngine.withDefaultContext(T.API, this, "Fetch sites") {
+            val result = siteRestClient.fetchSites(payload.filters, payload.filterJetpackConnectedPackageSite)
+            handleFetchedSitesWPComRest(result)
+        }
     }
 
     suspend fun fetchSitesXmlRpc(payload: RefreshSitesXMLRPCPayload): OnSiteChanged {
         return updateSites(siteXMLRPCClient.fetchSites(payload.url, payload.username, payload.password))
     }
 
+    @Suppress("ForbiddenComment", "SwallowedException")
     private fun updateSiteProfile(siteModel: SiteModel) {
         val event = OnProfileFetched(siteModel)
         if (siteModel.isError) {
@@ -1296,6 +1349,7 @@ open class SiteStore
         emitChange(event)
     }
 
+    @Suppress("ForbiddenComment", "SwallowedException")
     private fun updateSite(siteModel: SiteModel): OnSiteChanged {
         return if (siteModel.isError) {
             // TODO: what kind of error could we get here?
@@ -1317,6 +1371,7 @@ open class SiteStore
         }
     }
 
+    @Suppress("ForbiddenComment")
     private fun updateSites(sitesModel: SitesModel): OnSiteChanged {
         val event = if (sitesModel.isError) {
             // TODO: what kind of error could we get here?
@@ -1332,6 +1387,7 @@ open class SiteStore
         return event
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleFetchedSitesWPComRest(fetchedSites: SitesModel): OnSiteChanged {
         return if (fetchedSites.isError) {
             // TODO: what kind of error could we get here?
@@ -1348,6 +1404,7 @@ open class SiteStore
         }
     }
 
+    @Suppress("SwallowedException")
     private fun createOrUpdateSites(sites: SitesModel): UpdateSitesResult {
         var rowsAffected = 0
         var duplicateSiteFound = false
@@ -1401,6 +1458,7 @@ open class SiteStore
         siteRestClient.exportSite(site)
     }
 
+    @Suppress("ForbiddenComment")
     private fun handleExportedSite(payload: ExportSiteResponsePayload) {
         val event = if (payload.isError) {
             // TODO: what kind of error could we get here?
@@ -1438,10 +1496,17 @@ open class SiteStore
         return rowsAffected
     }
 
+    @VisibleForTesting
     suspend fun createNewSite(payload: NewSitePayload): OnNewSiteCreated {
         val result = siteRestClient.newSite(
-                payload.siteName, payload.language, payload.visibility,
-                payload.segmentId, payload.siteDesign, payload.dryRun
+                payload.siteName,
+                payload.siteTitle,
+                payload.language,
+                payload.timeZoneId,
+                payload.visibility,
+                payload.segmentId,
+                payload.siteDesign,
+                payload.dryRun
         )
         return handleCreateNewSiteCompleted(
                 payload = result
@@ -1449,7 +1514,7 @@ open class SiteStore
     }
 
     private fun handleCreateNewSiteCompleted(payload: NewSiteResponsePayload): OnNewSiteCreated {
-        return OnNewSiteCreated(payload.dryRun, payload.newSiteRemoteId, payload.error)
+        return OnNewSiteCreated(payload.dryRun, payload.siteUrl, payload.newSiteRemoteId, payload.error)
     }
 
     suspend fun fetchPostFormats(site: SiteModel): OnPostFormatsChanged {
@@ -1489,6 +1554,7 @@ open class SiteStore
         }
     }
 
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private fun designateMobileEditor(payload: DesignateMobileEditorPayload) {
         // wpcom sites sync the new value with the backend
         if (payload.site.isUsingWpComRestApi) {
@@ -1506,6 +1572,7 @@ open class SiteStore
         emitChange(event)
     }
 
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private fun designateMobileEditorForAllSites(payload: DesignateMobileEditorForAllSitesPayload) {
         var rowsAffected = 0
         var wpcomPostRequestRequired = false
@@ -1531,6 +1598,7 @@ open class SiteStore
         emitChange(OnAllSitesMobileEditorChanged(rowsAffected, isNetworkResponse, error))
     }
 
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private fun updateSiteEditors(payload: FetchedEditorsPayload) {
         val site = payload.site
         val event = if (payload.isError) {
@@ -1551,33 +1619,40 @@ open class SiteStore
         val event = if (payload.isError) {
             OnAllSitesMobileEditorChanged(siteEditorsError = payload.error)
         } else {
-            var rowsAffected = 0
-            var error: SiteEditorsError? = null
-            // Loop over the returned sites and make sure we've the fresh values for editor prop stored locally
-            for ((key, value) in payload.editors ?: mapOf()) {
-                val currentModel = getSiteBySiteId(key.toLong())
-                if (currentModel == null) {
-                    // this could happen when a site was added to the current account with another app, or on the web
-                    AppLog.e(
-                            API,
-                            "handleDesignatedMobileEditorForAllSites - The backend returned info for the " +
-                                    "following siteID $key but there is no site with that remote ID in SiteStore."
-                    )
-                    continue
-                }
-                if (currentModel.mobileEditor == null || currentModel.mobileEditor != value) {
-                    // the current editor is either null or != from the value on the server. Update it
-                    currentModel.mobileEditor = value
-                    try {
-                        rowsAffected += siteSqlUtils.insertOrUpdateSite(currentModel)
-                    } catch (e: Exception) {
-                        error = SiteEditorsError(SiteEditorsErrorType.GENERIC_ERROR)
-                    }
-                }
-            }
-            OnAllSitesMobileEditorChanged(rowsAffected, true, error)
+            onAllSitesMobileEditorChanged(payload)
         }
         emitChange(event)
+    }
+
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
+    private fun onAllSitesMobileEditorChanged(
+        payload: DesignateMobileEditorForAllSitesResponsePayload
+    ): OnAllSitesMobileEditorChanged {
+        var rowsAffected = 0
+        var error: SiteEditorsError? = null
+        // Loop over the returned sites and make sure we've the fresh values for editor prop stored locally
+        for ((key, value) in payload.editors ?: mapOf()) {
+            val currentModel = getSiteBySiteId(key.toLong())
+            if (currentModel == null) {
+                // this could happen when a site was added to the current account with another app, or on the web
+                AppLog.e(
+                    API,
+                    "handleDesignatedMobileEditorForAllSites - The backend returned info for the " +
+                        "following siteID $key but there is no site with that remote ID in SiteStore."
+                )
+                continue
+            }
+            if (currentModel.mobileEditor == null || currentModel.mobileEditor != value) {
+                // the current editor is either null or != from the value on the server. Update it
+                currentModel.mobileEditor = value
+                try {
+                    rowsAffected += siteSqlUtils.insertOrUpdateSite(currentModel)
+                } catch (e: Exception) {
+                    error = SiteEditorsError(SiteEditorsErrorType.GENERIC_ERROR)
+                }
+            }
+        }
+        return OnAllSitesMobileEditorChanged(rowsAffected, true, error)
     }
 
     private fun fetchUserRoles(site: SiteModel) {

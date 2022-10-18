@@ -20,6 +20,8 @@ import org.wordpress.android.fluxc.example.UploadsFragment
 import org.wordpress.android.fluxc.example.PluginsFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
+import org.wordpress.android.fluxc.example.ui.coupons.WooCouponsFragment
+import org.wordpress.android.fluxc.example.ui.coupons.WooUpdateCouponFragment
 import org.wordpress.android.fluxc.example.ui.customer.WooCustomersFragment
 import org.wordpress.android.fluxc.example.ui.customer.creation.WooCustomerCreationFragment
 import org.wordpress.android.fluxc.example.ui.customer.search.WooCustomersSearchFragment
@@ -29,6 +31,7 @@ import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragme
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooAddonsTestFragment
+import org.wordpress.android.fluxc.example.ui.products.WooBatchUpdateVariationsFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductAttributeFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductFiltersFragment
@@ -44,124 +47,133 @@ import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 
 @Module
-internal abstract class FragmentsModule {
+internal interface FragmentsModule {
     @ContributesAndroidInjector
-    abstract fun provideMainFragmentInjector(): MainFragment
+    fun provideMainFragmentInjector(): MainFragment
 
     @ContributesAndroidInjector
-    abstract fun provideAccountFragmentInjector(): AccountFragment
+    fun provideAccountFragmentInjector(): AccountFragment
 
     @ContributesAndroidInjector
-    abstract fun provideCommentsFragmentInjector(): CommentsFragment
+    fun provideCommentsFragmentInjector(): CommentsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideMediaFragmentInjector(): MediaFragment
+    fun provideMediaFragmentInjector(): MediaFragment
 
     @ContributesAndroidInjector
-    abstract fun providePostsFragmentInjector(): PostsFragment
+    fun providePostsFragmentInjector(): PostsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideSignedOutActionsFragmentInjector(): SignedOutActionsFragment
+    fun provideSignedOutActionsFragmentInjector(): SignedOutActionsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideSitesFragmentInjector(): SitesFragment
+    fun provideSitesFragmentInjector(): SitesFragment
 
     @ContributesAndroidInjector
-    abstract fun provideTaxonomiesFragmentInjector(): TaxonomiesFragment
+    fun provideTaxonomiesFragmentInjector(): TaxonomiesFragment
 
     @ContributesAndroidInjector
-    abstract fun provideThemeFragmentInjector(): ThemeFragment
+    fun provideThemeFragmentInjector(): ThemeFragment
 
     @ContributesAndroidInjector
-    abstract fun provideUploadsFragmentInjector(): UploadsFragment
+    fun provideUploadsFragmentInjector(): UploadsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooCommerceFragmentInjector(): WooCommerceFragment
+    fun provideWooCommerceFragmentInjector(): WooCommerceFragment
 
     @ContributesAndroidInjector
-    abstract fun provideNotificationsFragmentInjector(): NotificationsFragment
+    fun provideNotificationsFragmentInjector(): NotificationsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooStatsFragmentInjector(): WooStatsFragment
+    fun provideWooStatsFragmentInjector(): WooStatsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooRevenueStatsFragmentInjector(): WooRevenueStatsFragment
+    fun provideWooRevenueStatsFragmentInjector(): WooRevenueStatsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooProductsFragmentInjector(): WooProductsFragment
+    fun provideWooProductsFragmentInjector(): WooProductsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooUpdateProductFragmentInjector(): WooUpdateProductFragment
+    fun provideWooUpdateProductFragmentInjector(): WooUpdateProductFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooUpdateVariationFragmentInjector(): WooUpdateVariationFragment
+    fun provideWooUpdateCouponFragmentInjector(): WooUpdateCouponFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooProductFiltersFragmentInjector(): WooProductFiltersFragment
+    fun provideWooUpdateVariationFragmentInjector(): WooUpdateVariationFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooProductCategoriesFragmentInjector(): WooProductCategoriesFragment
+    fun provideWooBatchUpdateVariationsFragmentInjector(): WooBatchUpdateVariationsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooProductTagsFragmentInjector(): WooProductTagsFragment
+    fun provideWooProductFiltersFragmentInjector(): WooProductFiltersFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooOrdersFragmentInjector(): WooOrdersFragment
+    fun provideWooProductCategoriesFragmentInjector(): WooProductCategoriesFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooRefundsFragmentInjector(): WooRefundsFragment
+    fun provideWooProductTagsFragmentInjector(): WooProductTagsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooGatewaysFragmentInjector(): WooGatewaysFragment
+    fun provideWooOrdersFragmentInjector(): WooOrdersFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooTaxFragmentInjector(): WooTaxFragment
+    fun provideWooRefundsFragmentInjector(): WooRefundsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooShippingLabelFragmentInjector(): WooShippingLabelFragment
+    fun provideWooGatewaysFragmentInjector(): WooGatewaysFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooVerifyAddressFragment(): WooVerifyAddressFragment
+    fun provideWooTaxFragmentInjector(): WooTaxFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooLeaderboardsFragmentInjector(): WooLeaderboardsFragment
+    fun provideWooShippingLabelFragmentInjector(): WooShippingLabelFragment
 
     @ContributesAndroidInjector
-    abstract fun provideSiteSelectorDialogInjector(): SiteSelectorDialog
+    fun provideWooVerifyAddressFragment(): WooVerifyAddressFragment
 
     @ContributesAndroidInjector
-    abstract fun provideStoreSelectorDialogInjector(): StoreSelectorDialog
+    fun provideWooLeaderboardsFragmentInjector(): WooLeaderboardsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideReactNativeFragmentInjector(): ReactNativeFragment
+    fun provideSiteSelectorDialogInjector(): SiteSelectorDialog
 
     @ContributesAndroidInjector
-    abstract fun provideEditorThemeFragmentInjector(): EditorThemeFragment
+    fun provideStoreSelectorDialogInjector(): StoreSelectorDialog
 
     @ContributesAndroidInjector
-    abstract fun provideExperimentsFragmentInjector(): ExperimentsFragment
+    fun provideReactNativeFragmentInjector(): ReactNativeFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooProductAttributeFragmentInjector(): WooProductAttributeFragment
+    fun provideEditorThemeFragmentInjector(): EditorThemeFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooCustomersFragmentInjector(): WooCustomersFragment
+    fun provideExperimentsFragmentInjector(): ExperimentsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooCustomersSearchInjector(): WooCustomersSearchFragment
+    fun provideWooProductAttributeFragmentInjector(): WooProductAttributeFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooCustomerCreationFragment(): WooCustomerCreationFragment
+    fun provideWooCustomersFragmentInjector(): WooCustomersFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooAddonsTestFragment(): WooAddonsTestFragment
+    fun provideWooCouponsFragmentInjector(): WooCouponsFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooHelpSupportFragment(): WooHelpSupportFragment
+    fun provideWooCustomersSearchInjector(): WooCustomersSearchFragment
 
     @ContributesAndroidInjector
-    abstract fun provideWooAddressEditDialogFragment(): AddressEditDialogFragment
+    fun provideWooCustomerCreationFragment(): WooCustomerCreationFragment
 
     @ContributesAndroidInjector
-    abstract fun providePluginsFragment(): PluginsFragment
+    fun provideWooAddonsTestFragment(): WooAddonsTestFragment
+
+    @ContributesAndroidInjector
+    fun provideWooHelpSupportFragment(): WooHelpSupportFragment
+
+    @ContributesAndroidInjector
+    fun provideWooAddressEditDialogFragment(): AddressEditDialogFragment
+
+    @ContributesAndroidInjector
+    fun providePluginsFragment(): PluginsFragment
 }

@@ -13,11 +13,15 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -41,14 +45,16 @@ class OrderUpdateStoreTest {
     private val siteSqlUtils: SiteSqlUtils = mock {
         on { getSiteWithLocalId(any()) } doReturn site
     }
+    private val dispatcher: Dispatcher = mock()
 
     private val ordersDao: OrdersDao = mock {
-        on { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
+        onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
 
-    fun setUp(setMocks: () -> Unit) {
+    fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
         sut = OrderUpdateStore(
+                dispatcher = dispatcher,
                 coroutineEngine = CoroutineEngine(
                         TestCoroutineScope().coroutineContext,
                         mock()
@@ -71,7 +77,7 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock {
                 onBlocking { updateCustomerOrderNote(initialOrder, site, UPDATED_CUSTOMER_NOTE) }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 updatedOrder,
                                 site
                         )
@@ -84,7 +90,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateCustomerOrderNote(
-                remoteOrderId = TEST_REMOTE_ORDER_ID,
+                orderId = TEST_REMOTE_ORDER_ID,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -106,7 +112,7 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock {
                 onBlocking { updateCustomerOrderNote(initialOrder, site, UPDATED_CUSTOMER_NOTE) }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 error = OrderError(message = specificOrderError),
                                 initialOrder,
                                 site
@@ -120,7 +126,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateCustomerOrderNote(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -150,7 +156,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateCustomerOrderNote(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 site = site,
                 newCustomerNote = UPDATED_CUSTOMER_NOTE
         ).toList()
@@ -160,7 +166,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(
                         event = OnOrderChanged(
                                 orderError = OrderError(
-                                        message = "Order with id ${initialOrder.remoteOrderId.value} not found"
+                                        message = "Order with id ${initialOrder.orderId} not found"
                                 )
                         )
                 )
@@ -187,13 +193,13 @@ class OrderUpdateStoreTest {
                             emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME),
                             emptyBillingDto.copy(first_name = UPDATED_BILLING_FIRST_NAME)
                     )
-                } doReturn (RemoteOrderPayload(updatedOrder, site))
+                } doReturn (RemoteOrderPayload.Updating(updatedOrder, site))
             }
         }
 
         // when
         val results = sut.updateBothOrderAddresses(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 localSiteId = site.localId(),
                 shippingAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME),
                 billingAddress = emptyBilling.copy(firstName = UPDATED_BILLING_FIRST_NAME)
@@ -225,13 +231,13 @@ class OrderUpdateStoreTest {
                             site,
                             emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME)
                     )
-                } doReturn (RemoteOrderPayload(updatedOrder, site))
+                } doReturn (RemoteOrderPayload.Updating(updatedOrder, site))
             }
         }
 
         // when
         val results = sut.updateOrderAddress(
-                remoteOrderId = initialOrder.remoteOrderId,
+                orderId = initialOrder.orderId,
                 localSiteId = site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -256,7 +262,7 @@ class OrderUpdateStoreTest {
                             initialOrder, site, emptyShippingDto.copy(first_name = UPDATED_SHIPPING_FIRST_NAME)
                     )
                 }.doReturn(
-                        RemoteOrderPayload(
+                        RemoteOrderPayload.Updating(
                                 error = OrderError(),
                                 initialOrder,
                                 site
@@ -267,7 +273,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -297,7 +303,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -307,7 +313,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(
                         OnOrderChanged(
                                 orderError = OrderError(
-                                        message = "Order with id ${initialOrder.remoteOrderId.value} not found"
+                                        message = "Order with id ${initialOrder.orderId} not found"
                                 )
                         )
                 )
@@ -325,7 +331,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyShipping.copy(firstName = UPDATED_SHIPPING_FIRST_NAME)
         ).toList()
@@ -354,8 +360,8 @@ class OrderUpdateStoreTest {
                             initialOrder, site, emptyBillingDto
                     )
                 }.doReturn(
-                        RemoteOrderPayload(
-                                error = WCOrderStore.OrderError(type = INVALID_PARAM),
+                        RemoteOrderPayload.Updating(
+                                error = OrderError(type = INVALID_PARAM),
                                 initialOrder,
                                 site
                         )
@@ -365,7 +371,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyBilling
         ).toList()
@@ -384,8 +390,8 @@ class OrderUpdateStoreTest {
                             initialOrder, site, emptyBillingDto.copy(email = "custom@mail.com")
                     )
                 }.doReturn(
-                        RemoteOrderPayload(
-                                error = WCOrderStore.OrderError(type = GENERIC_ERROR),
+                        RemoteOrderPayload.Updating(
+                                error = OrderError(type = GENERIC_ERROR),
                                 initialOrder,
                                 site
                         )
@@ -395,7 +401,7 @@ class OrderUpdateStoreTest {
 
         // when
         val results = sut.updateOrderAddress(
-                initialOrder.remoteOrderId,
+                initialOrder.orderId,
                 site.localId(),
                 newAddress = emptyBilling.copy(email = "custom@mail.com")
         ).toList()
@@ -404,8 +410,118 @@ class OrderUpdateStoreTest {
         assertThat(results[1].event.error.type).isEqualTo(GENERIC_ERROR)
     }
 
+//      Simple payments
+
+    @Test
+    fun `should create simple payment with correct amount, tax status, and order status`(): Unit = runBlocking {
+        // given
+        val newOrder = initialOrder.copy(
+                status = SIMPLE_PAYMENT_ORDER_STATUS.statusKey,
+                feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
+                        SIMPLE_PAYMENT_AMOUNT,
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
+                ).toString()
+        )
+
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    createOrder(any(), any())
+                }.doReturn(
+                    WooPayload(newOrder)
+                )
+            }
+        }
+
+        // when
+        val result = sut.createSimplePayment(
+            site,
+            SIMPLE_PAYMENT_AMOUNT,
+            SIMPLE_PAYMENT_IS_TAXABLE,
+            SIMPLE_PAYMENT_ORDER_STATUS
+        )
+
+        // then
+        assertThat(result.isError).isFalse()
+        assertThat(result.model).isNotNull
+        assertThat(result.model!!.getFeeLineList()).hasSize(1)
+        assertThat(result.model!!.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
+        assertThat(result.model!!.getFeeLineList()[0].taxStatus!!.value).isEqualTo(SIMPLE_PAYMENT_TAX_STATUS)
+        assertThat(result.model!!.status).isEqualTo(SIMPLE_PAYMENT_ORDER_STATUS.statusKey)
+    }
+
+    @Test
+    fun `should optimistically update simple payment`(): Unit = runBlocking {
+        // given
+        val updatedOrder = initialOrder.copy(
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
+                billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
+                feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
+                        SIMPLE_PAYMENT_AMOUNT,
+                        SIMPLE_PAYMENT_IS_TAXABLE,
+                        SIMPLE_PAYMENT_FEE_ID
+                ).toString()
+        )
+
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(updatedOrder)
+                )
+            }
+            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
+                    updatedOrder
+            )
+        }
+
+        // when
+        val results = sut.updateSimplePayment(
+                site = site,
+                orderId = TEST_REMOTE_ORDER_ID,
+                amount = SIMPLE_PAYMENT_AMOUNT,
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
+                billingEmail = SIMPLE_PAYMENT_BILLING_EMAIL,
+                isTaxable = SIMPLE_PAYMENT_IS_TAXABLE
+        ).toList()
+
+        // then
+        assertThat(results).hasSize(2).containsExactly(
+                OptimisticUpdateResult(OnOrderChanged()),
+                RemoteUpdateResult(OnOrderChanged())
+        )
+        ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)?.let { order ->
+            assertThat(order.billingEmail).isEqualTo(SIMPLE_PAYMENT_BILLING_EMAIL)
+            assertThat(order.customerNote).isEqualTo(SIMPLE_PAYMENT_CUSTOMER_NOTE)
+            assertThat(order.getFeeLineList()).hasSize(1)
+            assertThat(order.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
+        }
+    }
+
+    @Test
+    fun `should delete local copy of order when delete request succeeds`(): Unit = runBlocking {
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    deleteOrder(any(), any(), any())
+                }.doReturn(
+                    WooPayload(Unit)
+                )
+            }
+        }
+
+        sut.deleteOrder(
+            site = site,
+            orderId = TEST_REMOTE_ORDER_ID
+        )
+
+        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID)
+    }
+
     private companion object {
-        val TEST_REMOTE_ORDER_ID = RemoteId(321L)
+        const val TEST_REMOTE_ORDER_ID = 321L
         val TEST_LOCAL_SITE_ID = LocalId(654)
         const val INITIAL_CUSTOMER_NOTE = "original customer note"
         const val UPDATED_CUSTOMER_NOTE = "updated customer note"
@@ -413,8 +529,16 @@ class OrderUpdateStoreTest {
         const val UPDATED_SHIPPING_FIRST_NAME = "updated shipping first name"
         const val UPDATED_BILLING_FIRST_NAME = "updated billing first name"
 
-        val initialOrder = WCOrderModel(
-                remoteOrderId = TEST_REMOTE_ORDER_ID,
+        const val SIMPLE_PAYMENT_FEE_ID = 1L
+        const val SIMPLE_PAYMENT_AMOUNT = "10.00"
+        const val SIMPLE_PAYMENT_CUSTOMER_NOTE = "Simple payment customer note"
+        const val SIMPLE_PAYMENT_BILLING_EMAIL = "example@example.com"
+        const val SIMPLE_PAYMENT_IS_TAXABLE = true
+        val SIMPLE_PAYMENT_ORDER_STATUS = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
+        val SIMPLE_PAYMENT_TAX_STATUS = FeeLineTaxStatus.Taxable.value
+
+        val initialOrder = OrderEntity(
+                orderId = TEST_REMOTE_ORDER_ID,
                 localSiteId = TEST_LOCAL_SITE_ID,
                 customerNote = INITIAL_CUSTOMER_NOTE,
                 shippingFirstName = INITIAL_SHIPPING_FIRST_NAME
@@ -427,6 +551,6 @@ class OrderUpdateStoreTest {
         val emptyShipping = OrderAddress.Shipping("", "", "", "", "", "", "", "", "", "")
         val emptyBilling = OrderAddress.Billing("", "", "", "", "", "", "", "", "", "", "")
         val emptyShippingDto = Shipping("", "", "", "", "", "", "", "", "", "")
-        val emptyBillingDto = Billing("", "", "", "", "", "", "", "", "", "", "")
+        val emptyBillingDto = Billing("", "", "", "", "", "", "", "", "", null, "")
     }
 }

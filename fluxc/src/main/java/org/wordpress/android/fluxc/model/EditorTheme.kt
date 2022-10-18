@@ -21,6 +21,8 @@ const val MAP_KEY_ELEMENT_STYLES: String = "rawStyles"
 const val MAP_KEY_ELEMENT_FEATURES: String = "rawFeatures"
 const val MAP_KEY_IS_FSETHEME: String = "isFSETheme"
 const val MAP_KEY_GALLERY_WITH_IMAGE_BLOCKS: String = "galleryWithImageBlocks"
+const val MAP_KEY_QUOTE_BLOCK_V2: String = "quoteBlockV2"
+const val MAP_KEY_LIST_BLOCK_V2: String = "listBlockV2"
 
 data class EditorTheme(
     @SerializedName("theme_supports") val themeSupport: EditorThemeSupport,
@@ -34,7 +36,9 @@ data class EditorTheme(
                     blockEditorSettings.styles?.toString(),
                     blockEditorSettings.features?.toString(),
                     blockEditorSettings.isFSETheme,
-                    blockEditorSettings.galleryWithImageBlocks
+                    blockEditorSettings.galleryWithImageBlocks,
+                    blockEditorSettings.quoteBlockV2,
+                    blockEditorSettings.listBlockV2
             ),
             stylesheet = null,
             version = null
@@ -49,6 +53,8 @@ data class EditorTheme(
         element.rawFeatures = themeSupport.rawFeatures
         element.isFSETheme = themeSupport.isFSETheme
         element.galleryWithImageBlocks = themeSupport.galleryWithImageBlocks
+        element.quoteBlockV2 = themeSupport.quoteBlockV2
+        element.listBlockV2 = themeSupport.listBlockV2
 
         return element
     }
@@ -65,6 +71,8 @@ data class EditorTheme(
 data class BlockEditorSettings(
     @SerializedName("__unstableEnableFullSiteEditingBlocks") val isFSETheme: Boolean,
     @SerializedName("__unstableGalleryWithImageBlocks") val galleryWithImageBlocks: Boolean,
+    @SerializedName("__experimentalEnableQuoteBlockV2") val quoteBlockV2: Boolean,
+    @SerializedName("__experimentalEnableListBlockV2") val listBlockV2: Boolean,
     @SerializedName("__experimentalStyles") val styles: JsonElement?,
     @SerializedName("__experimentalFeatures") val features: JsonElement?,
     @JsonAdapter(EditorThemeElementListSerializer::class) val colors: List<EditorThemeElement>?,
@@ -81,7 +89,9 @@ data class EditorThemeSupport(
     val rawStyles: String?,
     val rawFeatures: String?,
     val isFSETheme: Boolean,
-    val galleryWithImageBlocks: Boolean
+    val galleryWithImageBlocks: Boolean,
+    val quoteBlockV2: Boolean,
+    val listBlockV2: Boolean
 ) {
     fun toBundle(): Bundle {
         val bundle = Bundle()
@@ -104,6 +114,8 @@ data class EditorThemeSupport(
 
         bundle.putBoolean(MAP_KEY_IS_FSETHEME, isFSETheme)
         bundle.putBoolean(MAP_KEY_GALLERY_WITH_IMAGE_BLOCKS, galleryWithImageBlocks)
+        bundle.putBoolean(MAP_KEY_QUOTE_BLOCK_V2, quoteBlockV2)
+        bundle.putBoolean(MAP_KEY_LIST_BLOCK_V2, listBlockV2)
 
         return bundle
     }
@@ -142,6 +154,7 @@ data class EditorThemeElement(
 }
 
 class EditorThemeElementListSerializer : JsonDeserializer<List<EditorThemeElement>> {
+    @Suppress("SwallowedException")
     override fun deserialize(
         json: JsonElement?,
         typeOfT: Type?,

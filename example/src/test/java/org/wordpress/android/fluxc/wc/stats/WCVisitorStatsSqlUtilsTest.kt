@@ -34,6 +34,7 @@ class WCVisitorStatsSqlUtilsTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testSimpleInsertionAndRetrievalOfVisitorStats() {
         // insert a visitor stats entry and verify that it is stored correctly
         val visitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel()
@@ -185,6 +186,7 @@ class WCVisitorStatsSqlUtilsTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testSimpleInsertionAndRetrievalOfCustomVisitorStats() {
         // Test Scenario - 1: Generate default stats with granularity - DAYS, quantity - 30, date - current date
         // and isCustomField - false
@@ -406,6 +408,7 @@ class WCVisitorStatsSqlUtilsTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testSimpleInsertionAndRetrievalOfNewVisitorStats() {
         // insert a visitor stats entry and verify that it is stored correctly
         val visitorStatsModel = WCStatsTestUtils.generateSampleNewVisitorStatsModel()
@@ -557,6 +560,7 @@ class WCVisitorStatsSqlUtilsTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun testSimpleInsertionAndRetrievalOfNewCustomVisitorStats() {
         // Test Scenario - 1: Generate default stats with granularity - DAYS, quantity - 30, date - current date
         // and isCustomField - false

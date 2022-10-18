@@ -7,6 +7,7 @@
     tools:ignore="HardcodedText">
 
     <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
@@ -22,24 +23,28 @@
             android:id="@+id/log_woo_api_versions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Log Woo API versions" />
 
         <Button
             android:id="@+id/fetch_settings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Fetch WC site settings" />
 
         <Button
             android:id="@+id/fetch_product_settings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Fetch WC product settings" />
 
         <Button
             android:id="@+id/get_user_role"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Get user_role" />
 
         <View
@@ -117,6 +122,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Customers" />
+
+        <Button
+            android:id="@+id/coupons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Coupons" />
 
         <Button
             android:id="@+id/help_support"

@@ -20,9 +20,11 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
@@ -30,17 +32,13 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResp
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductTagsPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -58,7 +56,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
-    private val bogusProductId = -1L
     private val remoteShippingClassId = 34L
     private val searchQuery = "test"
 
@@ -81,26 +78,21 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchSingleProductSuccess() {
+    fun testFetchSingleProductSuccess() = runBlocking {
         interceptor.respondWith("wc-fetch-product-response-success.json")
-        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductPayload
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
             assertEquals(product.getCategoryList().size, 2)
             assertEquals(product.getTagList().size, 2)
-            assertEquals(product.getImageList().size, 2)
+            assertEquals(product.getImageListOrEmpty().size, 2)
             assertNotNull(product.getFirstImageUrl())
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getVariationIdList().size, 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
@@ -116,71 +108,64 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.remoteProductId, remoteProductId)
             assertEquals(product.getCategoryList().size, 2)
             assertEquals(product.getTagList().size, 2)
-            assertEquals(product.getImageList().size, 2)
+            assertEquals(product.getImageListOrEmpty().size, 2)
             assertNotNull(product.getFirstImageUrl())
             assertEquals(product.getAttributeList().size, 2)
             assertEquals(product.getAttributeList().get(0).options.size, 3)
             assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getNumVariations(), 2)
+            assertEquals(product.getVariationIdList().size, 2)
             assertEquals(product.getDownloadableFiles().size, 1)
             assertEquals(product.downloadExpiry, 10)
             assertEquals(product.downloadLimit, 123123124124)
         }
+        Unit
     }
 
     @Test
-    fun testFetchSingleProductError() {
+    fun testFetchSingleProductError() = runBlocking {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductPayload
         assertNotNull(payload.error)
     }
 
     @Test
-    fun testFetchInvalidProductIdError() {
+    fun testFetchInvalidProductIdError() = runBlocking {
         interceptor.respondWithError("wc-fetch-invalid-product-id.json")
-        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductPayload
         assertNotNull(payload.error)
         assertEquals(payload.error.type, ProductErrorType.INVALID_PRODUCT_ID)
     }
 
+    /**
+     * ParentId used to be an integer. This test verifies the app correctly parses even long values.
+     */
     @Test
-    fun testFetchSingleProductManageStock() {
+    fun testFetchParentProductIdExceedingInteger() = runBlocking {
+        interceptor.respondWith("wc-fetch-parent-product-id-exceeding-integer.json")
+        val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+
+        assertEquals(5060147738939L, payload.product.parentId)
+    }
+
+    @Test
+    fun testFetchSingleProductManageStock() = runBlocking {
         // check that a product's manage stock field is correctly set to true
         interceptor.respondWith("wc-fetch-product-response-manage-stock-true.json")
-        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-        val payloadTrue = lastAction!!.payload as RemoteProductPayload
+        val payloadTrue = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
         assertTrue(payloadTrue.product.manageStock)
 
         // check that a product's manage stock field is correctly set to false
         interceptor.respondWith("wc-fetch-product-response-manage-stock-false.json")
-        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-        val payloadFalse = lastAction!!.payload as RemoteProductPayload
+        val payloadFalse = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
         assertFalse(payloadFalse.product.manageStock)
 
         // check that a product's manage stock field is correctly set to true when response contains
         // "parent" rather than true/false (this is for product variations who inherit the parent's
         // manage stock)
         interceptor.respondWith("wc-fetch-product-response-manage-stock-parent.json")
-        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-        val payloadParent = lastAction!!.payload as RemoteProductPayload
+        val payloadParent = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
         assertTrue(payloadParent.product.manageStock)
     }
 
@@ -197,42 +182,48 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertNotNull(products)
-            assertEquals(products.size, 3)
+            assertEquals(products.size, 4)
             assertNull(products[0].getFirstImageUrl())
 
             // verify that response as json array in product response is handled correctly
             assertEquals("10,11,12", products[0].getGroupedProductIdList().joinToString(","))
             assertEquals("10,11,12", products[0].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[0].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[0].getNumVariations())
+            assertEquals(3, products[0].getVariationIdList().size)
 
             // verify that response as json object in product response is handled correctly
             assertEquals("10,11,12", products[1].getGroupedProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getUpsellProductIdList().joinToString(","))
             assertEquals("10,11,12", products[1].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[1].getNumVariations())
+            assertEquals(3, products[1].getVariationIdList().size)
 
             // verify that response as null in product response is handled correctly
             assertEquals(0, products[2].getGroupedProductIdList().size)
             assertEquals(0, products[2].getUpsellProductIdList().size)
             assertEquals(0, products[2].getCrossSellProductIdList().size)
-            assertEquals(0, products[2].getNumVariations())
+            assertEquals(0, products[2].getVariationIdList().size)
             assertEquals(0, products[2].getCategoryList().size)
+
+            // verify that variations are handled correctly when returned as array of objects
+            assertEquals(2, products[3].getVariationIdList().size)
+            assertEquals(16892, products[3].getVariationIdList()[0])
+            assertEquals(16893, products[3].getVariationIdList()[1])
         }
 
         // delete all products then insert these into the store
         ProductSqlUtils.deleteProductsForSite(siteModel)
-        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 3)
+        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 4)
 
         // now verify the db stored the products correctly
         val productsFromDb = ProductSqlUtils.getProductsForSite(siteModel)
         assertNotNull(productsFromDb)
-        assertEquals(productsFromDb.size, 3)
+        assertEquals(productsFromDb.size, 4)
 
         // verify that the products are correctly sorted
-        assertEquals("aaa test product", productsFromDb[0].name)
-        assertEquals("Booklet", productsFromDb[1].name)
-        assertEquals("Test Product", productsFromDb[2].name)
+        assertEquals("Product 1", productsFromDb[0].name)
+        assertEquals("Product 2", productsFromDb[1].name)
+        assertEquals("Product 3", productsFromDb[2].name)
+        assertEquals("Product 4", productsFromDb[3].name)
     }
 
     @Test
@@ -251,7 +242,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testSearchProductsSuccess() {
         interceptor.respondWith("wc-fetch-products-response-success.json")
-        productRestClient.searchProducts(siteModel, searchQuery)
+        productRestClient.searchProducts(
+            site = siteModel,
+            searchQuery = searchQuery
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -260,6 +254,26 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNull(payload.error)
         assertEquals(payload.searchQuery, searchQuery)
+        assertEquals(payload.isSkuSearch, false)
+    }
+
+    @Test
+    fun testSearchProductsBySkuSuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.searchProducts(
+            site = siteModel,
+            searchQuery = searchQuery,
+            isSkuSearch = true
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
+        assertEquals(payload.isSkuSearch, true)
     }
 
     @Test
@@ -311,27 +325,22 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchProductVariationsSuccess() {
+    fun testFetchProductVariationsSuccess() = runBlocking {
         interceptor.respondWith("wc-fetch-product-variations-response-success.json")
-        productRestClient.fetchProductVariations(siteModel, remoteProductId)
+        val result = productRestClient.fetchProductVariations(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductVariationsPayload
-        assertNull(payload.error)
-        assertEquals(remoteProductId, payload.remoteProductId)
-        assertEquals(3, payload.variations.size)
-        assertEquals("null", payload.variations[0].image)
-        assertNotNull(payload.variations[1].image)
+        assertNull(result.error)
+        assertEquals(remoteProductId, result.remoteProductId)
+        assertEquals(3, result.variations.size)
+        assertEquals("null", result.variations[0].image)
+        assertNotNull(result.variations[1].image)
 
         // save the variation to the db
-        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(result.variations), 3)
 
         // now delete all variations for this product and save again
         ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
-        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(result.variations), 3)
 
         // now verify the db stored the variation correctly
         val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
@@ -346,16 +355,50 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testFetchProductVariationsError() {
+    fun testFetchProductVariationsWithSyncRequestSuccess() = runBlocking {
+        interceptor.respondWith("wc-fetch-product-variations-response-success.json")
+        val result = productRestClient.fetchProductVariationsWithSyncRequest(
+            siteModel,
+            remoteProductId,
+            offset = 0,
+            pageSize = WCProductStore.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
+        )
+
+        assertNull(result.error)
+
+        val variations = result.result!!
+        variations.forEach {
+            assertEquals(remoteProductId, it.remoteProductId)
+        }
+        assertEquals(3, variations.size)
+        assertEquals("null", variations[0].image)
+        assertNotNull(variations[1].image)
+
+        // save the variation to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(variations), 3)
+
+        // now delete all variations for this product and save again
+        ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(variations), 3)
+
+        // now verify the db stored the variation correctly
+        val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(dbVariations.size, 3)
+        with(dbVariations.first()) {
+            assertEquals(this.remoteProductId, remoteProductId)
+            assertEquals(this.localSiteId, siteModel.id)
+
+            // verify that the variant with the first date created is fetched first
+            assertEquals(this.dateCreated, "2019-03-16T05:14:57")
+        }
+    }
+
+    @Test
+    fun testFetchProductVariationsError() = runBlocking {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        productRestClient.fetchProductVariations(siteModel, remoteProductId)
+        val result = productRestClient.fetchProductVariations(siteModel, remoteProductId)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductVariationsPayload
-        assertNotNull(payload.error)
+        assertNotNull(result.error)
     }
 
     @Test
@@ -517,46 +560,37 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
     @Test
     fun testUpdateProductReviewStatusSuccess() {
-        interceptor.respondWith("wc-update-product-review-response-success.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
+        runBlocking {
+            interceptor.respondWith("wc-update-product-review-response-success.json")
+            val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS, lastAction!!.type)
-
-        // Verify payload and product review properties
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertFalse(payload.isError)
-        assertEquals(siteModel.id, payload.site.id)
-        payload.productReview?.let {
-            with(it) {
-                assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T15:48:07Z", dateCreated)
-                assertEquals(18, remoteProductId)
-                assertEquals("spam", status)
-                assertEquals("Johnny", reviewerName)
-                assertEquals("johnny@gmail.com", reviewerEmail)
-                assertEquals("<p>What a lovely cap!</p>\n", review)
-                assertEquals(4, rating)
-                assertEquals(false, verified)
-                assertEquals(3, reviewerAvatarUrlBySize.size)
+            assertFalse(result.isError)
+            result.result?.let {
+                with(it) {
+                    assertEquals(5499, remoteProductReviewId)
+                    assertEquals("2019-07-09T15:48:07Z", dateCreated)
+                    assertEquals(18, remoteProductId)
+                    assertEquals("spam", status)
+                    assertEquals("Johnny", reviewerName)
+                    assertEquals("johnny@gmail.com", reviewerEmail)
+                    assertEquals("<p>What a lovely cap!</p>\n", review)
+                    assertEquals(4, rating)
+                    assertEquals(false, verified)
+                    assertEquals(3, reviewerAvatarUrlBySize.size)
+                }
             }
         }
     }
 
     @Test
     fun testUpdateProductReviewStatusFailed() {
-        interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
+        runBlocking {
+            interceptor.respondWithError("wc-response-failure-invalid-param.json")
+            val result = productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteProductReviewPayload
-        assertTrue(payload.isError)
-        assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
+            assertTrue(result.isError)
+            assertEquals(WooErrorType.INVALID_ID, result.error.type)
+        }
     }
 
     private fun generateTestImageList(): List<WCProductImageModel> {
@@ -595,7 +629,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         }
     }
 
-    fun generateSampleVariation(): WCProductVariationModel {
+    private fun generateSampleVariation(): WCProductVariationModel {
         return WCProductVariationModel().apply {
             remoteProductId = 1
             remoteVariationId = 181
@@ -629,7 +663,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getImageList().size, 2)
+            assertEquals(product.getImageListOrEmpty().size, 2)
         }
     }
 
@@ -647,20 +681,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteProductVariationImageSuccess() {
+    fun testDeleteProductVariationImageSuccess() = runBlocking {
         interceptor.respondWith("wc-delete-product-variation-image-success.json")
 
         val testVariation = generateSampleVariation()
         val updateVariation = testVariation.copy().apply {
             image = "{id:0}"
         }
-        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
+        val payload = productRestClient.updateVariation(siteModel, testVariation, updateVariation)
         with(payload) {
             assertNull(error)
             assertNotNull(variation.image)
@@ -669,20 +697,15 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testDeleteProductVariationImageError() {
+    fun testDeleteProductVariationImageError() = runBlocking {
         interceptor.respondWithError("wc-delete-product-variation-image-failure.json", 400)
 
         val testVariation = generateSampleVariation()
         val updateVariation = testVariation.copy().apply {
             image = "{id:0}"
         }
-        productRestClient.updateVariation(siteModel, testVariation, updateVariation)
+        val payload = productRestClient.updateVariation(siteModel, testVariation, updateVariation)
 
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCProductAction.UPDATED_VARIATION, lastAction!!.type)
-        val payload = lastAction!!.payload as RemoteUpdateVariationPayload
         with(payload) {
             assertNotNull("Error should not be null", error)
             assertEquals(
@@ -726,7 +749,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
             assertEquals(updatedProduct.virtual, product.virtual)
-            assertEquals(updatedProduct.getImageList().size, 2)
+            assertEquals(updatedProduct.getImageListOrEmpty().size, 2)
             assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
             assertEquals(updatedProduct.getCrossSellProductIdList().size, 3)
             assertEquals(updatedProduct.getUpsellProductIdList().size, 4)
@@ -811,7 +834,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // make sure two images are attached to the product
         val productBefore = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productBefore)
-        assertEquals(productBefore!!.getImageList().size, 2)
+        assertEquals(productBefore!!.getImageListOrEmpty().size, 2)
 
         // remove one of the images
         val didDelete = ProductSqlUtils.deleteProductImage(siteModel, remoteProductId, 1)
@@ -820,7 +843,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // now make sure only one image is attached to the product
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
-        assertEquals(productAfter!!.getImageList().size, 1)
+        assertEquals(productAfter!!.getImageListOrEmpty().size, 1)
     }
 
     @Test

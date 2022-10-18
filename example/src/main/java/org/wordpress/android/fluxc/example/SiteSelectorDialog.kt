@@ -67,25 +67,23 @@ class SiteSelectorDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return activity?.let {
-            val adapter = SiteAdapter(it, siteStore.sites)
+        val adapter = SiteAdapter(requireActivity(), siteStore.sites)
 
-            // Use the Builder class for convenient dialog construction
-            val builder = AlertDialog.Builder(it)
-            builder.setTitle("Select a site")
-                    .setSingleChoiceItems(adapter, selectedPos) { dialog, which ->
-                        val adapter = (dialog as AlertDialog).listView.adapter as SiteAdapter
-                        val site = adapter.getItem(which)
-                        if (site != null) {
-                            listener?.onSiteSelected(site, which)
-                        } else {
-                            prependToLog("SiteChanged error: site at position $which was null.")
-                        }
-                        dialog.dismiss()
+        // Use the Builder class for convenient dialog construction
+        val builder = AlertDialog.Builder(requireActivity())
+        builder.setTitle("Select a site")
+                .setSingleChoiceItems(adapter, selectedPos) { dialog, which ->
+                    val adapter = (dialog as AlertDialog).listView.adapter as SiteAdapter
+                    val site = adapter.getItem(which)
+                    if (site != null) {
+                        listener?.onSiteSelected(site, which)
+                    } else {
+                        prependToLog("SiteChanged error: site at position $which was null.")
                     }
-            // Create the AlertDialog object and return it
-            builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
+                    dialog.dismiss()
+                }
+        // Create the AlertDialog object and return it
+        return builder.create()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -1,16 +1,20 @@
 plugins {
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.android.extensions"
-    id "org.jetbrains.kotlin.kapt"
+    alias(sharedLibs.plugins.android.application)
+    alias(sharedLibs.plugins.kotlin.android)
+    alias(sharedLibs.plugins.kotlin.android.extensions)
+    alias(sharedLibs.plugins.kotlin.kapt)
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     defaultConfig {
@@ -51,7 +55,7 @@ android {
         // pressure on the API (authentication/fetch profile/fetch sites).
         // Uncomment the next line to enable the Orchestrator.
         // execution 'ANDROID_TEST_ORCHESTRATOR'
-
+        unitTests.includeAndroidResources  = true
         unitTests.all {
             if (project.hasProperty('testsMaxHeapSize')) {
                 // maxHeapSize for tests is not limited unless we give an explicit value
@@ -100,67 +104,66 @@ dependencies {
     implementation project(':fluxc')
     implementation project(':plugins:woocommerce')
 
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "androidx.legacy:legacy-support-v4:1.0.0"
-    implementation "androidx.recyclerview:recyclerview:1.0.0"
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.annotation:annotation:1.0.2'
-    implementation "androidx.arch.core:core-common:$arch_core_version"
-    implementation "androidx.arch.core:core-runtime:$arch_core_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
-    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation sharedLibs.androidx.appcompat
+    implementation sharedLibs.androidx.legacy.support.v4
+    implementation sharedLibs.androidx.recyclerview
+    implementation sharedLibs.androidx.constraintlayout
+    implementation sharedLibs.androidx.annotation
+    implementation sharedLibs.androidx.arch.core.common
+    implementation sharedLibs.androidx.arch.core.runtime
+    implementation sharedLibs.androidx.lifecycle.runtime.ktx
+    implementation sharedLibs.apache.commons.lang3
 
-    // WordPress libs
-    implementation("org.wordpress:utils:$wordPressUtilsVersion") {
+    implementation(sharedLibs.wordpress.utils) {
         // Using official volley package
         exclude group: "com.mcxiaoke.volley"
         exclude group: "com.android.support"
     }
 
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation sharedLibs.google.gson
 
-    implementation "androidx.room:room-runtime:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
-    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+    implementation sharedLibs.androidx.room.runtime
+    kapt sharedLibs.androidx.room.compiler
+    implementation sharedLibs.androidx.room.ktx
+    androidTestImplementation sharedLibs.androidx.room.testing
 
     // Dagger
-    implementation "com.google.dagger:dagger:$daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
-    compileOnly 'org.glassfish:javax.annotation:10.0-b28'
-    implementation "com.google.dagger:dagger-android-support:$daggerVersion"
-    kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
+    implementation sharedLibs.google.dagger
+    kapt sharedLibs.google.dagger.compiler
+    compileOnly sharedLibs.glassfish.javax.annotation
+    implementation sharedLibs.google.dagger.android.support
+    kapt sharedLibs.google.dagger.android.processor
 
-    testImplementation 'junit:junit:4.13'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$gradle.ext.kotlinVersion"
-    testImplementation 'org.robolectric:robolectric:4.3.1'
-    testImplementation 'androidx.test:core:1.3.0'
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
-    testImplementation "org.assertj:assertj-core:$assertJVersion"
-    testImplementation "androidx.arch.core:core-testing:$arch_core_version"
+    testImplementation sharedLibs.junit
+    testImplementation sharedLibs.kotlin.test.junit
+    testImplementation sharedLibs.robolectric
+    testImplementation sharedLibs.androidx.test.core
+    testImplementation sharedLibs.mockito.core
+    testImplementation sharedLibs.nhaarman.mockito.kotlin
+    testImplementation sharedLibs.assertj.core
+    testImplementation sharedLibs.androidx.arch.core.testing
 
-    androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
-    androidTestImplementation 'org.apache.commons:commons-lang3:3.7'
-    androidTestImplementation "org.assertj:assertj-core:$assertJVersion"
-    androidTestImplementation "androidx.arch.core:core-testing:$arch_core_version"
-    kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
-    androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
+    androidTestImplementation sharedLibs.mockito.android
+    androidTestImplementation sharedLibs.apache.commons.lang3
+    androidTestImplementation sharedLibs.assertj.core
+    androidTestImplementation sharedLibs.androidx.arch.core.testing
+    kaptAndroidTest sharedLibs.google.dagger.compiler
+    androidTestCompileOnly sharedLibs.glassfish.javax.annotation
     // Test orchestrator
-    androidTestImplementation 'androidx.test:runner:1.2.0'
-    androidTestUtil 'androidx.test:orchestrator:1.2.0'
+    androidTestImplementation sharedLibs.androidx.test.runner
+    androidTestUtil sharedLibs.androidx.test.orchestrator
 
     androidTestImplementation "com.goterl:lazysodium-android:5.0.2@aar"
     androidTestImplementation "net.java.dev.jna:jna:5.5.0@aar"
 
     // Debug dependencies
-    debugImplementation 'com.facebook.flipper:flipper:0.51.0'
-    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
-    debugImplementation ('com.facebook.flipper:flipper-network-plugin:0.51.0')
+    debugImplementation sharedLibs.facebook.flipper
+    debugImplementation sharedLibs.facebook.soloader
+    debugImplementation sharedLibs.facebook.flipper.network.plugin
 
     // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+    implementation sharedLibs.kotlinx.coroutines.core
+    implementation sharedLibs.kotlinx.coroutines.android
 }
 
 def loadPropertiesOrUseExampleProperties(fileName, warningDetail) {

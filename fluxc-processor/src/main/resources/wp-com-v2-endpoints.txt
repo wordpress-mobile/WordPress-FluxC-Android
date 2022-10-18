@@ -2,7 +2,7 @@
 
 /read/sites/$site#String/notification-subscriptions/$action#String
 
-/sites/$site/dashboard/cards
+/sites/$site/dashboard/cards-data
 
 /sites/$site/activity
 /sites/$site/activity/count/group
@@ -32,6 +32,8 @@
 
 /sites/$site/xposts
 
+/sites/$site/blogging-prompts
+
 /users/username/suggestions/
 
 /segments
@@ -39,7 +41,11 @@
 /plans/mobile
 
 /mobile/feature-announcements/
+/mobile/feature-flags/
 
 /me/gutenberg/
 
 /experiments/$version#String/assignments/$platform#String
+
+/auth/qr-code/validate
+/auth/qr-code/authenticate

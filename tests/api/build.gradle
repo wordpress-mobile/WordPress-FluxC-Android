@@ -1,8 +1,8 @@
 apply plugin: 'java'
 dependencies {
-    testImplementation 'io.rest-assured:rest-assured:4.2.0' 
-    testImplementation 'junit:junit:4.13'
-    testImplementation 'org.json:json:20190722'
+    testImplementation sharedLibs.restAssured
+    testImplementation sharedLibs.junit
+    testImplementation sharedLibs.json
 }
 
 test {
@@ -13,5 +13,4 @@ test {
 
 repositories {
     google()
-    jcenter()
 }

@@ -190,6 +190,7 @@ abstract class CommentsDao {
         AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp >= :startOfRange
     """)
+    @Suppress("LongParameterList")
     protected abstract fun removeGapsFromTheTopInternal(
         localSiteId: Int,
         filterByStatuses: Boolean,
@@ -206,6 +207,7 @@ abstract class CommentsDao {
         AND CASE WHEN (:filterByIds = 1) THEN (remoteCommentId NOT IN (:remoteIds)) ELSE 1 END
         AND publishedTimestamp <= :endOfRange
     """)
+    @Suppress("LongParameterList")
     protected abstract fun removeGapsFromTheBottomInternal(
         localSiteId: Int,
         filterByStatuses: Boolean,
@@ -223,6 +225,7 @@ abstract class CommentsDao {
         AND publishedTimestamp <= :startOfRange
         AND publishedTimestamp >= :endOfRange
     """)
+    @Suppress("LongParameterList")
     protected abstract fun removeGapsFromTheMiddleInternal(
         localSiteId: Int,
         filterByStatuses: Boolean,
@@ -275,13 +278,13 @@ abstract class CommentsDao {
         val id: Long = 0,
         val remoteCommentId: Long,
         val remotePostId: Long,
-        val remoteParentCommentId: Long,
         val localSiteId: Int,
         val remoteSiteId: Long,
         val authorUrl: String?,
         val authorName: String?,
         val authorEmail: String?,
         val authorProfileImageUrl: String?,
+        val authorId: Long,
         val postTitle: String?,
         val status: String?,
         val datePublished: String?,
@@ -293,6 +296,7 @@ abstract class CommentsDao {
         val iLike: Boolean
     ) {
         @Ignore
+        @Suppress("DataClassShouldBeImmutable")
         var level: Int = 0
     }
 

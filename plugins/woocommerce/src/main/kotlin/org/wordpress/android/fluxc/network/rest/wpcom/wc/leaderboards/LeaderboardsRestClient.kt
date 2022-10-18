@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -31,9 +32,13 @@ class LeaderboardsRestClient @Inject constructor(
         unit: StatsGranularity?,
         startDate: String?,
         endDate: String?,
-        quantity: Int?
-    ) = WOOCOMMERCE.leaderboards.pathV4Analytics
-        .requestTo(site, unit, startDate, endDate, quantity)
+        quantity: Int?,
+        addProductsPath: Boolean = false,
+        forceRefresh: Boolean
+    ) = when (addProductsPath) {
+        true -> WOOCOMMERCE.leaderboards.products.pathV4Analytics
+        else -> WOOCOMMERCE.leaderboards.pathV4Analytics
+    }.requestTo(site, unit, startDate, endDate, quantity, forceRefresh)
         .handleResult()
 
     private suspend fun String.requestTo(
@@ -41,12 +46,13 @@ class LeaderboardsRestClient @Inject constructor(
         unit: StatsGranularity?,
         startDate: String?,
         endDate: String?,
-        quantity: Int?
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        quantity: Int?,
+        forceRefresh: Boolean
+    ): JetpackResponse<Array<LeaderboardsApiResponse>> = jetpackTunnelGsonRequestBuilder.syncGetRequest(
         this@LeaderboardsRestClient,
         site,
         this,
-        createParameters(site, unit, startDate, endDate, quantity),
+        createParameters(site, unit, startDate, endDate, quantity, forceRefresh),
         Array<LeaderboardsApiResponse>::class.java
     )
 
@@ -55,11 +61,13 @@ class LeaderboardsRestClient @Inject constructor(
         unit: StatsGranularity?,
         startDate: String?,
         endDate: String?,
-        quantity: Int?
+        quantity: Int?,
+        forceRefresh: Boolean
     ) = mapOf(
         "before" to (endDate ?: DateUtils.getEndDateForSite(site)).toString(),
         "after" to (startDate ?: (unit?.startDateTime(site) ?: "")).toString(),
         "per_page" to quantity?.toString().orEmpty(),
-        "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
+        "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: ""),
+        "force_cache_refresh" to forceRefresh.toString()
     ).filter { it.value.isNotEmpty() }
 }

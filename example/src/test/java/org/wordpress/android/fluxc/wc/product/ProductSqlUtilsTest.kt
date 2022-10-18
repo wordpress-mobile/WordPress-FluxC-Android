@@ -24,6 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+@Suppress("LargeClass")
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class ProductSqlUtilsTest {
@@ -242,7 +243,7 @@ class ProductSqlUtilsTest {
 
     @Test
     fun testInsertOrUpdateProductShippingClass() {
-        val shippingClass = ProductTestUtils.generateProductList(site.id)[0]
+        val shippingClass = ProductTestUtils.generateProductShippingClassList(site.id)[0]
         assertNotNull(shippingClass)
 
         // Test inserting a product shipping class
@@ -274,7 +275,7 @@ class ProductSqlUtilsTest {
 
     @Test
     fun testInsertOrUpdateProductShippingClassList() {
-        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        val shippingClassList = ProductTestUtils.generateProductShippingClassList(site.id)
         assertTrue(shippingClassList.isNotEmpty())
 
         // Insert product shipping class list
@@ -284,7 +285,7 @@ class ProductSqlUtilsTest {
 
     @Test
     fun testGetProductShippingClassListForSite() {
-        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        val shippingClassList = ProductTestUtils.generateProductShippingClassList(site.id)
         assertTrue(shippingClassList.isNotEmpty())
 
         // Insert product shipping class list
@@ -338,7 +339,7 @@ class ProductSqlUtilsTest {
 
     @Test
     fun testDeleteProductShippingListForSite() {
-        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        val shippingClassList = ProductTestUtils.generateProductShippingClassList(site.id)
 
         var rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(shippingClassList)
         assertEquals(shippingClassList.size, rowsAffected)
@@ -356,7 +357,7 @@ class ProductSqlUtilsTest {
 
     @Test
     fun testDeleteSiteDeletesProductShippingClassList() {
-        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        val shippingClassList = ProductTestUtils.generateProductShippingClassList(site.id)
         assertTrue(shippingClassList.isNotEmpty())
 
         val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(shippingClassList)

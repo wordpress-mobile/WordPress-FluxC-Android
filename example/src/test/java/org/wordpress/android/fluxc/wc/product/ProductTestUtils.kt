@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductCategoryApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
+import kotlin.random.Random
 
 object ProductTestUtils {
     fun generateSampleProduct(
@@ -54,6 +55,17 @@ object ProductTestUtils {
         }
     }
 
+    fun generateSampleVariations(number: Int, productId: Long, siteId: Int): List<WCProductVariationModel> {
+        return (0 until number).map {
+            generateSampleVariation(
+                remoteId = productId,
+                variationId = Random.nextLong(),
+                siteId = siteId,
+                stockQuantity = Random.nextDouble()
+            )
+        }
+    }
+
     fun generateSampleProductShippingClass(
         remoteId: Long = 1L,
         name: String = "",
@@ -82,15 +94,12 @@ object ProductTestUtils {
         }
     }
 
-    fun generateProductList(siteId: Int = 6): List<WCProductShippingClassModel> {
-        with(ArrayList<WCProductShippingClassModel>()) {
-            add(generateSampleProductShippingClass(1, siteId = siteId))
-            add(generateSampleProductShippingClass(2, siteId = siteId))
-            add(generateSampleProductShippingClass(3, siteId = siteId))
-            add(generateSampleProductShippingClass(4, siteId = siteId))
-            add(generateSampleProductShippingClass(5, siteId = siteId))
-            return this
-        }
+    fun generateProductShippingClassList(siteId: Int = 6) = List(5) {
+        generateSampleProductShippingClass(it + 1L, siteId = siteId)
+    }
+
+    fun generateProductList(siteId: Int = 6) = List(5) {
+        generateSampleProduct(it + 1L, siteId = siteId)
     }
 
     fun getProductReviewsFromJsonString(json: String, siteId: Int): List<WCProductReviewModel> {
@@ -109,6 +118,27 @@ object ProductTestUtils {
                 rating = it.rating
                 verified = it.verified
                 reviewerAvatarsJson = it.reviewer_avatar_urls.toString()
+            }
+        }
+    }
+
+    fun generateCategory(siteId: Int, remoteId: Long) =
+        WCProductCategoryModel().apply {
+            localSiteId = siteId
+            remoteCategoryId = remoteId
+            name = "Category $remoteId"
+            slug = "category$remoteId"
+            parent = 0L
+        }
+
+    fun generateCategoryList(siteId: Int): List<WCProductCategoryModel> {
+        return List(5) {
+            WCProductCategoryModel().apply {
+                localSiteId = siteId
+                remoteCategoryId = it.toLong()
+                name = "Category $it"
+                slug = "category$it"
+                parent = 0L
             }
         }
     }

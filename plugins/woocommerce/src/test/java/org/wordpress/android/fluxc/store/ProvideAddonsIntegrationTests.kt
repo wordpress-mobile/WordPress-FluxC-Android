@@ -72,7 +72,7 @@ class ProvideAddonsIntegrationTests {
         database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
                 .allowMainThreadQueries()
                 .build()
-        dao = database.addonsDao()
+        dao = database.addonsDao
         restClient = mock()
         coroutineEngine = CoroutineEngine(
                 context = Default,
@@ -349,6 +349,7 @@ class ProvideAddonsIntegrationTests {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `should map Checkbox add-on`() {
         runBlocking {
             whenever(restClient.fetchGlobalAddOnGroups(any())).thenReturn(

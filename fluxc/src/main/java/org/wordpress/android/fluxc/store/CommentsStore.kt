@@ -53,9 +53,9 @@ import org.wordpress.android.util.AppLog.T.COMMENTS
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LargeClass")
 @Singleton
-class CommentsStore
-@Inject constructor(
+class CommentsStore @Inject constructor(
     private val commentsRestClient: CommentsRestClient,
     private val commentsXMLRPCClient: CommentsXMLRPCClient,
     private val commentsDao: CommentsDao,
@@ -238,6 +238,7 @@ class CommentsStore
         }
     }
 
+    @Suppress("ComplexMethod", "ReturnCount")
     suspend fun deleteComment(
         site: SiteModel,
         remoteCommentId: Long,
@@ -739,6 +740,7 @@ class CommentsStore
         return this ?: 0
     }
 
+    @Suppress("LongMethod", "ReturnCount")
     private suspend fun removeCommentGaps(
         site: SiteModel?,
         commentsList: CommentEntityList?,

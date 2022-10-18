@@ -12,6 +12,7 @@ class WCCustomerMapperTest {
     val mapper = WCCustomerMapper()
 
     @Test
+    @Suppress("LongMethod")
     fun `mapper maps to correct customer model`() {
         // given
         val remoteId = 13L
@@ -102,6 +103,7 @@ class WCCustomerMapperTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `mapper maps to correct customer dto`() {
         // given
         val model = WCCustomerModel().apply {

@@ -9,7 +9,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCOrderShipmentTrackingModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
-    @Column var localOrderId = 0
+    @Column(name = "LOCAL_ORDER_ID") var orderId = 0L // The local db unique identifier for the parent order object
     @Column var remoteTrackingId = ""
     @Column var trackingNumber = ""
     @Column var trackingProvider = ""

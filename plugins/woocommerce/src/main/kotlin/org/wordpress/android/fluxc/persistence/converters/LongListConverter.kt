@@ -8,12 +8,15 @@ class LongListConverter {
     }
 
     @TypeConverter
-    fun listToString(value: List<Long>): String = value.joinToString(separator = SEPARATOR)
+    fun listToString(value: List<Long>?): String? =
+        value?.joinToString(separator = SEPARATOR)
 
     @TypeConverter
-    fun stringToList(value: String): List<Long> = if (value.isEmpty()) {
-        emptyList()
-    } else {
-        value.split(SEPARATOR).map(String::toLong)
+    fun stringToList(value: String?): List<Long>? = value?.let {
+        if (it.isEmpty()) {
+            emptyList()
+        } else {
+            it.split(SEPARATOR).map(String::toLong)
+        }
     }
 }

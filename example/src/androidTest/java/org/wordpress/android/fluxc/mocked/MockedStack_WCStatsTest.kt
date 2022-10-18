@@ -485,9 +485,9 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         // Make the same stats request, but this time pass force=true to force a network request
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchRevenueStats(
-                site = siteModel, granularity = StatsGranularity.DAYS,
-                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
-                perPage = 35, force = true
+            site = siteModel, granularity = StatsGranularity.DAYS,
+            startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+            perPage = 35, forceRefresh = true
         )
 
         val thirdRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)

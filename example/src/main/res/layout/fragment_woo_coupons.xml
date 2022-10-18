@@ -1,0 +1,80 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/activity_start_end_margin"
+    tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment"
+    tools:ignore="HardcodedText">
+
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp">
+
+        <Button
+            android:id="@+id/btnEnableCouponsFeature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Enable Coupons feature" />
+
+        <Button
+            android:id="@+id/btnFetchCoupons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Fetch Coupons" />
+
+        <Button
+            android:id="@+id/btnFetchSingleCoupon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Fetch single coupon" />
+
+        <Button
+            android:id="@+id/btnDeleteCoupon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Delete coupon" />
+
+        <Button
+            android:id="@+id/btnSearchCoupons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Search coupons" />
+
+        <Button
+            android:id="@+id/btnFetchCouponReport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Fetch Coupon Report" />
+
+        <Button
+            android:id="@+id/btnUpdateCoupon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Update Coupon" />
+
+        <Button
+            android:id="@+id/btnCreateCoupon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="Create Coupon" />
+    </LinearLayout>
+</ScrollView>

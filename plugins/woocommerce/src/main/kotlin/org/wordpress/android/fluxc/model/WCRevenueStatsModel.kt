@@ -29,6 +29,7 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
         this.id = id
     }
 
+    @Suppress("MemberNameEqualsClassName")
     class Interval {
         val interval: String? = null
         val subtotals: SubTotal? = null

@@ -4,7 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_day
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_month
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_week
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_year
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_day
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_month
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_week
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_year
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,7 +21,7 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
+import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
@@ -70,10 +77,17 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun launchProductLeaderboardsRequest(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchProductLeaderboards(it, unit) }
+                takeAsyncRequestWithValidSite {
+                    wcLeaderboardsStore.fetchTopPerformerProducts(
+                        it,
+                        unit,
+                        forceRefresh = false
+                    )
+                }
                         ?.model
                         ?.let { logLeaderboardResponse(it, unit) }
                         ?: prependToLog("Couldn't fetch Products Leaderboards.")
@@ -83,10 +97,11 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun launchProductLeaderboardsCacheRetrieval(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchCachedProductLeaderboards(it, unit) }
+                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchTopPerformerProducts(it, unit) }
                         ?.model
                         ?.let { logLeaderboardResponse(it, unit) }
                         ?: prependToLog("Couldn't fetch Products Leaderboards.")
@@ -96,14 +111,13 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun logLeaderboardResponse(model: List<WCTopPerformerProductModel>, unit: StatsGranularity) {
+    private fun logLeaderboardResponse(model: List<TopPerformerProductEntity>, unit: StatsGranularity) {
         model.forEach {
-            prependToLog("  Top Performer Product id: ${it.product.remoteProductId ?: "Product id not available"}")
-            prependToLog("  Top Performer Product name: ${it.product.name ?: "Product name not available"}")
+            prependToLog("  Top Performer Product id: ${it.productId ?: "Product id not available"}")
+            prependToLog("  Top Performer Product name: ${it.name ?: "Product name not available"}")
             prependToLog("  Top Performer currency: ${it.currency ?: "Currency not available"}")
             prependToLog("  Top Performer quantity: ${it.quantity ?: "Quantity not available"}")
             prependToLog("  Top Performer total: ${it.total ?: "total not available"}")
-            prependToLog("  Top Performer id: ${it.id ?: "ID not available"}")
             prependToLog("  --------- Product ---------")
         }
         prependToLog("========== Top Performers of the $unit =========")

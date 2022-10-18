@@ -31,6 +31,7 @@ class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(Ord
         }
     }
 
+    @Suppress("UseCheckOrError")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (viewType) {
             VIEW_TYPE_ORDER_ITEM -> WCOrderItemUIViewHolder(R.layout.list_item_woo_order, parent)
@@ -71,33 +72,23 @@ class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(Ord
 
 private val OrderListDiffItemCallback = object : DiffUtil.ItemCallback<WCOrderListItemUIType>() {
     override fun areItemsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean {
-        if (oldItem is SectionHeader && newItem is SectionHeader) {
-            return oldItem.title == newItem.title
+        return when {
+            oldItem is SectionHeader && newItem is SectionHeader -> oldItem.title == newItem.title
+            oldItem is LoadingItem && newItem is LoadingItem -> oldItem.orderId == newItem.orderId
+            oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem -> oldItem.orderId == newItem.orderId
+            oldItem is LoadingItem && newItem is WCOrderListUIItem -> oldItem.orderId == newItem.orderId
+            else -> false
         }
-        if (oldItem is LoadingItem && newItem is LoadingItem) {
-            return oldItem.remoteId == newItem.remoteId
-        }
-        if (oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem) {
-            return oldItem.remoteOrderId == newItem.remoteOrderId
-        }
-        if (oldItem is LoadingItem && newItem is WCOrderListUIItem) {
-            return oldItem.remoteId == newItem.remoteOrderId
-        }
-        return false
     }
 
     override fun areContentsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean {
-        if (oldItem is SectionHeader && newItem is SectionHeader) {
-            return oldItem.title == newItem.title
-        }
-        if (oldItem is LoadingItem && newItem is LoadingItem) {
-            return oldItem.remoteId == newItem.remoteId
-        }
-        if (oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem) {
+        return when {
+            oldItem is SectionHeader && newItem is SectionHeader -> oldItem.title == newItem.title
+            oldItem is LoadingItem && newItem is LoadingItem -> oldItem.orderId == newItem.orderId
             // AS is lying, it's not actually smart casting, so we have to do it :sigh:
-            return oldItem == newItem
+            oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem -> oldItem == newItem
+            else -> false
         }
-        return false
     }
 }
 

@@ -19,8 +19,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.comments.CommentsMapper
 import org.wordpress.android.fluxc.network.HTTPAuthManager
 import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequestBuilder
 import org.wordpress.android.fluxc.network.xmlrpc.comment.CommentsXMLRPCClient
@@ -36,11 +34,9 @@ import java.util.concurrent.CountDownLatch
 class CommentsXMLRPCClientTest {
     private lateinit var dispatcher: Dispatcher
     private lateinit var requestQueue: RequestQueue
-    private lateinit var accessToken: AccessToken
     private lateinit var userAgent: UserAgent
     private lateinit var httpAuthManager: HTTPAuthManager
     private lateinit var commentsMapper: CommentsMapper
-    private lateinit var wpComGsonRequestBuilder: WPComGsonRequestBuilder
     private lateinit var commentErrorUtilsWrapper: CommentErrorUtilsWrapper
     private lateinit var site: SiteModel
 
@@ -206,6 +202,7 @@ class CommentsXMLRPCClientTest {
     }
 
     @Test
+    @Suppress("MaxLineLength")
     fun `fetchComment returns fetched comment`() = test {
         mockedResponse = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -215,7 +212,7 @@ class CommentsXMLRPCClientTest {
                   <value>
                   <struct>
               <member><name>date_created_gmt</name><value><dateTime.iso8601>20210727T20:33:41</dateTime.iso8601></value></member>
-              <member><name>user_id</name><value><string>1</string></value></member>
+              <member><name>user_id</name><value><string>44</string></value></member>
               <member><name>comment_id</name><value><string>34</string></value></member>
               <member><name>parent</name><value><string>33</string></value></member>
               <member><name>status</name><value><string>approve</string></value></member>
@@ -352,7 +349,7 @@ class CommentsXMLRPCClientTest {
             id = 0,
             remoteCommentId = 34,
             remotePostId = 367,
-            remoteParentCommentId = 33,
+            authorId = 44,
             localSiteId = 0,
             remoteSiteId = 200,
             authorUrl = "",

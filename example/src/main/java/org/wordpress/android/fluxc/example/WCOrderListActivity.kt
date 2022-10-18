@@ -165,14 +165,14 @@ class WCOrderListActivity : AppCompatActivity() {
 
 sealed class WCOrderListItemIdentifier {
     class SectionHeaderIdentifier(val title: TimeGroup) : WCOrderListItemIdentifier()
-    class OrderIdentifier(val remoteId: RemoteId) : WCOrderListItemIdentifier()
+    class OrderIdentifier(val orderId: Long) : WCOrderListItemIdentifier()
 }
 
 sealed class WCOrderListItemUIType {
     class SectionHeader(val title: TimeGroup) : WCOrderListItemUIType()
-    class LoadingItem(val remoteId: RemoteId) : WCOrderListItemUIType()
+    class LoadingItem(val orderId: Long) : WCOrderListItemUIType()
     data class WCOrderListUIItem(
-        val remoteOrderId: RemoteId,
+        val orderId: Long,
         val orderNumber: String,
         val status: String,
         val orderName: String,
@@ -180,6 +180,7 @@ sealed class WCOrderListItemUIType {
         val dateCreated: String
     ) : WCOrderListItemUIType()
 
+    @Suppress("ComplexMethod")
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
@@ -187,9 +188,9 @@ sealed class WCOrderListItemUIType {
         return if (this is SectionHeader && other is SectionHeader) {
             this.title == other.title
         } else if (this is LoadingItem && other is LoadingItem) {
-            this.remoteId == other.remoteId
+            this.orderId == other.orderId
         } else if (this is WCOrderListUIItem && other is WCOrderListUIItem) {
-            this.remoteOrderId == other.remoteOrderId &&
+            this.orderId == other.orderId &&
                     this.status == other.status &&
                     this.dateCreated == other.dateCreated &&
                     this.orderNumber == other.orderNumber &&
@@ -214,6 +215,7 @@ enum class TimeGroup {
     GROUP_OLDER_MONTH;
 
     companion object {
+        @Suppress("MagicNumber")
         fun getTimeGroupForDate(date: Date): TimeGroup {
             val dateToday = Date()
             return when {
@@ -239,21 +241,21 @@ private class WCOrderListItemDataSource(
         listDescriptor: WCOrderListDescriptor,
         itemIdentifiers: List<WCOrderListItemIdentifier>
     ): List<WCOrderListItemUIType> {
-        val remoteItemIds = itemIdentifiers.mapNotNull { (it as? OrderIdentifier)?.remoteId }
+        val remoteItemIds = itemIdentifiers.mapNotNull { (it as? OrderIdentifier)?.orderId }
         val ordersMap = wcOrderStore.getOrdersForDescriptor(listDescriptor, remoteItemIds)
         // Fetch missing items
         fetcher.fetchOrders(
                 site = listDescriptor.site,
-                remoteItemIds = remoteItemIds.filter { !ordersMap.containsKey(it) }
+                orderIds = remoteItemIds.filter { !ordersMap.containsKey(it) }
         )
 
-        val mapSummary = { remoteOrderId: RemoteId ->
-            ordersMap[remoteOrderId].let { order ->
+        val mapSummary = { orderId: Long ->
+            ordersMap[orderId].let { order ->
                 if (order == null) {
-                    LoadingItem(remoteOrderId)
+                    LoadingItem(orderId)
                 } else {
                     WCOrderListUIItem(
-                            remoteOrderId = order.remoteOrderId,
+                            orderId = order.orderId,
                             orderNumber = order.number,
                             status = order.status,
                             orderName = "${order.billingFirstName} ${order.billingLastName}",
@@ -264,21 +266,25 @@ private class WCOrderListItemDataSource(
         }
         return itemIdentifiers.map { identifier ->
             when (identifier) {
-                is OrderIdentifier -> mapSummary(identifier.remoteId)
+                is OrderIdentifier -> mapSummary(identifier.orderId)
                 is SectionHeaderIdentifier -> SectionHeader(title = identifier.title)
             }
         }
     }
 
+    @Suppress("ComplexMethod")
     override fun getItemIdentifiers(
         listDescriptor: WCOrderListDescriptor,
-        remoteItemIds: List<RemoteId>,
+        itemIds: List<RemoteId>,
         isListFullyFetched: Boolean
     ): List<WCOrderListItemIdentifier> {
-        val orderSummaries = wcOrderStore.getOrderSummariesByRemoteOrderIds(listDescriptor.site, remoteItemIds)
-                .let { summariesByRemoteId ->
-                    remoteItemIds.mapNotNull { summariesByRemoteId[it] }
-                }
+        val orderSummaries = wcOrderStore.getOrderSummariesByRemoteOrderIds(
+                listDescriptor.site,
+                itemIds.map { it.value }
+        )
+        .let { summariesByRemoteId ->
+            itemIds.mapNotNull { summariesByRemoteId[it] }
+        }
 
         val listFuture = mutableListOf<OrderIdentifier>()
         val listToday = mutableListOf<OrderIdentifier>()
@@ -287,7 +293,7 @@ private class WCOrderListItemDataSource(
         val listWeek = mutableListOf<OrderIdentifier>()
         val listMonth = mutableListOf<OrderIdentifier>()
         val mapToRemoteOrderIdentifier = { summary: WCOrderSummaryModel ->
-            OrderIdentifier(RemoteId(summary.remoteOrderId))
+            OrderIdentifier(summary.orderId)
         }
         orderSummaries.forEach {
             // Default to today if the date cannot be parsed

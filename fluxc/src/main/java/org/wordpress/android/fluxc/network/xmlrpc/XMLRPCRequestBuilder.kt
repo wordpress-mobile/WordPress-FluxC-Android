@@ -1,10 +1,12 @@
 package org.wordpress.android.fluxc.network.xmlrpc
 
+import com.android.volley.Response.Listener
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest.XmlRpcErrorType
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequestBuilder.Response.Error
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequestBuilder.Response.Success
 import javax.inject.Inject
@@ -12,8 +14,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 
 @Singleton
-class XMLRPCRequestBuilder
-@Inject constructor() {
+class XMLRPCRequestBuilder @Inject constructor() {
     /**
      * Creates a new GET request.
      * @param url the request URL
@@ -22,6 +23,7 @@ class XMLRPCRequestBuilder
      * @param listener the success listener
      * @param errorListener the error listener
      */
+    @Suppress("LongParameterList", "SwallowedException")
     fun <T> buildGetRequest(
         url: String,
         method: XMLRPC,
@@ -30,16 +32,29 @@ class XMLRPCRequestBuilder
         listener: (T) -> Unit,
         errorListener: (BaseNetworkError) -> Unit
     ): XMLRPCRequest {
-        return XMLRPCRequest(url, method, params, { obj: Any? ->
-            if (obj == null) {
-                errorListener.invoke(BaseNetworkError(INVALID_RESPONSE))
-            }
-            try {
-                clazz.cast(obj)?.let { listener(it) }
-            } catch (e: ClassCastException) {
-                errorListener.invoke(BaseNetworkError(INVALID_RESPONSE))
-            }
-        }, errorListener)
+        return XMLRPCRequest(
+            url,
+            method,
+            params,
+            // **Do not** convert it to lambda! See https://youtrack.jetbrains.com/issue/KT-51868
+            @Suppress("RedundantSamConstructor")
+            Listener<Any> { obj: Any? ->
+                if (obj == null) {
+                    errorListener.invoke(BaseNetworkError(INVALID_RESPONSE))
+                }
+                try {
+                    clazz.cast(obj)?.let { listener(it) }
+                } catch (e: ClassCastException) {
+                    errorListener.invoke(
+                        BaseNetworkError(
+                            INVALID_RESPONSE,
+                            XmlRpcErrorType.UNABLE_TO_READ_SITE
+                        )
+                    )
+                }
+            },
+            errorListener
+        )
     }
 
     /**

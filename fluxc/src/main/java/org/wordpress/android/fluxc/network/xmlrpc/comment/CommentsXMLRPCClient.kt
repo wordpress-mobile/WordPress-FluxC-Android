@@ -22,7 +22,6 @@ import org.wordpress.android.fluxc.persistence.comments.CommentsDao.CommentEntit
 import org.wordpress.android.fluxc.store.CommentStore.CommentError
 import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.utils.CommentErrorUtilsWrapper
-import java.util.ArrayList
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -43,7 +42,7 @@ class CommentsXMLRPCClient @Inject constructor(
         offset: Int,
         status: CommentStatus
     ): CommentsApiPayload<CommentEntityList> {
-        val params: MutableList<Any> = ArrayList(4)
+        val params: MutableList<Any> = ArrayList()
 
         val commentParams = mutableMapOf<String, Any>(
                 "number" to number,
@@ -103,7 +102,7 @@ class CommentsXMLRPCClient @Inject constructor(
         comment: CommentEntity,
         commentParams: Map<String, Any?>
     ): CommentsApiPayload<CommentEntity> {
-        val params: MutableList<Any> = ArrayList(5)
+        val params: MutableList<Any> = ArrayList()
 
         params.add(site.selfHostedSiteId)
         params.add(site.username)
@@ -130,7 +129,7 @@ class CommentsXMLRPCClient @Inject constructor(
     }
 
     suspend fun fetchComment(site: SiteModel, remoteCommentId: Long): CommentsApiPayload<CommentEntity> {
-        val params: MutableList<Any> = ArrayList(4)
+        val params: MutableList<Any> = ArrayList()
 
         params.add(site.selfHostedSiteId)
         params.add(site.username)
@@ -156,7 +155,7 @@ class CommentsXMLRPCClient @Inject constructor(
     }
 
     suspend fun deleteComment(site: SiteModel, remoteCommentId: Long): CommentsApiPayload<CommentEntity?> {
-        val params: MutableList<Any> = ArrayList(4)
+        val params: MutableList<Any> = ArrayList()
 
         params.add(site.selfHostedSiteId)
         params.add(site.username)
@@ -216,8 +215,8 @@ class CommentsXMLRPCClient @Inject constructor(
                 "content" to comment.content
         )
 
-        if (comment.remoteParentCommentId != 0L) {
-            commentParams["comment_parent"] = comment.remoteParentCommentId
+        if (comment.parentId != 0L) {
+            commentParams["comment_parent"] = comment.parentId
         }
         if (comment.authorName != null) {
             commentParams["author"] = comment.authorName
@@ -229,7 +228,7 @@ class CommentsXMLRPCClient @Inject constructor(
             commentParams["author_email"] = comment.authorEmail
         }
 
-        return newComment(site, remotePostId, comment, comment.remoteParentCommentId, commentParams)
+        return newComment(site, remotePostId, comment, comment.parentId, commentParams)
     }
 
     private suspend fun newComment(
@@ -239,7 +238,7 @@ class CommentsXMLRPCClient @Inject constructor(
         parentId: Long,
         commentParams: Map<String, Any?>
     ): CommentsApiPayload<CommentEntity> {
-        val params: MutableList<Any> = ArrayList(5)
+        val params: MutableList<Any> = ArrayList()
 
         params.add(site.selfHostedSiteId)
         params.add(site.username)
@@ -259,12 +258,12 @@ class CommentsXMLRPCClient @Inject constructor(
             is Success -> {
                 if (response.data is Int) {
                     val newComment = comment.copy(
-                            remoteParentCommentId = parentId,
+                            parentId = parentId,
                             remoteCommentId = response.data.toLong()
                     )
                     CommentsApiPayload(newComment)
                 } else {
-                    val newComment = comment.copy(remoteParentCommentId = parentId)
+                    val newComment = comment.copy(parentId = parentId)
                     CommentsApiPayload(CommentError(GENERIC_ERROR, ""), newComment)
                 }
             }

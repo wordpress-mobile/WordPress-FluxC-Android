@@ -137,7 +137,7 @@ class SiteStoreTest {
         val siteA = SiteModel()
         val siteB = SiteModel()
         sitesModel.sites = listOf(siteA, siteB)
-        whenever(siteRestClient.fetchSites(payload.filters)).thenReturn(sitesModel)
+        whenever(siteRestClient.fetchSites(payload.filters, false)).thenReturn(sitesModel)
         whenever(siteSqlUtils.insertOrUpdateSite(siteA)).thenReturn(1)
         whenever(siteSqlUtils.insertOrUpdateSite(siteB)).thenReturn(1)
 
@@ -156,7 +156,7 @@ class SiteStoreTest {
         val payload = FetchSitesPayload(listOf(WPCOM))
         val sitesModel = SitesModel()
         sitesModel.error = BaseNetworkError(PARSE_ERROR)
-        whenever(siteRestClient.fetchSites(payload.filters)).thenReturn(sitesModel)
+        whenever(siteRestClient.fetchSites(payload.filters, false)).thenReturn(sitesModel)
 
         val onSiteChanged = siteStore.fetchSites(payload)
 
@@ -168,13 +168,15 @@ class SiteStoreTest {
     @Test
     fun `creates a new site`() = test {
         val dryRun = false
-        val payload = NewSitePayload("New site", "CZ", PUBLIC, dryRun)
+        val payload = NewSitePayload("New site", "CZ", "Europe/London", PUBLIC, dryRun)
         val newSiteRemoteId: Long = 123
-        val response = NewSiteResponsePayload(newSiteRemoteId, dryRun)
+        val response = NewSiteResponsePayload(newSiteRemoteId, dryRun = dryRun)
         whenever(
                 siteRestClient.newSite(
                         payload.siteName,
+                        null,
                         payload.language,
+                        payload.timeZoneId,
                         payload.visibility,
                         null,
                         null,
@@ -191,14 +193,16 @@ class SiteStoreTest {
     @Test
     fun `fails to create a new site`() = test {
         val dryRun = false
-        val payload = NewSitePayload("New site", "CZ", PUBLIC, dryRun)
+        val payload = NewSitePayload("New site", "CZ", "Europe/London", PUBLIC, dryRun)
         val response = NewSiteResponsePayload()
         val newSiteError = NewSiteError(SITE_NAME_INVALID, "Site name invalid")
         response.error = newSiteError
         whenever(
                 siteRestClient.newSite(
                         payload.siteName,
+                        null,
                         payload.language,
+                        payload.timeZoneId,
                         payload.visibility,
                         null,
                         null,

@@ -140,11 +140,18 @@
             android:text="Update latest order billing address" />
 
         <Button
-            android:id="@+id/create_quick_order"
+            android:id="@+id/create_simple_payment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Create quick order" />
+            android:text="Create simple payment" />
+
+        <Button
+            android:id="@+id/update_simple_payment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update simple payment" />
 
         <Button
             android:id="@+id/create_order"
@@ -152,5 +159,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Create Order" />
+
+        <Button
+            android:id="@+id/delete_order"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Delete an order" />
     </LinearLayout>
 </ScrollView>

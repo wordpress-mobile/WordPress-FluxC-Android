@@ -10,10 +10,12 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResul
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
+import org.wordpress.android.fluxc.store.WCOrderStore
 import javax.inject.Inject
 
 class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     @Inject internal lateinit var store: WCInPersonPaymentsStore
+    @Inject internal lateinit var orderStore: WCOrderStore
 
     override val testSite: TestSite = TestSite.Specified(siteId = BuildConfig.TEST_WPCOM_SITE_ID_WOO_JP_WCPAY.toLong())
 
@@ -32,7 +34,7 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
 
     @Test
     fun givenSiteHasWCPayWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
-        val result = store.fetchConnectionToken(sSite)
+        val result = store.fetchConnectionToken(WOOCOMMERCE_PAYMENTS, sSite)
 
         assertTrue(result.model?.token?.isNotEmpty() == true)
     }
@@ -52,28 +54,8 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun givenSiteHasWCPayAndOrderWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-                sSite,
-                17L
-        )
-
-        assertEquals("cus_JyzaCUE61Qmy8y", result.model?.customerId)
-    }
-
-    @Test
-    fun givenSiteHasWCPayAndWrongOrderIdWhenCreateCustomerByOrderIdCustomerIdReturned() = runBlocking {
-        val result = store.createCustomerByOrderId(
-                sSite,
-                1L
-        )
-
-        assertTrue(result.isError)
-    }
-
-    @Test
     fun givenSiteHasWCPayAndStripeAddressThenLocationDataReturned() = runBlocking {
-        val result = store.getStoreLocationForSite(sSite)
+        val result = store.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, sSite)
 
         assertFalse(result.isError)
         assertEquals("tml_EUZ4bQQTxLWMq2", result.locationId)
@@ -84,5 +66,15 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
         assertEquals("71", result.address?.line2)
         assertEquals("94122", result.address?.postalCode)
         assertEquals("CA", result.address?.state)
+    }
+
+    @Test
+    fun givenSiteHasWCPayFetchingChargeByIdThenChargeReturned() = runBlocking {
+        val chargeId = "ch_3KOLxm2HswaZkMX319bDtsay"
+        val result = store.fetchPaymentCharge(WOOCOMMERCE_PAYMENTS, sSite, chargeId)
+
+        assertFalse(result.isError)
+        assertEquals("9969", result.asWooResult().model?.paymentMethodDetails?.cardDetails?.last4)
+        assertEquals(4500, result.asWooResult().model?.amount)
     }
 }

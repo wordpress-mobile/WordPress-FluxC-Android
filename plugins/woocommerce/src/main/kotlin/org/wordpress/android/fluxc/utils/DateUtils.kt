@@ -12,6 +12,14 @@ object DateUtils {
     private const val DATE_TIME_FORMAT_START = "yyyy-MM-dd'T'00:00:00"
     private const val DATE_TIME_FORMAT_END = "yyyy-MM-dd'T'23:59:59"
 
+    private const val ONE_WEEK_IN_DAYS = 7
+    private const val ONE_DAY_IN_HOURS = 24
+    private const val ONE_HOUR_IN_MINUTES = 60
+    private const val ONE_MINUTE_IN_SECONDS = 60
+    private const val ONE_SECOND_IN_MILLISECONDS = 1000
+    private const val ONE_DAY_IN_MILLIS =
+        ONE_DAY_IN_HOURS * ONE_HOUR_IN_MINUTES * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS
+
     /**
      * Given a [SiteModel] and a [String] compatible with [SimpleDateFormat]
      * and a {@param dateString}
@@ -94,13 +102,14 @@ object DateUtils {
      * The end date time is set to 23:59:59
      *
      */
+    @Suppress("MagicNumber", "ForbiddenComment")
     fun getEndDateCalendar(endDate: Date, locale: Locale = Locale.getDefault()): Calendar {
         val cal2 = Calendar.getInstance(locale)
         cal2.time = endDate
-        cal2.set(Calendar.HOUR_OF_DAY, 23)
-        cal2.set(Calendar.MINUTE, 59)
-        cal2.set(Calendar.SECOND, 59)
-        cal2.set(Calendar.MILLISECOND, 59)
+        cal2.set(Calendar.HOUR_OF_DAY, ONE_DAY_IN_HOURS - 1)
+        cal2.set(Calendar.MINUTE, ONE_HOUR_IN_MINUTES - 1)
+        cal2.set(Calendar.SECOND, ONE_MINUTE_IN_SECONDS - 1)
+        cal2.set(Calendar.MILLISECOND, 59) // TODO: (@anitaa) Why '59' instead of '999'?
         return cal2
     }
 
@@ -116,7 +125,7 @@ object DateUtils {
         val millis2 = endDateCalendar.timeInMillis
 
         val diff = Math.abs(millis2 - millis1)
-        return Math.ceil(diff / (24 * 60 * 60 * 1000).toDouble()).toLong()
+        return Math.ceil(diff / ONE_DAY_IN_MILLIS.toDouble()).toLong()
     }
 
     /**
@@ -144,7 +153,7 @@ object DateUtils {
         }
 
         val diffInDays = getQuantityInDays(startDateCalendar, endDateCalendar).toDouble()
-        return Math.ceil(diffInDays / 7).toLong()
+        return Math.ceil(diffInDays / ONE_WEEK_IN_DAYS).toLong()
     }
 
     /**
@@ -237,7 +246,7 @@ object DateUtils {
      *
      */
     fun getFormattedDateString(year: Int, month: Int, dayOfMonth: Int): String {
-        return String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)
+        return String.format(Locale.US, "%d-%02d-%02d", year, (month + 1), dayOfMonth)
     }
 
     /**
@@ -346,9 +355,9 @@ object DateUtils {
      * Returns (#Calendar.DAY_OF_WEEK) constant for last day of week.
      */
     fun getConstantForLastDayOfWeek(calendar: Calendar): Int {
-        val lastDay = calendar.firstDayOfWeek + 6
-        return if (lastDay > 7) {
-            lastDay % 8 + 1
+        val lastDay = calendar.firstDayOfWeek + (ONE_WEEK_IN_DAYS - 1)
+        return if (lastDay > ONE_WEEK_IN_DAYS) {
+            lastDay % (ONE_WEEK_IN_DAYS + 1) + 1
         } else {
             lastDay
         }

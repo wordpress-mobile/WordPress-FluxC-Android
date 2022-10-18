@@ -54,6 +54,7 @@ class NotificationsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_notifications, container, false)
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -156,8 +157,8 @@ class NotificationsFragment : Fragment() {
 
         notifs_update_first.setOnClickListener {
             selectedSite?.let { site ->
-                notificationStore.getNotificationsForSite(site).firstOrNull()?.let { note ->
-                    note.read = !note.read
+                notificationStore.getNotificationsForSite(site).firstOrNull()?.let {
+                    val note = it.copy(read = !it.read)
                     prependToLog("Updating notification with remoteNoteId " +
                             "of ${note.remoteNoteId} to [read = ${note.read}]\n")
                     dispatcher.dispatch(NotificationActionBuilder.newUpdateNotificationAction(note))

@@ -23,7 +23,7 @@ data class WCPaymentAccountResult(
      * See https://stripe.com/docs/statement-descriptors
      */
     @SerializedName("statement_descriptor")
-    val statementDescriptor: String,
+    val statementDescriptor: String?,
     @SerializedName("store_currencies")
     val storeCurrencies: StoreCurrencies,
 

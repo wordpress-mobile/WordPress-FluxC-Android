@@ -49,6 +49,20 @@
             android:text="Search Products"/>
 
         <Button
+            android:id="@+id/search_products_sku"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Search Products by SKU"/>
+
+        <Button
+            android:id="@+id/fetch_specific_products"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch specific products"/>
+
+        <Button
             android:id="@+id/fetch_product_variations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -91,6 +105,13 @@
             android:text="Fetch Product Review by ID"/>
 
         <Button
+            android:id="@+id/update_review_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product Review Status" />
+
+        <Button
             android:id="@+id/fetch_product_shipping_class"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,6 +138,13 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch Product Categories"/>
+
+        <Button
+            android:id="@+id/observe_product_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Observe Product Categories"/>
 
         <Button
             android:id="@+id/load_more_product_categories"
@@ -194,5 +222,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Delete product"/>
+
+        <Button
+            android:id="@+id/batch_update_variations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Batch update variations"/>
     </LinearLayout>
 </ScrollView>

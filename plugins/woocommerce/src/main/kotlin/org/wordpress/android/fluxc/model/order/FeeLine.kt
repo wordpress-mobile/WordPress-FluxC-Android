@@ -1,15 +1,33 @@
 package org.wordpress.android.fluxc.model.order
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.utils.NullStringJsonAdapter
 
 /**
- * Represents a fee line
- * We are reading only the name and the total, as the tax is already included in the order totalTax
+ * Represents a fee line.
  */
 class FeeLine {
+    @SerializedName("id")
+    var id: Long? = null
+
     @SerializedName("name")
-    val name: String? = null
+    @JsonAdapter(NullStringJsonAdapter::class, nullSafe = false)
+    var name: String? = null
 
     @SerializedName("total")
-    val total: String? = null
+    var total: String? = null
+
+    @SerializedName("total_tax")
+    var totalTax: String? = null
+
+    @SerializedName("tax_status")
+    var taxStatus: FeeLineTaxStatus? = null
+}
+
+enum class FeeLineTaxStatus(val value: String) {
+    @SerializedName("taxable")
+    Taxable("taxable"),
+    @SerializedName("none")
+    None("none")
 }

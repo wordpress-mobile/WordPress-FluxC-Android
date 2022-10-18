@@ -96,7 +96,27 @@ public class PluginSqlUtils {
         return result.isEmpty() ? null : result.get(0);
     }
 
-    public static @Nullable WPOrgPluginModel getWPOrgPluginBySlug(String slug) {
+    public static SitePluginModel getSitePluginByName(@NonNull SiteModel site, String pluginName) {
+        List<SitePluginModel> result = WellSql.select(SitePluginModel.class)
+                .where()
+                .equals(SitePluginModelTable.NAME, pluginName)
+                .equals(SitePluginModelTable.LOCAL_SITE_ID, site.getId())
+                .endWhere()
+                .getAsModel();
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    public static List<SitePluginModel> getSitePluginByNames(@NonNull SiteModel site, List<String> pluginNames) {
+        return WellSql.select(SitePluginModel.class)
+            .where()
+            .isIn(SitePluginModelTable.NAME, pluginNames)
+            .equals(SitePluginModelTable.LOCAL_SITE_ID, site.getId())
+            .endWhere()
+            .getAsModel();
+    }
+
+    public static @Nullable
+    WPOrgPluginModel getWPOrgPluginBySlug(String slug) {
         List<WPOrgPluginModel> result = WellSql.select(WPOrgPluginModel.class)
                 .where().equals(WPOrgPluginModelTable.SLUG, slug)
                 .endWhere().getAsModel();

@@ -1,8 +1,12 @@
 package org.wordpress.android.fluxc.wc.product
 
+import com.google.gson.JsonObject
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -16,21 +20,33 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.AccountModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
+import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.utils.SiteTestUtils
+import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -56,6 +72,7 @@ class WCProductStoreTest {
                 listOf(
                         WCProductModel::class.java,
                         WCProductVariationModel::class.java,
+                        WCProductCategoryModel::class.java,
                         WCProductReviewModel::class.java,
                         SiteModel::class.java,
                         AccountModel::class.java
@@ -139,18 +156,15 @@ class WCProductStoreTest {
     }
 
     @Test
-    fun testUpdateVariation() {
+    fun testUpdateVariation() = runBlocking {
         val variationModel = ProductTestUtils.generateSampleVariation(42, 24).apply {
             description = "test description"
         }
         val site = SiteModel().apply { id = variationModel.localSiteId }
-        ProductSqlUtils.insertOrUpdateProductVariation(variationModel)
+        whenever(productRestClient.updateVariation(site, null, variationModel))
+            .thenReturn(RemoteUpdateVariationPayload(site, variationModel))
 
-        // Simulate incoming action with updated product model
-        val payload = RemoteUpdateVariationPayload(site, variationModel.apply {
-            description = "Updated description"
-        })
-        productStore.onAction(WCProductActionBuilder.newUpdatedVariationAction(payload))
+        productStore.updateVariation(UpdateVariationPayload(site, variationModel))
 
         with(productStore.getVariationByRemoteId(
                 site,
@@ -271,6 +285,57 @@ class WCProductStoreTest {
     }
 
     @Test
+    fun `test that product insert emits a flow event`() = test {
+        // given
+        val productModel = ProductTestUtils.generateSampleProduct(remoteId = 0).apply {
+            name = "test new product"
+            description = "test new description"
+        }
+        val productList = ProductTestUtils.generateProductList()
+        ProductSqlUtils.insertOrUpdateProducts(productList)
+        val site = SiteModel().apply { id = productModel.localSiteId }
+
+        var observedProducts = productStore.observeProducts(site).first()
+        assertThat(observedProducts).isEqualTo(productList)
+
+        // when
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+        observedProducts = productStore.observeProducts(site).first()
+
+        // then
+        assertThat(observedProducts).isEqualTo(productList + productModel)
+    }
+
+    @Test
+    fun `test that variation insert emits a flow event`() = test {
+        // given
+        val variation = ProductTestUtils.generateSampleVariation(
+            remoteId = 0,
+            variationId = 1
+        ).apply {
+            description = "test new description"
+        }
+        val site = SiteModel().apply { id = variation.localSiteId }
+        val variations = ProductTestUtils.generateSampleVariations(
+            number = 5,
+            productId = variation.remoteProductId,
+            siteId = site.id
+        )
+        ProductSqlUtils.insertOrUpdateProductVariations(variations)
+
+        var observedVariations = productStore.observeVariations(site, variation.remoteProductId)
+            .first()
+        assertThat(observedVariations).isEqualTo(variations)
+
+        // when
+        ProductSqlUtils.insertOrUpdateProductVariation(variation)
+        observedVariations = productStore.observeVariations(site, variation.remoteProductId).first()
+
+        // then
+        assertThat(observedVariations).isEqualTo(variations + variation)
+    }
+
+    @Test
     fun `given product review exists, when fetch product review, then local database updated`() = runBlocking {
         val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
         val productModel = ProductTestUtils.generateSampleProduct(remoteId = 1).apply {
@@ -290,5 +355,237 @@ class WCProductStoreTest {
 
         assertThat(productStore.getProductReviewByRemoteId(site.id, reviewModel.remoteProductReviewId)).isNotNull
         Unit
+    }
+
+    @Test
+    fun `batch variations update should return positive result on successful backend request`() =
+        runBlocking {
+            // given
+            val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
+            val site = SiteModel().apply { id = product.localSiteId }
+            val variations = ProductTestUtils.generateSampleVariations(
+                number = 64,
+                productId = product.remoteProductId,
+                siteId = site.id
+            )
+
+            // when
+            val variationsIds = variations.map { it.remoteVariationId }
+            val variationsUpdatePayload = BatchUpdateVariationsPayload.Builder(
+                site,
+                product.remoteProductId,
+                variationsIds
+            ).build()
+            val response = BatchProductVariationsUpdateApiResponse().apply {
+                updatedVariations = emptyList()
+            }
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(response)
+            val result = productStore.batchUpdateVariations(variationsUpdatePayload)
+
+            // then
+            assertThat(result.isError).isFalse
+            assertThat(result.model).isNotNull
+            Unit
+        }
+
+    @Test
+    fun `batch variations update should return negative result on failed backend request`() =
+        runBlocking {
+            // given
+            val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
+            val site = SiteModel().apply { id = product.localSiteId }
+            val variations = ProductTestUtils.generateSampleVariations(
+                number = 64,
+                productId = product.remoteProductId,
+                siteId = site.id
+            )
+
+            // when
+            val variationsIds = variations.map { it.remoteVariationId }
+            val variationsUpdatePayload =
+                BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variationsIds)
+                    .build()
+            val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(errorResponse)
+            val result = productStore.batchUpdateVariations(variationsUpdatePayload)
+
+            // then
+            assertThat(result.isError).isTrue
+            Unit
+        }
+
+    @Test
+    fun `batch variations update should update variations locally after successful backend request`() =
+        runBlocking {
+            // given
+            val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
+            ProductSqlUtils.insertOrUpdateProduct(product)
+            val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
+            val variations = ProductTestUtils.generateSampleVariations(
+                number = 64,
+                productId = product.remoteProductId,
+                siteId = site.id
+            )
+            ProductSqlUtils.insertOrUpdateProductVariations(variations)
+
+            // when
+            val variationsIds = variations.map { it.remoteVariationId }
+            val newRegularPrice = "1.234 💰"
+            val newSalePrice = "0.234 💰"
+            val variationsUpdatePayload =
+                BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variationsIds)
+                    .regularPrice(newRegularPrice)
+                    .salePrice(newSalePrice)
+                    .build()
+            val variationsReturnedFromBackend = variations.map {
+                ProductVariationApiResponse().apply {
+                    id = it.remoteVariationId
+                    regular_price = newRegularPrice
+                    sale_price = newSalePrice
+                }
+            }
+            val response = BatchProductVariationsUpdateApiResponse().apply {
+                updatedVariations = variationsReturnedFromBackend
+            }
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(response)
+            val result = productStore.batchUpdateVariations(variationsUpdatePayload)
+
+            // then
+            assertThat(result.isError).isFalse
+            assertThat(result.model).isNotNull
+            with(ProductSqlUtils.getVariationsForProduct(site, product.remoteProductId)) {
+                forEach { variation ->
+                    assertThat(variation.regularPrice).isEqualTo(newRegularPrice)
+                    assertThat(variation.salePrice).isEqualTo(newSalePrice)
+                }
+            }
+            Unit
+        }
+
+    @Test
+    fun `batch variations update should not update variations locally after failed backend request`() =
+        runBlocking {
+            // given
+            val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
+            ProductSqlUtils.insertOrUpdateProduct(product)
+            val site = SiteTestUtils.insertTestAccountAndSiteIntoDb()
+            val variations = ProductTestUtils.generateSampleVariations(
+                number = 64,
+                productId = product.remoteProductId,
+                siteId = site.id
+            )
+            ProductSqlUtils.insertOrUpdateProductVariations(variations)
+
+            // when
+            val variationsIds = variations.map { it.remoteVariationId }
+            val newRegularPrice = "1.234 💰"
+            val newSalePrice = "0.234 💰"
+            val variationsUpdatePayload =
+                BatchUpdateVariationsPayload.Builder(site, product.remoteProductId, variationsIds)
+                    .regularPrice(newRegularPrice)
+                    .salePrice(newSalePrice)
+                    .build()
+            val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ) doReturn WooPayload(errorResponse)
+            val result = productStore.batchUpdateVariations(variationsUpdatePayload)
+
+            // then
+            assertThat(result.isError).isTrue
+            with(ProductSqlUtils.getVariationsForProduct(site, product.remoteProductId)) {
+                forEach { variation ->
+                    assertThat(variation.regularPrice).isNotEqualTo(newRegularPrice)
+                    assertThat(variation.salePrice).isNotEqualTo(newSalePrice)
+                }
+            }
+            Unit
+        }
+
+    @Test
+    fun `BatchUpdateVariationsPayload_Builder should produce correct variations modifications map`() {
+        // given
+        val product = ProductTestUtils.generateSampleProduct(Random.nextLong())
+        val site = SiteModel().apply { id = 23 }
+        val variations = ProductTestUtils.generateSampleVariations(
+            number = 64,
+            productId = product.remoteProductId,
+            siteId = site.id
+        )
+        val builder = BatchUpdateVariationsPayload.Builder(
+            site,
+            product.remoteProductId,
+            variations.map { it.remoteVariationId }
+        )
+
+        val modifiedRegularPrice = "11234.234"
+        val modifiedSalePrice = "123,2.4"
+        val modifiedStartOfSale = "tomorrow"
+        val modifiedEndOfSale = "next week"
+        val modifiedStockQuantity = 1234
+        val modifiedStockStatus = CoreProductStockStatus.IN_STOCK
+        val modifiedWeight = "1234 kg"
+        val modifiedWidth = "5"
+        val modifiedHeight = "10"
+        val modifiedLength = "15"
+        val modifiedShippingClassId = "1234"
+        val modifiedShippingClassSlug = "DHL"
+
+        // when
+        builder.regularPrice(modifiedRegularPrice)
+            .salePrice(modifiedSalePrice)
+            .startOfSale(modifiedStartOfSale)
+            .endOfSale(modifiedEndOfSale)
+            .stockQuantity(modifiedStockQuantity)
+            .stockStatus(modifiedStockStatus)
+            .weight(modifiedWeight)
+            .dimensions(length = modifiedLength, width = modifiedWidth, height = modifiedHeight)
+            .shippingClassId(modifiedShippingClassId)
+            .shippingClassSlug(modifiedShippingClassSlug)
+        val payload = builder.build()
+
+        // then
+        with(payload.modifiedProperties) {
+            assertThat(get("regular_price")).isEqualTo(modifiedRegularPrice)
+            assertThat(get("sale_price")).isEqualTo(modifiedSalePrice)
+            assertThat(get("date_on_sale_from")).isEqualTo(modifiedStartOfSale)
+            assertThat(get("date_on_sale_to")).isEqualTo(modifiedEndOfSale)
+            assertThat(get("stock_quantity")).isEqualTo(modifiedStockQuantity)
+            assertThat(get("stock_status")).isEqualTo(modifiedStockStatus)
+            assertThat(get("weight")).isEqualTo(modifiedWeight)
+            with(get("dimensions") as JsonObject) {
+                assertThat(get("length").asString).isEqualTo(modifiedLength)
+                assertThat(get("height").asString).isEqualTo(modifiedHeight)
+                assertThat(get("width").asString).isEqualTo(modifiedWidth)
+            }
+            assertThat(get("shipping_class_id")).isEqualTo(modifiedShippingClassId)
+            assertThat(get("shipping_class")).isEqualTo(modifiedShippingClassSlug)
+        }
     }
 }

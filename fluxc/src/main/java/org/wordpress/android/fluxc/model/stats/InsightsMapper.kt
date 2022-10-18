@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.LatestPostI
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.MostPopularRestClient.MostPopularResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.PostingActivityRestClient.PostingActivityResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.PublicizeRestClient.PublicizeResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.SummaryRestClient.SummaryResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.TagsRestClient.TagsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.TagsRestClient.TagsResponse.TagsGroup.TagResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.TodayInsightsRestClient.VisitResponse
@@ -38,8 +39,9 @@ private const val REBLOGS = "reblogs"
 private const val COMMENTS = "comments"
 private const val POSTS = "posts"
 
-class InsightsMapper
-@Inject constructor(val statsUtils: StatsUtils) {
+private const val MILLIS = 1000
+
+class InsightsMapper @Inject constructor(val statsUtils: StatsUtils) {
     fun map(response: AllTimeResponse, site: SiteModel): InsightsAllTimeModel {
         val stats = response.stats
         return InsightsAllTimeModel(
@@ -79,16 +81,19 @@ class InsightsMapper
         return yearInsightsResponse?.let { YearsInsightsModel(it) }
     }
 
+    @Suppress("ComplexCondition")
     fun map(
         postResponse: PostResponse,
         postStatsResponse: PostStatsResponse,
         site: SiteModel
     ): InsightsLatestPostModel {
-        val daysViews = if (postStatsResponse.fields != null &&
-                postStatsResponse.data != null &&
-                postStatsResponse.fields.size > 1 &&
-                postStatsResponse.fields[0] == "period" &&
-                postStatsResponse.fields[1] == "views") {
+        val daysViews = if (
+            postStatsResponse.fields != null &&
+            postStatsResponse.data != null &&
+            postStatsResponse.fields.size > 1 &&
+            postStatsResponse.fields[0] == "period" &&
+            postStatsResponse.fields[1] == "views"
+        ) {
             postStatsResponse.data.map { list -> list[0] to list[1].toInt() }
         } else {
             listOf()
@@ -96,15 +101,16 @@ class InsightsMapper
         val viewsCount = postStatsResponse.views
         val commentCount = postResponse.discussion?.commentCount ?: 0
         return InsightsLatestPostModel(
-                site.siteId,
-                postResponse.title ?: "",
-                postResponse.url ?: "",
-                postResponse.date ?: Date(0),
-                postResponse.id,
-                viewsCount ?: 0,
-                commentCount,
-                postResponse.likeCount ?: 0,
-                daysViews
+            site.siteId,
+            postResponse.title ?: "",
+            postResponse.url ?: "",
+            postResponse.date ?: Date(0),
+            postResponse.id,
+            viewsCount ?: 0,
+            commentCount,
+            postResponse.likeCount ?: 0,
+            daysViews,
+            postResponse.featuredImage ?: ""
         )
     }
 
@@ -175,6 +181,7 @@ class InsightsMapper
             }
     }
 
+    @Suppress("ComplexMethod", "ComplexCondition")
     fun map(response: CommentsResponse, cacheMode: LimitMode): CommentsModel {
         val authors = response.authors?.let {
             if (cacheMode is LimitMode.Top) {
@@ -184,7 +191,12 @@ class InsightsMapper
             }
         }
         ?.mapNotNull {
-            if (it.name != null && it.comments != null && it.link != null && it.gravatar != null) {
+            if (
+                it.name != null &&
+                it.comments != null &&
+                it.link != null &&
+                it.gravatar != null
+            ) {
                 CommentsModel.Author(it.name, it.comments, it.link, it.gravatar)
             } else {
                 AppLog.e(STATS, "CommentsResponse.authors: Non-null field is coming as null from API")
@@ -199,7 +211,12 @@ class InsightsMapper
             }
         }
         ?.mapNotNull {
-            if (it.id != null && it.name != null && it.comments != null && it.link != null) {
+            if (
+                it.id != null &&
+                it.name != null &&
+                it.comments != null &&
+                it.link != null
+            ) {
                 CommentsModel.Post(it.id, it.name, it.comments, it.link)
             } else {
                 AppLog.e(STATS, "CommentsResponse.posts: Non-null field is coming as null from API")
@@ -210,6 +227,12 @@ class InsightsMapper
         val hasMorePosts = (response.posts != null && cacheMode is Top && response.posts.size > cacheMode.limit)
         return CommentsModel(posts ?: listOf(), authors ?: listOf(), hasMorePosts, hasMoreAuthors)
     }
+
+    fun map(response: SummaryResponse) = SummaryModel(
+        response.likes ?: 0,
+        response.comments ?: 0,
+        response.followers ?: 0
+    )
 
     fun map(response: TagsResponse, cacheMode: LimitMode): TagsModel {
         return TagsModel(response.tags.let {
@@ -251,6 +274,7 @@ class InsightsMapper
         )
     }
 
+    @Suppress("LongMethod")
     fun map(response: PostingActivityResponse, startDay: Day, endDay: Day): PostingActivityModel {
         if (response.streak == null) {
             AppLog.e(STATS, "PostingActivityResponse: Mandatory field streak is null")
@@ -317,7 +341,7 @@ class InsightsMapper
 
     private fun toDay(timeStamp: Long): Day {
         val calendar = Calendar.getInstance()
-        calendar.timeInMillis = timeStamp * 1000
+        calendar.timeInMillis = timeStamp * MILLIS
         return Day(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
     }
 }

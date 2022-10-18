@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundFeeLine
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -46,6 +47,7 @@ class RefundRestClient @Inject constructor(
         return createRefund(site, orderId, params)
     }
 
+    @Suppress("LongParameterList")
     suspend fun createRefundByItems(
         site: SiteModel,
         orderId: Long,
@@ -146,6 +148,7 @@ class RefundRestClient @Inject constructor(
         @SerializedName("reason") val reason: String?,
         @SerializedName("refunded_payment") val refundedPayment: Boolean?,
         @SerializedName("line_items") val items: List<LineItem>?,
-        @SerializedName("shipping_lines") val shippingLineItems: List<WCRefundShippingLine>?
+        @SerializedName("shipping_lines") val shippingLineItems: List<WCRefundShippingLine>?,
+        @SerializedName("fee_lines") val feeLineItems: List<WCRefundFeeLine>?
     )
 }

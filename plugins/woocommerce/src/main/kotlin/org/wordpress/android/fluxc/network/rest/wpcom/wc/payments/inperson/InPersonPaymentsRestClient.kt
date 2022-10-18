@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentError
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentResponsePayload
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
-import org.wordpress.android.fluxc.model.payments.inperson.WCCreateCustomerByOrderIdResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationError
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
@@ -45,8 +45,14 @@ class InPersonPaymentsRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooPayload<ConnectionTokenApiResponse> {
-        val url = WOOCOMMERCE.payments.connection_tokens.pathV3
+    suspend fun fetchConnectionToken(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WooPayload<ConnectionTokenApiResponse> {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.connection_tokens.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.connection_tokens.pathV3
+        }
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
                 site,
@@ -66,11 +72,15 @@ class InPersonPaymentsRestClient @Inject constructor(
     }
 
     suspend fun capturePayment(
+        activePlugin: InPersonPaymentsPluginType,
         site: SiteModel,
         paymentId: String,
         orderId: Long
     ): WCCapturePaymentResponsePayload {
-        val url = WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.orders.order(orderId).capture_terminal_payment.pathV3
+        }
         val params = mapOf(
                 "payment_intent_id" to paymentId
         )
@@ -128,28 +138,14 @@ class InPersonPaymentsRestClient @Inject constructor(
         }
     }
 
-    suspend fun createCustomerByOrderId(
-        site: SiteModel,
-        orderId: Long
-    ): WooPayload<WCCreateCustomerByOrderIdResult> {
-        val url = WOOCOMMERCE.payments.orders.order(orderId).create_customer.pathV3
-
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                body = emptyMap(),
-                clazz = WCCreateCustomerByOrderIdResult::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
+    suspend fun getStoreLocationForSite(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel
+    ): WCTerminalStoreLocationResult {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.terminal.locations.store.pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.terminal.locations.store.pathV3
         }
-    }
-
-    suspend fun getStoreLocationForSite(site: SiteModel): WCTerminalStoreLocationResult {
-        val url = WOOCOMMERCE.payments.terminal.locations.store.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
@@ -187,6 +183,30 @@ class InPersonPaymentsRestClient @Inject constructor(
                         mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
                 )
             }
+        }
+    }
+
+    suspend fun fetchPaymentCharge(
+        activePlugin: InPersonPaymentsPluginType,
+        chargeId: String,
+        site: SiteModel
+    ): WooPayload<WCPaymentChargeApiResult> {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.charges.charge(chargeId).pathV3
+            STRIPE -> WOOCOMMERCE.wc_stripe.charges.charge(chargeId).pathV3
+        }
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                mapOf(),
+                WCPaymentChargeApiResult::class.java
+        )
+
+        return when (response) {
+            is JetpackSuccess -> WooPayload(response.data)
+            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 

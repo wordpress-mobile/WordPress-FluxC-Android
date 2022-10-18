@@ -1,14 +1,17 @@
 package org.wordpress.android.fluxc.model.order
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.utils.NullStringJsonAdapter
 
-class ShippingLine {
-    val id: Long? = null
-    val total: String? = null
+data class ShippingLine(
+    val id: Long? = null,
+    val total: String? = null,
     @SerializedName("total_tax")
-    val totalTax: String? = null
+    val totalTax: String? = null,
     @SerializedName("method_id")
-    val methodId: String? = null
+    @JsonAdapter(NullStringJsonAdapter::class, nullSafe = false)
+    val methodId: String? = null,
     @SerializedName("method_title")
     val methodTitle: String? = null
-}
+)

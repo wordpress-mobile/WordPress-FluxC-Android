@@ -52,8 +52,11 @@ class EditorThemeSqlUtils {
         return editorTheme.toEditorTheme(colors, gradients)
     }
 
+    /**
+     * Deleting the row for the [EditorThemeTable] table row here will cascade to delete the
+     * associated rows in the [EditorThemeElementTable] as well.
+     */
     fun deleteEditorThemeForSite(site: SiteModel) {
-        // Deleting the row for the EditorThemeTable table row here will cascade to delete the associated rows in the EditorThemeElementTable as well.
         WellSql.delete(EditorThemeBuilder::class.java)
                 .where()
                 .equals(EditorThemeTable.LOCAL_SITE_ID, site.id)
@@ -92,6 +95,8 @@ class EditorThemeSqlUtils {
             @JvmName("setIsFSETheme")
             set
         @Column var galleryWithImageBlocks: Boolean = false
+        @Column var quoteBlockV2: Boolean = false
+        @Column var listBlockV2: Boolean = false
 
         override fun setId(id: Int) {
             this.mId = id
@@ -119,7 +124,9 @@ class EditorThemeSqlUtils {
                     rawStyles,
                     rawFeatures,
                     isFSETheme,
-                    galleryWithImageBlocks
+                    galleryWithImageBlocks,
+                    quoteBlockV2,
+                    listBlockV2
             )
 
             return EditorTheme(editorThemeSupport, stylesheet, version)
@@ -140,16 +147,14 @@ class EditorThemeSqlUtils {
 
         override fun getId() = mId
 
-        fun toEditorThemeElement(): EditorThemeElement? {
-            when (type) {
-                EditorThemeElementType.COLOR.value -> return EditorThemeElement(name, slug, value, null)
-                EditorThemeElementType.GRADIENT.value -> return EditorThemeElement(name, slug, null, value)
-                else -> {
-                    // This shouldn't really happen as the "type" is defined in this library and isn't really driven
-                    // off of the network call. However adding it for completeness.
-                    return null
-                }
-            }
+        /**
+         * Returning "null" shouldn't really happen as the "type" is defined in this library and isn't really driven
+         * off of the network call. However adding it for completeness.
+         */
+        fun toEditorThemeElement() = when (type) {
+            EditorThemeElementType.COLOR.value -> EditorThemeElement(name, slug, value, null)
+            EditorThemeElementType.GRADIENT.value -> EditorThemeElement(name, slug, null, value)
+            else -> null
         }
     }
 }

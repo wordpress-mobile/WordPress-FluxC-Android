@@ -4,9 +4,15 @@ import android.content.Context;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.wordpress.android.fluxc.module.MockedNetworkModule.MockedNetworkModuleBindings;
 import org.wordpress.android.fluxc.network.OkHttpStack;
+import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArray;
+import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArrayDeserializer;
+import org.wordpress.android.fluxc.network.rest.JsonObjectOrFalse;
+import org.wordpress.android.fluxc.network.rest.JsonObjectOrFalseDeserializer;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -73,5 +79,15 @@ public class MockedNetworkModule {
     @Provides
     public CoroutineContext provideCoroutineContext() {
         return Dispatchers.getDefault();
+    }
+
+    @Provides
+    public Gson provideGson() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setLenient();
+        gsonBuilder.registerTypeHierarchyAdapter(JsonObjectOrFalse.class, new JsonObjectOrFalseDeserializer());
+        gsonBuilder.registerTypeHierarchyAdapter(JsonObjectOrEmptyArray.class,
+                new JsonObjectOrEmptyArrayDeserializer());
+        return gsonBuilder.create();
     }
 }

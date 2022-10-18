@@ -1,0 +1,39 @@
+# Default Config: https://github.com/detekt/detekt/blob/main/detekt-core/src/main/resources/default-detekt-config.yml
+# Formatting Config: https://github.com/detekt/detekt/blob/main/detekt-formatting/src/main/resources/config/config.yml
+
+config:
+  warningsAsErrors: true
+
+complexity:
+  LongParameterList:
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Inject']
+  TooManyFunctions:
+    active: false
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+
+potential-bugs:
+  MissingWhenCase:
+    allowElseExpression: false
+
+style:
+  DataClassShouldBeImmutable:
+    active: true
+    ignoreAnnotated: ['Table']
+  MagicNumber:
+    ignoreEnums: true
+    ignorePropertyDeclaration: true
+  SpacingBetweenPackageAndImports:
+    active: true
+  UnusedImports:
+    active: true
+  WildcardImport:
+    active: true
+    excludeImports:
+      - 'kotlinx.android.synthetic.*' # For the 'example' module.
+  ForbiddenSuppress:
+    active: true
+    rules: ['MaximumLineLength']

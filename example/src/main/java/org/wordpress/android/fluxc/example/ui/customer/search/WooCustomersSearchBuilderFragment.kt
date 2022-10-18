@@ -36,6 +36,7 @@ class WooCustomersSearchBuilderFragment : Fragment() {
             role = etCustomerRole.text?.toString()
     )
 
+    @Suppress("SwallowedException", "TooGenericExceptionCaught")
     private fun Editable?.toIds(): List<Long> {
         return try {
             if (this.isNullOrEmpty()) return emptyList()

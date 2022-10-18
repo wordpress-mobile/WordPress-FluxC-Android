@@ -476,8 +476,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private StockMediaModel newStockMedia(int id) {
-        String name = "pexels-photo-" + id;
-        String url = "https://images.pexels.com/photos/" + id + "/" + name + ".jpeg?w=320";
+        String name = "pexels-photo-" + id + ".jpeg";
+        String url = "https://images.pexels.com/photos/" + id + "/" + name + "?w=320";
 
         StockMediaModel stockMedia = new StockMediaModel();
         stockMedia.setName(name);

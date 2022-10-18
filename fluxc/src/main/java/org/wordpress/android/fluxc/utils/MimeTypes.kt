@@ -27,6 +27,7 @@ class MimeTypes {
      * .ogg - "audio/ogg", "application/ogg"
      * .wav - "audio/x-wav"
      */
+    @Suppress("MaxLineLength")
     private val audioTypes = listOf(
             MimeType(AUDIO, Subtype.MPEG, listOf("mp3")),
             MimeType(AUDIO, Subtype.MP4, listOf("m4a")),
@@ -48,6 +49,7 @@ class MimeTypes {
      * .3gp (3GPP) - "video/3gpp"
      * .3g2 (3GPP2) - "video/3gpp2"
      */
+    @Suppress("MaxLineLength")
     private val videoTypes = listOf(
             MimeType(VIDEO, Subtype.MP4, listOf("mp4", "m4v")),
             MimeType(VIDEO, Subtype.QUICKTIME, listOf("mov")),
@@ -68,12 +70,17 @@ class MimeTypes {
      * .png - "image/png"
      * .gif - "image/gif"
      * .webp - "image/webp"
+     * .heic - "image/heic"
+     * .heif - "image/heif"
      */
+    @Suppress("MaxLineLength")
     private val imageTypes = listOf(
             MimeType(IMAGE, Subtype.JPEG, listOf("jpg", "jpeg")),
             MimeType(IMAGE, Subtype.PNG, listOf("png")),
             MimeType(IMAGE, Subtype.GIF, listOf("gif")),
-            MimeType(IMAGE, Subtype.WEBP, listOf("webp"))
+            MimeType(IMAGE, Subtype.WEBP, listOf("webp")),
+            MimeType(IMAGE, Subtype.HEIC, listOf("heic")),
+            MimeType(IMAGE, Subtype.HEIF, listOf("heif"))
     )
 
     /*
@@ -106,7 +113,7 @@ class MimeTypes {
      *
      * documentTypes - all MIME types that are available.
      */
-
+    @Suppress("MaxLineLength")
     private val wpComFreeDocumentTypes = listOf(
             MimeType(APPLICATION, Subtype.PDF, listOf("pdf")),
             MimeType(APPLICATION, listOf(Subtype.MSWORD, Subtype.DOC, Subtype.MSDOC), listOf("doc")),
@@ -232,7 +239,7 @@ class MimeTypes {
         return expected.any { mimeType -> mimeType.subtypes.any { print(mimeType.type, it) == type } }
     }
 
-    fun getMimeTypeForExtension(extension: String): String? {
+    fun getMimeTypeForExtension(extension: String?): String? {
         return (imageTypes + videoTypes + audioTypes + documentTypes).find { it.extensions.contains(extension) }
                 ?.toString()
     }

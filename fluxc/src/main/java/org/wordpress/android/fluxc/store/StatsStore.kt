@@ -18,10 +18,18 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.persistence.InsightTypeSqlUtils
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.ACTION_GROW
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.ACTION_REMINDER
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.ACTION_SCHEDULE
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.ALL_TIME_STATS
-import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWER_TOTALS
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWERS
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.LATEST_POST_SUMMARY
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.MOST_POPULAR_DAY_AND_HOUR
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.TODAY_STATS
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.TOTAL_COMMENTS
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.TOTAL_FOLLOWERS
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.TOTAL_LIKES
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.VIEWS_AND_VISITORS
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.GENERIC_ERROR
@@ -34,7 +42,22 @@ import java.util.Collections
 import javax.inject.Inject
 import javax.inject.Singleton
 
-val DEFAULT_INSIGHTS = listOf(LATEST_POST_SUMMARY, TODAY_STATS, ALL_TIME_STATS, FOLLOWER_TOTALS)
+val DEFAULT_INSIGHTS = listOf(
+        MOST_POPULAR_DAY_AND_HOUR,
+        ALL_TIME_STATS,
+        TODAY_STATS,
+        FOLLOWERS
+)
+
+val JETPACK_DEFAULT_INSIGHTS = listOf(
+        VIEWS_AND_VISITORS,
+        TOTAL_LIKES,
+        TOTAL_COMMENTS,
+        TOTAL_FOLLOWERS,
+        MOST_POPULAR_DAY_AND_HOUR,
+        LATEST_POST_SUMMARY
+)
+
 val STATS_UNAVAILABLE_WITH_JETPACK = listOf(FILE_DOWNLOADS)
 const val INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN = "INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN"
 
@@ -57,9 +80,14 @@ class StatsStore
     suspend fun getInsightTypes(site: SiteModel): List<StatsType> =
             coroutineEngine.withDefaultContext(AppLog.T.STATS, this, "getInsightTypes") {
                 val types = mutableListOf<StatsType>()
-                if (!preferenceUtils.getFluxCPreferences().getBoolean(INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN, false)) {
-                    types.add(ManagementType.NEWS_CARD)
-                }
+/**
+ * Customize Insights Management card is being hidden for now.
+ * It will be updated to new design in the next iteration.
+ * Also, make sure to remove @Ignore annotation on tests in StatsStoreTest when this is undone.
+ **/
+//                if (!preferenceUtils.getFluxCPreferences().getBoolean(INSIGHTS_MANAGEMENT_NEWS_CARD_SHOWN, false)) {
+//                    types.add(ManagementType.NEWS_CARD)
+//                }
                 types.addAll(getAddedInsights(site))
                 types.add(ManagementType.CONTROL)
                 return@withDefaultContext types
@@ -130,6 +158,49 @@ class StatsStore
                 updateTypes(site, addedItems)
             }
 
+    suspend fun addActionType(site: SiteModel, type: InsightType) =
+        coroutineEngine.withDefaultContext(AppLog.T.STATS, this, "addActionType($type)") {
+            val addedInsights = getAddedInsights(site).toMutableList()
+
+            when (type) {
+                ACTION_REMINDER -> {
+                    if (!addedInsights.contains(ACTION_REMINDER)) {
+                        addedInsights.add(addedInsights.indexOf(MOST_POPULAR_DAY_AND_HOUR) + 1, ACTION_REMINDER)
+                    }
+                }
+                ACTION_GROW -> {
+                    if (!addedInsights.contains(ACTION_GROW)) {
+                        addedInsights.add(addedInsights.indexOf(TOTAL_FOLLOWERS) + 1, ACTION_GROW)
+                    }
+                }
+                ACTION_SCHEDULE -> {
+                    if (!addedInsights.contains(ACTION_SCHEDULE) && !addedInsights.contains(ACTION_REMINDER)) {
+                        addedInsights.add(addedInsights.indexOf(MOST_POPULAR_DAY_AND_HOUR) + 1, ACTION_SCHEDULE)
+                    }
+                }
+                else -> {
+                    // just to make when exhaustive
+                }
+            }
+
+            insightTypeSqlUtils.insertOrReplaceAddedItems(site, addedInsights)
+        }
+
+    suspend fun removeActionType(site: SiteModel, type: InsightType) =
+            coroutineEngine.withDefaultContext(AppLog.T.STATS, this, "removeActionType($type)") {
+                val addedInsights = insightTypeSqlUtils.selectAddedItemsOrderedByStatus(site)
+                val removedInsights = insightTypeSqlUtils.selectRemovedItemsOrderedByStatus(site)
+                insertOrReplaceItems(site, addedInsights - type, removedInsights + type)
+            }
+
+    suspend fun isActionTypeShown(site: SiteModel, type: InsightType) =
+            coroutineEngine.withDefaultContext(AppLog.T.STATS, this, "isActionTypeShown(${site.id} $type") {
+                val addedInsights = insightTypeSqlUtils.selectAddedItemsOrderedByStatus(site)
+                val removedInsights = insightTypeSqlUtils.selectRemovedItemsOrderedByStatus(site)
+
+                return@withDefaultContext (addedInsights.contains(type) || removedInsights.contains(type))
+            }
+
     private fun insertOrReplaceItems(
         site: SiteModel,
         addedItems: List<InsightType>,
@@ -156,17 +227,27 @@ class StatsStore
     interface StatsType
 
     enum class InsightType : StatsType {
+        VIEWS_AND_VISITORS,
+        TOTAL_LIKES,
+        TOTAL_COMMENTS,
+        TOTAL_FOLLOWERS,
         LATEST_POST_SUMMARY,
         MOST_POPULAR_DAY_AND_HOUR,
         ALL_TIME_STATS,
+        FOLLOWER_TYPES,
         FOLLOWER_TOTALS,
         TAGS_AND_CATEGORIES,
         ANNUAL_SITE_STATS,
         COMMENTS,
+        AUTHORS_COMMENTS,
+        POSTS_COMMENTS,
         FOLLOWERS,
         TODAY_STATS,
         POSTING_ACTIVITY,
-        PUBLICIZE
+        PUBLICIZE,
+        ACTION_GROW,
+        ACTION_REMINDER,
+        ACTION_SCHEDULE
     }
 
     enum class ManagementType : StatsType {

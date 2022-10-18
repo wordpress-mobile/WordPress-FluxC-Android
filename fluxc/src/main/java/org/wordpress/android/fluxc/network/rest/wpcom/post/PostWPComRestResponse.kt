@@ -69,20 +69,20 @@ data class PostWPComRestResponse(
     data class PostMeta(@SerializedName("data") val data: PostData? = null) {
         data class PostData(@SerializedName("autosave") val autoSave: PostAutoSave? = null) {
             data class PostAutoSave(
-                @SerializedName("ID") var revisionId: Long = 0,
-                @SerializedName("modified") var modified: String? = null,
-                @SerializedName("preview_URL") var previewUrl: String? = null,
-                @SerializedName("title") var title: String? = null,
-                @SerializedName("content") var content: String? = null,
-                @SerializedName("excerpt") var excerpt: String? = null
+                @SerializedName("ID") val revisionId: Long = 0,
+                @SerializedName("modified") val modified: String? = null,
+                @SerializedName("preview_URL") val previewUrl: String? = null,
+                @SerializedName("title") val title: String? = null,
+                @SerializedName("content") val content: String? = null,
+                @SerializedName("excerpt") val excerpt: String? = null
             )
         }
     }
 
     data class PostMetaData(
-        @SerializedName("id") var id: Long = 0,
-        @SerializedName("key") var key: String? = null,
-        @SerializedName("value") var value: Any? = null
+        @SerializedName("id") val id: Long = 0,
+        @SerializedName("key") val key: String? = null,
+        @SerializedName("value") val value: Any? = null
     )
 
     fun getPostAutoSave(): PostAutoSave? {
@@ -103,8 +103,8 @@ data class PostWPComRestResponse(
 
     class MetaDataAdapter(private val gson: Gson) : TypeAdapter<List<PostMetaData>>() {
         @Throws(IOException::class)
-        override
-        fun read(jsonReader: JsonReader): List<PostMetaData> {
+        @Suppress("NestedBlockDepth", "TooGenericExceptionCaught")
+        override fun read(jsonReader: JsonReader): List<PostMetaData> {
             val metaDataList = arrayListOf<PostMetaData>()
 
             // Noticed several metadata formats in the json response like
@@ -128,6 +128,7 @@ data class PostWPComRestResponse(
                                         AppLog.w(POSTS, "Error in post metadata json conversion: " + ex.message)
                                         jsonReader.skipValue()
                                     }
+                                    else -> Unit // Do nothing (ignore)
                                 }
                             }
                         } else {
@@ -135,8 +136,7 @@ data class PostWPComRestResponse(
                         }
                     }
                     jsonReader.endArray()
-                }
-                else -> {
+                } else -> {
                     jsonReader.skipValue()
                 }
             }
@@ -144,7 +144,6 @@ data class PostWPComRestResponse(
             return metaDataList
         }
 
-        override fun write(out: JsonWriter?, value: List<PostMetaData>) { // Do Nothing
-        }
+        override fun write(out: JsonWriter?, value: List<PostMetaData>) = Unit // Do Nothing (ignore)
     }
 }

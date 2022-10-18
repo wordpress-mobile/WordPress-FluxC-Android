@@ -47,8 +47,15 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should call syncGetRequest with correct parameters and return expected response`() = test {
         val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
+        val response = restClientUnderTest.fetchLeaderboards(
+            stubSite,
+            DAYS,
+            "10-10-2022",
+            "22-10-2022",
+            quantity = 5,
+            forceRefresh = false
+        )
 
-        val response = restClientUnderTest.fetchLeaderboards(stubSite, DAYS, "10-10-2022", "22-10-2022", 5)
         verify(requestBuilder, times(1)).syncGetRequest(
             restClientUnderTest,
             stubSite,
@@ -57,7 +64,8 @@ class LeaderboardsRestClientTest {
                 "before" to "22-10-2022",
                 "after" to "10-10-2022",
                 "per_page" to "5",
-                "interval" to "day"
+                "interval" to "day",
+                "force_cache_refresh" to "false",
             ),
             Array<LeaderboardsApiResponse>::class.java
         )
@@ -75,7 +83,8 @@ class LeaderboardsRestClientTest {
             DAYS,
             "10-10-2022",
             "22-10-2022",
-            5
+            forceRefresh = false,
+            quantity = 5
         )
 
         assertThat(response).isNotNull
@@ -95,7 +104,8 @@ class LeaderboardsRestClientTest {
                     "after" to "10-10-2022",
                     "before" to "22-10-2022",
                     "per_page" to "5",
-                    "interval" to "day"
+                    "interval" to "day",
+                    "force_cache_refresh" to "false",
                 ),
                 Array<LeaderboardsApiResponse>::class.java
             )
@@ -113,7 +123,8 @@ class LeaderboardsRestClientTest {
                     "after" to "10-10-2022",
                     "before" to "22-10-2022",
                     "per_page" to "5",
-                    "interval" to "day"
+                    "interval" to "day",
+                    "force_cache_refresh" to "false",
                 ),
                 Array<LeaderboardsApiResponse>::class.java
             )

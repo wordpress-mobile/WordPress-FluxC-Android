@@ -98,6 +98,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.math.max
 
+@Suppress("LargeClass")
 @Singleton
 class SiteRestClient @Inject constructor(
     appContext: Context?,
@@ -110,6 +111,7 @@ class SiteRestClient @Inject constructor(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     data class NewSiteResponsePayload(
         val newSiteRemoteId: Long = 0,
+        val siteUrl: String? = null,
         val dryRun: Boolean = false
     ) : Payload<NewSiteError>()
 
@@ -126,7 +128,7 @@ class SiteRestClient @Inject constructor(
         val site: SiteModel? = null
     ) : Payload<SiteError>()
 
-    suspend fun fetchSites(filters: List<SiteFilter?>): SitesModel {
+    suspend fun fetchSites(filters: List<SiteFilter?>, filterJetpackConnectedPackageSite: Boolean): SitesModel {
         val params = getFetchSitesParams(filters)
         val url = WPCOMREST.me.sites.urlV1_2
         val response = wpComGsonRequestBuilder.syncGetRequest(this, url, params, SitesResponse::class.java)
@@ -134,7 +136,10 @@ class SiteRestClient @Inject constructor(
             is Success -> {
                 val siteArray = mutableListOf<SiteModel>()
                 for (siteResponse in response.data.sites) {
-                    siteArray.add(siteResponseToSiteModel(siteResponse))
+                    val siteModel = siteResponseToSiteModel(siteResponse)
+                    // see https://github.com/wordpress-mobile/WordPress-Android/issues/15540#issuecomment-993752880
+                    if (filterJetpackConnectedPackageSite && siteModel.isJetpackCPConnected) continue
+                    siteArray.add(siteModel)
                 }
                 SitesModel(siteArray)
             }
@@ -176,9 +181,35 @@ class SiteRestClient @Inject constructor(
         }
     }
 
+    /**
+     * Calls the API at https://public-api.wordpress.com/rest/v1.1/sites/new/ to create a new site
+     * @param siteName The domain of the site
+     * @param siteTitle The title of the site
+     * @param language The language of the site
+     * @param timeZoneId The timezone of the site
+     * @param visibility The visibility of the site (public or private)
+     * @param segmentId The segment that the site belongs to
+     * @param siteDesign The design template of the site
+     * @param dryRun If set to true the call only validates the parameters passed
+     *
+     * The domain of the site is generated with the following logic:
+     *
+     * 1. If the [siteName] is provided it is used as a domain
+     * 2. If the [siteName] is not provided the [siteTitle] is passed and the API generates the domain from it
+     * 3. If neither the [siteName] or the [siteTitle] is passed the api generates a domain of the form siteXXXXXX
+     *
+     * In the cases 2 and 3 two extra parameters are passed:
+     * - `options.site_creation_flow` with value `with-design-picker`
+     * - `find_available_url` with value `1`
+     *
+     * @return the response of the API call  as [NewSiteResponsePayload]
+     */
+    @Suppress("ComplexMethod", "LongParameterList")
     suspend fun newSite(
-        siteName: String,
+        siteName: String?,
+        siteTitle: String?,
         language: String,
+        timeZoneId: String?,
         visibility: SiteVisibility,
         segmentId: Long?,
         siteDesign: String?,
@@ -186,21 +217,34 @@ class SiteRestClient @Inject constructor(
     ): NewSiteResponsePayload {
         val url = WPCOMREST.sites.new_.urlV1_1
         val body = mutableMapOf<String, Any>()
-        body["blog_name"] = siteName
+        val options = mutableMapOf<String, Any>()
+
         body["lang_id"] = language
         body["public"] = visibility.value().toString()
         body["validate"] = if (dryRun) "1" else "0"
         body["client_id"] = appSecrets.appId
         body["client_secret"] = appSecrets.appSecret
 
-        // Add site options if available
-        val options = mutableMapOf<String, Any>()
+        if (siteTitle != null) {
+            body["blog_title"] = siteTitle
+        }
+        body["blog_name"] = siteName ?: siteTitle ?: ""
+        siteName ?: run {
+            body["find_available_url"] = "1"
+            options["site_creation_flow"] = "with-design-picker"
+        }
+
         if (segmentId != null) {
             options["site_segment"] = segmentId
         }
         if (siteDesign != null) {
             options["template"] = siteDesign
         }
+        if (timeZoneId != null) {
+            options["timezone_string"] = timeZoneId
+        }
+
+        // Add site options if available
         if (options.isNotEmpty()) {
             body["options"] = options
         }
@@ -224,7 +268,7 @@ class SiteRestClient @Inject constructor(
                         // No op: In dry run mode, returned newSiteRemoteId is "Array"
                     }
                 }
-                NewSiteResponsePayload(siteId, dryRun)
+                NewSiteResponsePayload(siteId, response.data.blog_details?.url, dryRun)
             }
             is Error -> {
                 volleyErrorToAccountResponsePayload(response.error.volleyError, dryRun)
@@ -330,6 +374,7 @@ class SiteRestClient @Inject constructor(
         }
     }
 
+    @Suppress("ForbiddenComment")
     fun fetchUserRoles(site: SiteModel) {
         val url = WPCOMREST.sites.site(site.siteId).roles.urlV1_1
         val request = WPComGsonRequest.buildGetRequest(url, null,
@@ -409,6 +454,7 @@ class SiteRestClient @Inject constructor(
         add(request)
     }
 
+    @Suppress("LongParameterList")
     fun suggestDomains(
         query: String,
         onlyWordpressCom: Boolean?,
@@ -465,6 +511,7 @@ class SiteRestClient @Inject constructor(
         add(request)
     }
 
+    @Suppress("LongParameterList")
     fun fetchWpComBlockLayouts(
         site: SiteModel,
         supportedBlocks: List<String?>?,
@@ -477,6 +524,7 @@ class SiteRestClient @Inject constructor(
         fetchBlockLayouts(site, url, supportedBlocks, previewWidth, previewHeight, scale, isBeta)
     }
 
+    @Suppress("LongParameterList")
     fun fetchSelfHostedBlockLayouts(
         site: SiteModel,
         supportedBlocks: List<String?>?,
@@ -489,6 +537,7 @@ class SiteRestClient @Inject constructor(
         fetchBlockLayouts(site, url, supportedBlocks, previewWidth, previewHeight, scale, isBeta)
     }
 
+    @Suppress("LongParameterList")
     private fun fetchBlockLayouts(
         site: SiteModel,
         url: String,
@@ -537,9 +586,8 @@ class SiteRestClient @Inject constructor(
         add(request)
     }
 
-    //
     // Unauthenticated network calls
-    //
+    @Suppress("SwallowedException")
     fun fetchConnectSiteInfo(siteUrl: String) {
         // Get a proper URI to reliably retrieve the scheme.
         val uri: URI = try {
@@ -569,6 +617,7 @@ class SiteRestClient @Inject constructor(
         addUnauthedRequest(request)
     }
 
+    @Suppress("SwallowedException")
     fun fetchWPComSiteByUrl(siteUrl: String) {
         val sanitizedUrl: String
         try {
@@ -899,7 +948,7 @@ class SiteRestClient @Inject constructor(
         add(request)
     }
 
-    // Utils
+    @Suppress("LongMethod", "ComplexMethod")
     private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel {
         val site = SiteModel()
         site.siteId = from.ID
@@ -956,6 +1005,27 @@ class SiteRestClient @Inject constructor(
                 // probably not set ('false'), but we don't want to overwrite any existing value we stored earlier,
                 // as /me/sites/ and /sites/$site/ can return different responses for this
                 site.memoryLimit = max(wpMemoryLimit, wpMaxMemoryLimit)
+            }
+
+            val bloggingPromptsSettings = from.options.blogging_prompts_settings
+
+            bloggingPromptsSettings?.let {
+                site.setIsBloggingPromptsOptedIn(it.prompts_reminders_opted_in)
+                site.setIsBloggingPromptsCardOptedIn(it.prompts_card_opted_in)
+                site.setIsPotentialBloggingSite(it.is_potential_blogging_site)
+                site.setIsBloggingReminderOnMonday(it.reminders_days["monday"] ?: false)
+                site.setIsBloggingReminderOnTuesday(it.reminders_days["tuesday"] ?: false)
+                site.setIsBloggingReminderOnWednesday(it.reminders_days["wednesday"] ?: false)
+                site.setIsBloggingReminderOnThursday(it.reminders_days["thursday"] ?: false)
+                site.setIsBloggingReminderOnFriday(it.reminders_days["friday"] ?: false)
+                site.setIsBloggingReminderOnSaturday(it.reminders_days["saturday"] ?: false)
+                site.setIsBloggingReminderOnSunday(it.reminders_days["sunday"] ?: false)
+                try {
+                    site.bloggingReminderHour = it.reminders_time.split(".")[0].toInt()
+                    site.bloggingReminderMinute = it.reminders_time.split(".")[1].toInt()
+                } catch (ex: NumberFormatException) {
+                    AppLog.e(API, "Received malformed blogging reminder time: " + ex.message)
+                }
             }
         }
         if (from.plan != null) {
@@ -1017,6 +1087,7 @@ class SiteRestClient @Inject constructor(
         return site
     }
 
+    @Suppress("SwallowedException")
     private fun volleyErrorToAccountResponsePayload(
         error: VolleyError,
         dryRun: Boolean = false

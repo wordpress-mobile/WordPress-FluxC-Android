@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient.GatewayId
 import org.wordpress.android.fluxc.persistence.WCGatewaySqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -37,6 +38,29 @@ class WCGatewayStore @Inject constructor(
         }
     }
 
+    suspend fun updatePaymentGateway(
+        site: SiteModel,
+        gatewayId: GatewayId,
+        enabled: Boolean? = null,
+        title: String? = null,
+        description: String? = null,
+        settings: Settings? = null
+    ): WooResult<WCGatewayModel> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "updatePaymentGateway") {
+            val response = restClient.updatePaymentGateway(site, gatewayId, enabled, title, description, settings)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    WCGatewaySqlUtils.insertOrUpdate(site, response.result)
+                    WooResult(mapper.map(response.result))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+    }
+}
+
     fun getAllGateways(site: SiteModel): List<WCGatewayModel> =
             WCGatewaySqlUtils.selectAllGateways(site).map { mapper.map(it) }
 
@@ -56,3 +80,7 @@ class WCGatewayStore @Inject constructor(
         }
     }
 }
+
+data class Settings(
+    val instructions: String,
+)

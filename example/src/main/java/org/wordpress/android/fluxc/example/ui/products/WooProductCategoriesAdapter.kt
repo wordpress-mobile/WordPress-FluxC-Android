@@ -23,7 +23,11 @@ class WooProductCategoriesAdapter(
         fun onProductCategoryClick(productCategoryViewHolderModel: ProductCategoryViewHolderModel)
     }
 
-    data class ProductCategoryViewHolderModel(val category: ProductCategory, var isSelected: Boolean = false)
+    @Suppress("DataClassShouldBeImmutable")
+    data class ProductCategoryViewHolderModel(
+        val category: ProductCategory,
+        var isSelected: Boolean = false
+    )
 
     override fun getItemCount() = productCategoryList.size
 

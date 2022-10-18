@@ -13,20 +13,23 @@ class FixThreatsStatusDeserializer : JsonDeserializer<List<FixThreatStatus>?> {
         typeOfT: Type?,
         context: JsonDeserializationContext?
     ) = if (context != null && json != null && json.isJsonObject) {
-        /**
-         * Input: { "39154018": {"status": "fixed" }} / { "39154018": {"error": "not_found" }}
-         * Output: [{ "id": 39154018, "status": "fixed" }] /  [{ "id": 39154018, "error": "not_found" }]
-         */
-        mutableListOf<FixThreatStatus>().apply {
-            val inputJsonObject = json.asJsonObject
-            inputJsonObject.keySet().iterator().forEach { key ->
-                getFixThreatStatus(key, inputJsonObject)?.let { add(it) }
-            }
-        }.toList()
+        deserializeJson(json)
     } else {
         null
     }
 
+    /**
+     * Input: { "39154018": {"status": "fixed" }} / { "39154018": {"error": "not_found" }}
+     * Output: [{ "id": 39154018, "status": "fixed" }] /  [{ "id": 39154018, "error": "not_found" }]
+     */
+    private fun deserializeJson(json: JsonElement) = mutableListOf<FixThreatStatus>().apply {
+        val inputJsonObject = json.asJsonObject
+        inputJsonObject.keySet().iterator().forEach { key ->
+            getFixThreatStatus(key, inputJsonObject)?.let { add(it) }
+        }
+    }.toList()
+
+    @Suppress("SwallowedException")
     private fun getFixThreatStatus(key: String, inputJsonObject: JsonObject) =
         inputJsonObject.get(key)?.takeIf { it.isJsonObject }?.asJsonObject?.let { threat ->
             try {

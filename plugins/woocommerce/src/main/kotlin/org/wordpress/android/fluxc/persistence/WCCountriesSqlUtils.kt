@@ -14,11 +14,15 @@ object WCCountriesSqlUtils {
     }
 
     fun getStates(country: String): List<WCLocationModel> {
-        return WellSql.select(WCLocationModel::class.java)
+        return if (country.isNotEmpty()) {
+            WellSql.select(WCLocationModel::class.java)
                 .where()
                 .equals(WCLocationsTable.PARENT_CODE, country)
                 .endWhere()
                 .asModel
+        } else {
+            emptyList()
+        }
     }
 
     fun insertOrUpdateLocations(locations: List<WCLocationModel>): Int {

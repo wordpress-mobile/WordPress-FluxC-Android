@@ -4,11 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_woo_taxes.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
@@ -26,25 +25,26 @@ class WooTaxFragment : StoreSelectingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woo_taxes, container, false)
 
+    @Suppress("TooGenericExceptionCaught")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         fetch_tax_class.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch tax classes for site ${site.id}")
-                GlobalScope.launch(Dispatchers.Main) {
-                    supervisorScope {
-                        try {
-                            val response = withContext(Dispatchers.Default) {
-                                wcTaxStore.fetchTaxClassList(site)
-                            }
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val response = wcTaxStore.fetchTaxClassList(site)
+                        withContext(Dispatchers.Main) {
                             response.error?.let {
                                 prependToLog("${it.type}: ${it.message}")
                             }
                             response.model?.let {
                                 prependToLog("Site has ${it.size} tax classes")
                             }
-                        } catch (e: Exception) {
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
                             prependToLog("Error: ${e.message}")
                         }
                     }

@@ -136,11 +136,12 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         val updateList = notificationSqlUtils.getNotifications()
                 .take(chunkLimit).map {
                     // Change the hash to force an update
-                    it.noteHash = BOGUS_HASH
+                    val note = it.copy(noteHash = BOGUS_HASH)
 
                     // Save to database
-                    notificationSqlUtils.insertOrUpdateNotification(it)
-                    it.remoteNoteId }
+                    notificationSqlUtils.insertOrUpdateNotification(note)
+                    note.remoteNoteId
+                }
 
         // Build a list of notification ids expected to be inserted as new
         val newList = notificationSqlUtils.getNotifications()

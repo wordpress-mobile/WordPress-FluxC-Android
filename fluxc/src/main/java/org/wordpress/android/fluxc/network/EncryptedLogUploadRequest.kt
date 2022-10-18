@@ -30,11 +30,13 @@ class EncryptedLogUploadRequest(
         )
     }
 
+    @Suppress("ForbiddenComment")
     override fun getBody(): ByteArray {
         // TODO: Max file size is 10MB - maybe we should just handle that in the error callback?
         return contents.toByteArray()
     }
 
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     override fun parseNetworkResponse(response: NetworkResponse?): Response<NetworkResponse> {
         return try {
             Response.success(response, HttpHeaderParser.parseCacheHeaders(response))

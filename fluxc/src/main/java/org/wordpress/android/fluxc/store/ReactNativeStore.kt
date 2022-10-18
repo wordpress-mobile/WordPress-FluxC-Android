@@ -19,8 +19,11 @@ import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
+import java.net.HttpURLConnection
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val WPCOM_ENDPOINT = "https://public-api.wordpress.com"
 
 /**
  * This store is for use making calls that originate from React Native. It does not use
@@ -28,8 +31,7 @@ import javax.inject.Singleton
  * around React Native. Calls originating from native code should not use this class.
  */
 @Singleton
-class ReactNativeStore
-@VisibleForTesting constructor(
+class ReactNativeStore @VisibleForTesting constructor(
     private val wpComRestClient: ReactNativeWPComRestClient,
     private val wpAPIRestClient: ReactNativeWPAPIRestClient,
     private val nonceRestClient: NonceRestClient,
@@ -58,8 +60,6 @@ class ReactNativeStore
             siteSqlUtils::insertOrUpdateSite,
             Uri::parse
     )
-
-    private val WPCOM_ENDPOINT = "https://public-api.wordpress.com"
 
     suspend fun executeRequest(
         site: SiteModel,
@@ -107,19 +107,25 @@ class ReactNativeStore
         return Error(error)
     }
 
+    @Suppress("ComplexMethod", "NestedBlockDepth")
     private suspend fun executeWPAPIRequest(
         site: SiteModel,
         path: String,
         params: Map<String, String>,
         enableCaching: Boolean
     ): ReactNativeFetchResponse {
-        val usingSavedRestUrl = site.wpApiRestUrl != null
+        // Storing this in a variable to avoid a NPE that can occur if the site object is mutated
+        // from another thread: https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1579
+        var wpApiRestUrl = site.wpApiRestUrl
+
+        val usingSavedRestUrl = wpApiRestUrl != null
         if (!usingSavedRestUrl) {
-            site.wpApiRestUrl = discoveryWPAPIRestClient.discoverWPAPIBaseURL(site.url) // discover rest api endpoint
+            wpApiRestUrl = discoveryWPAPIRestClient.discoverWPAPIBaseURL(site.url) // discover rest api endpoint
                     ?: slashJoin(site.url, "wp-json/") // fallback to ".../wp-json/" default if discovery fails
+            site.wpApiRestUrl = wpApiRestUrl
             persistSiteSafely(site)
         }
-        val fullRestUrl = slashJoin(site.wpApiRestUrl, path)
+        val fullRestUrl = slashJoin(wpApiRestUrl, path)
 
         var nonce = nonceRestClient.getNonce(site)
         val usingSavedNonce = nonce is Available
@@ -135,7 +141,7 @@ class ReactNativeStore
             is Success -> response
 
             is Error -> when (response.statusCode()) {
-                401 -> {
+                HttpURLConnection.HTTP_UNAUTHORIZED -> {
                     if (usingSavedNonce) {
                         // Call with saved nonce failed, so try getting a new one
                         val previousNonce = nonce?.value
@@ -150,7 +156,7 @@ class ReactNativeStore
                     response
                 }
 
-                404 -> {
+                HttpURLConnection.HTTP_NOT_FOUND -> {
                     // call failed with 'not found' so clear the (failing) rest url
                     site.wpApiRestUrl = null
                     persistSiteSafely(site)

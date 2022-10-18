@@ -13,6 +13,9 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_update_variation.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -23,7 +26,6 @@ import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
-import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductBackOrders
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
@@ -46,6 +48,8 @@ class WooUpdateVariationFragment : Fragment() {
     private var selectedRemoteProductId: Long? = null
     private var selectedRemoteVariationId: Long? = null
     private var selectedVariationModel: WCProductVariationModel? = null
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
@@ -97,6 +101,7 @@ class WooUpdateVariationFragment : Fragment() {
         selectedRemoteVariationId?.let { outState.putLong(ARG_SELECTED_VARIATION_ID, it) }
     }
 
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -178,9 +183,20 @@ class WooUpdateVariationFragment : Fragment() {
         product_update.setOnClickListener {
             getWCSite()?.let { site ->
                 if (selectedVariationModel?.remoteProductId != null &&
-                        selectedVariationModel?.remoteVariationId != null) {
-                    val payload = UpdateVariationPayload(site, selectedVariationModel!!)
-                    dispatcher.dispatch(WCProductActionBuilder.newUpdateVariationAction(payload))
+                    selectedVariationModel?.remoteVariationId != null) {
+                    coroutineScope.launch {
+                        val result = wcProductStore.updateVariation(
+                            UpdateVariationPayload(
+                                site,
+                                selectedVariationModel!!
+                            )
+                        )
+                        if (result.isError) {
+                            prependToLog("Updating Variation Failed: " + result.error.type)
+                        } else {
+                            prependToLog("Variation updated ${result.rowsAffected}")
+                        }
+                    }
                 } else {
                     prependToLog("No valid remoteProductId or remoteVariationId defined...doing nothing")
                 }

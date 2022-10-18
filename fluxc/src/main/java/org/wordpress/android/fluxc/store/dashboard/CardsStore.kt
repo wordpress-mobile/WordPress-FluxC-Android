@@ -21,9 +21,10 @@ class CardsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine
 ) {
     suspend fun fetchCards(
-        site: SiteModel
+        site: SiteModel,
+        cardTypes: List<CardModel.Type>
     ) = coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCards") {
-        val payload = restClient.fetchCards(site)
+        val payload = restClient.fetchCards(site, cardTypes)
         return@withDefaultContext storeCards(site, payload)
     }
 
@@ -31,21 +32,36 @@ class CardsStore @Inject constructor(
         site: SiteModel,
         payload: CardsPayload<CardsResponse>
     ): CardsResult<List<CardModel>> = when {
-        payload.isError -> CardsResult(payload.error)
-        payload.response != null -> {
-            try {
-                cardsDao.insertWithDate(site.id, payload.response.toCards())
-                CardsResult()
-            } catch (e: Exception) {
-                CardsResult(CardsError(CardsErrorType.GENERIC_ERROR))
-            }
-        }
+        payload.isError -> handlePayloadError(payload.error)
+        payload.response != null -> handlePayloadResponse(site, payload.response)
         else -> CardsResult(CardsError(CardsErrorType.INVALID_RESPONSE))
     }
 
+    private fun handlePayloadError(
+        error: CardsError
+    ): CardsResult<List<CardModel>> = when (error.type) {
+        CardsErrorType.AUTHORIZATION_REQUIRED -> {
+            cardsDao.clear()
+            CardsResult()
+        }
+        else -> CardsResult(error)
+    }
+
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
+    private suspend fun handlePayloadResponse(
+        site: SiteModel,
+        response: CardsResponse
+    ): CardsResult<List<CardModel>> = try {
+        cardsDao.insertWithDate(site.id, response.toCards())
+        CardsResult()
+    } catch (e: Exception) {
+        CardsResult(CardsError(CardsErrorType.GENERIC_ERROR))
+    }
+
     fun getCards(
-        site: SiteModel
-    ) = cardsDao.get(site.id).map { cards ->
+        site: SiteModel,
+        cardTypes: List<CardModel.Type>
+    ) = cardsDao.get(site.id, cardTypes).map { cards ->
         CardsResult(cards.map { it.toCard() })
     }
 
@@ -71,6 +87,28 @@ class CardsStore @Inject constructor(
     }
 
     /* ERRORS */
+
+    enum class TodaysStatsCardErrorType {
+        JETPACK_DISCONNECTED,
+        JETPACK_DISABLED,
+        UNAUTHORIZED,
+        GENERIC_ERROR
+    }
+
+    class TodaysStatsCardError(
+        val type: TodaysStatsCardErrorType,
+        val message: String? = null
+    ) : OnChangedError
+
+    enum class PostCardErrorType {
+        UNAUTHORIZED,
+        GENERIC_ERROR
+    }
+
+    class PostCardError(
+        val type: PostCardErrorType,
+        val message: String? = null
+    ) : OnChangedError
 
     enum class CardsErrorType {
         GENERIC_ERROR,

@@ -1,5 +1,9 @@
 package org.wordpress.android.fluxc.release;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
@@ -26,10 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject CommentStore mCommentStore;
@@ -163,7 +163,8 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
         assertEquals(comment.getContent(), mNewComment.getContent());
-        assertEquals(comment.getRemoteParentCommentId(), firstComment.getRemoteCommentId());
+        assertEquals(comment.getAuthorId(), firstComment.getAuthorId());
+        assertEquals(comment.getParentId(), firstComment.getRemoteCommentId());
     }
 
     @Test

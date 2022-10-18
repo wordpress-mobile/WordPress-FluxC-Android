@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.network.Response
 
-@Suppress("PropertyName")
+@Suppress("PropertyName", "VariableNaming")
 class ProductReviewApiResponse : Response {
     val id: Long = 0L
     val date_created_gmt: String? = null

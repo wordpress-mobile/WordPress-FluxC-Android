@@ -53,7 +53,6 @@ import org.wordpress.android.fluxc.store.stats.TAGS_RESPONSE
 import org.wordpress.android.fluxc.store.stats.TOP_COMMENTS_RESPONSE
 import org.wordpress.android.fluxc.store.stats.VISITS_RESPONSE
 import org.wordpress.android.fluxc.test
-import java.util.Date
 
 @RunWith(MockitoJUnitRunner::class)
 class InsightsRestClientTest {
@@ -78,6 +77,7 @@ class InsightsRestClientTest {
     private val pageSize = 5
 
     @Before
+    @Suppress("LongMethod")
     fun setUp() {
         urlCaptor = argumentCaptor()
         paramsCaptor = argumentCaptor()
@@ -191,7 +191,7 @@ class InsightsRestClientTest {
         assertThat(urlCaptor.lastValue).isEqualTo("https://public-api.wordpress.com/rest/v1.1/sites/12/posts/")
         assertThat(paramsCaptor.lastValue).isEqualTo(
                 mapOf(
-                        "fields" to "ID,title,URL,discussion,like_count,date",
+                        "fields" to "ID,title,URL,discussion,like_count,date,featured_image",
                         "number" to "1",
                         "order_by" to "date",
                         "type" to "post"
@@ -284,7 +284,6 @@ class InsightsRestClientTest {
                 )
         )
 
-        val date = Date()
         val responseModel = todayInsightsRestClient.fetchTimePeriodStats(site, DAYS, false)
 
         assertThat(responseModel.error).isNotNull

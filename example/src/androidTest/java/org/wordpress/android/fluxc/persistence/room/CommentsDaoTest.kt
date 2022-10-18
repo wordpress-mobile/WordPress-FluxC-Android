@@ -10,8 +10,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.wordpress.android.fluxc.model.CommentStatus.APPROVED
-import org.wordpress.android.fluxc.model.CommentStatus.UNAPPROVED
 import org.wordpress.android.fluxc.model.CommentStatus.SPAM
+import org.wordpress.android.fluxc.model.CommentStatus.UNAPPROVED
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus.TRASH
 import org.wordpress.android.fluxc.persistence.WPAndroidDatabase
 import org.wordpress.android.fluxc.persistence.comments.CommentEntityList
@@ -420,7 +420,7 @@ class CommentsDaoTest {
             id = 1,
             remoteCommentId = 10,
             remotePostId = 100,
-            remoteParentCommentId = 1_000,
+            authorId = 1_000,
             localSiteId = 10_000,
             remoteSiteId = 100_000,
             authorUrl = null,
