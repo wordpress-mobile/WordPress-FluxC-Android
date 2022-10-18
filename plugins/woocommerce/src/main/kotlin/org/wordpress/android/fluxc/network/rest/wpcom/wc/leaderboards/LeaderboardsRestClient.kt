@@ -27,7 +27,6 @@ class LeaderboardsRestClient @Inject constructor(
     userAgent: UserAgent,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-
     @Suppress("LongParameterList")
     suspend fun fetchLeaderboards(
         site: SiteModel,
