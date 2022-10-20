@@ -520,40 +520,9 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         create_order.setOnClickListener {
             selectedSite?.let { site ->
                 lifecycleScope.launch {
-                    val products = showSingleLineDialog(
-                            activity = requireActivity(),
-                            message = "Please type a comma separated list of product IDs",
-                            isNumeric = false
-                    )?.split(",")?.map { it.toLongOrNull() }
+                    val order = processOrderCreation() ?: return@launch
 
-                    if (products == null || products.any { it == null }) {
-                        prependToLog("Error while parsing the entered product IDs")
-                        return@launch
-                    }
-
-                    val customerNote = showSingleLineDialog(
-                        activity = requireActivity(),
-                        message = "Please enter a customer note?",
-                        isNumeric = false
-                    )
-
-                    val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
-                    val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
-
-                    val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
-
-                    val result = orderUpdateStore.createOrder(
-                            site,
-                            UpdateOrderRequest(
-                                    status = status,
-                                    lineItems = products.map {
-                                        LineItem(productId = it, quantity = 1f)
-                                    },
-                                    shippingAddress = shippingAddress,
-                                    billingAddress = billingAddress,
-                                    customerNote = customerNote
-                            )
-                    )
+                    val result = orderUpdateStore.createOrder(site, order)
                     if (result.isError) {
                         prependToLog("Order creation failed, error ${result.error.type} ${result.error.message}")
                     } else {
@@ -601,33 +570,23 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
         update_order_batch.setOnClickListener {
             selectedSite?.let { site ->
                 lifecycleScope.launch {
-                    val products = showSingleLineDialog(
+                    val shouldCreateNewOrder = showTwoButtonsDialog(
                         activity = requireActivity(),
-                        message = "Please type a comma separated list of product IDs",
-                        isNumeric = false
-                    )?.split(",")?.map { it.toLongOrNull() }
-
-                    if (products == null || products.any { it == null }) {
-                        prependToLog("Error while parsing the entered product IDs")
-                        return@launch
-                    }
-
-                    val customerNote = showSingleLineDialog(
-                        activity = requireActivity(),
-                        message = "Please enter a customer note?",
-                        isNumeric = false
+                        message = "Do you want to create a new order?"
                     )
+                    val ordersToCreate = if (shouldCreateNewOrder) {
+                        processOrderCreation()?.let { order ->
+                            val duplicatesCount = showSingleLineDialog(
+                                activity = requireActivity(),
+                                message = "Please type a how many duplicates of this Order are needed",
+                                isNumeric = true
+                            )?.toInt() ?: 1
 
-                    val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
-                    val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
-
-                    val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
-
-                    val duplicatesCount = showSingleLineDialog(
-                        activity = requireActivity(),
-                        message = "Please type a how many duplicates of this Order are needed",
-                        isNumeric = true
-                    )?.toInt() ?: 1
+                            List(duplicatesCount) { order }
+                        } ?: emptyList()
+                    } else {
+                        emptyList()
+                    }
 
                     val ordersToDelete = showSingleLineDialog(
                         activity = requireActivity(),
@@ -651,21 +610,18 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         )
                     } ?: emptyList()
 
-                    val orderToCreate = UpdateOrderRequest(
-                        status = status,
-                        lineItems = products.map {
-                            LineItem(productId = it, quantity = 1f)
-                        },
-                        shippingAddress = shippingAddress,
-                        billingAddress = billingAddress,
-                        customerNote = customerNote
-                    )
+                    if (
+                        ordersToCreate.isEmpty() &&
+                        ordersToUpdate.isEmpty() &&
+                        ordersToUpdate.isEmpty()
+                    ) {
+                        prependToLog("It is not possible to perform a Batch Update with all param requests empty")
+                        return@launch
+                    }
 
                     val result = orderUpdateStore.updateOrdersBatch(
                         site,
-                        createRequest = mutableListOf<UpdateOrderRequest>().apply {
-                            repeat(duplicatesCount) { this.add(orderToCreate) }
-                        },
+                        createRequest = ordersToCreate,
                         updateRequest = ordersToUpdate,
                         deleteRequest = ordersToDelete
                     )
@@ -679,6 +635,36 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 }
             }
         }
+    }
+
+    private suspend fun processOrderCreation(): UpdateOrderRequest? {
+        val products = showSingleLineDialog(
+            activity = requireActivity(),
+            message = "Please type a comma separated list of product IDs",
+            isNumeric = false
+        )?.split(",")?.map { it.toLongOrNull() }
+        if (products == null || products.any { it == null }) {
+            prependToLog("Error while parsing the entered product IDs")
+            return null
+        }
+        val customerNote = showSingleLineDialog(
+            activity = requireActivity(),
+            message = "Please enter a customer note?",
+            isNumeric = false
+        )
+        val shippingAddress = showAddressDialog(addressType = SHIPPING) as OrderAddress.Shipping
+        val billingAddress = showAddressDialog(addressType = BILLING) as OrderAddress.Billing
+        val status = WCOrderStatusModel(CoreOrderStatus.PROCESSING.value)
+
+        return UpdateOrderRequest(
+            status = status,
+            lineItems = products.map {
+                LineItem(productId = it, quantity = 1f)
+            },
+            shippingAddress = shippingAddress,
+            billingAddress = billingAddress,
+            customerNote = customerNote
+        )
     }
 
     private fun fetchOrderShipmentProviders(
