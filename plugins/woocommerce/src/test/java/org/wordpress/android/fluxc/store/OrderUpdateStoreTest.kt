@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
@@ -21,6 +22,9 @@ import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
@@ -29,6 +33,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrdersDatabaseBatch
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.EMPTY_BILLING_EMAIL
@@ -52,6 +57,11 @@ class OrderUpdateStoreTest {
     private val ordersDao: OrdersDao = mock {
         onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
+
+    private val orderEntities = listOf(
+        OrderEntity(orderId = 123L, localSiteId = LocalId(1)),
+        OrderEntity(orderId = 456L, localSiteId = LocalId(2))
+    )
 
     fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
@@ -531,17 +541,14 @@ class OrderUpdateStoreTest {
                         site = site,
                         createRequest = emptyList(),
                         updateRequest = emptyList(),
-                        deleteRequest = listOf(1.toLong(), 2.toLong())
+                        deleteRequest = listOf(1L, 2L)
                     )
                 }.doReturn(
                     WooPayload(
                         OrdersDatabaseBatch(
                             createdEntities = emptyList(),
                             updatedEntities = emptyList(),
-                            deletedEntities = listOf(
-                                OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
-                                OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
-                            )
+                            deletedEntities = orderEntities
                         )
                     )
                 )
@@ -550,11 +557,12 @@ class OrderUpdateStoreTest {
 
         sut.updateOrdersBatch(
             site = site,
-            deleteRequest = listOf(1.toLong(), 2.toLong())
+            deleteRequest = listOf(1L, 2L)
         )
 
-        verify(ordersDao).deleteOrder(site.localId(), 1.toLong())
-        verify(ordersDao).deleteOrder(site.localId(), 2.toLong())
+        orderEntities.forEach {
+            verify(ordersDao).deleteOrder(it.localSiteId, it.orderId)
+        }
     }
 
     @Test
@@ -574,8 +582,8 @@ class OrderUpdateStoreTest {
                         OrdersDatabaseBatch(
                             createdEntities = emptyList(),
                             updatedEntities = listOf(
-                                OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
-                                OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
+                                OrderEntity(orderId = 123L, localSiteId = LocalId(1)),
+                                OrderEntity(orderId = 456L, localSiteId = LocalId(2))
                             ),
                             deletedEntities = emptyList()
                         )
@@ -589,12 +597,9 @@ class OrderUpdateStoreTest {
             updateRequest = mockedListOfUpdatedOrders
         )
 
-        verify(ordersDao).insertOrUpdateOrder(
-            OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1))
-        )
-        verify(ordersDao).insertOrUpdateOrder(
-            OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
-        )
+        orderEntities.forEach {
+            verify(ordersDao).insertOrUpdateOrder(it)
+        }
     }
 
     @Test
@@ -605,18 +610,18 @@ class OrderUpdateStoreTest {
                 onBlocking {
                     updateOrdersBatch(
                         site = site,
-                        createRequest = emptyList(),
-                        updateRequest = mockedListOfUpdatedOrders,
+                        createRequest = mockedListOfUpdatedOrders,
+                        updateRequest = emptyList(),
                         deleteRequest = emptyList()
                     )
                 }.doReturn(
                     WooPayload(
                         OrdersDatabaseBatch(
-                            createdEntities = emptyList(),
-                            updatedEntities = listOf(
-                                OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1)),
-                                OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
+                            createdEntities = listOf(
+                                OrderEntity(orderId = 123L, localSiteId = LocalId(1)),
+                                OrderEntity(orderId = 456L, localSiteId = LocalId(2))
                             ),
+                            updatedEntities = emptyList(),
                             deletedEntities = emptyList()
                         )
                     )
@@ -626,15 +631,13 @@ class OrderUpdateStoreTest {
 
         sut.updateOrdersBatch(
             site = site,
-            updateRequest = mockedListOfUpdatedOrders
+            createRequest = mockedListOfUpdatedOrders
         )
 
-        verify(ordersDao).insertOrUpdateOrder(
-            OrderEntity(orderId = 123.toLong(), localSiteId = LocalId(1))
-        )
-        verify(ordersDao).insertOrUpdateOrder(
-            OrderEntity(orderId = 456.toLong(), localSiteId = LocalId(2))
-        )
+        orderEntities.forEach {
+            verify(ordersDao).insertOrUpdateOrder(it)
+        }
+        verify(dispatcher).dispatch(any<Action<FetchOrderListPayload>>())
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -651,6 +654,30 @@ class OrderUpdateStoreTest {
                 deleteRequest = emptyList()
             )
         }
+    }
+
+    @Test
+    fun `when bulky update request fails should result into WooError`(): Unit = runBlocking {
+        val expectedError = WooError(WooErrorType.GENERIC_ERROR, GenericErrorType.UNKNOWN, "test")
+        setUp {
+            orderRestClient = mock {
+                onBlocking {
+                    updateOrdersBatch(
+                        any(), any(), any(), any()
+                    )
+                }.doReturn(
+                    WooPayload(expectedError)
+                )
+            }
+        }
+
+        val response = sut.updateOrdersBatch(
+            site = site,
+            createRequest = mock()
+        )
+
+        assertThat(response).isNotNull
+        assertThat(response.error).isEqualTo(expectedError)
     }
 
     private companion object {

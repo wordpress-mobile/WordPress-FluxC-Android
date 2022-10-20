@@ -260,7 +260,7 @@ class OrderUpdateStore @Inject internal constructor(
                     model.updatedEntities.map { ordersDao.insertOrUpdateOrder(it) }
                 }
                 if (deleteRequest.isNotEmpty()) {
-                    deleteRequest.map { ordersDao.deleteOrder(site.localId(), it) }
+                    model.deletedEntities.map { ordersDao.deleteOrder(it.localSiteId, it.orderId) }
                 }
                 WooResult(model)
             }

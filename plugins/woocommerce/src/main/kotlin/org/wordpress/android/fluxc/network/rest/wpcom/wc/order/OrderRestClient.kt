@@ -801,7 +801,7 @@ class OrderRestClient @Inject constructor(
         site: SiteModel
     ) = this?.map {
         buildOrderEntity(it, site)
-    } ?: emptyList()
+    }.orEmpty()
 
     suspend fun createOrder(
         site: SiteModel,

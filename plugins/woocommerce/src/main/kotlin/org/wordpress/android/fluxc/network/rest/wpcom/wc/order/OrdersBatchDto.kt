@@ -15,10 +15,14 @@ object OrdersBatchUpdateRequest {
         createRequest: List<Map<String, Any>>,
         updateRequest: List<Map<String, Any>>,
         deleteRequest: List<Long>
-    ) = mutableMapOf<String, Any>().apply {
-        put("create", createRequest)
-        put("update", updateRequest)
-        put("delete", deleteRequest)
+    ) = buildMap {
+        putNotEmpty("create", createRequest)
+        putNotEmpty("update", updateRequest)
+        putNotEmpty("delete", deleteRequest)
+    }
+
+    private fun MutableMap<String, Any>.putNotEmpty(key: String, value: List<*>) {
+        if (value.isNotEmpty()) this[key] = value
     }
 }
 

@@ -4,9 +4,12 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,16 +18,15 @@ import org.mockito.junit.MockitoJUnitRunner
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderStatusModel
-import org.wordpress.android.fluxc.model.order.LineItem
-import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
-import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
-import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 
 @RunWith(MockitoJUnitRunner::class)
 class OrderRestClientTest {
@@ -55,91 +57,58 @@ class OrderRestClientTest {
 
     @Test
     fun `updateOrdersBatch should call gson builder request with expected params`(): Unit = runBlocking {
-        val createRequest = listOf(
-            buildOrderRequest("create1"), buildOrderRequest("create2")
-        )
-        val updateRequest = listOf(
-            buildOrderRequest("update1"), buildOrderRequest("update2")
-        )
-        val deleteRequest = listOf(
-            1.toLong(), 2.toLong(), 3.toLong()
-        )
+        val deleteRequest = listOf(1L, 2L, 3L)
 
         whenever(
             jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                eq(orderRestClient),
-                site = eq(site),
-                url = eq(WOOCOMMERCE.orders.batch.pathV3),
-                body = any(),
-                clazz = eq(OrdersBatchDto::class.java)
+                any(), any(), any(), any(), any<Class<*>>()
             )
         ).thenReturn(
             JetpackSuccess(OrdersBatchDto())
         )
 
-        val response = orderRestClient.updateOrdersBatch(
+        orderRestClient.updateOrdersBatch(
             site = site,
-            createRequest = createRequest,
-            updateRequest = updateRequest,
+            createRequest = emptyList(),
+            updateRequest = emptyList(),
             deleteRequest = deleteRequest
         )
 
-        Assertions.assertThat(
-            response
-        ).isEqualTo(
-            WooPayload(
-                OrdersDatabaseBatch(
-                    createdEntities = emptyList(),
-                    updatedEntities = emptyList(),
-                    deletedEntities = emptyList()
-                )
-            )
+        verify(
+            jetpackTunnelGsonRequestBuilder, times(1)
+        ).syncPostRequest(
+            restClient = eq(orderRestClient),
+            site = eq(site),
+            url = eq(WOOCOMMERCE.orders.batch.pathV3),
+            body = eq(mapOf("delete" to deleteRequest)),
+            clazz = eq(OrdersBatchDto::class.java)
         )
     }
 
-    private fun buildOrderRequest(orderId: String) = UpdateOrderRequest(
-        status = WCOrderStatusModel("$orderId mock-status-key"),
-        lineItems = mutableListOf<LineItem>().apply {
-            add(buildLineItem(1))
-        },
-        shippingAddress = buildAddressModel(),
-        billingAddress = buildBillingModel(),
-        customerNote = "customerNote",
-        shippingLines = null
-    )
+    @Test
+    fun `when updateOrdersBatch fails should result into expected`(): Unit = runBlocking {
+        val jetpackErrorResponse = mock<JetpackError<OrdersBatchDto>>()
+        whenever(jetpackErrorResponse.error).thenReturn(
+            WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR))
+        )
+        whenever(
+            jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                any(), any(), any(), any(), any<Class<*>>()
+            )
+        ).thenReturn(
+            jetpackErrorResponse
+        )
 
-    private fun buildLineItem(id: Int) = LineItem(
-        id = id.toLong(),
-        name = "$id",
-        productId = id.toLong(),
-        variationId = id.toLong(),
-        quantity = 1f
-    )
+        val response = orderRestClient.updateOrdersBatch(
+            site = site,
+            createRequest = emptyList(),
+            updateRequest = emptyList(),
+            deleteRequest = emptyList()
+        )
 
-    private fun buildAddressModel() = Shipping(
-        firstName = "firstName",
-        lastName = "lastName",
-        company = "company",
-        address1 = "address1",
-        address2 = "address2",
-        city = "city",
-        state = "state",
-        postcode = "postcode",
-        country = "countryCode",
-        phone = "phone"
-    )
-
-    private fun buildBillingModel() = Billing(
-        email = "email@email.com",
-        firstName = "firstName",
-        lastName = "lastName",
-        company = "company",
-        address1 = "address1",
-        address2 = "address2",
-        city = "city",
-        state = "state",
-        postcode = "postcode",
-        country = "countryCode",
-        phone = "phone"
-    )
+        assertThat(response).isNotNull
+        assertThat(response.result).isNull()
+        assertThat(response.error).isNotNull
+        assertThat(response.error).isExactlyInstanceOf(WooError::class.java)
+    }
 }
