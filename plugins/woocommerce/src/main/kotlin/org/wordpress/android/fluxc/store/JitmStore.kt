@@ -7,7 +7,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMA
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class JitmStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: JitmRestClient
