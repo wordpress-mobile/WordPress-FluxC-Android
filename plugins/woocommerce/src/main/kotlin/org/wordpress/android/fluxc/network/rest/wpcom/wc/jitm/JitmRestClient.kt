@@ -48,9 +48,6 @@ class JitmRestClient @Inject constructor(
             is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError -> {
                 WooPayload(response.error.toWooError())
             }
-            else -> {
-                WooPayload(emptyArray())
-            }
         }
     }
 }
