@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class JITMApiResponse(
     @SerializedName("content") val content: JITMContent,
-    @SerializedName("CTA") val CTA: JITMCta,
+    @SerializedName("CTA") val cta: JITMCta,
     @SerializedName("ttl") val timeToLive: Int,
     @SerializedName("id") val id: String,
     @SerializedName("feature_class") val featureClass: String,
