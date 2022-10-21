@@ -54,7 +54,7 @@ class JitmRestClientTest {
         jitmStatsUrl: String = ""
     ) = JITMApiResponse(
         content = content,
-        CTA = jitmCta,
+        cta = jitmCta,
         timeToLive = timeToLive,
         id = id,
         featureClass = featureClass,
