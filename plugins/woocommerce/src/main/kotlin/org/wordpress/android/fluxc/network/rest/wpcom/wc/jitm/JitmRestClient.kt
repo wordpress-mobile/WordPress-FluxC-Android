@@ -10,7 +10,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
 import javax.inject.Named
@@ -39,6 +38,29 @@ class JitmRestClient @Inject constructor(
                 "message_path" to messagePath
             ),
             Array<JITMApiResponse>::class.java
+        )
+
+        return when (response) {
+            is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    suspend fun dismissJitmMessage(site: SiteModel, jitmId: String): WooPayload<JitmDismissApiResponse> {
+        val url = WPCOMREST.jetpack_blogs.site(site.siteId).rest_api.jitmPath
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+            this,
+            site,
+            url,
+            mapOf(
+                "id" to jitmId
+            ),
+            JitmDismissApiResponse::class.java
         )
 
         return when (response) {
