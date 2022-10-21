@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.wc.leaderboards
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.times
@@ -179,16 +180,17 @@ class WCLeaderboardsStoreTest {
     }
 
     private suspend fun givenFetchLeaderBoardsReturns(response: Array<LeaderboardsApiResponse>?) {
-        whenever(restClient.fetchLeaderboards(
-            site = stubSite,
-            unit = DAYS,
-            startDate = "2022-10-18T00:00:00",
-            endDate ="2022-10-18T23:59:59",
-            forceRefresh = false,
-            quantity = null,
-        addProductsPath = false)
-        )
-            .thenReturn(WooPayload(response))
+        whenever(
+            restClient.fetchLeaderboards(
+                site = any(),
+                unit = anyOrNull(),
+                startDate = anyOrNull(),
+                endDate = anyOrNull(),
+                quantity = anyOrNull(),
+                addProductsPath = any(),
+                forceRefresh = any(),
+            )
+        ).thenReturn(WooPayload(response))
     }
 
     private fun createStoreUnderTest() {
