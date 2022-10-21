@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson
+package org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm
 
 import com.google.gson.annotations.SerializedName
 
