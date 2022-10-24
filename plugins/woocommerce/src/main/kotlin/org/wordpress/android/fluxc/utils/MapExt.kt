@@ -6,3 +6,7 @@ fun <T> MutableMap<T, String>.putIfNotEmpty(vararg pairs: Pair<T, String?>) = ap
                 ?.let { put(pair.first, it) }
     }
 }
+
+fun <K,V> MutableMap<K, List<V>>.putIfNotEmpty(key: K, value: List<V>) {
+    if (value.isNotEmpty()) this[key] = value
+}

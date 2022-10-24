@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.Response
+import org.wordpress.android.fluxc.utils.putIfNotEmpty
 
 @Suppress("PropertyName", "VariableNaming")
 data class OrdersBatchDto(
@@ -16,13 +17,9 @@ object OrdersBatchUpdateRequest {
         updateRequest: List<Map<String, Any>>,
         deleteRequest: List<Long>
     ) = buildMap {
-        putNotEmpty("create", createRequest)
-        putNotEmpty("update", updateRequest)
-        putNotEmpty("delete", deleteRequest)
-    }
-
-    private fun MutableMap<String, Any>.putNotEmpty(key: String, value: List<*>) {
-        if (value.isNotEmpty()) this[key] = value
+        putIfNotEmpty("create", createRequest)
+        putIfNotEmpty("update", updateRequest)
+        putIfNotEmpty("delete", deleteRequest)
     }
 }
 
