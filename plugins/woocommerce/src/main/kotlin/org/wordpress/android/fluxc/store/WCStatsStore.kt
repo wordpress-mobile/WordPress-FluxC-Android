@@ -78,6 +78,19 @@ class WCStatsStore @Inject constructor(
             MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
             YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
         }
+
+        fun endDateTime(site: SiteModel) = when (this) {
+            DAYS -> DateUtils.getEndDateForSite(site)
+            WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+            MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
+            YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
+        }
+
+        fun datePeriod(site: SiteModel): String {
+            val startDate = startDateTime(site)
+            val endDate = endDateTime(site)
+            return DateUtils.getDatePeriod(startDate, endDate)
+        }
     }
 
     /**
