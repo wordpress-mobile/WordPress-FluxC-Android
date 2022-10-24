@@ -613,7 +613,7 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                     if (
                         ordersToCreate.isEmpty() &&
                         ordersToUpdate.isEmpty() &&
-                        ordersToUpdate.isEmpty()
+                        ordersToDelete.isEmpty()
                     ) {
                         prependToLog("It is not possible to perform a Batch Update with all param requests empty")
                         return@launch
