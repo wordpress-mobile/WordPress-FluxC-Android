@@ -31,7 +31,7 @@ class WCLeaderboardsStore @Inject constructor(
 ) {
     fun observeTopPerformerProducts(
         siteId: Long,
-        granularity: StatsGranularity
+        datePeriod: String
     ): Flow<List<TopPerformerProductEntity>> =
         topPerformersDao
             .observeTopPerformerProducts(siteId, granularity.toString())
@@ -39,7 +39,7 @@ class WCLeaderboardsStore @Inject constructor(
 
     suspend fun getCachedTopPerformerProducts(
         siteId: Long,
-        granularity: StatsGranularity
+        datePeriod: String
     ): List<TopPerformerProductEntity> =
         topPerformersDao.getTopPerformerProductsFor(siteId, granularity.toString())
 
@@ -66,16 +66,16 @@ class WCLeaderboardsStore @Inject constructor(
                 ?.firstOrNull { it.type == PRODUCTS }
                 ?.run {
                     mapper.mapTopPerformerProductsEntity(
-                        this,
-                        site,
-                        productStore,
-                        granularity
+                        response = this,
+                        site = site,
+                        productStore = productStore,
+                        datePeriod = period
                     )
                 }
                 ?.let {
                     topPerformersDao.updateTopPerformerProductsFor(
-                        site.siteId,
-                        granularity.toString(),
+                        siteId = site.siteId,
+                        datePeriod = period,
                         it
                     )
                     WooResult(it)
