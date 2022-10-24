@@ -581,10 +581,7 @@ class OrderUpdateStoreTest {
                     WooPayload(
                         OrdersDatabaseBatch(
                             createdEntities = emptyList(),
-                            updatedEntities = listOf(
-                                OrderEntity(orderId = 123L, localSiteId = LocalId(1)),
-                                OrderEntity(orderId = 456L, localSiteId = LocalId(2))
-                            ),
+                            updatedEntities = orderEntities,
                             deletedEntities = emptyList()
                         )
                     )
@@ -617,10 +614,7 @@ class OrderUpdateStoreTest {
                 }.doReturn(
                     WooPayload(
                         OrdersDatabaseBatch(
-                            createdEntities = listOf(
-                                OrderEntity(orderId = 123L, localSiteId = LocalId(1)),
-                                OrderEntity(orderId = 456L, localSiteId = LocalId(2))
-                            ),
+                            createdEntities = orderEntities,
                             updatedEntities = emptyList(),
                             deletedEntities = emptyList()
                         )
