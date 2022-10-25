@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.wc.leaderboards
 
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.times
@@ -63,8 +62,8 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch top performer products with empty result should return WooError`() = test {
-        givenFetchLeaderBoardsReturns(emptyArray())
         setup()
+        givenFetchLeaderBoardsReturns(emptyArray())
 
         val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
 
@@ -180,17 +179,8 @@ class WCLeaderboardsStoreTest {
     }
 
     private suspend fun givenFetchLeaderBoardsReturns(response: Array<LeaderboardsApiResponse>?) {
-        whenever(
-            restClient.fetchLeaderboards(
-                site = any(),
-                unit = anyOrNull(),
-                startDate = anyOrNull(),
-                endDate = anyOrNull(),
-                quantity = anyOrNull(),
-                addProductsPath = any(),
-                forceRefresh = any(),
-            )
-        ).thenReturn(WooPayload(response))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null, forceRefresh = false))
+            .thenReturn(WooPayload(response))
     }
 
     private fun createStoreUnderTest() {

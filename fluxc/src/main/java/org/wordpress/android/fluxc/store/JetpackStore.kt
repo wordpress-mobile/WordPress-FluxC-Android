@@ -22,14 +22,12 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
-import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
 private const val RELOAD_SITE_DELAY = 5000L
-private const val JETPACK_DOMAIN = "jetpack.wordpress.com"
 
 @Singleton
 class JetpackStore
@@ -198,10 +196,7 @@ class JetpackStore
         val message: String? = null
     ) : OnChangedError
 
-    suspend fun fetchJetpackConnectionUrl(
-        site: SiteModel,
-        autoRegisterSiteIfNeeded: Boolean = false
-    ): JetpackConnectionUrlResult {
+    suspend fun fetchJetpackConnectionUrl(site: SiteModel): JetpackConnectionUrlResult {
         if (site.isUsingWpComRestApi) error("This function supports only self-hosted site using WPAPI")
         return coroutineEngine.withDefaultContext(T.API, this, "fetchJetpackConnectionUrl") {
             val result = wpapiAuthenticator.makeAuthenticatedWPAPIRequest(site) { nonce ->
@@ -215,26 +210,11 @@ class JetpackStore
                 )
                 else -> {
                     val url = result.result.trim('"').replace("\\", "")
-                    val connectionUri = URI.create(url)
-                    if (!autoRegisterSiteIfNeeded || connectionUri.host == JETPACK_DOMAIN) {
-                        JetpackConnectionUrlResult(url)
-                    } else {
-                        registerJetpackSite(url).fold(
-                            onSuccess = {
-                                JetpackConnectionUrlResult(it)
-                            },
-                            onFailure = {
-                                JetpackConnectionUrlResult(JetpackConnectionUrlError(it.message))
-                            }
-                        )
-                    }
+                    JetpackConnectionUrlResult(url)
                 }
             }
         }
     }
-
-    private suspend fun registerJetpackSite(registrationUrl: String): Result<String> =
-        jetpackWPAPIRestClient.registerJetpackSite(registrationUrl)
 
     data class JetpackConnectionUrlResult(
         val url: String

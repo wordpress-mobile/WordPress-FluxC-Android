@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,21 +45,19 @@ class WCLeaderboardsStore @Inject constructor(
     suspend fun fetchTopPerformerProducts(
         site: SiteModel,
         granularity: StatsGranularity = DAYS,
+        queryTimeRange: LongRange? = null,
         quantity: Int? = null,
         addProductsPath: Boolean = false,
-        forceRefresh: Boolean = false,
-        startDate: String? = null,
-        endDate: String? = null,
+        forceRefresh: Boolean = false
     ): WooResult<List<TopPerformerProductEntity>> =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
             fetchAllLeaderboards(
                 site,
                 granularity,
+                queryTimeRange,
                 quantity,
                 addProductsPath,
-                forceRefresh,
-                getStartDateForProductsLeaderboards(site, granularity, startDate),
-                getEndDateForProductsLeaderboards(site, granularity, endDate),
+                forceRefresh
             )
                 .model
                 ?.firstOrNull { it.type == PRODUCTS }
@@ -85,70 +82,27 @@ class WCLeaderboardsStore @Inject constructor(
     private suspend fun fetchAllLeaderboards(
         site: SiteModel,
         unit: StatsGranularity? = null,
+        queryTimeRange: LongRange? = null,
         quantity: Int? = null,
         addProductsPath: Boolean = false,
-        forceRefresh: Boolean,
-        startDate: String? = null,
-        endDate: String? = null,
-    ): WooResult<List<LeaderboardsApiResponse>> {
-        val fetchLeaderboards = restClient.fetchLeaderboards(
-            site,
-            unit,
-            startDate,
-            endDate,
-            quantity,
-            addProductsPath,
-            forceRefresh
-        )
-
-        return when {
-                fetchLeaderboards.isError -> WooResult(fetchLeaderboards.error)
-                fetchLeaderboards.result != null -> WooResult(fetchLeaderboards.result.toList())
+        forceRefresh: Boolean
+    ): WooResult<List<LeaderboardsApiResponse>> =
+        with(
+            restClient.fetchLeaderboards(
+                site,
+                unit,
+                queryTimeRange,
+                quantity,
+                addProductsPath,
+                forceRefresh
+            )
+        ) {
+            return when {
+                isError -> WooResult(error)
+                result != null -> WooResult(result.toList())
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
-
-    /**
-     * Given a [startDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the start date is empty, fetches the date based on the [granularity]
-     */
-    private fun getStartDateForProductsLeaderboards(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        startDate: String?
-    ): String {
-        return if (startDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
-                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
-                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
-                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
-            }
-        } else {
-            DateUtils.getStartDateForSite(site, startDate)
-        }
-    }
-
-    /**
-     * Given a [endDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the end date is empty, fetches the date based on the [granularity]
-     */
-    private fun getEndDateForProductsLeaderboards(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        endDate: String?
-    ): String {
-        return if (endDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-                StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-                StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-            }
-        } else {
-            DateUtils.getEndDateForSite(site, endDate)
-        }
-    }
 
     fun invalidateTopPerformers(siteId: Long) {
         coroutineEngine.launch(AppLog.T.DB, this, "Invalidating top performer products") {

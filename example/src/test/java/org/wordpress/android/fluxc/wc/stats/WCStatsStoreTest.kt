@@ -1294,55 +1294,6 @@ class WCStatsStoreTest {
     }
 
     @Test
-    fun testFetchCurrentDayRevenueStatsDateSpecificEndDate() = runBlocking {
-        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
-            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
-            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
-            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-            val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-
-            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
-            wcStatsStore.fetchRevenueStats(payload)
-
-            val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
-
-            // The date value passed to the network client should match the current date on the site
-            val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
-                    dateArgument.capture(), any(), any(), any())
-            val siteDate = dateArgument.firstValue
-            assertEquals(timeOnSite, siteDate)
-            return@let siteDate
-        }
-
-        reset(mockOrderStatsRestClient)
-
-        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
-            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
-            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
-            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
-            wcStatsStore.fetchRevenueStats(payload)
-
-            val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
-
-            // The date value passed to the network client should match the current date on the site
-            val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
-                    any(), any())
-            val siteDate = dateArgument.firstValue
-            assertEquals(timeOnSite, siteDate)
-            return@let siteDate
-        }
-
-        // The two test sites are 24 hours apart, so we are guaranteed to have one site date match the local date,
-        // and the other not match it
-        val localDate = SimpleDateFormat("yyyy-MM-dd'T'00:00:00").format(Date())
-        assertThat(localDate, anyOf(isEqual(plus12SiteDate), isEqual(minus12SiteDate)))
-        assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
-    }
-
-    @Test
     @Suppress("LongMethod")
     fun testGetRevenueAndOrderStatsForSite() = runBlocking {
         // revenue stats model for current day

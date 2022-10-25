@@ -11,7 +11,6 @@ import com.google.gson.GsonBuilder;
 
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.OkHttpStack;
-import org.wordpress.android.fluxc.network.OpenJdkCookieManager;
 import org.wordpress.android.fluxc.network.RetryOnRedirectBasicNetwork;
 import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArray;
 import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArrayDeserializer;
@@ -92,7 +91,7 @@ public class ReleaseNetworkModule {
     @Provides
     @Singleton
     public CookieManager provideCookieManager() {
-        CookieManager cookieManager = new OpenJdkCookieManager();
+        CookieManager cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
         return cookieManager;
     }
