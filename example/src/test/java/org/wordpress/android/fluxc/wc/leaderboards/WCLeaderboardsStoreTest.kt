@@ -66,7 +66,7 @@ class WCLeaderboardsStoreTest {
         givenFetchLeaderBoardsReturns(emptyArray())
         setup()
 
-        val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
+        val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
 
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
@@ -78,13 +78,13 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
-        storeUnderTest.fetchTopPerformerProducts(stubSite)
+        storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
 
         verify(mapper).mapTopPerformerProductsEntity(
             response?.firstOrNull { it.type == PRODUCTS }!!,
             stubSite,
             productStore,
-            DAYS
+            DAYS.datePeriod(stubSite)
         )
     }
 
@@ -94,7 +94,7 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
-        storeUnderTest.fetchTopPerformerProducts(stubSite)
+        storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
 
         verify(mapper, times(1)).mapTopPerformerProductsEntity(any(), any(), any(), any())
     }
@@ -110,7 +110,7 @@ class WCLeaderboardsStoreTest {
                 returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
             )
 
-            val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
+            val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
 
             assertThat(result.model).isNotNull
             assertThat(result.model).isEqualTo(TOP_PERFORMER_ENTITY_LIST)
@@ -129,7 +129,7 @@ class WCLeaderboardsStoreTest {
                 SiteModel().apply { id = 100 },
             )
 
-            val result = storeUnderTest.fetchTopPerformerProducts(stubSite)
+            val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
 
             assertThat(result.model).isNull()
             assertThat(result.error).isNotNull
@@ -146,12 +146,12 @@ class WCLeaderboardsStoreTest {
                 returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
             )
 
-            storeUnderTest.fetchTopPerformerProducts(stubSite)
+            storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
 
             verify(topPerformersDao, times(1))
                 .updateTopPerformerProductsFor(
                     stubSite.siteId,
-                    DAYS.toString(),
+                    DAYS.datePeriod(stubSite),
                     TOP_PERFORMER_ENTITY_LIST
                 )
         }
@@ -183,12 +183,12 @@ class WCLeaderboardsStoreTest {
         whenever(
             restClient.fetchLeaderboards(
                 site = any(),
-                unit = anyOrNull(),
-                startDate = anyOrNull(),
-                endDate = anyOrNull(),
+                startDate = any(),
+                endDate = any(),
                 quantity = anyOrNull(),
-                addProductsPath = any(),
                 forceRefresh = any(),
+                interval = any(),
+                addProductsPath = any(),
             )
         ).thenReturn(WooPayload(response))
     }
@@ -213,7 +213,7 @@ class WCLeaderboardsStoreTest {
                 givenResponse,
                 siteModel,
                 productStore,
-                DAYS
+                DAYS.datePeriod(siteModel)
             )
         ).thenReturn(returnedTopPerformersList)
     }
@@ -223,7 +223,7 @@ class WCLeaderboardsStoreTest {
             listOf(
                 TopPerformerProductEntity(
                     siteId = 1,
-                    granularity = "Today",
+                    datePeriod = DAYS.datePeriod(stubSite),
                     productId = 123,
                     name = "product",
                     imageUrl = null,
@@ -237,7 +237,7 @@ class WCLeaderboardsStoreTest {
             listOf(
                 TopPerformerProductEntity(
                     siteId = 1,
-                    granularity = "Today",
+                    datePeriod = DAYS.datePeriod(stubSite),
                     productId = 123,
                     name = "product",
                     imageUrl = null,

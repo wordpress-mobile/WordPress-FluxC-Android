@@ -56,7 +56,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS
+                DAYS.datePeriod(stubSite)
         )
         assertThat(result).isNotNull
         assertThat(result.size).isEqualTo(3)
@@ -70,7 +70,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS
+                DAYS.datePeriod(stubSite)
         )
         assertThat(result).isNotNull
         assertThat(result.size).isEqualTo(2)
@@ -83,7 +83,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS
+                DAYS.datePeriod(stubSite)
         )
         assertThat(result).isNotNull
         assertThat(result).isEmpty()
