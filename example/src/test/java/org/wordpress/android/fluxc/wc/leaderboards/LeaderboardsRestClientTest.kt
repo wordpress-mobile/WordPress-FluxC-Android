@@ -50,7 +50,8 @@ class LeaderboardsRestClientTest {
         val response = restClientUnderTest.fetchLeaderboards(
             stubSite,
             DAYS,
-            queryTimeRange = 1L..22L,
+            "10-10-2022",
+            "22-10-2022",
             quantity = 5,
             forceRefresh = false
         )
@@ -60,8 +61,8 @@ class LeaderboardsRestClientTest {
             stubSite,
             WOOCOMMERCE.leaderboards.pathV4Analytics,
             mapOf(
-                "before" to "22",
-                "after" to "1",
+                "before" to "22-10-2022",
+                "after" to "10-10-2022",
                 "per_page" to "5",
                 "interval" to "day",
                 "force_cache_refresh" to "false",
@@ -80,9 +81,10 @@ class LeaderboardsRestClientTest {
         val response = restClientUnderTest.fetchLeaderboards(
             stubSite,
             DAYS,
-            1L..22L,
-            5,
-            forceRefresh = false
+            "10-10-2022",
+            "22-10-2022",
+            forceRefresh = false,
+            quantity = 5
         )
 
         assertThat(response).isNotNull
@@ -99,8 +101,8 @@ class LeaderboardsRestClientTest {
                 stubSite,
                 WOOCOMMERCE.leaderboards.pathV4Analytics,
                 mapOf(
-                    "after" to "1",
-                    "before" to "22",
+                    "after" to "10-10-2022",
+                    "before" to "22-10-2022",
                     "per_page" to "5",
                     "interval" to "day",
                     "force_cache_refresh" to "false",
@@ -118,8 +120,8 @@ class LeaderboardsRestClientTest {
                 stubSite,
                 WOOCOMMERCE.leaderboards.pathV4Analytics,
                 mapOf(
-                    "after" to "1",
-                    "before" to "22",
+                    "after" to "10-10-2022",
+                    "before" to "22-10-2022",
                     "per_page" to "5",
                     "interval" to "day",
                     "force_cache_refresh" to "false",
