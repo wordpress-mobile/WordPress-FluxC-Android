@@ -23,12 +23,16 @@ class JitmStore @Inject constructor(
         }
     }
 
-    suspend fun dismissJitmMessage(site: SiteModel, jitmId: String): Boolean {
+    suspend fun dismissJitmMessage(
+        site: SiteModel,
+        jitmId: String,
+        featureClass: String,
+    ): Boolean {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "jitm-dismiss") {
-            val response = restClient.dismissJitmMessage(site, jitmId).asWooResult()
+            val response = restClient.dismissJitmMessage(site, jitmId, featureClass)
             return@withDefaultContext when {
                 response.isError -> false
-                response.model != null -> {
+                response.result != null -> {
                     true
                 }
                 else -> false

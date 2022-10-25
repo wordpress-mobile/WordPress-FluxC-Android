@@ -50,7 +50,11 @@ class JitmRestClient @Inject constructor(
         }
     }
 
-    suspend fun dismissJitmMessage(site: SiteModel, jitmId: String): WooPayload<JitmDismissApiResponse> {
+    suspend fun dismissJitmMessage(
+        site: SiteModel,
+        jitmId: String,
+        featureClass: String,
+    ): WooPayload<JitmDismissApiResponse> {
         val url = WPCOMREST.jetpack_blogs.site(site.siteId).rest_api.jitmPath
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -58,7 +62,8 @@ class JitmRestClient @Inject constructor(
             site,
             url,
             mapOf(
-                "id" to jitmId
+                "id" to jitmId,
+                "feature_class" to featureClass
             ),
             JitmDismissApiResponse::class.java
         )
