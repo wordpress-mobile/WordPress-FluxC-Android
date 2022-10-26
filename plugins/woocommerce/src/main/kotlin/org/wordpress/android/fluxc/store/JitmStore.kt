@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmDismissApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -27,16 +28,9 @@ class JitmStore @Inject constructor(
         site: SiteModel,
         jitmId: String,
         featureClass: String,
-    ): Boolean {
+    ): WooResult<JitmDismissApiResponse> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "jitm-dismiss") {
-            val response = restClient.dismissJitmMessage(site, jitmId, featureClass)
-            return@withDefaultContext when {
-                response.isError -> false
-                response.result != null -> {
-                    true
-                }
-                else -> false
-            }
+            restClient.dismissJitmMessage(site, jitmId, featureClass).asWooResult()
         }
     }
 }
