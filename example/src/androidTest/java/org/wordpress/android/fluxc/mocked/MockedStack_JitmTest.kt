@@ -10,11 +10,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 import javax.inject.Inject
 
 class MockedStack_JitmTest : MockedStack_Base() {
-    @Inject
-    internal lateinit var restClient: JitmRestClient
+    @Inject internal lateinit var restClient: JitmRestClient
 
-    @Inject
-    internal lateinit var interceptor: ResponseMockingInterceptor
+    @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
     @Throws(Exception::class)
     override fun setUp() {
