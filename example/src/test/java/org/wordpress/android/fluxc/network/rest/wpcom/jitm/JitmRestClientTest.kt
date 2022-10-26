@@ -4,7 +4,7 @@ import com.android.volley.RequestQueue
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
@@ -110,8 +110,8 @@ class JitmRestClientTest {
                 ""
             )
 
-            Assertions.assertThat(actualResponse.isError).isFalse
-            Assertions.assertThat(actualResponse.result).isNotNull
+            assertThat(actualResponse.isError).isFalse
+            assertThat(actualResponse.result).isNotNull
         }
     }
 
@@ -138,8 +138,8 @@ class JitmRestClientTest {
 
             val actualResponse = jitmRestClient.fetchJitmMessage(site, "")
 
-            Assertions.assertThat(actualResponse.isError).isTrue
-            Assertions.assertThat(actualResponse.error).isNotNull
+            assertThat(actualResponse.isError).isTrue
+            assertThat(actualResponse.error).isNotNull
         }
     }
 }
