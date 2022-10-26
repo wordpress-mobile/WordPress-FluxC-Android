@@ -9,6 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -140,6 +141,71 @@ class JitmRestClientTest {
 
             Assertions.assertThat(actualResponse.isError).isTrue
             Assertions.assertThat(actualResponse.error).isNotNull
+        }
+    }
+
+    @Test
+    fun `given success response, when dismiss jitm, return success`() {
+        runBlocking {
+            val site = SiteModel().apply { siteId = 1234 }
+            whenever(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    jitmRestClient,
+                    site,
+                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    mapOf(
+                        "id" to "",
+                        "feature_class" to ""
+                    ),
+                    Any::class.java,
+                )
+            ).thenReturn(
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
+                    arrayOf(provideJitmApiResponse())
+                )
+            )
+
+            val actualResponse = jitmRestClient.dismissJitmMessage(
+                site,
+                "",
+                ""
+            )
+
+            Assertions.assertThat(actualResponse.isError).isFalse
+            Assertions.assertThat(actualResponse.result).isTrue
+        }
+    }
+
+    @Test
+    fun `given error response, when dismiss jitm, return error`() {
+        runBlocking {
+            val site = SiteModel().apply { siteId = 1234 }
+            val expectedError = mock<WPComGsonRequest.WPComGsonNetworkError>().apply {
+                type = mock()
+            }
+            whenever(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    jitmRestClient,
+                    site,
+                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    mapOf(
+                        "id" to "",
+                        "feature_class" to ""
+                    ),
+                    Any::class.java,
+                )
+            ).thenReturn(
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+            )
+
+            val actualResponse = jitmRestClient.dismissJitmMessage(
+                site,
+                "",
+                ""
+            )
+
+            Assertions.assertThat(actualResponse.isError).isTrue
+            Assertions.assertThat(actualResponse.result).isNull()
         }
     }
 }

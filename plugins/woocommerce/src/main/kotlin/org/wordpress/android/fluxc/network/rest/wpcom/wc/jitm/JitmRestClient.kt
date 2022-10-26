@@ -5,6 +5,7 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -54,7 +55,7 @@ class JitmRestClient @Inject constructor(
         site: SiteModel,
         jitmId: String,
         featureClass: String,
-    ): WooPayload<JitmDismissApiResponse> {
+    ): WooPayload<Boolean> {
         val url = WPCOMREST.jetpack_blogs.site(site.siteId).rest_api.jitmPath
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
@@ -65,15 +66,19 @@ class JitmRestClient @Inject constructor(
                 "id" to jitmId,
                 "feature_class" to featureClass
             ),
-            JitmDismissApiResponse::class.java
+            Any::class.java
         )
 
         return when (response) {
             is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess -> {
-                WooPayload(response.data)
+                WooPayload(true)
             }
             is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError -> {
-                WooPayload(response.error.toWooError())
+                if (response.error.type == BaseRequest.GenericErrorType.NOT_FOUND) {
+                    WooPayload(false)
+                } else {
+                    WooPayload(response.error.toWooError())
+                }
             }
         }
     }
