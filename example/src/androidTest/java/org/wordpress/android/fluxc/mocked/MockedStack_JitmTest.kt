@@ -1,7 +1,9 @@
 package org.wordpress.android.fluxc.mocked
 
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
@@ -27,8 +29,8 @@ class MockedStack_JitmTest : MockedStack_Base() {
 
         val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath)
 
-        Assert.assertFalse(result.isError)
-        Assert.assertTrue(!result.result.isNullOrEmpty())
+        assertFalse(result.isError)
+        assertTrue(!result.result.isNullOrEmpty())
     }
 
     @Test
@@ -38,8 +40,8 @@ class MockedStack_JitmTest : MockedStack_Base() {
 
         val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath)
 
-        Assert.assertFalse(result.isError)
-        Assert.assertTrue(result.result.isNullOrEmpty())
+        assertFalse(result.isError)
+        assertTrue(result.result.isNullOrEmpty())
     }
 
     @Test
@@ -49,7 +51,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
 
         val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath)
 
-        Assert.assertTrue(result.isError)
-        Assert.assertEquals(API_ERROR, result.error.type)
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
     }
 }
