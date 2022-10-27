@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmDismissApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
