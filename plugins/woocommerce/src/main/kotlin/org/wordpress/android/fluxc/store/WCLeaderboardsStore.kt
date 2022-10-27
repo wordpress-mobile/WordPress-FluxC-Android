@@ -11,10 +11,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.util.AppLog
@@ -29,124 +29,109 @@ class WCLeaderboardsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val topPerformersDao: TopPerformerProductsDao,
 ) {
+    @Suppress("Unused")
     fun observeTopPerformerProducts(
         siteId: Long,
-        granularity: StatsGranularity
+        datePeriod: String
     ): Flow<List<TopPerformerProductEntity>> =
         topPerformersDao
-            .observeTopPerformerProducts(siteId, granularity.toString())
+            .observeTopPerformerProducts(siteId, datePeriod)
             .distinctUntilChanged()
 
+    @Suppress("Unused")
     suspend fun getCachedTopPerformerProducts(
         siteId: Long,
-        granularity: StatsGranularity
+        datePeriod: String
     ): List<TopPerformerProductEntity> =
-        topPerformersDao.getTopPerformerProductsFor(siteId, granularity.toString())
+        topPerformersDao.getTopPerformerProductsFor(siteId, datePeriod)
 
     suspend fun fetchTopPerformerProducts(
         site: SiteModel,
-        granularity: StatsGranularity = DAYS,
+        granularity: StatsGranularity,
         quantity: Int? = null,
         addProductsPath: Boolean = false,
         forceRefresh: Boolean = false,
-        startDate: String? = null,
-        endDate: String? = null,
-    ): WooResult<List<TopPerformerProductEntity>> =
-        coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
+    ): WooResult<List<TopPerformerProductEntity>> {
+        val startDate = granularity.startDateTime(site)
+        val endDate = granularity.endDateTime(site)
+        val interval = OrderStatsRestClient.OrderStatsApiUnit.fromStatsGranularity(granularity).toString()
+        return fetchTopPerformerProducts(
+            site = site,
+            startDate = startDate,
+            endDate = endDate,
+            quantity = quantity,
+            addProductsPath = addProductsPath,
+            forceRefresh = forceRefresh,
+            interval = interval
+        )
+    }
+
+    @Suppress("LongParameterList")
+    suspend fun fetchTopPerformerProducts(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        quantity: Int? = null,
+        addProductsPath: Boolean = false,
+        forceRefresh: Boolean = false,
+        interval: String = ""
+    ): WooResult<List<TopPerformerProductEntity>> {
+        val period = DateUtils.getDatePeriod(startDate, endDate)
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
             fetchAllLeaderboards(
-                site,
-                granularity,
-                quantity,
-                addProductsPath,
-                forceRefresh,
-                getStartDateForProductsLeaderboards(site, granularity, startDate),
-                getEndDateForProductsLeaderboards(site, granularity, endDate),
+                site = site,
+                startDate = startDate,
+                endDate = endDate,
+                quantity = quantity,
+                addProductsPath = addProductsPath,
+                forceRefresh = forceRefresh,
+                interval = interval
             )
                 .model
                 ?.firstOrNull { it.type == PRODUCTS }
                 ?.run {
                     mapper.mapTopPerformerProductsEntity(
-                        this,
-                        site,
-                        productStore,
-                        granularity
+                        response = this,
+                        site = site,
+                        productStore = productStore,
+                        datePeriod = period
                     )
                 }
                 ?.let {
                     topPerformersDao.updateTopPerformerProductsFor(
-                        site.siteId,
-                        granularity.toString(),
+                        siteId = site.siteId,
+                        datePeriod = period,
                         it
                     )
                     WooResult(it)
                 } ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
+    }
 
+    @Suppress("LongParameterList")
     private suspend fun fetchAllLeaderboards(
         site: SiteModel,
-        unit: StatsGranularity? = null,
-        quantity: Int? = null,
-        addProductsPath: Boolean = false,
+        startDate: String,
+        endDate: String,
+        quantity: Int?,
+        addProductsPath: Boolean,
         forceRefresh: Boolean,
-        startDate: String? = null,
-        endDate: String? = null,
+        interval: String,
     ): WooResult<List<LeaderboardsApiResponse>> {
-        val fetchLeaderboards = restClient.fetchLeaderboards(
-            site,
-            unit,
-            startDate,
-            endDate,
-            quantity,
-            addProductsPath,
-            forceRefresh
+        val response = restClient.fetchLeaderboards(
+            site = site,
+            startDate = startDate,
+            endDate = endDate,
+            quantity = quantity,
+            addProductsPath = addProductsPath,
+            interval = interval,
+            forceRefresh = forceRefresh
         )
 
         return when {
-                fetchLeaderboards.isError -> WooResult(fetchLeaderboards.error)
-                fetchLeaderboards.result != null -> WooResult(fetchLeaderboards.result.toList())
-                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-            }
-        }
-
-    /**
-     * Given a [startDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the start date is empty, fetches the date based on the [granularity]
-     */
-    private fun getStartDateForProductsLeaderboards(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        startDate: String?
-    ): String {
-        return if (startDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
-                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
-                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
-                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
-            }
-        } else {
-            DateUtils.getStartDateForSite(site, startDate)
-        }
-    }
-
-    /**
-     * Given a [endDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the end date is empty, fetches the date based on the [granularity]
-     */
-    private fun getEndDateForProductsLeaderboards(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        endDate: String?
-    ): String {
-        return if (endDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-                StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-                StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-            }
-        } else {
-            DateUtils.getEndDateForSite(site, endDate)
+            response.isError -> WooResult(response.error)
+            response.result != null -> WooResult(response.result.toList())
+            else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
     }
 

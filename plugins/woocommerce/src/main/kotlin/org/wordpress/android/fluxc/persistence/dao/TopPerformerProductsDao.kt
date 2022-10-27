@@ -10,16 +10,16 @@ import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 
 @Dao
 interface TopPerformerProductsDao {
-    @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
+    @Query("SELECT * FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND siteId = :siteId")
     fun observeTopPerformerProducts(
         siteId: Long,
-        granularity: String
+        datePeriod: String
     ): Flow<List<TopPerformerProductEntity>>
 
-    @Query("SELECT * FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
+    @Query("SELECT * FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND siteId = :siteId")
     suspend fun getTopPerformerProductsFor(
         siteId: Long,
-        granularity: String
+        datePeriod: String
     ): List<TopPerformerProductEntity>
 
     @Query("SELECT * FROM TopPerformerProducts WHERE siteId = :siteId")
@@ -30,16 +30,16 @@ interface TopPerformerProductsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: TopPerformerProductEntity)
 
-    @Query("DELETE FROM TopPerformerProducts WHERE granularity = :granularity AND siteId = :siteId")
-    suspend fun deleteAllFor(siteId: Long, granularity: String)
+    @Query("DELETE FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND siteId = :siteId")
+    suspend fun deleteAllFor(siteId: Long, datePeriod: String)
 
     @Transaction
     suspend fun updateTopPerformerProductsFor(
         siteId: Long,
-        granularity: String,
+        datePeriod: String,
         topPerformerProducts: List<TopPerformerProductEntity>
     ) {
-        deleteAllFor(siteId, granularity)
+        deleteAllFor(siteId, datePeriod)
         topPerformerProducts.forEach { topPerformerProduct ->
             insert(topPerformerProduct)
         }
