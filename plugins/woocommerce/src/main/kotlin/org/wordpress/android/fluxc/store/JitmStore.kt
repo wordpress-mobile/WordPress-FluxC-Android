@@ -27,16 +27,9 @@ class JitmStore @Inject constructor(
         site: SiteModel,
         jitmId: String,
         featureClass: String,
-    ): Boolean {
+    ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "jitm-dismiss") {
-            val response = restClient.dismissJitmMessage(site, jitmId, featureClass)
-            return@withDefaultContext when {
-                response.isError -> false
-                response.result != null -> {
-                    true
-                }
-                else -> false
-            }
+            restClient.dismissJitmMessage(site, jitmId, featureClass).asWooResult()
         }
     }
 }
