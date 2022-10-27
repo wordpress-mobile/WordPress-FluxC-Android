@@ -9,15 +9,14 @@ import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMContent
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMCta
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 
 class JitmRestClientTest {
     private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
@@ -171,8 +170,8 @@ class JitmRestClientTest {
                 ""
             )
 
-            Assertions.assertThat(actualResponse.isError).isFalse
-            Assertions.assertThat(actualResponse.result).isTrue
+            assertThat(actualResponse.isError).isFalse
+            assertThat(actualResponse.result).isTrue
         }
     }
 
@@ -204,8 +203,8 @@ class JitmRestClientTest {
                 ""
             )
 
-            Assertions.assertThat(actualResponse.isError).isTrue
-            Assertions.assertThat(actualResponse.result).isNull()
+            assertThat(actualResponse.isError).isTrue
+            assertThat(actualResponse.result).isNull()
         }
     }
 }
