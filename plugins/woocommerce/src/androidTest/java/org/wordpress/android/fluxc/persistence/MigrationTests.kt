@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
-import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_20_21
 
 @RunWith(AndroidJUnit4::class)
 class MigrationTests {
@@ -145,41 +144,6 @@ class MigrationTests {
                     """.trimIndent()
             )
             // Ensure we delete all saved OrderEntities and use the API as the source of true
-            assertThat(cursor.count).isEqualTo(0)
-            cursor.close()
-        }
-    }
-
-    @Test
-    fun testMigrate20to21() {
-        helper.apply {
-            createDatabase(TEST_DB, 20).apply {
-                execSQL(
-                    // language=RoomSql
-                    """
-                    INSERT INTO TopPerformerProducts VALUES(
-                        202934350,
-                        "2022-10-01T00:00:00-2022-10-31T23:59:59",
-                        78,
-                        "WooCommerce Tote Bag",
-                        "https://samplesite.com/awesomeproduct.jpg",
-                        2,
-                        "/$",
-                        11.0,
-                        1666727639491 
-                    )
-                    """.trimIndent()
-                )
-            }.close()
-
-            val migratedDb = runMigrationsAndValidate(TEST_DB, 21, true, MIGRATION_20_21)
-            val cursor = migratedDb.query(
-                // language=RoomSql
-                """
-                        SELECT * FROM TopPerformerProducts
-                    """.trimIndent()
-            )
-            // Ensure we delete all saved TopPerformerProducts
             assertThat(cursor.count).isEqualTo(0)
             cursor.close()
         }

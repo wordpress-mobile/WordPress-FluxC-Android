@@ -372,6 +372,4 @@ object DateUtils {
         val dateString = SiteUtils.getCurrentDateTimeForSite(site, DATE_TIME_FORMAT_START)
         return getDateFromString(dateString, DATE_TIME_FORMAT_START)
     }
-
-    fun getDatePeriod(startDate: String, endDate: String) = "$startDate-$endDate"
 }

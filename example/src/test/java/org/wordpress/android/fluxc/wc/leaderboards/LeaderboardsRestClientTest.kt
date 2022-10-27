@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
@@ -47,12 +48,12 @@ class LeaderboardsRestClientTest {
         val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
         val response = restClientUnderTest.fetchLeaderboards(
-            site = stubSite,
-            startDate = "10-10-2022",
-            endDate = "22-10-2022",
+            stubSite,
+            DAYS,
+            "10-10-2022",
+            "22-10-2022",
             quantity = 5,
-            forceRefresh = false,
-            interval = "day"
+            forceRefresh = false
         )
 
         verify(requestBuilder, times(1)).syncGetRequest(
@@ -78,12 +79,12 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should correctly return failure as WooError`() = test {
         configureErrorRequest()
         val response = restClientUnderTest.fetchLeaderboards(
-            site = stubSite,
-            startDate = "10-10-2022",
-            endDate = "22-10-2022",
+            stubSite,
+            DAYS,
+            "10-10-2022",
+            "22-10-2022",
             forceRefresh = false,
-            quantity = 5,
-            interval = "day"
+            quantity = 5
         )
 
         assertThat(response).isNotNull

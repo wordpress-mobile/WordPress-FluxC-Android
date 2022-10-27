@@ -4,11 +4,11 @@ import androidx.room.Entity
 
 @Entity(
     tableName = "TopPerformerProducts",
-    primaryKeys = ["datePeriod", "productId", "siteId"]
+    primaryKeys = ["granularity", "productId", "siteId"]
 )
 data class TopPerformerProductEntity(
     val siteId: Long,
-    val datePeriod: String,
+    val granularity: String,
     val productId: Long,
     val name: String,
     val imageUrl: String?,

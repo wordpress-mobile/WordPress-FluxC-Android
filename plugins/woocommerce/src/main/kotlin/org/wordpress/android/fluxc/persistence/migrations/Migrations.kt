@@ -603,27 +603,3 @@ internal class AutoMigration17to18 : AutoMigrationSpec
 internal class AutoMigration18to19 : AutoMigrationSpec
 
 internal class AutoMigration19to20 : AutoMigrationSpec
-
-internal val MIGRATION_20_21 = object : Migration(20, 21) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
-            execSQL("DROP TABLE TopPerformerProducts")
-            execSQL(
-                // language=RoomSql
-                """CREATE TABLE IF NOT EXISTS `TopPerformerProducts` (
-                    `siteId` INTEGER NOT NULL,
-                    `datePeriod` TEXT NOT NULL,
-                    `productId` INTEGER NOT NULL,
-                    `name` TEXT NOT NULL,
-                    `imageUrl` TEXT,
-                    `quantity` INTEGER NOT NULL,
-                    `currency` TEXT NOT NULL,
-                    `total` REAL NOT NULL,
-                    `millisSinceLastUpdated` INTEGER NOT NULL,
-                    PRIMARY KEY(`datePeriod`,`productId`,`siteId`)
-                    )
-                    """.trimIndent()
-            )
-        }
-    }
-}

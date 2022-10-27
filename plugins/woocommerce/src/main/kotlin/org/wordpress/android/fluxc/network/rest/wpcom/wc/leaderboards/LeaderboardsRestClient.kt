@@ -9,7 +9,10 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.handleResult
 import javax.inject.Inject
 import javax.inject.Named
@@ -27,41 +30,47 @@ class LeaderboardsRestClient @Inject constructor(
     @Suppress("LongParameterList")
     suspend fun fetchLeaderboards(
         site: SiteModel,
-        startDate: String,
-        endDate: String,
+        unit: StatsGranularity?,
+        startDate: String?,
+        endDate: String?,
         quantity: Int?,
-        forceRefresh: Boolean,
-        interval: String = "",
         addProductsPath: Boolean = false,
-    ): WooPayload<Array<LeaderboardsApiResponse>> {
-        val url = when (addProductsPath) {
-            true -> WOOCOMMERCE.leaderboards.products.pathV4Analytics
-            else -> WOOCOMMERCE.leaderboards.pathV4Analytics
-        }
+        forceRefresh: Boolean
+    ) = when (addProductsPath) {
+        true -> WOOCOMMERCE.leaderboards.products.pathV4Analytics
+        else -> WOOCOMMERCE.leaderboards.pathV4Analytics
+    }.requestTo(site, unit, startDate, endDate, quantity, forceRefresh)
+        .handleResult()
 
-        val parameters = createParameters(startDate, endDate, quantity, forceRefresh, interval)
-
-        return jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            restClient = this@LeaderboardsRestClient,
-            site = site,
-            url = url,
-            params = parameters,
-            clazz = Array<LeaderboardsApiResponse>::class.java
-        ).handleResult()
-    }
+    @Suppress("LongParameterList")
+    private suspend fun String.requestTo(
+        site: SiteModel,
+        unit: StatsGranularity?,
+        startDate: String?,
+        endDate: String?,
+        quantity: Int?,
+        forceRefresh: Boolean
+    ): JetpackResponse<Array<LeaderboardsApiResponse>> = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        this@LeaderboardsRestClient,
+        site,
+        this,
+        createParameters(site, unit, startDate, endDate, quantity, forceRefresh),
+        Array<LeaderboardsApiResponse>::class.java
+    )
 
     @Suppress("LongParameterList")
     private fun createParameters(
-        startDate: String,
-        endDate: String,
+        site: SiteModel,
+        unit: StatsGranularity?,
+        startDate: String?,
+        endDate: String?,
         quantity: Int?,
-        forceRefresh: Boolean,
-        interval: String = ""
+        forceRefresh: Boolean
     ) = mapOf(
-        "before" to endDate,
-        "after" to startDate,
+        "before" to (endDate ?: DateUtils.getEndDateForSite(site)).toString(),
+        "after" to (startDate ?: (unit?.startDateTime(site) ?: "")).toString(),
         "per_page" to quantity?.toString().orEmpty(),
-        "interval" to interval,
+        "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: ""),
         "force_cache_refresh" to forceRefresh.toString()
     ).filter { it.value.isNotEmpty() }
 }
