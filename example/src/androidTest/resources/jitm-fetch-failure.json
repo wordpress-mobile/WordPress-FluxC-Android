@@ -1,0 +1,7 @@
+{
+  "error": "server_error",
+  "message": "Unexpected server error",
+  "data": {
+    "status": 500
+  }
+}
