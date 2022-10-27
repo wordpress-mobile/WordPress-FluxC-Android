@@ -55,6 +55,12 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
         val ordersCount: Int? = null
         @SerializedName("total_sales")
         val totalSales: Double? = null
+        @SerializedName("net_revenue")
+        val netRevenue: Double? = null
+        @SerializedName("avg_order_value")
+        val avgOrderValue: Double? = null
+        @SerializedName("num_items_sold")
+        val itemsSold: Int? = null
     }
 
     /**
