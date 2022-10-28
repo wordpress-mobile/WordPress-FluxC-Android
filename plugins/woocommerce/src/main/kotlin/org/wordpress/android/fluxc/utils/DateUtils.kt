@@ -272,6 +272,14 @@ object DateUtils {
             getDateTimeForSite(site, DATE_TIME_FORMAT_START, dateString)
 
     /**
+     * Given a [SiteModel] and a [dateString] in format yyyy-MM-dd,
+     * returns a formatted date that accounts for the site's timezone setting,
+     * in the format yyy-MM-ddThh:mm:ss with the time always set to the end of the [dateString]
+     */
+    fun getEndDateForSite(site: SiteModel, dateString: String) =
+            getDateTimeForSite(site, DATE_TIME_FORMAT_END, dateString)
+
+    /**
      * Given a [SiteModel],
      * returns a formatted date that accounts for the site's timezone setting,
      * in the format yyy-MM-ddThh:mm:ss with the time always set to the end of the
@@ -364,4 +372,6 @@ object DateUtils {
         val dateString = SiteUtils.getCurrentDateTimeForSite(site, DATE_TIME_FORMAT_START)
         return getDateFromString(dateString, DATE_TIME_FORMAT_START)
     }
+
+    fun getDatePeriod(startDate: String, endDate: String) = "$startDate-$endDate"
 }
