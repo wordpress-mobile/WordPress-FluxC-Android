@@ -14,9 +14,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMContent
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMCta
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMContent
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMCta
 
 class JitmRestClientTest {
     private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder

@@ -54,4 +54,32 @@ class MockedStack_JitmTest : MockedStack_Base() {
         assertTrue(result.isError)
         assertEquals(API_ERROR, result.error.type)
     }
+
+    @Test
+    fun whenJitmDismissedSuccessfullyThenSuccessReturned() = runBlocking {
+        interceptor.respondWith("jitm-dismiss-success.json")
+
+        val result = restClient.dismissJitmMessage(
+            SiteModel().apply { siteId = 123L },
+            jitmId = "123",
+            featureClass = ""
+        )
+
+        assertFalse(result.isError)
+        assertTrue(result.result!!)
+    }
+
+    @Test
+    fun whenJitmDismissedfailsThenFailureReturned() = runBlocking {
+        interceptor.respondWithError("jitm-dismiss-failure.json", 500)
+
+        val result = restClient.dismissJitmMessage(
+            SiteModel().apply { siteId = 123L },
+            jitmId = "123",
+            featureClass = ""
+        )
+
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
+    }
 }
