@@ -1,6 +1,9 @@
 package org.wordpress.android.fluxc.store.signup
 
+import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
+import org.wordpress.android.fluxc.generated.AccountActionBuilder
+import org.wordpress.android.fluxc.model.AccountModel
 import org.wordpress.android.fluxc.network.rest.wpcom.account.signup.SignUpRestClient
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -12,6 +15,7 @@ import javax.inject.Singleton
 class SignUpStore @Inject constructor(
     private val signUpRestClient: SignUpRestClient,
     private val coroutineEngine: CoroutineEngine,
+    private val dispatcher: Dispatcher
 ) {
     companion object {
         const val EMPTY_SUCCESSFUL_RESPONSE = "Empty successful response"
@@ -50,7 +54,14 @@ class SignUpStore @Inject constructor(
                 result.result == null -> CreateWpAccountResult(
                     CreateWpAccountError(EMPTY_SUCCESSFUL_RESPONSE)
                 )
-                else -> CreateWpAccountResult(result.result.success, result.result.token)
+                else -> {
+                    // Persist the account's username
+                    val account = AccountModel().apply {
+                        userName = result.result.username
+                    }
+                    dispatcher.dispatch(AccountActionBuilder.newUpdateAccountAction(account))
+                    CreateWpAccountResult(result.result.success, result.result.token)
+                }
             }
         }
     }
