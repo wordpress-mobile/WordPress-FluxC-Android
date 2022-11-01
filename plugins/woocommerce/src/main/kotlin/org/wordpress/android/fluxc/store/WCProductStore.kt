@@ -104,7 +104,8 @@ class WCProductStore @Inject constructor(
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        var excludedProductIds: List<Long>? = null
+        var excludedProductIds: List<Long>? = null,
+        var filterOptions: Map<ProductFilterOption, String>? = null,
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -416,12 +417,20 @@ class WCProductStore @Inject constructor(
         var products: List<WCProductModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
-        var canLoadMore: Boolean = false
+        var canLoadMore: Boolean = false,
+        var filterOptions: Map<ProductFilterOption, String>? = null
     ) : Payload<ProductError>() {
-        constructor(error: ProductError, site: SiteModel, query: String?, skuSearch: Boolean) : this(
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            query: String?,
+            skuSearch: Boolean,
+            filterOptions: Map<ProductFilterOption, String>?
+        ) : this(
             site = site,
             searchQuery = query,
-            isSkuSearch = skuSearch
+            isSkuSearch = skuSearch,
+            filterOptions = filterOptions
         ) {
             this.error = error
         }
@@ -1099,7 +1108,8 @@ class WCProductStore @Inject constructor(
                 pageSize = pageSize,
                 offset = offset,
                 sorting = sorting,
-                excludedProductIds = excludedProductIds
+                excludedProductIds = excludedProductIds,
+                filterOptions = filterOptions
             )
         }
     }
