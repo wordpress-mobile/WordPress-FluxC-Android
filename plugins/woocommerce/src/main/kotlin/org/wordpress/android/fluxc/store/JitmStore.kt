@@ -16,10 +16,12 @@ class JitmStore @Inject constructor(
 ) {
     suspend fun fetchJitmMessage(
         site: SiteModel,
-        messagePath: String
+        messagePath: String,
+        query: String,
+        locale: String,
     ): WooResult<Array<JITMApiResponse>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "jitm") {
-            restClient.fetchJitmMessage(site, messagePath).asWooResult()
+            restClient.fetchJitmMessage(site, messagePath, query, locale).asWooResult()
         }
     }
 

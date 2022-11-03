@@ -95,7 +95,9 @@ class JitmRestClientTest {
                     site,
                     WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
                     mapOf(
-                        "message_path" to ""
+                        "message_path" to "",
+                        "query" to "",
+                        "locale" to ""
                     ),
                     Array<JITMApiResponse>::class.java,
                 )
@@ -107,6 +109,8 @@ class JitmRestClientTest {
 
             val actualResponse = jitmRestClient.fetchJitmMessage(
                 site,
+                "",
+                "",
                 ""
             )
 
@@ -128,7 +132,9 @@ class JitmRestClientTest {
                     site,
                     WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
                     mapOf(
-                        "message_path" to ""
+                        "message_path" to "",
+                        "query" to "",
+                        "locale" to ""
                     ),
                     Array<JITMApiResponse>::class.java,
                 )
@@ -136,7 +142,7 @@ class JitmRestClientTest {
                 JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
             )
 
-            val actualResponse = jitmRestClient.fetchJitmMessage(site, "")
+            val actualResponse = jitmRestClient.fetchJitmMessage(site, "", "", "")
 
             assertThat(actualResponse.isError).isTrue
             assertThat(actualResponse.error).isNotNull
