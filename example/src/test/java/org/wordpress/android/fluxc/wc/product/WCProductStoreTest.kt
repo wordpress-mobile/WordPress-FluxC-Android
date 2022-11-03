@@ -1,10 +1,6 @@
 package org.wordpress.android.fluxc.wc.product
 
 import com.google.gson.JsonObject
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -12,6 +8,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config

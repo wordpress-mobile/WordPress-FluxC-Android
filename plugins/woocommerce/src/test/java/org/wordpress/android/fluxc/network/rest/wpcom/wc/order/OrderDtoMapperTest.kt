@@ -2,11 +2,11 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.AdditionalAnswers
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 
