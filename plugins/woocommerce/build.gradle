@@ -87,7 +87,7 @@ dependencies {
     testImplementation sharedLibs.androidx.test.core
     testImplementation sharedLibs.assertj.core
     testImplementation sharedLibs.mockito.core
-    testImplementation sharedLibs.nhaarman.mockito.kotlin
+    testImplementation sharedLibs.mockito.kotlin
     testImplementation sharedLibs.kotlinx.coroutines.test
 
     androidTestImplementation sharedLibs.androidx.room.testing
