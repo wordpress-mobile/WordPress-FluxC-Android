@@ -3,10 +3,10 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
-import com.nhaarman.mockitokotlin2.mock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity

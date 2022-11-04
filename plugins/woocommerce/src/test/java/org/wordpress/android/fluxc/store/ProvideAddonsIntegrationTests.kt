@@ -3,10 +3,6 @@ package org.wordpress.android.fluxc.store
 import android.app.Application
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -14,6 +10,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.domain.Addon.CustomText.Restrictions

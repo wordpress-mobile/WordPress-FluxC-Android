@@ -139,7 +139,7 @@ dependencies {
     testImplementation sharedLibs.robolectric
     testImplementation sharedLibs.androidx.test.core
     testImplementation sharedLibs.mockito.core
-    testImplementation sharedLibs.nhaarman.mockito.kotlin
+    testImplementation sharedLibs.mockito.kotlin
     testImplementation sharedLibs.assertj.core
     testImplementation sharedLibs.androidx.arch.core.testing
 
