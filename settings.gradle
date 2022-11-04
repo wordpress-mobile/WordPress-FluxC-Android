@@ -89,4 +89,5 @@ include ':fluxc',
 
 gradle.ext {
     minSdkVersion = 21
+    compileSdkVersion = 31
 }

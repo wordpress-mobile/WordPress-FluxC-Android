@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion gradle.ext.compileSdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
