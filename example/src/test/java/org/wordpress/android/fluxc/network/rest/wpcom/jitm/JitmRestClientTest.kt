@@ -1,12 +1,12 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.jitm
 
 import com.android.volley.RequestQueue
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.UserAgent

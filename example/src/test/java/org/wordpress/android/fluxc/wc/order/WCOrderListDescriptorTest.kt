@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.wc.order
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.list.ListDescriptorUnitTestCase
 import org.wordpress.android.fluxc.list.post.LIST_DESCRIPTOR_TEST_FIRST_MOCK_SITE_LOCAL_SITE_ID
 import org.wordpress.android.fluxc.list.post.LIST_DESCRIPTOR_TEST_QUERY_1
