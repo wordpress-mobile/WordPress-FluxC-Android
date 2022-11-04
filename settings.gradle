@@ -86,3 +86,7 @@ include ':fluxc',
         ':plugins:woocommerce',
         ':example',
         ':tests:api'
+
+gradle.ext {
+    minSdkVersion = 21
+}

@@ -9,7 +9,7 @@ android {
     compileSdkVersion 31
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion gradle.ext.minSdkVersion
         targetSdkVersion 30
         consumerProguardFiles 'proguard-rules.pro'
         javaCompileOptions {
