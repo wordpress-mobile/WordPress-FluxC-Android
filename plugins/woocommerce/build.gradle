@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdkVersion gradle.ext.minSdkVersion
-        targetSdkVersion 30
+        targetSdkVersion gradle.ext.targetSdkVersion
         consumerProguardFiles 'proguard-rules.pro'
         javaCompileOptions {
             annotationProcessorOptions {
