@@ -29,7 +29,6 @@ class JitmRestClient @Inject constructor(
         site: SiteModel,
         messagePath: String,
         query: String,
-        locale: String,
     ): WooPayload<Array<JITMApiResponse>> {
         val url = WPCOMREST.jetpack_blogs.site(site.siteId).rest_api.jitmPath
 
@@ -40,7 +39,6 @@ class JitmRestClient @Inject constructor(
             mapOf(
                 "message_path" to messagePath,
                 "query" to query,
-                "locale" to locale
             ),
             Array<JITMApiResponse>::class.java
         )

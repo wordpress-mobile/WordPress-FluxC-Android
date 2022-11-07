@@ -111,7 +111,6 @@ class JitmRestClientTest {
                 site,
                 "",
                 "",
-                ""
             )
 
             assertThat(actualResponse.isError).isFalse
@@ -142,7 +141,7 @@ class JitmRestClientTest {
                 JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
             )
 
-            val actualResponse = jitmRestClient.fetchJitmMessage(site, "", "", "")
+            val actualResponse = jitmRestClient.fetchJitmMessage(site, "", "")
 
             assertThat(actualResponse.isError).isTrue
             assertThat(actualResponse.error).isNotNull
