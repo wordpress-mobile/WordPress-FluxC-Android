@@ -97,7 +97,6 @@ class JitmRestClientTest {
                     mapOf(
                         "message_path" to "",
                         "query" to "",
-                        "locale" to ""
                     ),
                     Array<JITMApiResponse>::class.java,
                 )
@@ -133,7 +132,6 @@ class JitmRestClientTest {
                     mapOf(
                         "message_path" to "",
                         "query" to "",
-                        "locale" to ""
                     ),
                     Array<JITMApiResponse>::class.java,
                 )
