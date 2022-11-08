@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards
 
-import android.annotation.TargetApi
-import android.os.Build
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.style.URLSpan
@@ -175,11 +173,9 @@ class LeaderboardProductItem(
             getSpans(0, length, URLSpan::class.java)
                     .toList()
 
-    @TargetApi(Build.VERSION_CODES.N)
-    private fun fromHtmlWithSafeApiCall(source: String?) = source
-            ?.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.N }?.let {
-                Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY)
-            } ?: Html.fromHtml(source)
+    private fun fromHtmlWithSafeApiCall(source: String?) = source?.let {
+        Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY)
+    } ?: Html.fromHtml(source)
 
     /**
      * Returns the second object of the Top Performer Item Array if exists
