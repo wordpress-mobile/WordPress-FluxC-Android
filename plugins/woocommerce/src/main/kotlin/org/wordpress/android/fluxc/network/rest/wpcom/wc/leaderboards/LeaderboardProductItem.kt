@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.style.URLSpan
+import androidx.core.text.HtmlCompat
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.LeaderboardItemRow
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 
@@ -84,7 +85,7 @@ class LeaderboardProductItem(
                 ?.split(";")
                 ?.filter { it.contains("&#") }
                 ?.reduce { total, new -> "$total$new" }
-                ?.run { Html.fromHtml(this) }
+                ?.run { HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_MODE_LEGACY) }
                 ?: plainTextCurrency
     }
 
