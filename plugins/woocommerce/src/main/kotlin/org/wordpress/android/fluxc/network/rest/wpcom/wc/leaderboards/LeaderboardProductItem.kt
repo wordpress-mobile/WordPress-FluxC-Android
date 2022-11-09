@@ -84,7 +84,7 @@ class LeaderboardProductItem(
                 ?.split(";")
                 ?.filter { it.contains("&#") }
                 ?.reduce { total, new -> "$total$new" }
-                ?.run { fromHtmlWithSafeApiCall(this) }
+                ?.run { Html.fromHtml(this) }
                 ?: plainTextCurrency
     }
 
@@ -105,7 +105,7 @@ class LeaderboardProductItem(
      *      Output: DKK
      */
     @Suppress("MaxLineLength") private val plainTextCurrency by lazy {
-        fromHtmlWithSafeApiCall(priceAmountHtmlTag)
+        Html.fromHtml(priceAmountHtmlTag)
                 .toString()
                 .replace(Regex("[0-9.,]"), "")
     }
@@ -150,7 +150,7 @@ class LeaderboardProductItem(
      * using the [SpannableStringBuilder] implementation in order to parse it
      */
     private val link by lazy {
-        fromHtmlWithSafeApiCall(itemHtmlTag)
+        Html.fromHtml(itemHtmlTag)
                 .run { this as? SpannableStringBuilder }
                 ?.spansAsList()
                 ?.firstOrNull()
@@ -172,10 +172,6 @@ class LeaderboardProductItem(
     private fun SpannableStringBuilder.spansAsList() =
             getSpans(0, length, URLSpan::class.java)
                     .toList()
-
-    private fun fromHtmlWithSafeApiCall(source: String?) = source?.let {
-        Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY)
-    } ?: Html.fromHtml(source)
 
     /**
      * Returns the second object of the Top Performer Item Array if exists
