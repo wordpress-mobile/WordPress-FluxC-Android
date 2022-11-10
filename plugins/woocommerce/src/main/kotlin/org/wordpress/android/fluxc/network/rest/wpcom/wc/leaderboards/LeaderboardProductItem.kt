@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.style.URLSpan
-import androidx.core.text.HtmlCompat
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.LeaderboardItemRow
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 
@@ -85,7 +84,7 @@ class LeaderboardProductItem(
                 ?.split(";")
                 ?.filter { it.contains("&#") }
                 ?.reduce { total, new -> "$total$new" }
-                ?.run { HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_MODE_LEGACY) }
+                ?.run { Html.fromHtml(this, Html.FROM_HTML_MODE_LEGACY) }
                 ?: plainTextCurrency
     }
 
@@ -106,7 +105,7 @@ class LeaderboardProductItem(
      *      Output: DKK
      */
     @Suppress("MaxLineLength") private val plainTextCurrency by lazy {
-        Html.fromHtml(priceAmountHtmlTag)
+        Html.fromHtml(priceAmountHtmlTag, Html.FROM_HTML_MODE_LEGACY)
                 .toString()
                 .replace(Regex("[0-9.,]"), "")
     }
@@ -151,7 +150,7 @@ class LeaderboardProductItem(
      * using the [SpannableStringBuilder] implementation in order to parse it
      */
     private val link by lazy {
-        Html.fromHtml(itemHtmlTag)
+        Html.fromHtml(itemHtmlTag, Html.FROM_HTML_MODE_LEGACY)
                 .run { this as? SpannableStringBuilder }
                 ?.spansAsList()
                 ?.firstOrNull()
