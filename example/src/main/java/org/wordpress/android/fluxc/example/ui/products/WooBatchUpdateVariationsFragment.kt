@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
@@ -173,7 +173,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
 
     private fun runBatchUpdate(payload: BatchUpdateVariationsPayload) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val result: WooResult<BatchProductVariationsUpdateApiResponse> =
+            val result: WooResult<BatchProductVariationsApiResponse> =
                 wcProductStore.batchUpdateVariations(payload)
 
             withContext(Dispatchers.Main) {

@@ -9,6 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -28,7 +29,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationApiResponse
@@ -376,15 +377,16 @@ class WCProductStoreTest {
                 product.remoteProductId,
                 variationsIds
             ).build()
-            val response = BatchProductVariationsUpdateApiResponse().apply {
+            val response = BatchProductVariationsApiResponse().apply {
                 updatedVariations = emptyList()
             }
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(response)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -417,8 +419,9 @@ class WCProductStoreTest {
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(errorResponse)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -458,15 +461,16 @@ class WCProductStoreTest {
                     sale_price = newSalePrice
                 }
             }
-            val response = BatchProductVariationsUpdateApiResponse().apply {
+            val response = BatchProductVariationsApiResponse().apply {
                 updatedVariations = variationsReturnedFromBackend
             }
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(response)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -511,8 +515,9 @@ class WCProductStoreTest {
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(errorResponse)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)

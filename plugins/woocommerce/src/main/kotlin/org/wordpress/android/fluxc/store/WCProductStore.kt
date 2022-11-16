@@ -31,7 +31,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -1281,15 +1281,18 @@ class WCProductStore @Inject constructor(
      * [BatchUpdateVariationsPayload.Builder] class.
      */
     suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
-        WooResult<BatchProductVariationsUpdateApiResponse> =
+        WooResult<BatchProductVariationsApiResponse> =
         coroutineEngine.withDefaultContext(API, this, "batchUpdateVariations") {
             with(payload) {
-                val result: WooPayload<BatchProductVariationsUpdateApiResponse> =
+                val updateVariations: List<Map<String, Any>> = remoteVariationsIds.map { variationId ->
+                    modifiedProperties.toMutableMap()
+                        .also { properties -> properties["id"] = variationId }
+                }
+                val result: WooPayload<BatchProductVariationsApiResponse> =
                     wcProductRestClient.batchUpdateVariations(
-                        site,
-                        remoteProductId,
-                        remoteVariationsIds,
-                        modifiedProperties
+                        site = site,
+                        productId = remoteProductId,
+                        updateVariations = updateVariations
                     )
 
                 return@withDefaultContext if (result.isError) {

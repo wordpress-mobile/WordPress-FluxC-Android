@@ -76,6 +76,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPass
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
+import org.wordpress.android.fluxc.utils.putIfNotNull
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -932,34 +933,50 @@ class ProductRestClient @Inject constructor(
 
     /**
      * Makes a POST request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/batch`
-     * to batch update product variations.
+     * This API helps you to batch create, update and delete multiple product variations.
      *
+     * @param [site] The site containing the product
      * @param productId Id of the product.
-     * @param variationsIds Ids of variations that are going to be updated.
-     * @param modifiedProperties Map of the properties of variation that are going to be updated.
-     * Keys correspond to the names of variation properties. Values are the updated properties values.
+     * @param createVariations list of product variations to create.
+     * The Map keys correspond to the names of variation properties.
+     * The Map values are the variation properties values.
+     * @param updateVariations list of product variations to update.
+     * The Map keys correspond to the names of variation properties.
+     * The Map values are the variation properties values.
+     * @param deleteVariations list of product variations ids to delete.
      *
-     * @return Instance of [BatchProductVariationsUpdateApiResponse].
+     * @return Instance of [BatchProductVariationsApiResponse].
      */
     suspend fun batchUpdateVariations(
         site: SiteModel,
         productId: Long,
-        variationsIds: Collection<Long>,
-        modifiedProperties: Map<String, Any>
-    ): WooPayload<BatchProductVariationsUpdateApiResponse> = WOOCOMMERCE.products.id(productId).variations.batch.pathV3
-        .let { url ->
-            val variationsUpdates: List<Map<String, Any>> = variationsIds.map { variationId ->
-                modifiedProperties.toMutableMap()
-                    .also { properties -> properties["id"] = variationId }
+        createVariations: List<Map<String, Any>>? = null,
+        updateVariations: List<Map<String, Any>>? = null,
+        deleteVariations: List<Long>? = null
+    ): WooPayload<BatchProductVariationsApiResponse> =
+        WOOCOMMERCE.products.id(productId).variations.batch.pathV3
+            .let { url ->
+                val body = buildMap {
+                    putIfNotNull("create" to createVariations)
+                    putIfNotNull("update" to updateVariations)
+                    putIfNotNull("delete" to deleteVariations)
+                }
+
+                if (body.isEmpty()) {
+                    throw IllegalArgumentException(
+                        "At least one of createVariations, updateVariations or deleteVariations" +
+                            " should not be null"
+                    )
+                }
+
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    this@ProductRestClient,
+                    site,
+                    url,
+                    body,
+                    BatchProductVariationsApiResponse::class.java
+                ).handleResult()
             }
-            jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this@ProductRestClient,
-                site,
-                url,
-                mapOf("update" to variationsUpdates),
-                BatchProductVariationsUpdateApiResponse::class.java
-            ).handleResult()
-        }
 
     /**
      * Makes a POST request to `/wp-json/wc/v3/products` to create
