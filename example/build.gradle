@@ -44,7 +44,6 @@ android {
 
     lintOptions {
         warning 'InvalidPackage'
-        disable 'ExpiredTargetSdkVersion'
     }
 
     testOptions {

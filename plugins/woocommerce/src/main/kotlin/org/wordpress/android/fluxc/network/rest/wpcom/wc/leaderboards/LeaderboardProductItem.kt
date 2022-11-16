@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards
 
-import android.annotation.TargetApi
-import android.os.Build
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.style.URLSpan
@@ -86,7 +84,7 @@ class LeaderboardProductItem(
                 ?.split(";")
                 ?.filter { it.contains("&#") }
                 ?.reduce { total, new -> "$total$new" }
-                ?.run { fromHtmlWithSafeApiCall(this) }
+                ?.run { Html.fromHtml(this, Html.FROM_HTML_MODE_LEGACY) }
                 ?: plainTextCurrency
     }
 
@@ -107,7 +105,7 @@ class LeaderboardProductItem(
      *      Output: DKK
      */
     @Suppress("MaxLineLength") private val plainTextCurrency by lazy {
-        fromHtmlWithSafeApiCall(priceAmountHtmlTag)
+        Html.fromHtml(priceAmountHtmlTag, Html.FROM_HTML_MODE_LEGACY)
                 .toString()
                 .replace(Regex("[0-9.,]"), "")
     }
@@ -152,7 +150,7 @@ class LeaderboardProductItem(
      * using the [SpannableStringBuilder] implementation in order to parse it
      */
     private val link by lazy {
-        fromHtmlWithSafeApiCall(itemHtmlTag)
+        Html.fromHtml(itemHtmlTag, Html.FROM_HTML_MODE_LEGACY)
                 .run { this as? SpannableStringBuilder }
                 ?.spansAsList()
                 ?.firstOrNull()
@@ -174,12 +172,6 @@ class LeaderboardProductItem(
     private fun SpannableStringBuilder.spansAsList() =
             getSpans(0, length, URLSpan::class.java)
                     .toList()
-
-    @TargetApi(Build.VERSION_CODES.N)
-    private fun fromHtmlWithSafeApiCall(source: String?) = source
-            ?.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.N }?.let {
-                Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY)
-            } ?: Html.fromHtml(source)
 
     /**
      * Returns the second object of the Top Performer Item Array if exists
