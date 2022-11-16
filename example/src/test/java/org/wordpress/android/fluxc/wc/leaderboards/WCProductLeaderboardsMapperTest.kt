@@ -1,12 +1,12 @@
 package org.wordpress.android.fluxc.wc.leaderboards
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -56,7 +56,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS
+                DAYS.datePeriod(stubSite)
         )
         assertThat(result).isNotNull
         assertThat(result.size).isEqualTo(3)
@@ -70,7 +70,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS
+                DAYS.datePeriod(stubSite)
         )
         assertThat(result).isNotNull
         assertThat(result.size).isEqualTo(2)
@@ -83,7 +83,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS
+                DAYS.datePeriod(stubSite)
         )
         assertThat(result).isNotNull
         assertThat(result).isEmpty()

@@ -27,7 +27,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWith("jitm-fetch-success.json")
         val messagePath = "woomobile:my_store:admin_notices"
 
-        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath)
+        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath, "")
 
         assertFalse(result.isError)
         assertTrue(!result.result.isNullOrEmpty())
@@ -38,7 +38,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWith("jitm-fetch-success-empty.json")
         val messagePath = ""
 
-        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath)
+        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath, "")
 
         assertFalse(result.isError)
         assertTrue(result.result.isNullOrEmpty())
@@ -49,7 +49,35 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWithError("jitm-fetch-failure.json", 500)
         val messagePath = ""
 
-        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath)
+        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath, "")
+
+        assertTrue(result.isError)
+        assertEquals(API_ERROR, result.error.type)
+    }
+
+    @Test
+    fun whenJitmDismissedSuccessfullyThenSuccessReturned() = runBlocking {
+        interceptor.respondWith("jitm-dismiss-success.json")
+
+        val result = restClient.dismissJitmMessage(
+            SiteModel().apply { siteId = 123L },
+            jitmId = "123",
+            featureClass = ""
+        )
+
+        assertFalse(result.isError)
+        assertTrue(result.result!!)
+    }
+
+    @Test
+    fun whenJitmDismissedfailsThenFailureReturned() = runBlocking {
+        interceptor.respondWithError("jitm-dismiss-failure.json", 500)
+
+        val result = restClient.dismissJitmMessage(
+            SiteModel().apply { siteId = 123L },
+            jitmId = "123",
+            featureClass = ""
+        )
 
         assertTrue(result.isError)
         assertEquals(API_ERROR, result.error.type)

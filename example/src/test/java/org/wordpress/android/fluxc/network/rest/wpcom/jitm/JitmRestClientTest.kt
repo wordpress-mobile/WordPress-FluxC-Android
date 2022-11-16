@@ -1,22 +1,22 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.jitm
 
 import com.android.volley.RequestQueue
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMContent
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMCta
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMContent
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.JITMCta
 
 class JitmRestClientTest {
     private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
@@ -95,7 +95,8 @@ class JitmRestClientTest {
                     site,
                     WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
                     mapOf(
-                        "message_path" to ""
+                        "message_path" to "",
+                        "query" to "",
                     ),
                     Array<JITMApiResponse>::class.java,
                 )
@@ -107,7 +108,8 @@ class JitmRestClientTest {
 
             val actualResponse = jitmRestClient.fetchJitmMessage(
                 site,
-                ""
+                "",
+                "",
             )
 
             assertThat(actualResponse.isError).isFalse
@@ -128,7 +130,8 @@ class JitmRestClientTest {
                     site,
                     WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
                     mapOf(
-                        "message_path" to ""
+                        "message_path" to "",
+                        "query" to "",
                     ),
                     Array<JITMApiResponse>::class.java,
                 )
@@ -136,10 +139,75 @@ class JitmRestClientTest {
                 JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
             )
 
-            val actualResponse = jitmRestClient.fetchJitmMessage(site, "")
+            val actualResponse = jitmRestClient.fetchJitmMessage(site, "", "")
 
             assertThat(actualResponse.isError).isTrue
             assertThat(actualResponse.error).isNotNull
+        }
+    }
+
+    @Test
+    fun `given success response, when dismiss jitm, return success`() {
+        runBlocking {
+            val site = SiteModel().apply { siteId = 1234 }
+            whenever(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    jitmRestClient,
+                    site,
+                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    mapOf(
+                        "id" to "",
+                        "feature_class" to ""
+                    ),
+                    Any::class.java,
+                )
+            ).thenReturn(
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
+                    arrayOf(provideJitmApiResponse())
+                )
+            )
+
+            val actualResponse = jitmRestClient.dismissJitmMessage(
+                site,
+                "",
+                ""
+            )
+
+            assertThat(actualResponse.isError).isFalse
+            assertThat(actualResponse.result).isTrue
+        }
+    }
+
+    @Test
+    fun `given error response, when dismiss jitm, return error`() {
+        runBlocking {
+            val site = SiteModel().apply { siteId = 1234 }
+            val expectedError = mock<WPComGsonRequest.WPComGsonNetworkError>().apply {
+                type = mock()
+            }
+            whenever(
+                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                    jitmRestClient,
+                    site,
+                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    mapOf(
+                        "id" to "",
+                        "feature_class" to ""
+                    ),
+                    Any::class.java,
+                )
+            ).thenReturn(
+                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+            )
+
+            val actualResponse = jitmRestClient.dismissJitmMessage(
+                site,
+                "",
+                ""
+            )
+
+            assertThat(actualResponse.isError).isTrue
+            assertThat(actualResponse.result).isNull()
         }
     }
 }
