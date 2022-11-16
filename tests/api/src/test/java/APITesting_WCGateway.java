@@ -1,16 +1,16 @@
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.oauth2;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
+import io.restassured.builder.RequestSpecBuilder;
+
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.oauth2;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 
 public class APITesting_WCGateway {
     private RequestSpecification mRequestSpec;
