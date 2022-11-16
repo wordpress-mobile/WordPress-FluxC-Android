@@ -31,7 +31,7 @@ class WCAPIOrderRestClient @Inject constructor(
 ) : BaseWCAPIRestClient(dispatcher, requestQueue, userAgent) {
 
     companion object {
-        const val AUTH_KEY = "INSERT_KEY_HERE"
+        const val AUTH_KEY = "INSERT_AUTH_KEY"
     }
 
     suspend fun createOrder(
@@ -89,6 +89,38 @@ class WCAPIOrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun updateOrder(
+            site: SiteModel,
+            orderId: Long,
+            request: UpdateOrderRequest
+    ): WooPayload<OrderEntity> {
+        val url = site.url + "/wp-json" + WOOCOMMERCE.orders.id(orderId).pathV3
+        val params = request.toNetworkRequest()
+
+        val response = wcAPIGsonRequestBuilder.syncPutRequest(
+                this,
+                url,
+                params,
+                OrderDto::class.java,
+                AUTH_KEY
+        )
+
+        return when (response) {
+            is Success -> response.data?.let { orderDto ->
+                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
+            } ?: WooPayload(
+                    error = WooError(
+                            type = WooErrorType.GENERIC_ERROR,
+                            original = GenericErrorType.UNKNOWN,
+                            message = "Success response with empty data"
+                    )
+            )
+
+            is Error -> {
+                WooPayload(WooError(WooErrorType.GENERIC_ERROR, GenericErrorType.UNKNOWN, response.error.message))
+            }
+        }
+    }
 
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
