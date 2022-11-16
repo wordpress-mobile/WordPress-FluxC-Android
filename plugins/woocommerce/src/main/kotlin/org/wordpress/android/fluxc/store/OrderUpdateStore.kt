@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.WCAPIOrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
@@ -41,6 +42,7 @@ class OrderUpdateStore @Inject internal constructor(
     private val dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
+    private val wcAPIOrderRestClient: WCAPIOrderRestClient,
     private val ordersDao: OrdersDao,
     private val siteSqlUtils: SiteSqlUtils
 ) {
@@ -233,7 +235,7 @@ class OrderUpdateStore @Inject internal constructor(
 
     suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<OrderEntity> {
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
-            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
+            val result = wcAPIOrderRestClient.createOrder(site, createOrderRequest)
 
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
