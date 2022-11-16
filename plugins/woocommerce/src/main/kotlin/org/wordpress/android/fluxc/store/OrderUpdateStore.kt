@@ -38,6 +38,7 @@ import javax.inject.Singleton
 typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(OrderEntity, SiteModel) -> Unit
 
 @Singleton
+@Suppress("TooManyFunctions")
 class OrderUpdateStore @Inject internal constructor(
     private val dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
@@ -278,7 +279,7 @@ class OrderUpdateStore @Inject internal constructor(
         trash: Boolean = true
     ): WooResult<Unit> {
         return coroutineEngine.withDefaultContext(T.API, this, "deleteOrder") {
-            val result = wcOrderRestClient.deleteOrder(site, orderId, trash)
+            val result = wcAPIOrderRestClient.deleteOrder(site, orderId, trash)
 
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)

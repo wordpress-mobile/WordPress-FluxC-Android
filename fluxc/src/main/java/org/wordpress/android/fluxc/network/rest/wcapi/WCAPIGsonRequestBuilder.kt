@@ -78,15 +78,15 @@ class WCAPIGsonRequestBuilder @Inject constructor() {
     suspend fun <T> syncDeleteRequest(
             restClient: BaseWCAPIRestClient,
             url: String,
-            body: Map<String, String> = emptyMap(),
+            params: Map<String, String>,
             clazz: Class<T>,
             basicAuthKey: String? = null
     ) = suspendCancellableCoroutine<WCAPIResponse<T>> { cont ->
         callMethod(
                 Request.Method.DELETE,
                 url,
-                null,
-                body,
+                params,
+                emptyMap(),
                 clazz,
                 cont,
                 false,

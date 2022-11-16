@@ -30,13 +30,15 @@ class WCAPIOrderRestClient @Inject constructor(
         userAgent: UserAgent
 ) : BaseWCAPIRestClient(dispatcher, requestQueue, userAgent) {
 
+    companion object {
+        const val AUTH_KEY = "INSERT_KEY_HERE"
+    }
+
     suspend fun createOrder(
             site: SiteModel,
             request: UpdateOrderRequest
     ): WooPayload<OrderEntity> {
         val url = site.url + "/wp-json" + WOOCOMMERCE.orders.pathV3
-        val basicAuthKey = "ENTER_AUTH_KEY"
-
         val params = request.toNetworkRequest()
 
         val response = wcAPIGsonRequestBuilder.syncPostRequest(
@@ -44,7 +46,7 @@ class WCAPIOrderRestClient @Inject constructor(
                 url,
                 params,
                 OrderDto::class.java,
-                basicAuthKey
+                AUTH_KEY
         )
 
         return when (response) {
@@ -60,12 +62,29 @@ class WCAPIOrderRestClient @Inject constructor(
                 )
             }
             is Error -> {
-                WooPayload(
-                        WooError(
-                                WooErrorType.GENERIC_ERROR,
-                                GenericErrorType.UNKNOWN,
-                                response.error.message)
-                )
+                WooPayload(WooError(WooErrorType.GENERIC_ERROR, GenericErrorType.UNKNOWN, response.error.message))
+            }
+        }
+    }
+
+    suspend fun deleteOrder(
+            site: SiteModel,
+            orderId: Long,
+            trash: Boolean
+    ) : WooPayload<Unit> {
+        val url = site.url + "/wp-json" + WOOCOMMERCE.orders.id(orderId).pathV3
+        val response = wcAPIGsonRequestBuilder.syncDeleteRequest(
+                this,
+                url,
+                mapOf("force" to trash.toString()),
+                Unit::class.java,
+                AUTH_KEY
+        )
+
+        return when (response) {
+            is Success -> WooPayload(Unit)
+            is Error -> {
+                WooPayload(WooError(WooErrorType.GENERIC_ERROR, GenericErrorType.UNKNOWN, response.error.message))
             }
         }
     }
