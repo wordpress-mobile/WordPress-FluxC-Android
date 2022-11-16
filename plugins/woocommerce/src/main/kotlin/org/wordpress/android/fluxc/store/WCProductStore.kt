@@ -172,6 +172,43 @@ class WCProductStore @Inject constructor(
         val variation: WCProductVariationModel
     ) : Payload<BaseNetworkError>()
 
+    class BatchGenerateVariationsPayload(
+        val site: SiteModel,
+        val remoteProductId: Long,
+        val variations: List<List<Map<String, Any>>>
+    ) : Payload<BaseNetworkError>() {
+        class Builder(
+            private val site: SiteModel,
+            private val remoteProductId: Long
+        ) {
+            private val variations = mutableListOf<List<Map<String, Any>>>()
+            fun getVariations() = variations.toList()
+
+            private val currentAttributes = mutableListOf<Map<String, Any>>()
+            fun getCurrentAttributes() = currentAttributes.toList()
+
+            fun addVariationAttribute(id: Long, name: String, option: String) {
+                currentAttributes.add( buildMap {
+                    put("id", id)
+                    put("name", name)
+                    put("option", option)
+                })
+            }
+
+            fun addVariation() {
+                if(currentAttributes.isEmpty()) return
+                variations.add(currentAttributes.toList())
+                currentAttributes.clear()
+            }
+
+            fun build() = BatchGenerateVariationsPayload(
+                site = site,
+                remoteProductId = remoteProductId,
+                variations = variations
+            )
+        }
+    }
+
     /**
      * Payload used by [batchUpdateVariations] function.
      *
@@ -1273,6 +1310,44 @@ class WCProductStore @Inject constructor(
             }
         }
     }
+
+    /**
+     * Batch create variations on the backend and save result locally.
+     * For each variant, it only receives the list of attributes. The rest of the variant properties
+     * will use the default values.
+     *
+     * @param payload Instance of [BatchGenerateVariationsPayload]. It can be produced using
+     * [BatchGenerateVariationsPayload.Builder] class.
+     */
+    suspend fun batchGenerateVariations(payload: BatchGenerateVariationsPayload):
+        WooResult<BatchProductVariationsApiResponse> =
+        coroutineEngine.withDefaultContext(API, this, "batchCreateVariations") {
+            val createVariations = payload.variations.map {
+                buildMap { put("attributes", it) }
+            }
+
+            with(payload) {
+                val result: WooPayload<BatchProductVariationsApiResponse> =
+                    wcProductRestClient.batchUpdateVariations(
+                        site = site,
+                        productId = remoteProductId,
+                        createVariations = createVariations
+                    )
+
+                return@withDefaultContext if (result.isError) {
+                    WooResult(result.error)
+                } else {
+                    val generatedVariations = result.result?.createdVariations?.map { response ->
+                        response.asProductVariationModel().apply {
+                            remoteProductId = payload.remoteProductId
+                            localSiteId = payload.site.id
+                        }
+                    } ?: emptyList()
+                    ProductSqlUtils.insertOrUpdateProductVariations(generatedVariations)
+                    WooResult(result.result)
+                }
+            }
+        }
 
     /**
      * Batch updates variations on the backend and updates variations locally after successful request.
