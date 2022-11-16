@@ -13,7 +13,7 @@ class WCAPIGsonRequestBuilder @Inject constructor() {
             restClient: BaseWCAPIRestClient,
             url: String,
             params: Map<String, String> = emptyMap(),
-            body: Map<String, String> = emptyMap(),
+            body: Map<String, Any> = emptyMap(),
             clazz: Class<T>,
             enableCaching: Boolean = false,
             cacheTimeToLive: Int = BaseRequest.DEFAULT_CACHE_LIFETIME,
@@ -36,7 +36,7 @@ class WCAPIGsonRequestBuilder @Inject constructor() {
     suspend fun <T> syncPostRequest(
             restClient: BaseWCAPIRestClient,
             url: String,
-            body: Map<String, String> = emptyMap(),
+            body: Map<String, Any> = emptyMap(),
             clazz: Class<T>,
             basicAuthKey: String? = null
     ) = suspendCancellableCoroutine<WCAPIResponse<T>> { cont ->
@@ -57,7 +57,7 @@ class WCAPIGsonRequestBuilder @Inject constructor() {
     suspend fun <T> syncPutRequest(
             restClient: BaseWCAPIRestClient,
             url: String,
-            body: Map<String, String> = emptyMap(),
+            body: Map<String, Any> = emptyMap(),
             clazz: Class<T>,
             basicAuthKey: String? = null
     ) = suspendCancellableCoroutine<WCAPIResponse<T>> { cont ->
@@ -101,7 +101,7 @@ class WCAPIGsonRequestBuilder @Inject constructor() {
             method: Int,
             url: String,
             params: Map<String, String>?,
-            body: Map<String, String>,
+            body: Map<String, Any>,
             clazz: Class<T>,
             cont: CancellableContinuation<WCAPIResponse<T>>,
             enableCaching: Boolean,
