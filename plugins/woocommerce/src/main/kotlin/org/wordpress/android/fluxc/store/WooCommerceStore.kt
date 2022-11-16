@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCAPISystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCApiVersionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.toDomainModel
@@ -47,6 +48,7 @@ open class WooCommerceStore @Inject constructor(
     private val siteStore: SiteStore,
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
+    private val wcAPISystemRestClient: WCAPISystemRestClient,
     private val settingsMapper: WCSettingsMapper,
     private val siteSqlUtils: SiteSqlUtils
 ) : Store(dispatcher) {
@@ -194,7 +196,7 @@ open class WooCommerceStore @Inject constructor(
 
     suspend fun fetchSSR(site: SiteModel): WooResult<WCSSRModel> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchSSR") {
-            val response = systemRestClient.fetchSSR(site)
+            val response = wcAPISystemRestClient.fetchSSR(site)
             return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
