@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wcapi.BaseWCAPIRestClient
 import org.wordpress.android.fluxc.network.rest.wcapi.WCAPIGsonRequest
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -116,6 +117,93 @@ class WCAPIProductRestClient @Inject constructor(
         add(request)
     }
 
+    fun fetchProducts(
+            site: SiteModel,
+            pageSize: Int = WCProductStore.DEFAULT_PRODUCT_PAGE_SIZE,
+            offset: Int = 0,
+            sortType: WCProductStore.ProductSorting = WCProductStore.DEFAULT_PRODUCT_SORTING,
+            searchQuery: String? = null,
+            isSkuSearch: Boolean = false,
+            includedProductIds: List<Long>? = null,
+            filterOptions: Map<WCProductStore.ProductFilterOption, String>? = null,
+            excludedProductIds: List<Long>? = null
+    ) {
+        val url = site.url + "/wp-json" + WOOCOMMERCE.products.pathV3
+        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
+        val params = buildProductParametersMap(
+                pageSize = pageSize,
+                sortType = sortType,
+                offset = offset,
+                searchQuery = searchQuery,
+                isSkuSearch = isSkuSearch,
+                includedProductIds = includedProductIds,
+                excludedProductIds = excludedProductIds,
+                filterOptions = filterOptions
+        )
+
+        val request = WCAPIGsonRequest(
+                method = Request.Method.GET,
+                url = url,
+                params = params,
+                body = emptyMap(),
+                type = responseType,
+                listener = { response: List<ProductApiResponse>? ->
+                    // success
+                    val productModels = response?.map {
+                        it.asProductModel().apply { localSiteId = site.id }
+                    }.orEmpty()
+
+                    val loadedMore = offset > 0
+                    val canLoadMore = productModels.size == pageSize
+                    if (searchQuery == null) {
+                        val payload = WCProductStore.RemoteProductListPayload(
+                                site,
+                                productModels,
+                                offset,
+                                loadedMore,
+                                canLoadMore,
+                                includedProductIds,
+                                excludedProductIds
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    } else {
+                        val payload = WCProductStore.RemoteSearchProductsPayload(
+                                site = site,
+                                searchQuery = searchQuery,
+                                isSkuSearch = isSkuSearch,
+                                products = productModels,
+                                offset = offset,
+                                loadedMore = loadedMore,
+                                canLoadMore = canLoadMore
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
+                    }
+                },
+                errorListener = { networkError ->
+                    // error
+                    val productError = WCProductStore.ProductError(
+                            WCProductStore.ProductErrorType.GENERIC_ERROR,
+                            networkError.message
+                    )
+                    if (searchQuery == null) {
+                        val payload = WCProductStore.RemoteProductListPayload(productError, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    } else {
+                        val payload = WCProductStore.RemoteSearchProductsPayload(
+                                error = productError,
+                                site = site,
+                                query = searchQuery,
+                                skuSearch = isSkuSearch,
+                                filterOptions = filterOptions
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
+                    }
+                }
+        )
+
+        request.addHeader("Authorization", "Basic $AUTH_KEY")
+        add(request)
+    }
 
     /**
      * Build json body of product items to be updated to the backend.
@@ -301,5 +389,54 @@ class WCAPIProductRestClient @Inject constructor(
         }
 
         return body
+    }
+
+    private fun buildProductParametersMap(
+            pageSize: Int,
+            sortType: WCProductStore.ProductSorting,
+            offset: Int,
+            searchQuery: String?,
+            isSkuSearch: Boolean,
+            includedProductIds: List<Long>? = null,
+            excludedProductIds: List<Long>? = null,
+            filterOptions: Map<WCProductStore.ProductFilterOption, String>? = null
+    ): MutableMap<String, String> {
+        val params = mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "orderby" to sortType.asOrderByParameter(),
+                "order" to sortType.asSortOrderParameter(),
+                "offset" to offset.toString()
+        )
+
+        includedProductIds?.let { includedIds ->
+            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
+        }
+        excludedProductIds?.let { excludedIds ->
+            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
+        }
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
+        }
+
+        if (searchQuery.isNullOrEmpty().not()) {
+            if (isSkuSearch) {
+                params["sku"] = searchQuery!! // full SKU match
+                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+            } else {
+                params["search"] = searchQuery!!
+            }
+        }
+
+        return params
+    }
+
+    private fun WCProductStore.ProductSorting.asOrderByParameter() = when (this) {
+        WCProductStore.ProductSorting.TITLE_ASC, WCProductStore.ProductSorting.TITLE_DESC -> "title"
+        WCProductStore.ProductSorting.DATE_ASC, WCProductStore.ProductSorting.DATE_DESC -> "date"
+    }
+
+    private fun WCProductStore.ProductSorting.asSortOrderParameter() = when (this) {
+        WCProductStore.ProductSorting.TITLE_ASC, WCProductStore.ProductSorting.DATE_ASC -> "asc"
+        WCProductStore.ProductSorting.TITLE_DESC, WCProductStore.ProductSorting.DATE_DESC -> "desc"
     }
 }

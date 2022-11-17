@@ -1067,7 +1067,7 @@ class WCProductStore @Inject constructor(
 
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) {
-            wcProductRestClient.fetchProducts(
+            wcAPIProductRestClient.fetchProducts(
                     site = site,
                     pageSize = pageSize,
                     offset = offset,
