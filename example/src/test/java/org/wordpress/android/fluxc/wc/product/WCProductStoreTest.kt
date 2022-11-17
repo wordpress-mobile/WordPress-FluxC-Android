@@ -36,6 +36,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariatio
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.BatchGenerateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
@@ -593,4 +594,83 @@ class WCProductStoreTest {
             assertThat(get("shipping_class")).isEqualTo(modifiedShippingClassSlug)
         }
     }
+
+    @Test
+    fun `when variation generation succeed, result is received`() =
+        test {
+            // given
+            val productId = 6L
+            val site = SiteModel()
+
+            // when API call succeed
+            val variationsPayload = BatchGenerateVariationsPayload.Builder(
+                site,
+                productId
+            ).run {
+                addVariationAttribute(0,"Size","M")
+                addVariation()
+
+                addVariationAttribute(0,"Size","L")
+                addVariation()
+
+                build()
+            }
+
+            val response = BatchProductVariationsApiResponse().apply {
+                createdVariations = emptyList()
+            }
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull()
+                )
+            ) doReturn WooPayload(response)
+
+            val result = productStore.batchGenerateVariations(variationsPayload)
+
+            // then
+            assertThat(result.isError).isFalse
+            assertThat(result.model).isNotNull
+        }
+
+    @Test
+    fun `when variation generation fails, error is received`() =
+        test {
+            // given
+            val productId = 6L
+            val site = SiteModel()
+
+            // when API call fails
+            val variationsPayload = BatchGenerateVariationsPayload.Builder(
+                site,
+                productId
+            ).run {
+                addVariationAttribute(0,"Size","M")
+                addVariation()
+
+                addVariationAttribute(0,"Size","L")
+                addVariation()
+
+                build()
+            }
+
+            val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull()
+                )
+            ) doReturn WooPayload(errorResponse)
+
+            val result = productStore.batchGenerateVariations(variationsPayload)
+
+            // then
+            assertThat(result.isError).isTrue
+        }
 }
