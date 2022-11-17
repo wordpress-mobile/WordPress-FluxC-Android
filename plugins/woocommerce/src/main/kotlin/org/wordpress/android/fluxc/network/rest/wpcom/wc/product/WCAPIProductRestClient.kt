@@ -25,7 +25,7 @@ class WCAPIProductRestClient @Inject constructor(
         userAgent: UserAgent
 ) : BaseWCAPIRestClient(dispatcher, requestQueue, userAgent) {
     companion object {
-        const val AUTH_KEY = "INSERT_KEY"
+        const val AUTH_KEY = "ADD_KEY_HERE"
     }
 
     fun addProduct(
@@ -66,6 +66,51 @@ class WCAPIProductRestClient @Inject constructor(
                             WCProductModel()
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
+                }
+        )
+
+        request.addHeader("Authorization", "Basic $AUTH_KEY")
+        add(request)
+    }
+
+    fun updateProduct(
+            site: SiteModel,
+            storedWCProductModel: WCProductModel?,
+            updatedProductModel: WCProductModel
+    ) {
+        val remoteProductId = updatedProductModel.remoteProductId
+        val url = site.url + "/wp-json" + WOOCOMMERCE.products.id(remoteProductId).pathV3
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
+
+        val request = WCAPIGsonRequest(
+                method = Request.Method.PUT,
+                url = url,
+                params = emptyMap(),
+                body = body,
+                type = responseType,
+                listener = { response: ProductApiResponse? ->
+                    // success
+                    response?.let { product ->
+                        val newModel = product.asProductModel().apply {
+                            localSiteId = site.id
+                        }
+                        val payload = WCProductStore.RemoteUpdateProductPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
+                    }
+                },
+                errorListener = { networkError ->
+                    // error
+                    val productError = WCProductStore.ProductError(
+                            WCProductStore.ProductErrorType.GENERIC_ERROR,
+                            networkError.message
+                    )
+                    val payload = WCProductStore.RemoteUpdateProductPayload(
+                            productError,
+                            site,
+                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
                 }
         )
 

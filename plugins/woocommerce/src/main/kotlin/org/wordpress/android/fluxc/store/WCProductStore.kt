@@ -1239,7 +1239,7 @@ class WCProductStore @Inject constructor(
     private fun updateProduct(payload: UpdateProductPayload) {
         with(payload) {
             val storedProduct = getProductByRemoteId(site, product.remoteProductId)
-            wcProductRestClient.updateProduct(site, storedProduct, product)
+            wcAPIProductRestClient.updateProduct(site, storedProduct, product)
         }
     }
 
