@@ -607,17 +607,21 @@ class WCProductStoreTest {
                 site,
                 productId
             ).run {
-                addVariationAttribute(0,"Size","M")
+                addVariationAttribute(0, "Size", "M")
                 addVariation()
 
-                addVariationAttribute(0,"Size","L")
+                addVariationAttribute(0, "Size", "L")
                 addVariation()
 
                 build()
             }
 
+            val createdVariationsResponse = List(variationsPayload.variations.size) { index ->
+                ProductVariationApiResponse().apply { id = index.toLong() }
+            }
+
             val response = BatchProductVariationsApiResponse().apply {
-                createdVariations = emptyList()
+                createdVariations = createdVariationsResponse
             }
             whenever(
                 productRestClient.batchUpdateVariations(
@@ -631,9 +635,14 @@ class WCProductStoreTest {
 
             val result = productStore.batchGenerateVariations(variationsPayload)
 
-            // then
+            // then result is expected
             assertThat(result.isError).isFalse
             assertThat(result.model).isNotNull
+
+            // then result is saved in DB
+            with(ProductSqlUtils.getVariationsForProduct(site, productId)) {
+                assertThat(this.size).isEqualTo(createdVariationsResponse.size)
+            }
         }
 
     @Test
@@ -648,10 +657,10 @@ class WCProductStoreTest {
                 site,
                 productId
             ).run {
-                addVariationAttribute(0,"Size","M")
+                addVariationAttribute(0, "Size", "M")
                 addVariation()
 
-                addVariationAttribute(0,"Size","L")
+                addVariationAttribute(0, "Size", "L")
                 addVariation()
 
                 build()
@@ -670,7 +679,12 @@ class WCProductStoreTest {
 
             val result = productStore.batchGenerateVariations(variationsPayload)
 
-            // then
+            // then result is error
             assertThat(result.isError).isTrue
+
+            // then result is NOT saved in DB
+            with(ProductSqlUtils.getVariationsForProduct(site, productId)) {
+                assertThat(this.size).isEqualTo(0)
+            }
         }
 }
