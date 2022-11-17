@@ -11,6 +11,10 @@ import org.wordpress.android.fluxc.network.UserAgent
 open class BaseWCAPIRestClient(private val mDispatcher: Dispatcher, private val mRequestQueue: RequestQueue,
                                private val mUserAgent: UserAgent) {
 
+    companion object {
+        const val AUTH_KEY = "ADD_KEY_HERE"
+    }
+
     private val mOnAuthFailedListener: OnAuthFailedListener =
             OnAuthFailedListener { authError ->
                 mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(authError))

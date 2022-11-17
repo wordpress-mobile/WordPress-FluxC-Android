@@ -29,7 +29,6 @@ class WCAPISystemRestClient @Inject constructor(
 
     suspend fun fetchSSR(site: SiteModel): WooPayload<SSRResponse> {
         val url = site.url + "/wp-json" + WOOCOMMERCE.system_status.pathV3
-        val basicAuthKey = "ENTER_AUTH_KEY"
 
         val response = wcAPIGsonRequestBuilder.syncGetRequest(
             restClient = this,
@@ -39,7 +38,7 @@ class WCAPISystemRestClient @Inject constructor(
             clazz = SSRResponse::class.java,
             enableCaching = true,
             cacheTimeToLive = BaseRequest.DEFAULT_CACHE_LIFETIME,
-            basicAuthKey = basicAuthKey
+            basicAuthKey = AUTH_KEY
         )
         return when (response) {
             is Success -> {

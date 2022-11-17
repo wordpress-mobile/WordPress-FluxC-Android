@@ -24,9 +24,6 @@ class WCAPIProductRestClient @Inject constructor(
         @Named("regular") requestQueue: RequestQueue,
         userAgent: UserAgent
 ) : BaseWCAPIRestClient(dispatcher, requestQueue, userAgent) {
-    companion object {
-        const val AUTH_KEY = "ADD_KEY_HERE"
-    }
 
     fun addProduct(
             site: SiteModel,
@@ -71,6 +68,7 @@ class WCAPIProductRestClient @Inject constructor(
 
         request.addHeader("Authorization", "Basic $AUTH_KEY")
         add(request)
+
     }
 
     fun updateProduct(

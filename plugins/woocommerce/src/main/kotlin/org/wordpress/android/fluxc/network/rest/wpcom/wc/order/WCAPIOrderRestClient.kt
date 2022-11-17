@@ -30,10 +30,6 @@ class WCAPIOrderRestClient @Inject constructor(
         userAgent: UserAgent
 ) : BaseWCAPIRestClient(dispatcher, requestQueue, userAgent) {
 
-    companion object {
-        const val AUTH_KEY = "INSERT_AUTH_KEY"
-    }
-
     suspend fun createOrder(
             site: SiteModel,
             request: UpdateOrderRequest
