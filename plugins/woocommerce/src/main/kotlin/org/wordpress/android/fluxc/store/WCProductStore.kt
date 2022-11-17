@@ -1149,7 +1149,7 @@ class WCProductStore @Inject constructor(
     suspend fun fetchProductReviews(payload: FetchProductReviewsPayload): OnProductReviewChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductReviews") {
             val response = with(payload) {
-                wcProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus)
+                wcAPIProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus)
             }
 
             val onProductReviewChanged = if (response.isError) {

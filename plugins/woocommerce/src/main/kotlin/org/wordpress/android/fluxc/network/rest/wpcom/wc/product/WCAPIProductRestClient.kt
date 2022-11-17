@@ -10,9 +10,13 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductReviewModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wcapi.BaseWCAPIRestClient
 import org.wordpress.android.fluxc.network.rest.wcapi.WCAPIGsonRequest
+import org.wordpress.android.fluxc.network.rest.wcapi.WCAPIGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wcapi.WCAPIResponse
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import javax.inject.Inject
@@ -23,7 +27,8 @@ import javax.inject.Singleton
 class WCAPIProductRestClient @Inject constructor(
         private val dispatcher: Dispatcher,
         @Named("regular") requestQueue: RequestQueue,
-        userAgent: UserAgent
+        userAgent: UserAgent,
+        private val wcAPIGsonRequestBuilder: WCAPIGsonRequestBuilder
 ) : BaseWCAPIRestClient(dispatcher, requestQueue, userAgent) {
 
     fun addProduct(
@@ -204,6 +209,77 @@ class WCAPIProductRestClient @Inject constructor(
         request.addHeader("Authorization", "Basic $AUTH_KEY")
         add(request)
     }
+
+    suspend fun fetchProductReviews(
+            site: SiteModel,
+            offset: Int,
+            reviewIds: List<Long>? = null,
+            productIds: List<Long>? = null,
+            filterByStatus: List<String>? = null
+    ): WCProductStore.FetchProductReviewsResponsePayload {
+        val statusFilter = filterByStatus?.joinToString { it } ?: "all"
+
+        val url = site.url + "/wp-json" + WOOCOMMERCE.products.reviews.pathV3
+        val params = mutableMapOf(
+                "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
+                "offset" to offset.toString(),
+                "status" to statusFilter
+        )
+        reviewIds?.let { ids ->
+            params.put("include", ids.map { it }.joinToString())
+        }
+        productIds?.let { ids ->
+            params.put("product", ids.map { it }.joinToString())
+        }
+
+        val response = wcAPIGsonRequestBuilder.syncGetRequest(
+                restClient = this,
+                url = url,
+                params = params,
+                body = emptyMap(),
+                clazz = Array<ProductReviewApiResponse>::class.java,
+                enableCaching = true,
+                cacheTimeToLive = BaseRequest.DEFAULT_CACHE_LIFETIME,
+                basicAuthKey = AUTH_KEY
+        )
+
+        return when (response) {
+            is WCAPIResponse.Success -> {
+                val productData = response.data
+                if (productData != null) {
+                    val reviews = productData.map { review ->
+                        productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
+                    }
+                    WCProductStore.FetchProductReviewsResponsePayload(
+                            site,
+                            reviews,
+                            productIds,
+                            filterByStatus,
+                            offset > 0,
+                            reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                    )
+                } else {
+                    WCProductStore.FetchProductReviewsResponsePayload(
+                            WCProductStore.ProductError(
+                                    WCProductStore.ProductErrorType.GENERIC_ERROR,
+                                    "Success response with empty data"
+                            ),
+                            site
+                    )
+                }
+            }
+            is WCAPIResponse.Error -> {
+                WCProductStore.FetchProductReviewsResponsePayload(
+                        WCProductStore.ProductError(
+                                WCProductStore.ProductErrorType.GENERIC_ERROR,
+                                "Generic error"
+                        ),
+                        site
+                )
+            }
+        }
+    }
+
 
     /**
      * Build json body of product items to be updated to the backend.
@@ -439,4 +515,19 @@ class WCAPIProductRestClient @Inject constructor(
         WCProductStore.ProductSorting.TITLE_ASC, WCProductStore.ProductSorting.DATE_ASC -> "asc"
         WCProductStore.ProductSorting.TITLE_DESC, WCProductStore.ProductSorting.DATE_DESC -> "desc"
     }
+
+        private fun productReviewResponseToProductReviewModel(response: ProductReviewApiResponse): WCProductReviewModel {
+            return WCProductReviewModel().apply {
+                remoteProductReviewId = response.id
+                remoteProductId = response.product_id
+                dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
+                status = response.status ?: ""
+                reviewerName = response.reviewer ?: ""
+                reviewerEmail = response.reviewer_email ?: ""
+                review = response.review ?: ""
+                rating = response.rating
+                verified = response.verified
+                reviewerAvatarsJson = response.reviewer_avatar_urls?.toString() ?: ""
+            }
+        }
 }
