@@ -34,6 +34,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAd
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.WCAPIProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -51,11 +52,12 @@ import javax.inject.Singleton
 @Suppress("LargeClass")
 @Singleton
 class WCProductStore @Inject constructor(
-    dispatcher: Dispatcher,
-    private val wcProductRestClient: ProductRestClient,
-    private val coroutineEngine: CoroutineEngine,
-    private val addonsDao: AddonsDao,
-    private val logger: AppLogWrapper
+        dispatcher: Dispatcher,
+        private val wcProductRestClient: ProductRestClient,
+        private val wcAPIProductRestClient: WCAPIProductRestClient,
+        private val coroutineEngine: CoroutineEngine,
+        private val addonsDao: AddonsDao,
+        private val logger: AppLogWrapper
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -1487,7 +1489,7 @@ class WCProductStore @Inject constructor(
 
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
-            wcProductRestClient.addProduct(site, product)
+            wcAPIProductRestClient.addProduct(site, product)
         }
     }
 
