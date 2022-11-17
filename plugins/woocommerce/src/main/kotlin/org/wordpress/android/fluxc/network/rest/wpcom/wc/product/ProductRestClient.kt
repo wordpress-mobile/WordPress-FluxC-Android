@@ -962,12 +962,7 @@ class ProductRestClient @Inject constructor(
                     putIfNotNull("delete" to deleteVariations)
                 }
 
-                if (body.isEmpty()) {
-                    throw IllegalArgumentException(
-                        "At least one of createVariations, updateVariations or deleteVariations" +
-                            " should not be null"
-                    )
-                }
+                require(body.isNotEmpty())
 
                 jetpackTunnelGsonRequestBuilder.syncPostRequest(
                     this@ProductRestClient,
