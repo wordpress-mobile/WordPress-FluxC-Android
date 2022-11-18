@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -31,7 +32,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -170,6 +171,12 @@ class WCProductStore @Inject constructor(
     class UpdateVariationPayload(
         var site: SiteModel,
         val variation: WCProductVariationModel
+    ) : Payload<BaseNetworkError>()
+
+    class BatchGenerateVariationsPayload(
+        val site: SiteModel,
+        val remoteProductId: Long,
+        val variations: List<VariationAttributes>
     ) : Payload<BaseNetworkError>()
 
     /**
@@ -1275,21 +1282,61 @@ class WCProductStore @Inject constructor(
     }
 
     /**
+     * Batch create variations on the backend and save result locally.
+     * For each variant, it only receives the list of attributes. The rest of the variant properties
+     * will use the default values.
+     *
+     * @param payload Instance of [BatchGenerateVariationsPayload].
+     */
+    suspend fun batchGenerateVariations(payload: BatchGenerateVariationsPayload):
+        WooResult<BatchProductVariationsApiResponse> =
+        coroutineEngine.withDefaultContext(API, this, "batchCreateVariations") {
+            val createVariations = payload.variations.map {
+                buildMap { put("attributes", it) }
+            }
+
+            with(payload) {
+                val result: WooPayload<BatchProductVariationsApiResponse> =
+                    wcProductRestClient.batchUpdateVariations(
+                        site = site,
+                        productId = remoteProductId,
+                        createVariations = createVariations
+                    )
+
+                return@withDefaultContext if (result.isError) {
+                    WooResult(result.error)
+                } else {
+                    val generatedVariations = result.result?.createdVariations?.map { response ->
+                        response.asProductVariationModel().apply {
+                            remoteProductId = payload.remoteProductId
+                            localSiteId = payload.site.id
+                        }
+                    } ?: emptyList()
+                    ProductSqlUtils.insertOrUpdateProductVariations(generatedVariations)
+                    WooResult(result.result)
+                }
+            }
+        }
+
+    /**
      * Batch updates variations on the backend and updates variations locally after successful request.
      *
      * @param payload Instance of [BatchUpdateVariationsPayload]. It can be produced using
      * [BatchUpdateVariationsPayload.Builder] class.
      */
     suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
-        WooResult<BatchProductVariationsUpdateApiResponse> =
+        WooResult<BatchProductVariationsApiResponse> =
         coroutineEngine.withDefaultContext(API, this, "batchUpdateVariations") {
             with(payload) {
-                val result: WooPayload<BatchProductVariationsUpdateApiResponse> =
+                val updateVariations: List<Map<String, Any>> = remoteVariationsIds.map { variationId ->
+                    modifiedProperties.toMutableMap()
+                        .also { properties -> properties["id"] = variationId }
+                }
+                val result: WooPayload<BatchProductVariationsApiResponse> =
                     wcProductRestClient.batchUpdateVariations(
-                        site,
-                        remoteProductId,
-                        remoteVariationsIds,
-                        modifiedProperties
+                        site = site,
+                        productId = remoteProductId,
+                        updateVariations = updateVariations
                     )
 
                 return@withDefaultContext if (result.isError) {

@@ -229,5 +229,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Batch update variations"/>
+
+        <Button
+            android:id="@+id/batch_generate_variations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Batch generate variations"/>
     </LinearLayout>
 </ScrollView>

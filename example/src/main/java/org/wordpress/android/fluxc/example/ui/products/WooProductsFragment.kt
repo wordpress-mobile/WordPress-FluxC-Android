@@ -570,6 +570,10 @@ class WooProductsFragment : StoreSelectingFragment() {
         batch_update_variations.setOnClickListener {
             replaceFragment(WooBatchUpdateVariationsFragment.newInstance(selectedPos))
         }
+
+        batch_generate_variations.setOnClickListener{
+            replaceFragment(WooBatchGenerateVariationsFragment.newInstance(selectedPos))
+        }
     }
 
     /**
