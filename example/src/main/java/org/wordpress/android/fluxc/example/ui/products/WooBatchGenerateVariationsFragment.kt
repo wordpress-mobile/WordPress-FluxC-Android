@@ -17,11 +17,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.model.VariationAttributes
+import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchGenerateVariationsPayload
-import org.wordpress.android.fluxc.store.WCProductStore.BatchGenerateVariationsPayload.Builder
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -31,7 +32,9 @@ class WooBatchGenerateVariationsFragment : Fragment() {
 
     private var selectedSitePosition: Int = -1
 
-    private lateinit var generateVariationsPayloadBuilder: Builder
+    private lateinit var payload: BatchGenerateVariationsPayload
+    private val currentAttributes = mutableListOf<ProductVariantOption>()
+    private val variations = mutableListOf<VariationAttributes>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +79,11 @@ class WooBatchGenerateVariationsFragment : Fragment() {
 
             status.text = "Selected product: $productId"
 
-            generateVariationsPayloadBuilder = Builder(site, productId)
+            payload = BatchGenerateVariationsPayload(
+                site = site,
+                remoteProductId = productId,
+                variations = variations
+            )
 
             enableVariationModificationInputs(true)
         }
@@ -93,24 +100,22 @@ class WooBatchGenerateVariationsFragment : Fragment() {
                 prependToLog("Invalid attribute params...doing nothing")
                 return@setOnClickListener
             }
-            generateVariationsPayloadBuilder.addVariationAttribute(attrId, attrName, attrOption)
+            val variationOption = ProductVariantOption(attrId, attrName, attrOption)
+            currentAttributes.add(variationOption)
             displayAttributes()
         }
         add_variation.setOnClickListener {
-            generateVariationsPayloadBuilder.addVariation()
+            variations.add(currentAttributes.toList())
+            currentAttributes.clear()
+            attr_status.text = ""
             displayVariations()
-            displayAttributes()
         }
 
-        generate_variation.setOnClickListener {
-            runBatchCreate(generateVariationsPayloadBuilder.build())
-        }
+        generate_variation.setOnClickListener { runBatchCreate(payload) }
     }
 
     private fun displayVariations() {
-        val variationsString = variationsToString(
-            generateVariationsPayloadBuilder.getVariations()
-        )
+        val variationsString = variationsToString()
         variation_status.text = if (variationsString.isNotEmpty()) {
             "Current variations: \n $variationsString"
         } else {
@@ -119,9 +124,7 @@ class WooBatchGenerateVariationsFragment : Fragment() {
     }
 
     private fun displayAttributes() {
-        val currentAttributesString = attributesToString(
-            generateVariationsPayloadBuilder.getCurrentAttributes()
-        )
+        val currentAttributesString = attributesToString(currentAttributes, "\n")
         attr_status.text = if (currentAttributesString.isNotEmpty()) {
             "Current attribute: \n $currentAttributesString"
         } else {
@@ -129,23 +132,24 @@ class WooBatchGenerateVariationsFragment : Fragment() {
         }
     }
 
-    private fun variationsToString(variations: List<List<Map<String, Any>>>): String {
+    private fun variationsToString(): String {
         val stringBuffer = StringBuffer()
         variations.forEach { attributes ->
-            attributes.forEach {
-                stringBuffer.append(it.values.toString())
-                stringBuffer.append("  ")
-            }
+            val attributesString = attributesToString(attributes, " ")
+            stringBuffer.append(attributesString)
             stringBuffer.append("\n")
         }
         return stringBuffer.toString()
     }
 
-    private fun attributesToString(attribute: List<Map<String, Any>>): String {
+    private fun attributesToString(
+        attributes: VariationAttributes,
+        separator: String
+    ): String {
         val stringBuffer = StringBuffer()
-        attribute.forEach {
-            stringBuffer.append(it.values.toString())
-            stringBuffer.append("\n")
+        attributes.forEach { attr ->
+            stringBuffer.append("[${attr.id},${attr.name},${attr.option}]")
+            stringBuffer.append(separator)
         }
         return stringBuffer.toString()
     }
@@ -162,11 +166,12 @@ class WooBatchGenerateVariationsFragment : Fragment() {
                     val count = result.model?.createdVariations?.count() ?: 0
                     prependToLog("Success: $count variations created")
                 }
-                // reset product selection
+                // reset view
                 product_id.setText("")
                 status.text = ""
                 variation_status.text = ""
                 attr_status.text = ""
+                variations.clear()
                 enableVariationModificationInputs(false)
             }
         }

@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -175,39 +176,8 @@ class WCProductStore @Inject constructor(
     class BatchGenerateVariationsPayload(
         val site: SiteModel,
         val remoteProductId: Long,
-        val variations: List<List<Map<String, Any>>>
-    ) : Payload<BaseNetworkError>() {
-        class Builder(
-            private val site: SiteModel,
-            private val remoteProductId: Long
-        ) {
-            private val variations = mutableListOf<List<Map<String, Any>>>()
-            fun getVariations() = variations.toList()
-
-            private val currentAttributes = mutableListOf<Map<String, Any>>()
-            fun getCurrentAttributes() = currentAttributes.toList()
-
-            fun addVariationAttribute(id: Long, name: String, option: String) {
-                currentAttributes.add( buildMap {
-                    put("id", id)
-                    put("name", name)
-                    put("option", option)
-                })
-            }
-
-            fun addVariation() {
-                if(currentAttributes.isEmpty()) return
-                variations.add(currentAttributes.toList())
-                currentAttributes.clear()
-            }
-
-            fun build() = BatchGenerateVariationsPayload(
-                site = site,
-                remoteProductId = remoteProductId,
-                variations = variations
-            )
-        }
-    }
+        val variations: List<VariationAttributes>
+    ) : Payload<BaseNetworkError>()
 
     /**
      * Payload used by [batchUpdateVariations] function.
@@ -1316,8 +1286,7 @@ class WCProductStore @Inject constructor(
      * For each variant, it only receives the list of attributes. The rest of the variant properties
      * will use the default values.
      *
-     * @param payload Instance of [BatchGenerateVariationsPayload]. It can be produced using
-     * [BatchGenerateVariationsPayload.Builder] class.
+     * @param payload Instance of [BatchGenerateVariationsPayload].
      */
     suspend fun batchGenerateVariations(payload: BatchGenerateVariationsPayload):
         WooResult<BatchProductVariationsApiResponse> =
