@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -378,9 +379,7 @@ class WCProductStoreTest {
                 product.remoteProductId,
                 variationsIds
             ).build()
-            val response = BatchProductVariationsApiResponse().apply {
-                updatedVariations = emptyList()
-            }
+            val response = BatchProductVariationsApiResponse(updatedVariations = emptyList())
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
@@ -462,9 +461,7 @@ class WCProductStoreTest {
                     sale_price = newSalePrice
                 }
             }
-            val response = BatchProductVariationsApiResponse().apply {
-                updatedVariations = variationsReturnedFromBackend
-            }
+            val response = BatchProductVariationsApiResponse(updatedVariations = variationsReturnedFromBackend)
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
@@ -601,28 +598,32 @@ class WCProductStoreTest {
             // given
             val productId = 6L
             val site = SiteModel()
+            val firstVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Blue"),
+            )
+            val secondVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Red"),
+            )
+
+            val variations = listOf(firstVariationAttributes,secondVariationAttributes)
 
             // when API call succeed
-            val variationsPayload = BatchGenerateVariationsPayload.Builder(
+            val variationsPayload = BatchGenerateVariationsPayload(
                 site,
-                productId
-            ).run {
-                addVariationAttribute(0, "Size", "M")
-                addVariation()
-
-                addVariationAttribute(0, "Size", "L")
-                addVariation()
-
-                build()
-            }
+                productId,
+                variations
+            )
 
             val createdVariationsResponse = List(variationsPayload.variations.size) { index ->
                 ProductVariationApiResponse().apply { id = index.toLong() }
             }
 
-            val response = BatchProductVariationsApiResponse().apply {
+            val response = BatchProductVariationsApiResponse(
                 createdVariations = createdVariationsResponse
-            }
+            )
+
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
@@ -651,20 +652,22 @@ class WCProductStoreTest {
             // given
             val productId = 6L
             val site = SiteModel()
+            val firstVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Blue"),
+            )
+            val secondVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Red"),
+            )
+            val variations = listOf(firstVariationAttributes,secondVariationAttributes)
 
-            // when API call fails
-            val variationsPayload = BatchGenerateVariationsPayload.Builder(
+            // when API call failed
+            val variationsPayload = BatchGenerateVariationsPayload(
                 site,
-                productId
-            ).run {
-                addVariationAttribute(0, "Size", "M")
-                addVariation()
-
-                addVariationAttribute(0, "Size", "L")
-                addVariation()
-
-                build()
-            }
+                productId,
+                variations
+            )
 
             val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
             whenever(
