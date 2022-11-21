@@ -11,14 +11,13 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.oauth2;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
 
 public class APITesting_WCGateway {
     private RequestSpecification mRequestSpec;
 
     @Before
     public void setup() {
-        Map<String, String> pathParams = new HashMap<String, String>();
+        Map<String, String> pathParams = new HashMap<>();
         pathParams.put("json", "true");
         pathParams.put("locale", "en_US");
         pathParams.put("status", "any");
@@ -28,7 +27,7 @@ public class APITesting_WCGateway {
             setBasePath("rest/v1.1/jetpack-blogs/173063404/rest-api/").
             addQueryParams(pathParams).
             setAuth(oauth2(System.getenv("API_TEST_OAUTH_KEY")));
-        this.mRequestSpec = requestBuilder.build();    
+        this.mRequestSpec = requestBuilder.build();
     }
 
     @Test
@@ -40,9 +39,12 @@ public class APITesting_WCGateway {
             get().
         then().
             statusCode(200).
-            body("data", hasSize(14),
-                "data.id", hasItems("paypal", "bacs", "stripe")
-            ); 
+            body(
+                    "data.id",
+                    hasItems("bacs", "cheque", "cod", "paypal", "stripe", "stripe_sepa", "stripe_giropay",
+                            "stripe_ideal", "stripe_bancontact", "stripe_eps", "stripe_sofort", "stripe_p24",
+                            "stripe_boleto", "stripe_oxxo", "stripe_alipay", "stripe_multibanco")
+                );
     }
 
     @Test
@@ -56,6 +58,6 @@ public class APITesting_WCGateway {
             statusCode(200).
             body("data.id", equalTo("stripe"),
                 "data.title", equalTo("Credit Card (Stripe)")
-            ); 
+            );
     }
 }
