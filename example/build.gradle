@@ -108,7 +108,6 @@ dependencies {
     implementation sharedLibs.androidx.arch.core.common
     implementation sharedLibs.androidx.arch.core.runtime
     implementation sharedLibs.androidx.lifecycle.runtime.ktx
-    implementation sharedLibs.apache.commons.lang3
 
     implementation(sharedLibs.wordpress.utils) {
         // Using official volley package
