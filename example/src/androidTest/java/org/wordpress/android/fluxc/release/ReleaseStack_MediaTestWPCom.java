@@ -5,13 +5,13 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.example.utils.ArrayUtils;
+import org.wordpress.android.fluxc.example.utils.RandomStringUtils;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.StockMediaModel;
