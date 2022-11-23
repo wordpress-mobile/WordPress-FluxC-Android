@@ -8,7 +8,6 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.geProductExistsByRemoteId
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import javax.inject.Inject
 
 class WCProductLeaderboardsMapper @Inject constructor() {
@@ -16,7 +15,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         response: LeaderboardsApiResponse,
         site: SiteModel,
         productStore: WCProductStore,
-        granularity: StatsGranularity
+        datePeriod: String
     ): List<TopPerformerProductEntity> = response.products
         ?.takeIf { it.isNotEmpty() }
         ?.mapNotNull { it.productId }
@@ -24,7 +23,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         ?.mapNotNull { product ->
             response.products
                 ?.find { it.productId == product.remoteProductId }
-                ?.let { product.toTopPerformerProductEntity(it, site, granularity) }
+                ?.let { product.toTopPerformerProductEntity(it, site, datePeriod) }
         }.orEmpty()
 
     /**
@@ -61,10 +60,10 @@ class WCProductLeaderboardsMapper @Inject constructor() {
     private fun WCProductModel.toTopPerformerProductEntity(
         productItem: LeaderboardProductItem,
         site: SiteModel,
-        granularity: StatsGranularity
+        datePeriod: String
     ) = TopPerformerProductEntity(
         siteId = site.siteId,
-        granularity = granularity.toString(),
+        datePeriod = datePeriod,
         productId = remoteProductId,
         name = name,
         imageUrl = getFirstImageUrl(),

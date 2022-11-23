@@ -1,12 +1,5 @@
 package org.wordpress.android.fluxc.wc.stats
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.anyOrNull
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.reset
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.anyOf
@@ -15,6 +8,13 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -1253,6 +1253,55 @@ class WCStatsStoreTest {
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
+            wcStatsStore.fetchRevenueStats(payload)
+
+            val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
+                    dateArgument.capture(), any(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        reset(mockOrderStatsRestClient)
+
+        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
+            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
+            wcStatsStore.fetchRevenueStats(payload)
+
+            val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
+                    any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        // The two test sites are 24 hours apart, so we are guaranteed to have one site date match the local date,
+        // and the other not match it
+        val localDate = SimpleDateFormat("yyyy-MM-dd'T'00:00:00").format(Date())
+        assertThat(localDate, anyOf(isEqual(plus12SiteDate), isEqual(minus12SiteDate)))
+        assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
+    }
+
+    @Test
+    fun testFetchCurrentDayRevenueStatsDateSpecificEndDate() = runBlocking {
+        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
+            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+
+            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
             wcStatsStore.fetchRevenueStats(payload)
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion rootProject.compileSdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -19,11 +19,8 @@ android {
 
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
-        minSdkVersion 21
-        // Keep the targetSdkVersion 22 so we don't need to grant runtime permissions to the tests and the example app
-        // An alternative would be granting the permissions via adb before running the test, like here:
-        // https://afterecho.uk/blog/granting-marshmallow-permissions-for-testing-flavoured-builds.html
-        targetSdkVersion 22
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -47,7 +44,6 @@ android {
 
     lintOptions {
         warning 'InvalidPackage'
-        disable 'ExpiredTargetSdkVersion'
     }
 
     testOptions {
@@ -139,7 +135,7 @@ dependencies {
     testImplementation sharedLibs.robolectric
     testImplementation sharedLibs.androidx.test.core
     testImplementation sharedLibs.mockito.core
-    testImplementation sharedLibs.nhaarman.mockito.kotlin
+    testImplementation sharedLibs.mockito.kotlin
     testImplementation sharedLibs.assertj.core
     testImplementation sharedLibs.androidx.arch.core.testing
 

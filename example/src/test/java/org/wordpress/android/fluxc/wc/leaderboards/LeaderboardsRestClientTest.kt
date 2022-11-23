@@ -1,12 +1,12 @@
 package org.wordpress.android.fluxc.wc.leaderboards
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
@@ -48,11 +47,12 @@ class LeaderboardsRestClientTest {
         val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
         val response = restClientUnderTest.fetchLeaderboards(
-            stubSite,
-            DAYS,
-            queryTimeRange = 1L..22L,
+            site = stubSite,
+            startDate = "10-10-2022",
+            endDate = "22-10-2022",
             quantity = 5,
-            forceRefresh = false
+            forceRefresh = false,
+            interval = "day"
         )
 
         verify(requestBuilder, times(1)).syncGetRequest(
@@ -60,8 +60,8 @@ class LeaderboardsRestClientTest {
             stubSite,
             WOOCOMMERCE.leaderboards.pathV4Analytics,
             mapOf(
-                "before" to "22",
-                "after" to "1",
+                "before" to "22-10-2022",
+                "after" to "10-10-2022",
                 "per_page" to "5",
                 "interval" to "day",
                 "force_cache_refresh" to "false",
@@ -78,11 +78,12 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should correctly return failure as WooError`() = test {
         configureErrorRequest()
         val response = restClientUnderTest.fetchLeaderboards(
-            stubSite,
-            DAYS,
-            1L..22L,
-            5,
-            forceRefresh = false
+            site = stubSite,
+            startDate = "10-10-2022",
+            endDate = "22-10-2022",
+            forceRefresh = false,
+            quantity = 5,
+            interval = "day"
         )
 
         assertThat(response).isNotNull
@@ -99,8 +100,8 @@ class LeaderboardsRestClientTest {
                 stubSite,
                 WOOCOMMERCE.leaderboards.pathV4Analytics,
                 mapOf(
-                    "after" to "1",
-                    "before" to "22",
+                    "after" to "10-10-2022",
+                    "before" to "22-10-2022",
                     "per_page" to "5",
                     "interval" to "day",
                     "force_cache_refresh" to "false",
@@ -118,8 +119,8 @@ class LeaderboardsRestClientTest {
                 stubSite,
                 WOOCOMMERCE.leaderboards.pathV4Analytics,
                 mapOf(
-                    "after" to "1",
-                    "before" to "22",
+                    "after" to "10-10-2022",
+                    "before" to "22-10-2022",
                     "per_page" to "5",
                     "interval" to "day",
                     "force_cache_refresh" to "false",

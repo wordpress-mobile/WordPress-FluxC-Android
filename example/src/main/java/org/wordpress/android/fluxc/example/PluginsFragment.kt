@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.fragment_plugins.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -17,10 +16,10 @@ import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.PluginActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PluginStore
-import org.wordpress.android.fluxc.store.PluginStore.FetchJetpackSitePluginPayload
+import org.wordpress.android.fluxc.store.PluginStore.FetchSitePluginPayload
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload
-import org.wordpress.android.fluxc.store.PluginStore.OnJetpackSitePluginFetched
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginFetched
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled
 import javax.inject.Inject
 
@@ -92,8 +91,11 @@ class PluginsFragment : Fragment() {
                     pluginNameText.text.toString().apply {
                         prependToLog("Fetching plugin: $this")
 
-                        val payload = FetchJetpackSitePluginPayload(site, this)
-                        dispatcher.dispatch(PluginActionBuilder.newFetchJetpackSitePluginAction(payload))
+                        val payload = FetchSitePluginPayload(
+                            site,
+                            this
+                        )
+                        dispatcher.dispatch(PluginActionBuilder.newFetchSitePluginAction(payload))
                     }
                 }
             } ?: prependToLog("Please select a site first.")
@@ -114,7 +116,7 @@ class PluginsFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSitePluginFetched(event: OnJetpackSitePluginFetched) {
+    fun onSitePluginFetched(event: OnSitePluginFetched) {
         if (!event.isError) {
             prependToLog("${event.plugin.displayName}: ${event.plugin.description}")
         } else {

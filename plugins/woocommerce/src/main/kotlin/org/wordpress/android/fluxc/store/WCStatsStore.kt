@@ -78,6 +78,19 @@ class WCStatsStore @Inject constructor(
             MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
             YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
         }
+
+        fun endDateTime(site: SiteModel) = when (this) {
+            DAYS -> DateUtils.getEndDateForSite(site)
+            WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+            MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
+            YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
+        }
+
+        fun datePeriod(site: SiteModel): String {
+            val startDate = startDateTime(site)
+            val endDate = endDateTime(site)
+            return DateUtils.getDatePeriod(startDate, endDate)
+        }
     }
 
     /**
@@ -117,6 +130,7 @@ class WCStatsStore @Inject constructor(
      *
      * @param[granularity] the time interval for the requested data (days, weeks, months, years)
      * @param[startDate] The start date of the data
+     * @param[endDate] The end date of the data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
      */
     class FetchRevenueStatsPayload(
@@ -661,7 +675,7 @@ class WCStatsStore @Inject constructor(
 
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity)
+        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
         val perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
@@ -707,18 +721,23 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the appropriate end date for the [site] and [granularity] provided,
-     * to use for fetching revenue stats.
+     * Given a [endDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
+     * If the end date is empty, fetches the date based on the [granularity]
      */
     private fun getEndDateForRevenueStatsGranularity(
         site: SiteModel,
-        granularity: StatsGranularity
+        granularity: StatsGranularity,
+        endDate: String?
     ): String {
-        return when (granularity) {
-            StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-            StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-            StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-            StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
+        return if (endDate.isNullOrEmpty()) {
+            when (granularity) {
+                StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
+                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+                StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
+                StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
+            }
+        } else {
+            DateUtils.getEndDateForSite(site, endDate)
         }
     }
 

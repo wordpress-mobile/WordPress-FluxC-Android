@@ -1,11 +1,9 @@
 package org.wordpress.android.fluxc.mocked
 
-import android.os.Build
 import com.yarolegovich.wellsql.WellSql
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
@@ -55,11 +53,6 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
     // stubbed in a unit test environment, giving results inconsistent with a normal running app
     @Test
     fun testGetLocalizedCurrencySymbolForCode() {
-        assumeTrue(
-                "Requires API 23 or higher due to localized currency values differing on older versions",
-                Build.VERSION.SDK_INT >= 23
-        )
-
         Locale("en", "US").let { localeEnUS ->
             assertEquals("$", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("USD", localeEnUS))
             assertEquals("CA$", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("CAD", localeEnUS))
@@ -84,11 +77,6 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
 
     @Test
     fun testGetSiteCurrency() {
-        assumeTrue(
-                "Requires API 23 or higher due to localized currency values differing on older versions",
-                Build.VERSION.SDK_INT >= 23
-        )
-
         // Override device locale and use en_US so currency symbols can be predicted
         TestUtils.updateLocale(mAppContext, Locale("en", "US"))
 
@@ -175,11 +163,6 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
 
     @Test
     fun testFormatCurrencyForDisplay() {
-        assumeTrue(
-                "Requires API 23 or higher due to localized currency values differing on older versions",
-                Build.VERSION.SDK_INT >= 23
-        )
-
         // Override device locale and use en_US so currency symbols can be predicted
         TestUtils.updateLocale(mAppContext, Locale("en", "US"))
 

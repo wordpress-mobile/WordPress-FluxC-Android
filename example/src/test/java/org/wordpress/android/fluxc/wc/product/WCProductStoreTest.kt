@@ -1,10 +1,6 @@
 package org.wordpress.android.fluxc.wc.product
 
 import com.google.gson.JsonObject
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -12,6 +8,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -24,17 +25,19 @@ import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsUpdateApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.BatchGenerateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
@@ -376,15 +379,14 @@ class WCProductStoreTest {
                 product.remoteProductId,
                 variationsIds
             ).build()
-            val response = BatchProductVariationsUpdateApiResponse().apply {
-                updatedVariations = emptyList()
-            }
+            val response = BatchProductVariationsApiResponse(updatedVariations = emptyList())
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(response)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -417,8 +419,9 @@ class WCProductStoreTest {
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(errorResponse)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -458,15 +461,14 @@ class WCProductStoreTest {
                     sale_price = newSalePrice
                 }
             }
-            val response = BatchProductVariationsUpdateApiResponse().apply {
-                updatedVariations = variationsReturnedFromBackend
-            }
+            val response = BatchProductVariationsApiResponse(updatedVariations = variationsReturnedFromBackend)
             whenever(
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(response)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -511,8 +513,9 @@ class WCProductStoreTest {
                 productRestClient.batchUpdateVariations(
                     any(),
                     any(),
+                    anyOrNull(),
                     any(),
-                    any()
+                    anyOrNull()
                 )
             ) doReturn WooPayload(errorResponse)
             val result = productStore.batchUpdateVariations(variationsUpdatePayload)
@@ -588,4 +591,103 @@ class WCProductStoreTest {
             assertThat(get("shipping_class")).isEqualTo(modifiedShippingClassSlug)
         }
     }
+
+    @Test
+    fun `when variation generation succeed, result is received`() =
+        test {
+            // given
+            val productId = 6L
+            val site = SiteModel()
+            val firstVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Blue"),
+            )
+            val secondVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Red"),
+            )
+
+            val variations = listOf(firstVariationAttributes,secondVariationAttributes)
+
+            // when API call succeed
+            val variationsPayload = BatchGenerateVariationsPayload(
+                site,
+                productId,
+                variations
+            )
+
+            val createdVariationsResponse = List(variationsPayload.variations.size) { index ->
+                ProductVariationApiResponse().apply { id = index.toLong() }
+            }
+
+            val response = BatchProductVariationsApiResponse(
+                createdVariations = createdVariationsResponse
+            )
+
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull()
+                )
+            ) doReturn WooPayload(response)
+
+            val result = productStore.batchGenerateVariations(variationsPayload)
+
+            // then result is expected
+            assertThat(result.isError).isFalse
+            assertThat(result.model).isNotNull
+
+            // then result is saved in DB
+            with(ProductSqlUtils.getVariationsForProduct(site, productId)) {
+                assertThat(this.size).isEqualTo(createdVariationsResponse.size)
+            }
+        }
+
+    @Test
+    fun `when variation generation fails, error is received`() =
+        test {
+            // given
+            val productId = 6L
+            val site = SiteModel()
+            val firstVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Blue"),
+            )
+            val secondVariationAttributes = listOf(
+                ProductVariantOption( id = 1, name = "Size", option = "L"),
+                ProductVariantOption( id = 2, name = "Color", option = "Red"),
+            )
+            val variations = listOf(firstVariationAttributes,secondVariationAttributes)
+
+            // when API call failed
+            val variationsPayload = BatchGenerateVariationsPayload(
+                site,
+                productId,
+                variations
+            )
+
+            val errorResponse = WooError(GENERIC_ERROR, NETWORK_ERROR, "🔴")
+            whenever(
+                productRestClient.batchUpdateVariations(
+                    any(),
+                    any(),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull()
+                )
+            ) doReturn WooPayload(errorResponse)
+
+            val result = productStore.batchGenerateVariations(variationsPayload)
+
+            // then result is error
+            assertThat(result.isError).isTrue
+
+            // then result is NOT saved in DB
+            with(ProductSqlUtils.getVariationsForProduct(site, productId)) {
+                assertThat(this.size).isEqualTo(0)
+            }
+        }
 }
