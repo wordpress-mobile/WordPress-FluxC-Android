@@ -3,32 +3,24 @@ package org.wordpress.android.fluxc.example.utils
 object RandomStringUtils {
     @JvmStatic
     fun randomAlphanumeric(count: Int): String {
-        return randomString(
-            count = count,
-            letters = true,
-            numbers = true
-        )
+        return randomString(count)
     }
 
     @JvmStatic
     fun randomAlphabetic(count: Int): String {
-        return randomString(
-            count = count,
-            letters = true,
-            numbers = false
-        )
+        return randomString(count, numbers = false)
     }
 
     @JvmStatic
     fun randomNumeric(count: Int): String {
-        return randomString(
-            count = count,
-            letters = false,
-            numbers = true
-        )
+        return randomString(count, letters = false)
     }
 
-    private fun randomString(count: Int, letters: Boolean, numbers: Boolean): String {
+    private fun randomString(
+        count: Int,
+        letters: Boolean = true,
+        numbers: Boolean = true
+    ): String {
         val alphabetic: List<Char> = ('A'..'Z') + ('a'..'z')
         val numeric = ('0'..'9').toList()
         val allowedChars: List<Char> = when {
