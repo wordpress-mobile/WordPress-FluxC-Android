@@ -16,7 +16,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.storecreation.ShoppingC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Singleton
 
+@Singleton
 class ShoppingCartRestClient @Inject constructor(
     dispatcher: Dispatcher,
     private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,

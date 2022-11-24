@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.storecreation
 
-import com.google.gson.Gson
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -13,7 +12,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.storecreation.ShoppingC
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ShoppingCartStore @Inject constructor(
     private val restClient: ShoppingCartRestClient,
     private val coroutineEngine: CoroutineEngine
