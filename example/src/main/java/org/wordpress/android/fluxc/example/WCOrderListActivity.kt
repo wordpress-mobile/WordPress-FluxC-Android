@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_wc_order_list.*
-import org.apache.commons.lang3.time.DateUtils
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.wordpress.android.fluxc.Dispatcher
@@ -28,6 +27,7 @@ import org.wordpress.android.fluxc.example.WCOrderListItemIdentifier.SectionHead
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.SectionHeader
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
+import org.wordpress.android.fluxc.example.utils.DateUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor

@@ -51,8 +51,6 @@ android {
 dependencies {
     implementation fluxcProjectDependency
 
-    implementation sharedLibs.apache.commons.lang3
-
     // WordPress libs
     implementation(sharedLibs.wordpress.utils) {
         // Using official volley package
