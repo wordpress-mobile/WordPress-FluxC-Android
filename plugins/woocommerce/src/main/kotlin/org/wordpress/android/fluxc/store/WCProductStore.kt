@@ -34,6 +34,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
@@ -166,6 +168,11 @@ class WCProductStore @Inject constructor(
     class UpdateProductPayload(
         var site: SiteModel,
         val product: WCProductModel
+    ) : Payload<BaseNetworkError>()
+
+    class BatchUpdateProductsPayload(
+        val site: SiteModel,
+        val products: List<ProductDto>
     ) : Payload<BaseNetworkError>()
 
     class UpdateVariationPayload(

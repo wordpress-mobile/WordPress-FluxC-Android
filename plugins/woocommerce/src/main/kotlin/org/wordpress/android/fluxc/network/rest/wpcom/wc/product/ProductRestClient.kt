@@ -931,6 +931,24 @@ class ProductRestClient @Inject constructor(
         }
     }
 
+    suspend fun batchUpdateProducts(
+        site: SiteModel,
+        updatedProducts: List<ProductDto>
+    ): WooPayload<BatchProductApiResponse> = WOOCOMMERCE.products.batch.pathV3
+        .let { url ->
+            val body = buildMap {
+                putIfNotNull("update" to updatedProducts)
+            }
+
+            jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this@ProductRestClient,
+                site,
+                url,
+                body,
+                BatchProductApiResponse::class.java
+            ).handleResult()
+        }
+
     /**
      * Makes a POST request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/batch`
      * This API helps you to batch create, update and delete multiple product variations.
