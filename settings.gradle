@@ -9,7 +9,6 @@ pluginManagement {
             filter {
                 includeGroup "com.automattic.android"
                 includeGroup "com.automattic.android.configure"
-                includeGroup "com.automattic.android.fetchstyle"
                 includeGroup "com.automattic.android.publish-to-s3"
             }
         }
