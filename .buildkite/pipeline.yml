@@ -19,6 +19,9 @@ steps:
     command: |
       validate_gradle_wrapper
     plugins: *common_plugins
+    notify:
+      - github_commit_status:
+          context: "Gradle Wrapper Validation"
 
   # Wait for Gradle Wrapper to be validated before running any other jobs
   - wait
