@@ -2,7 +2,7 @@
 common_params:
   # Common plugin settings to use with the `plugins` key.
   - &common_plugins
-    - automattic/bash-cache#2.7.0
+    - automattic/bash-cache#2.11.0
   # Common artifact paths used across steps
   - &artifact_paths
     - "**/build/test-results/**/*"
@@ -12,6 +12,20 @@ agents:
   queue: "android"
 
 steps:
+  ############################
+  # Gradle Wrapper Validation
+  ############################
+  - label: "Gradle Wrapper Validation"
+    command: |
+      validate_gradle_wrapper
+    plugins: *common_plugins
+    notify:
+      - github_commit_status:
+          context: "Gradle Wrapper Validation"
+
+  # Wait for Gradle Wrapper to be validated before running any other jobs
+  - wait
+
   ############################
   # Linters
   ############################
