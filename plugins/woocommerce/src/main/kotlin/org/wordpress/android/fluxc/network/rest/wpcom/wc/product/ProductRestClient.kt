@@ -933,11 +933,17 @@ class ProductRestClient @Inject constructor(
 
     suspend fun batchUpdateProducts(
         site: SiteModel,
-        updatedProducts: List<ProductDto>
+        existingProducts: List<WCProductModel>,
+        updatedProducts: List<WCProductModel>
     ): WooPayload<BatchProductApiResponse> = WOOCOMMERCE.products.batch.pathV3
         .let { url ->
             val body = buildMap {
-                putIfNotNull("update" to updatedProducts)
+                putIfNotNull("update" to (existingProducts zip updatedProducts).map { (existing, updated) ->
+                    productModelToProductJsonBody(
+                        productModel = existing,
+                        updatedProductModel = updated
+                    ).plus("id" to updated.remoteProductId)
+                })
             }
 
             jetpackTunnelGsonRequestBuilder.syncPostRequest(

@@ -172,7 +172,7 @@ class WCProductStore @Inject constructor(
 
     class BatchUpdateProductsPayload(
         val site: SiteModel,
-        val products: List<ProductDto>
+        val updatedProducts: List<WCProductModel>
     ) : Payload<BaseNetworkError>()
 
     class UpdateVariationPayload(
@@ -1289,11 +1289,18 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun batchUpdateProducts(payload: BatchUpdateProductsPayload): WooResult<BatchProductApiResponse> =
-        coroutineEngine.withDefaultContext(API, this, "batchCreateVariations") {
+        coroutineEngine.withDefaultContext(API, this, "batchUpdateProducts") {
+
+            val existingProducts = ProductSqlUtils.getProductsByRemoteIds(
+                site = payload.site,
+                remoteProductIds = payload.updatedProducts.map(WCProductModel::remoteProductId)
+            )
+
             with(payload) {
                 val result = wcProductRestClient.batchUpdateProducts(
                     site,
-                    payload.products
+                    existingProducts,
+                    payload.updatedProducts
                 )
                 return@withDefaultContext if (result.isError) {
                     WooResult(result.error)
