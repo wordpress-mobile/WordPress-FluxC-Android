@@ -1290,7 +1290,6 @@ class WCProductStore @Inject constructor(
 
     suspend fun batchUpdateProducts(payload: BatchUpdateProductsPayload): WooResult<BatchProductApiResponse> =
         coroutineEngine.withDefaultContext(API, this, "batchUpdateProducts") {
-
             val existingProducts = ProductSqlUtils.getProductsByRemoteIds(
                 site = payload.site,
                 remoteProductIds = payload.updatedProducts.map(WCProductModel::remoteProductId)
