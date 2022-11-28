@@ -145,6 +145,12 @@
                     android:layout_height="wrap_content"
                     android:text="Plugins" />
 
+                <Button
+                    android:id="@+id/plans"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Plans" />
+
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

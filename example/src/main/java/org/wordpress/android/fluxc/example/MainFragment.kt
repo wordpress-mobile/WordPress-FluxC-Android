@@ -96,6 +96,7 @@ class MainFragment : Fragment() {
         editortheme.setOnClickListener(getOnClickListener(EditorThemeFragment()))
         experiments.setOnClickListener(getOnClickListener(ExperimentsFragment()))
         plugins.setOnClickListener(getOnClickListener(PluginsFragment()))
+        plans.setOnClickListener(getOnClickListener(PlansFragment()))
     }
 
     // Private methods
