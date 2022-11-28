@@ -45,6 +45,7 @@ import org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFra
 import org.wordpress.android.fluxc.example.ui.shippinglabels.WooVerifyAddressFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
+import org.wordpress.android.fluxc.example.ui.storecreation.WooStoreCreationFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 
 @Module
@@ -180,4 +181,7 @@ internal interface FragmentsModule {
 
     @ContributesAndroidInjector
     fun providePluginsFragment(): PluginsFragment
+
+    @ContributesAndroidInjector
+    fun provideWooStoreCreationFragment(): WooStoreCreationFragment
 }
