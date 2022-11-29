@@ -5,6 +5,8 @@ import com.android.volley.Response
 import com.android.volley.Response.Listener
 import com.android.volley.toolbox.HttpHeaderParser
 import org.wordpress.android.fluxc.network.BaseRequest
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -26,6 +28,16 @@ class WPAPIEncodedBodyRequest(
     }
 
     override fun deliverBaseNetworkError(error: BaseNetworkError): BaseNetworkError {
+        val authenticationError = when(error.volleyError?.networkResponse?.statusCode){
+            401 -> AuthenticationErrorType.AUTHORIZATION_REQUIRED
+            403 -> AuthenticationErrorType.NOT_AUTHENTICATED
+            else -> null
+        }
+
+        authenticationError?.let {
+            mOnAuthFailedListener.onAuthFailed(AuthenticateErrorPayload(authenticationError))
+        }
+
         return error
     }
 
