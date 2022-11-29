@@ -1346,7 +1346,9 @@ open class SiteStore @Inject constructor(
     }
 
     suspend fun fetchWPAPISite(payload: FetchWPAPISitePayload): OnSiteChanged {
-        return updateSite(siteWPAPIRestClient.fetchWPAPISite(payload))
+        return coroutineEngine.withDefaultContext(T.MAIN, this, "Fetch WPAPI Site") {
+            updateSite(siteWPAPIRestClient.fetchWPAPISite(payload))
+        }
     }
 
     @Suppress("ForbiddenComment", "SwallowedException")
