@@ -14,4 +14,4 @@ fun String.encodeRfc3986Delimiters(): String {
     }
 }
 
-fun String.slashJoin(end: String) = "${this.trimEnd('/')}/$end"
+fun String.slashJoin(end: String) = "${this.trimEnd('/')}/${end.trimStart('/')}"
