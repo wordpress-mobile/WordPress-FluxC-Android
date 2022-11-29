@@ -57,7 +57,10 @@ public class WPAPIGsonRequest<T> extends GsonRequest<T> {
 
             AuthenticationError authenticationError = null;
             if (error.volleyError.networkResponse.statusCode == 401) {
-                authenticationError = new AuthenticationError(AuthenticationErrorType.AUTHORIZATION_REQUIRED, errorCode);
+                authenticationError = new AuthenticationError(
+                        AuthenticationErrorType.AUTHORIZATION_REQUIRED,
+                        errorCode
+                );
             } else if (error.volleyError.networkResponse.statusCode == 403) {
                 authenticationError = new AuthenticationError(AuthenticationErrorType.NOT_AUTHENTICATED, errorCode);
             }

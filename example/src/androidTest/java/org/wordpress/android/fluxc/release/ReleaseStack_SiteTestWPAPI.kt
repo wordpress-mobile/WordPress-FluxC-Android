@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.FetchWPAPISitePayload
-import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.UrlUtils
 import javax.inject.Inject
 
@@ -16,8 +15,7 @@ import javax.inject.Inject
  * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
  */
 class ReleaseStack_SiteTestWPAPI : ReleaseStack_Base() {
-    @Inject
-    lateinit var siteStore: SiteStore
+    @Inject lateinit var siteStore: SiteStore
 
     override fun setUp() {
         super.setUp()
