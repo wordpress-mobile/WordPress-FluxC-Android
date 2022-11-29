@@ -1328,9 +1328,8 @@ open class SiteStore @Inject constructor(
     suspend fun fetchSite(site: SiteModel): OnSiteChanged {
         val updatedSite = when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> siteRestClient.fetchSite(site)
-            SiteModel.ORIGIN_XMLRPC -> siteXMLRPCClient.fetchSite(site)
             SiteModel.ORIGIN_WPAPI -> siteWPAPIRestClient.fetchWPAPISite(site)
-            else -> throw IllegalArgumentException("Can't fetch site with unknown origin")
+            else -> siteXMLRPCClient.fetchSite(site)
         }
         return updateSite(updatedSite)
     }
