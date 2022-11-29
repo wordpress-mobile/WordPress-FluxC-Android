@@ -11,7 +11,6 @@ import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_plans.*
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PlansStore
 import javax.inject.Inject
 
