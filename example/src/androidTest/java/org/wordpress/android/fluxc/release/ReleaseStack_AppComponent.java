@@ -78,4 +78,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_WPApiPluginTest test);
 
     void inject(ReleaseStack_CardsTest test);
+    void inject(ReleaseStack_SiteTestWPAPI test);
 }
