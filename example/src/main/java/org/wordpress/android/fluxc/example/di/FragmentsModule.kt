@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.example.ExperimentsFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
+import org.wordpress.android.fluxc.example.PlansFragment
 import org.wordpress.android.fluxc.example.PostsFragment
 import org.wordpress.android.fluxc.example.ReactNativeFragment
 import org.wordpress.android.fluxc.example.SignedOutActionsFragment
@@ -184,4 +185,7 @@ internal interface FragmentsModule {
 
     @ContributesAndroidInjector
     fun provideWooStoreCreationFragment(): WooStoreCreationFragment
+
+    @ContributesAndroidInjector
+    fun providePlansFragment(): PlansFragment
 }
