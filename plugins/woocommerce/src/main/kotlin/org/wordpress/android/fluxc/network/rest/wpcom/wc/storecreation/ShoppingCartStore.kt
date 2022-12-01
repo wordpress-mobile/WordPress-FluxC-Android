@@ -19,23 +19,13 @@ class ShoppingCartStore @Inject constructor(
     private val restClient: ShoppingCartRestClient,
     private val coroutineEngine: CoroutineEngine
 ) {
-    private val eCommerceProduct = CartProduct(
-        productId = 1021,
-        extra = mapOf(
-            "context" to "signup",
-            "signup_flow" to "ecommerce-monthly"
-        )
-    )
-
-    suspend fun addWooCommercePlanToCart(siteId: Long) = addProductToCart(siteId, eCommerceProduct)
-
     suspend fun completePurchaseWithCredit(cart: ShoppingCart) =
         completePurchase(cart, CREDIT_PAYMENT_METHOD)
 
     suspend fun completePurchaseWithCreditCard(cart: ShoppingCart) =
         completePurchase(cart, CREDIT_CARD_PAYMENT_METHOD)
 
-    private suspend fun addProductToCart(
+    suspend fun addProductToCart(
         siteId: Long,
         product: CartProduct
     ): WooResult<ShoppingCart> {
