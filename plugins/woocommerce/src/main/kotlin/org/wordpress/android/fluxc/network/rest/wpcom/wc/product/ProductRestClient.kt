@@ -940,7 +940,11 @@ class ProductRestClient @Inject constructor(
                 putIfNotNull("update" to existingToUpdatedProducts.map { (existing, updated) ->
                         productModelToProductJsonBody(
                             productModel = existing, updatedProductModel = updated
-                        ).plus("id" to updated.remoteProductId)
+                        ).apply {
+                            if (isNotEmpty()) {
+                                plus("id" to updated.remoteProductId)
+                            }
+                        }
                     })
             }
 
