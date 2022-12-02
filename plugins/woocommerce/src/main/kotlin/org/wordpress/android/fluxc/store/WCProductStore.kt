@@ -1295,11 +1295,15 @@ class WCProductStore @Inject constructor(
                 remoteProductIds = payload.updatedProducts.map(WCProductModel::remoteProductId)
             )
 
+            val sortedExistingToUpdatedProducts = existingProducts
+                .sortedBy(WCProductModel::remoteProductId)
+                .zip(payload.updatedProducts.sortedBy(WCProductModel::remoteProductId))
+                .toMap()
+
             with(payload) {
                 val result = wcProductRestClient.batchUpdateProducts(
                     site,
-                    existingProducts,
-                    payload.updatedProducts
+                    sortedExistingToUpdatedProducts
                 )
                 return@withDefaultContext if (result.isError) {
                     WooResult(result.error)

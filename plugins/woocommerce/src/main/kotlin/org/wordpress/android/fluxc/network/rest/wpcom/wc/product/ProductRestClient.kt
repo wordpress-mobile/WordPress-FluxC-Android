@@ -933,16 +933,11 @@ class ProductRestClient @Inject constructor(
 
     suspend fun batchUpdateProducts(
         site: SiteModel,
-        existingProducts: List<WCProductModel>,
-        updatedProducts: List<WCProductModel>
+        existingToUpdatedProducts: Map<WCProductModel, WCProductModel>,
     ): WooPayload<BatchProductApiResponse> = WOOCOMMERCE.products.batch.pathV3
         .let { url ->
-            val sortedExistingToUpdatedProducts = existingProducts
-                .sortedBy(WCProductModel::remoteProductId)
-                .zip(updatedProducts.sortedBy(WCProductModel::remoteProductId))
-
             val body = buildMap {
-                putIfNotNull("update" to sortedExistingToUpdatedProducts.map { (existing, updated) ->
+                putIfNotNull("update" to existingToUpdatedProducts.map { (existing, updated) ->
                         productModelToProductJsonBody(
                             productModel = existing, updatedProductModel = updated
                         ).plus("id" to updated.remoteProductId)
