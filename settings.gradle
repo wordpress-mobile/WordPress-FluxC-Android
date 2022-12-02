@@ -22,7 +22,7 @@ plugins {
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.5'
 }
 
-def catalogVersion = "8-4b277a26d22cb05d804bd4329236cdf0c5f5890f"
+def catalogVersion = "1.5.0"
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
