@@ -32,8 +32,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
@@ -166,6 +168,11 @@ class WCProductStore @Inject constructor(
     class UpdateProductPayload(
         var site: SiteModel,
         val product: WCProductModel
+    ) : Payload<BaseNetworkError>()
+
+    class BatchUpdateProductsPayload(
+        val site: SiteModel,
+        val updatedProducts: List<WCProductModel>
     ) : Payload<BaseNetworkError>()
 
     class UpdateVariationPayload(
@@ -1280,6 +1287,34 @@ class WCProductStore @Inject constructor(
             }
         }
     }
+
+    suspend fun batchUpdateProducts(payload: BatchUpdateProductsPayload): WooResult<BatchProductApiResponse> =
+        coroutineEngine.withDefaultContext(API, this, "batchUpdateProducts") {
+            val existingProducts = ProductSqlUtils.getProductsByRemoteIds(
+                site = payload.site,
+                remoteProductIds = payload.updatedProducts.map(WCProductModel::remoteProductId)
+            )
+
+            val sortedExistingToUpdatedProducts = existingProducts
+                .sortedBy(WCProductModel::remoteProductId)
+                .zip(payload.updatedProducts.sortedBy(WCProductModel::remoteProductId))
+                .toMap()
+
+            with(payload) {
+                val result = wcProductRestClient.batchUpdateProducts(
+                    site,
+                    sortedExistingToUpdatedProducts
+                )
+                return@withDefaultContext if (result.isError) {
+                    WooResult(result.error)
+                } else {
+                    ProductSqlUtils.insertOrUpdateProducts(
+                        result.result?.updatedProducts?.map(ProductDto::asProductModel).orEmpty()
+                    )
+                    WooResult(result.result)
+                }
+            }
+        }
 
     /**
      * Batch create variations on the backend and save result locally.

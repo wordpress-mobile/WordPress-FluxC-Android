@@ -10,7 +10,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
@@ -38,6 +40,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchGenerateVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.BatchUpdateVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
@@ -688,6 +691,43 @@ class WCProductStoreTest {
             // then result is NOT saved in DB
             with(ProductSqlUtils.getVariationsForProduct(site, productId)) {
                 assertThat(this.size).isEqualTo(0)
+            }
+        }
+
+    @Test
+    fun `when products bulk update is requested, correct existing and updated products are matched`(): Unit =
+        runBlocking {
+            // given
+            val existingProducts = listOf(
+                ProductTestUtils.generateSampleProduct(42),
+                ProductTestUtils.generateSampleProduct(43),
+                ProductTestUtils.generateSampleProduct(45),
+                ProductTestUtils.generateSampleProduct(48),
+            )
+            ProductSqlUtils.insertOrUpdateProducts(existingProducts)
+            val site = SiteModel().apply { id = existingProducts.first().localSiteId }
+            val updatedProductsInDifferentOrder = existingProducts.sortedByDescending(WCProductModel::remoteProductId)
+            val argumentCaptor = argumentCaptor<Map<WCProductModel, WCProductModel>>()
+            whenever(
+                productRestClient.batchUpdateProducts(
+                    eq(site),
+                    argumentCaptor.capture()
+                )
+            ).thenReturn(WooPayload())
+
+            // when
+            productStore.batchUpdateProducts(
+                BatchUpdateProductsPayload(
+                    site,
+                    updatedProducts = updatedProductsInDifferentOrder
+                )
+            )
+
+            // then
+            assertThat(argumentCaptor.allValues).hasSize(1)
+            assertThat(argumentCaptor.allValues.first()).hasSize(4)
+            argumentCaptor.allValues.first().onEach {(existing, updated) ->
+                assertThat(existing.remoteProductId).isEqualTo(updated.remoteProductId)
             }
         }
 }

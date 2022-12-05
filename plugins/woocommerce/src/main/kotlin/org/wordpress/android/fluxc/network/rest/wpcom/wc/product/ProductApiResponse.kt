@@ -4,89 +4,76 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCProductModel
-import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.utils.getString
 
-@Suppress("PropertyName", "VariableNaming")
-class ProductApiResponse : Response {
-    val id: Long? = null
-    var localSiteId = 0
-    var name: String? = null
-    var slug: String? = null
-    var permalink: String? = null
+typealias ProductDto = ProductApiResponse
 
-    var date_created: String? = null
-    var date_modified: String? = null
-
-    var type: String? = null
-    var status: String? = null
-    var featured = false
-    var catalog_visibility: String? = null
-    var description: String? = null
-    var short_description: String? = null
-    var sku: String? = null
-
-    var price: String? = null
-    var regular_price: String? = null
-    var sale_price: String? = null
-    var on_sale = false
-    var total_sales = 0L
-    var purchasable = false
-
-    var virtual = false
-    var downloadable = false
-    var download_limit = 0L
-    var download_expiry = 0
-
-    var external_url: String? = null
-    val button_text: String? = null
-
-    var tax_status: String? = null
-    var tax_class: String? = null
-
-    var manage_stock: String? = null
-    var stock_quantity = 0.0
-    var stock_status: String? = null
-
-    var date_on_sale_from: String? = null
-    var date_on_sale_to: String? = null
-    var date_on_sale_from_gmt: String? = null
-    var date_on_sale_to_gmt: String? = null
-
-    var backorders: String? = null
-    var backorders_allowed = false
-    var backordered = false
-
-    var sold_individually = false
-    var weight: String? = null
-    var dimensions: JsonElement? = null
-
-    var shipping_required = false
-    var shipping_taxable = false
-    var shipping_class: String? = null
-    var shipping_class_id = 0
-
-    var reviews_allowed = true
-    var average_rating: String? = null
-    var rating_count = 0
-
-    var parent_id = 0L
-    val menu_order = 0
-    var purchase_note: String? = null
-
-    var categories: JsonElement? = null
-    var tags: JsonElement? = null
-    var images: JsonElement? = null
-    var attributes: JsonElement? = null
-    var variations: JsonElement? = null
-    var downloads: JsonElement? = null
-    var related_ids: JsonElement? = null
-    var cross_sell_ids: JsonElement? = null
-    var upsell_ids: JsonElement? = null
-    var grouped_products: JsonElement? = null
+@Suppress("ConstructorParameterNaming")
+data class ProductApiResponse(
+    val id: Long? = null,
+    val localSiteId: Int = 0,
+    val name: String? = null,
+    val slug: String? = null,
+    val permalink: String? = null,
+    val date_created: String? = null,
+    val date_modified: String? = null,
+    val type: String? = null,
+    val status: String? = null,
+    val featured: Boolean = false,
+    val catalog_visibility: String? = null,
+    val description: String? = null,
+    val short_description: String? = null,
+    val sku: String? = null,
+    val price: String? = null,
+    val regular_price: String? = null,
+    val sale_price: String? = null,
+    val on_sale: Boolean = false,
+    val total_sales: Long = 0L,
+    val purchasable: Boolean = false,
+    val virtual: Boolean = false,
+    val downloadable: Boolean = false,
+    val download_limit: Long = 0L,
+    val download_expiry: Int = 0,
+    val external_url: String? = null,
+    val button_text: String? = null,
+    val tax_status: String? = null,
+    val tax_class: String? = null,
+    val manage_stock: String? = null,
+    val stock_quantity:Double = 0.0,
+    val stock_status: String? = null,
+    val date_on_sale_from: String? = null,
+    val date_on_sale_to: String? = null,
+    val date_on_sale_from_gmt: String? = null,
+    val date_on_sale_to_gmt: String? = null,
+    val backorders: String? = null,
+    val backorders_allowed:Boolean = false,
+    val backordered:Boolean = false,
+    val sold_individually:Boolean = false,
+    val weight: String? = null,
+    val dimensions: JsonElement? = null,
+    val shipping_required: Boolean = false,
+    val shipping_taxable:Boolean = false,
+    val shipping_class: String? = null,
+    val shipping_class_id:Int = 0,
+    val reviews_allowed:Boolean = true,
+    val average_rating: String? = null,
+    val rating_count:Int = 0,
+    val parent_id:Long = 0L,
+    val menu_order:Int = 0,
+    val purchase_note: String? = null,
+    val categories: JsonElement? = null,
+    val tags: JsonElement? = null,
+    val images: JsonElement? = null,
+    val attributes: JsonElement? = null,
+    val variations: JsonElement? = null,
+    val downloads: JsonElement? = null,
+    val related_ids: JsonElement? = null,
+    val cross_sell_ids: JsonElement? = null,
+    val upsell_ids: JsonElement? = null,
+    val grouped_products: JsonElement? = null,
     @SerializedName("meta_data")
-    var metadata: JsonArray? = null
-
+    val metadata: JsonArray? = null,
+) {
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
         val response = this
