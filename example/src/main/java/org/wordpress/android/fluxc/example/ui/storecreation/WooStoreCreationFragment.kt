@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.storecreation.ShoppingCartRestClient.ShoppingCart.CartProduct
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.storecreation.ShoppingCartStore
 import javax.inject.Inject
 
@@ -30,7 +31,17 @@ class WooStoreCreationFragment : StoreSelectingFragment() {
                 prependToLog("Adding eCommerce plan to a shopping cart for site ${site.id}")
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        val response = shoppingCartStore.addWooCommercePlanToCart(site.siteId)
+                        val eCommerceProduct = CartProduct(
+                            productId = 1021,
+                            extra = mapOf(
+                                "context" to "signup",
+                                "signup_flow" to "ecommerce-monthly"
+                            )
+                        )
+                        val response = shoppingCartStore.addProductToCart(
+                            site.siteId,
+                            eCommerceProduct
+                        )
                         withContext(Dispatchers.Main) {
                             response.error?.let {
                                 prependToLog("${it.type}: ${it.message}")
