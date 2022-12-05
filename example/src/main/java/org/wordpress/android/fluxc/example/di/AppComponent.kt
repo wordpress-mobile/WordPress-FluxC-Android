@@ -22,7 +22,8 @@ import javax.inject.Singleton
         MainActivityModule::class,
         WCOrderListActivityModule::class,
         WCDatabaseModule::class,
-        DatabaseModule::class])
+        DatabaseModule::class,
+        ApplicationPasswordsModule::class])
 interface AppComponent : AndroidInjector<ExampleApp> {
     override fun inject(app: ExampleApp)
 

@@ -12,6 +12,7 @@ import javax.inject.Inject
 
 open class ExampleApp : Application(), HasAndroidInjector {
     @Inject lateinit var androidInjector: DispatchingAndroidInjector<Any>
+    @Inject lateinit var applicationPasswordsUnavailableLogger: ApplicationPasswordsUnavailableLogger
 
     protected open val component: AppComponent by lazy {
         DaggerAppComponent.builder()
@@ -24,6 +25,7 @@ open class ExampleApp : Application(), HasAndroidInjector {
         component.inject(this)
         val wellSqlConfig = WellSqlConfig(applicationContext, WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(wellSqlConfig)
+        applicationPasswordsUnavailableLogger.init()
     }
 
     override fun androidInjector(): AndroidInjector<Any> = androidInjector

@@ -21,7 +21,8 @@ import org.wordpress.android.fluxc.di.WCDatabaseModule
         MainActivityModule::class,
         DatabaseModule::class,
         WCDatabaseModule::class,
-        WCOrderListActivityModule::class])
+        WCOrderListActivityModule::class,
+        ApplicationPasswordsModule::class])
 interface AppComponentDebug : AppComponent {
     @Component.Builder
     interface Builder : AppComponent.Builder {
