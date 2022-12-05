@@ -8,6 +8,7 @@ import com.goterl.lazysodium.exceptions.SodiumException;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLoggingKey;
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptionUtils;
+import org.wordpress.android.fluxc.module.ApplicationPasswordClientId;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.util.AppLog;
@@ -41,8 +42,14 @@ public class AppConfigModule {
     }
 
     @Provides
-    public UserAgent provideUserAgent(Context appContext) {
-        return new UserAgent(appContext, "fluxc-example-android");
+    public UserAgent provideUserAgent(Context appContext, @ApplicationPasswordClientId String applicationName) {
+        return new UserAgent(appContext, applicationName);
+    }
+
+    @Provides
+    @ApplicationPasswordClientId
+    public String provideApplicationName() {
+        return "fluxc-example-android";
     }
 
     @Provides
