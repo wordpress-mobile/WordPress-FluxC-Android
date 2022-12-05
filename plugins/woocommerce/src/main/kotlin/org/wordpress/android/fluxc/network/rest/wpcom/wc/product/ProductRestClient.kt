@@ -937,7 +937,7 @@ class ProductRestClient @Inject constructor(
     ): WooPayload<BatchProductApiResponse> = WOOCOMMERCE.products.batch.pathV3
         .let { url ->
             val body = buildMap {
-                putIfNotNull("update" to existingToUpdatedProducts.map { (existing, updated) ->
+                putIfNotNull("update" to existingToUpdatedProducts.mapNotNull { (existing, updated) ->
                     productModelToProductJsonBody(
                         productModel = existing, updatedProductModel = updated
                     ).let { updateProperties ->

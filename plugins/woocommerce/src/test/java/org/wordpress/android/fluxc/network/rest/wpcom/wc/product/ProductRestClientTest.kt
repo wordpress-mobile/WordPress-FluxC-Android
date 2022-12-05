@@ -107,10 +107,7 @@ class ProductRestClientTest {
         assertThat(bodyCaptor.allValues).hasSize(1)
         assertThat(bodyCaptor.firstValue).isEqualTo(
             mapOf(
-                ("update" to listOf(
-                    null,
-                    null
-                ))
+                ("update" to emptyList<Map<String, Any>>())
             )
         )
     }
