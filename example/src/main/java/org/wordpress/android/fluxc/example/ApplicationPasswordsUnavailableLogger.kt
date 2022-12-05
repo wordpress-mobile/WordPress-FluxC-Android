@@ -5,6 +5,7 @@ import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordsUnavailableListener
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -39,9 +40,15 @@ class ApplicationPasswordsUnavailableLogger @Inject constructor(
         })
     }
 
-    override fun featureIsUnavailable(siteModel: SiteModel) {
+    override fun featureIsUnavailable(siteModel: SiteModel, networkError: WPAPINetworkError) {
         activityReference.get()?.let {
-            it.runOnUiThread { it.prependToLog("Application Passwords are not supported on site ${siteModel.url}") }
+            it.runOnUiThread {
+                it.prependToLog(
+                    "Application Passwords are not supported on site ${siteModel.url}\n" +
+                        "Cause: ${networkError.errorCode} \n" +
+                        "Status Code: ${networkError.volleyError?.networkResponse?.statusCode}"
+                )
+            }
         }
     }
 }
