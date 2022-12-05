@@ -938,14 +938,16 @@ class ProductRestClient @Inject constructor(
         .let { url ->
             val body = buildMap {
                 putIfNotNull("update" to existingToUpdatedProducts.map { (existing, updated) ->
-                        productModelToProductJsonBody(
-                            productModel = existing, updatedProductModel = updated
-                        ).apply {
-                            if (isNotEmpty()) {
-                                plus("id" to updated.remoteProductId)
-                            }
+                    productModelToProductJsonBody(
+                        productModel = existing, updatedProductModel = updated
+                    ).let { updateProperties ->
+                        if (updateProperties.isNotEmpty()) {
+                            updateProperties.plus("id" to updated.remoteProductId)
+                        } else {
+                            null
                         }
-                    })
+                    }
+                })
             }
 
             jetpackTunnelGsonRequestBuilder.syncPostRequest(
