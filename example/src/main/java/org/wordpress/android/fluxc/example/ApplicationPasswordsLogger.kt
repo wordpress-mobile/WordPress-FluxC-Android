@@ -40,15 +40,25 @@ class ApplicationPasswordsLogger @Inject constructor(
         })
     }
 
+    override fun onNewPasswordCreated() {
+        invokeOnUiThread {
+            prependToLog("A new WordPress Application Password was created")
+        }
+    }
+
     override fun onFeatureUnavailable(siteModel: SiteModel, networkError: WPAPINetworkError) {
+        invokeOnUiThread {
+            prependToLog(
+                "Application Passwords are not supported on site ${siteModel.url}\n" +
+                    "Cause: ${networkError.errorCode} \n" +
+                    "Status Code: ${networkError.volleyError?.networkResponse?.statusCode}"
+            )
+        }
+    }
+
+    private fun invokeOnUiThread(block: MainExampleActivity.() -> Unit) {
         activityReference.get()?.let {
-            it.runOnUiThread {
-                it.prependToLog(
-                    "Application Passwords are not supported on site ${siteModel.url}\n" +
-                        "Cause: ${networkError.errorCode} \n" +
-                        "Status Code: ${networkError.volleyError?.networkResponse?.statusCode}"
-                )
-            }
+            it.runOnUiThread { it.block() }
         }
     }
 }
