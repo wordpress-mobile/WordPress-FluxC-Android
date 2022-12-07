@@ -6,15 +6,15 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
-import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordsUnavailableListener
+import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordsListener
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ApplicationPasswordsUnavailableLogger @Inject constructor(
+class ApplicationPasswordsLogger @Inject constructor(
     private val application: Application
-) : ApplicationPasswordsUnavailableListener {
+) : ApplicationPasswordsListener {
     private var activityReference = WeakReference<MainExampleActivity>(null)
 
     @Suppress("EmptyFunctionBlock")
@@ -40,7 +40,7 @@ class ApplicationPasswordsUnavailableLogger @Inject constructor(
         })
     }
 
-    override fun featureIsUnavailable(siteModel: SiteModel, networkError: WPAPINetworkError) {
+    override fun onFeatureUnavailable(siteModel: SiteModel, networkError: WPAPINetworkError) {
         activityReference.get()?.let {
             it.runOnUiThread {
                 it.prependToLog(
