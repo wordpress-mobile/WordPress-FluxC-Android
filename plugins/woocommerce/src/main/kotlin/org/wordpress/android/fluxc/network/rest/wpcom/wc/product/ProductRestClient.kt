@@ -937,18 +937,24 @@ class ProductRestClient @Inject constructor(
     ): WooPayload<BatchProductApiResponse> = WOOCOMMERCE.products.batch.pathV3
         .let { url ->
             val body = buildMap {
-                putIfNotNull("update" to existingToUpdatedProducts.mapNotNull { (existing, updated) ->
-                    productModelToProductJsonBody(
-                        productModel = existing, updatedProductModel = updated
-                    ).let { updateProperties ->
-                        if (updateProperties.isNotEmpty()) {
-                            updateProperties.plus("id" to updated.remoteProductId)
-                        } else {
-                            null
+                putIfNotNull("update" to existingToUpdatedProducts
+                    .mapNotNull { (existing, updated) ->
+                        productModelToProductJsonBody(
+                            productModel = existing, updatedProductModel = updated
+                        ).let { updateProperties ->
+                            if (updateProperties.isNotEmpty()) {
+                                updateProperties.plus("id" to updated.remoteProductId)
+                            } else {
+                                null
+                            }
                         }
                     }
-                })
+                    .takeIf { map -> map.isNotEmpty() }
+                )
             }
+
+            // No changes need to be executed, no need to call the API
+            if (body.isEmpty()) return@let WooPayload()
 
             jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this@ProductRestClient,

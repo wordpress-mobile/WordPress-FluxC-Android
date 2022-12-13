@@ -10,6 +10,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
@@ -97,18 +98,12 @@ class ProductRestClientTest {
         )
 
         // then
-        verify(requestBuilder).syncPostRequest(
+        verify(requestBuilder, never()).syncPostRequest(
             eq(sut),
             eq(site),
             eq(WOOCOMMERCE.products.batch.pathV3),
             bodyCaptor.capture(),
             eq(BatchProductApiResponse::class.java),
-        )
-        assertThat(bodyCaptor.allValues).hasSize(1)
-        assertThat(bodyCaptor.firstValue).isEqualTo(
-            mapOf(
-                ("update" to emptyList<Map<String, Any>>())
-            )
         )
     }
 
