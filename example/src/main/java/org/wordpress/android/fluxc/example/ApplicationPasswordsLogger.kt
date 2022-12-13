@@ -50,6 +50,7 @@ class ApplicationPasswordsLogger @Inject constructor(
         invokeOnUiThread {
             prependToLog(
                 "Application Passwords are not supported on site ${siteModel.url}\n" +
+                    "Error message: ${networkError.message}\n" +
                     "Cause: ${networkError.errorCode} \n" +
                     "Status Code: ${networkError.volleyError?.networkResponse?.statusCode}"
             )
