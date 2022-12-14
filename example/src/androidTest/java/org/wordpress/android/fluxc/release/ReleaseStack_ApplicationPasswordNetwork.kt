@@ -91,8 +91,8 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
         return SiteModel().apply {
             id = 1
             selfHostedSiteId = 0
-            // TODO update this to the value TEST_WPORG_URL_SH_SIMPLE when the non-jetpack site's WP version is updated
-            url = BuildConfig.TEST_WPORG_URL_JETPACK_SUBFOLDER.replace("http:", "https:")
+            // By default, Application Passwords are only available when using SSL
+            url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE.replace("http:", "https:")
             username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE
             password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE
         }
