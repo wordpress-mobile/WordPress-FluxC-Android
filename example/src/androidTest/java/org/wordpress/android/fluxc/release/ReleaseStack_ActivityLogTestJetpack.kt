@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.tools.FormattableContent
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import org.wordpress.android.util.UrlUtils
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -271,7 +272,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private fun authenticate(site: Sites): SiteModel {
         authenticateWPComAndFetchSites(site.wpUserName, site.wpPassword)
 
-        return siteStore.sites.find { it.unmappedUrl == site.siteUrl }!!
+        return siteStore.sites.find { UrlUtils.removeScheme(it.unmappedUrl) == UrlUtils.removeScheme(site.siteUrl) }!!
     }
 
     private fun activityLogModel(index: Long, rewindable: Boolean): ActivityLogModel {
