@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
-import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.AUTHORIZATION_REQUIRED
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.CENSORED
@@ -15,6 +14,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ER
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.TIMEOUT
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 
@@ -60,7 +60,7 @@ fun WPComGsonNetworkError.toWooError(): WooError {
     return WooError(type, this.type, message)
 }
 
-fun BaseNetworkError.toWooError(): WooError {
+fun WPAPINetworkError.toWooError(): WooError {
     val type = when (type) {
         TIMEOUT -> WooErrorType.TIMEOUT
         NO_CONNECTION,
@@ -75,7 +75,11 @@ fun BaseNetworkError.toWooError(): WooError {
         NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
         NOT_FOUND -> WooErrorType.INVALID_ID
         UNKNOWN, null -> {
-            WooErrorType.GENERIC_ERROR
+            when (errorCode) {
+                "rest_invalid_param" -> WooErrorType.INVALID_PARAM
+                "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
+                else -> WooErrorType.GENERIC_ERROR
+            }
         }
     }
     return WooError(type, this.type, message)
