@@ -1,18 +1,11 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
+import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
@@ -21,18 +14,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
 class CouponRestClient @Inject constructor(
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    appContext: Context?,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    private val applicationPasswordNetwork: ApplicationPasswordNetwork
+) {
     suspend fun fetchCoupons(
         site: SiteModel,
         page: Int,
@@ -41,10 +26,9 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<Array<CouponDto>> {
         val url = WOOCOMMERCE.coupons.pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            restClient = this,
+        val response = applicationPasswordNetwork.executeGetGsonRequest(
             site = site,
-            url = url,
+            path = url,
             params = mutableMapOf<String, String>().apply {
                 put("page", page.toString())
                 put("per_page", pageSize.toString())
@@ -55,10 +39,10 @@ class CouponRestClient @Inject constructor(
             clazz = Array<CouponDto>::class.java
         )
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 WooPayload(response.data)
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 WooPayload(response.error.toWooError())
             }
         }
@@ -70,18 +54,16 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<CouponDto> {
         val url = WOOCOMMERCE.coupons.id(couponId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            emptyMap(),
-            CouponDto::class.java
+        val response = applicationPasswordNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = CouponDto::class.java
         )
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 WooPayload(response.data)
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 WooPayload(response.error.toWooError())
             }
         }
@@ -94,19 +76,18 @@ class CouponRestClient @Inject constructor(
         val url = WOOCOMMERCE.coupons.pathV3
         val params = request.toNetworkRequest()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-            this,
-            site,
-            url,
-            params,
-            CouponDto::class.java
+        val response = applicationPasswordNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = CouponDto::class.java,
+            body = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 WooPayload(response.data)
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 WooPayload(response.error.toWooError())
             }
         }
@@ -120,19 +101,18 @@ class CouponRestClient @Inject constructor(
         val url = WOOCOMMERCE.coupons.id(couponId).pathV3
         val params = request.toNetworkRequest()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this,
-            site,
-            url,
-            params,
-            CouponDto::class.java
+        val response = applicationPasswordNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            clazz = CouponDto::class.java,
+            body = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 WooPayload(response.data)
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 WooPayload(response.error.toWooError())
             }
         }
@@ -145,17 +125,16 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.coupons.id(couponId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-            restClient = this,
+        val response = applicationPasswordNetwork.executeDeleteGsonRequest(
             site = site,
-            url = url,
+            path = url,
             clazz = Unit::class.java,
             params = mapOf("force" to trash.not().toString())
         )
 
         return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(Unit)
+            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is WPAPIResponse.Success -> WooPayload(Unit)
         }
     }
 
@@ -172,17 +151,16 @@ class CouponRestClient @Inject constructor(
             "coupons" to couponsIds.joinToString(",")
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            restClient = this,
+        val response = applicationPasswordNetwork.executeGetGsonRequest(
             site = site,
-            url = url,
+            path = url,
             params = params,
             clazz = Array<CouponReportDto>::class.java
         )
 
         return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(response.data?.toList())
+            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is WPAPIResponse.Success -> WooPayload(response.data?.toList())
         }
     }
 

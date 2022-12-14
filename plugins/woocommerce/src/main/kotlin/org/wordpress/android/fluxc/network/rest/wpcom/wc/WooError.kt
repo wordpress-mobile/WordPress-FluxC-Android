@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.AUTHORIZATION_REQUIRED
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.CENSORED
@@ -54,6 +55,27 @@ fun WPComGsonNetworkError.toWooError(): WooError {
                 "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
                 else -> WooErrorType.GENERIC_ERROR
             }
+        }
+    }
+    return WooError(type, this.type, message)
+}
+
+fun BaseNetworkError.toWooError(): WooError {
+    val type = when (type) {
+        TIMEOUT -> WooErrorType.TIMEOUT
+        NO_CONNECTION,
+        SERVER_ERROR,
+        INVALID_SSL_CERTIFICATE,
+        NETWORK_ERROR -> WooErrorType.API_ERROR
+        PARSE_ERROR,
+        CENSORED,
+        INVALID_RESPONSE -> WooErrorType.INVALID_RESPONSE
+        HTTP_AUTH_ERROR,
+        AUTHORIZATION_REQUIRED,
+        NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
+        NOT_FOUND -> WooErrorType.INVALID_ID
+        UNKNOWN, null -> {
+            WooErrorType.GENERIC_ERROR
         }
     }
     return WooError(type, this.type, message)
