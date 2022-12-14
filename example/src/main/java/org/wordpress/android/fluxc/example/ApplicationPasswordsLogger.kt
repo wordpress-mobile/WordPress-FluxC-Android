@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.example
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.Context
 import android.os.Bundle
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
@@ -13,13 +14,13 @@ import javax.inject.Singleton
 
 @Singleton
 class ApplicationPasswordsLogger @Inject constructor(
-    private val application: Application
+    private val context: Context
 ) : ApplicationPasswordsListener {
     private var activityReference = WeakReference<MainExampleActivity>(null)
 
     @Suppress("EmptyFunctionBlock")
     fun init() {
-        application.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+        (context.applicationContext as Application).registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 (activity as? MainExampleActivity)?.let {
                     activityReference = WeakReference(it)
