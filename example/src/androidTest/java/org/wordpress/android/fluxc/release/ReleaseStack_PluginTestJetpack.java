@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -138,45 +139,65 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     // plugin installed for the delete test and the plugin is not installed for the install test
     @Test
     public void testInstallAndDeleteSitePlugin() throws InterruptedException {
+        String prefix = "ManualDebugging";
         String pluginSlugToInstall = "react";
         // Fetch the list of installed plugins to make sure `React` is not installed
         SiteModel site = fetchSingleJetpackSitePlugins();
 
+        Log.i(prefix, "Getting Plugins List");
         List<ImmutablePluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
+        Log.i(prefix, "Iterating through plugins");
         for (ImmutablePluginModel immutablePlugin : plugins) {
+            Log.i(prefix, "Assert if current plugin is installed");
             assertTrue(immutablePlugin.isInstalled());
+
+            Log.i(prefix, "Check if current plugin is 'react'");
             if (pluginSlugToInstall.equals(immutablePlugin.getSlug())) {
                 // We need to deactivate the plugin to be able to uninstall it
+                Log.i(prefix, "Current plugin is 'react'. Check if it's active");
                 if (immutablePlugin.isActive()) {
+                    Log.i(prefix, "Trying to deactivate current plugin");
                     deactivatePlugin(site, immutablePlugin);
                 }
 
                 // delete plugin first
+                Log.i(prefix, "Trying to delete current plugin");
                 deleteSitePlugin(site, immutablePlugin);
             }
         }
 
         // Install the React plugin
+        Log.i(prefix, "Trying to install react");
         installSitePlugin(site, pluginSlugToInstall);
 
+        Log.i(prefix, "Trying to get the installed react plugin by name");
         ImmutablePluginModel installedPlugin = mPluginStore.getImmutablePluginBySlug(site,
                 pluginSlugToInstall);
+        Log.i(prefix, "assert not null");
         assertNotNull(installedPlugin);
+        Log.i(prefix, "assert installed");
         assertTrue(installedPlugin.isInstalled());
 
         // We need to deactivate the plugin to be able to uninstall it
+        Log.i(prefix, "check if active");
         if (installedPlugin.isActive()) {
+            Log.i(prefix, "deactivate");
             deactivatePlugin(site, installedPlugin);
         }
 
         // Delete the newly installed React plugin
+        Log.i(prefix, "delete");
         deleteSitePlugin(site, installedPlugin);
 
+        Log.i(prefix, "Getting Plugins List once again");
         List<ImmutablePluginModel> updatedPlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
+        Log.i(prefix, "iterate through Plugins List once again");
         for (ImmutablePluginModel immutablePlugin : updatedPlugins) {
+            Log.i(prefix, "make sure current plugin is not react");
             assertNotEquals(pluginSlugToInstall, immutablePlugin.getSlug());
         }
 
+        Log.i(prefix, "sign out");
         signOutWPCom();
     }
 
