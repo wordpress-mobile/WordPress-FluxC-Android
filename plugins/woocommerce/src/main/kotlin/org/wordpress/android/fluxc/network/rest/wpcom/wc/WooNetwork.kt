@@ -31,7 +31,8 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeGetGsonRequest(site, path, clazz, params)
                 .toWPAPIResponse()
-            else -> applicationPasswordNetwork.executeGetGsonRequest(site, path, clazz, params)
+            SiteModel.ORIGIN_XMLRPC -> applicationPasswordNetwork.executeGetGsonRequest(site, path, clazz, params)
+            else -> error("Site with unsupported origin")
         }
     }
 
@@ -44,7 +45,8 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executePostGsonRequest(site, path, clazz, body)
                 .toWPAPIResponse()
-            else -> applicationPasswordNetwork.executePostGsonRequest(site, path, clazz, body)
+            SiteModel.ORIGIN_XMLRPC -> applicationPasswordNetwork.executePostGsonRequest(site, path, clazz, body)
+            else -> error("Site with unsupported origin")
         }
     }
 
@@ -57,7 +59,8 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executePutGsonRequest(site, path, clazz, body)
                 .toWPAPIResponse()
-            else -> applicationPasswordNetwork.executePutGsonRequest(site, path, clazz, body)
+            SiteModel.ORIGIN_XMLRPC -> applicationPasswordNetwork.executePutGsonRequest(site, path, clazz, body)
+            else -> error("Site with unsupported origin")
         }
     }
 
@@ -70,7 +73,8 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeDeleteGsonRequest(site, path, clazz, params)
                 .toWPAPIResponse()
-            else -> applicationPasswordNetwork.executeDeleteGsonRequest(site, path, clazz, params)
+            SiteModel.ORIGIN_XMLRPC -> applicationPasswordNetwork.executeDeleteGsonRequest(site, path, clazz, params)
+            else -> error("Site with unsupported origin")
         }
     }
 }
