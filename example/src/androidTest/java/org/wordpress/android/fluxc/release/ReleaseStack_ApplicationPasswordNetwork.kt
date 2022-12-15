@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.SiteModel.SiteOrigin
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
-import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordNetwork
+import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordsNetwork
 import org.wordpress.android.fluxc.release.ReleaseStack_PostSchedulingTestJetpack.TestEvents
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -46,7 +46,7 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
 
     @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Inject internal lateinit var applicationPasswordNetwork: ApplicationPasswordNetwork
+    @Inject internal lateinit var applicationPasswordsNetwork: ApplicationPasswordsNetwork
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
 
@@ -63,13 +63,13 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
 
     @Test
     fun testApplicationPassword() = runBlocking {
-        val response = applicationPasswordNetwork.executeGetGsonRequest(site, WPAPI.users.me.urlV2, Unit::class.java)
+        val response = applicationPasswordsNetwork.executeGetGsonRequest(site, WPAPI.users.me.urlV2, Unit::class.java)
         Assert.assertTrue(response is WPAPIResponse.Success)
     }
 
     override fun tearDown() {
         runBlocking {
-            applicationPasswordNetwork.deleteApplicationPassword(site)
+            applicationPasswordsNetwork.deleteApplicationPassword(site)
         }
         super.tearDown()
     }
