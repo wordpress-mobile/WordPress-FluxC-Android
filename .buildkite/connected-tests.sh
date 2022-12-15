@@ -27,7 +27,7 @@ gcloud firebase test android run \
 	--verbosity info \
 	--no-record-video \
 	--results-history-name "fluxc-connected-tests" \
-	--test-targets "class org.wordpress.android.fluxc.release.ReleaseStack_PluginTestJetpack" \
+	--test-targets "package org.wordpress.android.fluxc" \
 	|& tee build/test-results/firebase-test-log.txt || EXIT_CODE=$?
 
 echo -e "--- :gcloud: Download Test Results"
