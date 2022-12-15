@@ -23,6 +23,8 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -89,7 +91,8 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
+    private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -964,6 +967,26 @@ class ProductRestClient @Inject constructor(
                 BatchProductApiResponse::class.java
             ).handleResult()
         }
+
+    suspend fun replyToReview(
+        site: SiteModel,
+        remoteReviewId: Long,
+        replayContent: String?
+    ): Response<Unit> {
+        val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteReviewId).replies.new_.urlV1_1
+
+        val request = mutableMapOf(
+            "content" to replayContent.orEmpty()
+        )
+
+        return wpComGsonRequestBuilder.syncPostRequest(
+            this,
+            url,
+            null,
+            request,
+            Unit::class.java
+        )
+    }
 
     /**
      * Makes a POST request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/batch`

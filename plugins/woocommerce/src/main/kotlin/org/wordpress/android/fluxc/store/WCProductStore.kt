@@ -25,6 +25,8 @@ import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
@@ -545,6 +547,12 @@ class WCProductStore @Inject constructor(
             this.error = error
         }
     }
+
+    class PostReviewReply(
+        val site: SiteModel,
+        val productReviewId: Long,
+        val replyContent: String,
+    )
 
     class FetchProductReviewsResponsePayload(
         val site: SiteModel,
@@ -1564,6 +1572,19 @@ class WCProductStore @Inject constructor(
                 }
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
+        }
+    }
+
+    suspend fun replyToReview(payload: PostReviewReply): WooResult<Unit> {
+        val response = wcProductRestClient.replyToReview(
+            payload.site,
+            payload.productReviewId,
+            payload.replyContent
+        )
+
+        return when (response) {
+            is Success -> WooResult()
+            is Error -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
         }
     }
 
