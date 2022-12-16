@@ -5,9 +5,9 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.coupon.UpdateCouponRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
-import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import java.text.SimpleDateFormat
@@ -16,7 +16,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 class CouponRestClient @Inject constructor(
-    private val applicationPasswordNetwork: ApplicationPasswordNetwork
+    private val wooNetwork: WooNetwork
 ) {
     suspend fun fetchCoupons(
         site: SiteModel,
@@ -26,7 +26,7 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<Array<CouponDto>> {
         val url = WOOCOMMERCE.coupons.pathV3
 
-        val response = applicationPasswordNetwork.executeGetGsonRequest(
+        val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = url,
             params = mutableMapOf<String, String>().apply {
@@ -54,7 +54,7 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<CouponDto> {
         val url = WOOCOMMERCE.coupons.id(couponId).pathV3
 
-        val response = applicationPasswordNetwork.executeGetGsonRequest(
+        val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = url,
             clazz = CouponDto::class.java
@@ -76,7 +76,7 @@ class CouponRestClient @Inject constructor(
         val url = WOOCOMMERCE.coupons.pathV3
         val params = request.toNetworkRequest()
 
-        val response = applicationPasswordNetwork.executePostGsonRequest(
+        val response = wooNetwork.executePostGsonRequest(
             site = site,
             path = url,
             clazz = CouponDto::class.java,
@@ -101,7 +101,7 @@ class CouponRestClient @Inject constructor(
         val url = WOOCOMMERCE.coupons.id(couponId).pathV3
         val params = request.toNetworkRequest()
 
-        val response = applicationPasswordNetwork.executePutGsonRequest(
+        val response = wooNetwork.executePutGsonRequest(
             site = site,
             path = url,
             clazz = CouponDto::class.java,
@@ -125,7 +125,7 @@ class CouponRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.coupons.id(couponId).pathV3
 
-        val response = applicationPasswordNetwork.executeDeleteGsonRequest(
+        val response = wooNetwork.executeDeleteGsonRequest(
             site = site,
             path = url,
             clazz = Unit::class.java,
@@ -151,7 +151,7 @@ class CouponRestClient @Inject constructor(
             "coupons" to couponsIds.joinToString(",")
         )
 
-        val response = applicationPasswordNetwork.executeGetGsonRequest(
+        val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = url,
             params = params,
