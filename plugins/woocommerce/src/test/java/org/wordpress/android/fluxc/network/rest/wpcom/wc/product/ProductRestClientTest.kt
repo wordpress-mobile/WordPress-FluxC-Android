@@ -35,7 +35,7 @@ class ProductRestClientTest {
                 )
             } doReturn JetpackResponse.JetpackSuccess(null)
         }
-        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), requestBuilder)
+        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), requestBuilder, mock())
     }
 
     @Test
