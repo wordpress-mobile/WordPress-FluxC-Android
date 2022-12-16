@@ -24,7 +24,10 @@ import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.OkHttpClient;
 
-@Module(includes = MockedNetworkModuleBindings.class)
+@Module(includes = {
+        MockedNetworkModuleBindings.class,
+        ApplicationPasswordsModule.class
+})
 public class MockedNetworkModule {
     @Module
     interface MockedNetworkModuleBindings {
