@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.wordpress.android.fluxc.di.WCDatabaseModule;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
+import org.wordpress.android.fluxc.example.di.ApplicationPasswordsModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.DatabaseModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
@@ -23,7 +24,8 @@ import dagger.Component;
         ReleaseToolsModule.class,
         MockedToolsModule.class,
         DatabaseModule.class,
-        WCDatabaseModule.class
+        WCDatabaseModule.class,
+        ApplicationPasswordsModule.class
 })
 public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountTest test);
@@ -78,4 +80,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_WPApiPluginTest test);
 
     void inject(ReleaseStack_CardsTest test);
+
+    void inject(ReleaseStack_ApplicationPasswordNetwork test);
 }

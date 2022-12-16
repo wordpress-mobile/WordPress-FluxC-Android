@@ -33,6 +33,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import org.wordpress.android.util.UrlUtils
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -214,7 +215,7 @@ class ReleaseStack_ScanTestJetpack : ReleaseStack_Base() {
     private fun authenticate(site: Sites): SiteModel {
         authenticateWPComAndFetchSites(site.wpUserName, site.wpPassword)
 
-        return siteStore.sites.find { it.unmappedUrl == site.siteUrl }!!
+        return siteStore.sites.find { UrlUtils.removeScheme(it.unmappedUrl) == UrlUtils.removeScheme(site.siteUrl) }!!
     }
 
     @Throws(InterruptedException::class)
