@@ -205,16 +205,23 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         searchQuery: String? = null
     ) {
-        val url = WOOCOMMERCE.products.tags.pathV3
-        val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductTags") {
+            val url = WOOCOMMERCE.products.tags.pathV3
+            val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
+            ).putIfNotEmpty("search" to searchQuery)
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductTagApiResponse>? ->
-                    val tags = response?.map {
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<ProductTagApiResponse>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val tags = response.data?.map {
                         productTagApiResponseToProductTagModel(it, site)
                     }.orEmpty()
 
@@ -222,14 +229,14 @@ class ProductRestClient @Inject constructor(
                     val canLoadMore = tags.size == pageSize
                     val payload = RemoteProductTagsPayload(site, tags, offset, loadedMore, canLoadMore, searchQuery)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductTagsPayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -245,27 +252,35 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         tags: List<String>
     ) {
-        val url = WOOCOMMERCE.products.tags.batch.pathV3
-        val responseType = object : TypeToken<BatchAddProductTagApiResponse>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "addProductTags") {
+            val url = WOOCOMMERCE.products.tags.batch.pathV3
+            val body = mutableMapOf(
                 "create" to tags.map { mapOf("name" to it) }
-        )
+            )
 
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
-                { response: BatchAddProductTagApiResponse? ->
-                    val addedTags = response?.addedTags?.map {
+            val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = BatchAddProductTagApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val addedTags = response.data?.addedTags?.map {
                         productTagApiResponseToProductTagModel(it, site)
                     }.orEmpty()
 
                     val payload = RemoteAddProductTagsResponsePayload(site, addedTags)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductTagsResponsePayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
