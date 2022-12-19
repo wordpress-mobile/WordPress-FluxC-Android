@@ -293,33 +293,32 @@ class ProductRestClient @Inject constructor(
     suspend fun fetchSingleProduct(site: SiteModel, remoteProductId: Long): RemoteProductPayload {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ProductApiResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = emptyMap(),
+            clazz = ProductApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val newModel = it.asProductModel().apply {
                         localSiteId = site.id
                     }
                     RemoteProductPayload(newModel, site)
                 } ?: RemoteProductPayload(
-                        ProductError(GENERIC_ERROR, "Success response with empty data"),
-                        WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site
+                    ProductError(GENERIC_ERROR, "Success response with empty data"),
+                    WCProductModel().apply { this.remoteProductId = remoteProductId },
+                    site
                 )
             }
-            is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error -> {
+                val productError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductPayload(
-                        productError,
-                        WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site
+                    productError,
+                    WCProductModel().apply { this.remoteProductId = remoteProductId },
+                    site
                 )
             }
         }
