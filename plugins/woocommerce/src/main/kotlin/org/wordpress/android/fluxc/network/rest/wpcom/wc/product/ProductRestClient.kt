@@ -1109,7 +1109,7 @@ class ProductRestClient @Inject constructor(
      *
      * Dispatches a WCProductAction.UPDATED_PRODUCT_IMAGES action with the result
      *
-     * @param [site] The site to fetch product reviews for
+     * @param [site] The site to update product images for
      * @param [remoteProductId] Unique server id of the product to update
      * @param [imageList] list of product images to assign to the product
      */
