@@ -28,8 +28,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
@@ -976,12 +974,11 @@ class ProductRestClient @Inject constructor(
             // No changes need to be executed, no need to call the API
             if (body.isEmpty()) return@let WooPayload()
 
-            jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this@ProductRestClient,
-                site,
-                url,
-                body,
-                BatchProductApiResponse::class.java
+            wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                clazz = BatchProductApiResponse::class.java,
+                body = body
             ).handleResult()
         }
 
