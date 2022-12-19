@@ -913,11 +913,15 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
         val body = variantModelToProductJsonBody(storedWCProductVariationModel, updatedProductVariationModel)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this, site, url, body, ProductVariationApiResponse::class.java
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            body = body,
+            clazz = ProductVariationApiResponse::class.java
         )
+
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val newModel = it.asProductVariationModel().apply {
                         this.remoteProductId = remoteProductId
@@ -933,8 +937,8 @@ class ProductRestClient @Inject constructor(
                     }
                 )
             }
-            is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error -> {
+                val productError = wpAPINetworkErrorToProductError(response.error)
                 RemoteUpdateVariationPayload(
                     productError,
                     site,
