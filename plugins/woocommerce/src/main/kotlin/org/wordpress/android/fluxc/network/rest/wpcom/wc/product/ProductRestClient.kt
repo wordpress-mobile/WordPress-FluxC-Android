@@ -4,7 +4,6 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
-import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
@@ -1200,7 +1199,6 @@ class ProductRestClient @Inject constructor(
             }
 
             val url = WOOCOMMERCE.products.categories.pathV3
-            val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
             val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
