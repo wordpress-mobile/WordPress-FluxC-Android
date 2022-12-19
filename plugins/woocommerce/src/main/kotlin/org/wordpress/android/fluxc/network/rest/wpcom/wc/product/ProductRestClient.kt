@@ -1501,27 +1501,35 @@ class ProductRestClient @Inject constructor(
         remoteProductId: Long,
         forceDelete: Boolean = false
     ) {
-        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params = mapOf("force" to forceDelete.toString())
-        val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
+        coroutineEngine.launch(AppLog.T.API, this, "deleteProduct") {
+            val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+            val params = mapOf("force" to forceDelete.toString())
+
+            val response = wooNetwork.executeDeleteGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val payload = RemoteDeleteProductPayload(site, remoteProductId)
                         dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteDeleteProductPayload(
-                            productError,
-                            site,
-                            remoteProductId
+                        productError,
+                        site,
+                        remoteProductId
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
                 }
-        )
-        add(request)
+            }
+        }
     }
 
     /**
