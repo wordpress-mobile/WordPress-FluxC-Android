@@ -1369,16 +1369,15 @@ class ProductRestClient @Inject constructor(
     ): WooPayload<WCProductReviewModel> {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val params = mapOf("status" to newStatus)
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            restClient = this,
-            site = site,
-            url = url,
-            body = params,
-            clazz = ProductReviewApiResponse::class.java
+        val response = wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductReviewApiResponse::class.java,
+                body = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success  -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
@@ -1392,7 +1391,7 @@ class ProductRestClient @Inject constructor(
                     )
                 )
             }
-            is JetpackError -> WooPayload(error = response.error.toWooError())
+            is WPAPIResponse.Error -> WooPayload(error = response.error.toWooError())
         }
     }
 
