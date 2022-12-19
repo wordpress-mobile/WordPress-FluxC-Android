@@ -546,6 +546,55 @@ class ProductRestClient @Inject constructor(
         }
     }
 
+    private fun buildProductParametersMap(
+        pageSize: Int,
+        sortType: ProductSorting,
+        offset: Int,
+        searchQuery: String?,
+        isSkuSearch: Boolean,
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
+    ): MutableMap<String, String> {
+        fun ProductSorting.asOrderByParameter() = when (this) {
+            TITLE_ASC, TITLE_DESC -> "title"
+            DATE_ASC, DATE_DESC -> "date"
+        }
+
+        fun ProductSorting.asSortOrderParameter() = when (this) {
+            TITLE_ASC, DATE_ASC -> "asc"
+            TITLE_DESC, DATE_DESC -> "desc"
+        }
+
+        val params = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "orderby" to sortType.asOrderByParameter(),
+            "order" to sortType.asSortOrderParameter(),
+            "offset" to offset.toString()
+        )
+
+        includedProductIds?.let { includedIds ->
+            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
+        }
+        excludedProductIds?.let { excludedIds ->
+            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
+        }
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
+        }
+
+        if (searchQuery.isNullOrEmpty().not()) {
+            if (isSkuSearch) {
+                params["sku"] = searchQuery!! // full SKU match
+                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+            } else {
+                params["search"] = searchQuery!!
+            }
+        }
+
+        return params
+    }
+
     /**
      * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of product categories for the given WooCommerce [SiteModel].
@@ -627,45 +676,6 @@ class ProductRestClient @Inject constructor(
             }
         }
 
-    private fun buildProductParametersMap(
-        pageSize: Int,
-        sortType: ProductSorting,
-        offset: Int,
-        searchQuery: String?,
-        isSkuSearch: Boolean,
-        includedProductIds: List<Long>? = null,
-        excludedProductIds: List<Long>? = null,
-        filterOptions: Map<ProductFilterOption, String>? = null
-    ): MutableMap<String, String> {
-        val params = mutableMapOf(
-            "per_page" to pageSize.toString(),
-            "orderby" to sortType.asOrderByParameter(),
-            "order" to sortType.asSortOrderParameter(),
-            "offset" to offset.toString()
-        )
-
-        includedProductIds?.let { includedIds ->
-            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
-        }
-        excludedProductIds?.let { excludedIds ->
-            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
-        }
-        filterOptions?.let { options ->
-            params.putAll(options.map { it.key.toString() to it.value })
-        }
-
-        if (searchQuery.isNullOrEmpty().not()) {
-            if (isSkuSearch) {
-                params["sku"] = searchQuery!! // full SKU match
-                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
-            } else {
-                params["search"] = searchQuery!!
-            }
-        }
-
-        return params
-    }
-
     private fun buildVariationParametersMap(
         pageSize: Int,
         offset: Int,
@@ -680,16 +690,6 @@ class ProductRestClient @Inject constructor(
         ).putIfNotEmpty("search" to searchQuery)
             .putIfNotEmpty("include" to ids.map { it }.joinToString())
             .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
-
-    private fun ProductSorting.asOrderByParameter() = when (this) {
-        TITLE_ASC, TITLE_DESC -> "title"
-        DATE_ASC, DATE_DESC -> "date"
-    }
-
-    private fun ProductSorting.asSortOrderParameter() = when (this) {
-        TITLE_ASC, DATE_ASC -> "asc"
-        TITLE_DESC, DATE_DESC -> "desc"
-    }
 
     /**
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
