@@ -20,6 +20,8 @@ import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
@@ -32,6 +34,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
@@ -89,7 +92,8 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
+    private val wooNetwork: WooNetwork
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -1109,7 +1113,7 @@ class ProductRestClient @Inject constructor(
      *
      * Dispatches a WCProductAction.UPDATED_PRODUCT_IMAGES action with the result
      *
-     * @param [site] The site to fetch product reviews for
+     * @param [site] The site to update product images for
      * @param [remoteProductId] Unique server id of the product to update
      * @param [imageList] list of product images to assign to the product
      */
@@ -1275,16 +1279,15 @@ class ProductRestClient @Inject constructor(
             params.put("product", ids.map { it }.joinToString())
         }
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                Array<ProductReviewApiResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<ProductReviewApiResponse>::class.java,
+                params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 val productData = response.data
                 if (productData != null) {
                     val reviews = productData.map { review ->
@@ -1308,9 +1311,9 @@ class ProductRestClient @Inject constructor(
                     )
                 }
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 FetchProductReviewsResponsePayload(
-                    networkErrorToProductError(response.error),
+                    wpAPINetworkErrorToProductError(response.error),
                     site
                 )
             }
@@ -1327,16 +1330,14 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ProductReviewApiResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductReviewApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success  -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
@@ -1347,8 +1348,8 @@ class ProductRestClient @Inject constructor(
                         site = site
                 )
             }
-            is JetpackError -> {
-                val productReviewError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error  -> {
+                val productReviewError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductReviewPayload(error = productReviewError, site = site)
             }
         }
@@ -1372,16 +1373,15 @@ class ProductRestClient @Inject constructor(
     ): WooPayload<WCProductReviewModel> {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val params = mapOf("status" to newStatus)
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            restClient = this,
-            site = site,
-            url = url,
-            body = params,
-            clazz = ProductReviewApiResponse::class.java
+        val response = wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductReviewApiResponse::class.java,
+                body = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success  -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
@@ -1395,7 +1395,7 @@ class ProductRestClient @Inject constructor(
                     )
                 )
             }
-            is JetpackError -> WooPayload(error = response.error.toWooError())
+            is WPAPIResponse.Error -> WooPayload(error = response.error.toWooError())
         }
     }
 
@@ -1827,5 +1827,19 @@ class ProductRestClient @Inject constructor(
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)
+    }
+
+    private fun wpAPINetworkErrorToProductError(wpAPINetworkError: WPAPINetworkError): ProductError {
+        val productErrorType = when (wpAPINetworkError.errorCode) {
+            "woocommerce_rest_product_invalid_id" -> ProductErrorType.INVALID_PRODUCT_ID
+            "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
+            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
+            "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            "term_exists" -> ProductErrorType.TERM_EXISTS
+            "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
+            else -> ProductErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
+        }
+        return ProductError(productErrorType, wpAPINetworkError.message)
     }
 }
