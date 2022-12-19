@@ -971,12 +971,12 @@ class ProductRestClient @Inject constructor(
     suspend fun replyToReview(
         site: SiteModel,
         remoteReviewId: Long,
-        replayContent: String?
+        replyContent: String?
     ): Response<Unit> {
         val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteReviewId).replies.new_.urlV1_1
 
         val request = mutableMapOf(
-            "content" to replayContent.orEmpty()
+            "content" to replyContent.orEmpty()
         )
 
         return wpComGsonRequestBuilder.syncPostRequest(
