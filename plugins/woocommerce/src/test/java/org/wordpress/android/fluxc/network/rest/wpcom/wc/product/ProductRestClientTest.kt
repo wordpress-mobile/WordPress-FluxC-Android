@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductRestClientTest {
@@ -26,6 +27,7 @@ class ProductRestClientTest {
     private val productId = 5L
     private val site = SiteModel()
     private val requestBuilder: JetpackTunnelGsonRequestBuilder = mock()
+    private val wooNetwork: WooNetwork = mock()
 
     @Before fun setUp() {
         requestBuilder.stub {
@@ -35,7 +37,16 @@ class ProductRestClientTest {
                 )
             } doReturn JetpackResponse.JetpackSuccess(null)
         }
-        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), requestBuilder, mock())
+        sut = ProductRestClient(
+            mock(),
+            mock(),
+            mock(),
+            mock(),
+            mock(),
+            requestBuilder,
+            wooNetwork,
+            mock()
+        )
     }
 
     @Test
