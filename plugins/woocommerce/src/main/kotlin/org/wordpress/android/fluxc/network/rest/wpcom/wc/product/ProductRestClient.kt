@@ -579,16 +579,18 @@ class ProductRestClient @Inject constructor(
             params["exclude"] = excludedCategoryIds.map { it }.joinToString()
         }
 
-        return WOOCOMMERCE.products.categories.pathV3
-            .requestCategoryTo(site, params)
-            .handleResultFrom(site)
-    }
+        val url = WOOCOMMERCE.products.categories.pathV3
 
-    @JvmName("handleResultFromProductCategoryApiResponse")
-    private fun JetpackResponse<Array<ProductCategoryApiResponse>>.handleResultFrom(site: SiteModel) =
-        when (this) {
-            is JetpackSuccess -> {
-                data
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductCategoryApiResponse>::class.java
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data
                     ?.map {
                         it.asProductCategoryModel()
                             .apply { localSiteId = site.id }
@@ -596,10 +598,11 @@ class ProductRestClient @Inject constructor(
                     .orEmpty()
                     .let { WooPayload(it.toList()) }
             }
-            is JetpackError -> {
-                WooPayload(error.toWooError())
+            is WPAPIResponse.Error -> {
+                WooPayload(response.error.toWooError())
             }
         }
+    }
 
     @JvmName("handleResultFromProductVariationApiResponse")
     private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(
@@ -623,17 +626,6 @@ class ProductRestClient @Inject constructor(
                 WooPayload(error.toWooError())
             }
         }
-
-    private suspend fun String.requestCategoryTo(
-        site: SiteModel,
-        params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-        this@ProductRestClient,
-        site,
-        this,
-        params,
-        Array<ProductCategoryApiResponse>::class.java
-    )
 
     private fun buildProductParametersMap(
         pageSize: Int,
