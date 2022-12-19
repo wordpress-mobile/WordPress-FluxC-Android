@@ -400,22 +400,29 @@ class ProductRestClient @Inject constructor(
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
     ) {
-        val url = WOOCOMMERCE.products.pathV3
-        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = buildProductParametersMap(
-            pageSize = pageSize,
-            sortType = sortType,
-            offset = offset,
-            searchQuery = searchQuery,
-            isSkuSearch = isSkuSearch,
-            includedProductIds = includedProductIds,
-            excludedProductIds = excludedProductIds,
-            filterOptions = filterOptions
-        )
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProducts") {
+            val url = WOOCOMMERCE.products.pathV3
+            val params = buildProductParametersMap(
+                pageSize = pageSize,
+                sortType = sortType,
+                offset = offset,
+                searchQuery = searchQuery,
+                isSkuSearch = isSkuSearch,
+                includedProductIds = includedProductIds,
+                excludedProductIds = excludedProductIds,
+                filterOptions = filterOptions
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductApiResponse>? ->
-                    val productModels = response?.map {
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val productModels = response.data?.map {
                         it.asProductModel().apply { localSiteId = site.id }
                     }.orEmpty()
 
@@ -423,13 +430,13 @@ class ProductRestClient @Inject constructor(
                     val canLoadMore = productModels.size == pageSize
                     if (searchQuery == null) {
                         val payload = RemoteProductListPayload(
-                                site,
-                                productModels,
-                                offset,
-                                loadedMore,
-                                canLoadMore,
-                                includedProductIds,
-                                excludedProductIds
+                            site,
+                            productModels,
+                            offset,
+                            loadedMore,
+                            canLoadMore,
+                            includedProductIds,
+                            excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
@@ -444,9 +451,9 @@ class ProductRestClient @Inject constructor(
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     if (searchQuery == null) {
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
@@ -460,9 +467,9 @@ class ProductRestClient @Inject constructor(
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     fun searchProducts(
