@@ -1015,12 +1015,11 @@ class ProductRestClient @Inject constructor(
 
                 require(body.isNotEmpty())
 
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    this@ProductRestClient,
-                    site,
-                    url,
-                    body,
-                    BatchProductVariationsApiResponse::class.java
+                wooNetwork.executePostGsonRequest(
+                    site = site,
+                    path = url,
+                    clazz = BatchProductVariationsApiResponse::class.java,
+                    body = body
                 ).handleResult()
             }
 
