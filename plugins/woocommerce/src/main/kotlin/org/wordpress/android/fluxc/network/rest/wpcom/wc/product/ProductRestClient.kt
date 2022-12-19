@@ -1126,38 +1126,46 @@ class ProductRestClient @Inject constructor(
      * @param [imageList] list of product images to assign to the product
      */
     fun updateProductImages(site: SiteModel, remoteProductId: Long, imageList: List<WCProductImageModel>) {
-        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        coroutineEngine.launch(AppLog.T.API, this, "updateProductImages") {
+            val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
 
-        // build json list of images
-        val jsonBody = JsonArray()
-        for (image in imageList) {
-            jsonBody.add(image.toJson())
-        }
-        val body = HashMap<String, Any>()
-        body["id"] = remoteProductId
-        body["images"] = jsonBody
+            // build json list of images
+            val jsonBody = JsonArray()
+            for (image in imageList) {
+                jsonBody.add(image.toJson())
+            }
+            val body = HashMap<String, Any>()
+            body["id"] = remoteProductId
+            body["images"] = jsonBody
 
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
+            val response = wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteUpdateProductImagesPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteUpdateProductImagesPayload(
-                            productError,
-                            site,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                        productError,
+                        site,
+                        WCProductModel().apply { this.remoteProductId = remoteProductId }
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
