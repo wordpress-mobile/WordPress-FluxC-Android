@@ -1326,16 +1326,14 @@ class ProductRestClient @Inject constructor(
      */
     suspend fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ProductReviewApiResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductReviewApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success  -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
@@ -1346,8 +1344,8 @@ class ProductRestClient @Inject constructor(
                         site = site
                 )
             }
-            is JetpackError -> {
-                val productReviewError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error  -> {
+                val productReviewError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductReviewPayload(error = productReviewError, site = site)
             }
         }
