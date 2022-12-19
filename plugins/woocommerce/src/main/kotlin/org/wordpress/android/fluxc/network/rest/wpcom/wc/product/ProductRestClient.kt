@@ -660,25 +660,32 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         sku: String
     ) {
-        val url = WOOCOMMERCE.products.pathV3
-        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mutableMapOf("sku" to sku, "_fields" to "sku")
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductSkuAvailability") {
+            val url = WOOCOMMERCE.products.pathV3
+            val params = mutableMapOf("sku" to sku, "_fields" to "sku")
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductApiResponse>? ->
-                    val available = response?.isEmpty() ?: false
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val available = response.data?.isEmpty() ?: false
                     val payload = RemoteProductSkuAvailabilityPayload(site, sku, available)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     // If there is a network error of some sort that prevents us from knowing if a sku is available
                     // then just consider sku as available
                     val payload = RemoteProductSkuAvailabilityPayload(productError, site, sku, true)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
