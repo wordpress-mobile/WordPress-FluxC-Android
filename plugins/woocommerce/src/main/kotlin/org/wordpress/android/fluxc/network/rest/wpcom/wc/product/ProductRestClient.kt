@@ -1187,40 +1187,49 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         productCategorySorting: ProductCategorySorting? = DEFAULT_CATEGORY_SORTING
     ) {
-        val sortOrder = when (productCategorySorting) {
-            NAME_DESC -> "desc"
-            else -> "asc"
-        }
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductCategories") {
+            val sortOrder = when (productCategorySorting) {
+                NAME_DESC -> "desc"
+                else -> "asc"
+            }
 
-        val url = WOOCOMMERCE.products.categories.pathV3
-        val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
-        val params = mutableMapOf(
+            val url = WOOCOMMERCE.products.categories.pathV3
+            val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
+            val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
                 "order" to sortOrder,
                 "orderby" to "name"
-        )
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductCategoryApiResponse>? ->
-                    response?.let {
+            )
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductCategoryApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val categories = it.map { category ->
                             category.asProductCategoryModel().apply { localSiteId = site.id }
                         }
                         val canLoadMore = categories.size == pageSize
                         val loadedMore = offset > 0
                         val payload = RemoteProductCategoriesPayload(
-                                site, categories, offset, loadedMore, canLoadMore
+                            site, categories, offset, loadedMore, canLoadMore
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
                     }
-                },
-                { networkError ->
-                    val productCategoryError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productCategoryError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductCategoriesPayload(productCategoryError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
