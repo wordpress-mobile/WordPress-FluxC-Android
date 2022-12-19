@@ -1452,18 +1452,20 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         productModel: WCProductModel
     ) {
-        val url = WOOCOMMERCE.products.pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params = productModelToProductJsonBody(null, productModel)
+        coroutineEngine.launch(AppLog.T.API, this, "addProduct") {
+            val url = WOOCOMMERCE.products.pathV3
+            val body = productModelToProductJsonBody(null, productModel)
 
-        val request = JetpackTunnelGsonRequest.buildPostRequest(
-                wpApiEndpoint = url,
-                siteId = site.siteId,
-                body = params,
-                type = responseType,
-                listener = { response: ProductApiResponse? ->
-                    // success
-                    response?.let { product ->
+            val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let { product ->
                         val newModel = product.asProductModel().apply {
                             id = product.id?.toInt() ?: 0
                             localSiteId = site.id
@@ -1471,19 +1473,18 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteAddProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                     }
-                },
-                errorListener = { networkError ->
-                    // error
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductPayload(
-                            productError,
-                            site,
-                            WCProductModel()
+                        productError,
+                        site,
+                        WCProductModel()
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                 }
-        )
-        add(request)
+            }
+        }
     }
 
     /**
