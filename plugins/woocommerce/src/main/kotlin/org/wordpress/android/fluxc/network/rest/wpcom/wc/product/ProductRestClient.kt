@@ -1035,15 +1035,14 @@ class ProductRestClient @Inject constructor(
         productId: Long,
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                        this@ProductRestClient,
-                        site,
-                        url,
-                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
-                        ProductVariationApiResponse::class.java
-                ).handleResult()
-            }
+        .let { url ->
+            wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductVariationApiResponse::class.java,
+                body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
+            ).handleResult()
+        }
 
     /**
      * Makes a DELETE request to `/wp-json/wc/v3/products/<id>` to delete a product
