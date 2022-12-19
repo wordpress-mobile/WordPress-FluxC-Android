@@ -91,7 +91,6 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     private val wooNetwork: WooNetwork,
     private val coroutineEngine: CoroutineEngine
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
