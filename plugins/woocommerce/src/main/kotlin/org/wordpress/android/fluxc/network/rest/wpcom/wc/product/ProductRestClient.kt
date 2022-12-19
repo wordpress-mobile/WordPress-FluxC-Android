@@ -861,31 +861,39 @@ class ProductRestClient @Inject constructor(
         storedWCProductModel: WCProductModel?,
         updatedProductModel: WCProductModel
     ) {
-        val remoteProductId = updatedProductModel.remoteProductId
-        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
+        coroutineEngine.launch(AppLog.T.API, this, "updateProduct") {
+            val remoteProductId = updatedProductModel.remoteProductId
+            val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+            val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
 
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
+            val response = wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteUpdateProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteUpdateProductPayload(
-                            productError,
-                            site,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                        productError,
+                        site,
+                        WCProductModel().apply { this.remoteProductId = remoteProductId }
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
