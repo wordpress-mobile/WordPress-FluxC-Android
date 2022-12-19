@@ -1106,15 +1106,14 @@ class ProductRestClient @Inject constructor(
         productId: Long,
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder.syncPutRequest(
-                        this,
-                        site,
-                        url,
-                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
-                        ProductApiResponse::class.java
-                ).handleResult()
-            }
+        .let { url ->
+            wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductApiResponse::class.java,
+                body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
+            ).handleResult()
+        }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
