@@ -22,8 +22,9 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -91,6 +92,7 @@ class ProductRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent,
     private val wooNetwork: WooNetwork,
+    private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
@@ -690,48 +692,67 @@ class ProductRestClient @Inject constructor(
      * Makes a WP.COM GET request to `/sites/$site/posts/$post_ID` to fetch just the password for a product
      */
     fun fetchProductPassword(site: SiteModel, remoteProductId: Long) {
-        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
-        val params = mutableMapOf("fields" to "password")
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductPassword") {
+            val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
+            val params = mutableMapOf("fields" to "password")
 
-        val request = WPComGsonRequest.buildGetRequest(url,
-                params,
-                PostWPComRestResponse::class.java,
-                { response ->
-                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.password ?: "")
+            val response = wpComNetwork.executeGetGsonRequest(
+                url = url,
+                params = params,
+                clazz = PostWPComRestResponse::class.java
+            )
+
+            when (response) {
+                is WPComGsonRequestBuilder.Response.Success -> {
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.data.password ?: "")
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
                 }
-        ) { networkError ->
-            val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
-            payload.error = networkErrorToProductError(networkError)
-            dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                is WPComGsonRequestBuilder.Response.Error -> {
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
+                    payload.error = networkErrorToProductError(response.error)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                }
+            }
         }
-        add(request)
     }
 
     /**
      * Makes a WP.COM POST request to `/sites/$site/posts/$post_ID` to update just the password for a product
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
-        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
-        val body = mapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "updateProductPassword") {
+            val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
+            val params = mapOf(
+                "context" to "edit",
+                "fields" to "password"
+            )
+            val body = mapOf(
                 "password" to password
-        )
+            )
 
-        val request = WPComGsonRequest.buildPostRequest(url,
-                body,
-                PostWPComRestResponse::class.java,
-                { response ->
-                    val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, response.password ?: "")
+            val response = wpComNetwork.executePostGsonRequest(
+                url = url,
+                params = params,
+                body = body,
+                clazz = PostWPComRestResponse::class.java
+            )
+
+            when (response) {
+                is WPComGsonRequestBuilder.Response.Success -> {
+                    val payload = RemoteUpdatedProductPasswordPayload(
+                        remoteProductId,
+                        site,
+                        response.data.password ?: ""
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
                 }
-        ) { networkError ->
-            val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
-            payload.error = networkErrorToProductError(networkError)
-            dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                is WPComGsonRequestBuilder.Response.Error -> {
+                    val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
+                    payload.error = networkErrorToProductError(response.error)
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                }
+            }
         }
-        request.addQueryParameter("context", "edit")
-        request.addQueryParameter("fields", "password")
-        add(request)
     }
 
     /**
