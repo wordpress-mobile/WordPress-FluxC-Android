@@ -1058,14 +1058,13 @@ class ProductRestClient @Inject constructor(
         productId: Long,
         variationId: Long
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-                        this@ProductRestClient,
-                        site,
-                        url,
-                        ProductVariationApiResponse::class.java
-                ).handleResult()
-            }
+        .let { url ->
+            wooNetwork.executeDeleteGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductVariationApiResponse::class.java
+            ).handleResult()
+        }
 
     /**
      * Makes a PUT request to
