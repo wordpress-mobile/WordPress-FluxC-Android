@@ -522,24 +522,17 @@ class ProductRestClient @Inject constructor(
             filterOptions = filterOptions
         )
 
-        return WOOCOMMERCE.products.pathV3.requestProductTo(site, params).handleResultFrom(site)
-    }
+        val url = WOOCOMMERCE.products.pathV3
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductApiResponse>::class.java
+        )
 
-    private suspend fun String.requestProductTo(
-        site: SiteModel,
-        params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this@ProductRestClient,
-            site,
-            this,
-            params,
-            Array<ProductApiResponse>::class.java
-    )
-
-    private fun JetpackResponse<Array<ProductApiResponse>>.handleResultFrom(site: SiteModel) =
-        when (this) {
-            is JetpackSuccess -> {
-                data
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data
                     ?.map {
                         it.asProductModel()
                             .apply { localSiteId = site.id }
@@ -547,10 +540,11 @@ class ProductRestClient @Inject constructor(
                     .orEmpty()
                     .let { WooPayload(it.toList()) }
             }
-            is JetpackError -> {
-                WooPayload(error.toWooError())
+            is WPAPIResponse.Error -> {
+                WooPayload(response.error.toWooError())
             }
         }
+    }
 
     /**
      * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
