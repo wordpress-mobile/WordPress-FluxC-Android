@@ -153,33 +153,40 @@ class ProductRestClient @Inject constructor(
         pageSize: Int = DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE,
         offset: Int = 0
     ) {
-        val url = WOOCOMMERCE.products.shipping_classes.pathV3
-        val responseType = object : TypeToken<List<ProductShippingClassApiResponse>>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductShippingClassList") {
+            val url = WOOCOMMERCE.products.shipping_classes.pathV3
+            val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString()
-        )
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductShippingClassApiResponse>? ->
-                    val shippingClassList = response?.map {
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductShippingClassApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val shippingClassList = response.data?.map {
                         productShippingClassResponseToProductShippingClassModel(it, site)
                     }.orEmpty()
 
                     val loadedMore = offset > 0
                     val canLoadMore = shippingClassList.size == pageSize
                     val payload = RemoteProductShippingClassListPayload(
-                            site, shippingClassList, offset, loadedMore, canLoadMore
+                        site, shippingClassList, offset, loadedMore, canLoadMore
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductShippingClassListPayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
