@@ -1315,9 +1315,9 @@ class ProductRestClient @Inject constructor(
 
         val url = WOOCOMMERCE.products.reviews.pathV3
         val params = mutableMapOf(
-                "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
-                "offset" to offset.toString(),
-                "status" to statusFilter
+            "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
+            "offset" to offset.toString(),
+            "status" to statusFilter
         )
         reviewIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
@@ -1327,10 +1327,10 @@ class ProductRestClient @Inject constructor(
         }
 
         val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<ProductReviewApiResponse>::class.java,
-                params = params
+            site = site,
+            path = url,
+            clazz = Array<ProductReviewApiResponse>::class.java,
+            params = params
         )
 
         return when (response) {
@@ -1378,24 +1378,24 @@ class ProductRestClient @Inject constructor(
     suspend fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = ProductReviewApiResponse::class.java
+            site = site,
+            path = url,
+            clazz = ProductReviewApiResponse::class.java
         )
 
         return when (response) {
-            is WPAPIResponse.Success  -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
                     }
                     RemoteProductReviewPayload(site, review)
                 } ?: RemoteProductReviewPayload(
-                        error = ProductError(GENERIC_ERROR, "Success response with empty data"),
-                        site = site
+                    error = ProductError(GENERIC_ERROR, "Success response with empty data"),
+                    site = site
                 )
             }
-            is WPAPIResponse.Error  -> {
+            is WPAPIResponse.Error -> {
                 val productReviewError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductReviewPayload(error = productReviewError, site = site)
             }
@@ -1421,14 +1421,14 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val params = mapOf("status" to newStatus)
         val response = wooNetwork.executePutGsonRequest(
-                site = site,
-                path = url,
-                clazz = ProductReviewApiResponse::class.java,
-                body = params
+            site = site,
+            path = url,
+            clazz = ProductReviewApiResponse::class.java,
+            body = params
         )
 
         return when (response) {
-            is WPAPIResponse.Success  -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
