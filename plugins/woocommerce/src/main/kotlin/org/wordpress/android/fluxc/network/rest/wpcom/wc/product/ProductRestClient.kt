@@ -1083,15 +1083,14 @@ class ProductRestClient @Inject constructor(
         variationId: Long,
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
-                .let { url ->
-                    jetpackTunnelGsonRequestBuilder.syncPutRequest(
-                            this@ProductRestClient,
-                            site,
-                            url,
-                            mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
-                            ProductVariationApiResponse::class.java
-                    ).handleResult()
-                }
+        .let { url ->
+            wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductVariationApiResponse::class.java,
+                body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
+            ).handleResult()
+        }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
