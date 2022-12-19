@@ -28,7 +28,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
@@ -653,44 +652,6 @@ class ProductRestClient @Inject constructor(
         }
     }
 
-    @JvmName("handleResultFromProductVariationApiResponse")
-    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(
-        site: SiteModel,
-        productId: Long
-    ) =
-        when (this) {
-            is JetpackSuccess -> {
-                data
-                    ?.map {
-                        it.asProductVariationModel()
-                            .apply {
-                                localSiteId = site.id
-                                remoteProductId = productId
-                            }
-                    }
-                    .orEmpty()
-                    .let { WooPayload(it.toList()) }
-            }
-            is JetpackError -> {
-                WooPayload(error.toWooError())
-            }
-        }
-
-    private fun buildVariationParametersMap(
-        pageSize: Int,
-        offset: Int,
-        searchQuery: String?,
-        ids: List<Long>,
-        excludedProductIds: List<Long>
-    ) = mutableMapOf(
-            "per_page" to pageSize.toString(),
-            "orderby" to "date",
-            "order" to "asc",
-            "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
-            .putIfNotEmpty("include" to ids.map { it }.joinToString())
-            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
-
     /**
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * for a given [SiteModel] and [sku] to check if this [sku] already exists on the site
@@ -846,29 +807,41 @@ class ProductRestClient @Inject constructor(
         searchQuery: String? = null,
         excludedVariationIds: List<Long> = emptyList()
     ): WooPayload<List<WCProductVariationModel>> {
-        val params = buildVariationParametersMap(
-            pageSize,
-            offset,
-            searchQuery,
-            includedVariationIds,
-            excludedVariationIds
+        val params = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "orderby" to "date",
+            "order" to "asc",
+            "offset" to offset.toString()
+        ).putIfNotEmpty("search" to searchQuery)
+            .putIfNotEmpty("include" to includedVariationIds.map { it }.joinToString())
+            .putIfNotEmpty("exclude" to excludedVariationIds.map { it }.joinToString())
+
+        val url = WOOCOMMERCE.products.id(productId).variations.pathV3
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductVariationApiResponse>::class.java
         )
 
-        return WOOCOMMERCE.products.id(productId).variations.pathV3
-            .requestProductVariationTo(site, params)
-            .handleResultFrom(site, productId)
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data?.map {
+                    it.asProductVariationModel()
+                        .apply {
+                            localSiteId = site.id
+                            remoteProductId = productId
+                        }
+                }
+                    .orEmpty()
+                    .let { WooPayload(it.toList()) }
+            }
+            is WPAPIResponse.Error -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
     }
-
-    private suspend fun String.requestProductVariationTo(
-        site: SiteModel,
-        params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-        this@ProductRestClient,
-        site,
-        this,
-        params,
-        Array<ProductVariationApiResponse>::class.java
-    )
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/remoteProductId` to update a product
