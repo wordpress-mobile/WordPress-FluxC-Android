@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import org.wordpress.android.fluxc.Dispatcher
@@ -18,14 +16,11 @@ import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
-import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
@@ -80,21 +75,14 @@ import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Suppress("LargeClass")
-@Singleton
 class ProductRestClient @Inject constructor(
-    appContext: Context,
     private val dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
     private val wooNetwork: WooNetwork,
     private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
      * to fetch a single product shipping class
