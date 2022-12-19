@@ -77,9 +77,11 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
+import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -93,7 +95,8 @@ class ProductRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent,
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    private val wooNetwork: WooNetwork
+    private val wooNetwork: WooNetwork,
+    private val coroutineEngine: CoroutineEngine
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -104,30 +107,37 @@ class ProductRestClient @Inject constructor(
      * @param [remoteShippingClassId] Unique server id of the shipping class to fetch
      */
     fun fetchSingleProductShippingClass(site: SiteModel, remoteShippingClassId: Long) {
-        val url = WOOCOMMERCE.products.shipping_classes.id(remoteShippingClassId).pathV3
-        val responseType = object : TypeToken<ProductShippingClassApiResponse>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: ProductShippingClassApiResponse? ->
-                    response?.let {
+        coroutineEngine.launch(AppLog.T.API, this, "fetchSingleProductShippingClass") {
+            val url = WOOCOMMERCE.products.shipping_classes.id(remoteShippingClassId).pathV3
+            val params = emptyMap<String, String>()
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = ProductShippingClassApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val newModel = productShippingClassResponseToProductShippingClassModel(
-                                it, site
+                            it, site
                         ).apply { localSiteId = site.id }
                         val payload = RemoteProductShippingClassPayload(newModel, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductShippingClassPayload(
-                            productError,
-                            WCProductShippingClassModel().apply { this.remoteShippingClassId = remoteShippingClassId },
-                            site
+                        productError,
+                        WCProductShippingClassModel().apply { this.remoteShippingClassId = remoteShippingClassId },
+                        site
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
