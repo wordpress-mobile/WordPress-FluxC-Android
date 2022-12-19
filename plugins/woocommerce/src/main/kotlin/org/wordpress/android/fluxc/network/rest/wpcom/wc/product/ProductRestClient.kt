@@ -1244,29 +1244,38 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         category: WCProductCategoryModel
     ) {
-        val url = WOOCOMMERCE.products.categories.pathV3
+        coroutineEngine.launch(AppLog.T.API, this, "addProductCategory") {
+            val url = WOOCOMMERCE.products.categories.pathV3
 
-        val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
-        val params = mutableMapOf(
+            val body = mutableMapOf(
                 "name" to category.name,
                 "parent" to category.parent.toString()
-        )
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
-                { response: ProductCategoryApiResponse? ->
-                    val categoryResponse = response?.let {
+            )
+
+            val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductCategoryApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val categoryResponse = response.data?.let {
                         it.asProductCategoryModel().apply {
                             localSiteId = site.id
                         }
                     }
                     val payload = RemoteAddProductCategoryResponsePayload(site, categoryResponse)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                },
-                { networkError ->
-                    val productCategorySaveError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productCategorySaveError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductCategoryResponsePayload(productCategorySaveError, site, category)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
