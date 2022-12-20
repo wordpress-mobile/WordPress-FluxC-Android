@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
@@ -13,15 +11,11 @@ import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsModel
-import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
@@ -35,22 +29,13 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
 class OrderStatsRestClient @Inject constructor(
-    appContext: Context,
-    dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    private val wpComGsonRequestBuilder: WPComGsonRequestBuilder,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
+    private val dispatcher: Dispatcher,
     private val wooNetwork: WooNetwork,
     private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+) {
     enum class OrderStatsApiUnit {
         HOUR, DAY, WEEK, MONTH, YEAR;
 
@@ -155,13 +140,13 @@ class OrderStatsRestClient @Inject constructor(
                             }
                         }
                         val payload = FetchOrderStatsResponsePayload(site, unit, model)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
+                        dispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                     }
                 }
                 is WPComGsonRequestBuilder.Response.Error -> {
                     val orderError = response.error.toOrderError()
                     val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                 }
             }
         }
@@ -267,12 +252,12 @@ class OrderStatsRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     val payload = FetchRevenueStatsAvailabilityResponsePayload(site, true)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
                 }
                 is WPAPIResponse.Error -> {
                     val orderError = response.error.toOrderError()
                     val payload = FetchRevenueStatsAvailabilityResponsePayload(orderError, site, false)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
                 }
             }
         }
@@ -319,12 +304,12 @@ class OrderStatsRestClient @Inject constructor(
                         }
                     }
                     val payload = FetchVisitorStatsResponsePayload(site, unit, model)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                 }
                 is WPComGsonRequestBuilder.Response.Error -> {
                     val orderError = response.error.toOrderError()
                     val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                 }
             }
         }
@@ -421,12 +406,12 @@ class OrderStatsRestClient @Inject constructor(
                     } ?: emptyList()
 
                     val payload = FetchTopEarnersStatsResponsePayload(site, unit, wcTopEarners)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
                 }
                 is WPComGsonRequestBuilder.Response.Error -> {
                     val orderError = response.error.toOrderError()
                     val payload = FetchTopEarnersStatsResponsePayload(orderError, site, unit)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
                 }
             }
         }
