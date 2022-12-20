@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
@@ -20,14 +19,10 @@ import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
@@ -146,7 +141,7 @@ class OrderStatsRestClient @Inject constructor(
             )
 
             when (response) {
-                is Success -> {
+                is WPComGsonRequestBuilder.Response.Success -> {
                     response.data.let {
                         val model = WCOrderStatsModel().apply {
                             this.localSiteId = site.id
@@ -165,7 +160,7 @@ class OrderStatsRestClient @Inject constructor(
                         mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                     }
                 }
-                is Error -> {
+                is WPComGsonRequestBuilder.Response.Error -> {
                     val orderError = networkErrorToOrderError(response.error)
                     val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
@@ -294,41 +289,47 @@ class OrderStatsRestClient @Inject constructor(
         startDate: String? = null,
         endDate: String? = null
     ) {
-        val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
-        val params = mapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchVisitorStats") {
+            val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
+            val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
                 "quantity" to quantity.toString(),
                 "stat_fields" to "visitors")
-        val request = WPComGsonRequest
-                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
-                        { response ->
-                            val model = WCVisitorStatsModel().apply {
-                                this.localSiteId = site.id
-                                this.unit = unit.toString()
-                                this.fields = response.fields.toString()
-                                this.data = response.data.toString()
-                                this.quantity = quantity.toString()
-                                this.date = date
-                                endDate?.let { this.endDate = it }
-                                startDate?.let {
-                                    this.startDate = startDate
-                                    this.isCustomField = true
-                                }
-                            }
-                            val payload = FetchVisitorStatsResponsePayload(site, unit, model)
-                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
-                        },
-                        { networkError ->
-                            val orderError = networkErrorToOrderError(networkError)
-                            val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
-                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
-                        })
 
-        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-        if (force) request.setShouldForceUpdate()
+            val response = wpComNetwork.executeGetGsonRequest(
+                url = url,
+                params = params,
+                clazz = VisitorStatsApiResponse::class.java,
+                enableCaching = true,
+                forced = force
+            )
 
-        add(request)
+            when (response) {
+                is WPComGsonRequestBuilder.Response.Success -> {
+                    val model = WCVisitorStatsModel().apply {
+                        this.localSiteId = site.id
+                        this.unit = unit.toString()
+                        this.fields = response.data.fields.toString()
+                        this.data = response.data.data.toString()
+                        this.quantity = quantity.toString()
+                        this.date = date
+                        endDate?.let { this.endDate = it }
+                        startDate?.let {
+                            this.startDate = startDate
+                            this.isCustomField = true
+                        }
+                    }
+                    val payload = FetchVisitorStatsResponsePayload(site, unit, model)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                }
+                is WPComGsonRequestBuilder.Response.Error -> {
+                    val orderError = networkErrorToOrderError(response.error)
+                    val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                }
+            }
+        }
     }
 
     suspend fun fetchNewVisitorStats(
@@ -358,7 +359,7 @@ class OrderStatsRestClient @Inject constructor(
         )
 
         return when (response) {
-            is Success -> {
+            is WPComGsonRequestBuilder.Response.Success -> {
                 val statsData = response.data
                 val model = WCNewVisitorStatsModel().apply {
                     this.localSiteId = site.id
@@ -377,7 +378,7 @@ class OrderStatsRestClient @Inject constructor(
                 FetchNewVisitorStatsResponsePayload(site, granularity, model)
             }
 
-            is Error -> {
+            is WPComGsonRequestBuilder.Response.Error -> {
                 val orderError = networkErrorToOrderError(response.error)
                 FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
             }
