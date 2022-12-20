@@ -350,11 +350,10 @@ class OrderStatsRestClient @Inject constructor(
             "stat_fields" to "visitors"
         )
 
-        val response = wpComGsonRequestBuilder.syncGetRequest(
-            this,
-            url,
-            params,
-            VisitorStatsApiResponse::class.java,
+        val response = wpComNetwork.executeGetGsonRequest(
+            url = url,
+            params = params,
+            clazz = VisitorStatsApiResponse::class.java,
             forced = force
         )
 
