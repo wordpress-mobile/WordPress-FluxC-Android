@@ -74,7 +74,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPay
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.fluxc.utils.handleResult
+import org.wordpress.android.fluxc.utils.toWooPayload
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
 import org.wordpress.android.util.AppLog
@@ -984,7 +984,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = BatchProductApiResponse::class.java,
                 body = body
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1025,7 +1025,7 @@ class ProductRestClient @Inject constructor(
                     path = url,
                     clazz = BatchProductVariationsApiResponse::class.java,
                     body = body
-                ).handleResult()
+                ).toWooPayload()
             }
 
     /**
@@ -1046,7 +1046,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = ProductVariationApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1068,7 +1068,7 @@ class ProductRestClient @Inject constructor(
                 site = site,
                 path = url,
                 clazz = ProductVariationApiResponse::class.java
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1094,7 +1094,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = ProductVariationApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1117,7 +1117,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = ProductApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
