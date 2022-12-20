@@ -159,7 +159,7 @@ class OrderStatsRestClient @Inject constructor(
                     }
                 }
                 is WPComGsonRequestBuilder.Response.Error -> {
-                    val orderError = networkErrorToOrderError(response.error)
+                    val orderError = response.error.toOrderError()
                     val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                 }
@@ -229,7 +229,7 @@ class OrderStatsRestClient @Inject constructor(
             }
 
             is WPAPIResponse.Error -> {
-                val orderError = networkErrorToOrderError(response.error)
+                val orderError = response.error.toOrderError()
                 FetchRevenueStatsResponsePayload(orderError, site, granularity)
             }
         }
@@ -270,7 +270,7 @@ class OrderStatsRestClient @Inject constructor(
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
                 }
                 is WPAPIResponse.Error -> {
-                    val orderError = networkErrorToOrderError(response.error)
+                    val orderError = response.error.toOrderError()
                     val payload = FetchRevenueStatsAvailabilityResponsePayload(orderError, site, false)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
                 }
@@ -322,7 +322,7 @@ class OrderStatsRestClient @Inject constructor(
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                 }
                 is WPComGsonRequestBuilder.Response.Error -> {
-                    val orderError = networkErrorToOrderError(response.error)
+                    val orderError = response.error.toOrderError()
                     val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                 }
@@ -377,7 +377,7 @@ class OrderStatsRestClient @Inject constructor(
             }
 
             is WPComGsonRequestBuilder.Response.Error -> {
-                val orderError = networkErrorToOrderError(response.error)
+                val orderError = response.error.toOrderError()
                 FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
             }
         }
@@ -424,7 +424,7 @@ class OrderStatsRestClient @Inject constructor(
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
                 }
                 is WPComGsonRequestBuilder.Response.Error -> {
-                    val orderError = networkErrorToOrderError(response.error)
+                    val orderError = response.error.toOrderError()
                     val payload = FetchTopEarnersStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
                 }
@@ -432,21 +432,15 @@ class OrderStatsRestClient @Inject constructor(
         }
     }
 
-    private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderStatsError {
-        val orderStatsErrorType = when (wpComError.apiError) {
+    private fun WPAPINetworkError.toOrderError() = networkErrorToOrderError(errorCode, message)
+    private fun WPComGsonNetworkError.toOrderError() = networkErrorToOrderError(apiError, message)
+    
+    private fun networkErrorToOrderError(errorCode: String?, message: String?): OrderStatsError {
+        val orderStatsErrorType = when (errorCode) {
             "rest_invalid_param" -> OrderStatsErrorType.INVALID_PARAM
             "rest_no_route" -> OrderStatsErrorType.PLUGIN_NOT_ACTIVE
-            else -> OrderStatsErrorType.fromString(wpComError.apiError)
+            else -> OrderStatsErrorType.fromString(errorCode.orEmpty())
         }
-        return OrderStatsError(orderStatsErrorType, wpComError.message)
-    }
-
-    private fun networkErrorToOrderError(wpapiNetworkError: WPAPINetworkError): OrderStatsError {
-        val orderStatsErrorType = when (wpapiNetworkError.errorCode) {
-            "rest_invalid_param" -> OrderStatsErrorType.INVALID_PARAM
-            "rest_no_route" -> OrderStatsErrorType.PLUGIN_NOT_ACTIVE
-            else -> OrderStatsErrorType.fromString(wpapiNetworkError.errorCode.orEmpty())
-        }
-        return OrderStatsError(orderStatsErrorType, wpapiNetworkError.message)
+        return OrderStatsError(orderStatsErrorType, message.orEmpty())
     }
 }
