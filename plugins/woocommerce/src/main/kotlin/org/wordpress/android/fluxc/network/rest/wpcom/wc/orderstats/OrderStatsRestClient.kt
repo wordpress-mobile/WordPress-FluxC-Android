@@ -354,6 +354,7 @@ class OrderStatsRestClient @Inject constructor(
             url = url,
             params = params,
             clazz = VisitorStatsApiResponse::class.java,
+            enableCaching = true,
             forced = force
         )
 
