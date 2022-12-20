@@ -24,7 +24,10 @@ import kotlin.coroutines.CoroutineContext;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.OkHttpClient;
 
-@Module(includes = MockedNetworkModuleBindings.class)
+@Module(includes = {
+        MockedNetworkModuleBindings.class,
+        ApplicationPasswordsModule.class
+})
 public class MockedNetworkModule {
     @Module
     interface MockedNetworkModuleBindings {
@@ -36,6 +39,9 @@ public class MockedNetworkModule {
 
         @Named("no-redirects")
         @Binds OkHttpClient bindsNoRedirectsOkHttpClient(OkHttpClient okHttpClient);
+
+        @Named("no-cookies")
+        @Binds OkHttpClient bindsNoCookiesOkHttpClient(OkHttpClient okHttpClient);
     }
 
     @Provides
@@ -55,7 +61,7 @@ public class MockedNetworkModule {
     @Named("regular")
     @Provides
     public RequestQueue provideRegularRequestQueue(@Named("regular") OkHttpClient okHttpClient,
-                                                          Context appContext) {
+                                                   Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
@@ -63,7 +69,7 @@ public class MockedNetworkModule {
     @Named("no-redirects")
     @Provides
     public RequestQueue provideNoRedirectsRequestQueue(@Named("no-redirects") OkHttpClient okHttpClient,
-                                                              Context appContext) {
+                                                       Context appContext) {
         return provideRegularRequestQueue(okHttpClient, appContext);
     }
 
@@ -71,7 +77,15 @@ public class MockedNetworkModule {
     @Named("custom-ssl")
     @Provides
     public RequestQueue provideCustomRequestQueue(@Named("custom-ssl") OkHttpClient okHttpClient,
-                                                         Context appContext) {
+                                                  Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
+    }
+
+    @Singleton
+    @Named("no-cookies")
+    @Provides
+    public RequestQueue provideNoCookiesRequestQueue(@Named("no-cookies") OkHttpClient okHttpClient,
+                                                     Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
