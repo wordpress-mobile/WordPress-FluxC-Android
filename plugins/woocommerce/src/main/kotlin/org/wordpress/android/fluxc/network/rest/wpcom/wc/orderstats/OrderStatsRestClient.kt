@@ -256,25 +256,33 @@ class OrderStatsRestClient @Inject constructor(
      * The _fields param is added to retrieve only the `Totals` field from the api
      */
     fun fetchRevenueStatsAvailability(site: SiteModel, startDate: String) {
-        val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
-        val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
-        val params = mapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchRevenueStatsAvailability") {
+            val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
+            val params = mapOf(
                 "interval" to OrderStatsApiUnit.YEAR.toString(),
                 "after" to startDate,
-                "_fields" to "totals")
+                "_fields" to "totals"
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: RevenueStatsApiResponse? ->
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = RevenueStatsApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
                     val payload = FetchRevenueStatsAvailabilityResponsePayload(site, true)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = networkErrorToOrderError(response.error)
                     val payload = FetchRevenueStatsAvailabilityResponsePayload(orderError, site, false)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     fun fetchVisitorStats(
