@@ -120,6 +120,7 @@ class OrderStatsRestClient @Inject constructor(
                 url = url,
                 params = params,
                 clazz = OrderStatsApiResponse::class.java,
+                enableCaching = true,
                 forced = force
             )
 
