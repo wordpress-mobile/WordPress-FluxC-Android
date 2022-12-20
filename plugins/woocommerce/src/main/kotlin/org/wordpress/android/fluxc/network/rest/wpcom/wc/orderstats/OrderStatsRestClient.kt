@@ -16,6 +16,8 @@ import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
@@ -27,8 +29,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
@@ -204,18 +204,17 @@ class OrderStatsRestClient @Inject constructor(
             "force_cache_refresh" to forceRefresh.toString()
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site = site,
-                url = url,
-                params = params,
-                clazz = RevenueStatsApiResponse::class.java,
-                enableCaching = true,
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = RevenueStatsApiResponse::class.java,
+            enableCaching = true,
             forced = forceRefresh
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                         val model = WCRevenueStatsModel().apply {
                             this.localSiteId = site.id
@@ -236,7 +235,7 @@ class OrderStatsRestClient @Inject constructor(
                 )
             }
 
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 val orderError = networkErrorToOrderError(response.error)
                 FetchRevenueStatsResponsePayload(orderError, site, granularity)
             }
@@ -426,5 +425,14 @@ class OrderStatsRestClient @Inject constructor(
             else -> OrderStatsErrorType.fromString(wpComError.apiError)
         }
         return OrderStatsError(orderStatsErrorType, wpComError.message)
+    }
+
+    private fun networkErrorToOrderError(wpapiNetworkError: WPAPINetworkError): OrderStatsError {
+        val orderStatsErrorType = when (wpapiNetworkError.errorCode) {
+            "rest_invalid_param" -> OrderStatsErrorType.INVALID_PARAM
+            "rest_no_route" -> OrderStatsErrorType.PLUGIN_NOT_ACTIVE
+            else -> OrderStatsErrorType.fromString(wpapiNetworkError.errorCode.orEmpty())
+        }
+        return OrderStatsError(orderStatsErrorType, wpapiNetworkError.message)
     }
 }
