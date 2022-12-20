@@ -41,7 +41,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
-import org.wordpress.android.util.AppLog.T
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -130,22 +129,30 @@ class OrderStatsRestClient @Inject constructor(
         startDate: String? = null,
         endDate: String? = null
     ) {
-        val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
-        val params = mapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchStats") {
+            val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
+            val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
                 "quantity" to quantity.toString(),
                 "_fields" to "data,fields"
-        )
+            )
 
-        val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
-                { apiResponse ->
-                    apiResponse?.let {
+            val response = wpComNetwork.executeGetGsonRequest(
+                url = url,
+                params = params,
+                clazz = OrderStatsApiResponse::class.java,
+                forced = force
+            )
+
+            when (response) {
+                is Success -> {
+                    response.data.let {
                         val model = WCOrderStatsModel().apply {
                             this.localSiteId = site.id
                             this.unit = unit.toString()
-                            this.fields = apiResponse.fields.toString()
-                            this.data = apiResponse.data.toString()
+                            this.fields = it.fields.toString()
+                            this.data = it.data.toString()
                             this.quantity = quantity.toString()
                             this.date = date
                             endDate?.let { this.endDate = it }
@@ -156,23 +163,15 @@ class OrderStatsRestClient @Inject constructor(
                         }
                         val payload = FetchOrderStatsResponsePayload(site, unit, model)
                         mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
-                    } ?: run {
-                        AppLog.e(T.API, "Response for url $url with param $params is null: $apiResponse")
-                        val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
-                        val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                     }
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is Error -> {
+                    val orderError = networkErrorToOrderError(response.error)
                     val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
-                })
-
-        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-        if (force) request.setShouldForceUpdate()
-
-        add(request)
+                }
+            }
+        }
     }
 
     /**
