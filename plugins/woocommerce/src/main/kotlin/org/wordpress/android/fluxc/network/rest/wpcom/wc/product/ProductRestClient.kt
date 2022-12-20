@@ -4,7 +4,6 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
-import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
@@ -28,9 +27,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
@@ -77,9 +73,11 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
+import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -92,8 +90,8 @@ class ProductRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    private val wooNetwork: WooNetwork
+    private val wooNetwork: WooNetwork,
+    private val coroutineEngine: CoroutineEngine
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -104,30 +102,37 @@ class ProductRestClient @Inject constructor(
      * @param [remoteShippingClassId] Unique server id of the shipping class to fetch
      */
     fun fetchSingleProductShippingClass(site: SiteModel, remoteShippingClassId: Long) {
-        val url = WOOCOMMERCE.products.shipping_classes.id(remoteShippingClassId).pathV3
-        val responseType = object : TypeToken<ProductShippingClassApiResponse>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: ProductShippingClassApiResponse? ->
-                    response?.let {
+        coroutineEngine.launch(AppLog.T.API, this, "fetchSingleProductShippingClass") {
+            val url = WOOCOMMERCE.products.shipping_classes.id(remoteShippingClassId).pathV3
+            val params = emptyMap<String, String>()
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = ProductShippingClassApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val newModel = productShippingClassResponseToProductShippingClassModel(
-                                it, site
+                            it, site
                         ).apply { localSiteId = site.id }
                         val payload = RemoteProductShippingClassPayload(newModel, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductShippingClassPayload(
-                            productError,
-                            WCProductShippingClassModel().apply { this.remoteShippingClassId = remoteShippingClassId },
-                            site
+                        productError,
+                        WCProductShippingClassModel().apply { this.remoteShippingClassId = remoteShippingClassId },
+                        site
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -143,33 +148,40 @@ class ProductRestClient @Inject constructor(
         pageSize: Int = DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE,
         offset: Int = 0
     ) {
-        val url = WOOCOMMERCE.products.shipping_classes.pathV3
-        val responseType = object : TypeToken<List<ProductShippingClassApiResponse>>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductShippingClassList") {
+            val url = WOOCOMMERCE.products.shipping_classes.pathV3
+            val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString()
-        )
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductShippingClassApiResponse>? ->
-                    val shippingClassList = response?.map {
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductShippingClassApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val shippingClassList = response.data?.map {
                         productShippingClassResponseToProductShippingClassModel(it, site)
                     }.orEmpty()
 
                     val loadedMore = offset > 0
                     val canLoadMore = shippingClassList.size == pageSize
                     val payload = RemoteProductShippingClassListPayload(
-                            site, shippingClassList, offset, loadedMore, canLoadMore
+                        site, shippingClassList, offset, loadedMore, canLoadMore
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductShippingClassListPayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -188,16 +200,23 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         searchQuery: String? = null
     ) {
-        val url = WOOCOMMERCE.products.tags.pathV3
-        val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductTags") {
+            val url = WOOCOMMERCE.products.tags.pathV3
+            val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
+            ).putIfNotEmpty("search" to searchQuery)
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductTagApiResponse>? ->
-                    val tags = response?.map {
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<ProductTagApiResponse>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val tags = response.data?.map {
                         productTagApiResponseToProductTagModel(it, site)
                     }.orEmpty()
 
@@ -205,14 +224,14 @@ class ProductRestClient @Inject constructor(
                     val canLoadMore = tags.size == pageSize
                     val payload = RemoteProductTagsPayload(site, tags, offset, loadedMore, canLoadMore, searchQuery)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductTagsPayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -228,27 +247,35 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         tags: List<String>
     ) {
-        val url = WOOCOMMERCE.products.tags.batch.pathV3
-        val responseType = object : TypeToken<BatchAddProductTagApiResponse>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "addProductTags") {
+            val url = WOOCOMMERCE.products.tags.batch.pathV3
+            val body = mutableMapOf(
                 "create" to tags.map { mapOf("name" to it) }
-        )
+            )
 
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
-                { response: BatchAddProductTagApiResponse? ->
-                    val addedTags = response?.addedTags?.map {
+            val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = BatchAddProductTagApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val addedTags = response.data?.addedTags?.map {
                         productTagApiResponseToProductTagModel(it, site)
                     }.orEmpty()
 
                     val payload = RemoteAddProductTagsResponsePayload(site, addedTags)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductTagsResponsePayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -261,33 +288,32 @@ class ProductRestClient @Inject constructor(
     suspend fun fetchSingleProduct(site: SiteModel, remoteProductId: Long): RemoteProductPayload {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ProductApiResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = emptyMap(),
+            clazz = ProductApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val newModel = it.asProductModel().apply {
                         localSiteId = site.id
                     }
                     RemoteProductPayload(newModel, site)
                 } ?: RemoteProductPayload(
-                        ProductError(GENERIC_ERROR, "Success response with empty data"),
-                        WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site
+                    ProductError(GENERIC_ERROR, "Success response with empty data"),
+                    WCProductModel().apply { this.remoteProductId = remoteProductId },
+                    site
                 )
             }
-            is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error -> {
+                val productError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductPayload(
-                        productError,
-                        WCProductModel().apply { this.remoteProductId = remoteProductId },
-                        site
+                    productError,
+                    WCProductModel().apply { this.remoteProductId = remoteProductId },
+                    site
                 )
             }
         }
@@ -309,12 +335,15 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
         val params = emptyMap<String, String>()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this, site, url, params, ProductVariationApiResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = ProductVariationApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 val productData = response.data
                 if (productData != null) {
                     RemoteVariationPayload(
@@ -335,9 +364,9 @@ class ProductRestClient @Inject constructor(
                     )
                 }
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 RemoteVariationPayload(
-                    networkErrorToProductError(response.error),
+                    wpAPINetworkErrorToProductError(response.error),
                     WCProductVariationModel().apply {
                         this.remoteProductId = remoteProductId
                         this.remoteVariationId = remoteVariationId
@@ -366,22 +395,29 @@ class ProductRestClient @Inject constructor(
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
     ) {
-        val url = WOOCOMMERCE.products.pathV3
-        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = buildProductParametersMap(
-            pageSize = pageSize,
-            sortType = sortType,
-            offset = offset,
-            searchQuery = searchQuery,
-            isSkuSearch = isSkuSearch,
-            includedProductIds = includedProductIds,
-            excludedProductIds = excludedProductIds,
-            filterOptions = filterOptions
-        )
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProducts") {
+            val url = WOOCOMMERCE.products.pathV3
+            val params = buildProductParametersMap(
+                pageSize = pageSize,
+                sortType = sortType,
+                offset = offset,
+                searchQuery = searchQuery,
+                isSkuSearch = isSkuSearch,
+                includedProductIds = includedProductIds,
+                excludedProductIds = excludedProductIds,
+                filterOptions = filterOptions
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductApiResponse>? ->
-                    val productModels = response?.map {
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val productModels = response.data?.map {
                         it.asProductModel().apply { localSiteId = site.id }
                     }.orEmpty()
 
@@ -389,13 +425,13 @@ class ProductRestClient @Inject constructor(
                     val canLoadMore = productModels.size == pageSize
                     if (searchQuery == null) {
                         val payload = RemoteProductListPayload(
-                                site,
-                                productModels,
-                                offset,
-                                loadedMore,
-                                canLoadMore,
-                                includedProductIds,
-                                excludedProductIds
+                            site,
+                            productModels,
+                            offset,
+                            loadedMore,
+                            canLoadMore,
+                            includedProductIds,
+                            excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
@@ -410,9 +446,9 @@ class ProductRestClient @Inject constructor(
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     if (searchQuery == null) {
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
@@ -426,9 +462,9 @@ class ProductRestClient @Inject constructor(
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     fun searchProducts(
@@ -481,24 +517,17 @@ class ProductRestClient @Inject constructor(
             filterOptions = filterOptions
         )
 
-        return WOOCOMMERCE.products.pathV3.requestProductTo(site, params).handleResultFrom(site)
-    }
+        val url = WOOCOMMERCE.products.pathV3
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductApiResponse>::class.java
+        )
 
-    private suspend fun String.requestProductTo(
-        site: SiteModel,
-        params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this@ProductRestClient,
-            site,
-            this,
-            params,
-            Array<ProductApiResponse>::class.java
-    )
-
-    private fun JetpackResponse<Array<ProductApiResponse>>.handleResultFrom(site: SiteModel) =
-        when (this) {
-            is JetpackSuccess -> {
-                data
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data
                     ?.map {
                         it.asProductModel()
                             .apply { localSiteId = site.id }
@@ -506,10 +535,60 @@ class ProductRestClient @Inject constructor(
                     .orEmpty()
                     .let { WooPayload(it.toList()) }
             }
-            is JetpackError -> {
-                WooPayload(error.toWooError())
+            is WPAPIResponse.Error -> {
+                WooPayload(response.error.toWooError())
             }
         }
+    }
+
+    private fun buildProductParametersMap(
+        pageSize: Int,
+        sortType: ProductSorting,
+        offset: Int,
+        searchQuery: String?,
+        isSkuSearch: Boolean,
+        includedProductIds: List<Long>? = null,
+        excludedProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
+    ): MutableMap<String, String> {
+        fun ProductSorting.asOrderByParameter() = when (this) {
+            TITLE_ASC, TITLE_DESC -> "title"
+            DATE_ASC, DATE_DESC -> "date"
+        }
+
+        fun ProductSorting.asSortOrderParameter() = when (this) {
+            TITLE_ASC, DATE_ASC -> "asc"
+            TITLE_DESC, DATE_DESC -> "desc"
+        }
+
+        val params = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "orderby" to sortType.asOrderByParameter(),
+            "order" to sortType.asSortOrderParameter(),
+            "offset" to offset.toString()
+        )
+
+        includedProductIds?.let { includedIds ->
+            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
+        }
+        excludedProductIds?.let { excludedIds ->
+            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
+        }
+        filterOptions?.let { options ->
+            params.putAll(options.map { it.key.toString() to it.value })
+        }
+
+        if (searchQuery.isNullOrEmpty().not()) {
+            if (isSkuSearch) {
+                params["sku"] = searchQuery!! // full SKU match
+                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+            } else {
+                params["search"] = searchQuery!!
+            }
+        }
+
+        return params
+    }
 
     /**
      * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
@@ -544,16 +623,18 @@ class ProductRestClient @Inject constructor(
             params["exclude"] = excludedCategoryIds.map { it }.joinToString()
         }
 
-        return WOOCOMMERCE.products.categories.pathV3
-            .requestCategoryTo(site, params)
-            .handleResultFrom(site)
-    }
+        val url = WOOCOMMERCE.products.categories.pathV3
 
-    @JvmName("handleResultFromProductCategoryApiResponse")
-    private fun JetpackResponse<Array<ProductCategoryApiResponse>>.handleResultFrom(site: SiteModel) =
-        when (this) {
-            is JetpackSuccess -> {
-                data
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductCategoryApiResponse>::class.java
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data
                     ?.map {
                         it.asProductCategoryModel()
                             .apply { localSiteId = site.id }
@@ -561,107 +642,10 @@ class ProductRestClient @Inject constructor(
                     .orEmpty()
                     .let { WooPayload(it.toList()) }
             }
-            is JetpackError -> {
-                WooPayload(error.toWooError())
+            is WPAPIResponse.Error -> {
+                WooPayload(response.error.toWooError())
             }
         }
-
-    @JvmName("handleResultFromProductVariationApiResponse")
-    private fun JetpackResponse<Array<ProductVariationApiResponse>>.handleResultFrom(
-        site: SiteModel,
-        productId: Long
-    ) =
-        when (this) {
-            is JetpackSuccess -> {
-                data
-                    ?.map {
-                        it.asProductVariationModel()
-                            .apply {
-                                localSiteId = site.id
-                                remoteProductId = productId
-                            }
-                    }
-                    .orEmpty()
-                    .let { WooPayload(it.toList()) }
-            }
-            is JetpackError -> {
-                WooPayload(error.toWooError())
-            }
-        }
-
-    private suspend fun String.requestCategoryTo(
-        site: SiteModel,
-        params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-        this@ProductRestClient,
-        site,
-        this,
-        params,
-        Array<ProductCategoryApiResponse>::class.java
-    )
-
-    private fun buildProductParametersMap(
-        pageSize: Int,
-        sortType: ProductSorting,
-        offset: Int,
-        searchQuery: String?,
-        isSkuSearch: Boolean,
-        includedProductIds: List<Long>? = null,
-        excludedProductIds: List<Long>? = null,
-        filterOptions: Map<ProductFilterOption, String>? = null
-    ): MutableMap<String, String> {
-        val params = mutableMapOf(
-            "per_page" to pageSize.toString(),
-            "orderby" to sortType.asOrderByParameter(),
-            "order" to sortType.asSortOrderParameter(),
-            "offset" to offset.toString()
-        )
-
-        includedProductIds?.let { includedIds ->
-            params.putIfNotEmpty("include" to includedIds.map { it }.joinToString())
-        }
-        excludedProductIds?.let { excludedIds ->
-            params.putIfNotEmpty("exclude" to excludedIds.map { it }.joinToString())
-        }
-        filterOptions?.let { options ->
-            params.putAll(options.map { it.key.toString() to it.value })
-        }
-
-        if (searchQuery.isNullOrEmpty().not()) {
-            if (isSkuSearch) {
-                params["sku"] = searchQuery!! // full SKU match
-                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
-            } else {
-                params["search"] = searchQuery!!
-            }
-        }
-
-        return params
-    }
-
-    private fun buildVariationParametersMap(
-        pageSize: Int,
-        offset: Int,
-        searchQuery: String?,
-        ids: List<Long>,
-        excludedProductIds: List<Long>
-    ) = mutableMapOf(
-            "per_page" to pageSize.toString(),
-            "orderby" to "date",
-            "order" to "asc",
-            "offset" to offset.toString()
-        ).putIfNotEmpty("search" to searchQuery)
-            .putIfNotEmpty("include" to ids.map { it }.joinToString())
-            .putIfNotEmpty("exclude" to excludedProductIds.map { it }.joinToString())
-
-    private fun ProductSorting.asOrderByParameter() = when (this) {
-        TITLE_ASC, TITLE_DESC -> "title"
-        DATE_ASC, DATE_DESC -> "date"
-    }
-
-    private fun ProductSorting.asSortOrderParameter() = when (this) {
-        TITLE_ASC, DATE_ASC -> "asc"
-        TITLE_DESC, DATE_DESC -> "desc"
     }
 
     /**
@@ -674,25 +658,32 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         sku: String
     ) {
-        val url = WOOCOMMERCE.products.pathV3
-        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mutableMapOf("sku" to sku, "_fields" to "sku")
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductSkuAvailability") {
+            val url = WOOCOMMERCE.products.pathV3
+            val params = mutableMapOf("sku" to sku, "_fields" to "sku")
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductApiResponse>? ->
-                    val available = response?.isEmpty() ?: false
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val available = response.data?.isEmpty() ?: false
                     val payload = RemoteProductSkuAvailabilityPayload(site, sku, available)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     // If there is a network error of some sort that prevents us from knowing if a sku is available
                     // then just consider sku as available
                     val payload = RemoteProductSkuAvailabilityPayload(productError, site, sku, true)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -765,17 +756,21 @@ class ProductRestClient @Inject constructor(
     ): RemoteProductVariationsPayload {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
         val params = mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "offset" to offset.toString(),
-                "order" to "asc",
-                "orderby" to "date"
+            "per_page" to pageSize.toString(),
+            "offset" to offset.toString(),
+            "order" to "asc",
+            "orderby" to "date"
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this, site, url, params, Array<ProductVariationApiResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductVariationApiResponse>::class.java
         )
+
         when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 val variationModels = response.data?.map {
                     it.asProductVariationModel().apply {
                         localSiteId = site.id
@@ -789,8 +784,8 @@ class ProductRestClient @Inject constructor(
                     site, productId, variationModels, offset, loadedMore, canLoadMore
                 )
             }
-            is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error -> {
+                val productError = wpAPINetworkErrorToProductError(response.error)
                 return RemoteProductVariationsPayload(
                     productError,
                     site,
@@ -819,29 +814,41 @@ class ProductRestClient @Inject constructor(
         searchQuery: String? = null,
         excludedVariationIds: List<Long> = emptyList()
     ): WooPayload<List<WCProductVariationModel>> {
-        val params = buildVariationParametersMap(
-            pageSize,
-            offset,
-            searchQuery,
-            includedVariationIds,
-            excludedVariationIds
+        val params = mutableMapOf(
+            "per_page" to pageSize.toString(),
+            "orderby" to "date",
+            "order" to "asc",
+            "offset" to offset.toString()
+        ).putIfNotEmpty("search" to searchQuery)
+            .putIfNotEmpty("include" to includedVariationIds.map { it }.joinToString())
+            .putIfNotEmpty("exclude" to excludedVariationIds.map { it }.joinToString())
+
+        val url = WOOCOMMERCE.products.id(productId).variations.pathV3
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<ProductVariationApiResponse>::class.java
         )
 
-        return WOOCOMMERCE.products.id(productId).variations.pathV3
-            .requestProductVariationTo(site, params)
-            .handleResultFrom(site, productId)
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                response.data?.map {
+                    it.asProductVariationModel()
+                        .apply {
+                            localSiteId = site.id
+                            remoteProductId = productId
+                        }
+                }
+                    .orEmpty()
+                    .let { WooPayload(it.toList()) }
+            }
+            is WPAPIResponse.Error -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
     }
-
-    private suspend fun String.requestProductVariationTo(
-        site: SiteModel,
-        params: Map<String, String>
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-        this@ProductRestClient,
-        site,
-        this,
-        params,
-        Array<ProductVariationApiResponse>::class.java
-    )
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/remoteProductId` to update a product
@@ -857,31 +864,39 @@ class ProductRestClient @Inject constructor(
         storedWCProductModel: WCProductModel?,
         updatedProductModel: WCProductModel
     ) {
-        val remoteProductId = updatedProductModel.remoteProductId
-        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
+        coroutineEngine.launch(AppLog.T.API, this, "updateProduct") {
+            val remoteProductId = updatedProductModel.remoteProductId
+            val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+            val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
 
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
+            val response = wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteUpdateProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteUpdateProductPayload(
-                            productError,
-                            site,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                        productError,
+                        site,
+                        WCProductModel().apply { this.remoteProductId = remoteProductId }
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -901,11 +916,15 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
         val body = variantModelToProductJsonBody(storedWCProductVariationModel, updatedProductVariationModel)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this, site, url, body, ProductVariationApiResponse::class.java
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            body = body,
+            clazz = ProductVariationApiResponse::class.java
         )
+
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val newModel = it.asProductVariationModel().apply {
                         this.remoteProductId = remoteProductId
@@ -921,8 +940,8 @@ class ProductRestClient @Inject constructor(
                     }
                 )
             }
-            is JetpackError -> {
-                val productError = networkErrorToProductError(response.error)
+            is WPAPIResponse.Error -> {
+                val productError = wpAPINetworkErrorToProductError(response.error)
                 RemoteUpdateVariationPayload(
                     productError,
                     site,
@@ -960,12 +979,11 @@ class ProductRestClient @Inject constructor(
             // No changes need to be executed, no need to call the API
             if (body.isEmpty()) return@let WooPayload()
 
-            jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this@ProductRestClient,
-                site,
-                url,
-                body,
-                BatchProductApiResponse::class.java
+            wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                clazz = BatchProductApiResponse::class.java,
+                body = body
             ).handleResult()
         }
 
@@ -1002,12 +1020,11 @@ class ProductRestClient @Inject constructor(
 
                 require(body.isNotEmpty())
 
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    this@ProductRestClient,
-                    site,
-                    url,
-                    body,
-                    BatchProductVariationsApiResponse::class.java
+                wooNetwork.executePostGsonRequest(
+                    site = site,
+                    path = url,
+                    clazz = BatchProductVariationsApiResponse::class.java,
+                    body = body
                 ).handleResult()
             }
 
@@ -1023,15 +1040,14 @@ class ProductRestClient @Inject constructor(
         productId: Long,
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                        this@ProductRestClient,
-                        site,
-                        url,
-                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
-                        ProductVariationApiResponse::class.java
-                ).handleResult()
-            }
+        .let { url ->
+            wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductVariationApiResponse::class.java,
+                body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
+            ).handleResult()
+        }
 
     /**
      * Makes a DELETE request to `/wp-json/wc/v3/products/<id>` to delete a product
@@ -1047,14 +1063,13 @@ class ProductRestClient @Inject constructor(
         productId: Long,
         variationId: Long
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-                        this@ProductRestClient,
-                        site,
-                        url,
-                        ProductVariationApiResponse::class.java
-                ).handleResult()
-            }
+        .let { url ->
+            wooNetwork.executeDeleteGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductVariationApiResponse::class.java
+            ).handleResult()
+        }
 
     /**
      * Makes a PUT request to
@@ -1073,15 +1088,14 @@ class ProductRestClient @Inject constructor(
         variationId: Long,
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).variations.variation(variationId).pathV3
-                .let { url ->
-                    jetpackTunnelGsonRequestBuilder.syncPutRequest(
-                            this@ProductRestClient,
-                            site,
-                            url,
-                            mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
-                            ProductVariationApiResponse::class.java
-                    ).handleResult()
-                }
+        .let { url ->
+            wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductVariationApiResponse::class.java,
+                body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
+            ).handleResult()
+        }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]`
@@ -1097,15 +1111,14 @@ class ProductRestClient @Inject constructor(
         productId: Long,
         attributesJson: String
     ) = WOOCOMMERCE.products.id(productId).pathV3
-            .let { url ->
-                jetpackTunnelGsonRequestBuilder.syncPutRequest(
-                        this,
-                        site,
-                        url,
-                        mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray),
-                        ProductApiResponse::class.java
-                ).handleResult()
-            }
+        .let { url ->
+            wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                clazz = ProductApiResponse::class.java,
+                body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
+            ).handleResult()
+        }
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
@@ -1118,38 +1131,46 @@ class ProductRestClient @Inject constructor(
      * @param [imageList] list of product images to assign to the product
      */
     fun updateProductImages(site: SiteModel, remoteProductId: Long, imageList: List<WCProductImageModel>) {
-        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        coroutineEngine.launch(AppLog.T.API, this, "updateProductImages") {
+            val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
 
-        // build json list of images
-        val jsonBody = JsonArray()
-        for (image in imageList) {
-            jsonBody.add(image.toJson())
-        }
-        val body = HashMap<String, Any>()
-        body["id"] = remoteProductId
-        body["images"] = jsonBody
+            // build json list of images
+            val jsonBody = JsonArray()
+            for (image in imageList) {
+                jsonBody.add(image.toJson())
+            }
+            val body = HashMap<String, Any>()
+            body["id"] = remoteProductId
+            body["images"] = jsonBody
 
-        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
+            val response = wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteUpdateProductImagesPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteUpdateProductImagesPayload(
-                            productError,
-                            site,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                        productError,
+                        site,
+                        WCProductModel().apply { this.remoteProductId = remoteProductId }
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -1171,40 +1192,48 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         productCategorySorting: ProductCategorySorting? = DEFAULT_CATEGORY_SORTING
     ) {
-        val sortOrder = when (productCategorySorting) {
-            NAME_DESC -> "desc"
-            else -> "asc"
-        }
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductCategories") {
+            val sortOrder = when (productCategorySorting) {
+                NAME_DESC -> "desc"
+                else -> "asc"
+            }
 
-        val url = WOOCOMMERCE.products.categories.pathV3
-        val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
-        val params = mutableMapOf(
+            val url = WOOCOMMERCE.products.categories.pathV3
+            val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
                 "order" to sortOrder,
                 "orderby" to "name"
-        )
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductCategoryApiResponse>? ->
-                    response?.let {
+            )
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<ProductCategoryApiResponse>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val categories = it.map { category ->
                             category.asProductCategoryModel().apply { localSiteId = site.id }
                         }
                         val canLoadMore = categories.size == pageSize
                         val loadedMore = offset > 0
                         val payload = RemoteProductCategoriesPayload(
-                                site, categories, offset, loadedMore, canLoadMore
+                            site, categories, offset, loadedMore, canLoadMore
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
                     }
-                },
-                { networkError ->
-                    val productCategoryError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productCategoryError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductCategoriesPayload(productCategoryError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -1219,29 +1248,38 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         category: WCProductCategoryModel
     ) {
-        val url = WOOCOMMERCE.products.categories.pathV3
+        coroutineEngine.launch(AppLog.T.API, this, "addProductCategory") {
+            val url = WOOCOMMERCE.products.categories.pathV3
 
-        val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
-        val params = mutableMapOf(
+            val body = mutableMapOf(
                 "name" to category.name,
                 "parent" to category.parent.toString()
-        )
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
-                { response: ProductCategoryApiResponse? ->
-                    val categoryResponse = response?.let {
+            )
+
+            val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductCategoryApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val categoryResponse = response.data?.let {
                         it.asProductCategoryModel().apply {
                             localSiteId = site.id
                         }
                     }
                     val payload = RemoteAddProductCategoryResponsePayload(site, categoryResponse)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                },
-                { networkError ->
-                    val productCategorySaveError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productCategorySaveError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductCategoryResponsePayload(productCategorySaveError, site, category)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -1411,18 +1449,20 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         productModel: WCProductModel
     ) {
-        val url = WOOCOMMERCE.products.pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params = productModelToProductJsonBody(null, productModel)
+        coroutineEngine.launch(AppLog.T.API, this, "addProduct") {
+            val url = WOOCOMMERCE.products.pathV3
+            val body = productModelToProductJsonBody(null, productModel)
 
-        val request = JetpackTunnelGsonRequest.buildPostRequest(
-                wpApiEndpoint = url,
-                siteId = site.siteId,
-                body = params,
-                type = responseType,
-                listener = { response: ProductApiResponse? ->
-                    // success
-                    response?.let { product ->
+            val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let { product ->
                         val newModel = product.asProductModel().apply {
                             id = product.id?.toInt() ?: 0
                             localSiteId = site.id
@@ -1430,19 +1470,18 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteAddProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                     }
-                },
-                errorListener = { networkError ->
-                    // error
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductPayload(
-                            productError,
-                            site,
-                            WCProductModel()
+                        productError,
+                        site,
+                        WCProductModel()
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                 }
-        )
-        add(request)
+            }
+        }
     }
 
     /**
@@ -1459,27 +1498,35 @@ class ProductRestClient @Inject constructor(
         remoteProductId: Long,
         forceDelete: Boolean = false
     ) {
-        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params = mapOf("force" to forceDelete.toString())
-        val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
-                { response: ProductApiResponse? ->
-                    response?.let {
+        coroutineEngine.launch(AppLog.T.API, this, "deleteProduct") {
+            val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+            val params = mapOf("force" to forceDelete.toString())
+
+            val response = wooNetwork.executeDeleteGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = ProductApiResponse::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    response.data?.let {
                         val payload = RemoteDeleteProductPayload(site, remoteProductId)
                         dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
                     }
-                },
-                { networkError ->
-                    val productError = networkErrorToProductError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteDeleteProductPayload(
-                            productError,
-                            site,
-                            remoteProductId
+                        productError,
+                        site,
+                        remoteProductId
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
                 }
-        )
-        add(request)
+            }
+        }
     }
 
     /**
