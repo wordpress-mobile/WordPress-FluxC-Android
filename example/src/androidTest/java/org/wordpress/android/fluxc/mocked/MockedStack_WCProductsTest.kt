@@ -60,6 +60,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private val searchQuery = "test"
 
     private val siteModel = SiteModel().apply {
+        origin = SiteModel.ORIGIN_WPCOM_REST
         email = "test@example.org"
         name = "Test Site"
         siteId = 24
