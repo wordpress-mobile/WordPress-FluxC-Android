@@ -13,12 +13,10 @@ import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsModel
-import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
@@ -392,15 +390,25 @@ class OrderStatsRestClient @Inject constructor(
         limit: Int,
         force: Boolean = false
     ) {
-        val url = WPCOMV2.sites.site(site.siteId).stats.top_earners.url
-        val params = mapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "fetchTopEarnersStats") {
+            val url = WPCOMV2.sites.site(site.siteId).stats.top_earners.url
+            val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
-                "limit" to limit.toString())
+                "limit" to limit.toString()
+            )
 
-        val request = WPComGsonRequest.buildGetRequest(url, params, TopEarnersStatsApiResponse::class.java,
-                { response: TopEarnersStatsApiResponse ->
-                    val wcTopEarners = response.data?.map {
+            val response = wpComNetwork.executeGetGsonRequest(
+                url = url,
+                params = params,
+                clazz = TopEarnersStatsApiResponse::class.java,
+                enableCaching = true,
+                forced = force
+            )
+
+            when (response) {
+                is WPComGsonRequestBuilder.Response.Success -> {
+                    val wcTopEarners = response.data.data?.map {
                         WCTopEarnerModel().apply {
                             id = it.id ?: 0
                             currency = it.currency ?: ""
@@ -414,17 +422,14 @@ class OrderStatsRestClient @Inject constructor(
 
                     val payload = FetchTopEarnersStatsResponsePayload(site, unit, wcTopEarners)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPComGsonRequestBuilder.Response.Error -> {
+                    val orderError = networkErrorToOrderError(response.error)
                     val payload = FetchTopEarnersStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
-                })
-
-        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-        if (force) request.setShouldForceUpdate()
-
-        add(request)
+                }
+            }
+        }
     }
 
     private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderStatsError {
