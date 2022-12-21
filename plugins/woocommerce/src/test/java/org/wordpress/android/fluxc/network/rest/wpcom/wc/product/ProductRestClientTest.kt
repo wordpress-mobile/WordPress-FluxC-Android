@@ -11,14 +11,13 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
+import org.wordpress.android.fluxc.utils.initCoroutineEngine
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductRestClientTest {
@@ -26,27 +25,16 @@ class ProductRestClientTest {
 
     private val productId = 5L
     private val site = SiteModel()
-    private val requestBuilder: JetpackTunnelGsonRequestBuilder = mock()
-    private val wooNetwork: WooNetwork = mock()
+    private val wooNetwork: WooNetwork = mock() {
+        onBlocking {
+            executePostGsonRequest(
+                any(), any(), eq(BatchProductApiResponse::class.java), any()
+            )
+        } doReturn WPAPIResponse.Success(null)
+    }
 
     @Before fun setUp() {
-        requestBuilder.stub {
-            onBlocking {
-                syncPostRequest(
-                    any(), any(), any(), any(), eq(BatchProductApiResponse::class.java)
-                )
-            } doReturn JetpackResponse.JetpackSuccess(null)
-        }
-        sut = ProductRestClient(
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            requestBuilder,
-            wooNetwork,
-            mock()
-        )
+        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), wooNetwork, initCoroutineEngine(), mock())
     }
 
     @Test
@@ -67,12 +55,11 @@ class ProductRestClientTest {
         )
 
         // then
-        verify(requestBuilder).syncPostRequest(
-            eq(sut),
-            eq(site),
-            eq(WOOCOMMERCE.products.batch.pathV3),
-            bodyCaptor.capture(),
-            eq(BatchProductApiResponse::class.java),
+        verify(wooNetwork).executePostGsonRequest(
+            site = eq(site),
+            path = eq(WOOCOMMERCE.products.batch.pathV3),
+            clazz = eq(BatchProductApiResponse::class.java),
+            body = bodyCaptor.capture()
         )
         assertThat(bodyCaptor.allValues).hasSize(1)
         assertThat(bodyCaptor.firstValue).isEqualTo(
@@ -109,12 +96,11 @@ class ProductRestClientTest {
         )
 
         // then
-        verify(requestBuilder, never()).syncPostRequest(
-            eq(sut),
-            eq(site),
-            eq(WOOCOMMERCE.products.batch.pathV3),
-            bodyCaptor.capture(),
-            eq(BatchProductApiResponse::class.java),
+        verify(wooNetwork, never()).executePostGsonRequest(
+            site = eq(site),
+            path = eq(WOOCOMMERCE.products.batch.pathV3),
+            clazz = eq(BatchProductApiResponse::class.java),
+            body = bodyCaptor.capture()
         )
     }
 
