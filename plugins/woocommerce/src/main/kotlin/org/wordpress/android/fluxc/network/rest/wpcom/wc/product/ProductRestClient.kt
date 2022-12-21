@@ -6,7 +6,9 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
+import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -995,6 +997,26 @@ class ProductRestClient @Inject constructor(
                 body = body
             ).handleResult()
         }
+
+    suspend fun replyToReview(
+        site: SiteModel,
+        productId: RemoteId,
+        reviewId: RemoteId,
+        replyContent: String?
+    ): WooPayload<Unit> {
+        val body = mapOf(
+            "post" to productId.value,
+            "parent" to reviewId.value,
+            "content" to replyContent.orEmpty()
+        )
+
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = WPAPI.comments.urlV2,
+            clazz = Unit::class.java,
+            body = body
+        ).handleResult()
+    }
 
     /**
      * Makes a POST request to `/wp-json/wc/v3/products/[WCProductModel.remoteProductId]/variations/batch`
