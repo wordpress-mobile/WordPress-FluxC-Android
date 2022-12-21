@@ -1577,10 +1577,10 @@ class WCProductStore @Inject constructor(
 
     suspend fun replyToReview(payload: PostReviewReply): WooResult<Unit> {
         return wcProductRestClient.replyToReview(
-            payload.site,
-            payload.productId,
-            payload.reviewId,
-            payload.replyContent
+            site = payload.site,
+            productId = payload.productId,
+            reviewId = payload.reviewId,
+            replyContent = payload.replyContent
         ).asWooResult()
     }
 

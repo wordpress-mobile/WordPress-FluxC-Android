@@ -995,17 +995,17 @@ class ProductRestClient @Inject constructor(
         reviewId: RemoteId,
         replyContent: String?
     ): WooPayload<Unit> {
-        val request = mutableMapOf(
+        val body = mapOf(
             "post" to productId.value,
             "parent" to reviewId.value,
             "content" to replyContent.orEmpty()
         )
 
         return wooNetwork.executePostGsonRequest(
-            site,
-            WPAPI.comments.urlV2,
-            Unit::class.java,
-           request
+            site = site,
+            path = WPAPI.comments.urlV2,
+            clazz = Unit::class.java,
+            body = body
         ).handleResult()
     }
 
