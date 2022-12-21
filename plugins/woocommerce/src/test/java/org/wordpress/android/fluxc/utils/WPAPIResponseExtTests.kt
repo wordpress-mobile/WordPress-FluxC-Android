@@ -23,6 +23,16 @@ class WPAPIResponseExtTests {
     }
 
     @Test
+    fun `given a null response and nullable type, when converting, then return null wrapped in success`() {
+        val response = WPAPIResponse.Success<String>(null)
+
+        val result = response.toWooPayload<String, String?> { "Got response: $it" }
+
+        assertThat(result.isError).isFalse
+        assertThat(result.result).isEqualTo(null)
+    }
+
+    @Test
     fun `given a non-null success response, when converting, then map the types`() {
         val response = WPAPIResponse.Success("message")
 

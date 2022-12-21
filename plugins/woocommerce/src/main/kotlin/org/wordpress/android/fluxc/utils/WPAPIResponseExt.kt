@@ -21,13 +21,17 @@ inline fun <reified T, reified R> WPAPIResponse<T>.toWooPayload(
     is WPAPIResponse.Success -> {
         val result = data
         if (result == null) {
-            WooPayload(
-                WooError(
-                    type = WooErrorType.EMPTY_RESPONSE,
-                    original = BaseRequest.GenericErrorType.UNKNOWN,
-                    message = "Success response with empty data"
+            if (null !is R) {
+                WooPayload(
+                    WooError(
+                        type = WooErrorType.EMPTY_RESPONSE,
+                        original = BaseRequest.GenericErrorType.UNKNOWN,
+                        message = "Success response with empty data"
+                    )
                 )
-            )
+            } else {
+                WooPayload(null)
+            }
         } else {
             WooPayload(mapper(result))
         }
