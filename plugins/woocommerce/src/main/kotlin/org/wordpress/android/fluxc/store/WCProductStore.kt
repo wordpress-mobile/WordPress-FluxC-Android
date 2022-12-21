@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.domain.Addon
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
@@ -545,6 +546,13 @@ class WCProductStore @Inject constructor(
             this.error = error
         }
     }
+
+    class PostReviewReply(
+        val site: SiteModel,
+        val productId: RemoteId,
+        val reviewId: RemoteId,
+        val replyContent: String?
+    )
 
     class FetchProductReviewsResponsePayload(
         val site: SiteModel,
@@ -1565,6 +1573,15 @@ class WCProductStore @Inject constructor(
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
+    }
+
+    suspend fun replyToReview(payload: PostReviewReply): WooResult<Unit> {
+        return wcProductRestClient.replyToReview(
+            site = payload.site,
+            productId = payload.productId,
+            reviewId = payload.reviewId,
+            replyContent = payload.replyContent
+        ).asWooResult()
     }
 
     private fun addProduct(payload: AddProductPayload) {
