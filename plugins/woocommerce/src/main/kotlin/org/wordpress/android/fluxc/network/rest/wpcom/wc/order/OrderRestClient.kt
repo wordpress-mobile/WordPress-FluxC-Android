@@ -838,6 +838,7 @@ class OrderRestClient @Inject constructor(
 
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
+            customerId?.let { put("customer_id", it) }
             status?.let { put("status", it.statusKey) }
             lineItems?.let { put("line_items", it) }
             shippingAddress?.toDto()?.let { put("shipping", it) }
