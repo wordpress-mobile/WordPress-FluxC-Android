@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.domain.Addon
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
@@ -25,8 +26,6 @@ import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
@@ -550,8 +549,9 @@ class WCProductStore @Inject constructor(
 
     class PostReviewReply(
         val site: SiteModel,
-        val productReviewId: Long,
-        val replyContent: String,
+        val productId: RemoteId,
+        val reviewId: RemoteId,
+        val replyContent: String?
     )
 
     class FetchProductReviewsResponsePayload(
@@ -1576,16 +1576,12 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun replyToReview(payload: PostReviewReply): WooResult<Unit> {
-        val response = wcProductRestClient.replyToReview(
+        return wcProductRestClient.replyToReview(
             payload.site,
-            payload.productReviewId,
+            payload.productId,
+            payload.reviewId,
             payload.replyContent
-        )
-
-        return when (response) {
-            is Success -> WooResult()
-            is Error -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
-        }
+        ).asWooResult()
     }
 
     private fun addProduct(payload: AddProductPayload) {

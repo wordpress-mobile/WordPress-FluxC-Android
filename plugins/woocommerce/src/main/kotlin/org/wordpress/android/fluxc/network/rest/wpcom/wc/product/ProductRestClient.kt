@@ -8,7 +8,9 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
+import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -24,8 +26,6 @@ import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -93,8 +93,7 @@ class ProductRestClient @Inject constructor(
     accessToken: AccessToken,
     userAgent: UserAgent,
     private val wooNetwork: WooNetwork,
-    private val coroutineEngine: CoroutineEngine,
-    private val wpComGsonRequestBuilder: WPComGsonRequestBuilder
+    private val coroutineEngine: CoroutineEngine
     ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -992,22 +991,22 @@ class ProductRestClient @Inject constructor(
 
     suspend fun replyToReview(
         site: SiteModel,
-        remoteReviewId: Long,
+        productId: RemoteId,
+        reviewId: RemoteId,
         replyContent: String?
-    ): Response<Unit> {
-        val url = WPCOMREST.sites.site(site.siteId).comments.comment(remoteReviewId).replies.new_.urlV1_1
-
+    ): WooPayload<Unit> {
         val request = mutableMapOf(
+            "post" to productId.value,
+            "parent" to reviewId.value,
             "content" to replyContent.orEmpty()
         )
 
-        return wpComGsonRequestBuilder.syncPostRequest(
-            this,
-            url,
-            null,
-            request,
-            Unit::class.java
-        )
+        return wooNetwork.executePostGsonRequest(
+            site,
+            WPAPI.comments.urlV2,
+            Unit::class.java,
+           request
+        ).handleResult()
     }
 
     /**

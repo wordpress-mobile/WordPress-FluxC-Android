@@ -34,7 +34,7 @@ class ProductRestClientTest {
     }
 
     @Before fun setUp() {
-        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), wooNetwork, initCoroutineEngine(), mock())
+        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), wooNetwork, initCoroutineEngine())
     }
 
     @Test
