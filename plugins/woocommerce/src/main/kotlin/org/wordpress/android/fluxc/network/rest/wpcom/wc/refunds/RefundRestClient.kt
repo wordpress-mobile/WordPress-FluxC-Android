@@ -91,21 +91,12 @@ class RefundRestClient @Inject constructor(
     ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.refund(refundId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                RefundResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = RefundResponse::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     suspend fun fetchAllRefunds(
