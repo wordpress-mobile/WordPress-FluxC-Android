@@ -16,9 +16,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.utils.sumBy
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -30,7 +32,8 @@ class RefundRestClient @Inject constructor(
     appContext: Context?,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val wooNetwork: WooNetwork
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun createRefundByAmount(
         site: SiteModel,
@@ -39,12 +42,12 @@ class RefundRestClient @Inject constructor(
         reason: String,
         automaticRefund: Boolean
     ): WooPayload<RefundResponse> {
-        val params = mapOf(
+        val body = mapOf(
                 "amount" to amount,
                 "reason" to reason,
                 "api_refund" to automaticRefund.toString()
         )
-        return createRefund(site, orderId, params)
+        return createRefund(site, orderId, body)
     }
 
     @Suppress("LongParameterList")
@@ -56,37 +59,29 @@ class RefundRestClient @Inject constructor(
         items: List<WCRefundModel.WCRefundItem>,
         restockItems: Boolean
     ): WooPayload<RefundResponse> {
-        val params = mapOf(
+        val body = mapOf(
                 "reason" to reason,
                 "amount" to items.sumBy { it.subtotal + it.totalTax }.toString(),
                 "api_refund" to automaticRefund.toString(),
                 "line_items" to items.associateBy { it.itemId },
                 "restock_items" to restockItems
         )
-        return createRefund(site, orderId, params)
+        return createRefund(site, orderId, body)
     }
 
     private suspend fun createRefund(
         site: SiteModel,
         orderId: Long,
-        params: Map<String, Any>
+        body: Map<String, Any>
     ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                RefundResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = RefundResponse::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     suspend fun fetchRefund(
