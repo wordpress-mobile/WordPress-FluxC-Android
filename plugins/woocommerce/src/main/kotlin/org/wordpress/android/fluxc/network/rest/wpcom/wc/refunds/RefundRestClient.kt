@@ -1,37 +1,19 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundFeeLine
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.utils.sumBy
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
-class RefundRestClient @Inject constructor(
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    appContext: Context?,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
-    private val wooNetwork: WooNetwork
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class RefundRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     suspend fun createRefundByAmount(
         site: SiteModel,
         orderId: Long,
