@@ -32,7 +32,8 @@ enum class WooErrorType {
     INVALID_RESPONSE,
     AUTHORIZATION_REQUIRED,
     INVALID_PARAM,
-    PLUGIN_NOT_ACTIVE
+    PLUGIN_NOT_ACTIVE,
+    EMPTY_RESPONSE
 }
 
 fun WPComGsonNetworkError.toWooError(): WooError {
