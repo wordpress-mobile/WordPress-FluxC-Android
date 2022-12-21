@@ -14,11 +14,8 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.utils.sumBy
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
@@ -107,24 +104,16 @@ class RefundRestClient @Inject constructor(
     ): WooPayload<Array<RefundResponse>> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                mapOf(
-                        "page" to page.toString(),
-                        "per_page" to pageSize.toString()
-                ),
-                Array<RefundResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<RefundResponse>::class.java,
+            params = mapOf(
+                "page" to page.toString(),
+                "per_page" to pageSize.toString()
+            )
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     data class RefundResponse(
