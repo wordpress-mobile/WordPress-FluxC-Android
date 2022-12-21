@@ -54,28 +54,20 @@ class GatewayRestClient @Inject constructor(
         settings: Settings? = null
     ): WooPayload<GatewayResponse> {
         val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId.apiKey).pathV3
-        val params = mutableMapOf<String, Any>().apply {
+        val body = mutableMapOf<String, Any>().apply {
             enabled?.let { put("enabled", enabled) }
             title?.let { put("title", title) }
             description?.let { put("description", description) }
             settings?.let { put("settings", settings) }
         }
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-            this,
-            site,
-            url,
-            params,
-            GatewayResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = GatewayResponse::class.java,
+            body = body
         )
 
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     suspend fun fetchAllGateways(
