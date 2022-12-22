@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.utils.initCoroutineEngine
 
@@ -32,9 +33,10 @@ class ProductRestClientTest {
             )
         } doReturn WPAPIResponse.Success(null)
     }
+    private val wpComNetwork: WPComNetwork = mock()
 
     @Before fun setUp() {
-        sut = ProductRestClient(mock(), mock(), mock(), mock(), mock(), wooNetwork, initCoroutineEngine())
+        sut = ProductRestClient(mock(), wooNetwork, wpComNetwork, initCoroutineEngine())
     }
 
     @Test
