@@ -106,6 +106,7 @@ open class WooCommerceStore @Inject constructor(
         return WooResult(getWooCommerceSites())
     }
 
+    @Suppress("ReturnCount")
     suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
         if (!site.isJetpackCPConnected) {
             // The endpoint used by siteStore to fetch a single site is broken for Jetpack CP sites, so skip it for them
@@ -226,6 +227,7 @@ open class WooCommerceStore @Inject constructor(
      *
      * @return [WooResult] representing whether the result succeeded and whether the site was updated
      */
+    @Suppress("ReturnCount")
     private suspend fun fetchAndUpdateNonJetpackSite(site: SiteModel): WooResult<Boolean> {
         // Fetch site metadata for Jetpack CP sites
         val isMetadataUpdated = if (site.isJetpackCPConnected) {
