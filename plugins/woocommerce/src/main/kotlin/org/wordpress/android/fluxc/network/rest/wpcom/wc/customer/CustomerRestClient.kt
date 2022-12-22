@@ -1,16 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.customer
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_ASC
@@ -20,24 +11,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSortin
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_DESC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
-class CustomerRestClient @Inject constructor(
-    appContext: Context,
-    private val requestBuilder: JetpackTunnelGsonRequestBuilder,
-    dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
-    private val wooNetwork: WooNetwork
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     /**
      * Makes a GET call to `/wc/v3/customers/[remoteCustomerId]` to fetch a single customer
      *
