@@ -15,8 +15,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -28,26 +30,20 @@ class WooSystemRestClient @Inject constructor(
     appContext: Context?,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val wooNetwork: WooNetwork
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<WCSystemPluginResponse> {
         val url = WOOCOMMERCE.system_status.pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                mapOf("_fields" to "active_plugins,inactive_plugins"),
-                WCSystemPluginResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf("_fields" to "active_plugins,inactive_plugins"),
+            clazz = WCSystemPluginResponse::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+
+        return response.toWooPayload()
     }
 
     suspend fun fetchSSR(site: SiteModel): WooPayload<SSRResponse> {
