@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
@@ -54,6 +55,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.util.AppLog
@@ -73,7 +75,9 @@ class OrderRestClient @Inject constructor(
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     private val orderDtoMapper: OrderDtoMapper,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val wooNetwork: WooNetwork,
+    private val coroutineEngine: CoroutineEngine
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
