@@ -415,7 +415,7 @@ class OrderRestClient @Inject constructor(
                 )
             }
             is JetpackError -> {
-                var orderError = networkErrorToOrderError(response.error)
+                val orderError = networkErrorToOrderError(response.error)
                 FetchHasOrdersResponsePayload(
                         orderError,
                         site
