@@ -1,32 +1,16 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest
-import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class WooCommerceRestClient @Inject constructor(
-    appContext: Context,
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
-    private val wooNetwork: WooNetwork
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class WooCommerceRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     companion object {
         const val COUPONS_SETTING_GROUP = "general"
         const val COUPONS_SETTING_ID = "woocommerce_enable_coupons"
