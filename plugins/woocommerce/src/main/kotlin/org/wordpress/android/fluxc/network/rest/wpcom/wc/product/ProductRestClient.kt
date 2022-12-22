@@ -988,7 +988,7 @@ class ProductRestClient @Inject constructor(
             path = WPAPI.comments.urlV2,
             clazz = Unit::class.java,
             body = body
-        ).handleResult()
+        ).toWooPayload()
     }
 
     /**
