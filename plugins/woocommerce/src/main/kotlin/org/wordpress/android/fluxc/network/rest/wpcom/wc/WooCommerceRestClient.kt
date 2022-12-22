@@ -12,8 +12,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Named
@@ -89,23 +87,13 @@ class WooCommerceRestClient @Inject constructor(
         val url = WOOCOMMERCE.settings.group(COUPONS_SETTING_GROUP).id(COUPONS_SETTING_ID).pathV3
         val param = mapOf("value" to "yes")
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this,
-            site,
-            url,
-            param,
-            SiteSettingOptionResponse::class.java
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            clazz = SiteSettingOptionResponse::class.java,
+            body = param
         )
 
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(
-                    result = response.data?.let { it.value == "yes" } ?: false
-                )
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload { it.let { it.value == "yes" } }
     }
 }
