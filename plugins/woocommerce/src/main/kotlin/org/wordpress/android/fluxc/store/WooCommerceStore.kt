@@ -123,15 +123,14 @@ open class WooCommerceStore @Inject constructor(
             }
         }
 
-        val isUpdated = if (!site.isJetpackConnected || site.origin != SiteModel.ORIGIN_WPCOM_REST) {
-            fetchAndUpdateNonJetpackSite(site).let {
+        if (!site.isJetpackConnected || site.origin != SiteModel.ORIGIN_WPCOM_REST) {
+            fetchAndUpdateNonJetpackSite(site).also {
                 if (it.isError) return WooResult(it.error)
-                it.model!!
-            }
-        } else false
 
-        if (isUpdated) {
-            emitChange(OnSiteChanged(1, listOf(site)))
+                if (it.model == true) {
+                    emitChange(OnSiteChanged(1, listOf(site)))
+                }
+            }
         }
 
         return WooResult(siteStore.getSiteByLocalId(site.id))
