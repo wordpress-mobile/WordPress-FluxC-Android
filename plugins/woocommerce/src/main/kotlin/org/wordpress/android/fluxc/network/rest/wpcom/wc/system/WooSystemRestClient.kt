@@ -53,7 +53,7 @@ class WooSystemRestClient @Inject constructor(private val wooNetwork: WooNetwork
             site = site,
             path = url,
             params = mapOf("_fields" to ""),
-            clazz = Unit::class.java
+            clazz = Any::class.java
         )
 
         return when (response) {
