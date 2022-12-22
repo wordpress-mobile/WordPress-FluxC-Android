@@ -22,8 +22,6 @@ import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
@@ -366,8 +364,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of products for the given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products` retrieving a list of products for the given
+     * WooCommerce [SiteModel].
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
@@ -478,8 +476,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of products for the given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products` retrieving a list of products for the given
+     * WooCommerce [SiteModel].
      *
      * but requiring this call to be suspended so the return call be synced within the coroutine job
      */
@@ -571,8 +569,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of product categories for the given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products/categories` retrieving a list of product
+     * categories for the given WooCommerce [SiteModel].
      *
      * but requiring this call to be suspended so the return call be synced within the coroutine job
      */
@@ -621,8 +619,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * for a given [SiteModel] and [sku] to check if this [sku] already exists on the site
+     * Makes a GET request to `/wp-json/wc/v3/products` for a given [SiteModel] and [sku] to check
+     * if this [sku] already exists on the site
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY] action with the availability for the [sku].
      */
@@ -787,9 +785,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of variations for the given WooCommerce [SiteModel]
-     * and product.
+     * Makes a GET request to `/wp-json/wc/v3/products/[productId]/variations` retrieving a list of
+     * variations for the given WooCommerce [SiteModel] and product.
      *
      * @param [productId] Unique server id of the product
      *
@@ -1178,8 +1175,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of product categories for a given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products/categories` retrieving a list of product
+     * categories for a given WooCommerce [SiteModel].
      *
      * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE],
      * and retrieving older categories is done by passing an [offset].
@@ -1243,7 +1240,7 @@ class ProductRestClient @Inject constructor(
     /**
      * Posts a new Add Category record to the API for a category.
      *
-     * Makes a POST call `/wc/v3/products/categories/id` to save a Category record via the Jetpack tunnel.
+     * Makes a POST request to `/wp-json/wc/v3/products/categories/id` to save a Category record.
      * Returns a [WCProductCategoryModel] on successful response.
      *
      * Dispatches [WCProductAction.ADDED_PRODUCT_CATEGORY] action with the results.
@@ -1287,8 +1284,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/reviews` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of product reviews for a given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products/reviews` retrieving a list of product reviews
+     * for a given WooCommerce [SiteModel].
      *
      * The number of reviews to fetch is defined in [WCProductStore.NUM_REVIEWS_PER_FETCH], and retrieving older
      * reviews is done by passing an [offset].
@@ -1363,9 +1360,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequestBuilder])
-     * retrieving a product review by it's remote ID for a given WooCommerce [SiteModel].
-     *
+     * Makes a GET request to `/wp-json/wc/v3/products/reviews/<id>` retrieving a product review by
+     * its remote ID for a given WooCommerce [SiteModel].
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote id of the review to fetch
@@ -1398,9 +1394,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a PUT call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the status for the given product review to [newStatus].
-     *
+     * Makes a PUT request to `/wp-json/wc/v3/products/reviews/<id>` updating the status for the
+     * given product review to [newStatus].
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote ID of the product review to be updated
