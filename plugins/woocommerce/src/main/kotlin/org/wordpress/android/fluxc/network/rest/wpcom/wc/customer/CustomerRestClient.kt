@@ -84,10 +84,10 @@ class CustomerRestClient @Inject constructor(
         }
 
         val params = mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "orderby" to orderBy,
-                "order" to sortOrder,
-                "offset" to offset.toString()
+            "per_page" to pageSize.toString(),
+            "orderby" to orderBy,
+            "order" to sortOrder,
+            "offset" to offset.toString()
         ).run {
             putIfNotEmpty("search" to searchQuery)
             putIfNotEmpty("email" to email)
@@ -103,18 +103,14 @@ class CustomerRestClient @Inject constructor(
             params["exclude"] = excludedCustomerIds.map { it }.joinToString()
         }
 
-        val response = requestBuilder.syncGetRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                params = params,
-                Array<CustomerDTO>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<CustomerDTO>::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     /**
