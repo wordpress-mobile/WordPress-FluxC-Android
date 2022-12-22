@@ -67,17 +67,12 @@ class WooCommerceRestClient @Inject constructor(
      */
     suspend fun fetchSiteSettingsGeneral(site: SiteModel): WooPayload<List<SiteSettingsResponse>> {
         val url = WOOCOMMERCE.settings.general.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            emptyMap(),
-            Array<SiteSettingsResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<SiteSettingsResponse>::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data?.toList())
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload { it.toList() }
     }
 
     suspend fun fetchSiteSettingsProducts(site: SiteModel): WooPayload<List<SiteSettingsResponse>> {
