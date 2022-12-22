@@ -48,7 +48,8 @@ open class WooCommerceStore @Inject constructor(
     private val systemRestClient: WooSystemRestClient,
     private val wcCoreRestClient: WooCommerceRestClient,
     private val settingsMapper: WCSettingsMapper,
-    private val siteSqlUtils: SiteSqlUtils
+    private val siteSqlUtils: SiteSqlUtils,
+    private val accountStore: AccountStore
 ) : Store(dispatcher) {
     enum class WooPlugin(val pluginName: String) {
         WOO_CORE("woocommerce/woocommerce"),
@@ -57,6 +58,7 @@ open class WooCommerceStore @Inject constructor(
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
         WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking")
     }
+
     companion object {
         const val WOO_API_NAMESPACE_V1 = "wc/v1"
         const val WOO_API_NAMESPACE_V2 = "wc/v2"
@@ -69,7 +71,13 @@ open class WooCommerceStore @Inject constructor(
     override fun onAction(action: Action<*>) = Unit // Do nothing (ignore)
 
     suspend fun fetchWooCommerceSites(): WooResult<List<SiteModel>> {
-        val fetchResult = siteStore.fetchSites(FetchSitesPayload())
+        val fetchResult = if (accountStore.hasAccessToken()) {
+            siteStore.fetchSites(FetchSitesPayload())
+        } else {
+            // If the user is not signed in using WordPress.com, the fetch will happen individually later
+            OnSiteChanged()
+        }
+
         if (fetchResult.isError) {
             emitChange(fetchResult)
 
@@ -83,11 +91,12 @@ open class WooCommerceStore @Inject constructor(
         }
 
         var rowsAffected = fetchResult.rowsAffected
-        // Fetch WooCommerce availability for jetpack cp sites
-        siteStore.sites.filter { it.isJetpackCPConnected }
+        // Fetch WooCommerce availability for non-Jetpack sites
+        siteStore.sites
+            .filterNot { it.origin == SiteModel.ORIGIN_WPCOM_REST && it.isJetpackConnected }
             .forEach { site ->
-                val isUpdated = fetchUpdatedSiteMetaData(site)
-                if (isUpdated.model == true && !fetchResult.updatedSites.contains(site)) {
+                val isUpdatedResult = fetchAndUpdateNonJetpackSite(site)
+                if (isUpdatedResult.model == true && !fetchResult.updatedSites.contains(site)) {
                     rowsAffected++
                 }
             }
@@ -97,41 +106,34 @@ open class WooCommerceStore @Inject constructor(
         return WooResult(getWooCommerceSites())
     }
 
-    @Suppress("ReturnCount")
     suspend fun fetchWooCommerceSite(site: SiteModel): WooResult<SiteModel> {
         if (!site.isJetpackCPConnected) {
+            // The endpoint used by siteStore to fetch a single site is broken for Jetpack CP sites, so skip it for them
             siteStore.fetchSite(site).let {
                 if (it.isError) {
                     return WooResult(
-                            WooError(
-                                    type = GENERIC_ERROR,
-                                    message = it.error.message,
-                                    original = UNKNOWN
-                            )
+                        WooError(
+                            type = GENERIC_ERROR,
+                            message = it.error.message,
+                            original = UNKNOWN
+                        )
                     )
                 }
-            }
-        } else {
-            // The endpoint used by siteStore to fetch a single site is broken, so we'll update the metadata
-            // manually using the remote site directly
-            val isUpdated = fetchAndUpdateMetaDataFromSiteSettings(site).let {
-                if (it.isError) {
-                    return WooResult(
-                            WooError(
-                                    type = GENERIC_ERROR,
-                                    message = it.error.message,
-                                    original = UNKNOWN
-                            )
-                    )
-                }
-                it.model!!
-            }
-            if (isUpdated) {
-                emitChange(OnSiteChanged(1, listOf(site)))
             }
         }
 
-        return WooResult(siteStore.getSiteBySiteId(site.siteId))
+        val isUpdated = if (!site.isJetpackConnected || site.origin != SiteModel.ORIGIN_WPCOM_REST) {
+            fetchAndUpdateNonJetpackSite(site).let {
+                if (it.isError) return WooResult(it.error)
+                it.model!!
+            }
+        } else false
+
+        if (isUpdated) {
+            emitChange(OnSiteChanged(1, listOf(site)))
+        }
+
+        return WooResult(siteStore.getSiteByLocalId(site.id))
     }
 
     fun getWooCommerceSites(): MutableList<SiteModel> =
@@ -163,7 +165,7 @@ open class WooCommerceStore @Inject constructor(
     }
 
     suspend fun getSitePlugins(site: SiteModel, plugins: List<WooPlugin>): List<SitePluginModel> {
-        return coroutineEngine.withDefaultContext(T.DB, this, "getSitePlugins"){
+        return coroutineEngine.withDefaultContext(T.DB, this, "getSitePlugins") {
             val pluginNames = plugins.map { it.pluginName }
             PluginSqlUtils.getSitePluginByNames(site, pluginNames)
         }
@@ -217,16 +219,33 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
-    private suspend fun fetchUpdatedSiteMetaData(site: SiteModel): WooResult<Boolean> {
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchUpdatedSiteMetaData") {
-            val updateSettingsResult = fetchAndUpdateMetaDataFromSiteSettings(site)
-            if (updateSettingsResult.isError) {
-                return@withDefaultContext updateSettingsResult
+    /**
+     * Fetch additional data about non-Jetpack connected sites, and here we mean two types:
+     * 1. Jetpack CP connected sites.
+     * 2. Self-hosted sites accessed using site credentials.
+     *
+     * @return [WooResult] representing whether the result succeeded and whether the site was updated
+     */
+    private suspend fun fetchAndUpdateNonJetpackSite(site: SiteModel): WooResult<Boolean> {
+        // Fetch site metadata for Jetpack CP sites
+        val isMetadataUpdated = if (site.isJetpackCPConnected) {
+            fetchAndUpdateMetaDataFromSiteSettings(site).let {
+                if (it.isError) {
+                    return it
+                }
+                it.model!!
             }
-            return@withDefaultContext WooResult(
-                    updateSettingsResult.model!! or fetchAndUpdateWooCommerceAvailability(site)
-            )
+        } else false
+
+        // Check Woo installation status for Jetpack CP sites and non-Jetpack sites
+        val isWooStatusUpdated = fetchAndUpdateWooCommerceAvailability(site).let {
+            if (it.isError) {
+                return it
+            }
+            it.model!!
         }
+
+        return WooResult(isMetadataUpdated || isWooStatusUpdated)
     }
 
     private suspend fun fetchAndUpdateMetaDataFromSiteSettings(site: SiteModel): WooResult<Boolean> {
@@ -254,20 +273,21 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
-    private suspend fun fetchAndUpdateWooCommerceAvailability(site: SiteModel): Boolean {
+    private suspend fun fetchAndUpdateWooCommerceAvailability(site: SiteModel): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchAndUpdateWooCommerceAvailability") {
             val response = systemRestClient.checkIfWooCommerceIsAvailable(site)
             return@withDefaultContext when {
                 response.isError -> {
                     AppLog.w(T.API, "Checking WooCommerce availability failed for site ${site.siteId}")
-                    false
+                    WooResult(response.error)
                 }
                 else -> {
-                    response.result?.takeIf { it != site.hasWooCommerce }?.let {
+                    val updated = response.result?.takeIf { it != site.hasWooCommerce }?.let {
                         site.hasWooCommerce = it
                         siteSqlUtils.insertOrUpdateSite(site)
                         true
                     } ?: false
+                    WooResult(updated)
                 }
             }
         }
