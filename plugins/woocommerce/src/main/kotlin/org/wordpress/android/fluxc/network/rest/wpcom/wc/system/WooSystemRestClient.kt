@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -68,17 +69,16 @@ class WooSystemRestClient @Inject constructor(
     suspend fun checkIfWooCommerceIsAvailable(site: SiteModel): WooPayload<Boolean> {
         val url = WOOCOMMERCE.settings.pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf("_fields" to ""),
-            Any::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf("_fields" to ""),
+            clazz = Unit::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> WooPayload(true)
-            is JetpackError -> {
+            is WPAPIResponse.Success -> WooPayload(true)
+            is WPAPIResponse.Error -> {
                 if (response.error.type == NOT_FOUND) {
                     WooPayload(false)
                 } else {
