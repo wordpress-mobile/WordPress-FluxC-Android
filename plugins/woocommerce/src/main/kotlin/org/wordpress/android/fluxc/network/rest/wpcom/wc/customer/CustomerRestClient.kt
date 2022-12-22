@@ -119,17 +119,13 @@ class CustomerRestClient @Inject constructor(
     suspend fun createCustomer(site: SiteModel, customer: CustomerDTO): WooPayload<CustomerDTO> {
         val url = WOOCOMMERCE.customers.pathV3
 
-        val response = requestBuilder.syncPostRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                body = customer.toMap(),
-                clazz = CustomerDTO::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            body = customer.toMap(),
+            clazz = CustomerDTO::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 }
