@@ -45,6 +45,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val siteModel = SiteModel().apply {
+        origin = SiteModel.ORIGIN_WPCOM_REST
         id = 5
         siteId = 567
     }
@@ -170,7 +171,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderListFetchError() {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        orderRestClient.fetchOrders(SiteModel(), 0)
+        orderRestClient.fetchOrders(siteModel, 0)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
