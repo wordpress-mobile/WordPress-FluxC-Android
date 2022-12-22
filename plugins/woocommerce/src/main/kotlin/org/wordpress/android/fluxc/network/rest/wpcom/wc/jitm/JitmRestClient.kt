@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm
 import android.content.Context
 import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
+import org.wordpress.android.fluxc.generated.endpoint.JPAPI
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
@@ -30,7 +30,7 @@ class JitmRestClient @Inject constructor(
         messagePath: String,
         query: String,
     ): WooPayload<Array<JITMApiResponse>> {
-        val url = WPCOMREST.jetpack_blogs.site(site.siteId).rest_api.jitmPath
+        val url = JPAPI.jitm.pathV4
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this,
@@ -58,7 +58,7 @@ class JitmRestClient @Inject constructor(
         jitmId: String,
         featureClass: String,
     ): WooPayload<Boolean> {
-        val url = WPCOMREST.jetpack_blogs.site(site.siteId).rest_api.jitmPath
+        val url = JPAPI.jitm.pathV4
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
             this,
