@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordsNetwork
@@ -26,12 +27,18 @@ class WooNetwork @Inject constructor(
         site: SiteModel,
         path: String,
         clazz: Class<T>,
-        params: Map<String, String> = emptyMap()
+        params: Map<String, String> = emptyMap(),
+        enableCaching: Boolean = false,
+        cacheTimeToLive: Int = BaseRequest.DEFAULT_CACHE_LIFETIME,
+        forced: Boolean = false
     ): WPAPIResponse<T> {
         return when (site.origin) {
-            SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeGetGsonRequest(site, path, clazz, params)
-                .toWPAPIResponse()
-            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executeGetGsonRequest(site, path, clazz, params)
+            SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeGetGsonRequest(
+                site, path, clazz, params, enableCaching, cacheTimeToLive, forced
+            ).toWPAPIResponse()
+            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executeGetGsonRequest(
+                site, path, clazz, params, enableCaching, cacheTimeToLive, forced
+            )
             else -> error("Site with unsupported origin")
         }
     }
