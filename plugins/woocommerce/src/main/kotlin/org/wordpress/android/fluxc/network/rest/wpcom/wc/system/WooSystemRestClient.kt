@@ -49,21 +49,13 @@ class WooSystemRestClient @Inject constructor(
     suspend fun fetchSSR(site: SiteModel): WooPayload<SSRResponse> {
         val url = WOOCOMMERCE.system_status.pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf("_fields" to "environment,database,active_plugins,theme,settings,security,pages"),
-            SSRResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf("_fields" to "environment,database,active_plugins,theme,settings,security,pages"),
+            clazz = SSRResponse::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     /**
