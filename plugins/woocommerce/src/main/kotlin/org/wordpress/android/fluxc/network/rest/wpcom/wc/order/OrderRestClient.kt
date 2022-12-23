@@ -189,7 +189,6 @@ class OrderRestClient @Inject constructor(
                         requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-
                 }
                 is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
@@ -241,7 +240,6 @@ class OrderRestClient @Inject constructor(
                         fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
-
                 }
                 is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
@@ -282,7 +280,6 @@ class OrderRestClient @Inject constructor(
                     dispatcher.dispatch(
                         WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload)
                     )
-
                 }
                 is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
@@ -596,7 +593,6 @@ class OrderRestClient @Inject constructor(
                     it.toDataModel(site.remoteId(), RemoteId(orderId))
                 }.orEmpty()
                 WooPayload(noteModels)
-
             }
             is Error -> WooPayload(response.error.toWooError())
         }
@@ -679,7 +675,6 @@ class OrderRestClient @Inject constructor(
             is Error -> {
                 val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, orderId)
-
             }
         }
     }
