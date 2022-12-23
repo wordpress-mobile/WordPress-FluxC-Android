@@ -859,25 +859,26 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = request.toNetworkRequest()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderDto::class.java,
+            body = params
         )
 
         return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
-            } ?: WooPayload(
+            is WPAPIResponse.Success -> {
+                response.data?.let { orderDto ->
+                    WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
+                } ?: WooPayload(
                     error = WooError(
-                            type = WooErrorType.GENERIC_ERROR,
-                            original = GenericErrorType.UNKNOWN,
-                            message = "Success response with empty data"
+                        type = WooErrorType.GENERIC_ERROR,
+                        original = GenericErrorType.UNKNOWN,
+                        message = "Success response with empty data"
                     )
-            )
+                )
+            }
+            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
         }
     }
 
