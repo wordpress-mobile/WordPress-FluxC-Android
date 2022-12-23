@@ -7,7 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
+import org.wordpress.android.fluxc.generated.endpoint.JPAPI
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -93,7 +93,7 @@ class JitmRestClientTest {
                 jetpackTunnelGsonRequestBuilder.syncGetRequest(
                     jitmRestClient,
                     site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    JPAPI.jitm.pathV4,
                     mapOf(
                         "message_path" to "",
                         "query" to "",
@@ -128,7 +128,7 @@ class JitmRestClientTest {
                 jetpackTunnelGsonRequestBuilder.syncGetRequest(
                     jitmRestClient,
                     site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    JPAPI.jitm.pathV4,
                     mapOf(
                         "message_path" to "",
                         "query" to "",
@@ -154,7 +154,7 @@ class JitmRestClientTest {
                 jetpackTunnelGsonRequestBuilder.syncPostRequest(
                     jitmRestClient,
                     site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    JPAPI.jitm.pathV4,
                     mapOf(
                         "id" to "",
                         "feature_class" to ""
@@ -189,7 +189,7 @@ class JitmRestClientTest {
                 jetpackTunnelGsonRequestBuilder.syncPostRequest(
                     jitmRestClient,
                     site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
+                    JPAPI.jitm.pathV4,
                     mapOf(
                         "id" to "",
                         "feature_class" to ""
