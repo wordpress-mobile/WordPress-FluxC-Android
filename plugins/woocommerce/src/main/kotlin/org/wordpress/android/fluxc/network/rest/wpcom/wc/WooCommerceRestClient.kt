@@ -1,34 +1,20 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class WooCommerceRestClient @Inject constructor(
-    appContext: Context,
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class WooCommerceRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     companion object {
         const val COUPONS_SETTING_GROUP = "general"
         const val COUPONS_SETTING_ID = "woocommerce_enable_coupons"
+        private const val ROOT_ENDPOINT_TIMEOUT_MS = 15000
     }
 
     /**
@@ -42,22 +28,18 @@ class WooCommerceRestClient @Inject constructor(
         overrideRetryPolicy: Boolean = false
     ): WooPayload<RootWPAPIRestResponse> {
         val url = "/"
-        val retryPolicy = when (overrideRetryPolicy) {
-            true -> jetpackTunnelGsonRequestBuilder.buildDefaultTimeoutRetryPolicy()
-            false -> null
+        val timeout = when (overrideRetryPolicy) {
+            true -> ROOT_ENDPOINT_TIMEOUT_MS
+            false -> BaseRequest.DEFAULT_REQUEST_TIMEOUT
         }
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf("_fields" to "authentication,namespaces"),
-            RootWPAPIRestResponse::class.java,
-            retryPolicy = retryPolicy
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf("_fields" to "authentication,namespaces"),
+            clazz = RootWPAPIRestResponse::class.java,
+            requestTimeout = timeout
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     /**
@@ -67,55 +49,35 @@ class WooCommerceRestClient @Inject constructor(
      */
     suspend fun fetchSiteSettingsGeneral(site: SiteModel): WooPayload<List<SiteSettingsResponse>> {
         val url = WOOCOMMERCE.settings.general.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            emptyMap(),
-            Array<SiteSettingsResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<SiteSettingsResponse>::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data?.toList())
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload { it.toList() }
     }
 
     suspend fun fetchSiteSettingsProducts(site: SiteModel): WooPayload<List<SiteSettingsResponse>> {
         val url = WOOCOMMERCE.settings.products.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            emptyMap(),
-            Array<SiteSettingsResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<SiteSettingsResponse>::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data?.toList())
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload { it.toList() }
     }
 
     suspend fun enableCoupons(site: SiteModel): WooPayload<Boolean> {
         val url = WOOCOMMERCE.settings.group(COUPONS_SETTING_GROUP).id(COUPONS_SETTING_ID).pathV3
         val param = mapOf("value" to "yes")
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            this,
-            site,
-            url,
-            param,
-            SiteSettingOptionResponse::class.java
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            clazz = SiteSettingOptionResponse::class.java,
+            body = param
         )
 
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(
-                    result = response.data?.let { it.value == "yes" } ?: false
-                )
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload { it.let { it.value == "yes" } }
     }
 }

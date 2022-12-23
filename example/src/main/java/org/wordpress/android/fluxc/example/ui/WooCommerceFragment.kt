@@ -65,17 +65,17 @@ class WooCommerceFragment : StoreSelectingFragment() {
         }
 
         log_woo_api_versions.setOnClickListener {
-            for (site in wooCommerceStore.getWooCommerceSites()) {
+            selectedSite?.let { selectedSite ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooCommerceStore.fetchSupportedApiVersion(site)
+                        wooCommerceStore.fetchSupportedApiVersion(selectedSite)
                     }
                     result.error?.let {
                         prependToLog("Error in onApiVersionFetched: ${it.type} - ${it.message}")
                     }
                     result.model?.let {
                         val formattedVersion = it.apiVersion?.substringAfterLast("/")
-                        prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+                        prependToLog("Max Woo version for ${selectedSite.name}: $formattedVersion")
                     }
                 }
             }
