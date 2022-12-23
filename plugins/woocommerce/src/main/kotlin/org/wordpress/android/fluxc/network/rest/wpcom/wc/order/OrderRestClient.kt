@@ -20,6 +20,8 @@ import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
@@ -91,35 +93,43 @@ class OrderRestClient @Inject constructor(
      * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
-        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() } ?: WCOrderStore.DEFAULT_ORDER_STATUS
+        coroutineEngine.launch(T.API, this, "fetchOrders") {
+            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+            val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() } ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}.type
-        val params = mapOf(
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to ORDER_FIELDS)
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
+                "_fields" to ORDER_FIELDS
+            )
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<OrderDto>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-
                     val payload = FetchOrdersResponsePayload(
-                            site, orderModels, filterByStatus, offset > 0, canLoadMore)
+                        site, orderModels, filterByStatus, offset > 0, canLoadMore)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -868,6 +878,16 @@ class OrderRestClient @Inject constructor(
             else -> OrderErrorType.fromString(wpComError.apiError)
         }
         return OrderError(orderErrorType, wpComError.message)
+    }
+
+    private fun wpAPINetworkErrorToOrderError(wpAPINetworkError: WPAPINetworkError): OrderError {
+        val orderErrorType = when (wpAPINetworkError.errorCode) {
+            "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
+            "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
+            "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
+            else -> OrderErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
+        }
+        return OrderError(orderErrorType, wpAPINetworkError.message)
     }
 
     private fun orderStatusResponseToOrderStatusModel(
