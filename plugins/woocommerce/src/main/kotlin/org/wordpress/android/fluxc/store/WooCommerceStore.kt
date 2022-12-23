@@ -105,7 +105,7 @@ open class WooCommerceStore @Inject constructor(
 
         emitChange(OnSiteChanged(rowsAffected, fetchResult.updatedSites))
 
-        return WooResult(getWooCommerceSites())
+        return withContext(Dispatchers.IO) { WooResult(getWooCommerceSites()) }
     }
 
     @Suppress("ReturnCount")
