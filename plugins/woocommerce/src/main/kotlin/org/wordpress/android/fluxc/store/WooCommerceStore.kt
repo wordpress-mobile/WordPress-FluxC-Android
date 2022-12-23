@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.store
 
 import android.content.Context
 import com.wellsql.generated.SiteModelTable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -123,17 +125,21 @@ open class WooCommerceStore @Inject constructor(
             }
         }
 
-        if (!site.isJetpackConnected || site.origin != SiteModel.ORIGIN_WPCOM_REST) {
-            fetchAndUpdateNonJetpackSite(site).also {
+        val isSiteUpdated = if (!site.isJetpackConnected || site.origin != SiteModel.ORIGIN_WPCOM_REST) {
+            fetchAndUpdateNonJetpackSite(site).let {
                 if (it.isError) return WooResult(it.error)
 
-                if (it.model == true) {
-                    emitChange(OnSiteChanged(1, listOf(site)))
-                }
+                it.model!!
             }
+        } else false
+
+        val updatedSite = withContext(Dispatchers.IO) { siteStore.getSiteByLocalId(site.id)!! }
+
+        if (isSiteUpdated) {
+            emitChange(OnSiteChanged(1, listOf(updatedSite)))
         }
 
-        return WooResult(siteStore.getSiteByLocalId(site.id))
+        return WooResult(updatedSite)
     }
 
     fun getWooCommerceSites(): MutableList<SiteModel> =
