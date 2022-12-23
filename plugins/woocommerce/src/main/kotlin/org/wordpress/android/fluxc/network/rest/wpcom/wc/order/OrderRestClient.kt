@@ -1,4 +1,5 @@
 @file:Suppress("DEPRECATION_ERROR")
+
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
@@ -89,7 +90,8 @@ class OrderRestClient @Inject constructor(
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
         coroutineEngine.launch(T.API, this, "fetchOrders") {
             // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-            val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() } ?: WCOrderStore.DEFAULT_ORDER_STATUS
+            val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() }
+                ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
             val url = WOOCOMMERCE.orders.pathV3
             val params = mapOf(
@@ -114,7 +116,8 @@ class OrderRestClient @Inject constructor(
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
                     val payload = FetchOrdersResponsePayload(
-                        site, orderModels, filterByStatus, offset > 0, canLoadMore)
+                        site, orderModels, filterByStatus, offset > 0, canLoadMore
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 }
                 is WPAPIResponse.Error -> {
@@ -140,7 +143,11 @@ class OrderRestClient @Inject constructor(
      * the optional parameters in effect.
      * @param offset Used to retrieve older orders
      */
-    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long, requestStartTime: Calendar) {
+    fun fetchOrderListSummaries(
+        listDescriptor: WCOrderListDescriptor,
+        offset: Long,
+        requestStartTime: Calendar
+    ) {
         coroutineEngine.launch(T.API, this, "fetchOrderListSummaries") {
             // If null, set the filter to the api default value of "any", which will not apply any order status filters.
             val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
@@ -214,7 +221,8 @@ class OrderRestClient @Inject constructor(
             val params = mapOf(
                 "per_page" to orderIds.size.toString(),
                 "include" to orderIds.map { it }.joinToString(),
-                "_fields" to ORDER_FIELDS)
+                "_fields" to ORDER_FIELDS
+            )
 
             val response = wooNetwork.executeGetGsonRequest(
                 site = site,
@@ -240,7 +248,8 @@ class OrderRestClient @Inject constructor(
                 is WPAPIResponse.Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersByIdsResponsePayload(
-                        error = orderError, site = site, orderIds = orderIds)
+                        error = orderError, site = site, orderIds = orderIds
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 }
             }
@@ -315,7 +324,7 @@ class OrderRestClient @Inject constructor(
                 params = params
             )
 
-            when(response) {
+            when (response) {
                 is WPAPIResponse.Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
@@ -358,7 +367,7 @@ class OrderRestClient @Inject constructor(
             params = params
         )
 
-       return when (response) {
+        return when (response) {
             is WPAPIResponse.Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
@@ -383,7 +392,7 @@ class OrderRestClient @Inject constructor(
                     site
                 )
             }
-       }
+        }
     }
 
     /**
@@ -443,20 +452,28 @@ class OrderRestClient @Inject constructor(
      *
      * @param [filterByStatus] Nullable. If not null, consider only orders with a matching order status.
      */
-    suspend fun fetchHasOrders(site: SiteModel, filterByStatus: String? = null): FetchHasOrdersResponsePayload {
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
+    suspend fun fetchHasOrders(
+        site: SiteModel,
+        filterByStatus: String? = null
+    ): FetchHasOrdersResponsePayload {
+        val statusFilter = if (filterByStatus.isNullOrBlank()) {
+            "any"
+        } else {
+            filterByStatus
+        }
 
         val url = WOOCOMMERCE.orders.pathV3
         val params = mapOf(
-                "per_page" to "1",
-                "offset" to "0",
-                "status" to statusFilter)
+            "per_page" to "1",
+            "offset" to "0",
+            "status" to statusFilter
+        )
 
         val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<OrderDto>::class.java,
-                params = params
+            site = site,
+            path = url,
+            clazz = Array<OrderDto>::class.java,
+            params = params
         )
 
         return when (response) {
@@ -527,16 +544,28 @@ class OrderRestClient @Inject constructor(
     }
 
     suspend fun updateOrderStatus(orderToUpdate: OrderEntity, site: SiteModel, status: String) =
-            updateOrder(orderToUpdate, site, mapOf("status" to status))
+        updateOrder(orderToUpdate, site, mapOf("status" to status))
 
-    suspend fun updateCustomerOrderNote(orderToUpdate: OrderEntity, site: SiteModel, newNotes: String) =
-            updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
+    suspend fun updateCustomerOrderNote(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        newNotes: String
+    ) =
+        updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
 
-    suspend fun updateBillingAddress(orderToUpdate: OrderEntity, site: SiteModel, billing: Billing) =
-            updateOrder(orderToUpdate, site, mapOf("billing" to billing))
+    suspend fun updateBillingAddress(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        billing: Billing
+    ) =
+        updateOrder(orderToUpdate, site, mapOf("billing" to billing))
 
-    suspend fun updateShippingAddress(orderToUpdate: OrderEntity, site: SiteModel, shipping: Shipping) =
-            updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
+    suspend fun updateShippingAddress(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        shipping: Shipping
+    ) =
+        updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
     suspend fun updateBothOrderAddresses(
         orderToUpdate: OrderEntity,
@@ -544,8 +573,8 @@ class OrderRestClient @Inject constructor(
         shipping: Shipping,
         billing: Billing
     ) = updateOrder(
-            orderToUpdate, site,
-            mapOf("shipping" to shipping, "billing" to billing)
+        orderToUpdate, site,
+        mapOf("shipping" to shipping, "billing" to billing)
     )
 
     /**
@@ -589,9 +618,9 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
 
         val params = mutableMapOf(
-                "note" to note,
-                "customer_note" to isCustomerNote,
-                "added_by_user" to true
+            "note" to note,
+            "customer_note" to isCustomerNote,
+            "added_by_user" to true
         )
 
         val response = wooNetwork.executePostGsonRequest(
@@ -676,8 +705,9 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
         val params = if (isCustomProvider) {
             mutableMapOf(
-                    "custom_tracking_provider" to tracking.trackingProvider,
-                    "custom_tracking_link" to tracking.trackingLink)
+                "custom_tracking_provider" to tracking.trackingProvider,
+                "custom_tracking_link" to tracking.trackingLink
+            )
         } else {
             mutableMapOf("tracking_provider" to tracking.trackingProvider)
         }
@@ -955,7 +985,7 @@ class OrderRestClient @Inject constructor(
     }
 
     private fun convertDateToUTCString(date: String?): String =
-            date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
+        date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,
@@ -963,60 +993,60 @@ class OrderRestClient @Inject constructor(
     ): List<WCOrderShipmentProviderModel> {
         val providers = mutableListOf<WCOrderShipmentProviderModel>()
         response.asJsonObject.entrySet()
-                .forEach { countryEntry: MutableEntry<String, JsonElement> ->
-                    countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
-                        carrierEntry?.let { carrier ->
-                            val provider = WCOrderShipmentProviderModel().apply {
-                                localSiteId = site.id
-                                this.country = countryEntry.key
-                                this.carrierName = carrier.key
-                                this.carrierLink = carrier.value.asString
-                            }
-                            providers.add(provider)
+            .forEach { countryEntry: MutableEntry<String, JsonElement> ->
+                countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                    carrierEntry?.let { carrier ->
+                        val provider = WCOrderShipmentProviderModel().apply {
+                            localSiteId = site.id
+                            this.country = countryEntry.key
+                            this.carrierName = carrier.key
+                            this.carrierLink = carrier.value.asString
                         }
+                        providers.add(provider)
                     }
                 }
+            }
 
         return providers
     }
 
     companion object {
         private val ORDER_FIELDS = arrayOf(
-                "billing",
-                "coupon_lines",
-                "currency",
-                "order_key",
-                "customer_note",
-                "date_created_gmt",
-                "date_modified_gmt",
-                "date_paid_gmt",
-                "discount_total",
-                "fee_lines",
-                "tax_lines",
-                "id",
-                "line_items",
-                "number",
-                "payment_method",
-                "payment_method_title",
-                "prices_include_tax",
-                "refunds",
-                "shipping",
-                "shipping_lines",
-                "shipping_total",
-                "status",
-                "total",
-                "total_tax",
-                "meta_data",
-                "payment_url",
-                "is_editable"
+            "billing",
+            "coupon_lines",
+            "currency",
+            "order_key",
+            "customer_note",
+            "date_created_gmt",
+            "date_modified_gmt",
+            "date_paid_gmt",
+            "discount_total",
+            "fee_lines",
+            "tax_lines",
+            "id",
+            "line_items",
+            "number",
+            "payment_method",
+            "payment_method_title",
+            "prices_include_tax",
+            "refunds",
+            "shipping",
+            "shipping_lines",
+            "shipping_total",
+            "status",
+            "total",
+            "total_tax",
+            "meta_data",
+            "payment_url",
+            "is_editable"
         ).joinToString(separator = ",")
 
         private val TRACKING_FIELDS = arrayOf(
-                "date_shipped",
-                "tracking_id",
-                "tracking_link",
-                "tracking_number",
-                "tracking_provider"
+            "date_shipped",
+            "tracking_id",
+            "tracking_link",
+            "tracking_number",
+            "tracking_provider"
         ).joinToString(separator = ",")
     }
 }
