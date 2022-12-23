@@ -357,40 +357,39 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = mapOf("_fields" to ORDER_FIELDS)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderDto::class.java,
+            params = params
         )
 
-        return when (response) {
-            is JetpackSuccess -> {
+       return when(response) {
+            is WPAPIResponse.Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload.Fetching(newModel, site)
                 } ?: RemoteOrderPayload.Fetching(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        OrderEntity(
-                                orderId = orderId,
-                                localSiteId = site.localId()
-                        ) to emptyList(),
-                        site
+                    OrderError(GENERIC_ERROR, "Success response with empty data"),
+                    OrderEntity(
+                        orderId = orderId,
+                        localSiteId = site.localId()
+                    ) to emptyList(),
+                    site
                 )
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
                 RemoteOrderPayload.Fetching(
-                        orderError,
-                        OrderEntity(
-                                orderId = orderId,
-                                localSiteId = site.localId()
-                        ) to emptyList(),
-                        site
+                    orderError,
+                    OrderEntity(
+                        orderId = orderId,
+                        localSiteId = site.localId()
+                    ) to emptyList(),
+                    site
                 )
             }
-        }
+       }
     }
 
     /**
