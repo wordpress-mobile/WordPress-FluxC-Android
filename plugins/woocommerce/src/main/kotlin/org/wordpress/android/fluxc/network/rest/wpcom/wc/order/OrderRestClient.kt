@@ -215,33 +215,42 @@ class OrderRestClient @Inject constructor(
      * @param orderIds A list of remote order identifiers to fetch from the API
      */
     fun fetchOrdersByIds(site: SiteModel, orderIds: List<Long>) {
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}.type
-        val params = mapOf(
+        coroutineEngine.launch(T.API, this, "fetchOrdersByIds") {
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mapOf(
                 "per_page" to orderIds.size.toString(),
                 "include" to orderIds.map { it }.joinToString(),
                 "_fields" to ORDER_FIELDS)
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderDto>::class.java,
+                params = params
+            )
+
+            when(response) {
+                is WPAPIResponse.Success -> {
+                    val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val payload = FetchOrdersByIdsResponsePayload(
-                            site = site,
-                            orderIds = orderIds,
-                            fetchedOrders = orderModels
+                        site = site,
+                        orderIds = orderIds,
+                        fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersByIdsResponsePayload(
-                            error = orderError, site = site, orderIds = orderIds)
+                        error = orderError, site = site, orderIds = orderIds)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
