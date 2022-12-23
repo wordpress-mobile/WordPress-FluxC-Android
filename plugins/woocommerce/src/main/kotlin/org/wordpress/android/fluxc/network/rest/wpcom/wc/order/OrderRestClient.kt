@@ -169,7 +169,7 @@ class OrderRestClient @Inject constructor(
                 params = params
             )
 
-            when(response) {
+            when (response) {
                 is WPAPIResponse.Success -> {
                     val orderSummaries = response.data?.map {
                         orderResponseToOrderSummaryModel(it).apply {
@@ -226,7 +226,7 @@ class OrderRestClient @Inject constructor(
                 params = params
             )
 
-            when(response) {
+            when (response) {
                 is WPAPIResponse.Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
@@ -268,7 +268,7 @@ class OrderRestClient @Inject constructor(
                 params = params
             )
 
-            when(response) {
+            when (response) {
                 is WPAPIResponse.Success -> {
                     val orderStatusOptions = response.data?.map {
                         orderStatusResponseToOrderStatusModel(it, site)
@@ -361,7 +361,7 @@ class OrderRestClient @Inject constructor(
             params = params
         )
 
-       return when(response) {
+       return when (response) {
             is WPAPIResponse.Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
@@ -409,7 +409,7 @@ class OrderRestClient @Inject constructor(
                 params = params
             )
 
-            when(response) {
+            when (response) {
                 is WPAPIResponse.Success -> {
                     val total = response.data?.find { it.slug == filterByStatus }?.total
 
@@ -450,38 +450,36 @@ class OrderRestClient @Inject constructor(
         val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
 
         val url = WOOCOMMERCE.orders.pathV3
-
         val params = mapOf(
                 "per_page" to "1",
                 "offset" to "0",
                 "status" to statusFilter)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                Array<OrderDto>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderDto>::class.java,
+                params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     FetchHasOrdersResponsePayload(
-                            site,
-                            filterByStatus,
-                            it.count() > 0
+                        site,
+                        filterByStatus,
+                        it.isNotEmpty()
                     )
                 } ?: FetchHasOrdersResponsePayload(
                     OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                     site
                 )
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
                 FetchHasOrdersResponsePayload(
-                        orderError,
-                        site
+                    orderError,
+                    site
                 )
             }
         }
