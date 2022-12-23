@@ -9,11 +9,8 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Named
@@ -87,20 +84,16 @@ class InboxRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.admin.notes.delete.all.pathV4Analytics
 
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-            this,
-            site,
-            url,
-            Array<InboxNoteDto>::class.java,
-            mapOf(
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<InboxNoteDto>::class.java,
+            params = mapOf(
                 "page" to page.toString(),
                 "per_page" to pageSize.toString(),
                 "type" to inboxNoteTypes.joinToString(separator = ",")
             )
         )
-        return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(Unit)
-        }
+        return response.toWooPayload { }
     }
 }
