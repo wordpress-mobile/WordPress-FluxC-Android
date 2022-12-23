@@ -4,7 +4,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonElement
-import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -23,8 +22,6 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
@@ -401,29 +398,45 @@ class OrderRestClient @Inject constructor(
      * @param [filterByStatus] The order status to return a count for
      */
     fun fetchOrderCount(site: SiteModel, filterByStatus: String) {
-        val url = WOOCOMMERCE.reports.orders.totals.pathV3
-        val params = mapOf("status" to filterByStatus)
-        val responseType = object : TypeToken<List<OrderCountApiResponse>>() {}.type
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderCountApiResponse>? ->
-                    val total = response?.find { it.slug == filterByStatus }?.total
+        coroutineEngine.launch(T.API, this, "fetchOrderCount") {
+            val url = WOOCOMMERCE.reports.orders.totals.pathV3
+            val params = mapOf("status" to filterByStatus)
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderCountApiResponse>::class.java,
+                params = params
+            )
+
+            when(response) {
+                is WPAPIResponse.Success -> {
+                    val total = response.data?.find { it.slug == filterByStatus }?.total
 
                     total?.let {
                         val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                        dispatcher.dispatch(
+                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
+                        )
                     } ?: run {
                         val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
-                        val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                        val payload = FetchOrdersCountResponsePayload(
+                            orderError,
+                            site,
+                            filterByStatus
+                        )
+                        dispatcher.dispatch(
+                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
+                        )
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
