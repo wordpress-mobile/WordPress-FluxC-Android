@@ -684,19 +684,18 @@ class OrderRestClient @Inject constructor(
         } else {
             mutableMapOf("tracking_provider" to tracking.trackingProvider)
         }
-        params.put("tracking_number", tracking.trackingNumber)
-        params.put("date_shipped", tracking.dateShipped)
+        params["tracking_number"] = tracking.trackingNumber
+        params["date_shipped"] = tracking.dateShipped
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderShipmentTrackingApiResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderShipmentTrackingApiResponse::class.java,
+            body = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val trackingModel = orderShipmentTrackingResponseToModel(it).apply {
                         this.orderId = orderId
@@ -704,14 +703,14 @@ class OrderRestClient @Inject constructor(
                     }
                     AddOrderShipmentTrackingResponsePayload(site, orderId, trackingModel)
                 } ?: AddOrderShipmentTrackingResponsePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        site,
-                        orderId,
-                        tracking
+                    OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                    site,
+                    orderId,
+                    tracking
                 )
             }
-            is JetpackError -> {
-                val trackingsError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 AddOrderShipmentTrackingResponsePayload(trackingsError, site, orderId, tracking)
             }
         }
