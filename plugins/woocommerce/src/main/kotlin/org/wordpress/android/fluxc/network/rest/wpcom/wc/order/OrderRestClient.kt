@@ -21,7 +21,8 @@ import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
-import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Error
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -106,7 +107,7 @@ class OrderRestClient @Inject constructor(
             )
 
             when (response) {
-                is WPAPIResponse.Success -> {
+                is Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
@@ -117,7 +118,7 @@ class OrderRestClient @Inject constructor(
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 }
-                is WPAPIResponse.Error -> {
+                is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
@@ -171,7 +172,7 @@ class OrderRestClient @Inject constructor(
             )
 
             when (response) {
-                is WPAPIResponse.Success -> {
+                is Success -> {
                     val orderSummaries = response.data?.map {
                         orderResponseToOrderSummaryModel(it).apply {
                             localSiteId = listDescriptor.site.id
@@ -190,7 +191,7 @@ class OrderRestClient @Inject constructor(
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
 
                 }
-                is WPAPIResponse.Error -> {
+                is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrderListResponsePayload(
                         error = orderError,
@@ -229,7 +230,7 @@ class OrderRestClient @Inject constructor(
             )
 
             when (response) {
-                is WPAPIResponse.Success -> {
+                is Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
@@ -242,7 +243,7 @@ class OrderRestClient @Inject constructor(
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
 
                 }
-                is WPAPIResponse.Error -> {
+                is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersByIdsResponsePayload(
                         error = orderError, site = site, orderIds = orderIds
@@ -272,7 +273,7 @@ class OrderRestClient @Inject constructor(
             )
 
             when (response) {
-                is WPAPIResponse.Success -> {
+                is Success -> {
                     val orderStatusOptions = response.data?.map {
                         orderStatusResponseToOrderStatusModel(it, site)
                     }.orEmpty()
@@ -283,7 +284,7 @@ class OrderRestClient @Inject constructor(
                     )
 
                 }
-                is WPAPIResponse.Error -> {
+                is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
                     dispatcher.dispatch(
@@ -322,7 +323,7 @@ class OrderRestClient @Inject constructor(
             )
 
             when (response) {
-                is WPAPIResponse.Success -> {
+                is Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
@@ -339,7 +340,7 @@ class OrderRestClient @Inject constructor(
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 }
-                is WPAPIResponse.Error -> {
+                is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
                     dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
@@ -365,7 +366,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload.Fetching(newModel, site)
@@ -378,7 +379,7 @@ class OrderRestClient @Inject constructor(
                     site
                 )
             }
-            is WPAPIResponse.Error -> {
+            is Error -> {
                 val orderError = wpAPINetworkErrorToOrderError(response.error)
                 RemoteOrderPayload.Fetching(
                     orderError,
@@ -413,7 +414,7 @@ class OrderRestClient @Inject constructor(
             )
 
             when (response) {
-                is WPAPIResponse.Success -> {
+                is Success -> {
                     val total = response.data?.find { it.slug == filterByStatus }?.total
 
                     total?.let {
@@ -433,7 +434,7 @@ class OrderRestClient @Inject constructor(
                         )
                     }
                 }
-                is WPAPIResponse.Error -> {
+                is Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
@@ -474,7 +475,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let {
                     FetchHasOrdersResponsePayload(
                         site,
@@ -486,7 +487,7 @@ class OrderRestClient @Inject constructor(
                     site
                 )
             }
-            is WPAPIResponse.Error -> {
+            is Error -> {
                 val orderError = wpAPINetworkErrorToOrderError(response.error)
                 FetchHasOrdersResponsePayload(
                     orderError,
@@ -514,7 +515,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                         .first
@@ -528,7 +529,7 @@ class OrderRestClient @Inject constructor(
                     site
                 )
             }
-            is WPAPIResponse.Error -> {
+            is Error -> {
                 val orderError = wpAPINetworkErrorToOrderError(response.error)
                 RemoteOrderPayload.Updating(
                     orderError,
@@ -590,14 +591,14 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 val noteModels = response.data?.map {
                     it.toDataModel(site.remoteId(), RemoteId(orderId))
                 }.orEmpty()
                 WooPayload(noteModels)
 
             }
-            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is Error -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -627,7 +628,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let {
                     val newNote = it.toDataModel(site.remoteId(), RemoteId(orderId))
                     return WooPayload(newNote)
@@ -639,7 +640,7 @@ class OrderRestClient @Inject constructor(
                     )
                 )
             }
-            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is Error -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -665,7 +666,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 val trackings = response.data?.map {
                     orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
@@ -675,7 +676,7 @@ class OrderRestClient @Inject constructor(
 
                 FetchOrderShipmentTrackingsResponsePayload(site, orderId, trackings)
             }
-            is WPAPIResponse.Error -> {
+            is Error -> {
                 val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, orderId)
 
@@ -718,7 +719,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let {
                     val trackingModel = orderShipmentTrackingResponseToModel(it).apply {
                         this.orderId = orderId
@@ -732,7 +733,7 @@ class OrderRestClient @Inject constructor(
                     tracking
                 )
             }
-            is WPAPIResponse.Error -> {
+            is Error -> {
                 val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 AddOrderShipmentTrackingResponsePayload(trackingsError, site, orderId, tracking)
             }
@@ -762,7 +763,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let {
                     val model = orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
@@ -781,7 +782,7 @@ class OrderRestClient @Inject constructor(
                     tracking
                 )
             }
-            is WPAPIResponse.Error -> DeleteOrderShipmentTrackingResponsePayload(
+            is Error -> DeleteOrderShipmentTrackingResponsePayload(
                 wpAPINetworkErrorToOrderError(response.error),
                 site,
                 orderId,
@@ -813,7 +814,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let {
                     try {
                         val providers = jsonResponseToShipmentProviderList(site, it)
@@ -838,7 +839,7 @@ class OrderRestClient @Inject constructor(
                 )
             }
 
-            is WPAPIResponse.Error -> {
+            is Error -> {
                 val trackingError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentProvidersResponsePayload(trackingError, site, order)
             }
@@ -860,7 +861,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let { orderDto ->
                     WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
                 } ?: WooPayload(
@@ -871,7 +872,7 @@ class OrderRestClient @Inject constructor(
                     )
                 )
             }
-            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is Error -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -891,7 +892,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> {
+            is Success -> {
                 response.data?.let { orderDto ->
                     WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
                 } ?: WooPayload(
@@ -902,7 +903,7 @@ class OrderRestClient @Inject constructor(
                     )
                 )
             }
-            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is Error -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -921,8 +922,8 @@ class OrderRestClient @Inject constructor(
         )
 
         return when (response) {
-            is WPAPIResponse.Success -> WooPayload(Unit)
-            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+            is Success -> WooPayload(Unit)
+            is Error -> WooPayload(response.error.toWooError())
         }
     }
 
