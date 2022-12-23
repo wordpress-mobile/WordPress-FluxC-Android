@@ -260,24 +260,38 @@ class OrderRestClient @Inject constructor(
      * Dispatches a [WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS] action with the resulting list of order status labels.
      */
     fun fetchOrderStatusOptions(site: SiteModel) {
-        val url = WOOCOMMERCE.reports.orders.totals.pathV3
-        val params = emptyMap<String, String>()
-        val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderStatusApiResponse>? ->
-                    val orderStatusOptions = response?.map {
+        coroutineEngine.launch(T.API, this, "fetchOrderStatusOptions") {
+            val url = WOOCOMMERCE.reports.orders.totals.pathV3
+            val params = emptyMap<String, String>()
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderStatusApiResponse>::class.java,
+                params = params
+            )
+
+            when(response) {
+                is WPAPIResponse.Success -> {
+                    val orderStatusOptions = response.data?.map {
                         orderStatusResponseToOrderStatusModel(it, site)
                     }.orEmpty()
+
                     val payload = FetchOrderStatusOptionsResponsePayload(site, orderStatusOptions)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                    dispatcher.dispatch(
+                        WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload)
+                    )
+
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    dispatcher.dispatch(
+                        WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload)
+                    )
+                }
+            }
+        }
     }
 
     /**
