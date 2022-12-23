@@ -25,8 +25,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
@@ -889,17 +887,16 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                clazz = Unit::class.java,
-                params = mapOf("force" to trash.not().toString())
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = Unit::class.java,
+            params = mapOf("force" to trash.not().toString())
         )
 
         return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(Unit)
+            is WPAPIResponse.Success -> WooPayload(Unit)
+            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
         }
     }
 
