@@ -305,23 +305,31 @@ class OrderRestClient @Inject constructor(
      * @param [searchQuery] the keyword or phrase to match orders with
      */
     fun searchOrders(site: SiteModel, searchQuery: String, offset: Int) {
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(T.API, this, "searchOrders") {
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
                 "_fields" to ORDER_FIELDS
-        ).putIfNotEmpty("search" to searchQuery)
+            ).putIfNotEmpty("search" to searchQuery)
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderDto>::class.java,
+                params = params
+            )
+
+            when(response) {
+                is WPAPIResponse.Success -> {
+                    val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
                     val nextOffset = offset + orderModels.size
+
                     val payload = SearchOrdersResponsePayload(
                         site,
                         searchQuery,
@@ -330,14 +338,14 @@ class OrderRestClient @Inject constructor(
                         orderModels.map { it.first }
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
                     dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
