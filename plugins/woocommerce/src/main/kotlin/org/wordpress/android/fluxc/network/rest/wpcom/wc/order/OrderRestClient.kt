@@ -560,21 +560,22 @@ class OrderRestClient @Inject constructor(
         site: SiteModel
     ): WooPayload<List<OrderNoteEntity>> {
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf(),
-            Array<OrderNoteApiResponse>::class.java
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderNoteApiResponse>::class.java
         )
+
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 val noteModels = response.data?.map {
                     it.toDataModel(site.remoteId(), RemoteId(orderId))
                 }.orEmpty()
                 WooPayload(noteModels)
+
             }
-            is JetpackError -> WooPayload(response.error.toWooError())
+            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
         }
     }
 
