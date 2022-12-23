@@ -147,52 +147,62 @@ class OrderRestClient @Inject constructor(
      * @param offset Used to retrieve older orders
      */
     fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long, requestStartTime: Calendar) {
-        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
+        coroutineEngine.launch(T.API, this, "fetchOrderListSummaries") {
+            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+            val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
-        val networkPageSize = listDescriptor.config.networkPageSize
-        val params = mutableMapOf(
+            val url = WOOCOMMERCE.orders.pathV3
+            val networkPageSize = listDescriptor.config.networkPageSize
+            val params = mutableMapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
                 "_fields" to "id,date_created_gmt,date_modified_gmt"
-        ).putIfNotEmpty(
-            "search" to listDescriptor.searchQuery,
+            ).putIfNotEmpty(
+                "search" to listDescriptor.searchQuery,
                 "before" to listDescriptor.beforeFilter,
                 "after" to listDescriptor.afterFilter
-        )
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
-                { response: List<OrderSummaryApiResponse>? ->
-                    val orderSummaries = response?.map {
-                        orderResponseToOrderSummaryModel(it).apply { localSiteId = listDescriptor.site.id }
+            val response = wooNetwork.executeGetGsonRequest(
+                site = listDescriptor.site,
+                path = url,
+                clazz = Array<OrderSummaryApiResponse>::class.java,
+                params = params
+            )
+
+            when(response) {
+                is WPAPIResponse.Success -> {
+                    val orderSummaries = response.data?.map {
+                        orderResponseToOrderSummaryModel(it).apply {
+                            localSiteId = listDescriptor.site.id
+                        }
                     }.orEmpty()
 
                     val canLoadMore = orderSummaries.size == networkPageSize
 
                     val payload = FetchOrderListResponsePayload(
-                            listDescriptor = listDescriptor,
-                            orderSummaries = orderSummaries,
-                            loadedMore = offset > 0,
-                            canLoadMore = canLoadMore,
-                            requestStartTime = requestStartTime
+                        listDescriptor = listDescriptor,
+                        orderSummaries = orderSummaries,
+                        loadedMore = offset > 0,
+                        canLoadMore = canLoadMore,
+                        requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrderListResponsePayload(
-                            error = orderError,
-                            listDescriptor = listDescriptor,
-                            requestStartTime = requestStartTime
+                        error = orderError,
+                        listDescriptor = listDescriptor,
+                        requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
