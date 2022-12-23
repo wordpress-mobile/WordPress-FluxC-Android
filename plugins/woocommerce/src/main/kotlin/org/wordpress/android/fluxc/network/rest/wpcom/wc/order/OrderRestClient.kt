@@ -496,16 +496,15 @@ class OrderRestClient @Inject constructor(
     ): RemoteOrderPayload.Updating {
         val url = WOOCOMMERCE.orders.id(orderToUpdate.orderId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            restClient = this,
+        val response = wooNetwork.executePutGsonRequest(
             site = site,
-            url = url,
-            body = updatePayload.plus("_fields" to ORDER_FIELDS),
-            clazz = OrderDto::class.java
+            path = url,
+            clazz = OrderDto::class.java,
+            body = updatePayload.plus("_fields" to ORDER_FIELDS)
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                         .first
@@ -519,8 +518,8 @@ class OrderRestClient @Inject constructor(
                     site
                 )
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
                 RemoteOrderPayload.Updating(
                     orderError,
                     orderToUpdate,
