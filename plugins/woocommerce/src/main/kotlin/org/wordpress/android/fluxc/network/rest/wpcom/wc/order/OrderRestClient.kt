@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
@@ -75,8 +74,8 @@ class OrderRestClient @Inject constructor(
     private val coroutineEngine: CoroutineEngine
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
-     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
+     * WooCommerce [SiteModel].
      *
      * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH], and retrieving older
      * orders is done by passing an [offset].
@@ -132,8 +131,8 @@ class OrderRestClient @Inject constructor(
      * used to determine what orders should be fetched (either existing orders that have since changed or new
      * orders not yet downloaded).
      *
-     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
+     * WooCommerce [SiteModel].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_LIST] action with the resulting list of order summaries.
      *
@@ -206,7 +205,7 @@ class OrderRestClient @Inject constructor(
 
     /**
      * Requests orders from the API that match the provided list of [orderIds] by making a GET call to
-     * `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     * `/wp-json/wc/v3/orders`
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS_BY_IDS] action with the resulting list of orders.
      *
@@ -255,8 +254,8 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of available order status options for the given WooCommerce [SiteModel].
+     * Makes a GET call to `/wp-json/wc/v3/reports/orders/totals` retrieving a list of available
+     * order status options for the given WooCommerce [SiteModel].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS] action with the resulting list of order status labels.
      */
@@ -296,8 +295,8 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
+     * WooCommerce [SiteModel] matching [searchQuery]
      *
      * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH]
      *
@@ -350,7 +349,7 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
+     * Makes a GET request to `/wp-json/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
      *
      * @param [orderId] Unique server id of the order to fetch
      */
@@ -394,8 +393,8 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving count of orders for the given WooCommerce [SiteModel], broken down by order status.
+     * Makes a GET call to `/wp-json/wc/v3/reports/orders/totals` retrieving count of orders for
+     * the given WooCommerce [SiteModel], broken down by order status.
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS_COUNT] action with the resulting count.
      *
@@ -444,7 +443,7 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET request to `/wc/v3/orders` for a single order of a specific type (or any type) in order to
+     * Makes a GET request to `/wp-json/wc/v3/orders` for a single order of a specific type (or any type) in order to
      * determine if there are any orders in the store.
      *
      *
@@ -498,8 +497,7 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a PUT call to `/wc/v3/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the order.
+     * Makes a PUT call to `/wp-json/wc/v3/orders/<id>` updating the order.
      */
     private suspend fun updateOrder(
         orderToUpdate: OrderEntity,
@@ -576,8 +574,8 @@ class OrderRestClient @Inject constructor(
     )
 
     /**
-     * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of notes for the given WooCommerce [SiteModel] and [OrderEntity].
+     * Makes a GET call to `/wp-json/wc/v3/orders/<id>/notes` retrieving a list of notes for the
+     * given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun fetchOrderNotes(
         orderId: Long,
@@ -604,8 +602,8 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a POST call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * saving the provide4d note for the given WooCommerce [SiteModel] and [OrderEntity].
+     * Makes a POST call to `/wp-json.wc/v3/orders/<id>/notes` saving the provided note for the
+     * given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun postOrderNote(
         orderId: Long,
@@ -646,8 +644,8 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [OrderEntity].
+     * Makes a GET call to `/wp-json/wc/v2/orders/<order_id>/shipment-trackings/`, retrieving
+     * a list of shipment tracking objects for a single [OrderEntity].
      *
      * Note: This is not currently supported in v3, but will be in the short future.
      *
@@ -688,7 +686,7 @@ class OrderRestClient @Inject constructor(
     /**
      * Posts a new Order Shipment Tracking record to the API for an order.
      *
-     * Makes a POST call to save a Shipment Tracking record via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     * Makes a POST call to save a Shipment Tracking record.
      * The API calls for different fields depending on if the new record uses a custom provider or not, so this is
      * why there is an if-statement. Either way, the same standard [WCOrderShipmentTrackingModel] is returned.
      *
@@ -744,8 +742,8 @@ class OrderRestClient @Inject constructor(
     /**
      * Deletes a single shipment tracking record for an order.
      *
-     * Makes a POST call requesting a DELETE method on `/wc/v2/orders/<order_id>/shipment_trackings/<tracking_id>/`
-     * via the Jetpack tunnel (see [JetpackTunnelGsonRequest].
+     * Makes a POST call requesting a DELETE method on
+     * `/wp-json/wc/v2/orders/<order_id>/shipment_trackings/<tracking_id>/`
      *
      * Note this is currently not supported in v3, but will be in the future.
      */
@@ -795,8 +793,8 @@ class OrderRestClient @Inject constructor(
     /**
      * Fetches a list of shipment providers from the WooCommerce Shipment Tracking plugin.
      *
-     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/providers/` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking provider objects. The `<order_id>`
+     * Makes a GET call to `/wp-json/wc/v2/orders/<order_id>/shipment-trackings/providers/`,
+     * retrieving a list of shipment tracking provider objects. The `<order_id>`
      * argument is only needed because it is a requirement of the plugins API even though this data is not directly
      * related to shipment providers.
      */
