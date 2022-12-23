@@ -55,20 +55,14 @@ class InboxRestClient @Inject constructor(
         inboxNoteId: Long,
         inboxNoteActionId: Long
     ): WooPayload<InboxNoteDto> {
-        val url = WOOCOMMERCE.admin.notes.note(inboxNoteId)
-            .action.item(inboxNoteActionId).pathV4Analytics
+        val url = WOOCOMMERCE.admin.notes.note(inboxNoteId).action.item(inboxNoteActionId).pathV4Analytics
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-            this,
-            site,
-            url,
-            emptyMap(),
-            InboxNoteDto::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = InboxNoteDto::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     suspend fun deleteNote(
