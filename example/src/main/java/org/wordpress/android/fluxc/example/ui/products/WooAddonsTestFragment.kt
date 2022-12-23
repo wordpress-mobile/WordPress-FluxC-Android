@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_addons.*
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.WCAddonsStore
@@ -33,13 +35,13 @@ class WooAddonsTestFragment : DialogFragment() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     companion object {
-        private const val SELECTED_SITE_REMOTE_ID = "selected_site_remote_id"
+        private const val SELECTED_SITE_LOCAL_ID = "selected_site_local_id"
 
         @JvmStatic
-        fun show(fragmentManager: FragmentManager, selectedSiteRemoteId: Long) =
+        fun show(fragmentManager: FragmentManager, selectedSiteId: Int) =
                 WooAddonsTestFragment().apply {
                     arguments = Bundle().apply {
-                        this.putLong(SELECTED_SITE_REMOTE_ID, selectedSiteRemoteId)
+                        this.putInt(SELECTED_SITE_LOCAL_ID, selectedSiteId)
                     }
                 }.show(fragmentManager, null)
     }
@@ -62,14 +64,19 @@ class WooAddonsTestFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val selectedSiteRemoteId = requireArguments().getLong(SELECTED_SITE_REMOTE_ID)
-        val selectedSite = siteStore.getSiteBySiteId(selectedSiteRemoteId)!!
+        val selectedSiteRemoteId = requireArguments().getInt(SELECTED_SITE_LOCAL_ID)
+        val selectedSite = siteStore.getSiteByLocalId(selectedSiteRemoteId)!!
 
         addons_product_remote_id_apply.setOnClickListener {
             val selectedProductRemoteId = addons_product_remote_id.text.toString().toLong()
-            selectedProduct = wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId)!!
+            lifecycleScope.launch {
+                selectedProduct = wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId) ?: run {
+                    wcProductStore.fetchSingleProduct(FetchSingleProductPayload(selectedSite, selectedProductRemoteId))
+                    wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId)!!
+                }
 
-            startObserving(selectedSiteRemoteId, selectedProduct)
+                startObserving(selectedSite, selectedProduct)
+            }
         }
 
         addons_fetch_product.setOnClickListener {
@@ -90,10 +97,10 @@ class WooAddonsTestFragment : DialogFragment() {
         }
     }
 
-    private fun startObserving(selectedSiteRemoteId: Long, productModel: WCProductModel) {
+    private fun startObserving(siteModel: SiteModel, productModel: WCProductModel) {
         coroutineScope.launch {
             wcAddonsStore.observeAllAddonsForProduct(
-                    selectedSiteRemoteId,
+                    siteModel,
                     productModel
             ).collect {
                 addonsResult.text = it.joinToString { addon ->
