@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,11 @@ class WooCommerceFragment : StoreSelectingFragment() {
     @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        lifecycleScope.launch {
+            // Fetch sites to make sure we have the correct status of WooCommerce installation
+            wooCommerceStore.fetchWooCommerceSites()
+        }
 
         log_sites.setOnClickListener {
             coroutineScope.launch {
