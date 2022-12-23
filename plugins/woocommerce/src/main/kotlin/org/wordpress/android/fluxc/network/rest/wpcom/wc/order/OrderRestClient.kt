@@ -22,7 +22,6 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -782,16 +781,15 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(order.orderId).shipment_trackings.providers.pathV2
         val params = emptyMap<String, String>()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                JsonElement::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = JsonElement::class.java,
+            params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     try {
                         val providers = jsonResponseToShipmentProviderList(site, it)
@@ -799,21 +797,25 @@ class OrderRestClient @Inject constructor(
                     } catch (e: IllegalStateException) {
                         // we have at least once instance of the response being invalid json so we catch the exception
                         // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
-                        AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
+                        AppLog.e(
+                            T.UTILS,
+                            "IllegalStateException parsing shipment provider list, response = $it"
+                        )
                         FetchOrderShipmentProvidersResponsePayload(
-                                OrderError(INVALID_RESPONSE, it.toString()),
-                                site,
-                                order
+                            OrderError(INVALID_RESPONSE, it.toString()),
+                            site,
+                            order
                         )
                     }
                 } ?: FetchOrderShipmentProvidersResponsePayload(
-                        OrderError(GENERIC_ERROR, "Success response with empty data"),
-                        site,
-                        order
+                    OrderError(GENERIC_ERROR, "Success response with empty data"),
+                    site,
+                    order
                 )
             }
-            is JetpackError -> {
-                val trackingError = networkErrorToOrderError(response.error)
+
+            is WPAPIResponse.Error -> {
+                val trackingError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentProvidersResponsePayload(trackingError, site, order)
             }
         }
@@ -917,16 +919,6 @@ class OrderRestClient @Inject constructor(
             dateCreated = convertDateToUTCString(response.dateCreatedGmt)
             dateModified = convertDateToUTCString(response.dateModifiedGmt)
         }
-    }
-
-    private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderError {
-        val orderErrorType = when (wpComError.apiError) {
-            "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
-            "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
-            "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
-            else -> OrderErrorType.fromString(wpComError.apiError)
-        }
-        return OrderError(orderErrorType, wpComError.message)
     }
 
     private fun wpAPINetworkErrorToOrderError(wpAPINetworkError: WPAPINetworkError): OrderError {
