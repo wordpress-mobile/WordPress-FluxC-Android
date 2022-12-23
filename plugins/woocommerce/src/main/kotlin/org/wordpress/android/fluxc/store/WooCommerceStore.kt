@@ -95,8 +95,8 @@ open class WooCommerceStore @Inject constructor(
         siteStore.sites
             .filterNot { it.origin == SiteModel.ORIGIN_WPCOM_REST && it.isJetpackConnected }
             .forEach { site ->
-                val isUpdatedResult = fetchAndUpdateNonJetpackSite(site)
-                if (isUpdatedResult.model == true && !fetchResult.updatedSites.contains(site)) {
+                val isResultUpdated = fetchAndUpdateNonJetpackSite(site)
+                if (isResultUpdated.model == true && !fetchResult.updatedSites.contains(site)) {
                     rowsAffected++
                 }
             }
