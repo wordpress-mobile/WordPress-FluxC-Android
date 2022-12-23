@@ -635,16 +635,15 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
         val params = mapOf("_fields" to TRACKING_FIELDS)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                Array<OrderShipmentTrackingApiResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderShipmentTrackingApiResponse>::class.java,
+            params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 val trackings = response.data?.map {
                     orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
@@ -654,9 +653,10 @@ class OrderRestClient @Inject constructor(
 
                 FetchOrderShipmentTrackingsResponsePayload(site, orderId, trackings)
             }
-            is JetpackError -> {
-                val trackingsError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, orderId)
+
             }
         }
     }
