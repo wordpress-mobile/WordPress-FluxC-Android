@@ -730,15 +730,16 @@ class OrderRestClient @Inject constructor(
         tracking: WCOrderShipmentTrackingModel
     ): DeleteOrderShipmentTrackingResponsePayload {
         val url = WOOCOMMERCE.orders.id(orderId)
-                .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-                this,
-                site,
-                url,
-                OrderShipmentTrackingApiResponse::class.java
+            .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
+
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderShipmentTrackingApiResponse::class.java
         )
+
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val model = orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
@@ -746,25 +747,23 @@ class OrderRestClient @Inject constructor(
                         id = tracking.id
                     }
                     DeleteOrderShipmentTrackingResponsePayload(
-                            site,
-                            orderId,
-                            model
+                        site,
+                        orderId,
+                        model
                     )
                 } ?: DeleteOrderShipmentTrackingResponsePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        site,
-                        orderId,
-                        tracking
+                    OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                    site,
+                    orderId,
+                    tracking
                 )
             }
-            is JetpackError -> {
-                DeleteOrderShipmentTrackingResponsePayload(
-                        networkErrorToOrderError(response.error),
-                        site,
-                        orderId,
-                        tracking
-                )
-            }
+            is WPAPIResponse.Error -> DeleteOrderShipmentTrackingResponsePayload(
+                wpAPINetworkErrorToOrderError(response.error),
+                site,
+                orderId,
+                tracking
+            )
         }
     }
 
