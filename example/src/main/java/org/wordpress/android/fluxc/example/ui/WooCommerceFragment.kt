@@ -229,11 +229,12 @@ class WooCommerceFragment : StoreSelectingFragment() {
     private fun launchCountriesRequest() {
         coroutineScope.launch {
             try {
-                selectedSite?.let {
-                    wooDataStore.fetchCountriesAndStates(it).model?.let { country ->
-                        country.forEach { location ->
-                            prependToLog(location.name)
-                        }
+                selectedSite?.let { selectedSite ->
+                    wooDataStore.fetchCountriesAndStates(selectedSite).model?.let { country ->
+                        country.filter { it.parentCode.isEmpty() }
+                            .forEach { location ->
+                                prependToLog(location.name)
+                            }
                     }
                         ?: prependToLog("Couldn't fetch countries.")
                 } ?: showNoWCSitesToast()
