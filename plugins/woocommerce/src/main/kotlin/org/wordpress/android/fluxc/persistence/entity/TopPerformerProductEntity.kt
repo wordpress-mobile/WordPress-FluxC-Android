@@ -1,15 +1,17 @@
 package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Entity
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
 @Entity(
     tableName = "TopPerformerProducts",
-    primaryKeys = ["datePeriod", "productId", "siteId"]
+    primaryKeys = ["datePeriod", "productId", "localSiteId"]
 )
 data class TopPerformerProductEntity(
-    val siteId: Long,
+    val localSiteId: LocalId,
     val datePeriod: String,
-    val productId: Long,
+    val productId: RemoteId,
     val name: String,
     val imageUrl: String?,
     val quantity: Int,
