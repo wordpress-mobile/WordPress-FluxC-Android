@@ -9,14 +9,15 @@ import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.domain.Addon.HasOptions
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonWithOptions
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupWithAddons
+import org.wordpress.android.fluxc.persistence.entity.ProductBasedIdentification
 import org.wordpress.android.fluxc.persistence.mappers.DatabaseAddonOptionMapper
 import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonGroupMapper
-import org.wordpress.android.fluxc.persistence.entity.ProductBasedIdentification
 import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonsMapper
 
 @Dao
@@ -26,8 +27,11 @@ abstract class AddonsDao {
     abstract fun observeGlobalAddonsForSite(localSiteId: LocalId): Flow<List<GlobalAddonGroupWithAddons>>
 
     @Transaction
-    @Query("SELECT * FROM AddonEntity WHERE siteRemoteId = :siteRemoteId AND productRemoteId = :productRemoteId")
-    abstract fun observeSingleProductAddons(siteRemoteId: Long, productRemoteId: Long): Flow<List<AddonWithOptions>>
+    @Query("SELECT * FROM AddonEntity WHERE localSiteId = :localSiteId AND productRemoteId = :productRemoteId")
+    abstract fun observeSingleProductAddons(
+        localSiteId: LocalId,
+        productRemoteId: RemoteId
+    ): Flow<List<AddonWithOptions>>
 
     @Insert
     abstract suspend fun insertGroup(globalAddonGroupEntity: GlobalAddonGroupEntity): Long
@@ -41,8 +45,8 @@ abstract class AddonsDao {
     @Query("DELETE FROM GlobalAddonGroupEntity WHERE localSiteId = :localSiteId")
     abstract suspend fun deleteGlobalAddonsForSite(localSiteId: LocalId)
 
-    @Query("DELETE FROM AddonEntity WHERE productRemoteId = :productRemoteId AND siteRemoteId = :siteRemoteId")
-    abstract suspend fun deleteAddonsForSpecifiedProduct(productRemoteId: Long, siteRemoteId: Long)
+    @Query("DELETE FROM AddonEntity WHERE productRemoteId = :productRemoteId AND localSiteId = :localSiteId")
+    abstract suspend fun deleteAddonsForSpecifiedProduct(productRemoteId: RemoteId, localSiteId: LocalId)
 
     @Transaction
     open suspend fun cacheGroups(
@@ -63,18 +67,18 @@ abstract class AddonsDao {
 
     @Transaction
     open suspend fun cacheProductAddons(
-        productRemoteId: Long,
-        siteRemoteId: Long,
+        productRemoteId: RemoteId,
+        localSiteId: LocalId,
         addons: List<Addon>
     ) {
-        deleteAddonsForSpecifiedProduct(productRemoteId = productRemoteId, siteRemoteId = siteRemoteId)
+        deleteAddonsForSpecifiedProduct(productRemoteId = productRemoteId, localSiteId = localSiteId)
 
         addons.forEach { addon ->
 
             val addonEntity = ToDatabaseAddonsMapper.toEntityModel(
                     domain = addon,
                     productBasedIdentification = ProductBasedIdentification(
-                            siteRemoteId = siteRemoteId,
+                            localSiteId = localSiteId,
                             productRemoteId = productRemoteId
                     )
             )
