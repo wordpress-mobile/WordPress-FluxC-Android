@@ -5,17 +5,19 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Relation
 import androidx.room.TypeConverters
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.persistence.converters.DiscountTypeConverter
 import java.math.BigDecimal
 
 @Entity(
     tableName = "Coupons",
-    primaryKeys = ["id", "siteId"],
-    indices = [Index("id", "siteId")]
+    primaryKeys = ["id", "localSiteId"],
+    indices = [Index("id", "localSiteId")]
 )
 data class CouponEntity(
-    val id: Long,
-    val siteId: Long,
+    val id: RemoteId,
+    val localSiteId: LocalId,
     val code: String? = null,
     val amount: BigDecimal? = null,
     val dateCreated: String? = null,
