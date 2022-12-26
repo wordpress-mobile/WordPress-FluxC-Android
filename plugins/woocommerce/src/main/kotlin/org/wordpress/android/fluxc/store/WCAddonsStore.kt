@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup.CategoriesRestriction.AllProductsCategories
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup.CategoriesRestriction.SpecifiedProductCategories
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -56,7 +57,7 @@ class WCAddonsStore @Inject internal constructor(
     }
 
     fun observeProductSpecificAddons(site: SiteModel, productRemoteId: Long): Flow<List<Addon>> {
-        return dao.observeSingleProductAddons(site.siteId, productRemoteId)
+        return dao.observeSingleProductAddons(site.localId(), RemoteId(productRemoteId))
                 .map {
                     it.map { entityAddon ->
                         FromDatabaseAddonsMapper.toDomainModel(entityAddon)
@@ -76,8 +77,8 @@ class WCAddonsStore @Inject internal constructor(
                 }
                 .combine(
                         dao.observeSingleProductAddons(
-                                siteRemoteId = site.siteId,
-                                productRemoteId = product.remoteProductId
+                                localSiteId = site.localId(),
+                                productRemoteId = product.remoteId
                         ).map { addonEntities ->
                             addonEntities.mapNotNull { addonEntity ->
                                 mapEntityToAddonSafely(addonEntity)
