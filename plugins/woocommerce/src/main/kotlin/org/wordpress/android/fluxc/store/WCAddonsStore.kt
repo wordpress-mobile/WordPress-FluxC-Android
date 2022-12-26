@@ -47,7 +47,7 @@ class WCAddonsStore @Inject internal constructor(
                         remoteGlobalAddonGroupMapper.toDomain(dtoGroup)
                     }
 
-                    dao.cacheGroups(domain, site.siteId)
+                    dao.cacheGroups(domain, site.localId())
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -65,7 +65,7 @@ class WCAddonsStore @Inject internal constructor(
     }
 
     fun observeAllAddonsForProduct(site: SiteModel, product: WCProductModel): Flow<List<Addon>> {
-        return dao.observeGlobalAddonsForSite(siteRemoteId = site.siteId)
+        return dao.observeGlobalAddonsForSite(localSiteId = site.localId())
                 .map { globalGroupsEntities ->
                     val domainGroup = globalGroupsEntities.map { globalGroupEntity ->
                         fromDatabaseAddonGroupMapper.toDomainModel(

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.domain.Addon.HasOptions
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonWithOptions
@@ -21,8 +22,8 @@ import org.wordpress.android.fluxc.persistence.mappers.ToDatabaseAddonsMapper
 @Dao
 abstract class AddonsDao {
     @Transaction
-    @Query("SELECT * FROM GlobalAddonGroupEntity WHERE siteRemoteId = :siteRemoteId")
-    abstract fun observeGlobalAddonsForSite(siteRemoteId: Long): Flow<List<GlobalAddonGroupWithAddons>>
+    @Query("SELECT * FROM GlobalAddonGroupEntity WHERE localSiteId = :localSiteId")
+    abstract fun observeGlobalAddonsForSite(localSiteId: LocalId): Flow<List<GlobalAddonGroupWithAddons>>
 
     @Transaction
     @Query("SELECT * FROM AddonEntity WHERE siteRemoteId = :siteRemoteId AND productRemoteId = :productRemoteId")
@@ -37,8 +38,8 @@ abstract class AddonsDao {
     @Insert
     abstract suspend fun insertAddonOptions(vararg addonOptions: AddonOptionEntity)
 
-    @Query("DELETE FROM GlobalAddonGroupEntity WHERE siteRemoteId = :siteRemoteId")
-    abstract suspend fun deleteGlobalAddonsForSite(siteRemoteId: Long)
+    @Query("DELETE FROM GlobalAddonGroupEntity WHERE localSiteId = :localSiteId")
+    abstract suspend fun deleteGlobalAddonsForSite(localSiteId: LocalId)
 
     @Query("DELETE FROM AddonEntity WHERE productRemoteId = :productRemoteId AND siteRemoteId = :siteRemoteId")
     abstract suspend fun deleteAddonsForSpecifiedProduct(productRemoteId: Long, siteRemoteId: Long)
@@ -46,14 +47,14 @@ abstract class AddonsDao {
     @Transaction
     open suspend fun cacheGroups(
         globalAddonGroups: List<GlobalAddonGroup>,
-        siteRemoteId: Long
+        localSiteId: LocalId
     ) {
-        deleteGlobalAddonsForSite(siteRemoteId)
+        deleteGlobalAddonsForSite(localSiteId)
 
         globalAddonGroups.forEach { group ->
             val entity = ToDatabaseAddonGroupMapper.toEntityModel(
                     domain = group,
-                    siteRemoteId = siteRemoteId
+                    localSiteId = localSiteId
             )
             val globalAddonGroupEntityId = insertGroup(entity)
             insertAddonEntity(group.addons, globalAddonGroupEntityId)
