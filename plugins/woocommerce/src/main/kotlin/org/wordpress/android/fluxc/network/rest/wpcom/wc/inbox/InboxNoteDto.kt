@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox
 
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity.LocalInboxNoteStatus
@@ -23,16 +24,16 @@ data class InboxNoteDto(
     @SerializedName("date_created") val dateCreated: String,
     @SerializedName("date_reminder") val dateReminder: String?
 ) {
-    fun toInboxNoteWithActionsEntity(siteId: Long) =
+    fun toInboxNoteWithActionsEntity(localSiteId: LocalId) =
         InboxNoteWithActions(
-            inboxNote = toInboxNoteEntity(siteId),
-            noteActions = actions.map { it.toDataModel(siteId) }
+            inboxNote = toInboxNoteEntity(localSiteId),
+            noteActions = actions.map { it.toDataModel(localSiteId) }
         )
 
-    fun toInboxNoteEntity(siteId: Long) =
+    fun toInboxNoteEntity(localSiteId: LocalId) =
         InboxNoteEntity(
             remoteId = id,
-            siteId = siteId,
+            localSiteId = localSiteId,
             name = name,
             title = title,
             content = content,
@@ -70,11 +71,11 @@ data class InboxNoteActionDto(
     @SerializedName("nonce_name") val nonceName: String?,
     @SerializedName("url") val url: String
 ) {
-    fun toDataModel(siteId: Long) =
+    fun toDataModel(localSiteId: LocalId) =
         InboxNoteActionEntity(
             remoteId = id,
             inboxNoteLocalId = 0,
-            siteId = siteId,
+            localSiteId = localSiteId,
             name = name,
             label = label,
             url = url,

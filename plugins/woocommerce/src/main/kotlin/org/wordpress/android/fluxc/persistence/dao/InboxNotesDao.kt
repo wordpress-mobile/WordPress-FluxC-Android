@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
@@ -13,12 +14,12 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteWithActions
 @Dao
 abstract class InboxNotesDao {
     @Transaction
-    @Query("SELECT * FROM InboxNotes WHERE siteId = :siteId ORDER BY dateCreated DESC, remoteId DESC")
-    abstract fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>>
+    @Query("SELECT * FROM InboxNotes WHERE localSiteId = :localSiteId ORDER BY dateCreated DESC, remoteId DESC")
+    abstract fun observeInboxNotes(localSiteId: LocalId): Flow<List<InboxNoteWithActions>>
 
     @Transaction
-    @Query("SELECT * FROM InboxNotes WHERE siteId = :siteId")
-    abstract fun getInboxNotesForSite(siteId: Long): List<InboxNoteEntity>
+    @Query("SELECT * FROM InboxNotes WHERE localSiteId = :localSiteId")
+    abstract fun getInboxNotesForSite(localSiteId: LocalId): List<InboxNoteEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertOrUpdateInboxNote(entity: InboxNoteEntity): Long
@@ -27,18 +28,18 @@ abstract class InboxNotesDao {
     abstract suspend fun insertOrUpdateInboxNoteAction(entity: InboxNoteActionEntity)
 
     @Transaction
-    @Query("DELETE FROM InboxNotes WHERE siteId = :siteId")
-    abstract fun deleteInboxNotesForSite(siteId: Long)
+    @Query("DELETE FROM InboxNotes WHERE localSiteId = :localSiteId")
+    abstract fun deleteInboxNotesForSite(localSiteId: LocalId)
 
-    @Query("DELETE FROM InboxNotes WHERE remoteId = :remoteNoteId AND siteId = :siteId")
-    abstract suspend fun deleteInboxNote(remoteNoteId: Long, siteId: Long)
+    @Query("DELETE FROM InboxNotes WHERE remoteId = :remoteNoteId AND localSiteId = :localSiteId")
+    abstract suspend fun deleteInboxNote(remoteNoteId: Long, localSiteId: LocalId)
 
     @Transaction
     open suspend fun deleteAllAndInsertInboxNotes(
-        siteId: Long,
+        localSiteId: LocalId,
         vararg notes: InboxNoteWithActions
     ) {
-        deleteInboxNotesForSite(siteId)
+        deleteInboxNotesForSite(localSiteId)
         notes.forEach { noteWithActions ->
             val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
             noteWithActions.noteActions.forEach {
@@ -48,8 +49,8 @@ abstract class InboxNotesDao {
     }
 
     @Transaction
-    open suspend fun updateNote(siteId: Long, noteWithActions: InboxNoteWithActions) {
-        deleteInboxNote(siteId, noteWithActions.inboxNote.remoteId)
+    open suspend fun updateNote(localSiteId: LocalId, noteWithActions: InboxNoteWithActions) {
+        deleteInboxNote(noteWithActions.inboxNote.remoteId, localSiteId)
         val localNoteId = insertOrUpdateInboxNote(noteWithActions.inboxNote)
         noteWithActions.noteActions.forEach {
             insertOrUpdateInboxNoteAction(it.copy(inboxNoteLocalId = localNoteId))
