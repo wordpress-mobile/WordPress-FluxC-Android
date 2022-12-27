@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 22,
-    "identityHash": "2f273b9015f30de6371cb20100b9032d",
+    "identityHash": "a08d1da9359217298fa9560aa8f69333",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -111,7 +111,17 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_AddonEntity_globalGroupLocalId",
+            "unique": false,
+            "columnNames": [
+              "globalGroupLocalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AddonEntity_globalGroupLocalId` ON `${TABLE_NAME}` (`globalGroupLocalId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "GlobalAddonGroupEntity",
@@ -173,7 +183,17 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_AddonOptionEntity_addonLocalId",
+            "unique": false,
+            "columnNames": [
+              "addonLocalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AddonOptionEntity_addonLocalId` ON `${TABLE_NAME}` (`addonLocalId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "AddonEntity",
@@ -1046,7 +1066,17 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_InboxNoteActions_inboxNoteLocalId",
+            "unique": false,
+            "columnNames": [
+              "inboxNoteLocalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_inboxNoteLocalId` ON `${TABLE_NAME}` (`inboxNoteLocalId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "InboxNotes",
@@ -1135,7 +1165,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f273b9015f30de6371cb20100b9032d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a08d1da9359217298fa9560aa8f69333')"
     ]
   }
 }

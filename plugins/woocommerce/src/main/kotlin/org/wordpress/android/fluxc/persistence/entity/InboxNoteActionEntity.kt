@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -16,7 +17,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 )
 data class InboxNoteActionEntity(
     val remoteId: Long,
-    val inboxNoteLocalId: Long,
+    @ColumnInfo(index = true) val inboxNoteLocalId: Long,
     val localSiteId: LocalId,
     val name: String,
     val label: String,

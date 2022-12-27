@@ -656,4 +656,9 @@ internal val MIGRATION_21_22 = Migration(21, 22) { database ->
     // Order Notes
     database.execSQL("DROP TABLE `OrderNotes`")
     database.execSQL("CREATE TABLE IF NOT EXISTS `OrderNotes` (`localSiteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL, `isCustomerNote` INTEGER NOT NULL, PRIMARY KEY(`localSiteId`, `noteId`))")
+
+    // Foreign Key missing indices
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_AddonOptionEntity_addonLocalId` ON `AddonOptionEntity` (`addonLocalId`)")
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_AddonEntity_globalGroupLocalId` ON `AddonEntity` (`globalGroupLocalId`)")
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_inboxNoteLocalId` ON `InboxNoteActions` (`inboxNoteLocalId`)")
 }
