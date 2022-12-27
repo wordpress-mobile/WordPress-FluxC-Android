@@ -640,9 +640,6 @@ internal val MIGRATION_21_22 = Migration(21, 22) { database ->
     database.execSQL("DROP TABLE `CouponEmails`")
     database.execSQL("CREATE TABLE IF NOT EXISTS `CouponEmails` (`couponId` INTEGER NOT NULL, `localSiteId` INTEGER NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`couponId`, `localSiteId`, `email`), FOREIGN KEY(`couponId`, `localSiteId`) REFERENCES `Coupons`(`id`, `localSiteId`) ON UPDATE NO ACTION ON DELETE CASCADE )")
 
-    database.execSQL("CREATE INDEX IF NOT EXISTS `index_CouponEmails_couponId_localSiteId_email` ON `CouponEmails` (`couponId`, `localSiteId`, `email`)");
-    database.execSQL("CREATE INDEX IF NOT EXISTS `index_Coupons_id_localSiteId` ON `Coupons` (`id`, `localSiteId`)");
-
     // Addons
     database.execSQL("DROP TABLE `GlobalAddonGroupEntity`")
     database.execSQL("CREATE TABLE IF NOT EXISTS `GlobalAddonGroupEntity` (`globalGroupLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `restrictedCategoriesIds` TEXT NOT NULL, `localSiteId` INTEGER NOT NULL)")

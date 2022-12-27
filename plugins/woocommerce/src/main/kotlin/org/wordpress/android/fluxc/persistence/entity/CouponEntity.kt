@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.Index
 import androidx.room.Relation
 import androidx.room.TypeConverters
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -12,8 +11,7 @@ import java.math.BigDecimal
 
 @Entity(
     tableName = "Coupons",
-    primaryKeys = ["id", "localSiteId"],
-    indices = [Index("id", "localSiteId")]
+    primaryKeys = ["id", "localSiteId"]
 )
 data class CouponEntity(
     val id: RemoteId,
