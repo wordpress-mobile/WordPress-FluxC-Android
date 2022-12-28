@@ -16,12 +16,9 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Error
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Success
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
@@ -49,6 +46,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayloa
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
+import org.wordpress.android.fluxc.utils.toWooPayload
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
@@ -575,14 +573,10 @@ class OrderRestClient @Inject constructor(
             clazz = Array<OrderNoteApiResponse>::class.java
         )
 
-        return when (response) {
-            is Success -> {
-                val noteModels = response.data?.map {
-                    it.toDataModel(site.remoteId(), RemoteId(orderId))
-                }.orEmpty()
-                WooPayload(noteModels)
+        return response.toWooPayload { orderNotesResponse ->
+            orderNotesResponse.map {
+                it.toDataModel(site.remoteId(), RemoteId(orderId))
             }
-            is Error -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -611,20 +605,8 @@ class OrderRestClient @Inject constructor(
             body = body
         )
 
-        return when (response) {
-            is Success -> {
-                response.data?.let {
-                    val newNote = it.toDataModel(site.remoteId(), RemoteId(orderId))
-                    return WooPayload(newNote)
-                } ?: WooPayload(
-                    WooError(
-                        type = WooErrorType.GENERIC_ERROR,
-                        original = GenericErrorType.UNKNOWN,
-                        message = "Success response with empty data"
-                    )
-                )
-            }
-            is Error -> WooPayload(response.error.toWooError())
+        return response.toWooPayload { orderNoteResponse ->
+            orderNoteResponse.toDataModel(site.remoteId(), RemoteId(orderId))
         }
     }
 
@@ -843,19 +825,8 @@ class OrderRestClient @Inject constructor(
             body = body
         )
 
-        return when (response) {
-            is Success -> {
-                response.data?.let { orderDto ->
-                    WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
-                } ?: WooPayload(
-                    error = WooError(
-                        type = WooErrorType.GENERIC_ERROR,
-                        original = GenericErrorType.UNKNOWN,
-                        message = "Success response with empty data"
-                    )
-                )
-            }
-            is Error -> WooPayload(response.error.toWooError())
+        return response.toWooPayload { orderDto ->
+            orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first
         }
     }
 
@@ -874,19 +845,8 @@ class OrderRestClient @Inject constructor(
             body = body
         )
 
-        return when (response) {
-            is Success -> {
-                response.data?.let { orderDto ->
-                    WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
-                } ?: WooPayload(
-                    error = WooError(
-                        type = WooErrorType.GENERIC_ERROR,
-                        original = GenericErrorType.UNKNOWN,
-                        message = "Success response with empty data"
-                    )
-                )
-            }
-            is Error -> WooPayload(response.error.toWooError())
+        return response.toWooPayload { orderDto ->
+            orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first
         }
     }
 
