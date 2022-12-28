@@ -2,8 +2,6 @@
 
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -19,12 +17,9 @@ import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
-import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Error
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Success
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
@@ -58,22 +53,17 @@ import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
-@Suppress("LargeClass")
+@Suppress("LargeClass", "TooManyFunctions")
 @Singleton
 class OrderRestClient @Inject constructor(
-    appContext: Context,
     private val dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
     private val orderDtoMapper: OrderDtoMapper,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
     private val wooNetwork: WooNetwork,
     private val coroutineEngine: CoroutineEngine
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+) {
     /**
      * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
      * WooCommerce [SiteModel].
