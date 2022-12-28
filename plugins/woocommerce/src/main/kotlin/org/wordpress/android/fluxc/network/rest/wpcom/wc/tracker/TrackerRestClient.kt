@@ -8,11 +8,9 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -24,15 +22,14 @@ internal class TrackerRestClient @Inject constructor(
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val requestBuilder: JetpackTunnelGsonRequestBuilder
+    private val wooNetwork: WooNetwork
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun sendTelemetry(appVersion: String, site: SiteModel): WooPayload<Unit> {
         val url = WOOCOMMERCE.tracker.pathWcTelemetry
 
-        val response = requestBuilder.syncPostRequest(
-            restClient = this,
+        val response = wooNetwork.executePostGsonRequest(
             site = site,
-            url = url,
+            path = url,
             clazz = Unit::class.java,
             body = mapOf(
                 "platform" to "android",
@@ -40,9 +37,6 @@ internal class TrackerRestClient @Inject constructor(
             )
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(Unit)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 }
