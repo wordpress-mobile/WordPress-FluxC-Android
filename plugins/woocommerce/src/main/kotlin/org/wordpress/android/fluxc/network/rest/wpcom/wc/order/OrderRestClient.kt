@@ -1,10 +1,8 @@
 @file:Suppress("DEPRECATION_ERROR")
+
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.JsonElement
-import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -18,19 +16,9 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
@@ -54,30 +42,26 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
+import org.wordpress.android.fluxc.utils.toWooPayload
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
-@Suppress("LargeClass")
-@Singleton
+@Suppress("LargeClass", "TooManyFunctions")
 class OrderRestClient @Inject constructor(
-    appContext: Context,
     private val dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
     private val orderDtoMapper: OrderDtoMapper,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    private val wooNetwork: WooNetwork,
+    private val coroutineEngine: CoroutineEngine
+) {
     /**
-     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
+     * WooCommerce [SiteModel].
      *
      * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH], and retrieving older
      * orders is done by passing an [offset].
@@ -87,35 +71,45 @@ class OrderRestClient @Inject constructor(
      * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
-        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() } ?: WCOrderStore.DEFAULT_ORDER_STATUS
+        coroutineEngine.launch(T.API, this, "fetchOrders") {
+            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+            val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() }
+                ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}.type
-        val params = mapOf(
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to ORDER_FIELDS)
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
+                "_fields" to ORDER_FIELDS
+            )
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<OrderDto>::class.java
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-
                     val payload = FetchOrdersResponsePayload(
-                            site, orderModels, filterByStatus, offset > 0, canLoadMore)
+                        site, orderModels, filterByStatus, offset > 0, canLoadMore
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
@@ -123,8 +117,8 @@ class OrderRestClient @Inject constructor(
      * used to determine what orders should be fetched (either existing orders that have since changed or new
      * orders not yet downloaded).
      *
-     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
+     * WooCommerce [SiteModel].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_LIST] action with the resulting list of order summaries.
      *
@@ -132,58 +126,71 @@ class OrderRestClient @Inject constructor(
      * the optional parameters in effect.
      * @param offset Used to retrieve older orders
      */
-    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long, requestStartTime: Calendar) {
-        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
+    fun fetchOrderListSummaries(
+        listDescriptor: WCOrderListDescriptor,
+        offset: Long,
+        requestStartTime: Calendar
+    ) {
+        coroutineEngine.launch(T.API, this, "fetchOrderListSummaries") {
+            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+            val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
-        val networkPageSize = listDescriptor.config.networkPageSize
-        val params = mutableMapOf(
+            val url = WOOCOMMERCE.orders.pathV3
+            val networkPageSize = listDescriptor.config.networkPageSize
+            val params = mutableMapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
                 "_fields" to "id,date_created_gmt,date_modified_gmt"
-        ).putIfNotEmpty(
-            "search" to listDescriptor.searchQuery,
+            ).putIfNotEmpty(
+                "search" to listDescriptor.searchQuery,
                 "before" to listDescriptor.beforeFilter,
                 "after" to listDescriptor.afterFilter
-        )
+            )
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
-                { response: List<OrderSummaryApiResponse>? ->
-                    val orderSummaries = response?.map {
-                        orderResponseToOrderSummaryModel(it).apply { localSiteId = listDescriptor.site.id }
+            val response = wooNetwork.executeGetGsonRequest(
+                site = listDescriptor.site,
+                path = url,
+                clazz = Array<OrderSummaryApiResponse>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val orderSummaries = response.data?.map {
+                        orderResponseToOrderSummaryModel(it).apply {
+                            localSiteId = listDescriptor.site.id
+                        }
                     }.orEmpty()
 
                     val canLoadMore = orderSummaries.size == networkPageSize
 
                     val payload = FetchOrderListResponsePayload(
-                            listDescriptor = listDescriptor,
-                            orderSummaries = orderSummaries,
-                            loadedMore = offset > 0,
-                            canLoadMore = canLoadMore,
-                            requestStartTime = requestStartTime
+                        listDescriptor = listDescriptor,
+                        orderSummaries = orderSummaries,
+                        loadedMore = offset > 0,
+                        canLoadMore = canLoadMore,
+                        requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrderListResponsePayload(
-                            error = orderError,
-                            listDescriptor = listDescriptor,
-                            requestStartTime = requestStartTime
+                        error = orderError,
+                        listDescriptor = listDescriptor,
+                        requestStartTime = requestStartTime
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
      * Requests orders from the API that match the provided list of [orderIds] by making a GET call to
-     * `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     * `/wp-json/wc/v3/orders`
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS_BY_IDS] action with the resulting list of orders.
      *
@@ -191,65 +198,88 @@ class OrderRestClient @Inject constructor(
      * @param orderIds A list of remote order identifiers to fetch from the API
      */
     fun fetchOrdersByIds(site: SiteModel, orderIds: List<Long>) {
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}.type
-        val params = mapOf(
+        coroutineEngine.launch(T.API, this, "fetchOrdersByIds") {
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mapOf(
                 "per_page" to orderIds.size.toString(),
                 "include" to orderIds.map { it }.joinToString(),
-                "_fields" to ORDER_FIELDS)
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
+                "_fields" to ORDER_FIELDS
+            )
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderDto>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val payload = FetchOrdersByIdsResponsePayload(
-                            site = site,
-                            orderIds = orderIds,
-                            fetchedOrders = orderModels
+                        site = site,
+                        orderIds = orderIds,
+                        fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersByIdsResponsePayload(
-                            error = orderError, site = site, orderIds = orderIds)
+                        error = orderError, site = site, orderIds = orderIds
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
-     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of available order status options for the given WooCommerce [SiteModel].
+     * Makes a GET call to `/wp-json/wc/v3/reports/orders/totals` retrieving a list of available
+     * order status options for the given WooCommerce [SiteModel].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS] action with the resulting list of order status labels.
      */
     fun fetchOrderStatusOptions(site: SiteModel) {
-        val url = WOOCOMMERCE.reports.orders.totals.pathV3
-        val params = emptyMap<String, String>()
-        val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderStatusApiResponse>? ->
-                    val orderStatusOptions = response?.map {
+        coroutineEngine.launch(T.API, this, "fetchOrderStatusOptions") {
+            val url = WOOCOMMERCE.reports.orders.totals.pathV3
+            val params = emptyMap<String, String>()
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderStatusApiResponse>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val orderStatusOptions = response.data?.map {
                         orderStatusResponseToOrderStatusModel(it, site)
                     }.orEmpty()
+
                     val payload = FetchOrderStatusOptionsResponsePayload(site, orderStatusOptions)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                    dispatcher.dispatch(
+                        WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload)
+                    )
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                    dispatcher.dispatch(
+                        WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload)
+                    )
+                }
+            }
+        }
     }
 
     /**
-     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given
+     * WooCommerce [SiteModel] matching [searchQuery]
      *
      * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH]
      *
@@ -258,23 +288,31 @@ class OrderRestClient @Inject constructor(
      * @param [searchQuery] the keyword or phrase to match orders with
      */
     fun searchOrders(site: SiteModel, searchQuery: String, offset: Int) {
-        val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderDto>>() {}.type
-        val params = mutableMapOf(
+        coroutineEngine.launch(T.API, this, "searchOrders") {
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
                 "_fields" to ORDER_FIELDS
-        ).putIfNotEmpty("search" to searchQuery)
+            ).putIfNotEmpty("search" to searchQuery)
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderDto>? ->
-                    val orderModels = response?.map { orderDto ->
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderDto>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
                     val nextOffset = offset + orderModels.size
+
                     val payload = SearchOrdersResponsePayload(
                         site,
                         searchQuery,
@@ -283,18 +321,18 @@ class OrderRestClient @Inject constructor(
                         orderModels.map { it.first }
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
                     dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
-     * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
+     * Makes a GET request to `/wp-json/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId.
      *
      * @param [orderId] Unique server id of the order to fetch
      */
@@ -302,127 +340,147 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
         val params = mapOf("_fields" to ORDER_FIELDS)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderDto::class.java,
+            params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     RemoteOrderPayload.Fetching(newModel, site)
                 } ?: RemoteOrderPayload.Fetching(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        OrderEntity(
-                                orderId = orderId,
-                                localSiteId = site.localId()
-                        ) to emptyList(),
-                        site
+                    OrderError(GENERIC_ERROR, "Success response with empty data"),
+                    OrderEntity(
+                        orderId = orderId,
+                        localSiteId = site.localId()
+                    ) to emptyList(),
+                    site
                 )
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
                 RemoteOrderPayload.Fetching(
-                        orderError,
-                        OrderEntity(
-                                orderId = orderId,
-                                localSiteId = site.localId()
-                        ) to emptyList(),
-                        site
+                    orderError,
+                    OrderEntity(
+                        orderId = orderId,
+                        localSiteId = site.localId()
+                    ) to emptyList(),
+                    site
                 )
             }
         }
     }
 
     /**
-     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving count of orders for the given WooCommerce [SiteModel], broken down by order status.
+     * Makes a GET call to `/wp-json/wc/v3/reports/orders/totals` retrieving count of orders for
+     * the given WooCommerce [SiteModel], broken down by order status.
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS_COUNT] action with the resulting count.
      *
      * @param [filterByStatus] The order status to return a count for
      */
     fun fetchOrderCount(site: SiteModel, filterByStatus: String) {
-        val url = WOOCOMMERCE.reports.orders.totals.pathV3
-        val params = mapOf("status" to filterByStatus)
-        val responseType = object : TypeToken<List<OrderCountApiResponse>>() {}.type
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderCountApiResponse>? ->
-                    val total = response?.find { it.slug == filterByStatus }?.total
+        coroutineEngine.launch(T.API, this, "fetchOrderCount") {
+            val url = WOOCOMMERCE.reports.orders.totals.pathV3
+            val params = mapOf("status" to filterByStatus)
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                clazz = Array<OrderCountApiResponse>::class.java,
+                params = params
+            )
+
+            when (response) {
+                is WPAPIResponse.Success -> {
+                    val total = response.data?.find { it.slug == filterByStatus }?.total
 
                     total?.let {
                         val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                        dispatcher.dispatch(
+                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
+                        )
                     } ?: run {
                         val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
-                        val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                        val payload = FetchOrdersCountResponsePayload(
+                            orderError,
+                            site,
+                            filterByStatus
+                        )
+                        dispatcher.dispatch(
+                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
+                        )
                     }
-                },
-                WPComErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
+                }
+                is WPAPIResponse.Error -> {
+                    val orderError = wpAPINetworkErrorToOrderError(response.error)
                     val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
+                }
+            }
+        }
     }
 
     /**
-     * Makes a GET request to `/wc/v3/orders` for a single order of a specific type (or any type) in order to
+     * Makes a GET request to `/wp-json/wc/v3/orders` for a single order of a specific type (or any type) in order to
      * determine if there are any orders in the store.
      *
      *
      * @param [filterByStatus] Nullable. If not null, consider only orders with a matching order status.
      */
-    suspend fun fetchHasOrders(site: SiteModel, filterByStatus: String? = null): FetchHasOrdersResponsePayload {
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
+    suspend fun fetchHasOrders(
+        site: SiteModel,
+        filterByStatus: String? = null
+    ): FetchHasOrdersResponsePayload {
+        val statusFilter = if (filterByStatus.isNullOrBlank()) {
+            "any"
+        } else {
+            filterByStatus
+        }
 
         val url = WOOCOMMERCE.orders.pathV3
-
         val params = mapOf(
-                "per_page" to "1",
-                "offset" to "0",
-                "status" to statusFilter)
+            "per_page" to "1",
+            "offset" to "0",
+            "status" to statusFilter
+        )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                Array<OrderDto>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderDto>::class.java,
+            params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     FetchHasOrdersResponsePayload(
-                            site,
-                            filterByStatus,
-                            it.count() > 0
+                        site,
+                        filterByStatus,
+                        it.isNotEmpty()
                     )
                 } ?: FetchHasOrdersResponsePayload(
                     OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
                     site
                 )
             }
-            is JetpackError -> {
-                var orderError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
                 FetchHasOrdersResponsePayload(
-                        orderError,
-                        site
+                    orderError,
+                    site
                 )
             }
         }
     }
 
     /**
-     * Makes a PUT call to `/wc/v3/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the order.
+     * Makes a PUT call to `/wp-json/wc/v3/orders/<id>` updating the order.
      */
     private suspend fun updateOrder(
         orderToUpdate: OrderEntity,
@@ -431,16 +489,15 @@ class OrderRestClient @Inject constructor(
     ): RemoteOrderPayload.Updating {
         val url = WOOCOMMERCE.orders.id(orderToUpdate.orderId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-            restClient = this,
+        val response = wooNetwork.executePutGsonRequest(
             site = site,
-            url = url,
-            body = updatePayload.plus("_fields" to ORDER_FIELDS),
-            clazz = OrderDto::class.java
+            path = url,
+            clazz = OrderDto::class.java,
+            body = updatePayload.plus("_fields" to ORDER_FIELDS)
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let { orderDto ->
                     val newModel = orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                         .first
@@ -454,8 +511,8 @@ class OrderRestClient @Inject constructor(
                     site
                 )
             }
-            is JetpackError -> {
-                val orderError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
                 RemoteOrderPayload.Updating(
                     orderError,
                     orderToUpdate,
@@ -466,16 +523,28 @@ class OrderRestClient @Inject constructor(
     }
 
     suspend fun updateOrderStatus(orderToUpdate: OrderEntity, site: SiteModel, status: String) =
-            updateOrder(orderToUpdate, site, mapOf("status" to status))
+        updateOrder(orderToUpdate, site, mapOf("status" to status))
 
-    suspend fun updateCustomerOrderNote(orderToUpdate: OrderEntity, site: SiteModel, newNotes: String) =
-            updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
+    suspend fun updateCustomerOrderNote(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        newNotes: String
+    ) =
+        updateOrder(orderToUpdate, site, mapOf("customer_note" to newNotes))
 
-    suspend fun updateBillingAddress(orderToUpdate: OrderEntity, site: SiteModel, billing: Billing) =
-            updateOrder(orderToUpdate, site, mapOf("billing" to billing))
+    suspend fun updateBillingAddress(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        billing: Billing
+    ) =
+        updateOrder(orderToUpdate, site, mapOf("billing" to billing))
 
-    suspend fun updateShippingAddress(orderToUpdate: OrderEntity, site: SiteModel, shipping: Shipping) =
-            updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
+    suspend fun updateShippingAddress(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        shipping: Shipping
+    ) =
+        updateOrder(orderToUpdate, site, mapOf("shipping" to shipping))
 
     suspend fun updateBothOrderAddresses(
         orderToUpdate: OrderEntity,
@@ -483,40 +552,36 @@ class OrderRestClient @Inject constructor(
         shipping: Shipping,
         billing: Billing
     ) = updateOrder(
-            orderToUpdate, site,
-            mapOf("shipping" to shipping, "billing" to billing)
+        orderToUpdate, site,
+        mapOf("shipping" to shipping, "billing" to billing)
     )
 
     /**
-     * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of notes for the given WooCommerce [SiteModel] and [OrderEntity].
+     * Makes a GET call to `/wp-json/wc/v3/orders/<id>/notes` retrieving a list of notes for the
+     * given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun fetchOrderNotes(
         orderId: Long,
         site: SiteModel
     ): WooPayload<List<OrderNoteEntity>> {
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf(),
-            Array<OrderNoteApiResponse>::class.java
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderNoteApiResponse>::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                val noteModels = response.data?.map {
-                    it.toDataModel(site.remoteId(), RemoteId(orderId))
-                }.orEmpty()
-                WooPayload(noteModels)
+
+        return response.toWooPayload { orderNotesResponse ->
+            orderNotesResponse.map {
+                it.toDataModel(site.remoteId(), RemoteId(orderId))
             }
-            is JetpackError -> WooPayload(response.error.toWooError())
         }
     }
 
     /**
-     * Makes a POST call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * saving the provide4d note for the given WooCommerce [SiteModel] and [OrderEntity].
+     * Makes a POST call to `/wp-json.wc/v3/orders/<id>/notes` saving the provided note for the
+     * given WooCommerce [SiteModel] and [OrderEntity].
      */
     suspend fun postOrderNote(
         orderId: Long,
@@ -526,39 +591,27 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<OrderNoteEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
 
-        val params = mutableMapOf(
-                "note" to note,
-                "customer_note" to isCustomerNote,
-                "added_by_user" to true
+        val body = mutableMapOf(
+            "note" to note,
+            "customer_note" to isCustomerNote,
+            "added_by_user" to true
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderNoteApiResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderNoteApiResponse::class.java,
+            body = body
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                response.data?.let {
-                    val newNote = it.toDataModel(site.remoteId(), RemoteId(orderId))
-                    return WooPayload(newNote)
-                } ?: WooPayload(
-                        WooError(
-                                type = WooErrorType.GENERIC_ERROR,
-                                original = GenericErrorType.UNKNOWN,
-                                message = "Success response with empty data"
-                        )
-                )
-            }
-            is JetpackError -> WooPayload(response.error.toWooError())
+
+        return response.toWooPayload { orderNoteResponse ->
+            orderNoteResponse.toDataModel(site.remoteId(), RemoteId(orderId))
         }
     }
 
     /**
-     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [OrderEntity].
+     * Makes a GET call to `/wp-json/wc/v2/orders/<order_id>/shipment-trackings/`, retrieving
+     * a list of shipment tracking objects for a single [OrderEntity].
      *
      * Note: This is not currently supported in v3, but will be in the short future.
      *
@@ -570,16 +623,15 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
         val params = mapOf("_fields" to TRACKING_FIELDS)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                Array<OrderShipmentTrackingApiResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderShipmentTrackingApiResponse>::class.java,
+            params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 val trackings = response.data?.map {
                     orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
@@ -589,8 +641,8 @@ class OrderRestClient @Inject constructor(
 
                 FetchOrderShipmentTrackingsResponsePayload(site, orderId, trackings)
             }
-            is JetpackError -> {
-                val trackingsError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, orderId)
             }
         }
@@ -599,7 +651,7 @@ class OrderRestClient @Inject constructor(
     /**
      * Posts a new Order Shipment Tracking record to the API for an order.
      *
-     * Makes a POST call to save a Shipment Tracking record via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     * Makes a POST call to save a Shipment Tracking record.
      * The API calls for different fields depending on if the new record uses a custom provider or not, so this is
      * why there is an if-statement. Either way, the same standard [WCOrderShipmentTrackingModel] is returned.
      *
@@ -612,26 +664,26 @@ class OrderRestClient @Inject constructor(
         isCustomProvider: Boolean
     ): AddOrderShipmentTrackingResponsePayload {
         val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
-        val params = if (isCustomProvider) {
+        val body = if (isCustomProvider) {
             mutableMapOf(
-                    "custom_tracking_provider" to tracking.trackingProvider,
-                    "custom_tracking_link" to tracking.trackingLink)
+                "custom_tracking_provider" to tracking.trackingProvider,
+                "custom_tracking_link" to tracking.trackingLink
+            )
         } else {
             mutableMapOf("tracking_provider" to tracking.trackingProvider)
         }
-        params.put("tracking_number", tracking.trackingNumber)
-        params.put("date_shipped", tracking.dateShipped)
+        body["tracking_number"] = tracking.trackingNumber
+        body["date_shipped"] = tracking.dateShipped
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderShipmentTrackingApiResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderShipmentTrackingApiResponse::class.java,
+            body = body
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val trackingModel = orderShipmentTrackingResponseToModel(it).apply {
                         this.orderId = orderId
@@ -639,14 +691,14 @@ class OrderRestClient @Inject constructor(
                     }
                     AddOrderShipmentTrackingResponsePayload(site, orderId, trackingModel)
                 } ?: AddOrderShipmentTrackingResponsePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        site,
-                        orderId,
-                        tracking
+                    OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                    site,
+                    orderId,
+                    tracking
                 )
             }
-            is JetpackError -> {
-                val trackingsError = networkErrorToOrderError(response.error)
+            is WPAPIResponse.Error -> {
+                val trackingsError = wpAPINetworkErrorToOrderError(response.error)
                 AddOrderShipmentTrackingResponsePayload(trackingsError, site, orderId, tracking)
             }
         }
@@ -655,8 +707,8 @@ class OrderRestClient @Inject constructor(
     /**
      * Deletes a single shipment tracking record for an order.
      *
-     * Makes a POST call requesting a DELETE method on `/wc/v2/orders/<order_id>/shipment_trackings/<tracking_id>/`
-     * via the Jetpack tunnel (see [JetpackTunnelGsonRequest].
+     * Makes a POST call requesting a DELETE method on
+     * `/wp-json/wc/v2/orders/<order_id>/shipment_trackings/<tracking_id>/`
      *
      * Note this is currently not supported in v3, but will be in the future.
      */
@@ -666,15 +718,16 @@ class OrderRestClient @Inject constructor(
         tracking: WCOrderShipmentTrackingModel
     ): DeleteOrderShipmentTrackingResponsePayload {
         val url = WOOCOMMERCE.orders.id(orderId)
-                .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-                this,
-                site,
-                url,
-                OrderShipmentTrackingApiResponse::class.java
+            .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
+
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderShipmentTrackingApiResponse::class.java
         )
+
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val model = orderShipmentTrackingResponseToModel(it).apply {
                         localSiteId = site.id
@@ -682,33 +735,31 @@ class OrderRestClient @Inject constructor(
                         id = tracking.id
                     }
                     DeleteOrderShipmentTrackingResponsePayload(
-                            site,
-                            orderId,
-                            model
+                        site,
+                        orderId,
+                        model
                     )
                 } ?: DeleteOrderShipmentTrackingResponsePayload(
-                        OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
-                        site,
-                        orderId,
-                        tracking
+                    OrderError(type = GENERIC_ERROR, message = "Success response with empty data"),
+                    site,
+                    orderId,
+                    tracking
                 )
             }
-            is JetpackError -> {
-                DeleteOrderShipmentTrackingResponsePayload(
-                        networkErrorToOrderError(response.error),
-                        site,
-                        orderId,
-                        tracking
-                )
-            }
+            is WPAPIResponse.Error -> DeleteOrderShipmentTrackingResponsePayload(
+                wpAPINetworkErrorToOrderError(response.error),
+                site,
+                orderId,
+                tracking
+            )
         }
     }
 
     /**
      * Fetches a list of shipment providers from the WooCommerce Shipment Tracking plugin.
      *
-     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/providers/` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking provider objects. The `<order_id>`
+     * Makes a GET call to `/wp-json/wc/v2/orders/<order_id>/shipment-trackings/providers/`,
+     * retrieving a list of shipment tracking provider objects. The `<order_id>`
      * argument is only needed because it is a requirement of the plugins API even though this data is not directly
      * related to shipment providers.
      */
@@ -719,16 +770,15 @@ class OrderRestClient @Inject constructor(
         val url = WOOCOMMERCE.orders.id(order.orderId).shipment_trackings.providers.pathV2
         val params = emptyMap<String, String>()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                JsonElement::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = JsonElement::class.java,
+            params = params
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     try {
                         val providers = jsonResponseToShipmentProviderList(site, it)
@@ -736,21 +786,25 @@ class OrderRestClient @Inject constructor(
                     } catch (e: IllegalStateException) {
                         // we have at least once instance of the response being invalid json so we catch the exception
                         // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
-                        AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
+                        AppLog.e(
+                            T.UTILS,
+                            "IllegalStateException parsing shipment provider list, response = $it"
+                        )
                         FetchOrderShipmentProvidersResponsePayload(
-                                OrderError(INVALID_RESPONSE, it.toString()),
-                                site,
-                                order
+                            OrderError(INVALID_RESPONSE, it.toString()),
+                            site,
+                            order
                         )
                     }
                 } ?: FetchOrderShipmentProvidersResponsePayload(
-                        OrderError(GENERIC_ERROR, "Success response with empty data"),
-                        site,
-                        order
+                    OrderError(GENERIC_ERROR, "Success response with empty data"),
+                    site,
+                    order
                 )
             }
-            is JetpackError -> {
-                val trackingError = networkErrorToOrderError(response.error)
+
+            is WPAPIResponse.Error -> {
+                val trackingError = wpAPINetworkErrorToOrderError(response.error)
                 FetchOrderShipmentProvidersResponsePayload(trackingError, site, order)
             }
         }
@@ -761,27 +815,17 @@ class OrderRestClient @Inject constructor(
         request: UpdateOrderRequest
     ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.pathV3
-        val params = request.toNetworkRequest()
+        val body = request.toNetworkRequest()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderDto::class.java,
+            body = body
         )
 
-        return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
-            } ?: WooPayload(
-                    error = WooError(
-                            type = WooErrorType.GENERIC_ERROR,
-                            original = GenericErrorType.UNKNOWN,
-                            message = "Success response with empty data"
-                    )
-            )
+        return response.toWooPayload { orderDto ->
+            orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first
         }
     }
 
@@ -791,27 +835,17 @@ class OrderRestClient @Inject constructor(
         request: UpdateOrderRequest
     ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
-        val params = request.toNetworkRequest()
+        val body = request.toNetworkRequest()
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPutRequest(
-                this,
-                site,
-                url,
-                params,
-                OrderDto::class.java
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderDto::class.java,
+            body = body
         )
 
-        return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> response.data?.let { orderDto ->
-                WooPayload(orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first)
-            } ?: WooPayload(
-                    error = WooError(
-                            type = WooErrorType.GENERIC_ERROR,
-                            original = GenericErrorType.UNKNOWN,
-                            message = "Success response with empty data"
-                    )
-            )
+        return response.toWooPayload { orderDto ->
+            orderDtoMapper.toDatabaseEntity(orderDto, site.localId()).first
         }
     }
 
@@ -822,17 +856,16 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                clazz = Unit::class.java,
-                params = mapOf("force" to trash.not().toString())
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = Unit::class.java,
+            params = mapOf("force" to trash.not().toString())
         )
 
         return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(Unit)
+            is WPAPIResponse.Success -> WooPayload(Unit)
+            is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
         }
     }
 
@@ -856,14 +889,14 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderError {
-        val orderErrorType = when (wpComError.apiError) {
+    private fun wpAPINetworkErrorToOrderError(wpAPINetworkError: WPAPINetworkError): OrderError {
+        val orderErrorType = when (wpAPINetworkError.errorCode) {
             "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
             "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
             "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
-            else -> OrderErrorType.fromString(wpComError.apiError)
+            else -> OrderErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return OrderError(orderErrorType, wpComError.message)
+        return OrderError(orderErrorType, wpAPINetworkError.message)
     }
 
     private fun orderStatusResponseToOrderStatusModel(
@@ -891,7 +924,7 @@ class OrderRestClient @Inject constructor(
     }
 
     private fun convertDateToUTCString(date: String?): String =
-            date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
+        date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,
@@ -899,60 +932,60 @@ class OrderRestClient @Inject constructor(
     ): List<WCOrderShipmentProviderModel> {
         val providers = mutableListOf<WCOrderShipmentProviderModel>()
         response.asJsonObject.entrySet()
-                .forEach { countryEntry: MutableEntry<String, JsonElement> ->
-                    countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
-                        carrierEntry?.let { carrier ->
-                            val provider = WCOrderShipmentProviderModel().apply {
-                                localSiteId = site.id
-                                this.country = countryEntry.key
-                                this.carrierName = carrier.key
-                                this.carrierLink = carrier.value.asString
-                            }
-                            providers.add(provider)
+            .forEach { countryEntry: MutableEntry<String, JsonElement> ->
+                countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                    carrierEntry?.let { carrier ->
+                        val provider = WCOrderShipmentProviderModel().apply {
+                            localSiteId = site.id
+                            this.country = countryEntry.key
+                            this.carrierName = carrier.key
+                            this.carrierLink = carrier.value.asString
                         }
+                        providers.add(provider)
                     }
                 }
+            }
 
         return providers
     }
 
     companion object {
         private val ORDER_FIELDS = arrayOf(
-                "billing",
-                "coupon_lines",
-                "currency",
-                "order_key",
-                "customer_note",
-                "date_created_gmt",
-                "date_modified_gmt",
-                "date_paid_gmt",
-                "discount_total",
-                "fee_lines",
-                "tax_lines",
-                "id",
-                "line_items",
-                "number",
-                "payment_method",
-                "payment_method_title",
-                "prices_include_tax",
-                "refunds",
-                "shipping",
-                "shipping_lines",
-                "shipping_total",
-                "status",
-                "total",
-                "total_tax",
-                "meta_data",
-                "payment_url",
-                "is_editable"
+            "billing",
+            "coupon_lines",
+            "currency",
+            "order_key",
+            "customer_note",
+            "date_created_gmt",
+            "date_modified_gmt",
+            "date_paid_gmt",
+            "discount_total",
+            "fee_lines",
+            "tax_lines",
+            "id",
+            "line_items",
+            "number",
+            "payment_method",
+            "payment_method_title",
+            "prices_include_tax",
+            "refunds",
+            "shipping",
+            "shipping_lines",
+            "shipping_total",
+            "status",
+            "total",
+            "total_tax",
+            "meta_data",
+            "payment_url",
+            "is_editable"
         ).joinToString(separator = ",")
 
         private val TRACKING_FIELDS = arrayOf(
-                "date_shipped",
-                "tracking_id",
-                "tracking_link",
-                "tracking_number",
-                "tracking_provider"
+            "date_shipped",
+            "tracking_id",
+            "tracking_link",
+            "tracking_number",
+            "tracking_provider"
         ).joinToString(separator = ",")
     }
 }
