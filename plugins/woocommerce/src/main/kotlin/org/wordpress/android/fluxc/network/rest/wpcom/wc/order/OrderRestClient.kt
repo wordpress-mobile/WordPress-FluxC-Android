@@ -598,7 +598,7 @@ class OrderRestClient @Inject constructor(
     ): WooPayload<OrderNoteEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).notes.pathV3
 
-        val params = mutableMapOf(
+        val body = mutableMapOf(
             "note" to note,
             "customer_note" to isCustomerNote,
             "added_by_user" to true
@@ -608,7 +608,7 @@ class OrderRestClient @Inject constructor(
             site = site,
             path = url,
             clazz = OrderNoteApiResponse::class.java,
-            body = params
+            body = body
         )
 
         return when (response) {
@@ -683,7 +683,7 @@ class OrderRestClient @Inject constructor(
         isCustomProvider: Boolean
     ): AddOrderShipmentTrackingResponsePayload {
         val url = WOOCOMMERCE.orders.id(orderId).shipment_trackings.pathV2
-        val params = if (isCustomProvider) {
+        val body = if (isCustomProvider) {
             mutableMapOf(
                 "custom_tracking_provider" to tracking.trackingProvider,
                 "custom_tracking_link" to tracking.trackingLink
@@ -691,14 +691,14 @@ class OrderRestClient @Inject constructor(
         } else {
             mutableMapOf("tracking_provider" to tracking.trackingProvider)
         }
-        params["tracking_number"] = tracking.trackingNumber
-        params["date_shipped"] = tracking.dateShipped
+        body["tracking_number"] = tracking.trackingNumber
+        body["date_shipped"] = tracking.dateShipped
 
         val response = wooNetwork.executePostGsonRequest(
             site = site,
             path = url,
             clazz = OrderShipmentTrackingApiResponse::class.java,
-            body = params
+            body = body
         )
 
         return when (response) {
@@ -834,13 +834,13 @@ class OrderRestClient @Inject constructor(
         request: UpdateOrderRequest
     ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.pathV3
-        val params = request.toNetworkRequest()
+        val body = request.toNetworkRequest()
 
         val response = wooNetwork.executePostGsonRequest(
             site = site,
             path = url,
             clazz = OrderDto::class.java,
-            body = params
+            body = body
         )
 
         return when (response) {
@@ -865,13 +865,13 @@ class OrderRestClient @Inject constructor(
         request: UpdateOrderRequest
     ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.id(orderId).pathV3
-        val params = request.toNetworkRequest()
+        val body = request.toNetworkRequest()
 
         val response = wooNetwork.executePutGsonRequest(
             site = site,
             path = url,
             clazz = OrderDto::class.java,
-            body = params
+            body = body
         )
 
         return when (response) {
