@@ -53,11 +53,9 @@ import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
 @Suppress("LargeClass", "TooManyFunctions")
-@Singleton
 class OrderRestClient @Inject constructor(
     private val dispatcher: Dispatcher,
     private val orderDtoMapper: OrderDtoMapper,
