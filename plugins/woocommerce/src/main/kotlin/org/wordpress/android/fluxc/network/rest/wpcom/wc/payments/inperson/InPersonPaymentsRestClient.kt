@@ -184,18 +184,13 @@ class InPersonPaymentsRestClient @Inject constructor(
             STRIPE -> WOOCOMMERCE.wc_stripe.charges.charge(chargeId).pathV3
         }
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                mapOf(),
-                WCPaymentChargeApiResult::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = WCPaymentChargeApiResult::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     private fun mapToCapturePaymentError(error: WPAPINetworkError?, message: String): WCCapturePaymentError {
