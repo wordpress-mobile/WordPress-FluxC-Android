@@ -10,8 +10,10 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -23,7 +25,8 @@ class JitmRestClient @Inject constructor(
     appContext: Context?,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val wooNetwork: WooNetwork
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchJitmMessage(
         site: SiteModel,
@@ -32,25 +35,17 @@ class JitmRestClient @Inject constructor(
     ): WooPayload<Array<JITMApiResponse>> {
         val url = JPAPI.jitm.pathV4
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf(
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf(
                 "message_path" to messagePath,
                 "query" to query,
             ),
-            Array<JITMApiResponse>::class.java
+            clazz = Array<JITMApiResponse>::class.java
         )
 
-        return when (response) {
-            is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     suspend fun dismissJitmMessage(
