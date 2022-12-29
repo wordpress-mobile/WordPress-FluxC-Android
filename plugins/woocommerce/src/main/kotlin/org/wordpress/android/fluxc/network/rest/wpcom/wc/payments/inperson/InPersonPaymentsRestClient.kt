@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
@@ -138,40 +137,38 @@ class InPersonPaymentsRestClient @Inject constructor(
             STRIPE -> WOOCOMMERCE.wc_stripe.terminal.locations.store.pathV3
         }
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                mapOf(),
-                StoreLocationApiResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = StoreLocationApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let { data ->
                     WCTerminalStoreLocationResult(
-                            locationId = data.id,
-                            displayName = data.displayName,
-                            liveMode = data.liveMode,
-                            address = StoreAddress(
-                                    city = data.address?.city,
-                                    country = data.address?.country,
-                                    line1 = data.address?.line1,
-                                    line2 = data.address?.line2,
-                                    postalCode = data.address?.postalCode,
-                                    state = data.address?.state
-                            )
+                        locationId = data.id,
+                        displayName = data.displayName,
+                        liveMode = data.liveMode,
+                        address = StoreAddress(
+                            city = data.address?.city,
+                            country = data.address?.country,
+                            line1 = data.address?.line1,
+                            line2 = data.address?.line2,
+                            postalCode = data.address?.postalCode,
+                            state = data.address?.state
+                        )
                     )
                 } ?: WCTerminalStoreLocationResult(
-                        mapToStoreLocationForSiteError(
-                                error = null,
-                                message = "status field is null, but isError == false"
-                        )
+                    mapToStoreLocationForSiteError(
+                        error = null,
+                        message = "status field is null, but isError == false"
+                    )
                 )
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 WCTerminalStoreLocationResult(
-                        mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
+                    mapToStoreLocationForSiteError(response.error, response.error.message ?: "Unexpected error")
                 )
             }
         }
@@ -216,15 +213,15 @@ class InPersonPaymentsRestClient @Inject constructor(
         return WCCapturePaymentError(type, message)
     }
 
-    private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
+    private fun mapToStoreLocationForSiteError(error: WPAPINetworkError?, message: String):
         WCTerminalStoreLocationError {
         val type = when {
             error == null -> WCTerminalStoreLocationErrorType.GenericError
-            error.apiError == "store_address_is_incomplete" -> {
+            error.errorCode == "store_address_is_incomplete" -> {
                 if (error.message.isNullOrBlank()) WCTerminalStoreLocationErrorType.GenericError
                 else WCTerminalStoreLocationErrorType.MissingAddress(error.message)
             }
-            error.apiError == "postal_code_invalid" -> WCTerminalStoreLocationErrorType.InvalidPostalCode
+            error.errorCode == "postal_code_invalid" -> WCTerminalStoreLocationErrorType.InvalidPostalCode
             error.type == GenericErrorType.TIMEOUT -> WCTerminalStoreLocationErrorType.NetworkError
             error.type == GenericErrorType.NO_CONNECTION -> WCTerminalStoreLocationErrorType.NetworkError
             error.type == GenericErrorType.NETWORK_ERROR -> WCTerminalStoreLocationErrorType.NetworkError
