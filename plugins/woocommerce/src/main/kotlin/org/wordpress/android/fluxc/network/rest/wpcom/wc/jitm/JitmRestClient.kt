@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.generated.endpoint.JPAPI
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -55,22 +56,21 @@ class JitmRestClient @Inject constructor(
     ): WooPayload<Boolean> {
         val url = JPAPI.jitm.pathV4
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-            this,
-            site,
-            url,
-            mapOf(
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            body = mapOf(
                 "id" to jitmId,
                 "feature_class" to featureClass
             ),
-            Any::class.java
+            clazz = Any::class.java
         )
 
         return when (response) {
-            is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 WooPayload(true)
             }
-            is JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError -> {
+            is WPAPIResponse.Error -> {
                 if (response.error.type == BaseRequest.GenericErrorType.NOT_FOUND) {
                     WooPayload(false)
                 } else {
