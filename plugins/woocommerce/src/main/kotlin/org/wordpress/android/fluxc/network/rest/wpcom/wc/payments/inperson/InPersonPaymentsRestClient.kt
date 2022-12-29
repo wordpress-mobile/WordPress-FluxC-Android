@@ -21,6 +21,8 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocati
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult.StoreAddress
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -75,34 +77,33 @@ class InPersonPaymentsRestClient @Inject constructor(
             WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.orders.id(orderId).capture_terminal_payment.pathV3
             STRIPE -> WOOCOMMERCE.wc_stripe.orders.order(orderId).capture_terminal_payment.pathV3
         }
-        val params = mapOf(
-                "payment_intent_id" to paymentId
+        val body = mapOf(
+            "payment_intent_id" to paymentId
         )
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                CapturePaymentApiResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            body = body,
+            clazz = CapturePaymentApiResponse::class.java
         )
 
         return when (response) {
-            is JetpackSuccess -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let { data ->
                     WCCapturePaymentResponsePayload(site, paymentId, orderId, data.status)
                 } ?: WCCapturePaymentResponsePayload(
-                        mapToCapturePaymentError(error = null, message = "status field is null, but isError == false"),
-                        site,
-                        paymentId,
-                        orderId
+                    mapToCapturePaymentError(error = null, message = "status field is null, but isError == false"),
+                    site,
+                    paymentId,
+                    orderId
                 )
             }
-            is JetpackError -> {
+            is WPAPIResponse.Error -> {
                 WCCapturePaymentResponsePayload(
-                        mapToCapturePaymentError(response.error, response.error.message ?: "Unexpected error"),
-                        site,
-                        paymentId,
-                        orderId
+                    mapToCapturePaymentError(response.error, response.error.message ?: "Unexpected error"),
+                    site,
+                    paymentId,
+                    orderId
                 )
             }
         }
@@ -204,13 +205,13 @@ class InPersonPaymentsRestClient @Inject constructor(
         }
     }
 
-    private fun mapToCapturePaymentError(error: WPComGsonNetworkError?, message: String): WCCapturePaymentError {
+    private fun mapToCapturePaymentError(error: WPAPINetworkError?, message: String): WCCapturePaymentError {
         val type = when {
             error == null -> GENERIC_ERROR
-            error.apiError == "wcpay_missing_order" -> MISSING_ORDER
-            error.apiError == "wcpay_payment_uncapturable" -> PAYMENT_ALREADY_CAPTURED
-            error.apiError == "wcpay_capture_error" -> CAPTURE_ERROR
-            error.apiError == "wcpay_server_error" -> SERVER_ERROR
+            error.errorCode == "wcpay_missing_order" -> MISSING_ORDER
+            error.errorCode == "wcpay_payment_uncapturable" -> PAYMENT_ALREADY_CAPTURED
+            error.errorCode == "wcpay_capture_error" -> CAPTURE_ERROR
+            error.errorCode == "wcpay_server_error" -> SERVER_ERROR
             error.type == GenericErrorType.TIMEOUT -> NETWORK_ERROR
             error.type == GenericErrorType.NO_CONNECTION -> NETWORK_ERROR
             error.type == GenericErrorType.NETWORK_ERROR -> NETWORK_ERROR
@@ -220,7 +221,7 @@ class InPersonPaymentsRestClient @Inject constructor(
     }
 
     private fun mapToStoreLocationForSiteError(error: WPComGsonNetworkError?, message: String):
-            WCTerminalStoreLocationError {
+        WCTerminalStoreLocationError {
         val type = when {
             error == null -> WCTerminalStoreLocationErrorType.GenericError
             error.apiError == "store_address_is_incomplete" -> {
@@ -238,7 +239,7 @@ class InPersonPaymentsRestClient @Inject constructor(
 
     companion object {
         private const val ACCOUNT_REQUESTED_FIELDS: String =
-                "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
-                        "store_currencies,country,is_live,test_mode"
+            "status,has_pending_requirements,has_overdue_requirements,current_deadline,statement_descriptor," +
+                "store_currencies,country,is_live,test_mode"
     }
 }
