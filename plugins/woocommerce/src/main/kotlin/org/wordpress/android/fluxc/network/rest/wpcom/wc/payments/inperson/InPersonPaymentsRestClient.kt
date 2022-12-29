@@ -119,18 +119,14 @@ class InPersonPaymentsRestClient @Inject constructor(
         }
         val params = mapOf("_fields" to ACCOUNT_REQUESTED_FIELDS)
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                WCPaymentAccountResult::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+                params = params,
+                clazz = WCPaymentAccountResult::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     suspend fun getStoreLocationForSite(
