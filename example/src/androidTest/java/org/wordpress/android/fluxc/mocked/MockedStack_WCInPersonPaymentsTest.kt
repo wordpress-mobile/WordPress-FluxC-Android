@@ -27,6 +27,11 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
+    private val testSite = SiteModel().apply {
+        origin = SiteModel.ORIGIN_WPCOM_REST
+        siteId = 123L
+    }
+
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
@@ -37,7 +42,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun givenSiteHasWCPayWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
         interceptor.respondWith("wc-pay-fetch-connection-token-response-success.json")
 
-        val result = restClient.fetchConnectionToken(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.fetchConnectionToken(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.result?.token?.isNotEmpty() == true)
         assertTrue(result.result?.isTestMode == true)
@@ -49,7 +54,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.capturePayment(
             WOOCOMMERCE_PAYMENTS,
-            SiteModel().apply { siteId = 123L },
+            testSite,
             DUMMY_PAYMENT_ID,
             -10L
         )
@@ -64,7 +69,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.capturePayment(
             WOOCOMMERCE_PAYMENTS,
-            SiteModel().apply { siteId = 123L },
+            testSite,
             DUMMY_PAYMENT_ID,
             -10L
         )
@@ -78,7 +83,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.capturePayment(
             WOOCOMMERCE_PAYMENTS,
-            SiteModel().apply { siteId = 123L },
+            testSite,
             DUMMY_PAYMENT_ID,
             -10L
         )
@@ -92,7 +97,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.capturePayment(
             WOOCOMMERCE_PAYMENTS,
-            SiteModel().apply { siteId = 123L },
+            testSite,
             DUMMY_PAYMENT_ID,
             -10L
         )
@@ -106,7 +111,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         val result = restClient.capturePayment(
             WOOCOMMERCE_PAYMENTS,
-            SiteModel().apply { siteId = 123L },
+            testSite,
             DUMMY_PAYMENT_ID,
             -10L
         )
@@ -118,7 +123,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountInvalidStatusThenFallbacksToUnknown() = runBlocking {
         interceptor.respondWith("wc-pay-load-account-response-new-status.json")
 
-        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.result?.status == WCPaymentAccountStatus.UNKNOWN)
     }
@@ -127,7 +132,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountEmptyStatusThenFallbackToNoAccount() = runBlocking {
         interceptor.respondWith("wc-pay-load-account-response-empty-status.json")
 
-        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.result?.status == WCPaymentAccountStatus.NO_ACCOUNT)
     }
@@ -136,7 +141,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenOverdueRequirementsThenCurrentDeadlineCorrectlyParsed() = runBlocking {
         interceptor.respondWith("wc-pay-load-account-response-current-deadline.json")
 
-        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.result?.currentDeadline == 1628258304L)
     }
@@ -145,7 +150,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountRestrictedSoonStatusThenRestrictedSoonStatusReturned() = runBlocking {
         interceptor.respondWith("wc-pay-load-account-response-restricted-soon-status.json")
 
-        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.result?.status == WCPaymentAccountStatus.RESTRICTED_SOON)
     }
@@ -154,7 +159,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenLoadAccountIsLiveThenIsLiveFlagIsTrue() = runBlocking {
         interceptor.respondWith("wc-pay-load-account-response-is-live-account.json")
 
-        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.result!!.isLive)
     }
@@ -163,7 +168,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenStatementeDescriptorNullThenFieldSetToNull() = runBlocking {
         interceptor.respondWith("stripe-extension-statement-descriptor-null.json")
 
-        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertNull(result.result!!.statementDescriptor)
     }
@@ -172,12 +177,12 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-with-url-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is MissingAddress)
         val expectedUrl = "https://myusernametestsite2020151673500.wpcomstaging.com/" +
-                "wp-admin/admin.php?page=wc-settings&tab=general"
+            "wp-admin/admin.php?page=wc-settings&tab=general"
         assertEquals(expectedUrl, (result.error?.type as MissingAddress).addressEditingUrl)
     }
 
@@ -185,7 +190,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithEmptyUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-with-empty-url-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
@@ -195,7 +200,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteErrorWithoutUrl() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-address-missing-without-url-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is GenericError)
@@ -205,7 +210,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     fun whenGetStoreLocationForSiteWithInvalidPostalCodeError() = runBlocking {
         interceptor.respondWithError("wc-pay-store-location-for-site-invalid-postal-code-error.json", 500)
 
-        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, SiteModel().apply { siteId = 123L })
+        val result = restClient.getStoreLocationForSite(WOOCOMMERCE_PAYMENTS, testSite)
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is InvalidPostalCode)
