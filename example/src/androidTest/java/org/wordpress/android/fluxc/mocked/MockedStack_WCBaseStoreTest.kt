@@ -37,6 +37,7 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val siteModel = SiteModel().apply {
+        origin = SiteModel.ORIGIN_WPCOM_REST
         id = 5
         siteId = 567
     }

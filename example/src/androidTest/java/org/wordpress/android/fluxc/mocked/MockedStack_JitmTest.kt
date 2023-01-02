@@ -16,6 +16,11 @@ class MockedStack_JitmTest : MockedStack_Base() {
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
+    private val testSite = SiteModel().apply {
+        origin = SiteModel.ORIGIN_WPCOM_REST
+        siteId = 123L
+    }
+
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
@@ -27,7 +32,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWith("jitm-fetch-success.json")
         val messagePath = "woomobile:my_store:admin_notices"
 
-        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath, "")
+        val result = restClient.fetchJitmMessage(testSite, messagePath, "")
 
         assertFalse(result.isError)
         assertTrue(!result.result.isNullOrEmpty())
@@ -38,7 +43,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWith("jitm-fetch-success-empty.json")
         val messagePath = ""
 
-        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath, "")
+        val result = restClient.fetchJitmMessage(testSite, messagePath, "")
 
         assertFalse(result.isError)
         assertTrue(result.result.isNullOrEmpty())
@@ -49,7 +54,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWithError("jitm-fetch-failure.json", 500)
         val messagePath = ""
 
-        val result = restClient.fetchJitmMessage(SiteModel().apply { siteId = 123L }, messagePath, "")
+        val result = restClient.fetchJitmMessage(testSite, messagePath, "")
 
         assertTrue(result.isError)
         assertEquals(API_ERROR, result.error.type)
@@ -60,7 +65,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWith("jitm-dismiss-success.json")
 
         val result = restClient.dismissJitmMessage(
-            SiteModel().apply { siteId = 123L },
+            testSite,
             jitmId = "123",
             featureClass = ""
         )
@@ -74,7 +79,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
         interceptor.respondWithError("jitm-dismiss-failure.json", 500)
 
         val result = restClient.dismissJitmMessage(
-            SiteModel().apply { siteId = 123L },
+            testSite,
             jitmId = "123",
             featureClass = ""
         )

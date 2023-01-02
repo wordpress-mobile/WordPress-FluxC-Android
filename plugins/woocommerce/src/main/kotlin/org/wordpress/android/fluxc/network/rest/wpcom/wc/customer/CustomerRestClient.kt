@@ -1,16 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.customer
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.INCLUDE_DESC
@@ -19,22 +11,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSortin
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_DESC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
-class CustomerRestClient @Inject constructor(
-    appContext: Context,
-    private val requestBuilder: JetpackTunnelGsonRequestBuilder,
-    dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     /**
      * Makes a GET call to `/wc/v3/customers/[remoteCustomerId]` to fetch a single customer
      *
@@ -43,18 +25,13 @@ class CustomerRestClient @Inject constructor(
     suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooPayload<CustomerDTO> {
         val url = WOOCOMMERCE.customers.id(remoteCustomerId).pathV3
 
-        val response = requestBuilder.syncGetRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                params = emptyMap(),
-                clazz = CustomerDTO::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = CustomerDTO::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     /**
@@ -86,10 +63,10 @@ class CustomerRestClient @Inject constructor(
         }
 
         val params = mutableMapOf(
-                "per_page" to pageSize.toString(),
-                "orderby" to orderBy,
-                "order" to sortOrder,
-                "offset" to offset.toString()
+            "per_page" to pageSize.toString(),
+            "orderby" to orderBy,
+            "order" to sortOrder,
+            "offset" to offset.toString()
         ).run {
             putIfNotEmpty("search" to searchQuery)
             putIfNotEmpty("email" to email)
@@ -105,18 +82,14 @@ class CustomerRestClient @Inject constructor(
             params["exclude"] = excludedCustomerIds.map { it }.joinToString()
         }
 
-        val response = requestBuilder.syncGetRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                params = params,
-                Array<CustomerDTO>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<CustomerDTO>::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     /**
@@ -125,17 +98,13 @@ class CustomerRestClient @Inject constructor(
     suspend fun createCustomer(site: SiteModel, customer: CustomerDTO): WooPayload<CustomerDTO> {
         val url = WOOCOMMERCE.customers.pathV3
 
-        val response = requestBuilder.syncPostRequest(
-                restClient = this,
-                site = site,
-                url = url,
-                body = customer.toMap(),
-                clazz = CustomerDTO::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            body = customer.toMap(),
+            clazz = CustomerDTO::class.java
         )
 
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 }

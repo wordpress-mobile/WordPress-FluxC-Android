@@ -10,6 +10,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
@@ -39,6 +40,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.toDomainModel
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils.WCSettingsBuilder
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.site.SiteUtils
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -59,6 +61,7 @@ class WooCommerceStoreTest {
     private val restClient = mock<WooSystemRestClient>()
     private val siteStore = mock<SiteStore>()
     private val wcrestClient = mock<WooCommerceRestClient>()
+    private val accountStore = mock<AccountStore>()
     private val settingsMapper = WCSettingsMapper()
 
     private val wooCommerceStore = WooCommerceStore(
@@ -69,7 +72,8 @@ class WooCommerceStoreTest {
         systemRestClient = restClient,
         wcCoreRestClient = wcrestClient,
         siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
-        settingsMapper = settingsMapper
+        settingsMapper = settingsMapper,
+        accountStore = accountStore
     )
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply {
@@ -271,9 +275,33 @@ class WooCommerceStoreTest {
     }
 
     @Test
+    fun `when the user is signed in using WPCom, then fetch sites using WPCom API`() {
+        runBlocking {
+            whenever(accountStore.hasAccessToken()).thenReturn(true)
+            whenever(siteStore.fetchSites(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
+
+            wooCommerceStore.fetchWooCommerceSites()
+
+            verify(siteStore).fetchSites(any())
+        }
+    }
+
+    @Test
+    fun `when the user is not signed in using WPCom, then don't fetch sites using WPCom API`() {
+        runBlocking {
+            whenever(accountStore.hasAccessToken()).thenReturn(false)
+
+            wooCommerceStore.fetchWooCommerceSites()
+
+            verify(siteStore, never()).fetchSites(any())
+        }
+    }
+
+    @Test
     fun `when fetching a jetpack cp site, then fetch metadata from the remote site manually`() {
         runBlocking {
             val site = SiteUtils.generateJetpackCPSite()
+            whenever(accountStore.hasAccessToken()).thenReturn(true)
             whenever(siteStore.fetchSites(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
             whenever(siteStore.sites).thenReturn(listOf(site))
             whenever(restClient.fetchSiteSettings(site)).thenReturn(
@@ -289,6 +317,40 @@ class WooCommerceStoreTest {
             verify(restClient).checkIfWooCommerceIsAvailable(site)
             Assertions.assertThat(sites.first().hasWooCommerce).isTrue
             Assertions.assertThat(sites.first().name).isEqualTo("new title")
+        }
+    }
+
+    @Test
+    fun `when fetching a non-Jetpack self-hosted site, then detect WooCommerce installation manually`() {
+        runBlocking {
+            val site = SiteUtils.generateSelfHostedNonJPSite()
+            whenever(accountStore.hasAccessToken()).thenReturn(false)
+            whenever(siteStore.fetchSite(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
+            whenever(siteStore.sites).thenReturn(listOf(site))
+            whenever(siteStore.getSiteByLocalId(any())).thenReturn(site)
+            whenever(restClient.checkIfWooCommerceIsAvailable(site)).thenReturn(WooPayload(true))
+
+            wooCommerceStore.fetchWooCommerceSite(site)
+
+            verify(siteStore).fetchSite(site)
+            verify(restClient).checkIfWooCommerceIsAvailable(site)
+        }
+    }
+
+    @Test
+    fun `when fetching a Jetpack site using site credentials, then detect WooCommerce installation manually`() {
+        runBlocking {
+            val site = SiteUtils.generateJetpackSiteOverXMLRPC()
+            whenever(accountStore.hasAccessToken()).thenReturn(false)
+            whenever(siteStore.fetchSite(any())).thenReturn(OnSiteChanged(1, updatedSites = listOf(site)))
+            whenever(siteStore.sites).thenReturn(listOf(site))
+            whenever(siteStore.getSiteByLocalId(any())).thenReturn(site)
+            whenever(restClient.checkIfWooCommerceIsAvailable(site)).thenReturn(WooPayload(true))
+
+            wooCommerceStore.fetchWooCommerceSite(site)
+
+            verify(siteStore).fetchSite(site)
+            verify(restClient).checkIfWooCommerceIsAvailable(site)
         }
     }
 

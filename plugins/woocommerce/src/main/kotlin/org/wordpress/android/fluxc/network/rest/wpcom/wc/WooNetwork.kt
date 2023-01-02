@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpapi.applicationpasswords.ApplicationPasswordsNetwork
@@ -26,12 +27,20 @@ class WooNetwork @Inject constructor(
         site: SiteModel,
         path: String,
         clazz: Class<T>,
-        params: Map<String, String> = emptyMap()
+        params: Map<String, String> = emptyMap(),
+        enableCaching: Boolean = false,
+        cacheTimeToLive: Int = BaseRequest.DEFAULT_CACHE_LIFETIME,
+        forced: Boolean = false,
+        requestTimeout: Int = BaseRequest.DEFAULT_REQUEST_TIMEOUT,
+        retries: Int = BaseRequest.DEFAULT_MAX_RETRIES
     ): WPAPIResponse<T> {
         return when (site.origin) {
-            SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeGetGsonRequest(site, path, clazz, params)
-                .toWPAPIResponse()
-            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executeGetGsonRequest(site, path, clazz, params)
+            SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeGetGsonRequest(
+                site, path, clazz, params, enableCaching, cacheTimeToLive, forced, requestTimeout, retries
+            ).toWPAPIResponse()
+            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executeGetGsonRequest(
+                site, path, clazz, params, enableCaching, cacheTimeToLive, forced, requestTimeout, retries
+            )
             else -> error("Site with unsupported origin")
         }
     }
@@ -40,7 +49,7 @@ class WooNetwork @Inject constructor(
         site: SiteModel,
         path: String,
         clazz: Class<T>,
-        body: Map<String, Any> = emptyMap(),
+        body: Map<String, Any> = emptyMap()
     ): WPAPIResponse<T> {
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executePostGsonRequest(site, path, clazz, body)

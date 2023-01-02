@@ -1,44 +1,28 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.jitm
 
-import com.android.volley.RequestQueue
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
+import org.wordpress.android.fluxc.generated.endpoint.JPAPI
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMContent
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JITMCta
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 
 class JitmRestClientTest {
-    private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
-    private lateinit var requestQueue: RequestQueue
-    private lateinit var accessToken: AccessToken
-    private lateinit var userAgent: UserAgent
+    private val wooNetwork: WooNetwork = mock()
     private lateinit var jitmRestClient: JitmRestClient
 
     @Before
     fun setup() {
-        jetpackTunnelGsonRequestBuilder = mock()
-        requestQueue = mock()
-        accessToken = mock()
-        userAgent = mock()
-        jitmRestClient = JitmRestClient(
-            mock(),
-            jetpackTunnelGsonRequestBuilder,
-            mock(),
-            requestQueue,
-            accessToken,
-            userAgent
-        )
+        jitmRestClient = JitmRestClient(wooNetwork)
     }
 
     private fun provideJitmApiResponse(
@@ -90,18 +74,17 @@ class JitmRestClientTest {
         runBlocking {
             val site = SiteModel().apply { siteId = 1234 }
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                    jitmRestClient,
-                    site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
-                    mapOf(
+                wooNetwork.executeGetGsonRequest(
+                    site = site,
+                    path = JPAPI.jitm.pathV4,
+                    params = mapOf(
                         "message_path" to "",
                         "query" to "",
                     ),
-                    Array<JITMApiResponse>::class.java,
+                    clazz = Array<JITMApiResponse>::class.java,
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
+                WPAPIResponse.Success(
                     arrayOf(provideJitmApiResponse())
                 )
             )
@@ -121,22 +104,21 @@ class JitmRestClientTest {
     fun `given error response, when fetch jitm, return error`() {
         val site = SiteModel().apply { siteId = 1234 }
         runBlocking {
-            val expectedError = mock<WPComGsonRequest.WPComGsonNetworkError>().apply {
+            val expectedError = mock<WPAPINetworkError>().apply {
                 type = mock()
             }
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                    jitmRestClient,
-                    site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
-                    mapOf(
+                wooNetwork.executeGetGsonRequest(
+                    site = site,
+                    path = JPAPI.jitm.pathV4,
+                    params = mapOf(
                         "message_path" to "",
                         "query" to "",
                     ),
-                    Array<JITMApiResponse>::class.java,
+                    clazz = Array<JITMApiResponse>::class.java,
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+                WPAPIResponse.Error(expectedError)
             )
 
             val actualResponse = jitmRestClient.fetchJitmMessage(site, "", "")
@@ -151,18 +133,17 @@ class JitmRestClientTest {
         runBlocking {
             val site = SiteModel().apply { siteId = 1234 }
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    jitmRestClient,
-                    site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
-                    mapOf(
+                wooNetwork.executePostGsonRequest(
+                    site = site,
+                    path = JPAPI.jitm.pathV4,
+                    body = mapOf(
                         "id" to "",
                         "feature_class" to ""
                     ),
-                    Any::class.java,
+                    clazz = Any::class.java,
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(
+                WPAPIResponse.Success(
                     arrayOf(provideJitmApiResponse())
                 )
             )
@@ -182,22 +163,21 @@ class JitmRestClientTest {
     fun `given error response, when dismiss jitm, return error`() {
         runBlocking {
             val site = SiteModel().apply { siteId = 1234 }
-            val expectedError = mock<WPComGsonRequest.WPComGsonNetworkError>().apply {
+            val expectedError = mock<WPAPINetworkError>().apply {
                 type = mock()
             }
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    jitmRestClient,
-                    site,
-                    WPCOMREST.jetpack_blogs.site(1234).rest_api.jitmPath,
-                    mapOf(
+                wooNetwork.executePostGsonRequest(
+                    site = site,
+                    path = JPAPI.jitm.pathV4,
+                    body = mapOf(
                         "id" to "",
                         "feature_class" to ""
                     ),
-                    Any::class.java,
+                    clazz = Any::class.java,
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+                WPAPIResponse.Error(expectedError)
             )
 
             val actualResponse = jitmRestClient.dismissJitmMessage(

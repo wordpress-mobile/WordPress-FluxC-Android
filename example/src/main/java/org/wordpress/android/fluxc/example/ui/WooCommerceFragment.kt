@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,11 @@ class WooCommerceFragment : StoreSelectingFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        lifecycleScope.launch {
+            // Fetch sites to make sure we have the correct status of WooCommerce installation
+            wooCommerceStore.fetchWooCommerceSites()
+        }
+
         log_sites.setOnClickListener {
             coroutineScope.launch {
                 prependToLog("Fetching WooCommerce sites")
@@ -65,17 +71,17 @@ class WooCommerceFragment : StoreSelectingFragment() {
         }
 
         log_woo_api_versions.setOnClickListener {
-            for (site in wooCommerceStore.getWooCommerceSites()) {
+            selectedSite?.let { selectedSite ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooCommerceStore.fetchSupportedApiVersion(site)
+                        wooCommerceStore.fetchSupportedApiVersion(selectedSite)
                     }
                     result.error?.let {
                         prependToLog("Error in onApiVersionFetched: ${it.type} - ${it.message}")
                     }
                     result.model?.let {
                         val formattedVersion = it.apiVersion?.substringAfterLast("/")
-                        prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+                        prependToLog("Max Woo version for ${selectedSite.name}: $formattedVersion")
                     }
                 }
             }
@@ -223,11 +229,12 @@ class WooCommerceFragment : StoreSelectingFragment() {
     private fun launchCountriesRequest() {
         coroutineScope.launch {
             try {
-                selectedSite?.let {
-                    wooDataStore.fetchCountriesAndStates(it).model?.let { country ->
-                        country.forEach { location ->
-                            prependToLog(location.name)
-                        }
+                selectedSite?.let { selectedSite ->
+                    wooDataStore.fetchCountriesAndStates(selectedSite).model?.let { country ->
+                        country.filter { it.parentCode.isEmpty() }
+                            .forEach { location ->
+                                prependToLog(location.name)
+                            }
                     }
                         ?: prependToLog("Couldn't fetch countries.")
                 } ?: showNoWCSitesToast()

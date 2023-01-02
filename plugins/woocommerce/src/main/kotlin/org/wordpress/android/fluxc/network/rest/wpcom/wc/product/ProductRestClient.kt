@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import org.wordpress.android.fluxc.Dispatcher
@@ -19,22 +17,14 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
-import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -76,25 +66,19 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPay
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.fluxc.utils.handleResult
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
+import org.wordpress.android.fluxc.utils.toWooPayload
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Suppress("LargeClass")
-@Singleton
 class ProductRestClient @Inject constructor(
-    appContext: Context,
     private val dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
     private val wooNetwork: WooNetwork,
+    private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine
-    ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
      * to fetch a single product shipping class
@@ -380,8 +364,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of products for the given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products` retrieving a list of products for the given
+     * WooCommerce [SiteModel].
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
@@ -492,8 +476,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of products for the given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products` retrieving a list of products for the given
+     * WooCommerce [SiteModel].
      *
      * but requiring this call to be suspended so the return call be synced within the coroutine job
      */
@@ -527,18 +511,10 @@ class ProductRestClient @Inject constructor(
             clazz = Array<ProductApiResponse>::class.java
         )
 
-        return when (response) {
-            is WPAPIResponse.Success -> {
-                response.data
-                    ?.map {
-                        it.asProductModel()
-                            .apply { localSiteId = site.id }
-                    }
-                    .orEmpty()
-                    .let { WooPayload(it.toList()) }
-            }
-            is WPAPIResponse.Error -> {
-                WooPayload(response.error.toWooError())
+        return response.toWooPayload { products ->
+            products.map {
+                it.asProductModel()
+                    .apply { localSiteId = site.id }
             }
         }
     }
@@ -593,8 +569,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of product categories for the given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products/categories` retrieving a list of product
+     * categories for the given WooCommerce [SiteModel].
      *
      * but requiring this call to be suspended so the return call be synced within the coroutine job
      */
@@ -634,25 +610,17 @@ class ProductRestClient @Inject constructor(
             clazz = Array<ProductCategoryApiResponse>::class.java
         )
 
-        return when (response) {
-            is WPAPIResponse.Success -> {
-                response.data
-                    ?.map {
-                        it.asProductCategoryModel()
-                            .apply { localSiteId = site.id }
-                    }
-                    .orEmpty()
-                    .let { WooPayload(it.toList()) }
-            }
-            is WPAPIResponse.Error -> {
-                WooPayload(response.error.toWooError())
+        return response.toWooPayload { categories ->
+            categories.map {
+                it.asProductCategoryModel()
+                    .apply { localSiteId = site.id }
             }
         }
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * for a given [SiteModel] and [sku] to check if this [sku] already exists on the site
+     * Makes a GET request to `/wp-json/wc/v3/products` for a given [SiteModel] and [sku] to check
+     * if this [sku] already exists on the site
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY] action with the availability for the [sku].
      */
@@ -692,48 +660,67 @@ class ProductRestClient @Inject constructor(
      * Makes a WP.COM GET request to `/sites/$site/posts/$post_ID` to fetch just the password for a product
      */
     fun fetchProductPassword(site: SiteModel, remoteProductId: Long) {
-        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
-        val params = mutableMapOf("fields" to "password")
+        coroutineEngine.launch(AppLog.T.API, this, "fetchProductPassword") {
+            val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
+            val params = mutableMapOf("fields" to "password")
 
-        val request = WPComGsonRequest.buildGetRequest(url,
-                params,
-                PostWPComRestResponse::class.java,
-                { response ->
-                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.password ?: "")
+            val response = wpComNetwork.executeGetGsonRequest(
+                url = url,
+                params = params,
+                clazz = PostWPComRestResponse::class.java
+            )
+
+            when (response) {
+                is WPComGsonRequestBuilder.Response.Success -> {
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.data.password ?: "")
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
                 }
-        ) { networkError ->
-            val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
-            payload.error = networkErrorToProductError(networkError)
-            dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                is WPComGsonRequestBuilder.Response.Error -> {
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
+                    payload.error = networkErrorToProductError(response.error)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                }
+            }
         }
-        add(request)
     }
 
     /**
      * Makes a WP.COM POST request to `/sites/$site/posts/$post_ID` to update just the password for a product
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
-        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
-        val body = mapOf(
+        coroutineEngine.launch(AppLog.T.API, this, "updateProductPassword") {
+            val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
+            val params = mapOf(
+                "context" to "edit",
+                "fields" to "password"
+            )
+            val body = mapOf(
                 "password" to password
-        )
+            )
 
-        val request = WPComGsonRequest.buildPostRequest(url,
-                body,
-                PostWPComRestResponse::class.java,
-                { response ->
-                    val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, response.password ?: "")
+            val response = wpComNetwork.executePostGsonRequest(
+                url = url,
+                params = params,
+                body = body,
+                clazz = PostWPComRestResponse::class.java
+            )
+
+            when (response) {
+                is WPComGsonRequestBuilder.Response.Success -> {
+                    val payload = RemoteUpdatedProductPasswordPayload(
+                        remoteProductId,
+                        site,
+                        response.data.password ?: ""
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
                 }
-        ) { networkError ->
-            val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
-            payload.error = networkErrorToProductError(networkError)
-            dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                is WPComGsonRequestBuilder.Response.Error -> {
+                    val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
+                    payload.error = networkErrorToProductError(response.error)
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                }
+            }
         }
-        request.addQueryParameter("context", "edit")
-        request.addQueryParameter("fields", "password")
-        add(request)
     }
 
     /**
@@ -798,9 +785,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wp-json/wc/v3/products/[productId]/variations` via the Jetpack tunnel
-     * (see [JetpackTunnelGsonRequest]), retrieving a list of variations for the given WooCommerce [SiteModel]
-     * and product.
+     * Makes a GET request to `/wp-json/wc/v3/products/[productId]/variations` retrieving a list of
+     * variations for the given WooCommerce [SiteModel] and product.
      *
      * @param [productId] Unique server id of the product
      *
@@ -834,20 +820,13 @@ class ProductRestClient @Inject constructor(
             clazz = Array<ProductVariationApiResponse>::class.java
         )
 
-        return when (response) {
-            is WPAPIResponse.Success -> {
-                response.data?.map {
-                    it.asProductVariationModel()
-                        .apply {
-                            localSiteId = site.id
-                            remoteProductId = productId
-                        }
-                }
-                    .orEmpty()
-                    .let { WooPayload(it.toList()) }
-            }
-            is WPAPIResponse.Error -> {
-                WooPayload(response.error.toWooError())
+        return response.toWooPayload { variations ->
+            variations.map {
+                it.asProductVariationModel()
+                    .apply {
+                        localSiteId = site.id
+                        remoteProductId = productId
+                    }
             }
         }
     }
@@ -986,7 +965,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = BatchProductApiResponse::class.java,
                 body = body
-            ).handleResult()
+            ).toWooPayload()
         }
 
     suspend fun replyToReview(
@@ -1006,7 +985,7 @@ class ProductRestClient @Inject constructor(
             path = WPAPI.comments.urlV2,
             clazz = Unit::class.java,
             body = body
-        ).handleResult()
+        ).toWooPayload()
     }
 
     /**
@@ -1047,7 +1026,7 @@ class ProductRestClient @Inject constructor(
                     path = url,
                     clazz = BatchProductVariationsApiResponse::class.java,
                     body = body
-                ).handleResult()
+                ).toWooPayload()
             }
 
     /**
@@ -1068,7 +1047,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = ProductVariationApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1090,7 +1069,7 @@ class ProductRestClient @Inject constructor(
                 site = site,
                 path = url,
                 clazz = ProductVariationApiResponse::class.java
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1116,7 +1095,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = ProductVariationApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1139,7 +1118,7 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = ProductApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).handleResult()
+            ).toWooPayload()
         }
 
     /**
@@ -1196,8 +1175,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of product categories for a given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products/categories` retrieving a list of product
+     * categories for a given WooCommerce [SiteModel].
      *
      * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE],
      * and retrieving older categories is done by passing an [offset].
@@ -1261,7 +1240,7 @@ class ProductRestClient @Inject constructor(
     /**
      * Posts a new Add Category record to the API for a category.
      *
-     * Makes a POST call `/wc/v3/products/categories/id` to save a Category record via the Jetpack tunnel.
+     * Makes a POST request to `/wp-json/wc/v3/products/categories/id` to save a Category record.
      * Returns a [WCProductCategoryModel] on successful response.
      *
      * Dispatches [WCProductAction.ADDED_PRODUCT_CATEGORY] action with the results.
@@ -1305,8 +1284,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/reviews` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * retrieving a list of product reviews for a given WooCommerce [SiteModel].
+     * Makes a GET request to `/wp-json/wc/v3/products/reviews` retrieving a list of product reviews
+     * for a given WooCommerce [SiteModel].
      *
      * The number of reviews to fetch is defined in [WCProductStore.NUM_REVIEWS_PER_FETCH], and retrieving older
      * reviews is done by passing an [offset].
@@ -1328,9 +1307,9 @@ class ProductRestClient @Inject constructor(
 
         val url = WOOCOMMERCE.products.reviews.pathV3
         val params = mutableMapOf(
-                "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
-                "offset" to offset.toString(),
-                "status" to statusFilter
+            "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
+            "offset" to offset.toString(),
+            "status" to statusFilter
         )
         reviewIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
@@ -1340,10 +1319,10 @@ class ProductRestClient @Inject constructor(
         }
 
         val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<ProductReviewApiResponse>::class.java,
-                params = params
+            site = site,
+            path = url,
+            clazz = Array<ProductReviewApiResponse>::class.java,
+            params = params
         )
 
         return when (response) {
@@ -1381,9 +1360,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a GET call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequestBuilder])
-     * retrieving a product review by it's remote ID for a given WooCommerce [SiteModel].
-     *
+     * Makes a GET request to `/wp-json/wc/v3/products/reviews/<id>` retrieving a product review by
+     * its remote ID for a given WooCommerce [SiteModel].
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote id of the review to fetch
@@ -1391,24 +1369,24 @@ class ProductRestClient @Inject constructor(
     suspend fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = ProductReviewApiResponse::class.java
+            site = site,
+            path = url,
+            clazz = ProductReviewApiResponse::class.java
         )
 
         return when (response) {
-            is WPAPIResponse.Success  -> {
+            is WPAPIResponse.Success -> {
                 response.data?.let {
                     val review = productReviewResponseToProductReviewModel(it).apply {
                         localSiteId = site.id
                     }
                     RemoteProductReviewPayload(site, review)
                 } ?: RemoteProductReviewPayload(
-                        error = ProductError(GENERIC_ERROR, "Success response with empty data"),
-                        site = site
+                    error = ProductError(GENERIC_ERROR, "Success response with empty data"),
+                    site = site
                 )
             }
-            is WPAPIResponse.Error  -> {
+            is WPAPIResponse.Error -> {
                 val productReviewError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductReviewPayload(error = productReviewError, site = site)
             }
@@ -1416,9 +1394,8 @@ class ProductRestClient @Inject constructor(
     }
 
     /**
-     * Makes a PUT call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the status for the given product review to [newStatus].
-     *
+     * Makes a PUT request to `/wp-json/wc/v3/products/reviews/<id>` updating the status for the
+     * given product review to [newStatus].
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote ID of the product review to be updated
@@ -1434,28 +1411,16 @@ class ProductRestClient @Inject constructor(
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val params = mapOf("status" to newStatus)
         val response = wooNetwork.executePutGsonRequest(
-                site = site,
-                path = url,
-                clazz = ProductReviewApiResponse::class.java,
-                body = params
+            site = site,
+            path = url,
+            clazz = ProductReviewApiResponse::class.java,
+            body = params
         )
 
-        return when (response) {
-            is WPAPIResponse.Success  -> {
-                response.data?.let {
-                    val review = productReviewResponseToProductReviewModel(it).apply {
-                        localSiteId = site.id
-                    }
-                    WooPayload(review)
-                } ?: WooPayload(
-                    error = WooError(
-                        type = WooErrorType.GENERIC_ERROR,
-                        original = GenericErrorType.UNKNOWN,
-                        message = "Success response with empty data"
-                    )
-                )
+        return response.toWooPayload {
+            productReviewResponseToProductReviewModel(it).apply {
+                localSiteId = site.id
             }
-            is WPAPIResponse.Error -> WooPayload(error = response.error.toWooError())
         }
     }
 
