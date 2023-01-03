@@ -16,6 +16,11 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
     @Inject internal lateinit var restClient: GatewayRestClient
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
+    private val testSite = SiteModel().apply {
+        origin = SiteModel.ORIGIN_WPCOM_REST
+        siteId = 123L
+    }
+
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
@@ -27,8 +32,8 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
         interceptor.respondWith("wc-pay-fetch-gateway-response-success.json")
 
         val result = restClient.fetchGateway(
-            SiteModel().apply { siteId = 123L },
-            "cod"
+            site = testSite,
+            gatewayId = "cod"
         )
 
         assertTrue(result.result != null)
@@ -40,8 +45,8 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
         interceptor.respondWithError("wc-pay-fetch-gateway-response-error.json", 500)
 
         val result = restClient.fetchGateway(
-            SiteModel().apply { siteId = 123L },
-            "cod"
+            site = testSite,
+            gatewayId = "cod"
         )
 
         assertTrue(result.isError)
@@ -53,8 +58,8 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
         interceptor.respondWith("wc-pay-update-gateway-response-success.json")
 
         val result = restClient.updatePaymentGateway(
-            SiteModel().apply { siteId = 123L },
-            CASH_ON_DELIVERY,
+            site = testSite,
+            gatewayId = CASH_ON_DELIVERY,
             enabled = true,
             title = "Pay on Delivery",
             description = "Pay by cash or card on delivery"
@@ -69,8 +74,8 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
         interceptor.respondWithError("wc-pay-update-gateway-response-error.json", 500)
 
         val result = restClient.updatePaymentGateway(
-            SiteModel().apply { siteId = 123L },
-            CASH_ON_DELIVERY,
+            site = testSite,
+            gatewayId = CASH_ON_DELIVERY,
             enabled = false,
             title = "Pay on Delivery",
             description = "Pay by cash or card on delivery"
@@ -85,7 +90,7 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
         interceptor.respondWithError("wc-pay-update-gateway-invalid-data-response-error.json", 500)
 
         val result = restClient.updatePaymentGateway(
-            SiteModel().apply { siteId = 123L },
+            site = testSite,
             enabled = true,
             title = "THIS IS INVALID TITLE",
             description = "THIS IS INVALID DESCRIPTION",
@@ -100,9 +105,7 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
     fun whenFetchAllGatewaysSucceedsReturnSuccess() = runBlocking {
         interceptor.respondWith("wc-pay-fetch-all-gateways-response-success.json")
 
-        val result = restClient.fetchAllGateways(
-            SiteModel().apply { siteId = 123L }
-        )
+        val result = restClient.fetchAllGateways(testSite)
 
         Assert.assertFalse(result.isError)
         assertTrue(result.result != null)
@@ -112,9 +115,7 @@ class MockedStack_WCGatewayTest : MockedStack_Base() {
     fun whenFetchAllGatewaysErrorReturnError() = runBlocking {
         interceptor.respondWithError("wc-pay-fetch-all-gateways-response-error.json", 500)
 
-        val result = restClient.fetchAllGateways(
-            SiteModel().apply { siteId = 123L }
-        )
+        val result = restClient.fetchAllGateways(testSite)
 
         assertTrue(result.isError)
         assertEquals(API_ERROR, result.error.type)

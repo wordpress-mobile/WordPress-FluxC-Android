@@ -1,62 +1,44 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
-import com.android.volley.RequestQueue
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient.GatewayId.CASH_ON_DELIVERY
 
 class GatewayRestClientTest {
-    private lateinit var jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
-    private lateinit var requestQueue: RequestQueue
-    private lateinit var accessToken: AccessToken
-    private lateinit var userAgent: UserAgent
+    private val wooNetwork: WooNetwork = mock()
     private lateinit var gatewayRestClient: GatewayRestClient
 
     @Before
     fun setup() {
-        jetpackTunnelGsonRequestBuilder = mock()
-        requestQueue = mock()
-        accessToken = mock()
-        userAgent = mock()
-        gatewayRestClient = GatewayRestClient(
-            mock(),
-            jetpackTunnelGsonRequestBuilder,
-            mock(),
-            requestQueue,
-            accessToken,
-            userAgent
-        )
+        gatewayRestClient = GatewayRestClient(wooNetwork)
     }
 
     @Test
     fun `given success response, when fetch gateway, return success`() {
         runBlocking {
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>(),
-                    any(),
-                    any(),
-                    any(),
-                    anyOrNull()
+                wooNetwork.executeGetGsonRequest(
+                    site = any(),
+                    path = any(),
+                    clazz = any<Class<GatewayRestClient.GatewayResponse>>(),
+                    params = any(),
+                    enableCaching = any(),
+                    cacheTimeToLive = any(),
+                    forced = any(),
+                    requestTimeout = any(),
+                    retries = any()
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(mock())
+                WPAPIResponse.Success(mock())
             )
 
             val actualResponse = gatewayRestClient.fetchGateway(
@@ -72,23 +54,23 @@ class GatewayRestClientTest {
     @Test
     fun `given error response, when fetch gateway, return error`() {
         runBlocking {
-            val expectedError = mock<WPComGsonNetworkError>().apply {
+            val expectedError = mock<WPAPINetworkError>().apply {
                 type = mock()
             }
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>(),
-                    any(),
-                    any(),
-                    any(),
-                    anyOrNull()
+                wooNetwork.executeGetGsonRequest(
+                    site = any(),
+                    path = any(),
+                    clazz = any<Class<GatewayRestClient.GatewayResponse>>(),
+                    params = any(),
+                    enableCaching = any(),
+                    cacheTimeToLive = any(),
+                    forced = any(),
+                    requestTimeout = any(),
+                    retries = any()
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+                WPAPIResponse.Error(expectedError)
             )
 
             val actualResponse = gatewayRestClient.fetchGateway(SiteModel(), "")
@@ -102,15 +84,14 @@ class GatewayRestClientTest {
     fun `given success response, when update gateway, return success`() {
         runBlocking {
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                wooNetwork.executePostGsonRequest(
                     any(),
                     any(),
-                    any(),
-                    any(),
-                    any<Class<GatewayRestClient.GatewayResponse>>()
+                    any<Class<GatewayRestClient.GatewayResponse>>(),
+                    any()
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess(mock())
+                WPAPIResponse.Success(mock())
             )
 
             val actualResponse = gatewayRestClient.updatePaymentGateway(
@@ -128,19 +109,18 @@ class GatewayRestClientTest {
     @Test
     fun `given error response, when update gateway, return error`() {
         runBlocking {
-            val expectedError = mock<WPComGsonNetworkError>().apply {
+            val expectedError = mock<WPAPINetworkError>().apply {
                 type = mock()
             }
             whenever(
-                jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                    any(),
-                    any(),
+                wooNetwork.executePostGsonRequest(
                     any(),
                     any(),
                     any<Class<GatewayRestClient.GatewayResponse>>(),
+                    any()
                 )
             ).thenReturn(
-                JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError(expectedError)
+                WPAPIResponse.Error(expectedError)
             )
 
             val actualResponse = gatewayRestClient.updatePaymentGateway(
