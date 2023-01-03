@@ -67,6 +67,10 @@ open class WooCommerceStore @Inject constructor(
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
     }
 
+
+    private val SiteModel.needsAdditionalCheckForWooInstallation
+        get() = origin != SiteModel.ORIGIN_WPCOM_REST || isJetpackCPConnected
+
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -95,7 +99,7 @@ open class WooCommerceStore @Inject constructor(
         var rowsAffected = fetchResult.rowsAffected
         // Fetch WooCommerce availability for non-Jetpack sites
         siteStore.sites
-            .filterNot { it.origin == SiteModel.ORIGIN_WPCOM_REST && it.isJetpackConnected }
+            .filter { it.needsAdditionalCheckForWooInstallation }
             .forEach { site ->
                 val isResultUpdated = fetchAndUpdateNonJetpackSite(site)
                 if (isResultUpdated.model == true && !fetchResult.updatedSites.contains(site)) {
@@ -125,7 +129,7 @@ open class WooCommerceStore @Inject constructor(
             }
         }
 
-        val isSiteUpdated = if (!site.isJetpackConnected || site.origin != SiteModel.ORIGIN_WPCOM_REST) {
+        val isSiteUpdated = if (site.needsAdditionalCheckForWooInstallation) {
             fetchAndUpdateNonJetpackSite(site).let {
                 if (it.isError) return WooResult(it.error)
 
