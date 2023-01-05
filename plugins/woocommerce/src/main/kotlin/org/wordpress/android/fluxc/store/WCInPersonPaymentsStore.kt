@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCCapturePaymentRespo
 import org.wordpress.android.fluxc.model.payments.inperson.WCConnectionTokenResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentTransactionsSummaryResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -76,6 +77,24 @@ class WCInPersonPaymentsStore @Inject constructor(
     ): WooPayload<WCPaymentChargeApiResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchPaymentCharge") {
             restClient.fetchPaymentCharge(activePlugin, chargeId, site)
+        }
+    }
+
+    /**
+     * Fetches a summary of IPP transactions made in a given period of time.
+     * The method is available for stores using WCPay plugin.
+     *
+     * @param activePlugin The active IPP plugin [InPersonPaymentsPluginType].
+     * @param site The site to fetch the transactions for.
+     * @param dateAfter The start date of the period to fetch the transactions for, in ISO 8601 format YYYY-mm-DD.
+     */
+    suspend fun fetchTransactionsSummary(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel,
+        dateAfter: String? = null
+    ): WooPayload<WCPaymentTransactionsSummaryResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTransactionsSummary") {
+            restClient.fetchTransactionsSummary(activePlugin, site, dateAfter)
         }
     }
 
