@@ -548,13 +548,13 @@ class ProvideAddonsIntegrationTests {
                     basicAddon.copy(name = "Add-on NOT applied to category of the test product")
 
             dao.cacheProductAddons(
-                    productRemoteId = product.remoteProductId,
-                    siteRemoteId = siteModel.siteId,
+                    productRemoteId = product.remoteId,
+                    localSiteId = siteModel.localId(),
                     addons = listOf(productSpecificAddon)
             )
 
             dao.cacheGroups(
-                    siteRemoteId = siteModel.siteId,
+                    localSiteId = siteModel.localId(),
                     globalAddonGroups = listOf(
                             GlobalAddonGroup(
                                     name = "Group for all categories",

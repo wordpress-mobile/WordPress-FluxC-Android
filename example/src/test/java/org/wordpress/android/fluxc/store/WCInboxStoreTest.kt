@@ -7,6 +7,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -45,7 +46,7 @@ class WCInboxStoreTest {
             sut.fetchInboxNotes(ANY_SITE_MODEL)
 
             verify(inboxNotesDao).deleteAllAndInsertInboxNotes(
-                ANY_SITE_MODEL.siteId, *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
+                ANY_SITE_MODEL.localId(), *INBOX_NOTES_WITH_ACTIONS_ENTITY.toTypedArray()
             )
         }
 
@@ -87,7 +88,7 @@ class WCInboxStoreTest {
 
             sut.deleteNotesForSite(ANY_SITE_MODEL)
 
-            verify(inboxNotesDao).deleteInboxNotesForSite(A_SITE_ID)
+            verify(inboxNotesDao).deleteInboxNotesForSite(LocalId(A_SITE_ID))
         }
 
     @Test
@@ -139,16 +140,16 @@ class WCInboxStoreTest {
         ).thenReturn(WooPayload(ANY_WOO_API_ERROR))
     }
 
-    private fun givenNotesSavedInDbForSite(siteId: Long) {
+    private fun givenNotesSavedInDbForSite(localSiteId: Int) {
         whenever(
-            inboxNotesDao.getInboxNotesForSite(siteId)
+            inboxNotesDao.getInboxNotesForSite(LocalId(localSiteId))
         ).thenReturn(listOf(ANY_INBOX_NOTE_ENTITY))
     }
 
     private companion object {
         const val AN_INBOX_NOTE_REMOTE_ID: Long = 1
-        const val A_SITE_ID: Long = 12324
-        val ANY_SITE_MODEL = SiteModel().apply { siteId = A_SITE_ID }
+        const val A_SITE_ID: Int = 12324
+        val ANY_SITE_MODEL = SiteModel().apply { id = A_SITE_ID }
         val ANY_WOO_API_ERROR = WooError(GENERIC_ERROR, UNKNOWN)
         val ANY_WOO_RESULT_WITH_ERROR: WooResult<Unit> = WooResult(ANY_WOO_API_ERROR)
         val ANY_INBOX_NOTE_ACTION_DTO = InboxNoteActionDto(
@@ -180,7 +181,7 @@ class WCInboxStoreTest {
         val ANY_INBOX_NOTE_ENTITY = InboxNoteEntity(
             localId = 1,
             remoteId = AN_INBOX_NOTE_REMOTE_ID,
-            siteId = A_SITE_ID,
+            localSiteId = LocalId(A_SITE_ID),
             name = "",
             type = "",
             status = Unactioned,
@@ -192,10 +193,10 @@ class WCInboxStoreTest {
         )
         val INBOX_NOTES_WITH_ACTIONS_ENTITY = listOf(
             InboxNoteWithActions(
-                inboxNote = ANY_INBOX_NOTE_DTO.toInboxNoteEntity(ANY_SITE_MODEL.siteId),
+                inboxNote = ANY_INBOX_NOTE_DTO.toInboxNoteEntity(ANY_SITE_MODEL.localId()),
                 noteActions = listOf(
                     ANY_INBOX_NOTE_ACTION_DTO.toDataModel(
-                        ANY_SITE_MODEL.siteId
+                        ANY_SITE_MODEL.localId()
                     )
                 )
             )

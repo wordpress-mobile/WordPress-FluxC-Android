@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_20_21
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_21_22
 
 @RunWith(AndroidJUnit4::class)
 class MigrationTests {
@@ -182,6 +183,14 @@ class MigrationTests {
             // Ensure we delete all saved TopPerformerProducts
             assertThat(cursor.count).isEqualTo(0)
             cursor.close()
+        }
+    }
+
+    @Test
+    fun testMigrate21to22() {
+        helper.apply {
+            createDatabase(TEST_DB, 21).close()
+            runMigrationsAndValidate(TEST_DB, 22, true, MIGRATION_21_22)
         }
     }
 

@@ -9,6 +9,7 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.utils.getBoolean
@@ -31,6 +32,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
+    val remoteId
+        get() = RemoteId(remoteProductId)
     @Column var name = ""
     @Column var slug = ""
     @Column var permalink = ""

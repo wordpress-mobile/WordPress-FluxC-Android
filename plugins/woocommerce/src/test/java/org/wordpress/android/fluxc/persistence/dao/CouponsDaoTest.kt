@@ -15,6 +15,8 @@ import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType.Percent
 import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
@@ -29,7 +31,7 @@ class CouponsDaoTest {
     private val coupon = generateCouponEntity()
     private val email = CouponEmailEntity(
         couponId = coupon.id,
-        siteId = coupon.siteId,
+        localSiteId = coupon.localSiteId,
         email = "test@test.com"
     )
 
@@ -53,7 +55,7 @@ class CouponsDaoTest {
         // when
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        var observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
+        var observedCoupon = couponsDao.observeCoupons(coupon.localSiteId).first()
 
         // then
         val expected = CouponWithEmails(coupon, listOf(email))
@@ -64,7 +66,7 @@ class CouponsDaoTest {
         val newExpected = CouponWithEmails(newCoupon, listOf(email))
         couponsDao.insertOrUpdateCoupon(newCoupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        observedCoupon = couponsDao.observeCoupons(coupon.siteId).first()
+        observedCoupon = couponsDao.observeCoupons(coupon.localSiteId).first()
 
         // then
         assertThat(observedCoupon.first()).isEqualTo(newExpected)
@@ -75,7 +77,7 @@ class CouponsDaoTest {
         // when
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        val observedCoupon = couponsDao.observeCoupon(1, coupon.id + 1)
+        val observedCoupon = couponsDao.observeCoupon(LocalId(1), RemoteId( coupon.id.value + 1))
 
         // then
         assertThat(observedCoupon.first()).isNull()
@@ -86,7 +88,7 @@ class CouponsDaoTest {
         // when
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        val observedCoupon = couponsDao.observeCoupon(1, coupon.id)
+        val observedCoupon = couponsDao.observeCoupon(LocalId(1), coupon.id)
 
         var expected = CouponWithEmails(coupon, listOf(email))
         assertThat(observedCoupon.first()).isEqualTo(expected)
@@ -107,22 +109,22 @@ class CouponsDaoTest {
         val coupon = generateCouponEntity()
         val email = CouponEmailEntity(
             couponId = coupon.id,
-            siteId = coupon.siteId,
+            localSiteId = coupon.localSiteId,
             email = "test@test.com"
         )
         couponsDao.insertOrUpdateCoupon(coupon)
         couponsDao.insertOrUpdateCouponEmail(email)
-        var observedCoupons = couponsDao.observeCoupons(coupon.siteId).first()
-        var emailCount = couponsDao.getEmailCount(coupon.siteId, coupon.id)
+        var observedCoupons = couponsDao.observeCoupons(coupon.localSiteId).first()
+        var emailCount = couponsDao.getEmailCount(coupon.localSiteId, coupon.id)
 
         // then
         assertThat(observedCoupons.size).isEqualTo(1)
         assertThat(emailCount).isEqualTo(1)
 
         // when
-        couponsDao.deleteCoupon(coupon.siteId, coupon.id)
-        observedCoupons = couponsDao.observeCoupons(coupon.siteId).first()
-        emailCount = couponsDao.getEmailCount(coupon.siteId, coupon.id)
+        couponsDao.deleteCoupon(coupon.localSiteId, coupon.id)
+        observedCoupons = couponsDao.observeCoupons(coupon.localSiteId).first()
+        emailCount = couponsDao.getEmailCount(coupon.localSiteId, coupon.id)
 
         // then
         assertThat(observedCoupons.size).isEqualTo(0)
@@ -131,8 +133,8 @@ class CouponsDaoTest {
 
     companion object {
         fun generateCouponEntity(id: Long = 0) = CouponEntity(
-            id = id,
-            siteId = 1,
+            id = RemoteId(1),
+            localSiteId = LocalId(1),
             amount = BigDecimal(5),
             code = "code",
             dateCreated = "2007-04-05T14:30Z",

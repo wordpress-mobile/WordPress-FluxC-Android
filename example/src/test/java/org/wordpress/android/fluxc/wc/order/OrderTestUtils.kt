@@ -57,11 +57,11 @@ object OrderTestUtils {
         }
     }
 
-    fun getOrderNotesFromJsonString(json: String, siteId: Long, orderId: Long): List<OrderNoteEntity> {
+    fun getOrderNotesFromJsonString(json: String, localSiteId: Int, orderId: Long): List<OrderNoteEntity> {
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderNoteApiResponse> ?: emptyList()
         return converted.map {
-            it.toDataModel(siteId = RemoteId(siteId), orderId = RemoteId(orderId))
+            it.toDataModel(localSiteId = LocalId(localSiteId), orderId = RemoteId(orderId))
         }
     }
 

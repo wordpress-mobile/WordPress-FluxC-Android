@@ -236,10 +236,10 @@ class WCOrderStoreTest {
     fun testGetOrderNotesForOrder() = runBlocking {
         val notesJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_notes.json")
         val orderId = 949L
-        val siteId = 6L
-        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, siteId, orderId)
-        val orderModel = OrderTestUtils.generateSampleOrder(orderId).copy(localSiteId = LocalId(siteId.toInt()))
-        val site = SiteModel().apply { setSiteId(siteId) }
+        val localSiteId = 6
+        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, localSiteId, orderId)
+        val orderModel = OrderTestUtils.generateSampleOrder(orderId).copy(localSiteId = LocalId(localSiteId.toInt()))
+        val site = SiteModel().apply { id = localSiteId }
         assertEquals(6, noteModels.size)
         orderNotesDao.insertNotes(noteModels[0])
 

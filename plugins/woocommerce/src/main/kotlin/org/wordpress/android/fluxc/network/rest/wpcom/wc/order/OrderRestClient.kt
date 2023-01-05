@@ -506,7 +506,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 val noteModels = response.data?.map {
-                    it.toDataModel(site.remoteId(), RemoteId(orderId))
+                    it.toDataModel(site.localId(), RemoteId(orderId))
                 }.orEmpty()
                 WooPayload(noteModels)
             }
@@ -542,7 +542,7 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess -> {
                 response.data?.let {
-                    val newNote = it.toDataModel(site.remoteId(), RemoteId(orderId))
+                    val newNote = it.toDataModel(site.localId(), RemoteId(orderId))
                     return WooPayload(newNote)
                 } ?: WooPayload(
                         WooError(

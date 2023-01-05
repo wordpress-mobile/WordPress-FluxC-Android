@@ -5,8 +5,8 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
 class RemoteIdConverter {
     @TypeConverter
-    fun fromRemoteId(value: RemoteId) = value.value
+    fun fromRemoteId(value: RemoteId?) = value?.value
 
     @TypeConverter
-    fun toRemoteId(value: Long) = RemoteId(value)
+    fun toRemoteId(value: Long?) = value?.let { RemoteId(it) }
 }

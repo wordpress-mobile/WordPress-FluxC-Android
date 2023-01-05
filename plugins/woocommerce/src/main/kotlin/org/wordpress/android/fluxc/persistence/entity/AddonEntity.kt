@@ -1,11 +1,14 @@
 package org.wordpress.android.fluxc.persistence.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
 data class AddonWithOptions(
     @Embedded val addon: AddonEntity,
@@ -26,9 +29,9 @@ data class AddonWithOptions(
 )
 data class AddonEntity(
     @PrimaryKey(autoGenerate = true) val addonLocalId: Long = 0,
-    val globalGroupLocalId: Long? = null,
-    val productRemoteId: Long? = null,
-    val siteRemoteId: Long? = null,
+    @ColumnInfo(index = true) val globalGroupLocalId: Long? = null,
+    val productRemoteId: RemoteId? = null,
+    val localSiteId: LocalId? = null,
     val type: LocalType,
     val display: LocalDisplay? = null,
     val name: String,
