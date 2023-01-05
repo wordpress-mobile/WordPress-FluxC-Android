@@ -1043,8 +1043,8 @@ class WCProductStore @Inject constructor(
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
                     val domainAddons = mapProductAddonsToDomain(result.product.addons)
                     addonsDao.cacheProductAddons(
-                            productRemoteId = result.product.remoteProductId,
-                            siteRemoteId = result.site.siteId,
+                            productRemoteId = result.product.remoteId,
+                            localSiteId = result.site.localId(),
                             addons = domainAddons
                     )
                 }
@@ -1643,8 +1643,8 @@ class WCProductStore @Inject constructor(
                         val domainAddons = mapProductAddonsToDomain(product.addons)
 
                         addonsDao.cacheProductAddons(
-                            productRemoteId = product.remoteProductId,
-                            siteRemoteId = payload.site.siteId,
+                            productRemoteId = product.remoteId,
+                            localSiteId = payload.site.localId(),
                             addons = domainAddons
                         )
                     }

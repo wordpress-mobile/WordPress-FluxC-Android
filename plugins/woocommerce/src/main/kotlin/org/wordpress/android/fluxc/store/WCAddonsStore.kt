@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup.CategoriesRestriction.AllProductsCategories
 import org.wordpress.android.fluxc.domain.GlobalAddonGroup.CategoriesRestriction.SpecifiedProductCategories
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -47,7 +48,7 @@ class WCAddonsStore @Inject internal constructor(
                         remoteGlobalAddonGroupMapper.toDomain(dtoGroup)
                     }
 
-                    dao.cacheGroups(domain, site.siteId)
+                    dao.cacheGroups(domain, site.localId())
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -55,8 +56,8 @@ class WCAddonsStore @Inject internal constructor(
         }
     }
 
-    fun observeProductSpecificAddons(siteRemoteId: Long, productRemoteId: Long): Flow<List<Addon>> {
-        return dao.observeSingleProductAddons(siteRemoteId, productRemoteId)
+    fun observeProductSpecificAddons(site: SiteModel, productRemoteId: Long): Flow<List<Addon>> {
+        return dao.observeSingleProductAddons(site.localId(), RemoteId(productRemoteId))
                 .map {
                     it.map { entityAddon ->
                         FromDatabaseAddonsMapper.toDomainModel(entityAddon)
@@ -64,8 +65,8 @@ class WCAddonsStore @Inject internal constructor(
                 }
     }
 
-    fun observeAllAddonsForProduct(siteRemoteId: Long, product: WCProductModel): Flow<List<Addon>> {
-        return dao.observeGlobalAddonsForSite(siteRemoteId = siteRemoteId)
+    fun observeAllAddonsForProduct(site: SiteModel, product: WCProductModel): Flow<List<Addon>> {
+        return dao.observeGlobalAddonsForSite(localSiteId = site.localId())
                 .map { globalGroupsEntities ->
                     val domainGroup = globalGroupsEntities.map { globalGroupEntity ->
                         fromDatabaseAddonGroupMapper.toDomainModel(
@@ -76,8 +77,8 @@ class WCAddonsStore @Inject internal constructor(
                 }
                 .combine(
                         dao.observeSingleProductAddons(
-                                siteRemoteId = siteRemoteId,
-                                productRemoteId = product.remoteProductId
+                                localSiteId = site.localId(),
+                                productRemoteId = product.remoteId
                         ).map { addonEntities ->
                             addonEntities.mapNotNull { addonEntity ->
                                 mapEntityToAddonSafely(addonEntity)

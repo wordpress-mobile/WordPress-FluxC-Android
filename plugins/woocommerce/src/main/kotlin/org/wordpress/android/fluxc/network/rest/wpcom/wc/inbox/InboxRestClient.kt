@@ -1,31 +1,13 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.inbox
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
-class InboxRestClient @Inject constructor(
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    appContext: Context?,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class InboxRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     suspend fun fetchInboxNotes(
         site: SiteModel,
         page: Int,
@@ -34,21 +16,17 @@ class InboxRestClient @Inject constructor(
     ): WooPayload<Array<InboxNoteDto>> {
         val url = WOOCOMMERCE.admin.notes.pathV4Analytics
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            this,
-            site,
-            url,
-            mapOf(
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf(
                 "page" to page.toString(),
                 "per_page" to pageSize.toString(),
                 "type" to inboxNoteTypes.joinToString(separator = ",")
             ),
-            Array<InboxNoteDto>::class.java
+            clazz = Array<InboxNoteDto>::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     suspend fun markInboxNoteAsActioned(
@@ -56,20 +34,14 @@ class InboxRestClient @Inject constructor(
         inboxNoteId: Long,
         inboxNoteActionId: Long
     ): WooPayload<InboxNoteDto> {
-        val url = WOOCOMMERCE.admin.notes.note(inboxNoteId)
-            .action.item(inboxNoteActionId).pathV4Analytics
+        val url = WOOCOMMERCE.admin.notes.note(inboxNoteId).action.item(inboxNoteActionId).pathV4Analytics
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-            this,
-            site,
-            url,
-            emptyMap(),
-            InboxNoteDto::class.java
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = InboxNoteDto::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> WooPayload(response.data)
-            is JetpackError -> WooPayload(response.error.toWooError())
-        }
+        return response.toWooPayload()
     }
 
     suspend fun deleteNote(
@@ -78,16 +50,12 @@ class InboxRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.admin.notes.delete.note(inboxNoteId).pathV4Analytics
 
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-            this,
-            site,
-            url,
-            Unit::class.java
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = Unit::class.java
         )
-        return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(Unit)
-        }
+        return response.toWooPayload()
     }
 
     suspend fun deleteAllNotesForSite(
@@ -98,20 +66,16 @@ class InboxRestClient @Inject constructor(
     ): WooPayload<Unit> {
         val url = WOOCOMMERCE.admin.notes.delete.all.pathV4Analytics
 
-        val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
-            this,
-            site,
-            url,
-            Array<InboxNoteDto>::class.java,
-            mapOf(
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<InboxNoteDto>::class.java,
+            params = mapOf(
                 "page" to page.toString(),
                 "per_page" to pageSize.toString(),
                 "type" to inboxNoteTypes.joinToString(separator = ",")
             )
         )
-        return when (response) {
-            is JetpackError -> WooPayload(response.error.toWooError())
-            is JetpackSuccess -> WooPayload(Unit)
-        }
+        return response.toWooPayload { }
     }
 }

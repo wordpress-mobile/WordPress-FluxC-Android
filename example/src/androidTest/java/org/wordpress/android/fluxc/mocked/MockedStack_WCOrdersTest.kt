@@ -279,7 +279,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload.result!![0]) {
             assertEquals(1942, noteId.value)
             assertEquals(DateTimeUtils.dateUTCFromIso8601("2018-04-27T20:48:10Z"), dateCreated)
-            assertEquals(siteModel.remoteId(), siteId)
+            assertEquals(siteModel.localId(), localSiteId)
             assertEquals(88, orderId.value)
             assertEquals(
                     "Email queued: Poster Purchase Follow-Up scheduled " +
@@ -337,7 +337,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(true, result!!.isCustomerNote)
             assertFalse(result!!.isSystemNote) // Any note created from the app should be flagged as user-created
             assertEquals(orderModel.orderId, result!!.orderId.value)
-            assertEquals(siteModel.remoteId(), result!!.siteId)
+            assertEquals(siteModel.localId(), result!!.localSiteId)
         }
     }
 

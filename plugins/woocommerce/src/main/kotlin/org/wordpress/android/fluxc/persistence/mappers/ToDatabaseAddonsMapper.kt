@@ -24,7 +24,7 @@ object ToDatabaseAddonsMapper {
         return AddonEntity(
                 globalGroupLocalId = globalGroupLocalId,
                 productRemoteId = productBasedIdentification?.productRemoteId,
-                siteRemoteId = productBasedIdentification?.siteRemoteId,
+                localSiteId = productBasedIdentification?.localSiteId,
                 titleFormat = domain.titleFormat.toLocalEntity(),
                 restrictions = domain.mapRestrictions(),
                 priceType = domain.mapPriceType(),

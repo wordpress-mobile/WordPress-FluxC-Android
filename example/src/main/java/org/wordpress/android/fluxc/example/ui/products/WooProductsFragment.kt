@@ -519,7 +519,7 @@ class WooProductsFragment : StoreSelectingFragment() {
 
         test_add_ons.setOnClickListener {
             selectedSite?.let { site ->
-                WooAddonsTestFragment.show(childFragmentManager, site.siteId)
+                WooAddonsTestFragment.show(childFragmentManager, site.id)
             }
         }
 

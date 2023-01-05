@@ -574,7 +574,7 @@ class OrderRestClient @Inject constructor(
 
         return response.toWooPayload { orderNotesResponse ->
             orderNotesResponse.map {
-                it.toDataModel(site.remoteId(), RemoteId(orderId))
+                it.toDataModel(site.localId(), RemoteId(orderId))
             }
         }
     }
@@ -605,7 +605,7 @@ class OrderRestClient @Inject constructor(
         )
 
         return response.toWooPayload { orderNoteResponse ->
-            orderNoteResponse.toDataModel(site.remoteId(), RemoteId(orderId))
+            orderNoteResponse.toDataModel(site.localId(), RemoteId(orderId))
         }
     }
 

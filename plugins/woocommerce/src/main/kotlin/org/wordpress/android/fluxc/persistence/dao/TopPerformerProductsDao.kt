@@ -6,40 +6,41 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 
 @Dao
 interface TopPerformerProductsDao {
-    @Query("SELECT * FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND siteId = :siteId")
+    @Query("SELECT * FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND localSiteId = :localSiteId")
     fun observeTopPerformerProducts(
-        siteId: Long,
+        localSiteId: LocalId,
         datePeriod: String
     ): Flow<List<TopPerformerProductEntity>>
 
-    @Query("SELECT * FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND siteId = :siteId")
+    @Query("SELECT * FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND localSiteId = :localSiteId")
     suspend fun getTopPerformerProductsFor(
-        siteId: Long,
+        localSiteId: LocalId,
         datePeriod: String
     ): List<TopPerformerProductEntity>
 
-    @Query("SELECT * FROM TopPerformerProducts WHERE siteId = :siteId")
+    @Query("SELECT * FROM TopPerformerProducts WHERE localSiteId = :localSiteId")
     suspend fun getTopPerformerProductsForSite(
-        siteId: Long
+        localSiteId: LocalId
     ): List<TopPerformerProductEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: TopPerformerProductEntity)
 
-    @Query("DELETE FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND siteId = :siteId")
-    suspend fun deleteAllFor(siteId: Long, datePeriod: String)
+    @Query("DELETE FROM TopPerformerProducts WHERE datePeriod = :datePeriod AND localSiteId = :localSiteId")
+    suspend fun deleteAllFor(localSiteId: LocalId, datePeriod: String)
 
     @Transaction
     suspend fun updateTopPerformerProductsFor(
-        siteId: Long,
+        localSiteId: LocalId,
         datePeriod: String,
         topPerformerProducts: List<TopPerformerProductEntity>
     ) {
-        deleteAllFor(siteId, datePeriod)
+        deleteAllFor(localSiteId, datePeriod)
         topPerformerProducts.forEach { topPerformerProduct ->
             insert(topPerformerProduct)
         }
@@ -47,7 +48,7 @@ interface TopPerformerProductsDao {
 
     @Transaction
     suspend fun updateTopPerformerProductsForSite(
-        siteId: Long,
+        localSiteId: LocalId,
         topPerformerProducts: List<TopPerformerProductEntity>
     ) {
         topPerformerProducts.forEach { topPerformerProduct ->

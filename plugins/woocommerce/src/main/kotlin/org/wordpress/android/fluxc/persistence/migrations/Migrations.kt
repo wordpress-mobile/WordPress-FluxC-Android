@@ -627,3 +627,38 @@ internal val MIGRATION_20_21 = object : Migration(20, 21) {
         }
     }
 }
+
+@Suppress("MaxLineLength")
+internal val MIGRATION_21_22 = Migration(21, 22) { database ->
+    // TopPerformerProducts
+    database.execSQL("DROP TABLE `TopPerformerProducts`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `TopPerformerProducts` (`localSiteId` INTEGER NOT NULL, `datePeriod` TEXT NOT NULL, `productId` INTEGER NOT NULL, `name` TEXT NOT NULL, `imageUrl` TEXT, `quantity` INTEGER NOT NULL, `currency` TEXT NOT NULL, `total` REAL NOT NULL, `millisSinceLastUpdated` INTEGER NOT NULL, PRIMARY KEY(`datePeriod`, `productId`, `localSiteId`))")
+
+    // Coupons
+    database.execSQL("DROP TABLE `Coupons`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `Coupons` (`id` INTEGER NOT NULL, `localSiteId` INTEGER NOT NULL, `code` TEXT, `amount` TEXT, `dateCreated` TEXT, `dateCreatedGmt` TEXT, `dateModified` TEXT, `dateModifiedGmt` TEXT, `discountType` TEXT, `description` TEXT, `dateExpires` TEXT, `dateExpiresGmt` TEXT, `usageCount` INTEGER, `isForIndividualUse` INTEGER, `usageLimit` INTEGER, `usageLimitPerUser` INTEGER, `limitUsageToXItems` INTEGER, `isShippingFree` INTEGER, `areSaleItemsExcluded` INTEGER, `minimumAmount` TEXT, `maximumAmount` TEXT, `includedProductIds` TEXT, `excludedProductIds` TEXT, `includedCategoryIds` TEXT, `excludedCategoryIds` TEXT, PRIMARY KEY(`id`, `localSiteId`))")
+    database.execSQL("DROP TABLE `CouponEmails`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `CouponEmails` (`couponId` INTEGER NOT NULL, `localSiteId` INTEGER NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`couponId`, `localSiteId`, `email`), FOREIGN KEY(`couponId`, `localSiteId`) REFERENCES `Coupons`(`id`, `localSiteId`) ON UPDATE NO ACTION ON DELETE CASCADE )")
+
+    // Addons
+    database.execSQL("DROP TABLE `GlobalAddonGroupEntity`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `GlobalAddonGroupEntity` (`globalGroupLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `restrictedCategoriesIds` TEXT NOT NULL, `localSiteId` INTEGER NOT NULL)")
+    database.execSQL("DROP TABLE `AddonEntity`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `AddonEntity` (`addonLocalId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `globalGroupLocalId` INTEGER, `productRemoteId` INTEGER, `localSiteId` INTEGER, `type` TEXT NOT NULL, `display` TEXT, `name` TEXT NOT NULL, `titleFormat` TEXT NOT NULL, `description` TEXT, `required` INTEGER NOT NULL, `position` INTEGER NOT NULL, `restrictions` TEXT, `priceType` TEXT, `price` TEXT, `min` INTEGER, `max` INTEGER, FOREIGN KEY(`globalGroupLocalId`) REFERENCES `GlobalAddonGroupEntity`(`globalGroupLocalId`) ON UPDATE NO ACTION ON DELETE CASCADE )")
+
+    // Inbox
+    database.execSQL("DROP TABLE `InboxNotes`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `InboxNotes` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteId` INTEGER NOT NULL, `localSiteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT, `type` TEXT, `dateReminder` TEXT)")
+    database.execSQL("DROP TABLE `InboxNoteActions`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `InboxNoteActions` (`remoteId` INTEGER NOT NULL, `inboxNoteLocalId` INTEGER NOT NULL, `localSiteId` INTEGER NOT NULL, `name` TEXT NOT NULL, `label` TEXT NOT NULL, `url` TEXT NOT NULL, `query` TEXT, `status` TEXT, `primary` INTEGER NOT NULL, `actionedText` TEXT, PRIMARY KEY(`remoteId`, `inboxNoteLocalId`), FOREIGN KEY(`inboxNoteLocalId`) REFERENCES `InboxNotes`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )")
+    database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_InboxNotes_remoteId_localSiteId` ON `InboxNotes` (`remoteId`, `localSiteId`)")
+
+    // Order Notes
+    database.execSQL("DROP TABLE `OrderNotes`")
+    database.execSQL("CREATE TABLE IF NOT EXISTS `OrderNotes` (`localSiteId` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `dateCreated` TEXT, `note` TEXT, `author` TEXT, `isSystemNote` INTEGER NOT NULL, `isCustomerNote` INTEGER NOT NULL, PRIMARY KEY(`localSiteId`, `noteId`))")
+
+    // Foreign Key missing indices
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_AddonOptionEntity_addonLocalId` ON `AddonOptionEntity` (`addonLocalId`)")
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_AddonEntity_globalGroupLocalId` ON `AddonEntity` (`globalGroupLocalId`)")
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_inboxNoteLocalId` ON `InboxNoteActions` (`inboxNoteLocalId`)")
+}

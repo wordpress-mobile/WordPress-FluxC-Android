@@ -2,23 +2,23 @@ package org.wordpress.android.fluxc.persistence.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Index
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 
 @Entity(
     tableName = "CouponEmails",
     foreignKeys = [
         ForeignKey(
             entity = CouponEntity::class,
-            parentColumns = ["id", "siteId"],
-            childColumns = ["couponId", "siteId"],
+            parentColumns = ["id", "localSiteId"],
+            childColumns = ["couponId", "localSiteId"],
             onDelete = ForeignKey.CASCADE
         )
     ],
-    primaryKeys = ["couponId", "siteId", "email"],
-    indices = [Index("couponId", "siteId", "email")]
+    primaryKeys = ["couponId", "localSiteId", "email"]
 )
 data class CouponEmailEntity(
-    val couponId: Long,
-    val siteId: Long,
+    val couponId: RemoteId,
+    val localSiteId: LocalId,
     val email: String
 )

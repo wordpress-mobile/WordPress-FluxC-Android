@@ -14,6 +14,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
@@ -78,8 +79,8 @@ class CouponStoreTest {
     )
 
     private val expectedCoupon = CouponEntity(
-        id = couponDto.id,
-        siteId = site.siteId,
+        id = RemoteId(couponDto.id),
+        localSiteId = site.localId(),
         code = couponDto.code,
         amount = couponDto.amount?.toBigDecimal(),
         dateCreated = couponDto.dateCreated,
@@ -106,8 +107,8 @@ class CouponStoreTest {
     )
 
     private val expectedEmail = CouponEmailEntity(
-        couponId = couponDto.id,
-        siteId = site.siteId,
+        couponId = RemoteId(couponDto.id),
+        localSiteId = site.localId(),
         email = couponDto.restrictedEmails!!.first()
     )
 
@@ -169,7 +170,7 @@ class CouponStoreTest {
             )
         )
 
-        whenever(couponsDao.observeCoupons(site.siteId)).thenReturn(flowOf(expectedDataModel))
+        whenever(couponsDao.observeCoupons(site.localId())).thenReturn(flowOf(expectedDataModel))
 
         val observedDataModel = couponStore.observeCoupons(site).first()
 
@@ -183,11 +184,11 @@ class CouponStoreTest {
             listOf(expectedEmail)
         )
 
-        whenever(couponsDao.observeCoupon(site.siteId, expectedCoupon.id)).thenReturn(
+        whenever(couponsDao.observeCoupon(site.localId(), expectedCoupon.id)).thenReturn(
             flowOf(expectedDataModel)
         )
 
-        val observedDataModel = couponStore.observeCoupon(site, expectedCoupon.id).first()
+        val observedDataModel = couponStore.observeCoupon(site, expectedCoupon.id.value).first()
 
         assertThat(observedDataModel).isEqualTo(expectedDataModel)
     }
@@ -197,16 +198,16 @@ class CouponStoreTest {
         whenever(restClient.fetchCouponReport(any(), any(), any())).thenReturn(
             WooPayload(
                 CouponReportDto(
-                    couponId = expectedCoupon.id,
+                    couponId = expectedCoupon.id.value,
                     amount = "10",
                     ordersCount = 2
                 )
             )
         )
 
-        val couponReport = couponStore.fetchCouponReport(site, expectedCoupon.id).model!!
+        val couponReport = couponStore.fetchCouponReport(site, expectedCoupon.id.value).model!!
 
-        assertThat(couponReport.couponId).isEqualTo(expectedCoupon.id)
+        assertThat(couponReport.couponId).isEqualTo(expectedCoupon.id.value)
         assertThat(couponReport.amount).isEqualByComparingTo(BigDecimal.TEN)
         assertThat(couponReport.ordersCount).isEqualTo(2)
     }

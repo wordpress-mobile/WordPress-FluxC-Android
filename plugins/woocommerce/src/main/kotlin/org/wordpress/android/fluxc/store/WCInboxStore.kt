@@ -47,15 +47,15 @@ class WCInboxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    saveInboxNotes(response.result, site.siteId)
+                    saveInboxNotes(response.result, site)
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
 
-    fun observeInboxNotes(siteId: Long): Flow<List<InboxNoteWithActions>> =
-        inboxNotesDao.observeInboxNotes(siteId)
+    fun observeInboxNotes(site: SiteModel): Flow<List<InboxNoteWithActions>> =
+        inboxNotesDao.observeInboxNotes(site.localId())
             .distinctUntilChanged()
 
     suspend fun markInboxNoteAsActioned(
@@ -68,7 +68,7 @@ class WCInboxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    markNoteAsActionedLocally(site.siteId, response.result)
+                    markNoteAsActionedLocally(site, response.result)
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -84,7 +84,7 @@ class WCInboxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    inboxNotesDao.deleteInboxNote(noteId, site.siteId)
+                    inboxNotesDao.deleteInboxNote(noteId, site.localId())
                     WooResult(Unit)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -105,13 +105,13 @@ class WCInboxStore @Inject constructor(
                 if (latestResult.isError) break
             }
             if (!latestResult.isError) {
-                inboxNotesDao.deleteInboxNotesForSite(site.siteId)
+                inboxNotesDao.deleteInboxNotesForSite(site.localId())
             }
             latestResult
         }
 
     private fun getNumberOfPagesToDelete(site: SiteModel): Int {
-        val sizeOfCachedNotesForSite = inboxNotesDao.getInboxNotesForSite(site.siteId).size
+        val sizeOfCachedNotesForSite = inboxNotesDao.getInboxNotesForSite(site.localId()).size
         var numberOfPagesToDelete = sizeOfCachedNotesForSite / MAX_PAGE_SIZE_FOR_DELETING_NOTES
         if (sizeOfCachedNotesForSite % MAX_PAGE_SIZE_FOR_DELETING_NOTES > 0) {
             numberOfPagesToDelete++
@@ -120,13 +120,13 @@ class WCInboxStore @Inject constructor(
     }
 
     @Suppress("SpreadOperator")
-    private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, siteId: Long) {
-        val notesWithActions = result.map { it.toInboxNoteWithActionsEntity(siteId) }
-        inboxNotesDao.deleteAllAndInsertInboxNotes(siteId, *notesWithActions.toTypedArray())
+    private suspend fun saveInboxNotes(result: Array<InboxNoteDto>, site: SiteModel) {
+        val notesWithActions = result.map { it.toInboxNoteWithActionsEntity(site.localId()) }
+        inboxNotesDao.deleteAllAndInsertInboxNotes(site.localId(), *notesWithActions.toTypedArray())
     }
 
-    private suspend fun markNoteAsActionedLocally(siteId: Long, updatedNote: InboxNoteDto) {
-        val noteWithActionsEntity = updatedNote.toInboxNoteWithActionsEntity(siteId)
-        inboxNotesDao.updateNote(siteId, noteWithActionsEntity)
+    private suspend fun markNoteAsActionedLocally(site: SiteModel, updatedNote: InboxNoteDto) {
+        val noteWithActionsEntity = updatedNote.toInboxNoteWithActionsEntity(site.localId())
+        inboxNotesDao.updateNote(site.localId(), noteWithActionsEntity)
     }
 }

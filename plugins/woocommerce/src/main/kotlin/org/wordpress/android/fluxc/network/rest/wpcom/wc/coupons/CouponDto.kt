@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.coupons
 
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEntity.DiscountType
 
@@ -32,10 +34,10 @@ data class CouponDto(
     @SerializedName("email_restrictions") val restrictedEmails: List<String>?,
     @SerializedName("used_by") val usedBy: List<String>?
 ) {
-    fun toDataModel(siteId: Long): CouponEntity =
+    fun toDataModel(localSiteId: LocalId): CouponEntity =
         CouponEntity(
-            id = id,
-            siteId = siteId,
+            id = RemoteId(id),
+            localSiteId = localSiteId,
             code = code,
             amount = amount?.toBigDecimalOrNull(),
             dateCreated = dateCreated,

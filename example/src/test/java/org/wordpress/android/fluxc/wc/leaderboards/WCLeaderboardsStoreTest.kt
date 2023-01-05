@@ -15,6 +15,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
@@ -150,7 +152,7 @@ class WCLeaderboardsStoreTest {
 
             verify(topPerformersDao, times(1))
                 .updateTopPerformerProductsFor(
-                    stubSite.siteId,
+                    stubSite.localId(),
                     DAYS.datePeriod(stubSite),
                     TOP_PERFORMER_ENTITY_LIST
                 )
@@ -162,20 +164,20 @@ class WCLeaderboardsStoreTest {
             setup()
             givenCachedTopPerformers()
 
-            storeUnderTest.invalidateTopPerformers(stubSite.siteId)
+            storeUnderTest.invalidateTopPerformers(stubSite)
 
             verify(topPerformersDao, times(1))
-                .getTopPerformerProductsForSite(stubSite.siteId)
+                .getTopPerformerProductsForSite(stubSite.localId())
             verify(topPerformersDao, times(1))
                 .updateTopPerformerProductsForSite(
-                    stubSite.siteId,
+                    stubSite.localId(),
                     INVALIDATED_TOP_PERFORMER_ENTITY_LIST
                 )
         }
 
     private suspend fun givenCachedTopPerformers() {
         whenever(
-            topPerformersDao.getTopPerformerProductsForSite(stubSite.siteId)
+            topPerformersDao.getTopPerformerProductsForSite(stubSite.localId())
         ).thenReturn(TOP_PERFORMER_ENTITY_LIST)
     }
 
@@ -222,9 +224,9 @@ class WCLeaderboardsStoreTest {
         val TOP_PERFORMER_ENTITY_LIST =
             listOf(
                 TopPerformerProductEntity(
-                    siteId = 1,
+                    localSiteId = LocalId(1),
                     datePeriod = DAYS.datePeriod(stubSite),
-                    productId = 123,
+                    productId = RemoteId(123),
                     name = "product",
                     imageUrl = null,
                     quantity = 5,
@@ -236,9 +238,9 @@ class WCLeaderboardsStoreTest {
         val INVALIDATED_TOP_PERFORMER_ENTITY_LIST =
             listOf(
                 TopPerformerProductEntity(
-                    siteId = 1,
+                    localSiteId = LocalId(1),
                     datePeriod = DAYS.datePeriod(stubSite),
-                    productId = 123,
+                    productId = RemoteId(123),
                     name = "product",
                     imageUrl = null,
                     quantity = 5,

@@ -31,19 +31,19 @@ class WCLeaderboardsStore @Inject constructor(
 ) {
     @Suppress("Unused")
     fun observeTopPerformerProducts(
-        siteId: Long,
+        site: SiteModel,
         datePeriod: String
     ): Flow<List<TopPerformerProductEntity>> =
         topPerformersDao
-            .observeTopPerformerProducts(siteId, datePeriod)
+            .observeTopPerformerProducts(site.localId(), datePeriod)
             .distinctUntilChanged()
 
     @Suppress("Unused")
     suspend fun getCachedTopPerformerProducts(
-        siteId: Long,
+        site: SiteModel,
         datePeriod: String
     ): List<TopPerformerProductEntity> =
-        topPerformersDao.getTopPerformerProductsFor(siteId, datePeriod)
+        topPerformersDao.getTopPerformerProductsFor(site.localId(), datePeriod)
 
     suspend fun fetchTopPerformerProducts(
         site: SiteModel,
@@ -99,9 +99,9 @@ class WCLeaderboardsStore @Inject constructor(
                 }
                 ?.let {
                     topPerformersDao.updateTopPerformerProductsFor(
-                        siteId = site.siteId,
+                        localSiteId = site.localId(),
                         datePeriod = period,
-                        it
+                        topPerformerProducts = it
                     )
                     WooResult(it)
                 } ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -135,12 +135,12 @@ class WCLeaderboardsStore @Inject constructor(
         }
     }
 
-    fun invalidateTopPerformers(siteId: Long) {
+    fun invalidateTopPerformers(site: SiteModel) {
         coroutineEngine.launch(AppLog.T.DB, this, "Invalidating top performer products") {
             val invalidatedTopPerformers =
-                topPerformersDao.getTopPerformerProductsForSite(siteId)
+                topPerformersDao.getTopPerformerProductsForSite(site.localId())
                     .map { it.copy(millisSinceLastUpdated = 0) }
-            topPerformersDao.updateTopPerformerProductsForSite(siteId, invalidatedTopPerformers)
+            topPerformersDao.updateTopPerformerProductsForSite(site.localId(), invalidatedTopPerformers)
         }
     }
 }

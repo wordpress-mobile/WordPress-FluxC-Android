@@ -62,9 +62,9 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         site: SiteModel,
         datePeriod: String
     ) = TopPerformerProductEntity(
-        siteId = site.siteId,
+        localSiteId = site.localId(),
         datePeriod = datePeriod,
-        productId = remoteProductId,
+        productId = remoteId,
         name = name,
         imageUrl = getFirstImageUrl(),
         quantity = productItem.quantity?.toIntOrNull() ?: 0,
