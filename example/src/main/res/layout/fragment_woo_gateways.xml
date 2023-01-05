@@ -7,6 +7,7 @@
     tools:ignore="HardcodedText">
 
     <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -15,12 +16,14 @@
             android:id="@+id/fetch_gateway"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Fetch gateway" />
 
         <Button
             android:id="@+id/fetch_all_gateways"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Fetch all gateways" />
 
     </LinearLayout>

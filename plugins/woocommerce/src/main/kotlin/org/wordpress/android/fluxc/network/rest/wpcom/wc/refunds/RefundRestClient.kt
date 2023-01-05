@@ -1,37 +1,19 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundFeeLine
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.utils.sumBy
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
-class RefundRestClient @Inject constructor(
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    appContext: Context?,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class RefundRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     suspend fun createRefundByAmount(
         site: SiteModel,
         orderId: Long,
@@ -39,12 +21,12 @@ class RefundRestClient @Inject constructor(
         reason: String,
         automaticRefund: Boolean
     ): WooPayload<RefundResponse> {
-        val params = mapOf(
+        val body = mapOf(
                 "amount" to amount,
                 "reason" to reason,
                 "api_refund" to automaticRefund.toString()
         )
-        return createRefund(site, orderId, params)
+        return createRefund(site, orderId, body)
     }
 
     @Suppress("LongParameterList")
@@ -56,37 +38,29 @@ class RefundRestClient @Inject constructor(
         items: List<WCRefundModel.WCRefundItem>,
         restockItems: Boolean
     ): WooPayload<RefundResponse> {
-        val params = mapOf(
+        val body = mapOf(
                 "reason" to reason,
                 "amount" to items.sumBy { it.subtotal + it.totalTax }.toString(),
                 "api_refund" to automaticRefund.toString(),
                 "line_items" to items.associateBy { it.itemId },
                 "restock_items" to restockItems
         )
-        return createRefund(site, orderId, params)
+        return createRefund(site, orderId, body)
     }
 
     private suspend fun createRefund(
         site: SiteModel,
         orderId: Long,
-        params: Map<String, Any>
+        body: Map<String, Any>
     ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                RefundResponse::class.java
+        val response = wooNetwork.executePostGsonRequest(
+                site = site,
+                path = url,
+                body = body,
+                clazz = RefundResponse::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     suspend fun fetchRefund(
@@ -96,21 +70,12 @@ class RefundRestClient @Inject constructor(
     ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.refund(refundId).pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                RefundResponse::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = RefundResponse::class.java
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     suspend fun fetchAllRefunds(
@@ -121,24 +86,16 @@ class RefundRestClient @Inject constructor(
     ): WooPayload<Array<RefundResponse>> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                mapOf(
-                        "page" to page.toString(),
-                        "per_page" to pageSize.toString()
-                ),
-                Array<RefundResponse>::class.java
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<RefundResponse>::class.java,
+            params = mapOf(
+                "page" to page.toString(),
+                "per_page" to pageSize.toString()
+            )
         )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return response.toWooPayload()
     }
 
     data class RefundResponse(

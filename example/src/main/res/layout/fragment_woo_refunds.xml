@@ -7,6 +7,7 @@
     tools:ignore="HardcodedText">
 
     <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -15,18 +16,21 @@
             android:id="@+id/create_full_refund"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Create full refund" />
 
         <Button
             android:id="@+id/fetch_refund"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Fetch refund" />
 
         <Button
             android:id="@+id/fetch_all_refunds"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:text="Fetch all refunds" />
 
     </LinearLayout>
