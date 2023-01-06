@@ -69,7 +69,7 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
 
     override fun tearDown() {
         runBlocking {
-            applicationPasswordsNetwork.deleteApplicationPassword(site)
+            siteStore.deleteApplicationPassword(site)
         }
         super.tearDown()
     }
