@@ -180,7 +180,7 @@ class InPersonPaymentsRestClient @Inject constructor(private val wooNetwork: Woo
     ): WooPayload<WCPaymentTransactionsSummaryResult> {
         val url = when (activePlugin) {
             WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.transactions.summary.pathV3
-            STRIPE -> throw IllegalStateException("Stripe plugin doesn't support /transactions/summary endpoint")
+            STRIPE -> error("Stripe does not support fetching transactions summary")
         }
         val params = mutableMapOf<String, String>()
         dateAfter?.let { params["date_after"] = it }
