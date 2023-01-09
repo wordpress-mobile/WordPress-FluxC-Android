@@ -1,29 +1,15 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards
 
-import android.content.Context
-import com.android.volley.RequestQueue
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.utils.handleResult
+import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class LeaderboardsRestClient @Inject constructor(
-    appContext: Context?,
-    dispatcher: Dispatcher,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class LeaderboardsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     @Suppress("LongParameterList")
     suspend fun fetchLeaderboards(
         site: SiteModel,
@@ -41,13 +27,14 @@ class LeaderboardsRestClient @Inject constructor(
 
         val parameters = createParameters(startDate, endDate, quantity, forceRefresh, interval)
 
-        return jetpackTunnelGsonRequestBuilder.syncGetRequest(
-            restClient = this@LeaderboardsRestClient,
+        val response = wooNetwork.executeGetGsonRequest(
             site = site,
-            url = url,
-            params = parameters,
-            clazz = Array<LeaderboardsApiResponse>::class.java
-        ).handleResult()
+            path = url,
+            clazz = Array<LeaderboardsApiResponse>::class.java,
+            params = parameters
+        )
+
+        return response.toWooPayload()
     }
 
     @Suppress("LongParameterList")

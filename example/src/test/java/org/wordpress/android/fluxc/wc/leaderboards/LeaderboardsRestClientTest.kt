@@ -4,17 +4,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.test
@@ -23,27 +21,20 @@ import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.st
 
 class LeaderboardsRestClientTest {
     private lateinit var restClientUnderTest: LeaderboardsRestClient
-    private lateinit var requestBuilder: JetpackTunnelGsonRequestBuilder
-    private lateinit var jetpackSuccessResponse: JetpackSuccess<Array<LeaderboardsApiResponse>>
-    private lateinit var jetpackErrorResponse: JetpackError<Array<LeaderboardsApiResponse>>
+    private lateinit var wpApiSuccessResponse: WPAPIResponse.Success<Array<LeaderboardsApiResponse>>
+    private lateinit var wpApiErrorResponse: WPAPIResponse.Error<Array<LeaderboardsApiResponse>>
+
+    private val wooNetwork: WooNetwork = mock()
 
     @Before
     fun setUp() {
-        requestBuilder = mock()
-        jetpackSuccessResponse = mock()
-        jetpackErrorResponse = mock()
-        restClientUnderTest = LeaderboardsRestClient(
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            requestBuilder
-        )
+        wpApiSuccessResponse = mock()
+        wpApiErrorResponse = mock()
+        restClientUnderTest = LeaderboardsRestClient(wooNetwork)
     }
 
     @Test
-    fun `fetch leaderboards should call syncGetRequest with correct parameters and return expected response`() = test {
+    fun `fetch leaderboards should call correct request with correct parameters and return expected response`() = test {
         val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
         val response = restClientUnderTest.fetchLeaderboards(
@@ -55,18 +46,17 @@ class LeaderboardsRestClientTest {
             interval = "day"
         )
 
-        verify(requestBuilder, times(1)).syncGetRequest(
-            restClientUnderTest,
-            stubSite,
-            WOOCOMMERCE.leaderboards.pathV4Analytics,
-            mapOf(
+        verify(wooNetwork).executeGetGsonRequest(
+            site = stubSite,
+            path = WOOCOMMERCE.leaderboards.pathV4Analytics,
+            params = mapOf(
                 "before" to "22-10-2022",
                 "after" to "10-10-2022",
                 "per_page" to "5",
                 "interval" to "day",
                 "force_cache_refresh" to "false",
             ),
-            Array<LeaderboardsApiResponse>::class.java
+            clazz = Array<LeaderboardsApiResponse>::class.java
         )
         assertThat(response).isNotNull
         assertThat(response.result).isNotNull
@@ -93,40 +83,38 @@ class LeaderboardsRestClientTest {
     }
 
     private suspend fun configureSuccessRequest(expectedResult: Array<LeaderboardsApiResponse>) {
-        whenever(jetpackSuccessResponse.data).thenReturn(expectedResult)
+        whenever(wpApiSuccessResponse.data).thenReturn(expectedResult)
         whenever(
-            requestBuilder.syncGetRequest(
-                restClientUnderTest,
-                stubSite,
-                WOOCOMMERCE.leaderboards.pathV4Analytics,
-                mapOf(
+            wooNetwork.executeGetGsonRequest(
+                site = stubSite,
+                path = WOOCOMMERCE.leaderboards.pathV4Analytics,
+                params = mapOf(
                     "after" to "10-10-2022",
                     "before" to "22-10-2022",
                     "per_page" to "5",
                     "interval" to "day",
                     "force_cache_refresh" to "false",
                 ),
-                Array<LeaderboardsApiResponse>::class.java
+                clazz = Array<LeaderboardsApiResponse>::class.java
             )
-        ).thenReturn(jetpackSuccessResponse)
+        ).thenReturn(wpApiSuccessResponse)
     }
 
     private suspend fun configureErrorRequest() {
-        whenever(jetpackErrorResponse.error).thenReturn(WPComGsonNetworkError(BaseNetworkError(NETWORK_ERROR)))
+        whenever(wpApiErrorResponse.error).thenReturn(WPAPINetworkError(BaseNetworkError(NETWORK_ERROR)))
         whenever(
-            requestBuilder.syncGetRequest(
-                restClientUnderTest,
-                stubSite,
-                WOOCOMMERCE.leaderboards.pathV4Analytics,
-                mapOf(
+            wooNetwork.executeGetGsonRequest(
+                site = stubSite,
+                path = WOOCOMMERCE.leaderboards.pathV4Analytics,
+                params = mapOf(
                     "after" to "10-10-2022",
                     "before" to "22-10-2022",
                     "per_page" to "5",
                     "interval" to "day",
                     "force_cache_refresh" to "false",
                 ),
-                Array<LeaderboardsApiResponse>::class.java
+                clazz = Array<LeaderboardsApiResponse>::class.java
             )
-        ).thenReturn(jetpackErrorResponse)
+        ).thenReturn(wpApiErrorResponse)
     }
 }

@@ -7,7 +7,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductApiResponse
 
 object WCLeaderboardsTestFixtures {
-    val stubSite = SiteModel().apply { id = 321 }
+    val stubSite = SiteModel().apply {
+        id = 321
+        origin = SiteModel.ORIGIN_XMLRPC
+    }
 
     fun generateSampleProductList() = listOf(
             "wc/top-performer-product-1.json",
