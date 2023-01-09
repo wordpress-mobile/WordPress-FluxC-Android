@@ -8,6 +8,6 @@ data class WCPaymentTransactionsSummaryResult(
     val total: Int,
     val fees: Int,
     val net: Int,
-    @SerializedName("store_currencies") val storeCurrencies: List<String>,
-    @SerializedName("customer_currencies") val customerCurrencies: List<String>,
+    @SerializedName("store_currencies") val storeCurrencies: List<String>?,
+    @SerializedName("customer_currencies") val customerCurrencies: List<String>?,
 )
