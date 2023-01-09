@@ -1,0 +1,15 @@
+{
+  "data": {
+    "count": 7,
+    "currency": "usd",
+    "total": 2231720,
+    "fees": 58095,
+    "net": 2173625,
+    "store_currencies": [
+      "usd"
+    ],
+    "customer_currencies": [
+      "usd"
+    ]
+  }
+}

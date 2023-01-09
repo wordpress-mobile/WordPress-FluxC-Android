@@ -173,7 +173,7 @@ class InPersonPaymentsRestClient @Inject constructor(private val wooNetwork: Woo
         return response.toWooPayload()
     }
 
-    internal suspend fun fetchTransactionsSummary(
+    suspend fun fetchTransactionsSummary(
         activePlugin: InPersonPaymentsPluginType,
         site: SiteModel,
         dateAfter: String? = null,
