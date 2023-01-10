@@ -1,9 +1,12 @@
 package org.wordpress.android.fluxc.mocked
 
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers.instanceOf
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
@@ -17,6 +20,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocati
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType.MissingAddress
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.inperson.InPersonPaymentsRestClient
+import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.STRIPE
 import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPaymentsPluginType.WOOCOMMERCE_PAYMENTS
 import javax.inject.Inject
 
@@ -214,5 +218,37 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
 
         assertTrue(result.isError)
         assertTrue(result.error?.type is InvalidPostalCode)
+    }
+
+    @Test
+    fun whenFetchTransactionsSummaryDateParamShouldNotBeSent() = runBlocking {
+        interceptor.respondWith("wc-pay-fetch-transactions-summary-response.json")
+
+        restClient.fetchTransactionsSummary(WOOCOMMERCE_PAYMENTS, testSite, null)
+
+        assertNull(interceptor.lastRequest?.url?.queryParameter("dateAfter"))
+    }
+
+    @Test
+    fun whenFetchTransactionsSummaryForSpecificTimeSlotDateParamShouldBeSent() = runBlocking {
+        interceptor.respondWith("wc-pay-fetch-transactions-summary-response.json")
+
+        val dateAfterParam = "2023-01-01"
+        restClient.fetchTransactionsSummary(WOOCOMMERCE_PAYMENTS, testSite, dateAfterParam)
+
+        assertTrue(interceptor.lastRequest!!.url.query!!.contains("\"date_after\":\"$dateAfterParam\""))
+    }
+
+    @Test
+    fun whenFetchTransactionsSummaryInvokedWithStripePluginShouldThrowException() = runBlocking {
+        interceptor.respondWith("wc-pay-fetch-transactions-summary-response.json")
+        try {
+            restClient.fetchTransactionsSummary(STRIPE, testSite, null)
+        } catch (e: IllegalStateException) {
+            assertNotNull(e)
+            assertThat(e, instanceOf(IllegalStateException::class.java))
+            assertEquals("Stripe does not support fetching transactions summary", e.message)
+        }
+        Unit
     }
 }

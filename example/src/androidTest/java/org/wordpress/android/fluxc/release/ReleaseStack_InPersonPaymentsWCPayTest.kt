@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.wordpress.android.fluxc.example.test.BuildConfig
 import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentAccountResult.WCPaymentAccountStatus
@@ -77,4 +78,37 @@ class ReleaseStack_InPersonPaymentsWCPayTest : ReleaseStack_WCBase() {
         assertEquals("9969", result.asWooResult().model?.paymentMethodDetails?.cardDetails?.last4)
         assertEquals(4500, result.asWooResult().model?.amount)
     }
+
+    @Test
+    fun givenSiteHasWCPayWhenTransactionSummaryInvokedSummaryIsReturned() = runBlocking {
+        val result = store.fetchTransactionsSummary(WOOCOMMERCE_PAYMENTS, sSite)
+
+        assertFalse(result.isError)
+
+        val data = result.result
+        assertNotNull(data)
+        assertNotNull(data!!.transactionsCount)
+        assertNotNull(data.currency)
+        assertNotNull(data.net)
+        assertNotNull(data.fees)
+        assertNotNull(data.total)
+    }
+
+    @Test
+    fun givenSiteHasWCPayWhenTransactionSummaryInvokedWithParameterSummaryIsReturned() =
+        runBlocking {
+            val dateAfter = "2021-07-01"
+
+            val result = store.fetchTransactionsSummary(WOOCOMMERCE_PAYMENTS, sSite, dateAfter)
+
+            assertFalse(result.isError)
+
+            val data = result.result
+            assertNotNull(data)
+            assertNotNull(data!!.transactionsCount)
+            assertNotNull(data.currency)
+            assertNotNull(data.net)
+            assertNotNull(data.fees)
+            assertNotNull(data.total)
+        }
 }

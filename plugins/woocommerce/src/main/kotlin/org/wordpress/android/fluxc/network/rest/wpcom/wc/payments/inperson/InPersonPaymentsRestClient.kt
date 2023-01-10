@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentChargeApiRes
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationError
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationErrorType
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult
+import org.wordpress.android.fluxc.model.payments.inperson.WCPaymentTransactionsSummaryResult
 import org.wordpress.android.fluxc.model.payments.inperson.WCTerminalStoreLocationResult.StoreAddress
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
@@ -167,6 +168,27 @@ class InPersonPaymentsRestClient @Inject constructor(private val wooNetwork: Woo
             site = site,
             path = url,
             clazz = WCPaymentChargeApiResult::class.java
+        )
+
+        return response.toWooPayload()
+    }
+
+    suspend fun fetchTransactionsSummary(
+        activePlugin: InPersonPaymentsPluginType,
+        site: SiteModel,
+        dateAfter: String? = null,
+    ): WooPayload<WCPaymentTransactionsSummaryResult> {
+        val url = when (activePlugin) {
+            WOOCOMMERCE_PAYMENTS -> WOOCOMMERCE.payments.transactions.summary.pathV3
+            STRIPE -> error("Stripe does not support fetching transactions summary")
+        }
+        val params = mutableMapOf<String, String>()
+        dateAfter?.let { params["date_after"] = it }
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = WCPaymentTransactionsSummaryResult::class.java
         )
 
         return response.toWooPayload()
