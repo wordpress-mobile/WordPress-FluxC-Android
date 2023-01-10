@@ -14,6 +14,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.AccountModel
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -728,6 +730,56 @@ class WCProductStoreTest {
             assertThat(argumentCaptor.allValues.first()).hasSize(4)
             argumentCaptor.allValues.first().onEach {(existing, updated) ->
                 assertThat(existing.remoteProductId).isEqualTo(updated.remoteProductId)
+            }
+        }
+
+    @Test
+    fun `when variation bulk creation, request creation on core`(): Unit =
+        runBlocking {
+            // given
+            val site = SiteModel()
+            val productId = RemoteId(123)
+            val variationsToCreate = listOf(
+                WCProductVariationModel(5).apply { description = "test$id" },
+                WCProductVariationModel(6).apply { description = "test$id" }
+            )
+            whenever(productRestClient.createVariations(any(), any(), any())) doReturn WooPayload()
+
+            // when
+            productStore.createVariations(site, productId, variationsToCreate)
+
+            // then
+            verify(productRestClient).createVariations(
+                site = site, productId = productId, variations = listOf(
+                mapOf("description" to "test5"),
+                mapOf("description" to "test6")
+            )
+            )
+        }
+
+    @Test
+    fun `when product variation bulk creation is successful, save results to database`(): Unit =
+        runBlocking {
+            // given
+            val site = SiteModel()
+            val productId = RemoteId(123)
+            val createdVariations = listOf(
+                ProductVariationApiResponse().apply { id = 5 },
+                ProductVariationApiResponse().apply { id = 6 },
+            )
+            whenever(productRestClient.createVariations(any(), any(), any())) doReturn WooPayload(
+                BatchProductVariationsApiResponse(createdVariations = createdVariations)
+            )
+
+            // when
+            productStore.createVariations(site, productId, emptyList())
+
+            // then
+            val storedVariations = ProductSqlUtils.getVariationsForProduct(site, productId.value)
+            assertThat(storedVariations).hasSize(2).anyMatch {
+                it.remoteVariationId == 5L
+            }.anyMatch {
+                it.remoteVariationId == 6L
             }
         }
 }

@@ -38,6 +38,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -1572,6 +1573,41 @@ class WCProductStore @Inject constructor(
                 }
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
+        }
+    }
+
+    suspend fun createVariations(
+        site: SiteModel,
+        productId: RemoteId,
+        variations: List<WCProductVariationModel>,
+    ): WooResult<BatchProductVariationsApiResponse> {
+        return coroutineEngine.withDefaultContext(API, this, "createVariations") {
+            val response = wcProductRestClient.createVariations(
+                site,
+                productId = productId,
+                variations = variations.map {
+                    ProductVariationMapper.variantModelToProductJsonBody(
+                        variationModel = null,
+                        updatedVariationModel = it
+                    )
+                }
+            ).asWooResult()
+
+            response.takeIf { !it.isError }
+                .let { result ->
+                    result?.model
+                        ?.createdVariations
+                        ?.map{variationResponse ->
+                            variationResponse.asProductVariationModel().apply {
+                                remoteProductId = productId.value
+                                localSiteId = site.id
+                            }
+                        }
+                        ?.let {databaseEntities ->
+                            ProductSqlUtils.insertOrUpdateProductVariations(databaseEntities)
+                        }
+                }
+            response
         }
     }
 
