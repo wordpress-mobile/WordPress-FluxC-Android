@@ -772,7 +772,11 @@ class WCProductStoreTest {
             )
 
             // when
-            productStore.createVariations(site, productId, emptyList())
+            productStore.createVariations(
+                site,
+                productId,
+                ProductTestUtils.generateSampleVariations(2, productId.value, site.id)
+            )
 
             // then
             val storedVariations = ProductSqlUtils.getVariationsForProduct(site, productId.value)

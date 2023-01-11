@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantO
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
@@ -71,6 +72,7 @@ class WCProductStore @Inject constructor(
         const val DEFAULT_PRODUCT_TAGS_PAGE_SIZE = 100
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
         val DEFAULT_CATEGORY_SORTING = NAME_ASC
+        const val VARIATIONS_CREATION_LIMIT = 100
     }
 
     /**
@@ -1582,33 +1584,51 @@ class WCProductStore @Inject constructor(
         variations: List<WCProductVariationModel>,
     ): WooResult<BatchProductVariationsApiResponse> {
         return coroutineEngine.withDefaultContext(API, this, "createVariations") {
-            val response = wcProductRestClient.createVariations(
-                site,
-                productId = productId,
-                variations = variations.map {
-                    ProductVariationMapper.variantModelToProductJsonBody(
-                        variationModel = null,
-                        updatedVariationModel = it
-                    )
+            val responses = variations
+                .chunked(VARIATIONS_CREATION_LIMIT)
+                .map { chunkedVariations ->
+                    wcProductRestClient.createVariations(
+                        site,
+                        productId = productId,
+                        variations = chunkedVariations.map {
+                            ProductVariationMapper.variantModelToProductJsonBody(
+                                variationModel = null,
+                                updatedVariationModel = it
+                            )
+                        }
+                    ).asWooResult()
                 }
-            ).asWooResult()
+                .onEach { result: WooResult<BatchProductVariationsApiResponse> ->
+                    if (!result.isError) {
+                        saveVariationsInDatabase(result, productId, site)
+                    }
+                }
 
-            response.takeIf { !it.isError }
-                .let { result ->
-                    result?.model
-                        ?.createdVariations
-                        ?.map{variationResponse ->
-                            variationResponse.asProductVariationModel().apply {
-                                remoteProductId = productId.value
-                                localSiteId = site.id
-                            }
-                        }
-                        ?.let {databaseEntities ->
-                            ProductSqlUtils.insertOrUpdateProductVariations(databaseEntities)
-                        }
-                }
-            response
+            val anySuccessfulResponse = responses.firstOrNull { !it.isError }
+            val anyFailureResponse = responses.firstOrNull { it.isError }
+
+            anySuccessfulResponse
+                ?: anyFailureResponse
+                ?: WooResult(error = WooError(WooErrorType.GENERIC_ERROR, NETWORK_ERROR))
         }
+    }
+
+    private fun saveVariationsInDatabase(
+        result: WooResult<BatchProductVariationsApiResponse>,
+        productId: RemoteId,
+        site: SiteModel
+    ) {
+        result.model
+            ?.createdVariations
+            ?.map { variationResponse ->
+                variationResponse.asProductVariationModel().apply {
+                    remoteProductId = productId.value
+                    localSiteId = site.id
+                }
+            }
+            ?.let { databaseEntities ->
+                ProductSqlUtils.insertOrUpdateProductVariations(databaseEntities)
+            }
     }
 
     suspend fun replyToReview(payload: PostReviewReply): WooResult<Unit> {
