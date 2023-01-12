@@ -84,22 +84,13 @@ class ShippingLabelRestClient @Inject constructor(
                 "caption_csv" to "",
                 "json" to "true"
         )
-
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                PrintShippingLabelApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = PrintShippingLabelApiResponse::class.java,
+            params = params
+        ).toWooPayload()
     }
 
     suspend fun checkShippingLabelCreationEligibility(
