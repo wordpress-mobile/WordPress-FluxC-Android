@@ -22,9 +22,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
+import org.wordpress.android.fluxc.utils.toWooPayload
 import java.math.BigDecimal
 import java.util.Date
 import java.util.Locale
@@ -40,7 +42,8 @@ class ShippingLabelRestClient @Inject constructor(
     appContext: Context?,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val wooNetwork: WooNetwork
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchShippingLabelsForOrder(
         orderId: Long,
@@ -48,21 +51,11 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<ShippingLabelApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ShippingLabelApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelApiResponse::class.java
+        ).toWooPayload()
     }
 
     suspend fun refundShippingLabelForOrder(
