@@ -139,21 +139,11 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<GetPackageTypesResponse> {
         val url = WOOCOMMERCE.connect.packages.pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                GetPackageTypesResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = GetPackageTypesResponse::class.java
+        ).toWooPayload()
     }
 
     suspend fun getAccountSettings(
