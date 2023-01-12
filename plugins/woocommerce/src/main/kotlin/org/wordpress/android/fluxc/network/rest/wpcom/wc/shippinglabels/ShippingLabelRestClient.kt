@@ -220,21 +220,12 @@ class ShippingLabelRestClient @Inject constructor(
                 "email_receipt" to emailReceipts
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                ShippingLabelStatusApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelStatusApiResponse::class.java,
+            body = params
+        ).toWooPayload()
     }
 
     suspend fun fetchShippingLabelsStatus(
