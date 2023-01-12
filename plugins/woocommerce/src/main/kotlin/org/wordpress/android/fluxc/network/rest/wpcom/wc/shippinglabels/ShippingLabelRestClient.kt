@@ -161,21 +161,12 @@ class ShippingLabelRestClient @Inject constructor(
     suspend fun updateAccountSettings(site: SiteModel, request: UpdateSettingsApiRequest): WooPayload<Boolean> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                request.toMap(),
-                JsonObject::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data!!["success"].asBoolean)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = JsonObject::class.java,
+            body = request.toMap()
+        ).toWooPayload { it["success"].asBoolean }
     }
 
     @Suppress("LongParameterList")
@@ -198,21 +189,12 @@ class ShippingLabelRestClient @Inject constructor(
             }
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                ShippingRatesApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingRatesApiResponse::class.java,
+            body = params
+        ).toWooPayload()
     }
 
     @Suppress("LongParameterList")
