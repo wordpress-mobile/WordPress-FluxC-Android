@@ -102,7 +102,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
         type: ShippingLabelAddress.Type
     ): WooPayload<VerifyAddressResponse> {
         val url = WOOCOMMERCE.connect.normalize_address.pathV1
-        val params = mapOf(
+        val body = mapOf(
                 "address" to address.toMap(),
                 "type" to type.name.toLowerCase(Locale.ROOT)
         )
@@ -111,7 +111,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
             site = site,
             path = url,
             clazz = VerifyAddressResponse::class.java,
-            body = params
+            body = body
         ).toWooPayload()
     }
 
@@ -161,7 +161,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
     ): WooPayload<ShippingRatesApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
 
-        val params = mapOf(
+        val body = mapOf(
             "origin" to origin.toMap(),
             "destination" to destination.toMap(),
             "packages" to packages.map { labelPackage ->
@@ -174,7 +174,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
             site = site,
             path = url,
             clazz = ShippingRatesApiResponse::class.java,
-            body = params
+            body = body
         ).toWooPayload()
     }
 
@@ -190,7 +190,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
-        val params = mapOf(
+        val body = mapOf(
                 "async" to true,
                 "origin" to origin,
                 "destination" to destination,
@@ -205,7 +205,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
             site = site,
             path = url,
             clazz = ShippingLabelStatusApiResponse::class.java,
-            body = params
+            body = body
         ).toWooPayload()
     }
 
@@ -275,7 +275,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
                             .map { it.id } // Grab all found package id(s)
                 }.asMap() // Convert list of Map to Map
 
-        val params = mapOf(
+        val body = mapOf(
                 "custom" to mappedCustomPackages,
                 "predefined" to predefinedParam
         )
@@ -284,7 +284,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
             site = site,
             path = url,
             clazz = JsonObject::class.java,
-            body = params
+            body = body
         ).toWooPayload { it["success"].asBoolean }
     }
 
