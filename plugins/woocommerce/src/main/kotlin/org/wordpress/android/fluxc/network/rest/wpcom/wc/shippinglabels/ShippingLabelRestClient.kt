@@ -234,21 +234,12 @@ class ShippingLabelRestClient @Inject constructor(
         labelIds: List<Long>
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ShippingLabelStatusApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelStatusApiResponse::class.java
+        ).toWooPayload()
     }
 
     // Supports both creating custom package(s), or activating existing predefined package(s).
