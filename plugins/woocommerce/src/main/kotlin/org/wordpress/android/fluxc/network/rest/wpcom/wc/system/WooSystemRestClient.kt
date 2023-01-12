@@ -5,7 +5,6 @@ import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
@@ -14,6 +13,11 @@ import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 
 class WooSystemRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
+    companion object {
+        private const val NOT_FOUND = 404
+        private const val FORBIDDEN = 403
+    }
+
     suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<WCSystemPluginResponse> {
         val url = WOOCOMMERCE.system_status.pathV3
 
@@ -59,10 +63,14 @@ class WooSystemRestClient @Inject constructor(private val wooNetwork: WooNetwork
         return when (response) {
             is WPAPIResponse.Success -> WooPayload(true)
             is WPAPIResponse.Error -> {
-                if (response.error.type == NOT_FOUND) {
-                    WooPayload(false)
-                } else {
-                    WooPayload(response.error.toWooError())
+                when (response.error.volleyError?.networkResponse?.statusCode) {
+                    NOT_FOUND -> WooPayload(false)
+                    FORBIDDEN -> {
+                        // If we get a 403 status code, we can infer that Woo is installed,
+                        // the user just doesn't have permission to access the Woo API
+                        WooPayload(true)
+                    }
+                    else -> WooPayload(response.error.toWooError())
                 }
             }
         }
