@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import org.wordpress.android.util.AppLog.T.API
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
@@ -676,24 +677,38 @@ class WCStatsStore @Inject constructor(
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
         val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
-        val perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity)
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchRevenueStats") {
+        return fetchRevenueStats(payload.site, payload.granularity, startDate, endDate, payload.forced)
+    }
+
+    suspend fun fetchRevenueStats(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        startDate: String,
+        endDate: String,
+        forced: Boolean = false
+    ): OnWCRevenueStatsChanged {
+        return coroutineEngine.withDefaultContext(API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
-                site = payload.site,
-                granularity = payload.granularity,
+                site = site,
+                granularity = granularity,
                 startDate = startDate,
                 endDate = endDate,
-                perPage = perPage,
-                forceRefresh = payload.forced
+                perPage = getPerPageQuantityForRevenueStatsGranularity(granularity),
+                forceRefresh = forced
             )
 
             with(result) {
                 return@withDefaultContext if (isError || stats == null) {
-                    OnWCRevenueStatsChanged(0, payload.granularity)
-                            .also { it.error = error }
+                    OnWCRevenueStatsChanged(0, granularity)
+                        .also { it.error = error }
                 } else {
                     val rowsAffected = WCStatsSqlUtils.insertOrUpdateRevenueStats(stats)
-                    OnWCRevenueStatsChanged(rowsAffected, payload.granularity, stats.startDate, stats.endDate)
+                    OnWCRevenueStatsChanged(
+                        rowsAffected,
+                        granularity,
+                        stats.startDate,
+                        stats.endDate
+                    )
                 }
             }
         }
