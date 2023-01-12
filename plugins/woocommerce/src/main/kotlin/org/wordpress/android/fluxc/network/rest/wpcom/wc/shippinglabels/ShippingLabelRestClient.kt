@@ -1,13 +1,10 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
@@ -16,9 +13,6 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.Shi
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingPackageCustoms
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.utils.toMap
@@ -27,19 +21,11 @@ import java.math.BigDecimal
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.collections.toMap as asMap
 
 @Singleton
-class ShippingLabelRestClient @Inject constructor(
-    dispatcher: Dispatcher,
-    appContext: Context?,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent,
-    private val wooNetwork: WooNetwork
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     suspend fun fetchShippingLabelsForOrder(
         orderId: Long,
         site: SiteModel
