@@ -1,13 +1,10 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
-import android.content.Context
-import com.android.volley.RequestQueue
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
@@ -16,53 +13,30 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.Shi
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelPackageData
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingPackageCustoms
-import org.wordpress.android.fluxc.network.UserAgent
-import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.toMap
+import org.wordpress.android.fluxc.utils.toWooPayload
 import java.math.BigDecimal
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.collections.toMap as asMap
 
 @Singleton
-class ShippingLabelRestClient @Inject constructor(
-    dispatcher: Dispatcher,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder,
-    appContext: Context?,
-    @Named("regular") requestQueue: RequestQueue,
-    accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     suspend fun fetchShippingLabelsForOrder(
         orderId: Long,
         site: SiteModel
     ): WooPayload<ShippingLabelApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ShippingLabelApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelApiResponse::class.java
+        ).toWooPayload()
     }
 
     suspend fun refundShippingLabelForOrder(
@@ -72,21 +46,11 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<ShippingLabelApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabelId(remoteShippingLabelId).refund.pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ShippingLabelApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelApiResponse::class.java
+        ).toWooPayload()
     }
 
     suspend fun printShippingLabels(
@@ -102,21 +66,12 @@ class ShippingLabelRestClient @Inject constructor(
                 "json" to "true"
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                PrintShippingLabelApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = PrintShippingLabelApiResponse::class.java,
+            params = params
+        ).toWooPayload()
     }
 
     suspend fun checkShippingLabelCreationEligibility(
@@ -132,21 +87,13 @@ class ShippingLabelRestClient @Inject constructor(
                 "can_create_payment_method" to canCreatePaymentMethod.toString(),
                 "can_create_customs_form" to canCreateCustomsForm.toString()
         )
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                params,
-                SLCreationEligibilityApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = SLCreationEligibilityApiResponse::class.java,
+            params = params
+        ).toWooPayload()
     }
 
     suspend fun verifyAddress(
@@ -155,26 +102,17 @@ class ShippingLabelRestClient @Inject constructor(
         type: ShippingLabelAddress.Type
     ): WooPayload<VerifyAddressResponse> {
         val url = WOOCOMMERCE.connect.normalize_address.pathV1
-        val params = mapOf(
+        val body = mapOf(
                 "address" to address.toMap(),
                 "type" to type.name.toLowerCase(Locale.ROOT)
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                VerifyAddressResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = VerifyAddressResponse::class.java,
+            body = body
+        ).toWooPayload()
     }
 
     suspend fun getPackageTypes(
@@ -182,21 +120,11 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<GetPackageTypesResponse> {
         val url = WOOCOMMERCE.connect.packages.pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                GetPackageTypesResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = GetPackageTypesResponse::class.java
+        ).toWooPayload()
     }
 
     suspend fun getAccountSettings(
@@ -204,41 +132,22 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<AccountSettingsApiResponse> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                AccountSettingsApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = AccountSettingsApiResponse::class.java
+        ).toWooPayload()
     }
 
     suspend fun updateAccountSettings(site: SiteModel, request: UpdateSettingsApiRequest): WooPayload<Boolean> {
         val url = WOOCOMMERCE.connect.account.settings.pathV1
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                request.toMap(),
-                JsonObject::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data!!["success"].asBoolean)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = JsonObject::class.java,
+            body = request.toMap()
+        ).toWooPayload { it["success"].asBoolean }
     }
 
     @Suppress("LongParameterList")
@@ -252,7 +161,7 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<ShippingRatesApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).rates.pathV1
 
-        val params = mapOf(
+        val body = mapOf(
             "origin" to origin.toMap(),
             "destination" to destination.toMap(),
             "packages" to packages.map { labelPackage ->
@@ -261,21 +170,12 @@ class ShippingLabelRestClient @Inject constructor(
             }
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                ShippingRatesApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingRatesApiResponse::class.java,
+            body = body
+        ).toWooPayload()
     }
 
     @Suppress("LongParameterList")
@@ -290,7 +190,7 @@ class ShippingLabelRestClient @Inject constructor(
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).pathV1
 
-        val params = mapOf(
+        val body = mapOf(
                 "async" to true,
                 "origin" to origin,
                 "destination" to destination,
@@ -301,21 +201,12 @@ class ShippingLabelRestClient @Inject constructor(
                 "email_receipt" to emailReceipts
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                ShippingLabelStatusApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelStatusApiResponse::class.java,
+            body = body
+        ).toWooPayload()
     }
 
     suspend fun fetchShippingLabelsStatus(
@@ -324,21 +215,12 @@ class ShippingLabelRestClient @Inject constructor(
         labelIds: List<Long>
     ): WooPayload<ShippingLabelStatusApiResponse> {
         val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabels(labelIds.joinToString(separator = ",")).pathV1
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
-                this,
-                site,
-                url,
-                emptyMap(),
-                ShippingLabelStatusApiResponse::class.java
-        )
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = ShippingLabelStatusApiResponse::class.java
+        ).toWooPayload()
     }
 
     // Supports both creating custom package(s), or activating existing predefined package(s).
@@ -393,27 +275,17 @@ class ShippingLabelRestClient @Inject constructor(
                             .map { it.id } // Grab all found package id(s)
                 }.asMap() // Convert list of Map to Map
 
-        val params = mapOf(
+        val body = mapOf(
                 "custom" to mappedCustomPackages,
                 "predefined" to predefinedParam
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
-                this,
-                site,
-                url,
-                params,
-                JsonObject::class.java
-        )
-
-        return when (response) {
-            is JetpackSuccess -> {
-                WooPayload(response.data!!["success"].asBoolean)
-            }
-            is JetpackError -> {
-                WooPayload(response.error.toWooError())
-            }
-        }
+        return wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = JsonObject::class.java,
+            body = body
+        ).toWooPayload { it["success"].asBoolean }
     }
 
     data class PrintShippingLabelApiResponse(
