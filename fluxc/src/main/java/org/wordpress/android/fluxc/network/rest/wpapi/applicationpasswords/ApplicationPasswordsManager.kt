@@ -88,7 +88,11 @@ internal class ApplicationPasswordsManager @Inject constructor(
 
         return when {
             !payload.isError -> ApplicationPasswordCreationResult.Created(
-                ApplicationPasswordCredentials(userName = username, password = payload.password)
+                ApplicationPasswordCredentials(
+                    userName = username,
+                    password = payload.password,
+                    uuid = payload.uuid
+                )
             )
             else -> {
                 val statusCode = payload.error.volleyError?.networkResponse?.statusCode
@@ -133,15 +137,27 @@ internal class ApplicationPasswordsManager @Inject constructor(
     suspend fun deleteApplicationCredentials(
         site: SiteModel
     ): ApplicationPasswordDeletionResult {
+        val uuid = applicationPasswordsStore.getUuid(site.domainName)
+
+        if (uuid == null) {
+            appLogWrapper.w(AppLog.T.MAIN, "Application password deletion failed, no UUID found")
+            return ApplicationPasswordDeletionResult.Failure(
+                BaseNetworkError(
+                    GenericErrorType.UNKNOWN,
+                    "UUID required for deletion is not found"
+                )
+            )
+        }
+
         val payload = if (site.origin == SiteModel.ORIGIN_WPCOM_REST) {
             jetpackApplicationPasswordsRestClient.deleteApplicationPassword(
                 site = site,
-                applicationName = applicationName
+                uuid = uuid
             )
         } else {
             wpApiApplicationPasswordsRestClient.deleteApplicationPassword(
                 site = site,
-                applicationName = applicationName
+                uuid = uuid
             )
         }
 

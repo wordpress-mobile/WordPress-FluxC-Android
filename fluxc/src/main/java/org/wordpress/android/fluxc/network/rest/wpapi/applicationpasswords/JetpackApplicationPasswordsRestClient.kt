@@ -47,7 +47,7 @@ internal class JetpackApplicationPasswordsRestClient @Inject constructor(
         return when (response) {
             is JetpackSuccess<ApplicationPasswordCreationResponse> -> {
                 response.data?.let {
-                    ApplicationPasswordCreationPayload(it.password)
+                    ApplicationPasswordCreationPayload(it.password, it.uuid)
                 } ?: ApplicationPasswordCreationPayload(
                     BaseNetworkError(
                         GenericErrorType.UNKNOWN,
@@ -62,16 +62,15 @@ internal class JetpackApplicationPasswordsRestClient @Inject constructor(
 
     suspend fun deleteApplicationPassword(
         site: SiteModel,
-        applicationName: String
+        uuid: String
     ): ApplicationPasswordDeletionPayload {
         AppLog.d(T.MAIN, "Delete application password using Jetpack Tunnel")
 
-        val url = WPAPI.users.me.application_passwords.urlV2
+        val url = WPAPI.users.me.application_passwords.uuid(uuid).urlV2
         val response = jetpackTunnelGsonRequestBuilder.syncDeleteRequest(
             restClient = this,
             site = site,
             url = url,
-            params = mapOf("name" to applicationName),
             clazz = ApplicationPasswordDeleteResponse::class.java
         )
 
