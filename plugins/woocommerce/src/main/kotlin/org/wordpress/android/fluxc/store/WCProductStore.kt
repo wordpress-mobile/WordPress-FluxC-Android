@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantO
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
@@ -38,6 +39,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -70,6 +72,7 @@ class WCProductStore @Inject constructor(
         const val DEFAULT_PRODUCT_TAGS_PAGE_SIZE = 100
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
         val DEFAULT_CATEGORY_SORTING = NAME_ASC
+        const val VARIATIONS_CREATION_LIMIT = 100
     }
 
     /**
@@ -1573,6 +1576,59 @@ class WCProductStore @Inject constructor(
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
+    }
+
+    suspend fun createVariations(
+        site: SiteModel,
+        productId: RemoteId,
+        variations: List<WCProductVariationModel>,
+    ): WooResult<BatchProductVariationsApiResponse> {
+        return coroutineEngine.withDefaultContext(API, this, "createVariations") {
+            val responses = variations
+                .chunked(VARIATIONS_CREATION_LIMIT)
+                .map { chunkedVariations ->
+                    wcProductRestClient.createVariations(
+                        site,
+                        productId = productId,
+                        variations = chunkedVariations.map {
+                            ProductVariationMapper.variantModelToProductJsonBody(
+                                variationModel = null,
+                                updatedVariationModel = it
+                            )
+                        }
+                    ).asWooResult()
+                }
+                .onEach { result: WooResult<BatchProductVariationsApiResponse> ->
+                    if (!result.isError) {
+                        saveVariationsInDatabase(result, productId, site)
+                    }
+                }
+
+            val anySuccessfulResponse = responses.firstOrNull { !it.isError }
+            val anyFailureResponse = responses.firstOrNull { it.isError }
+
+            anySuccessfulResponse
+                ?: anyFailureResponse
+                ?: WooResult(error = WooError(WooErrorType.GENERIC_ERROR, NETWORK_ERROR))
+        }
+    }
+
+    private fun saveVariationsInDatabase(
+        result: WooResult<BatchProductVariationsApiResponse>,
+        productId: RemoteId,
+        site: SiteModel
+    ) {
+        result.model
+            ?.createdVariations
+            ?.map { variationResponse ->
+                variationResponse.asProductVariationModel().apply {
+                    remoteProductId = productId.value
+                    localSiteId = site.id
+                }
+            }
+            ?.let { databaseEntities ->
+                ProductSqlUtils.insertOrUpdateProductVariations(databaseEntities)
+            }
     }
 
     suspend fun replyToReview(payload: PostReviewReply): WooResult<Unit> {
