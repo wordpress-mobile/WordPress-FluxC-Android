@@ -1251,7 +1251,7 @@ class WCStatsStoreTest {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
-            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
             wcStatsStore.fetchRevenueStats(payload)
 
@@ -1271,7 +1271,7 @@ class WCStatsStoreTest {
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
-            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
             wcStatsStore.fetchRevenueStats(payload)
 
@@ -1298,7 +1298,7 @@ class WCStatsStoreTest {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
-            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
 
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
@@ -1320,7 +1320,7 @@ class WCStatsStoreTest {
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
-            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
             wcStatsStore.fetchRevenueStats(payload)
 
