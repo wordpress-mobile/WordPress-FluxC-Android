@@ -675,26 +675,19 @@ class WCStatsStore @Inject constructor(
     }
 
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
-        val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
-        return fetchRevenueStats(payload.site, payload.granularity, startDate, endDate, payload.forced)
-    }
+        val startDate = payload.startDate?.takeIf { it.isNotEmpty() }
+            ?: getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
+        val endDate = payload.endDate?.takeIf { it.isNotEmpty() }
+            ?: getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
 
-    suspend fun fetchRevenueStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        startDate: String,
-        endDate: String,
-        forced: Boolean = false
-    ): OnWCRevenueStatsChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
-                site = site,
-                granularity = granularity,
+                site = payload.site,
+                granularity = payload.granularity,
                 startDate = startDate,
                 endDate = endDate,
-                perPage = getPerPageQuantityForRevenueStatsGranularity(granularity),
-                forceRefresh = forced
+                perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity),
+                forceRefresh = payload.forced
             )
 
             with(result) {
