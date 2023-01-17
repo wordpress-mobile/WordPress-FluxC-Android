@@ -496,8 +496,8 @@ class WCStatsStore @Inject constructor(
 
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
         val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
-        val startDate = payload.startDate ?: getStartDate(payload.granularity)
-        val endDate = payload.endDate ?: getEndDate(payload.granularity, payload.site)
+        val startDate = payload.startDate?.takeIf { it.isNotEmpty() } ?: getStartDate(payload.granularity)
+        val endDate = payload.endDate?.takeIf { it.isNotEmpty() } ?: getEndDate(payload.granularity, payload.site)
         val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, startDate, endDate)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchNewVisitorStats") {
             val result = wcOrderStatsClient.fetchNewVisitorStats(
