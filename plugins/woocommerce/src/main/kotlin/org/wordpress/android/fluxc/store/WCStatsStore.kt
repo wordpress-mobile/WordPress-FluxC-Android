@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import org.wordpress.android.util.AppLog.T.API
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
@@ -495,8 +496,8 @@ class WCStatsStore @Inject constructor(
 
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
         val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
-        val startDate = payload.startDate ?: getStartDate(payload.granularity)
-        val endDate = payload.endDate ?: getEndDate(payload.granularity, payload.site)
+        val startDate = payload.startDate?.takeIf { it.isNotEmpty() } ?: getStartDate(payload.granularity)
+        val endDate = payload.endDate?.takeIf { it.isNotEmpty() } ?: getEndDate(payload.granularity, payload.site)
         val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, startDate, endDate)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchNewVisitorStats") {
             val result = wcOrderStatsClient.fetchNewVisitorStats(
@@ -674,26 +675,33 @@ class WCStatsStore @Inject constructor(
     }
 
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
-        val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
-        val perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity)
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchRevenueStats") {
+        val startDate = payload.startDate?.takeIf { it.isNotEmpty() }
+            ?: getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
+        val endDate = payload.endDate?.takeIf { it.isNotEmpty() }
+            ?: getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
+
+        return coroutineEngine.withDefaultContext(API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
                 site = payload.site,
                 granularity = payload.granularity,
                 startDate = startDate,
                 endDate = endDate,
-                perPage = perPage,
+                perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity),
                 forceRefresh = payload.forced
             )
 
             with(result) {
                 return@withDefaultContext if (isError || stats == null) {
-                    OnWCRevenueStatsChanged(0, payload.granularity)
-                            .also { it.error = error }
+                    OnWCRevenueStatsChanged(0, granularity)
+                        .also { it.error = error }
                 } else {
                     val rowsAffected = WCStatsSqlUtils.insertOrUpdateRevenueStats(stats)
-                    OnWCRevenueStatsChanged(rowsAffected, payload.granularity, stats.startDate, stats.endDate)
+                    OnWCRevenueStatsChanged(
+                        rowsAffected,
+                        granularity,
+                        stats.startDate,
+                        stats.endDate
+                    )
                 }
             }
         }
