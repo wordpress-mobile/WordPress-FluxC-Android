@@ -48,7 +48,7 @@ internal class WPApiApplicationPasswordsRestClient @Inject constructor(
         return when (val response = payload.response) {
             is WPAPIResponse.Success<ApplicationPasswordCreationResponse> -> {
                 response.data?.let {
-                    ApplicationPasswordCreationPayload(it.password)
+                    ApplicationPasswordCreationPayload(it.password, it.uuid)
                 } ?: ApplicationPasswordCreationPayload(
                     BaseNetworkError(
                         GenericErrorType.UNKNOWN,
@@ -63,17 +63,16 @@ internal class WPApiApplicationPasswordsRestClient @Inject constructor(
 
     suspend fun deleteApplicationPassword(
         site: SiteModel,
-        applicationName: String
+        uuid: String
     ): ApplicationPasswordDeletionPayload {
         AppLog.d(T.MAIN, "Delete application password using Cookie Authentication")
 
-        val path = WPAPI.users.me.application_passwords.urlV2
+        val path = WPAPI.users.me.application_passwords.uuid(uuid).urlV2
         val payload = wpApiAuthenticator.makeAuthenticatedWPAPIRequest(site) { nonce ->
             APIResponseWrapper(
                 wpApiGsonRequestBuilder.syncDeleteRequest(
                     restClient = this,
                     url = site.buildUrl(path),
-                    body = mapOf("name" to applicationName),
                     clazz = ApplicationPasswordDeleteResponse::class.java,
                     nonce = nonce?.value
                 )

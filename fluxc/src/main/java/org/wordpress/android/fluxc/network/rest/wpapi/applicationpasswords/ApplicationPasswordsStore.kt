@@ -4,30 +4,23 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import org.wordpress.android.fluxc.module.ApplicationPasswordsClientId
 import org.wordpress.android.util.AppLog
-import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 internal class ApplicationPasswordsStore @Inject constructor(
     private val context: Context,
-    @ApplicationPasswordsClientId private val applicationNameOptional: Optional<String>,
+    private val configuration: ApplicationPasswordsConfiguration
 ) {
     companion object {
         private const val USERNAME_PREFERENCE_KEY_PREFIX = "username_"
         private const val PASSWORD_PREFERENCE_KEY_PREFIX = "app_password_"
+        private const val UUID_PREFERENCE_KEY_PREFIX = "app_password_uuid_"
     }
 
-    val applicationName: String
-        get() = applicationNameOptional.orElseThrow {
-            NoSuchElementException(
-                "Please make sure to inject a String instance with " +
-                    "the annotation @${ApplicationPasswordsClientId::class.simpleName} to the Dagger graph" +
-                    "to be able to use the Application Passwords feature"
-            )
-        }
+    private val applicationName: String
+        get() = configuration.applicationName
 
     private val encryptedPreferences by lazy {
         initEncryptedPrefs()
@@ -36,9 +29,14 @@ internal class ApplicationPasswordsStore @Inject constructor(
     fun getCredentials(host: String): ApplicationPasswordCredentials? {
         val username = encryptedPreferences.getString(host.usernamePrefKey, null)
         val password = encryptedPreferences.getString(host.passwordPrefKey, null)
+        val uuid = encryptedPreferences.getString(host.uuidPrefKey, null)
 
-        return if (username != null && password != null) {
-            ApplicationPasswordCredentials(username, password)
+        return if (username != null && password != null && uuid != null) {
+            ApplicationPasswordCredentials(
+                userName = username,
+                password = password,
+                uuid = uuid
+            )
         } else {
             null
         }
@@ -48,6 +46,7 @@ internal class ApplicationPasswordsStore @Inject constructor(
         encryptedPreferences.edit()
             .putString(host.usernamePrefKey, credentials.userName)
             .putString(host.passwordPrefKey, credentials.password)
+            .putString(host.uuidPrefKey, credentials.uuid)
             .apply()
     }
 
@@ -55,6 +54,7 @@ internal class ApplicationPasswordsStore @Inject constructor(
         encryptedPreferences.edit()
             .remove(host.usernamePrefKey)
             .remove(host.passwordPrefKey)
+            .remove(host.uuidPrefKey)
             .apply()
     }
 
@@ -89,9 +89,16 @@ internal class ApplicationPasswordsStore @Inject constructor(
         }
     }
 
+    fun getUuid(host: String): String? {
+        return encryptedPreferences.getString(host.uuidPrefKey, null)
+    }
+
     private val String.usernamePrefKey
         get() = "$USERNAME_PREFERENCE_KEY_PREFIX$this"
 
     private val String.passwordPrefKey
         get() = "$PASSWORD_PREFERENCE_KEY_PREFIX$this"
+
+    private val String.uuidPrefKey
+        get() = "$UUID_PREFERENCE_KEY_PREFIX$this"
 }

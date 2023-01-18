@@ -4,6 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,6 +63,8 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
     }
 
     @Test
+    // TODO remove this after re-enabling application passwords support
+    @Ignore
     fun testApplicationPassword() = runBlocking {
         val response = applicationPasswordsNetwork.executeGetGsonRequest(site, WPAPI.users.me.urlV2, Unit::class.java)
         Assert.assertTrue(response is WPAPIResponse.Success)
