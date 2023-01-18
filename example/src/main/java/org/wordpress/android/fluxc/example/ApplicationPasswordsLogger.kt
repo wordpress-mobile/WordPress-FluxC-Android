@@ -42,9 +42,25 @@ class ApplicationPasswordsLogger @Inject constructor(
             })
     }
 
-    override fun onNewPasswordCreated() {
+    override fun onNewPasswordCreated(isPasswordRegenerated: Boolean) {
         invokeOnUiThread {
-            prependToLog("A new WordPress Application Password was created")
+            val message = if (isPasswordRegenerated) {
+                "A new WordPress Application Password was regenerated"
+            } else {
+                "An Application Password was created"
+            }
+            prependToLog(message)
+        }
+    }
+
+    override fun onPasswordGenerationFailed(networkError: WPAPINetworkError) {
+        invokeOnUiThread {
+            prependToLog(
+                "Application Password generation failed:" +
+                    "Error message: ${networkError.message}\n" +
+                    "Cause: ${networkError.errorCode} \n" +
+                    "Status Code: ${networkError.volleyError?.networkResponse?.statusCode}"
+            )
         }
     }
 
