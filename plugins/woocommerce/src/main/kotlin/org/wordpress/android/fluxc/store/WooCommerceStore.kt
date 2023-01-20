@@ -67,7 +67,6 @@ open class WooCommerceStore @Inject constructor(
         const val WOO_API_NAMESPACE_V3 = "wc/v3"
     }
 
-
     private val SiteModel.needsAdditionalCheckForWooInstallation
         get() = origin != SiteModel.ORIGIN_WPCOM_REST || isJetpackCPConnected
 
@@ -137,7 +136,15 @@ open class WooCommerceStore @Inject constructor(
             }
         } else false
 
-        val updatedSite = withContext(Dispatchers.IO) { siteStore.getSiteByLocalId(site.id)!! }
+        val updatedSite = withContext(Dispatchers.IO) {
+            siteStore.getSiteByLocalId(site.id)
+        } ?: return WooResult(
+            WooError(
+                type = GENERIC_ERROR,
+                message = "Site not found in the DB",
+                original = UNKNOWN
+            )
+        )
 
         if (isSiteUpdated) {
             emitChange(OnSiteChanged(1, listOf(updatedSite)))
@@ -147,19 +154,19 @@ open class WooCommerceStore @Inject constructor(
     }
 
     fun getWooCommerceSites(): MutableList<SiteModel> =
-            siteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
+        siteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
 
     /**
      * Given a [SiteModel], returns its WooCommerce site settings, or null if no settings are stored for this site.
      */
     fun getSiteSettings(site: SiteModel): WCSettingsModel? =
-            WCSettingsSqlUtils.getSettingsForSite(site)
+        WCSettingsSqlUtils.getSettingsForSite(site)
 
     /**
      * Given a [SiteModel], returns its WooCommerce product settings, or null if no settings are stored for this site.
      */
     open fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
-            WCProductSettingsSqlUtils.getProductSettingsForSite(site)
+        WCProductSettingsSqlUtils.getProductSettingsForSite(site)
 
     /**
      * Given a [SiteModel], returns its WooCommerce store country name,
@@ -194,11 +201,13 @@ open class WooCommerceStore @Inject constructor(
                 response.isError -> {
                     WooResult(response.error)
                 }
+
                 response.result?.plugins != null -> {
                     val plugins = response.result.plugins.map { it.toDomainModel(site.id) }
                     PluginSqlUtils.insertOrReplaceSitePlugins(site, plugins)
                     WooResult(plugins)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -211,19 +220,21 @@ open class WooCommerceStore @Inject constructor(
                 response.isError -> {
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
                     val ssr = WCSSRModel(
-                            remoteSiteId = site.siteId,
-                            environment = response.result.environment?.toString(),
-                            database = response.result.database?.toString(),
-                            activePlugins = response.result.activePlugins?.toString(),
-                            theme = response.result.theme?.toString(),
-                            settings = response.result.settings?.toString(),
-                            security = response.result.security?.toString(),
-                            pages = response.result.pages?.toString()
+                        remoteSiteId = site.siteId,
+                        environment = response.result.environment?.toString(),
+                        database = response.result.database?.toString(),
+                        activePlugins = response.result.activePlugins?.toString(),
+                        theme = response.result.theme?.toString(),
+                        settings = response.result.settings?.toString(),
+                        security = response.result.security?.toString(),
+                        pages = response.result.pages?.toString()
                     )
                     WooResult(ssr)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -275,6 +286,7 @@ open class WooCommerceStore @Inject constructor(
                     AppLog.w(T.API, "fetching site settings  site ${site.siteId}")
                     WooResult(response.error)
                 }
+
                 else -> {
                     WooResult(response.result?.let {
                         siteSqlUtils.insertOrUpdateSite(site.updateFromSiteSettings(it)) == 1
@@ -292,6 +304,7 @@ open class WooCommerceStore @Inject constructor(
                     AppLog.w(T.API, "Checking WooCommerce availability failed for site ${site.siteId}")
                     WooResult(response.error)
                 }
+
                 else -> {
                     val updated = response.result?.takeIf { it != site.hasWooCommerce }?.let {
                         site.hasWooCommerce = it
@@ -318,6 +331,7 @@ open class WooCommerceStore @Inject constructor(
                     )
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
                     val namespaces = response.result.namespaces
                     val maxWooApiVersion = namespaces?.run {
@@ -325,11 +339,14 @@ open class WooCommerceStore @Inject constructor(
                             ?: find { it == WOO_API_NAMESPACE_V2 }
                             ?: find { it == WOO_API_NAMESPACE_V1 }
                     }
-                    WooResult(WCApiVersionResponse(
-                        siteModel = site,
-                        apiVersion = maxWooApiVersion
-                    ))
+                    WooResult(
+                        WCApiVersionResponse(
+                            siteModel = site,
+                            apiVersion = maxWooApiVersion
+                        )
+                    )
                 }
+
                 else -> {
                     WooResult(WooError(GENERIC_ERROR, UNKNOWN))
                 }
@@ -345,6 +362,7 @@ open class WooCommerceStore @Inject constructor(
                     AppLog.w(T.API, "Failed to enable coupons for ${site.siteId}")
                     false
                 }
+
                 else -> {
                     response.result?.let {
                         WCSettingsSqlUtils.setCouponsEnabled(site, it)
@@ -366,12 +384,14 @@ open class WooCommerceStore @Inject constructor(
                     )
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
                     val settings = settingsMapper.mapSiteSettings(response.result, site)
                     WCSettingsSqlUtils.insertOrUpdateSettings(settings)
 
                     WooResult(settings)
                 }
+
                 else -> {
                     WooResult(WooError(GENERIC_ERROR, UNKNOWN))
                 }
@@ -390,12 +410,14 @@ open class WooCommerceStore @Inject constructor(
                     )
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
                     val settings = settingsMapper.mapProductSettings(response.result, site)
                     WCProductSettingsSqlUtils.insertOrUpdateProductSettings(settings)
 
                     WooResult(settings)
                 }
+
                 else -> {
                     WooResult(WooError(GENERIC_ERROR, UNKNOWN))
                 }
@@ -438,13 +460,17 @@ open class WooCommerceStore @Inject constructor(
 
         // Append or prepend the currency symbol according to the site's settings
         with(StringBuilder()) {
-            if (rawValue.startsWith("-")) { append("-") }
-            append(when (siteSettings?.currencyPosition) {
-                null, LEFT -> "$currencySymbol$decimalFormattedValue"
-                LEFT_SPACE -> "$currencySymbol $decimalFormattedValue"
-                RIGHT -> "$decimalFormattedValue$currencySymbol"
-                RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
-            })
+            if (rawValue.startsWith("-")) {
+                append("-")
+            }
+            append(
+                when (siteSettings?.currencyPosition) {
+                    null, LEFT -> "$currencySymbol$decimalFormattedValue"
+                    LEFT_SPACE -> "$currencySymbol $decimalFormattedValue"
+                    RIGHT -> "$decimalFormattedValue$currencySymbol"
+                    RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
+                }
+            )
             return toString()
         }
     }
