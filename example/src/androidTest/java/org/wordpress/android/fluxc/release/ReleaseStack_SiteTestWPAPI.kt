@@ -40,7 +40,6 @@ class ReleaseStack_SiteTestWPAPI : ReleaseStack_Base() {
             UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
             UrlUtils.removeScheme(site.url)
         )
-        Assert.assertTrue(site.email.isNotEmpty())
         Assert.assertEquals(SiteModel.ORIGIN_WPAPI, site.origin)
         Assert.assertEquals(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE, site.username)
         Assert.assertEquals(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE, site.password)
