@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.wc.settings
 
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
+import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse.Authentication
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.SSRResponse
@@ -26,14 +27,14 @@ object WCSettingsTestUtils {
             .jsonFileAs(SSRResponse::class.java)
 
     fun getSupportedApiVersionResponse() =
-        RootWPAPIRestResponse().apply {
-            authentication = Authentication()
+        RootWPAPIRestResponse(
+            authentication = Authentication(),
             namespaces = arrayListOf("wc/v3")
-        }
+        )
 
     fun getUnsupportedApiVersionResponse() =
-        RootWPAPIRestResponse().apply {
-            authentication = Authentication()
+        RootWPAPIRestResponse(
+            authentication = Authentication(),
             namespaces = arrayListOf("wc/v1")
-        }
+        )
 }
