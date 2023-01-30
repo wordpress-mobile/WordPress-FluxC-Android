@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.persistence.room
 
 import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import org.assertj.core.api.Assertions.assertThat
@@ -22,8 +21,7 @@ class WPAndroidDatabaseMigrationTest {
     @JvmField
     val helper: MigrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        WPAndroidDatabase::class.java.canonicalName,
-        FrameworkSQLiteOpenHelperFactory()
+        WPAndroidDatabase::class.java,
     )
 
     @Test
@@ -31,7 +29,8 @@ class WPAndroidDatabaseMigrationTest {
     fun migrate1To2() {
         helper.createDatabase(WP_DB_NAME, 1).apply {
             // populate BloggingReminders with some data
-            execSQL("""
+            execSQL(
+                """
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
@@ -49,9 +48,9 @@ class WPAndroidDatabaseMigrationTest {
 
         assertThat(cursor.count).isEqualTo(1)
         cursor.moveToFirst()
-        assertThat(cursor.getInt(0)).isEqualTo(1000)
-        assertThat(cursor.getInt(2)).isEqualTo(1)
-        assertThat(cursor.getInt(4)).isEqualTo(0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("localSiteId"))).isEqualTo(1000)
+        assertThat(cursor.getInt(cursor.getColumnIndex("tuesday"))).isEqualTo(1)
+        assertThat(cursor.getInt(cursor.getColumnIndex("thursday"))).isEqualTo(0)
         cursor.close()
         db.close()
     }
@@ -61,11 +60,13 @@ class WPAndroidDatabaseMigrationTest {
     fun migrate2To3() {
         helper.createDatabase(WP_DB_NAME, 2).apply {
             // populate BloggingReminders with some data
-            execSQL(""" 
+            execSQL(
+                """ 
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
-            """)
+            """
+            )
             close()
         }
 
@@ -78,9 +79,9 @@ class WPAndroidDatabaseMigrationTest {
 
         assertThat(cursor.count).isEqualTo(1)
         cursor.moveToFirst()
-        assertThat(cursor.getInt(0)).isEqualTo(1000)
-        assertThat(cursor.getInt(2)).isEqualTo(1)
-        assertThat(cursor.getInt(4)).isEqualTo(0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("localSiteId"))).isEqualTo(1000)
+        assertThat(cursor.getInt(cursor.getColumnIndex("tuesday"))).isEqualTo(1)
+        assertThat(cursor.getInt(cursor.getColumnIndex("thursday"))).isEqualTo(0)
         cursor.close()
         db.close()
     }
@@ -93,11 +94,13 @@ class WPAndroidDatabaseMigrationTest {
 
         helper.createDatabase(WP_DB_NAME, oldVersion).apply {
             // populate BloggingReminders with some data
-            execSQL(""" 
+            execSQL(
+                """ 
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1) 
-            """)
+            """
+            )
             close()
         }
 
@@ -109,11 +112,13 @@ class WPAndroidDatabaseMigrationTest {
 
         assertThat(cursor.count).isEqualTo(1)
         cursor.moveToFirst()
-        assertThat(cursor.getInt(0)).isEqualTo(1000)
-        assertThat(cursor.getInt(2)).isEqualTo(1)
-        assertThat(cursor.getInt(4)).isEqualTo(0)
-        assertThat(cursor.getInt(8)).isEqualTo(10)
-        assertThat(cursor.getInt(9)).isEqualTo(0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("localSiteId"))).isEqualTo(1000)
+        assertThat(cursor.getInt(cursor.getColumnIndex("tuesday"))).isEqualTo(1)
+        assertThat(cursor.getInt(cursor.getColumnIndex("thursday"))).isEqualTo(0)
+        // also test existing entry has new field hour with correct default (10)
+        assertThat(cursor.getInt(cursor.getColumnIndex("hour"))).isEqualTo(10)
+        // also test existing entry has new field minute with correct default (0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("minute"))).isEqualTo(0)
         cursor.close()
         db.close()
     }
@@ -126,11 +131,13 @@ class WPAndroidDatabaseMigrationTest {
 
         helper.createDatabase(WP_DB_NAME, oldVersion).apply {
             // populate BloggingReminders with some data
-            execSQL(""" 
+            execSQL(
+                """ 
                 INSERT INTO BloggingReminders 
                 (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday, hour, minute) 
                 VALUES (1000,1, 1, 0, 0, 1, 0, 1, 10, 33) 
-            """)
+            """
+            )
             close()
         }
 
@@ -142,12 +149,52 @@ class WPAndroidDatabaseMigrationTest {
 
         assertThat(cursor.count).isEqualTo(1)
         cursor.moveToFirst()
-        assertThat(cursor.getInt(0)).isEqualTo(1000)
-        assertThat(cursor.getInt(2)).isEqualTo(1)
-        assertThat(cursor.getInt(4)).isEqualTo(0)
-        assertThat(cursor.getInt(8)).isEqualTo(10)
-        assertThat(cursor.getInt(9)).isEqualTo(33)
-        assertThat(cursor.getInt(10)).isEqualTo(0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("localSiteId"))).isEqualTo(1000)
+        assertThat(cursor.getInt(cursor.getColumnIndex("tuesday"))).isEqualTo(1)
+        assertThat(cursor.getInt(cursor.getColumnIndex("thursday"))).isEqualTo(0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("hour"))).isEqualTo(10)
+        assertThat(cursor.getInt(cursor.getColumnIndex("minute"))).isEqualTo(33)
+        // also test existing entry has new field isPromptRemindersOptedIn with correct default (0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("isPromptRemindersOptedIn"))).isEqualTo(0)
+        cursor.close()
+        db.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate10to11() {
+        val oldVersion = 10
+        val newVersion = 11
+        helper.createDatabase(WP_DB_NAME, oldVersion).apply {
+            // populate BloggingReminders with some data
+            execSQL(
+                """ 
+                INSERT INTO BloggingReminders 
+                (localSiteId, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
+                hour, minute, isPromptRemindersOptedIn) 
+                VALUES (1000,1, 1, 0, 0, 1, 0, 1, 10, 33, 0) 
+            """.trimIndent()
+            )
+            close()
+        }
+
+        // Re-open the database with the new version and provide migration to check against.
+        val db = helper.runMigrationsAndValidate(WP_DB_NAME, newVersion, true)
+
+        // Validate that the data was migrated properly.
+        val cursor = db.query("SELECT * FROM BloggingReminders")
+
+        assertThat(cursor.count).isEqualTo(1)
+        cursor.moveToFirst()
+        assertThat(cursor.getInt(cursor.getColumnIndex("localSiteId"))).isEqualTo(1000)
+        assertThat(cursor.getInt(cursor.getColumnIndex("tuesday"))).isEqualTo(1)
+        assertThat(cursor.getInt(cursor.getColumnIndex("thursday"))).isEqualTo(0)
+        assertThat(cursor.getInt(cursor.getColumnIndex("hour"))).isEqualTo(10)
+        assertThat(cursor.getInt(cursor.getColumnIndex("minute"))).isEqualTo(33)
+        assertThat(cursor.getInt(cursor.getColumnIndex("isPromptRemindersOptedIn"))).isEqualTo(0)
+        // also test existing entry has new field isPromptsCardOptedIn with correct default (1)
+        assertThat(cursor.getInt(cursor.getColumnIndex("isPromptsCardOptedIn"))).isEqualTo(1)
+
         cursor.close()
         db.close()
     }
