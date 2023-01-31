@@ -16,7 +16,13 @@
             android:id="@+id/fetch_plans"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch plans" />
+            android:text="Fetch available plans" />
+
+        <Button
+            android:id="@+id/fetch_site_plan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch site plan" />
 
     </LinearLayout>
 </ScrollView>
