@@ -97,6 +97,7 @@ class MainFragment : Fragment() {
         experiments.setOnClickListener(getOnClickListener(ExperimentsFragment()))
         plugins.setOnClickListener(getOnClickListener(PluginsFragment()))
         plans.setOnClickListener(getOnClickListener(PlansFragment()))
+        domains.setOnClickListener(getOnClickListener(DomainsFragment()))
     }
 
     // Private methods

@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.AccountFragment
 import org.wordpress.android.fluxc.example.CommentsFragment
+import org.wordpress.android.fluxc.example.DomainsFragment
 import org.wordpress.android.fluxc.example.EditorThemeFragment
 import org.wordpress.android.fluxc.example.ExperimentsFragment
 import org.wordpress.android.fluxc.example.MainFragment
@@ -188,4 +189,7 @@ internal interface FragmentsModule {
 
     @ContributesAndroidInjector
     fun providePlansFragment(): PlansFragment
+
+    @ContributesAndroidInjector
+    fun provideDomainsFragment(): DomainsFragment
 }
