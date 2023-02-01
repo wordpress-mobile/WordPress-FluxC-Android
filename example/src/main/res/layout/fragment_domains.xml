@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="@dimen/activity_start_end_margin"
-    tools:context="org.wordpress.android.fluxc.example.PlansFragment"
+    tools:context="org.wordpress.android.fluxc.example.DomainsFragment"
     tools:ignore="HardcodedText">
     <LinearLayout
         android:id="@+id/buttonContainer"
@@ -13,16 +13,10 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/fetch_plans"
+            android:id="@+id/fetch_domains"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch available plans" />
-
-        <Button
-            android:id="@+id/fetch_site_plan"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fetch site plan" />
+            android:text="Fetch domains" />
 
     </LinearLayout>
 </ScrollView>
