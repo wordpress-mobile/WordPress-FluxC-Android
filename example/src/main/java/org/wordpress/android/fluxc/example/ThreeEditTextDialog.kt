@@ -29,7 +29,7 @@ class ThreeEditTextDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireActivity())
         val inflater = requireActivity().layoutInflater
-        val view = inflater.inflate(R.layout.signin_dialog, null)
+        val view = inflater.inflate(R.layout.three_edit_text_dialog, null)
         editText1 = view.findViewById(R.id.text1) as EditText
         editText2 = view.findViewById(R.id.text2) as EditText
         editText3 = view.findViewById(R.id.text3) as EditText
