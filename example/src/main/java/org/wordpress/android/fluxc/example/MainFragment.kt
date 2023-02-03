@@ -14,6 +14,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.AccountAction
+import org.wordpress.android.fluxc.example.SigninDialog.SigningListener
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.generated.AccountActionBuilder
@@ -30,6 +31,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
+import org.wordpress.android.fluxc.store.SiteStore.FetchWPAPISitePayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload
 import org.wordpress.android.util.AppLog
@@ -65,8 +67,12 @@ class MainFragment : Fragment() {
         dispatcher.unregister(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_main, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
+        inflater.inflate(R.layout.fragment_main, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -77,9 +83,9 @@ class MainFragment : Fragment() {
 
         signed_out_actions.setOnClickListener {
             fragmentManager?.beginTransaction()
-                    ?.replace(R.id.fragment_container, SignedOutActionsFragment())
-                    ?.addToBackStack(null)
-                    ?.commit()
+                ?.replace(R.id.fragment_container, SignedOutActionsFragment())
+                ?.addToBackStack(null)
+                ?.commit()
         }
 
         account.setOnClickListener(getOnClickListener(AccountFragment()))
@@ -102,7 +108,8 @@ class MainFragment : Fragment() {
 
     // Private methods
 
-    private fun getOnClickListener(fragment: Fragment) = OnClickListener { replaceFragment(fragment) }
+    private fun getOnClickListener(fragment: Fragment) =
+        OnClickListener { replaceFragment(fragment) }
 
     private fun replaceFragment(fragment: Fragment) {
         if (siteStore.sitesCount == 0 && !accountStore.hasAccessToken()) {
@@ -110,33 +117,38 @@ class MainFragment : Fragment() {
             return
         }
         fragmentManager?.beginTransaction()
-                ?.replace(R.id.fragment_container, fragment)
-                ?.addToBackStack(null)
-                ?.commit()
+            ?.replace(R.id.fragment_container, fragment)
+            ?.addToBackStack(null)
+            ?.commit()
     }
 
     private fun showSSLWarningDialog(certifString: String) {
         val ft = fragmentManager?.beginTransaction()
         val newFragment = SSLWarningDialog.newInstance(
-                { _, _ ->
-                    // Add the certificate to our list
-                    memorizingTrustManager.storeLastFailure()
-                    // Retry login action
-                    selfHostedPayload?.let {
-                        signInAction(it.username, it.password, it.url)
-                    }
-                }, certifString)
+            { _, _ ->
+                // Add the certificate to our list
+                memorizingTrustManager.storeLastFailure()
+                // Retry login action
+                selfHostedPayload?.let {
+                    signInAction(it.username, it.password, it.url, true)
+                }
+            }, certifString
+        )
         ft?.let { newFragment.show(it, "dialog") }
     }
 
     private fun showSigninDialog() {
         val ft = fragmentManager?.beginTransaction()
-        val newFragment = ThreeEditTextDialog.newInstance(object : Listener {
-            @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-            override fun onClick(username: String, password: String, url: String) {
-                signInAction(username, password, url)
+        val newFragment = SigninDialog.newInstance(object : SigningListener {
+            override fun onClick(
+                username: String,
+                password: String,
+                url: String,
+                isXmlrpc: Boolean
+            ) {
+                signInAction(username, password, url, isXmlrpc)
             }
-        }, "Username", "Password", "XMLRPC Url (Leave blank for WP.COM!)")
+        })
         ft?.let { newFragment.show(it, "dialog") }
     }
 
@@ -168,7 +180,7 @@ class MainFragment : Fragment() {
                 httpAuthManager.addHTTPAuthCredentials(username, password, url, null)
                 // Retry login action
                 selfHostedPayload?.let {
-                    signInAction(it.username ?: "", it.password ?: "", url)
+                    signInAction(it.username ?: "", it.password ?: "", url, isXmlrpc = true)
                 }
             }
         }, "Username", "Password", "unused")
@@ -179,12 +191,22 @@ class MainFragment : Fragment() {
      * Called when the user tap OK on the SignIn Dialog. It authenticates and list user sites, on wpcom or self hosted
      * depending if the user filled the URL field.
      */
-    private fun signInAction(username: String, password: String, url: String) {
-        if (TextUtils.isEmpty(url)) {
-            wpcomFetchSites(username, password)
-        } else {
-            selfHostedPayload = RefreshSitesXMLRPCPayload(username, password, url)
-            dispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url))
+    private fun signInAction(username: String, password: String, url: String, isXmlrpc: Boolean) {
+        when {
+            TextUtils.isEmpty(url) -> wpcomFetchSites(username, password)
+            isXmlrpc -> {
+                selfHostedPayload = RefreshSitesXMLRPCPayload(username, password, url)
+                dispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url))
+            }
+            else -> dispatcher.dispatch(
+                SiteActionBuilder.newFetchSiteWpApiAction(
+                    FetchWPAPISitePayload(
+                        url = url,
+                        username = username,
+                        password = password
+                    )
+                )
+            )
         }
     }
 
@@ -256,7 +278,7 @@ class MainFragment : Fragment() {
                     // Show a SSL Warning Dialog
                     showSSLWarningDialog(memorizingTrustManager.lastFailure.toString())
                 AuthenticationErrorType.NEEDS_2FA -> show2faDialog()
-                AuthenticationErrorType.INVALID_OTP -> { }
+                AuthenticationErrorType.INVALID_OTP -> {}
                 AuthenticationErrorType.INVALID_REQUEST,
                 AuthenticationErrorType.UNSUPPORTED_RESPONSE_TYPE,
                 AuthenticationErrorType.EMAIL_LOGIN_NOT_ALLOWED,
@@ -289,7 +311,7 @@ class MainFragment : Fragment() {
                     selfHostedPayload = selfHostedPayload?.copy(url = event.failedEndpoint)
                     showSSLWarningDialog(memorizingTrustManager.lastFailure.toString())
                 }
-                else -> { }
+                else -> {}
             }
             prependToLog("Discovery failed with error: " + event.error)
             AppLog.e(T.API, "Discover error: " + event.error)
@@ -314,8 +336,10 @@ class MainFragment : Fragment() {
         }
         if (siteStore.hasSite()) {
             val firstSite = siteStore.sites[0]
-            prependToLog("First site name: " + firstSite.name + " - Total sites: " + siteStore.sitesCount +
-                    " - rowsAffected: " + event.rowsAffected)
+            prependToLog(
+                "First site name: " + firstSite.name + " - Total sites: " + siteStore.sitesCount +
+                    " - rowsAffected: " + event.rowsAffected
+            )
         }
     }
 

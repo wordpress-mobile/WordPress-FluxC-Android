@@ -4,7 +4,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,6 +26,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
+import org.wordpress.android.fluxc.store.SiteStore.FetchWPAPISitePayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType.DUPLICATE_SITE
 import org.wordpress.android.util.AppLog
@@ -42,7 +42,7 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
     companion object {
         @Parameters
         @JvmStatic
-        fun cases() = listOf(SiteModel.ORIGIN_WPCOM_REST, SiteModel.ORIGIN_XMLRPC)
+        fun cases() = listOf(SiteModel.ORIGIN_WPCOM_REST, SiteModel.ORIGIN_WPAPI)
     }
 
     @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -63,8 +63,6 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
     }
 
     @Test
-    // TODO remove this after re-enabling application passwords support
-    @Ignore
     fun testApplicationPassword() = runBlocking {
         val response = applicationPasswordsNetwork.executeGetGsonRequest(site, WPAPI.users.me.urlV2, Unit::class.java)
         Assert.assertTrue(response is WPAPIResponse.Success)
@@ -80,7 +78,7 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
     private fun getSite(): SiteModel {
         return when (origin) {
             SiteModel.ORIGIN_WPCOM_REST -> getJetpackSite()
-            SiteModel.ORIGIN_XMLRPC -> getNonJetpackSite()
+            SiteModel.ORIGIN_WPAPI -> getNonJetpackSite()
             else -> error("Unsupported test case")
         }
     }
@@ -91,14 +89,7 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
     }
 
     private fun getNonJetpackSite(): SiteModel {
-        return SiteModel().apply {
-            id = 1
-            selfHostedSiteId = 0
-            // By default, Application Passwords are only available when using SSL
-            url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE.replace("http:", "https:")
-            username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE
-            password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE
-        }
+        return runBlocking { authenticateWPAPIAndFetchSite() }
     }
 
     @Subscribe
@@ -158,5 +149,19 @@ internal class ReleaseStack_ApplicationPasswordNetwork(
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
         Assert.assertTrue(siteStore.sitesCount > 0)
+    }
+
+    private suspend fun authenticateWPAPIAndFetchSite(): SiteModel {
+        val payload = FetchWPAPISitePayload(
+            // By default, Application Passwords are only available when using SSL
+            url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE.replace("http:", "https:"),
+            username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+            password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE
+        )
+
+        val result = siteStore.fetchWPAPISite(payload)
+        Assert.assertFalse(result.isError)
+
+        return siteStore.sites[0]
     }
 }

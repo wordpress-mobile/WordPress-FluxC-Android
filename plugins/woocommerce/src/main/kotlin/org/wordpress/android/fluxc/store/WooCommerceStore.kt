@@ -68,7 +68,7 @@ open class WooCommerceStore @Inject constructor(
     }
 
     private val SiteModel.needsAdditionalCheckForWooInstallation
-        get() = origin != SiteModel.ORIGIN_WPCOM_REST || isJetpackCPConnected
+        get() = origin == SiteModel.ORIGIN_XMLRPC || (origin == SiteModel.ORIGIN_WPCOM_REST && isJetpackCPConnected)
 
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
