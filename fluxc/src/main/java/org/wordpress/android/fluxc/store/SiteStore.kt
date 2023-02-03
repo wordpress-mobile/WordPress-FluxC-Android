@@ -309,7 +309,8 @@ open class SiteStore @Inject constructor(
         @JvmField val tlds: String? = null,
         @JvmField val segmentId: Long? = null,
         @JvmField val quantity: Int,
-        @JvmField val includeVendorDot: Boolean = false
+        @JvmField val includeVendorDot: Boolean = false,
+        @JvmField val vendor: String? = null
     ) : Payload<BaseNetworkError>() {
         constructor(
             query: String,
@@ -317,7 +318,8 @@ open class SiteStore @Inject constructor(
             includeWordpressCom: Boolean,
             includeDotBlogSubdomain: Boolean,
             quantity: Int,
-            includeVendorDot: Boolean
+            includeVendorDot: Boolean,
+            vendor: String?
         ) : this(
                 query = query,
                 onlyWordpressCom = onlyWordpressCom,
@@ -1769,7 +1771,7 @@ open class SiteStore @Inject constructor(
         siteRestClient.suggestDomains(
                 payload.query, payload.onlyWordpressCom, payload.includeWordpressCom,
                 payload.includeDotBlogSubdomain, payload.segmentId, payload.quantity, payload.includeVendorDot,
-                payload.tlds
+                payload.tlds, payload.vendor
         )
     }
 

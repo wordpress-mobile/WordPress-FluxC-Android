@@ -463,7 +463,8 @@ class SiteRestClient @Inject constructor(
         segmentId: Long?,
         quantity: Int,
         includeVendorDot: Boolean,
-        tlds: String?
+        tlds: String?,
+        vendor: String?
     ) {
         val url = WPCOMREST.domains.suggestions.urlV1_1
         val params = mutableMapOf<String, String>()
@@ -486,6 +487,8 @@ class SiteRestClient @Inject constructor(
         params["quantity"] = quantity.toString()
         if (includeVendorDot) {
             params["vendor"] = "dot"
+        } else if (vendor != null) {
+            params["vendor"] = vendor
         }
         val request = WPComGsonRequest.buildGetRequest<List<DomainSuggestionResponse>>(url, params,
                 object : TypeToken<List<DomainSuggestionResponse>>() {}.type,
