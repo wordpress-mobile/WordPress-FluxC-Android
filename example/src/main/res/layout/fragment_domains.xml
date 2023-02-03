@@ -18,5 +18,11 @@
             android:layout_height="wrap_content"
             android:text="Fetch domains" />
 
+        <Button
+            android:id="@+id/fetch_domain_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch domain price" />
+
     </LinearLayout>
 </ScrollView>

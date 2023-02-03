@@ -8,10 +8,12 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_domains.*
-import kotlinx.android.synthetic.main.fragment_plans.*
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Error
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Success
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
 
@@ -48,6 +50,22 @@ class DomainsFragment : StoreSelectingFragment() {
                     }
                 }
             } ?: prependToLog("Select a site first")
+        }
+
+        fetch_domain_price.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a domain name:") { editText ->
+                lifecycleScope.launch {
+                    val domain = editText.text.toString()
+                    when (val result = store.fetchDomainPrice(editText.text.toString())) {
+                        is Error -> {
+                            prependToLog("Error fetching domain price: ${result.error.type}")
+                        }
+                        is Success -> {
+                            prependToLog("$domain price: ${result.data?.cost}")
+                        }
+                    }
+                }
+            }
         }
     }
 }
