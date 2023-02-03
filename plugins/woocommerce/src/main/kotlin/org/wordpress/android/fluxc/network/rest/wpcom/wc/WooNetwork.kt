@@ -17,6 +17,8 @@ import javax.inject.Singleton
  * passwords). This class allows this by supporting multiple networking implementations depending on the type of site:
  * - Jetpack Sites: the API call will use Jetpack Tunnel using [JetpackTunnelWPAPINetwork]
  * - Non-Jetpack Sites: the API call will use Application Passwords using [ApplicationPasswordsNetwork]
+ *
+ * The [SiteModel.ORIGIN_XMLRPC] support is kept for backward compatibility
  */
 @Singleton
 class WooNetwork @Inject constructor(
@@ -38,7 +40,7 @@ class WooNetwork @Inject constructor(
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeGetGsonRequest(
                 site, path, clazz, params, enableCaching, cacheTimeToLive, forced, requestTimeout, retries
             ).toWPAPIResponse()
-            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executeGetGsonRequest(
+            SiteModel.ORIGIN_XMLRPC, SiteModel.ORIGIN_WPAPI -> applicationPasswordsNetwork.executeGetGsonRequest(
                 site, path, clazz, params, enableCaching, cacheTimeToLive, forced, requestTimeout, retries
             )
             else -> error("Site with unsupported origin")
@@ -54,7 +56,9 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executePostGsonRequest(site, path, clazz, body)
                 .toWPAPIResponse()
-            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executePostGsonRequest(site, path, clazz, body)
+            SiteModel.ORIGIN_XMLRPC, SiteModel.ORIGIN_WPAPI -> applicationPasswordsNetwork.executePostGsonRequest(
+                site, path, clazz, body
+            )
             else -> error("Site with unsupported origin")
         }
     }
@@ -68,7 +72,9 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executePutGsonRequest(site, path, clazz, body)
                 .toWPAPIResponse()
-            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executePutGsonRequest(site, path, clazz, body)
+            SiteModel.ORIGIN_XMLRPC, SiteModel.ORIGIN_WPAPI -> applicationPasswordsNetwork.executePutGsonRequest(
+                site, path, clazz, body
+            )
             else -> error("Site with unsupported origin")
         }
     }
@@ -82,7 +88,9 @@ class WooNetwork @Inject constructor(
         return when (site.origin) {
             SiteModel.ORIGIN_WPCOM_REST -> jetpackTunnelWPAPINetwork.executeDeleteGsonRequest(site, path, clazz, params)
                 .toWPAPIResponse()
-            SiteModel.ORIGIN_XMLRPC -> applicationPasswordsNetwork.executeDeleteGsonRequest(site, path, clazz, params)
+            SiteModel.ORIGIN_XMLRPC, SiteModel.ORIGIN_WPAPI -> applicationPasswordsNetwork.executeDeleteGsonRequest(
+                site, path, clazz, params
+            )
             else -> error("Site with unsupported origin")
         }
     }
