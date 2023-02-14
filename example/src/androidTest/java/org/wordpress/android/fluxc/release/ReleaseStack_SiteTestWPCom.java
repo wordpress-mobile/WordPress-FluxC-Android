@@ -310,14 +310,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, null);
         testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
     }
 
     @Test
     public void testWpcomSubdomainDotBlogSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, "dot");
         testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
     }
 
@@ -334,7 +334,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // This query should return 0 results which returns a 400 error from the API. This test verifies that
         // we are converting it to a successful response.
         String keywords = "test";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, null);
         testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
     }
 
@@ -342,7 +342,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void testInvalidQueryDomainSuggestions() throws InterruptedException {
         // This query should return
         String keywords = ".";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, null);
         testSuggestDomains(payload, TestEvents.DOMAIN_SUGGESTION_ERROR_INVALID_QUERY);
     }
 
