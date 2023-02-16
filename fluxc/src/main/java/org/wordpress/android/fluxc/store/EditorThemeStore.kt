@@ -63,6 +63,8 @@ class EditorThemeStore
         return editorThemeSqlUtils.getEditorThemeForSite(site)
     }
 
+    fun getIsBlockBasedTheme(site: SiteModel) = getEditorThemeForSite(site)?.themeSupport?.isBlockBasedTheme
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? EditorThemeAction ?: return
@@ -167,6 +169,12 @@ class EditorThemeStore
         val existingTheme = editorThemeSqlUtils.getEditorThemeForSite(site)
         if (newTheme != existingTheme) {
             editorThemeSqlUtils.replaceEditorThemeForSite(site, newTheme)
+            val onChanged = OnEditorThemeChanged(newTheme, site.id, action, endpoint)
+            emitChange(onChanged)
+        } else {
+            // Fixme:
+            // This is a temporary hack / workaround for the WIP implementation, and should be refactored before
+            // committing to trunk.
             val onChanged = OnEditorThemeChanged(newTheme, site.id, action, endpoint)
             emitChange(onChanged)
         }
