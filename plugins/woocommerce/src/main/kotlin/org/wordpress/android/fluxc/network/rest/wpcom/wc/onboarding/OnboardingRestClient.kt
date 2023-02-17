@@ -10,12 +10,12 @@ import javax.inject.Inject
 class OnboardingRestClient @Inject constructor(
     private val wooNetwork: WooNetwork
 ) {
-    suspend fun fetchOnboardingTasks(site: SiteModel): WooPayload<OnboardingTasksResponse> {
+    suspend fun fetchOnboardingTasks(site: SiteModel): WooPayload<Array<TaskGroupDto>> {
         val url = WPCOMREST.wc_admin.onboarding.tasks.endpoint
         return wooNetwork.executeGetGsonRequest(
             site,
             url,
-            OnboardingTasksResponse::class.java
+            Array<TaskGroupDto>::class.java
         ).toWooPayload()
     }
 }
