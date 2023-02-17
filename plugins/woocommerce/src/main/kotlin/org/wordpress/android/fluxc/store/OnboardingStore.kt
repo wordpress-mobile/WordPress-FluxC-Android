@@ -15,12 +15,19 @@ class OnboardingStore @Inject constructor(
     private val restClient: OnboardingRestClient,
     private val coroutineEngine: CoroutineEngine,
 ) {
+    private companion object {
+        const val ONBOARDING_TASKS_KEY = "setup"
+    }
     suspend fun fetchOnboardingTasks(site: SiteModel): WooResult<List<TaskDto>> =
         coroutineEngine.withDefaultContext(API, this, "fetchOnboardingTasks") {
             val response = restClient.fetchOnboardingTasks(site)
             when {
                 response.isError -> WooResult(response.error)
-                response.result != null -> WooResult(emptyList())
+                response.result != null -> WooResult(
+                    response.result
+                        .firstOrNull { it.id == ONBOARDING_TASKS_KEY  }
+                        ?.tasks ?: emptyList()
+                )
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
