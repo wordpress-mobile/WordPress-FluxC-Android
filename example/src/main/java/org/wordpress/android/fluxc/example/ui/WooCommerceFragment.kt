@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.example.ui.customer.WooCustomersFragment
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
 import org.wordpress.android.fluxc.example.ui.helpsupport.WooHelpSupportFragment
 import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment
+import org.wordpress.android.fluxc.example.ui.onboarding.WooOnboardingFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductAttributeFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
@@ -43,7 +44,11 @@ class WooCommerceFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.fragment_woocommerce, container, false)
 
     @Suppress("LongMethod", "ComplexMethod")
@@ -97,8 +102,9 @@ class WooCommerceFragment : StoreSelectingFragment() {
                         prependToLog("Error fetching settings: ${it.type} - ${it.message}")
                     }
                     result.model?.let {
-                        prependToLog("Updated site settings for ${site.name}:\n" +
-                            it.toString()
+                        prependToLog(
+                            "Updated site settings for ${site.name}:\n" +
+                                it.toString()
                         )
                     }
                 }
@@ -222,6 +228,10 @@ class WooCommerceFragment : StoreSelectingFragment() {
             selectedSite?.let {
                 replaceFragment(WooHelpSupportFragment())
             } ?: showNoWCSitesToast()
+        }
+
+        store_onboarding.setOnClickListener {
+            replaceFragment(WooOnboardingFragment())
         }
     }
 

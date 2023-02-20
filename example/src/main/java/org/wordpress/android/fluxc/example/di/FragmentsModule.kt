@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
 import org.wordpress.android.fluxc.example.PlansFragment
+import org.wordpress.android.fluxc.example.PluginsFragment
 import org.wordpress.android.fluxc.example.PostsFragment
 import org.wordpress.android.fluxc.example.ReactNativeFragment
 import org.wordpress.android.fluxc.example.SignedOutActionsFragment
@@ -19,7 +20,6 @@ import org.wordpress.android.fluxc.example.SitesFragment
 import org.wordpress.android.fluxc.example.TaxonomiesFragment
 import org.wordpress.android.fluxc.example.ThemeFragment
 import org.wordpress.android.fluxc.example.UploadsFragment
-import org.wordpress.android.fluxc.example.PluginsFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.example.ui.coupons.WooCouponsFragment
@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.example.ui.customer.search.WooCustomersSearch
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
 import org.wordpress.android.fluxc.example.ui.helpsupport.WooHelpSupportFragment
 import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment
+import org.wordpress.android.fluxc.example.ui.onboarding.WooOnboardingFragment
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooAddonsTestFragment
@@ -192,4 +193,7 @@ internal interface FragmentsModule {
 
     @ContributesAndroidInjector
     fun provideDomainsFragment(): DomainsFragment
+
+    @ContributesAndroidInjector
+    fun provideOnboardingFragment(): WooOnboardingFragment
 }
