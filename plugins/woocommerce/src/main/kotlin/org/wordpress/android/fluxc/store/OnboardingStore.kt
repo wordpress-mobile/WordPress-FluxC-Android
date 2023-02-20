@@ -10,7 +10,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.onboarding.TaskDto
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class OnboardingStore @Inject constructor(
     private val restClient: OnboardingRestClient,
     private val coroutineEngine: CoroutineEngine,
@@ -33,4 +35,5 @@ class OnboardingStore @Inject constructor(
             }
         }
 }
+
 
