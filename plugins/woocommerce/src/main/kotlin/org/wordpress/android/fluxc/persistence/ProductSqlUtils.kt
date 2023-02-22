@@ -176,7 +176,8 @@ object ProductSqlUtils {
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        excludedProductIds: List<Long>? = null
+        excludedProductIds: List<Long>? = null,
+        searchQuery: String? = null,
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -196,6 +197,9 @@ object ProductSqlUtils {
             // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
             val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
             queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
+        }
+        if (searchQuery?.isNotEmpty() == true) {
+            queryBuilder.contains(WCProductModelTable.NAME, searchQuery)
         }
 
         excludedProductIds?.let {

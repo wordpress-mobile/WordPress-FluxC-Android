@@ -807,9 +807,10 @@ class WCProductStore @Inject constructor(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        excludedProductIds: List<Long>? = null
+        excludedProductIds: List<Long>? = null,
+        searchQuery: String? = null,
     ): List<WCProductModel> =
-            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType, excludedProductIds)
+            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType, excludedProductIds, searchQuery)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
             ProductSqlUtils.getProductsForSite(site, sortType)
