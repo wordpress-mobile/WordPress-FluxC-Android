@@ -141,5 +141,11 @@
             android:layout_height="wrap_content"
             android:text="Help &amp; Support" />
 
+        <Button
+            android:id="@+id/store_onboarding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Store onboarding" />
+
     </LinearLayout>
 </ScrollView>
