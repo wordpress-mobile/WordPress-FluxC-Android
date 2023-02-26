@@ -199,7 +199,14 @@ object ProductSqlUtils {
             queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
         }
         if (searchQuery?.isNotEmpty() == true) {
-            queryBuilder.contains(WCProductModelTable.NAME, searchQuery)
+            queryBuilder
+                    .beginGroup()
+                    .contains(WCProductModelTable.NAME, searchQuery)
+                    .or()
+                    .contains(WCProductModelTable.DESCRIPTION, searchQuery)
+                    .or()
+                    .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
+                    .endGroup()
         }
 
         excludedProductIds?.let {
