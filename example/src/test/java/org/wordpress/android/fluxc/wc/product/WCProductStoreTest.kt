@@ -206,7 +206,7 @@ class WCProductStoreTest {
     }
 
     @Test
-    fun testGetProductsByFilterOptions() {
+    fun testGetProductsWithFilterOptions() {
         val filterOptions = mapOf<ProductFilterOption, String>(
                 ProductFilterOption.TYPE to "simple",
                 ProductFilterOption.STOCK_STATUS to "instock",
@@ -230,7 +230,7 @@ class WCProductStoreTest {
         ProductSqlUtils.insertOrUpdateProduct(product4)
 
         val site = SiteModel().apply { id = product1.localSiteId }
-        val products = productStore.getProductsByFilterOptions(site, filterOptions)
+        val products = productStore.getProducts(site, filterOptions)
         assertEquals(1, products.size)
 
         // insert products with the same product options but for a different site
@@ -250,22 +250,22 @@ class WCProductStoreTest {
         ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct4)
 
         // verify that the products for the first site is still 1
-        assertEquals(1, productStore.getProductsByFilterOptions(site, filterOptions).size)
+        assertEquals(1, productStore.getProducts(site, filterOptions).size)
 
         // verify that the products for the second site is 3
         val site2 = SiteModel().apply { id = differentSiteProduct1.localSiteId }
         val filterOptions2 = mapOf(ProductFilterOption.STATUS to "draft")
-        val differentSiteProducts = productStore.getProductsByFilterOptions(site2, filterOptions2)
+        val differentSiteProducts = productStore.getProducts(site2, filterOptions2)
         assertEquals(1, differentSiteProducts.size)
         assertEquals(differentSiteProduct2.status, differentSiteProducts[0].status)
 
         val filterOptions3 = mapOf(ProductFilterOption.STOCK_STATUS to "onbackorder")
-        val differentProductFilters = productStore.getProductsByFilterOptions(site2, filterOptions3)
+        val differentProductFilters = productStore.getProducts(site2, filterOptions3)
         assertEquals(1, differentProductFilters.size)
         assertEquals(differentSiteProduct3.stockStatus, differentProductFilters[0].stockStatus)
 
         val filterByCategory = mapOf(ProductFilterOption.CATEGORY to "1337")
-        val productsFilteredByCategory = productStore.getProductsByFilterOptions(site2, filterByCategory)
+        val productsFilteredByCategory = productStore.getProducts(site2, filterByCategory)
         assertEquals(1, productsFilteredByCategory.size)
         assertTrue(productsFilteredByCategory[0].categories.contains("1337"))
     }

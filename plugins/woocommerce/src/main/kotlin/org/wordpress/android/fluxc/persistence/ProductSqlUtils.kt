@@ -57,7 +57,7 @@ object ProductSqlUtils {
                 if (filterOptions.isEmpty()) {
                     getProductsForSite(site, sortType)
                 } else {
-                    getProductsByFilterOptions(site, filterOptions, sortType)
+                    getProducts(site, filterOptions, sortType)
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -172,7 +172,7 @@ object ProductSqlUtils {
                 .count().toInt()
     }
 
-    fun getProductsByFilterOptions(
+    fun getProducts(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
