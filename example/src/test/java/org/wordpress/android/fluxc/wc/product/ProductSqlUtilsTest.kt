@@ -451,10 +451,12 @@ class ProductSqlUtilsTest {
 
     @Test
     fun testGetProductsWithSearchQuery() {
-        val product1 = ProductTestUtils.generateSampleProduct(40, name = "a", description = "1", shortDescription = "+")
-        val product2 = ProductTestUtils.generateSampleProduct(41, name = "b", description = "2", shortDescription = "-")
-        val product3 = ProductTestUtils
-                .generateSampleProduct(42, name = "xyz ab piu", description = "xyz 12 piu", shortDescription = "xyz +- piu", stockStatus = "onbackorder")
+        val product1 = ProductTestUtils.generateSampleProduct(40, name = "a",
+                description = "1", shortDescription = "+")
+        val product2 = ProductTestUtils.generateSampleProduct(41, name = "b",
+                description = "2", shortDescription = "-")
+        val product3 = ProductTestUtils.generateSampleProduct(42, name = "xyz ab piu",
+                description = "xyz 12 piu", shortDescription = "xyz +- piu", stockStatus = "onbackorder")
 
         ProductSqlUtils.insertOrUpdateProduct(product1)
         ProductSqlUtils.insertOrUpdateProduct(product2)
@@ -502,7 +504,8 @@ class ProductSqlUtilsTest {
         assertEquals(1, products.size)
 
         // Test search with filter options
-        products = ProductSqlUtils.getProducts(site, mapOf(ProductFilterOption.STOCK_STATUS to "instock"), searchQuery = "a")
+        products = ProductSqlUtils.getProducts(site, mapOf(ProductFilterOption.STOCK_STATUS to "instock"),
+                searchQuery = "a")
         // Product 1
         assertEquals(1, products.size)
     }
