@@ -450,6 +450,64 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testGetProductsForSiteWithFilterOptionsAndSearchQuery() {
+        val product1 = ProductTestUtils.generateSampleProduct(40, name = "a", description = "1", shortDescription = "+")
+        val product2 = ProductTestUtils.generateSampleProduct(41, name = "b", description = "2", shortDescription = "-")
+        val product3 = ProductTestUtils
+                .generateSampleProduct(42, name = "xyz ab piu", description = "xyz 12 piu", shortDescription = "xyz +- piu", stockStatus = "onbackorder")
+
+        ProductSqlUtils.insertOrUpdateProduct(product1)
+        ProductSqlUtils.insertOrUpdateProduct(product2)
+        ProductSqlUtils.insertOrUpdateProduct(product3)
+
+        val site = SiteModel().apply { id = product1.localSiteId }
+
+        // Test search in name
+        var products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "a")
+        // Products 1 and 3
+        assertEquals(2, products.size)
+
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "b")
+        // Products 2 and 3
+        assertEquals(2, products.size)
+
+        // Product 3
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "ab")
+        assertEquals(1, products.size)
+
+        // Test search in description
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "1")
+        // Products 1 and 3
+        assertEquals(2, products.size)
+
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "2")
+        // Products 2 and 3
+        assertEquals(2, products.size)
+
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "12")
+        // Product 3
+        assertEquals(1, products.size)
+
+        // Test search in short description
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "+")
+        // Products 1 and 3
+        assertEquals(2, products.size)
+
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "-")
+        // Products 2 and 3
+        assertEquals(2, products.size)
+
+        products = ProductSqlUtils.getProductsByFilterOptions(site, emptyMap(), searchQuery = "+-")
+        // Product 3
+        assertEquals(1, products.size)
+
+        // Test search with filter options
+        products = ProductSqlUtils.getProductsByFilterOptions(site, mapOf(ProductFilterOption.STOCK_STATUS to "instock"), searchQuery = "a")
+        // Product 1
+        assertEquals(1, products.size)
+    }
+
+    @Test
     fun testGetProductsForSiteWithExcludedProductIds() {
         val excludedProductIds = listOf(40L)
 
