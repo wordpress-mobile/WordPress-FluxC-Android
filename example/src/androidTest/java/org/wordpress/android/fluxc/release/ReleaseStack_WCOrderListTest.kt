@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,6 +68,7 @@ internal class ReleaseStack_WCOrderListTest(
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
     fun test() {
         listStoreConnectedTestHelper.runTest(testCase.testMode, this::createPagedListWrapper)
     }

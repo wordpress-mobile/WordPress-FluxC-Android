@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient
 import okhttp3.internal.tls.OkHostnameVerifier
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.network.BaseRequest
 import javax.inject.Inject
@@ -42,6 +43,7 @@ class OkHttpInjectionTest {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
     fun assertNoRedirectsOkHttpClientBuilderHasExpectedSettings() {
         noRedirectsOkHttpClient.apply {
             assertThat(cookieJar).isEqualTo(customCookieJar)

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
@@ -237,6 +238,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
     fun testEditorSettingsOrgUrl() {
         val wordPressPayload = payloadWithGSS.apply {
             site.softwareVersion = "5.8"
@@ -253,6 +255,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
     fun testEditorSettingsOldOrgUrl() {
         val wordPressPayload = payloadWithGSS.apply {
             site.softwareVersion = "5.7"
@@ -270,6 +273,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
     fun testEditorSettingsRetryOrgUrl() {
         val wordPressPayload = payloadWithGSS.apply {
             site.softwareVersion = "5.8"

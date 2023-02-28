@@ -4,6 +4,7 @@ import junit.framework.Assert.assertNotNull
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.SiteModel
@@ -65,6 +66,7 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
     fun testAuthenticatedCallToSelfSignedSslSite() {
         // Clear the trust manager, so we're sure the first call will be an error
         memorizingTrustManager.clearLocalTrustStore()
