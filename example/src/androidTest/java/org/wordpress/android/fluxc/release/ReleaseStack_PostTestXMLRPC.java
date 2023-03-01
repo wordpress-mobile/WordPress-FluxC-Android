@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -365,7 +364,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
-    @Ignore
     public void testFullFeaturedPostUpload() throws InterruptedException {
         createNewPost();
 
