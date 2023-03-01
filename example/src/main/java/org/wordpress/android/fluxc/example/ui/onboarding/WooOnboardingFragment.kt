@@ -13,8 +13,6 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
-import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Error
-import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse.Success
 import org.wordpress.android.fluxc.store.OnboardingStore
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
@@ -55,16 +53,15 @@ internal class WooOnboardingFragment : StoreSelectingFragment() {
         btnLaunchSite.setOnClickListener {
             selectedSite?.let { site ->
                 lifecycleScope.launch {
-                    when (val result = siteStore.launchSite(site)) {
-                        is Error -> {
+                    val result = siteStore.launchSite(site)
+                    when {
+                        result.isError -> {
                             prependToLog(
                                 "Error launching site. Type:${result.error.type} \n " +
                                     "Message: ${result.error.message}"
                             )
                         }
-                        is Success -> {
-                            prependToLog("Site launched success")
-                        }
+                        else -> prependToLog("Site launched success")
                     }
                 }
             }
