@@ -11,7 +11,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.subscription.Subscripti
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class WCSubscriptionStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: SubscriptionRestClient,
