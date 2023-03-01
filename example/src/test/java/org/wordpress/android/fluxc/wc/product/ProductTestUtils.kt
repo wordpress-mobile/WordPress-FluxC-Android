@@ -24,7 +24,9 @@ object ProductTestUtils {
         stockStatus: String = CoreProductStockStatus.IN_STOCK.value,
         status: String = "publish",
         stockQuantity: Double = 0.0,
-        categories: String = ""
+        categories: String = "",
+        description: String = "",
+        shortDescription: String = "",
     ): WCProductModel {
         return WCProductModel().apply {
             remoteProductId = remoteId
@@ -36,6 +38,8 @@ object ProductTestUtils {
             this.status = status
             this.stockQuantity = stockQuantity
             this.categories = categories
+            this.description = description
+            this.shortDescription = shortDescription
         }
     }
 

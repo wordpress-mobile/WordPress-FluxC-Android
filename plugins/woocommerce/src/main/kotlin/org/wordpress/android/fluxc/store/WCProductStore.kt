@@ -799,17 +799,17 @@ class WCProductStore @Inject constructor(
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
     /**
-     * returns a list of [WCProductModel] for the given [SiteModel] and [filterOptions]
-     * if it exists in the database. To filter by category, make sure the [filterOptions] value
-     * is the category ID in String.
+     * Returns a list of [WCProductModel] for the given [SiteModel], [filterOptions] and [searchQuery].
+     * To filter by category, make sure the [filterOptions] value is the category ID in String.
      */
-    fun getProductsByFilterOptions(
+    fun getProducts(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        excludedProductIds: List<Long>? = null
+        excludedProductIds: List<Long>? = null,
+        searchQuery: String? = null,
     ): List<WCProductModel> =
-            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType, excludedProductIds)
+            ProductSqlUtils.getProducts(site, filterOptions, sortType, excludedProductIds, searchQuery)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
             ProductSqlUtils.getProductsForSite(site, sortType)

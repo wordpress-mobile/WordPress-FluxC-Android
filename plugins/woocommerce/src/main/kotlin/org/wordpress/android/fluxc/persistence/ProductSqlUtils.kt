@@ -57,7 +57,7 @@ object ProductSqlUtils {
                 if (filterOptions.isEmpty()) {
                     getProductsForSite(site, sortType)
                 } else {
-                    getProductsByFilterOptions(site, filterOptions, sortType)
+                    getProducts(site, filterOptions, sortType)
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -172,11 +172,12 @@ object ProductSqlUtils {
                 .count().toInt()
     }
 
-    fun getProductsByFilterOptions(
+    fun getProducts(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        excludedProductIds: List<Long>? = null
+        excludedProductIds: List<Long>? = null,
+        searchQuery: String? = null,
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -196,6 +197,16 @@ object ProductSqlUtils {
             // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
             val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
             queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
+        }
+        if (searchQuery?.isNotEmpty() == true) {
+            queryBuilder
+                    .beginGroup()
+                    .contains(WCProductModelTable.NAME, searchQuery)
+                    .or()
+                    .contains(WCProductModelTable.DESCRIPTION, searchQuery)
+                    .or()
+                    .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
+                    .endGroup()
         }
 
         excludedProductIds?.let {
