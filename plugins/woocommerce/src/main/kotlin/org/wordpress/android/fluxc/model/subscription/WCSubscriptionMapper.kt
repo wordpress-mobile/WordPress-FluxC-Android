@@ -16,6 +16,7 @@ class WCSubscriptionMapper @Inject constructor() {
             billingInterval = dto.billing_interval?.toIntOrNull() ?: 0,
             total = dto.total ?: "",
             startDate = dto.start_date_gmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "",
+            endDate = dto.end_date_gmt?.let { DateUtils.formatGmtAsUtcDateString(it) },
             currency = dto.currency?: ""
         )
     }

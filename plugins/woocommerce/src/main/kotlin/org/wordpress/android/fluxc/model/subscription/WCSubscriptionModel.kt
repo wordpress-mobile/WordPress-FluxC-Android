@@ -9,5 +9,6 @@ data class WCSubscriptionModel(
     val billingInterval: Int,
     val total: String,
     val startDate: String,
+    val endDate: String?,
     val currency: String
 )

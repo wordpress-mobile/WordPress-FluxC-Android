@@ -28,6 +28,7 @@ class SubscriptionRestClient @Inject constructor(private val wooNetwork: WooNetw
         val billing_period: String? = null
         val billing_interval: String? = null
         val start_date_gmt: String? = null
+        val end_date_gmt: String? = null
         val total: String? = null
         val currency: String? = null
     }
