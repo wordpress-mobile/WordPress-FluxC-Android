@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.release
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder
@@ -36,9 +35,7 @@ class ReleaseStack_StockMediaTest : ReleaseStack_WPComBase() {
     }
 
     private var mFirstPageMedia: List<StockMediaModel>? = null
-    @Test
-    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
-    @Throws(InterruptedException::class) fun testFetchStockMediaList() {
+    @Test @Throws(InterruptedException::class) fun testFetchStockMediaList() {
         mNextEvent = FETCHED_STOCK_MEDIA_LIST_PAGE_ONE
         fetchStockMediaList(SEARCH_TERM, 1)
         mNextEvent = FETCHED_STOCK_MEDIA_LIST_PAGE_TWO
