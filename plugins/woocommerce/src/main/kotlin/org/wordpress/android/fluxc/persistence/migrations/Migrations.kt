@@ -663,6 +663,14 @@ internal val MIGRATION_21_22 = Migration(21, 22) { database ->
     database.execSQL("CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_inboxNoteLocalId` ON `InboxNoteActions` (`inboxNoteLocalId`)")
 }
 
+/**
+ * We are storing "receipt_url" into the order metadata. The purpose of this migration
+ * is to recreate all of the orders freshly from the API so that the "receipt_url" will be stored
+ * in every orders metadata and not just on the newly created ones.
+ *
+ * We need the "receipt_url" metadata to identify whether the order is an IPP order or not. We
+ * use "receipt_url" along with the "paymentMethod" to identify the IPP order.
+ */
 internal val MIGRATION_22_23 = object : Migration(22, 23) {
     @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
