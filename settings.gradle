@@ -60,3 +60,5 @@ include ':fluxc',
         ':plugins:woocommerce',
         ':example',
         ':tests:api'
+
+apply from: './config/gradle/gradle_build_cache.gradle'
