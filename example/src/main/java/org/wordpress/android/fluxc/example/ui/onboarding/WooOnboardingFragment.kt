@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_woo_onboarding.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,10 +14,12 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.store.OnboardingStore
+import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
 
-class WooOnboardingFragment : StoreSelectingFragment() {
-    @Inject internal lateinit var onboardingStore: OnboardingStore
+internal class WooOnboardingFragment : StoreSelectingFragment() {
+    @Inject lateinit var onboardingStore: OnboardingStore
+    @Inject lateinit var siteStore: SiteStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -42,6 +45,23 @@ class WooOnboardingFragment : StoreSelectingFragment() {
                     }
                     result.model?.let {
                         prependToLog("Fetched data: $it")
+                    }
+                }
+            }
+        }
+
+        btnLaunchSite.setOnClickListener {
+            selectedSite?.let { site ->
+                lifecycleScope.launch {
+                    val result = siteStore.launchSite(site)
+                    when {
+                        result.isError -> {
+                            prependToLog(
+                                "Error launching site. Type:${result.error.type} \n " +
+                                    "Message: ${result.error.message}"
+                            )
+                        }
+                        else -> prependToLog("Site launched success")
                     }
                 }
             }
