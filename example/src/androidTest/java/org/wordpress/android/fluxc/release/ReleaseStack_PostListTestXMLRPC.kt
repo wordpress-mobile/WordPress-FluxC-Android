@@ -75,7 +75,8 @@ internal class ReleaseStack_PostListTestXMLRPC(
     }
 
     @Test
-    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests." +
+        "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     fun test() {
         listStoreConnectedTestHelper.runTest(testCase.testMode, this::createPagedListWrapper)
     }

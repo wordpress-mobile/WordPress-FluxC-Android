@@ -162,7 +162,8 @@ class WPAndroidDatabaseMigrationTest {
     }
 
     @Test
-    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests." +
+        "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     @Throws(IOException::class)
     fun migrate10to11() {
         val oldVersion = 10

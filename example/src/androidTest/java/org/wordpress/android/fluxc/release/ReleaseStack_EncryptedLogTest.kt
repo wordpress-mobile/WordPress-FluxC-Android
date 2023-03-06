@@ -47,7 +47,8 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
     }
 
     @Test
-    @Ignore("Disabling as a part of effort to exclude flaky or failing tests. pdcxQM-1St-p2")
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests." +
+        "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     fun testQueueForUpload() {
         nextEvent = ENCRYPTED_LOG_UPLOADED_SUCCESSFULLY
 
