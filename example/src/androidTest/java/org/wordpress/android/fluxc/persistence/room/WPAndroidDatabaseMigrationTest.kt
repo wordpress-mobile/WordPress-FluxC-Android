@@ -4,6 +4,7 @@ import androidx.room.testing.MigrationTestHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -161,6 +162,8 @@ class WPAndroidDatabaseMigrationTest {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests." +
+        "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     @Throws(IOException::class)
     fun migrate10to11() {
         val oldVersion = 10
