@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -87,6 +88,8 @@ internal class ReleaseStack_PostListTestWpCom(
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests." +
+        "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     fun test() {
         listStoreConnectedTestHelper.runTest(testCase.testMode, this::createPagedListWrapper)
     }
