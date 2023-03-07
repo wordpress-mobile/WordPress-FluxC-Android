@@ -74,3 +74,5 @@ ext {
 dependencies {
     detektPlugins sharedLibs.detekt.formatting
 }
+
+apply from: './config/gradle/gradle_build_scan.gradle'
