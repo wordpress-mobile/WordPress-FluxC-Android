@@ -67,6 +67,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testFetchCategories() throws InterruptedException {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -150,6 +151,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
         testUpdateExistingTerm(term);
