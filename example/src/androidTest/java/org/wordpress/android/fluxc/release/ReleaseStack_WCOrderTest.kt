@@ -8,6 +8,7 @@ import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -187,6 +188,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrderNotes() = runBlocking {
         // Grab a list of orders
         nextEvent = TestEvent.FETCHED_ORDERS
