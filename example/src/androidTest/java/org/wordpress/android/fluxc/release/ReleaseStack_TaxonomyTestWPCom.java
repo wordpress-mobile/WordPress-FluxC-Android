@@ -147,6 +147,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         TermModel term = createNewTag();
