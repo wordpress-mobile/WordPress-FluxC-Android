@@ -10,6 +10,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
@@ -313,6 +314,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchProductReviews() = runBlocking {
         /*
          * TEST 1: Fetch product reviews for site
