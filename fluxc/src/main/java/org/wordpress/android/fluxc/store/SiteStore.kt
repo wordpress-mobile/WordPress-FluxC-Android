@@ -1033,7 +1033,7 @@ open class SiteStore @Inject constructor(
     }
 
     enum class SiteVisibility(private val mValue: Int) {
-        PRIVATE(-1), BLOCK_SEARCH_ENGINE(0), PUBLIC(1);
+        PRIVATE(-1), BLOCK_SEARCH_ENGINE(0), PUBLIC(1), COMING_SOON(999);
 
         fun value(): Int {
             return mValue

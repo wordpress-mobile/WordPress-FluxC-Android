@@ -79,6 +79,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType.UNAUTHORIZED
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType.UNKNOWN_SITE
 import org.wordpress.android.fluxc.store.SiteStore.SiteFilter
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility
+import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility.COMING_SOON
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainError
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainErrorType.EMPTY_RESULTS
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsResponsePayload
@@ -220,7 +221,13 @@ class SiteRestClient @Inject constructor(
         val options = mutableMapOf<String, Any>()
 
         body["lang_id"] = language
-        body["public"] = visibility.value().toString()
+
+        if (visibility != COMING_SOON) {
+            body["public"] = visibility.value().toString()
+        } else {
+            body["coming_soon"] = 1
+        }
+
         body["validate"] = if (dryRun) "1" else "0"
         body["client_id"] = appSecrets.appId
         body["client_secret"] = appSecrets.appSecret
