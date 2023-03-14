@@ -21,7 +21,7 @@ gcloud firebase test android run \
 	--type "instrumentation" \
 	--app "example/build/outputs/apk/debug/example-debug.apk" \
 	--test "example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk" \
-	--timeout "90m" \
+	--timeout "60m" \
 	--device "model=Pixel3,version=30,locale=en,orientation=portrait" \
 	--project "api-project-108380595987" \
 	--verbosity info \
