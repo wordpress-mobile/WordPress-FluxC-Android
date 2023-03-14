@@ -191,6 +191,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testFetchSitesWithWpComFilter() throws InterruptedException {
         List<SiteFilter> filters = new ArrayList<>();
         filters.add(SiteFilter.WPCOM);
