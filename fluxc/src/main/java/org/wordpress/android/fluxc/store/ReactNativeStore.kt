@@ -79,6 +79,21 @@ class ReactNativeStore @VisibleForTesting constructor(
                 }
             }
 
+    suspend fun executePostRequest(
+        site: SiteModel,
+        pathWithParams: String,
+    ): ReactNativeFetchResponse =
+        coroutineEngine.withDefaultContext(AppLog.T.API, this, "executePostRequest") {
+            return@withDefaultContext if (site.isUsingWpComRestApi) {
+                executeWPComPostRequest(site, pathWithParams)
+            } else {
+                executeWPAPIPostRequest(site, pathWithParams)
+            }
+        }
+
+    /**
+     * WPCOM REST API
+     */
     private suspend fun executeWPComGetRequest(
         site: SiteModel,
         path: String,
@@ -92,6 +107,21 @@ class ReactNativeStore @VisibleForTesting constructor(
         }
     }
 
+    private suspend fun executeWPComPostRequest(
+        site: SiteModel,
+        path: String,
+    ): ReactNativeFetchResponse {
+        val (url, params) = parseUrlAndParamsForWPCom(path, site.siteId)
+        return if (url != null) {
+            wpComRestClient.postRequest(url, params, ::Success, ::Error)
+        } else {
+            urlParseError(path)
+        }
+    }
+
+    /**
+     * WP REST PI
+     */
     private suspend fun executeWPAPIGetRequest(
         site: SiteModel,
         pathWithParams: String,
@@ -99,6 +129,14 @@ class ReactNativeStore @VisibleForTesting constructor(
     ): ReactNativeFetchResponse {
         return executeWPAPIRequest(site, pathWithParams, RequestMethod.GET, enableCaching)
     }
+
+    private suspend fun executeWPAPIPostRequest(
+        site: SiteModel,
+        pathWithParams: String,
+    ): ReactNativeFetchResponse {
+        return executeWPAPIRequest(site, pathWithParams, RequestMethod.POST)
+    }
+
     private suspend fun executeWPAPIRequest(
         site: SiteModel,
         pathWithParams: String,
@@ -152,6 +190,7 @@ class ReactNativeStore @VisibleForTesting constructor(
 
         val response = when (method) {
             RequestMethod.GET -> executeGet(fullRestUrl, params, nonce?.value, enableCaching)
+            RequestMethod.POST -> executePost(fullRestUrl, params, nonce?.value)
         }
         return when (response) {
             is Success -> response
@@ -204,6 +243,13 @@ class ReactNativeStore @VisibleForTesting constructor(
     ): ReactNativeFetchResponse =
             wpAPIRestClient.getRequest(fullRestApiUrl, params, ::Success, ::Error, nonce, enableCaching)
 
+    private suspend fun executePost(
+        fullRestApiUrl: String,
+        body: Map<String, String>,
+        nonce: String?
+    ): ReactNativeFetchResponse =
+        wpAPIRestClient.postRequest(fullRestApiUrl, body, ::Success, ::Error, nonce)
+
     private fun parseUrlAndParamsForWPCom(
         pathWithParams: String,
         wpComSiteId: Long
@@ -212,6 +258,7 @@ class ReactNativeStore @VisibleForTesting constructor(
                 val url = path?.let {
                     val newPath = it
                             .replace("wp/v2".toRegex(), "wp/v2/sites/$wpComSiteId")
+                            .replace("wpcom/v2".toRegex(), "wpcom/v2/sites/$wpComSiteId")
                             .replace("wp-block-editor/v1".toRegex(), "wp-block-editor/v1/sites/$wpComSiteId")
                             .replace("oembed/1.0".toRegex(), "oembed/1.0/sites/$wpComSiteId")
                     slashJoin(WPCOM_ENDPOINT, newPath)
