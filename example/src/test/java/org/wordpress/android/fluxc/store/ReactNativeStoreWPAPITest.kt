@@ -98,7 +98,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl, nonce.value))
                 .thenReturn(callWithSuccess)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(callWithSuccess, actualResponse)
         assertEquals(restUrl, site.wpApiRestUrl, "site should be updated with rest endpoint used for successful call")
         inOrder(discoveryWPAPIRestClient, sitePersistenceMock, wpApiRestClient, nonceRestClient) {
@@ -118,7 +118,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl))
                 .thenReturn(initialResponseWithSuccess)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(initialResponseWithSuccess, actualResponse)
         verify(wpApiRestClient).fetch(fetchUrl)
         verify(sitePersistenceMock, never())(any()) // no wpApiRestUrl updates, so no persistence
@@ -141,7 +141,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl))
                 .thenReturn(initialResponseWithSuccess)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(initialResponseWithSuccess, actualResponse)
         assertEquals(restUrl, site.wpApiRestUrl, "site should be updated with rest endpoint used for successful call")
         inOrder(discoveryWPAPIRestClient, sitePersistenceMock, wpApiRestClient) {
@@ -167,7 +167,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl))
                 .thenReturn(successfulResponse)
 
-        val actualResponse = store.executeRequest(site, "$restPath?$queryKey=$queryValue")
+        val actualResponse = store.executeGetRequest(site, "$restPath?$queryKey=$queryValue")
         assertEquals(successfulResponse, actualResponse)
         assertEquals(
                 fallbackRestUrl, site.wpApiRestUrl,
@@ -203,7 +203,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(correctUrl))
                 .thenReturn(secondResponseWithSuccess)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(secondResponseWithSuccess, actualResponse)
         assertEquals(restUrl, site.wpApiRestUrl, "should save rest endpoint used for successful call")
         inOrder(discoveryWPAPIRestClient, sitePersistenceMock, wpApiRestClient) {
@@ -232,7 +232,7 @@ class ReactNativeStoreWPAPITest {
                 .thenReturn(responseWithNotFoundError)
 
         // 'not found' error does not lead to discovery call because we already did discovery
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(responseWithNotFoundError, actualResponse)
         assertNull(site.wpApiRestUrl, "should not update site wpApiRestEndpoint when call fails")
         inOrder(discoveryWPAPIRestClient, sitePersistenceMock, wpApiRestClient) {
@@ -250,7 +250,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl))
                 .thenReturn(responseWithUnknownError)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(responseWithUnknownError, actualResponse)
         verify(wpApiRestClient).fetch(fetchUrl)
     }
@@ -274,7 +274,7 @@ class ReactNativeStoreWPAPITest {
                 .thenReturn(initialResponseWithUnauthorizedError)
 
         // Already refreshed nonce, so just returns unauthorized error
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(initialResponseWithUnauthorizedError, actualResponse)
         inOrder(wpApiRestClient) {
             verify(wpApiRestClient).fetch(fetchUrl, nonce.value)
@@ -296,7 +296,7 @@ class ReactNativeStoreWPAPITest {
         whenever(nonceRestClient.getNonce(site))
                 .thenReturn(savedNonce)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(initialResponseWithUnauthorizedError, actualResponse)
         inOrder(wpApiRestClient, nonceRestClient) {
             verify(wpApiRestClient).fetch(fetchUrl, savedNonce.value)
@@ -325,7 +325,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl, updatedNonce.value))
                 .thenReturn(secondResponseWithSuccess)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(secondResponseWithSuccess, actualResponse)
         inOrder(wpApiRestClient, nonceRestClient) {
             verify(nonceRestClient).getNonce(site)
@@ -350,7 +350,7 @@ class ReactNativeStoreWPAPITest {
         whenever(nonceRestClient.getNonce(site))
                 .thenReturn(savedNonce, null)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(initialResponseWithUnauthorizedError, actualResponse)
         inOrder(wpApiRestClient, nonceRestClient) {
             verify(wpApiRestClient).fetch(fetchUrl, savedNonce.value)
@@ -370,7 +370,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl, null)) // passes null for nonce
                 .thenReturn(successResponse)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(successResponse, actualResponse)
         verify(wpApiRestClient).fetch(fetchUrl, null)
         verify(nonceRestClient, never()).requestNonce(any())
@@ -392,7 +392,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl, nonce.value)) // passes null for nonce
                 .thenReturn(successResponse)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(successResponse, actualResponse)
         inOrder(nonceRestClient, wpApiRestClient) {
             verify(nonceRestClient).requestNonce(site)
@@ -415,7 +415,7 @@ class ReactNativeStoreWPAPITest {
         whenever(wpApiRestClient.fetch(fetchUrl, nonce.value)) // passes null for nonce
                 .thenReturn(successResponse)
 
-        val actualResponse = store.executeRequest(site, restPathWithParams)
+        val actualResponse = store.executeGetRequest(site, restPathWithParams)
         assertEquals(successResponse, actualResponse)
         inOrder(wpApiRestClient, nonceRestClient) {
             verify(nonceRestClient).requestNonce(site)
@@ -449,13 +449,13 @@ class ReactNativeStoreWPAPITest {
                 uriParser
         )
 
-        val response = store.executeRequest(mock(), "")
+        val response = store.executeGetRequest(mock(), "")
         val errorType = (response as? Error)?.error?.type
         assertEquals(UNKNOWN, errorType)
     }
 
     private suspend fun ReactNativeWPAPIRestClient.fetch(url: String, nonce: String? = null) =
-            fetch(url, paramMap, ReactNativeFetchResponse::Success, ReactNativeFetchResponse::Error, nonce)
+            getRequest(url, paramMap, ReactNativeFetchResponse::Success, ReactNativeFetchResponse::Error, nonce)
 
     private fun errorResponse(statusCode: Int): ReactNativeFetchResponse = Error(mock()).apply {
         error.volleyError = VolleyError(NetworkResponse(statusCode, null, false, 0L, null))

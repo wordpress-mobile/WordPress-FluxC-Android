@@ -93,7 +93,7 @@ class ReactNativeWPComRestClientTest {
                 true)
         ).thenReturn(expectedRestCallResponse)
 
-        val actual = subject.fetch(url, params, successHandler, errorHandler)
+        val actual = subject.getRequest(url, params, successHandler, errorHandler)
         assertEquals(expected, actual)
     }
 }
