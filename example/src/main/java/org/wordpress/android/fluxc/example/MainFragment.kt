@@ -331,7 +331,7 @@ class MainFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSiteChanged(event: OnSiteChanged) {
         if (event.isError) {
-            prependToLog("SiteChanged error: " + event.error?.type)
+            prependToLog("SiteChanged error: " + event.error)
             return
         }
         if (siteStore.hasSite()) {
