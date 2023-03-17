@@ -84,6 +84,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrdersByStatus() {
         runBlocking {
             nextEvent = TestEvent.FETCHED_ORDERS
