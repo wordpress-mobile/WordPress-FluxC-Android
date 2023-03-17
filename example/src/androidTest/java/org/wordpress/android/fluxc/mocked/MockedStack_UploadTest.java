@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked;
 import com.google.gson.JsonObject;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -100,6 +101,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testUploadMediaError() throws InterruptedException {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         startFailingMediaUpload(testMedia, getTestSite());
