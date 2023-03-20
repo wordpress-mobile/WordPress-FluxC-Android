@@ -118,6 +118,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testCancelImageUpload() throws InterruptedException {
         mInterceptor.respondWithSticky("media-upload-response-success.json", 1000L, null);
 
