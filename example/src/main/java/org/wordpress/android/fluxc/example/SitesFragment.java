@@ -176,6 +176,7 @@ public class SitesFragment extends Fragment {
                 defaultLanguage,
                 defaultTimeZoneId,
                 SiteVisibility.PUBLIC,
+                null,
                 true);
         mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
     }
