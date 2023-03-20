@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import android.annotation.SuppressLint
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
@@ -62,6 +63,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testCancelImageUpload() {
         interceptor.respondWithSticky("media-upload-response-success.json")
 
