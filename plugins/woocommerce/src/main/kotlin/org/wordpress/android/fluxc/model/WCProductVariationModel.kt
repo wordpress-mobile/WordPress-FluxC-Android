@@ -80,6 +80,8 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
 
     @Column var attributes = ""
 
+    @Column var metadata: String? = null
+
     override fun getId() = id
 
     override fun setId(id: Int) {
