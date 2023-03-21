@@ -55,7 +55,6 @@ class ProductVariationApiResponse : Response {
     var dimensions: JsonElement? = null
     var attributes: JsonElement? = null
     var downloads: JsonElement? = null
-    var meta_data: JsonElement? = null
 
     @Suppress("ComplexMethod")
     fun asProductVariationModel() =
@@ -117,6 +116,5 @@ class ProductVariationApiResponse : Response {
             }
 
             image = response.image?.toString() ?: ""
-            metadata = response.meta_data?.toString()
         }
 }
