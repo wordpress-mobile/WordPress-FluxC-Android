@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.StripProductVariationMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -78,7 +79,8 @@ class ProductRestClient @Inject constructor(
     private val dispatcher: Dispatcher,
     private val wooNetwork: WooNetwork,
     private val wpComNetwork: WPComNetwork,
-    private val coroutineEngine: CoroutineEngine
+    private val coroutineEngine: CoroutineEngine,
+    private val stripProductVariationMetaData: StripProductVariationMetaData
 ) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -337,6 +339,7 @@ class ProductRestClient @Inject constructor(
                         productData.asProductVariationModel().apply {
                             this.remoteProductId = remoteProductId
                             localSiteId = site.id
+                            metadata = stripProductVariationMetaData(metadata)
                         },
                         site
                     )
@@ -765,6 +768,7 @@ class ProductRestClient @Inject constructor(
                     it.asProductVariationModel().apply {
                         localSiteId = site.id
                         remoteProductId = productId
+                        metadata = stripProductVariationMetaData(metadata)
                     }
                 }.orEmpty()
 
@@ -827,6 +831,7 @@ class ProductRestClient @Inject constructor(
                     .apply {
                         localSiteId = site.id
                         remoteProductId = productId
+                        metadata = stripProductVariationMetaData(metadata)
                     }
             }
         }
@@ -911,6 +916,7 @@ class ProductRestClient @Inject constructor(
                     val newModel = it.asProductVariationModel().apply {
                         this.remoteProductId = remoteProductId
                         localSiteId = site.id
+                        metadata = stripProductVariationMetaData(metadata)
                     }
                     RemoteUpdateVariationPayload(site, newModel)
                 } ?: RemoteUpdateVariationPayload(
