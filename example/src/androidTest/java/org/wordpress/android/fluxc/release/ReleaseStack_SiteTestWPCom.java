@@ -458,6 +458,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testFetchJetpackCapabilities() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK, BuildConfig.TEST_WPCOM_PASSWORD_JETPACK);
 
