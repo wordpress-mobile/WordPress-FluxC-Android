@@ -149,4 +149,25 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
         val responseType = object : TypeToken<List<ProductVariantOption>>() {}.type
         return gson.fromJson(attributes, responseType) as? List<ProductVariantOption> ?: emptyList()
     }
+
+    object SubscriptionMetadataKeys {
+        const val SUBSCRIPTION_PRICE = "_subscription_price"
+        const val SUBSCRIPTION_PERIOD = "_subscription_period"
+        const val SUBSCRIPTION_PERIOD_INTERVAL = "_subscription_period_interval"
+        const val SUBSCRIPTION_LENGTH = "_subscription_length"
+        const val SUBSCRIPTION_SIGN_UP_FEE = "_subscription_sign_up_fee"
+        const val SUBSCRIPTION_TRIAL_PERIOD = "_subscription_trial_period"
+        const val SUBSCRIPTION_TRIAL_LENGTH = "_subscription_trial_length"
+        const val SUBSCRIPTION_ONE_TIME_SHIPPING = "_subscription_one_time_shipping"
+        val ALL_KEYS = setOf(
+            SUBSCRIPTION_PRICE,
+            SUBSCRIPTION_TRIAL_LENGTH,
+            SUBSCRIPTION_SIGN_UP_FEE,
+            SUBSCRIPTION_PERIOD,
+            SUBSCRIPTION_PERIOD_INTERVAL,
+            SUBSCRIPTION_LENGTH,
+            SUBSCRIPTION_TRIAL_PERIOD,
+            SUBSCRIPTION_ONE_TIME_SHIPPING
+        )
+    }
 }
