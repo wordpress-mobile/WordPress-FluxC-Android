@@ -155,9 +155,9 @@ open class SiteStore @Inject constructor(
     ) : Payload<BaseNetworkError>()
 
     data class FetchWPAPISitePayload(
-        @JvmField val username: String = "",
-        @JvmField val password: String = "",
-        @JvmField val url: String = ""
+        val url: String,
+        val username: String? = null,
+        val password: String? = null,
     ) : Payload<BaseNetworkError>()
 
     data class FetchSitesPayload @JvmOverloads constructor(
@@ -185,7 +185,9 @@ open class SiteStore @Inject constructor(
         @JvmField val visibility: SiteVisibility,
         @JvmField val segmentId: Long? = null,
         @JvmField val siteDesign: String? = null,
-        @JvmField val dryRun: Boolean
+        @JvmField val dryRun: Boolean,
+        @JvmField val findAvailableUrl: Boolean? = null,
+        @JvmField val siteCreationFlow: String? = null
     ) : Payload<BaseNetworkError>() {
         constructor(
             siteName: String?,
@@ -216,8 +218,9 @@ open class SiteStore @Inject constructor(
             language: String,
             timeZoneId: String,
             visibility: SiteVisibility,
+            findAvailableUrl: Boolean?,
             dryRun: Boolean
-        ) : this(siteName, siteTitle, language, timeZoneId, visibility, null, null, dryRun)
+        ) : this(siteName, siteTitle, language, timeZoneId, visibility, null, null, dryRun, findAvailableUrl)
     }
 
     data class FetchedPostFormatsPayload(
@@ -1033,7 +1036,10 @@ open class SiteStore @Inject constructor(
     }
 
     enum class SiteVisibility(private val mValue: Int) {
-        PRIVATE(-1), BLOCK_SEARCH_ENGINE(0), PUBLIC(1);
+        PRIVATE(-1),
+        BLOCK_SEARCH_ENGINE(0),
+        PUBLIC(1),
+        COMING_SOON(999);
 
         fun value(): Int {
             return mValue
@@ -1595,7 +1601,9 @@ open class SiteStore @Inject constructor(
                 payload.visibility,
                 payload.segmentId,
                 payload.siteDesign,
-                payload.dryRun
+                payload.findAvailableUrl,
+                payload.dryRun,
+                payload.siteCreationFlow
         )
         return handleCreateNewSiteCompleted(
                 payload = result

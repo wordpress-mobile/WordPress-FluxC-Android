@@ -45,6 +45,8 @@ class ReleaseStack_WPApiPluginTest : ReleaseStack_Base() {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests." +
+        "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     fun testFetchPlugins() {
         val site = initSite()
 

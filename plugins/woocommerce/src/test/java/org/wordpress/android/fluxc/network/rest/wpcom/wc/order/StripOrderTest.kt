@@ -8,6 +8,7 @@ import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.RECEIPT_URL_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
 import org.wordpress.android.fluxc.utils.json
 
@@ -196,6 +197,47 @@ internal class StripOrderTest {
         // then
         assertThat(fatModel.lineItems).contains(emptyAttributeValue)
         assertThat(strippedOrder.lineItems).contains(emptyAttributeValue)
+    }
+
+    @Test
+    fun `should filter meta data that contains "receipt_url" as key`() {
+        // given
+        val metaDataFromRemote = JsonArray().apply {
+            add(json {
+                "id" To "1"
+                "key" To redundantMemberKey
+            })
+            add(json {
+                "id" To "2"
+                "key" To CHARGE_ID_KEY
+            })
+            add(json {
+                "id" To "3"
+                "key" To SHIPPING_PHONE_KEY
+            })
+            add(json {
+                "id" To "3"
+                "key" To RECEIPT_URL_KEY
+            })
+        }.toString()
+        val fatModel = emptyOrder.copy(metaData = metaDataFromRemote)
+
+        // when
+        val strippedOrder = sut.invoke(fatModel)
+
+        // then
+        assertThat(fatModel.metaData).contains(
+            redundantMemberKey,
+            CHARGE_ID_KEY,
+            SHIPPING_PHONE_KEY,
+            RECEIPT_URL_KEY
+        )
+        assertThat(strippedOrder.metaData)
+            .contains(
+                CHARGE_ID_KEY,
+                SHIPPING_PHONE_KEY,
+                RECEIPT_URL_KEY
+            )
     }
 
     companion object {
