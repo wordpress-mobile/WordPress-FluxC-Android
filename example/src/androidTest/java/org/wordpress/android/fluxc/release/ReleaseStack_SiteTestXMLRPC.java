@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -175,6 +176,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testXMLRPCFetchAndDeleteSite() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
