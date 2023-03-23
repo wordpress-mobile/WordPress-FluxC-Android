@@ -34,6 +34,9 @@ abstract class OrdersDao {
             ?.let { insertOrUpdateOrder(it) }
     }
 
+    @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId ORDER BY datePaid DESC")
+    abstract suspend fun getOrdersForSiteDesc(localSiteId: LocalId): List<OrderEntity>
+
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
     abstract suspend fun getOrdersForSite(localSiteId: LocalId, status: List<String>): List<OrderEntity>
 
