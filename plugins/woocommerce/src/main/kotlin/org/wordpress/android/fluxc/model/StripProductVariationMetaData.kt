@@ -9,19 +9,15 @@ class StripProductVariationMetaData @Inject internal constructor(private val gso
     operator fun invoke(metadata: String?): String? {
         if (metadata == null) return null
 
-        val filteredMetadata = gson.fromJson(metadata, JsonArray::class.java)
+        return gson.fromJson(metadata, JsonArray::class.java)
             .mapNotNull { it as? JsonObject }
+            .asSequence()
             .filter { jsonObject ->
-                val key = jsonObject[WCMetaData.KEY]?.asString ?: ""
-                key in SUPPORTED_KEYS
-            }
-            .filter { jsonObject ->
-                val value = jsonObject[WCMetaData.VALUE]?.asString ?: ""
-                value.isBlank().not()
-            }
-            .toList()
-
-        return if (filteredMetadata.isEmpty()) null else gson.toJson(filteredMetadata)
+                jsonObject[WCMetaData.KEY]?.asString.orEmpty() in SUPPORTED_KEYS &&
+                    jsonObject[WCMetaData.VALUE]?.asString.orEmpty().isNotBlank()
+            }.toList()
+            .takeIf { it.isNotEmpty() }
+            ?.let { gson.toJson(it) }
     }
 
     companion object {
