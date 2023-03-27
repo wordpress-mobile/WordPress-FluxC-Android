@@ -361,7 +361,7 @@ class WCOrderStore @Inject constructor(
         ordersDao.getOrdersForSite(site.localId(), status = status.asList())
     }
 
-    suspend fun getOrdersForSiteDesc(siteModel: SiteModel) = ordersDao.getOrdersForSiteDesc(siteModel.localId())
+    suspend fun getPaidOrdersForSiteDesc(siteModel: SiteModel) = ordersDao.getPaidOrdersForSiteDesc(siteModel.localId())
 
     /**
      * Observe the changes to orders for a given [SiteModel]
