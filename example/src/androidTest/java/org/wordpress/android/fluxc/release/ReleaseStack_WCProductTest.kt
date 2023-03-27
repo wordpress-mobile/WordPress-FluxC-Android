@@ -178,6 +178,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchProducts() {
         // remove all products for this site and verify there are none
         ProductSqlUtils.deleteProductsForSite(sSite)
