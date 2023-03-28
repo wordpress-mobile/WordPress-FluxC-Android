@@ -27,7 +27,7 @@ class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
 
         return parseMetaDataJSON(orderDto.meta_data)
             ?.asSequence()
-            ?.filter { it.isDisplayableAttribute }
+            ?.filter { it.isDisplayableAttribute || it.key in WCMetaData.SUPPORTED_KEYS }
             ?.map { it.asOrderMetaDataEntity(orderDto.id, localSiteId) }
             ?.filter { it.value.isNotEmpty() && it.value.matches(jsonRegex).not() }
             ?.toList()
