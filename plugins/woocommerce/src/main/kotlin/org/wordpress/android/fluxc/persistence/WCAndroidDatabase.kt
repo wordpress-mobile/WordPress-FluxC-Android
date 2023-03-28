@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.persistence.migrations.AutoMigration16to17
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration17to18
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration18to19
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration19to20
+import org.wordpress.android.fluxc.persistence.migrations.AutoMigration22to23
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_15_16
@@ -49,7 +50,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-        version = 22,
+        version = 23,
         entities = [
             AddonEntity::class,
             AddonOptionEntity::class,
@@ -70,7 +71,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
             AutoMigration(from = 16, to = 17, spec = AutoMigration16to17::class),
             AutoMigration(from = 17, to = 18, spec = AutoMigration17to18::class),
             AutoMigration(from = 18, to = 19, spec = AutoMigration18to19::class),
-            AutoMigration(from = 19, to = 20, spec = AutoMigration19to20::class)
+            AutoMigration(from = 19, to = 20, spec = AutoMigration19to20::class),
+            AutoMigration(from = 22, to = 23, spec = AutoMigration22to23::class)
         ]
 )
 @TypeConverters(
