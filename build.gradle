@@ -61,8 +61,8 @@ allprojects {
 
 ext {
     minSdkVersion = 24
-    compileSdkVersion = 31
-    targetSdkVersion = 31
+    compileSdkVersion = 33
+    targetSdkVersion = 33
 }
 
 ext {
@@ -74,3 +74,5 @@ ext {
 dependencies {
     detektPlugins sharedLibs.detekt.formatting
 }
+
+apply from: './config/gradle/gradle_build_scan.gradle'

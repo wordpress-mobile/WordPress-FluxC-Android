@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.utils.RandomStringUtils;
@@ -79,6 +80,8 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore("Disabling as a part of effort to exclude flaky or failing tests."
+            + "See https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2665")
     public void testFetchTags() throws InterruptedException {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);

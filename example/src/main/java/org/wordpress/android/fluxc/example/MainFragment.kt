@@ -8,8 +8,10 @@ import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_main.*
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -23,6 +25,9 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.network.HTTPAuthManager
 import org.wordpress.android.fluxc.network.MemorizingTrustManager
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError
+import org.wordpress.android.fluxc.network.rest.wpapi.CookieNonceAuthenticator
+import org.wordpress.android.fluxc.network.rest.wpapi.CookieNonceAuthenticator.CookieNonceAuthenticationResult.Error
+import org.wordpress.android.fluxc.network.rest.wpapi.CookieNonceAuthenticator.CookieNonceAuthenticationResult.Success
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType
@@ -45,6 +50,7 @@ class MainFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var httpAuthManager: HTTPAuthManager
     @Inject internal lateinit var memorizingTrustManager: MemorizingTrustManager
+    @Inject internal lateinit var cookieNonceAuthenticator: CookieNonceAuthenticator
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private var selfHostedPayload: RefreshSitesXMLRPCPayload? = null
@@ -198,15 +204,20 @@ class MainFragment : Fragment() {
                 selfHostedPayload = RefreshSitesXMLRPCPayload(username, password, url)
                 dispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url))
             }
-            else -> dispatcher.dispatch(
-                SiteActionBuilder.newFetchSiteWpApiAction(
-                    FetchWPAPISitePayload(
-                        url = url,
-                        username = username,
-                        password = password
-                    )
-                )
-            )
+            else -> lifecycleScope.launch {
+                cookieNonceAuthenticator.authenticate(url, username, password).let {
+                    when (it) {
+                        is Error -> prependToLog("Authentication error: ${it.type} - ${it.message}")
+                        Success -> SiteActionBuilder.newFetchSiteWpApiAction(
+                            FetchWPAPISitePayload(
+                                url = url,
+                                username = username,
+                                password = password
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -331,7 +342,7 @@ class MainFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSiteChanged(event: OnSiteChanged) {
         if (event.isError) {
-            prependToLog("SiteChanged error: " + event.error?.type)
+            prependToLog("SiteChanged error: " + event.error)
             return
         }
         if (siteStore.hasSite()) {
