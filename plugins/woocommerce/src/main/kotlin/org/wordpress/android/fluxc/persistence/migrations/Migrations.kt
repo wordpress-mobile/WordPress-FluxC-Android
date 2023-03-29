@@ -662,3 +662,4 @@ internal val MIGRATION_21_22 = Migration(21, 22) { database ->
     database.execSQL("CREATE INDEX IF NOT EXISTS `index_AddonEntity_globalGroupLocalId` ON `AddonEntity` (`globalGroupLocalId`)")
     database.execSQL("CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_inboxNoteLocalId` ON `InboxNoteActions` (`inboxNoteLocalId`)")
 }
+internal class AutoMigration22to23 : AutoMigrationSpec

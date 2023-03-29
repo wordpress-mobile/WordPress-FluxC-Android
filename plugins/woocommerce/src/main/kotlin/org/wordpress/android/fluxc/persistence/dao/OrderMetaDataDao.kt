@@ -14,10 +14,27 @@ abstract class OrderMetaDataDao {
     abstract fun insertOrUpdateMetaData(metaDataEntity: OrderMetaDataEntity)
 
     @Query("SELECT * FROM OrderMetaData WHERE orderId = :orderId AND localSiteId = :localSiteId")
-    abstract suspend fun getOrderMetaData(orderId: Long, localSiteId: LocalId): List<OrderMetaDataEntity>
+    abstract suspend fun getOrderMetaData(
+        orderId: Long,
+        localSiteId: LocalId
+    ): List<OrderMetaDataEntity>
+
+    @Query("SELECT * FROM OrderMetaData WHERE orderId = :orderId AND localSiteId = :localSiteId AND isDisplayable = 1")
+    abstract suspend fun getDisplayableOrderMetaData(
+        orderId: Long,
+        localSiteId: LocalId
+    ): List<OrderMetaDataEntity>
 
     @Query("SELECT COUNT(*) FROM OrderMetaData WHERE orderId = :orderId AND localSiteId = :localSiteId")
     abstract suspend fun getOrderMetaDataCount(orderId: Long, localSiteId: LocalId): Int
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM OrderMetaData 
+        WHERE orderId = :orderId AND localSiteId = :localSiteId AND isDisplayable = 1
+        """
+    )
+    abstract suspend fun getDisplayableOrderMetaDataCount(orderId: Long, localSiteId: LocalId): Int
 
     @Transaction
     @Query("DELETE FROM OrderMetaData WHERE localSiteId = :localSiteId AND orderId = :orderId")

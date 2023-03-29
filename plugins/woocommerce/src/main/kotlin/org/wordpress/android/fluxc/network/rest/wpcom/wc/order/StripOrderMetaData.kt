@@ -48,6 +48,7 @@ class StripOrderMetaData @Inject internal constructor(private val gson: Gson) {
             localSiteId = localSiteId,
             orderId = orderId,
             key = key.orEmpty(),
-            value = value.toString().replace(htmlRegex, "")
+            value = value.toString().replace(htmlRegex, ""),
+            isDisplayable = isDisplayableAttribute
         )
 }

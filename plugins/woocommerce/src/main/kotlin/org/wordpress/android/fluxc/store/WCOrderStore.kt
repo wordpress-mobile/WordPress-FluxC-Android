@@ -421,10 +421,26 @@ class WCOrderStore @Inject constructor(
 
     /**
      * Given an order id and [SiteModel],
+     * returns the displayable metadata from the database for an order
+     */
+    suspend fun getDisplayableOrderMetadata(orderId: Long, site: SiteModel): List<OrderMetaDataEntity> {
+        return orderMetaDataDao.getDisplayableOrderMetaData(orderId, site.localId())
+    }
+
+    /**
+     * Given an order id and [SiteModel],
      * returns whether there is metadata in the database for an order
      */
     suspend fun hasOrderMetadata(orderId: Long, site: SiteModel): Boolean {
         return orderMetaDataDao.hasOrderMetaData(orderId, site.localId())
+    }
+
+    /**
+     * Given an order id and [SiteModel],
+     * returns whether there is displayable metadata in the database for an order
+     */
+    suspend fun hasDisplayableOrderMetadata(orderId: Long, site: SiteModel): Boolean {
+        return orderMetaDataDao.getDisplayableOrderMetaDataCount(orderId, site.localId()) > 0
     }
 
     /**

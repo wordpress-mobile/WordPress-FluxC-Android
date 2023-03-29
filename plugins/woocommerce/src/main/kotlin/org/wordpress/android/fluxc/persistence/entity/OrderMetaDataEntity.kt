@@ -30,5 +30,7 @@ data class OrderMetaDataEntity(
     val id: Long,
     val orderId: Long,
     val key: String,
-    val value: String
+    val value: String,
+    @ColumnInfo(defaultValue = "1")
+    val isDisplayable: Boolean = true
 )
