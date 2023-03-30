@@ -58,7 +58,8 @@ open class WooCommerceStore @Inject constructor(
         WOO_SERVICES("woocommerce-services/woocommerce-services"),
         WOO_PAYMENTS("woocommerce-payments/woocommerce-payments"),
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
-        WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking")
+        WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking"),
+        WOO_SUBSCRIPTIONS("woocommerce-subscriptions/woocommerce-subscriptions")
     }
 
     companion object {

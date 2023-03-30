@@ -662,6 +662,7 @@ internal val MIGRATION_21_22 = Migration(21, 22) { database ->
     database.execSQL("CREATE INDEX IF NOT EXISTS `index_AddonEntity_globalGroupLocalId` ON `AddonEntity` (`globalGroupLocalId`)")
     database.execSQL("CREATE INDEX IF NOT EXISTS `index_InboxNoteActions_inboxNoteLocalId` ON `InboxNoteActions` (`inboxNoteLocalId`)")
 }
+internal class AutoMigration23to24 : AutoMigrationSpec
 
 /**
  * We are storing "receipt_url" into the order metadata. The purpose of this migration
