@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "f01bc4956b3c08f4ae847bff0626776b",
+    "identityHash": "a08d1da9359217298fa9560aa8f69333",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -834,7 +834,7 @@
       },
       {
         "tableName": "OrderMetaData",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, `isDisplayable` INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(`localSiteId`, `orderId`, `id`), FOREIGN KEY(`localSiteId`, `orderId`) REFERENCES `OrderEntity`(`localSiteId`, `orderId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`localSiteId`, `orderId`, `id`), FOREIGN KEY(`localSiteId`, `orderId`) REFERENCES `OrderEntity`(`localSiteId`, `orderId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "localSiteId",
@@ -865,13 +865,6 @@
             "columnName": "value",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "isDisplayable",
-            "columnName": "isDisplayable",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "1"
           }
         ],
         "primaryKey": {
@@ -1172,7 +1165,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f01bc4956b3c08f4ae847bff0626776b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a08d1da9359217298fa9560aa8f69333')"
     ]
   }
 }
