@@ -38,7 +38,7 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
             }
 
             // media queries with a context of 'view' do not require authentication
-            reactNativeStore.executeRequest(site, "wp/v2/media?context=view")
+            reactNativeStore.executeGetRequest(site, "wp/v2/media?context=view")
         }
 
         val assertionMessage = "Call unexpectedly failed with error: ${(response as? Error)?.error?.message}"
@@ -57,7 +57,7 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
             }
 
             // media queries with a context of 'edit' require authentication
-            reactNativeStore.executeRequest(siteWithCustomRestEndpoint, "wp/v2/media?context=edit")
+            reactNativeStore.executeGetRequest(siteWithCustomRestEndpoint, "wp/v2/media?context=edit")
         }
 
         val assertionMessage = "Call unexpectedly failed with error: ${(response as? Error)?.error?.message}"
@@ -81,13 +81,13 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
 
             // media queries with a context of 'edit' require authentication
             // this request will fail because of the self signed ssl certificate ("Invalid SSL certificate")
-            reactNativeStore.executeRequest(siteUsingSsl, "wp/v2/media?context=edit")
+            reactNativeStore.executeGetRequest(siteUsingSsl, "wp/v2/media?context=edit")
 
             // Add an exception for the last failure of certificate validation
             memorizingTrustManager.storeLastFailure()
 
             // Retry to run the same media query (media queries with a context of 'edit' require authentication)
-            reactNativeStore.executeRequest(siteUsingSsl, "wp/v2/media?context=edit")
+            reactNativeStore.executeGetRequest(siteUsingSsl, "wp/v2/media?context=edit")
         }
 
         memorizingTrustManager.clearLocalTrustStore()
@@ -106,7 +106,7 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
                 password = BuildConfig.TEST_WPORG_PASSWORD_SH_WPAPI_SIMPLE
             }
 
-            reactNativeStore.executeRequest(site, "wp/v2/an-invalid-endpoint")
+            reactNativeStore.executeGetRequest(site, "wp/v2/an-invalid-endpoint")
         }
 
         val assertionMessage = "Call should have failed with a 404, instead response was $response"
