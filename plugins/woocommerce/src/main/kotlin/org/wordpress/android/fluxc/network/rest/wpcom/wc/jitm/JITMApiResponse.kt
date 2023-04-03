@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm
 import com.google.gson.annotations.SerializedName
 
 data class JITMApiResponse(
+    @SerializedName("template") val template: String,
     @SerializedName("content") val content: JITMContent,
     @SerializedName("CTA") val cta: JITMCta,
     @SerializedName("ttl") val timeToLive: Int,
@@ -18,6 +19,9 @@ data class JITMApiResponse(
 data class JITMContent(
     @SerializedName("message") val message: String,
     @SerializedName("icon") val icon: String,
+    @SerializedName("icon_path") val iconPath: String?,
+    @SerializedName("secondary_icon_path") val secondaryIconPath: String?,
+    @SerializedName("classes") val classes: String?,
     @SerializedName("description") val description: String,
     @SerializedName("title") val title: String,
 )
