@@ -71,7 +71,7 @@ class ReactNativeFragment : Fragment() {
         val path = path_field.text.toString()
         prependToLog("Making request: $path")
         lifecycleScope.launch(Dispatchers.IO) {
-            val response = site?.let { reactNativeStore.executeRequest(it, path) }
+            val response = site?.let { reactNativeStore.executeGetRequest(it, path) }
             withContext(Dispatchers.Main) {
                 when (response) {
                     is Success -> {
