@@ -26,6 +26,7 @@ class JitmRestClientTest {
     }
 
     private fun provideJitmApiResponse(
+        template: String = "",
         content: JITMContent = provideJitmContent(),
         jitmCta: JITMCta = provideJitmCta(),
         timeToLive: Int = 0,
@@ -35,8 +36,10 @@ class JitmRestClientTest {
         maxDismissal: Int = 2,
         isDismissible: Boolean = false,
         url: String = "",
-        jitmStatsUrl: String = ""
+        jitmStatsUrl: String = "",
+        assets: Map<String, String>? = null
     ) = JITMApiResponse(
+        template = template,
         content = content,
         cta = jitmCta,
         timeToLive = timeToLive,
@@ -46,19 +49,22 @@ class JitmRestClientTest {
         maxDismissal = maxDismissal,
         isDismissible = isDismissible,
         url = url,
-        jitmStatsUrl = jitmStatsUrl
+        jitmStatsUrl = jitmStatsUrl,
+        assets = assets
     )
 
     private fun provideJitmContent(
         message: String = "",
         description: String = "",
         icon: String = "",
-        title: String = ""
+        title: String = "",
+        iconPath: String = ""
     ) = JITMContent(
         message = message,
         description = description,
         icon = icon,
-        title = title
+        title = title,
+        iconPath = iconPath,
     )
 
     private fun provideJitmCta(

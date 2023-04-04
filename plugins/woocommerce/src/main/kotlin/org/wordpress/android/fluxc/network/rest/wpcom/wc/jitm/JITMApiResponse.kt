@@ -14,14 +14,13 @@ data class JITMApiResponse(
     @SerializedName("is_dismissible") val isDismissible: Boolean,
     @SerializedName("url") val url: String,
     @SerializedName("jitm_stats_url") val jitmStatsUrl: String,
+    @SerializedName("assets") val assets: Map<String, String>?,
 )
 
 data class JITMContent(
     @SerializedName("message") val message: String,
     @SerializedName("icon") val icon: String,
     @SerializedName("icon_path") val iconPath: String?,
-    @SerializedName("secondary_icon_path") val secondaryIconPath: String?,
-    @SerializedName("classes") val classes: String?,
     @SerializedName("description") val description: String,
     @SerializedName("title") val title: String,
 )

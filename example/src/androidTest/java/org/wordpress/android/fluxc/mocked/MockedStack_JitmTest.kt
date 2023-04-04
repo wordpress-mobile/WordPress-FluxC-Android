@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
@@ -12,9 +13,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.jitm.JitmRestClient
 import javax.inject.Inject
 
 class MockedStack_JitmTest : MockedStack_Base() {
-    @Inject internal lateinit var restClient: JitmRestClient
+    @Inject
+    internal lateinit var restClient: JitmRestClient
 
-    @Inject internal lateinit var interceptor: ResponseMockingInterceptor
+    @Inject
+    internal lateinit var interceptor: ResponseMockingInterceptor
 
     private val testSite = SiteModel().apply {
         origin = SiteModel.ORIGIN_WPCOM_REST
@@ -28,7 +31,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenValidMessagePathPassedForJitmThenSuccessReturned() = runBlocking {
+    fun whenValidMessagePathPassedForJitmThenSuccessReturnedWithAssets() = runBlocking {
         interceptor.respondWith("jitm-fetch-success.json")
         val messagePath = "woomobile:my_store:admin_notices"
 
@@ -36,6 +39,20 @@ class MockedStack_JitmTest : MockedStack_Base() {
 
         assertFalse(result.isError)
         assertTrue(!result.result.isNullOrEmpty())
+        assertEquals("https://wordpress.com/bcg_image.png", result.result?.get(0)?.assets?.get("background_image_url"))
+        assertEquals("https://wordpress.com/badge_image.png", result.result?.get(0)?.assets?.get("badge_image_url"))
+    }
+
+    @Test
+    fun whenValidMessagePathPassedForJitmWithoutAssetsThenSuccessReturnedWithoutAssets() = runBlocking {
+        interceptor.respondWith("jitm-fetch-success_without_assets.json")
+        val messagePath = "woomobile:my_store:admin_notices"
+
+        val result = restClient.fetchJitmMessage(testSite, messagePath, "")
+
+        assertFalse(result.isError)
+        assertTrue(!result.result.isNullOrEmpty())
+        assertNull(result.result?.get(0)?.assets)
     }
 
     @Test
