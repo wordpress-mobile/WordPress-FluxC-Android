@@ -29,14 +29,14 @@ class ReleaseStack_ReactNativeWPComRequestTest : ReleaseStack_WPComBase() {
     }
 
     private fun assertSuccessWithPath(path: String) {
-        val response = runBlocking { reactNativeStore.executeRequest(sSite, path) }
+        val response = runBlocking { reactNativeStore.executeGetRequest(sSite, path) }
         val failureMessage = "Call failed with error: ${(response as? Error)?.error}"
         assertTrue(failureMessage, response is Success)
     }
 
     @Test
     fun testWpComCall_fails() {
-        val response = runBlocking { reactNativeStore.executeRequest(sSite, "an-invalid-extension") }
+        val response = runBlocking { reactNativeStore.executeGetRequest(sSite, "an-invalid-extension") }
         val assertionMessage = "Call should have failed with a 404, instead response was $response"
         val actualStatusCode = (response as? Error)?.error?.volleyError?.networkResponse?.statusCode
         assertEquals(assertionMessage, 404, actualStatusCode)

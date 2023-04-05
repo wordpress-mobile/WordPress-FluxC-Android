@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 
 @Dao
 abstract class OrdersDao {
@@ -33,6 +34,12 @@ abstract class OrdersDao {
             ?.let(updateOrder)
             ?.let { insertOrUpdateOrder(it) }
     }
+
+    @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status) ORDER BY datePaid DESC")
+    abstract suspend fun getPaidOrdersForSiteDesc(
+        localSiteId: LocalId,
+        status: List<String> = listOf(CoreOrderStatus.COMPLETED.value)
+    ): List<OrderEntity>
 
     @Query("SELECT * FROM OrderEntity WHERE localSiteId = :localSiteId AND status IN (:status)")
     abstract suspend fun getOrdersForSite(localSiteId: LocalId, status: List<String>): List<OrderEntity>
