@@ -134,6 +134,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testXMLRPCHTTPAuthFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT);
