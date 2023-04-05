@@ -897,7 +897,7 @@ class OrderRestClient @Inject constructor(
             "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
             else -> OrderErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return OrderError(orderErrorType, wpAPINetworkError.message)
+        return OrderError(orderErrorType, wpAPINetworkError.message.orEmpty())
     }
 
     private fun orderStatusResponseToOrderStatusModel(
