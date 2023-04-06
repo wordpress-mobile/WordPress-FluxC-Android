@@ -541,6 +541,21 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }
 
+    // Test for any order-related call that returns error with no message to ensure
+    // the app doesn't crash, by converting the null value to empty string.
+    @Test
+    fun testAnyOrderCallErrorWithNoMessage() = runBlocking {
+        val errorJson = JsonObject().apply {
+            addProperty("error", "some_error_message")
+        }
+        val remoteOrderId = 88L
+        interceptor.respondWithError(errorJson)
+        val response = orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+
+        assertEquals(response.error.message, "")
+    }
+
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
