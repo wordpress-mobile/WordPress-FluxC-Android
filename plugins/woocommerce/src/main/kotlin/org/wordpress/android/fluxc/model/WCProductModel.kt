@@ -553,4 +553,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val storedFiles = getDownloadableFiles()
         return storedFiles == updatedFiles
     }
+
+    object QuantityRulesMetadataKeys {
+        const val MINIMUM_ALLOWED_QUANTITY = "minimum_allowed_quantity"
+        const val MAXIMUM_ALLOWED_QUANTITY = "maximum_allowed_quantity"
+        const val GROUP_OF_QUANTITY = "group_of_quantity"
+        val ALL_KEYS = setOf(
+            MINIMUM_ALLOWED_QUANTITY,
+            MAXIMUM_ALLOWED_QUANTITY,
+            GROUP_OF_QUANTITY
+        )
+    }
 }

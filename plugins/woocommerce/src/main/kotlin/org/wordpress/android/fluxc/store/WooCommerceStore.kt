@@ -60,7 +60,8 @@ open class WooCommerceStore @Inject constructor(
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
         WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking"),
         WOO_SUBSCRIPTIONS("woocommerce-subscriptions/woocommerce-subscriptions"),
-        WOO_GIFT_CARDS("woocommerce-gift-cards/woocommerce-gift-cards")
+        WOO_GIFT_CARDS("woocommerce-gift-cards/woocommerce-gift-cards"),
+        WOO_MIN_MAX_QUANTITIES("woocommerce-min-max-quantities/woocommerce-min-max-quantities")
     }
 
     companion object {
