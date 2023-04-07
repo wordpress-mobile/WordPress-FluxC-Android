@@ -170,4 +170,15 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
             SUBSCRIPTION_ONE_TIME_SHIPPING
         )
     }
+
+    object QuantityRulesMetadataKeys {
+        const val MINIMUM_ALLOWED_QUANTITY = "variation_minimum_allowed_quantity"
+        const val MAXIMUM_ALLOWED_QUANTITY = "variation_maximum_allowed_quantity"
+        const val GROUP_OF_QUANTITY = "variation_group_of_quantity"
+        val ALL_KEYS = setOf(
+            MINIMUM_ALLOWED_QUANTITY,
+            MAXIMUM_ALLOWED_QUANTITY,
+            GROUP_OF_QUANTITY
+        )
+    }
 }
