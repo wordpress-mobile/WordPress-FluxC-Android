@@ -2,10 +2,12 @@ package org.wordpress.android.fluxc.example;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -37,6 +39,7 @@ import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
+import org.wordpress.android.util.PermissionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,7 @@ import dagger.android.support.AndroidSupportInjection;
 
 public class MediaFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;
+    private static final int MEDIA_PERMISSION_REQUEST_CODE = 101;
 
     @Inject SiteStore mSiteStore;
     @Inject MediaStore mMediaStore;
@@ -137,17 +141,21 @@ public class MediaFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.upload_media).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request upload media.");
-                    return;
-                }
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("*/*");
-                startActivityForResult(intent, RESULT_PICK_MEDIA);
+        view.findViewById(R.id.upload_media).setOnClickListener(v -> {
+            if (!PermissionUtils.checkAndRequestPermissions(
+                    getActivity(),
+                    MEDIA_PERMISSION_REQUEST_CODE,
+                    getRequiredPermissions())) {
+                return;
             }
+
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request upload media.");
+                return;
+            }
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("*/*");
+            startActivityForResult(intent, RESULT_PICK_MEDIA);
         });
 
         view.findViewById(R.id.delete_media).setOnClickListener(new View.OnClickListener() {
@@ -169,6 +177,19 @@ public class MediaFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private String[] getRequiredPermissions() {
+        String[] permissions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[]{permission.READ_MEDIA_IMAGES, permission.READ_MEDIA_VIDEO,
+                    permission.READ_MEDIA_AUDIO};
+        } else {
+            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos, Music and Audio
+            // permissions
+            permissions = new String[]{permission.READ_EXTERNAL_STORAGE};
+        }
+        return permissions;
     }
 
     @Override
