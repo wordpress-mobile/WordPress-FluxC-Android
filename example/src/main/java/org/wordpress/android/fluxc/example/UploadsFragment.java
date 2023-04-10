@@ -95,20 +95,17 @@ public class UploadsFragment extends Fragment {
         });
 
         mCancelButton = view.findViewById(R.id.cancel_upload);
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isAdded()) {
-                    return;
-                }
-
-                if (mCurrentMediaUpload == null) {
-                    mCancelButton.setEnabled(false);
-                    return;
-                }
-
-                cancelMediaUpload(mSite, mCurrentMediaUpload);
+        mCancelButton.setOnClickListener(v -> {
+            if (!isAdded()) {
+                return;
             }
+
+            if (mCurrentMediaUpload == null) {
+                mCancelButton.setEnabled(false);
+                return;
+            }
+
+            cancelMediaUpload(mSite, mCurrentMediaUpload);
         });
 
         return view;
@@ -184,14 +181,15 @@ public class UploadsFragment extends Fragment {
                 if (event.media.getLocalPostId() > 0) {
                     PostModel associatedPost = mPostStore.getPostByLocalPostId(event.media.getLocalPostId());
                     if (mUploadStore.isPendingPost(associatedPost)) {
-                        // This media was attached to a post waiting to be uploaded (it's registered in the UploadStore)
+                        // This media was attached to a post waiting to be uploaded (it's registered in the
+                        // UploadStore)
                         String postContent = associatedPost.getContent();
                         // Replace image placeholder in post content with remote URL of uploaded image
                         associatedPost.setContent(postContent.replace("[image]", "<img src=\""
-                                + event.media.getUrl() + "\">"));
+                                                                                 + event.media.getUrl() + "\">"));
                         if (mUploadStore.getUploadingMediaForPost(associatedPost).isEmpty()) {
                             prependToLog("Post with localId=" + associatedPost.getId()
-                                    + " has no more pending media - uploading!");
+                                         + " has no more pending media - uploading!");
                             RemotePostPayload payload = new RemotePostPayload(associatedPost, mSite);
                             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
                         }

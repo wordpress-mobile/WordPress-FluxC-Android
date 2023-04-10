@@ -87,58 +87,46 @@ public class MediaFragment extends Fragment {
                 (site, pos) -> mSite = site));
 
         mCancelButton = view.findViewById(R.id.cancel_upload);
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isAdded()) {
-                    return;
-                }
-
-                if (mCurrentUpload == null) {
-                    mCancelButton.setEnabled(false);
-                    return;
-                }
-
-                cancelMediaUpload(mSite, mCurrentUpload);
+        mCancelButton.setOnClickListener(v -> {
+            if (!isAdded()) {
+                return;
             }
+
+            if (mCurrentUpload == null) {
+                mCancelButton.setEnabled(false);
+                return;
+            }
+
+            cancelMediaUpload(mSite, mCurrentUpload);
         });
 
-        view.findViewById(R.id.fetch_media_list).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request first media page.");
-                    return;
-                }
-                fetchMediaList(mSite);
+        view.findViewById(R.id.fetch_media_list).setOnClickListener(v -> {
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request first media page.");
+                return;
             }
+            fetchMediaList(mSite);
         });
 
-        view.findViewById(R.id.fetch_specified_media).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request media.");
+        view.findViewById(R.id.fetch_specified_media).setOnClickListener(v -> {
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request media.");
+                return;
+            }
+            ThreeEditTextDialog dialog = ThreeEditTextDialog.newInstance((text1, text2, text3) -> {
+                if (TextUtils.isEmpty(text1)) {
+                    prependToLog("You must specify media IDs to fetch.");
                     return;
                 }
-                ThreeEditTextDialog dialog = ThreeEditTextDialog.newInstance(new ThreeEditTextDialog.Listener() {
-                    @Override
-                    public void onClick(String text1, String text2, String text3) {
-                        if (TextUtils.isEmpty(text1)) {
-                            prependToLog("You must specify media IDs to fetch.");
-                            return;
-                        }
 
-                        String[] ids = text1.split(",");
-                        for (String id : ids) {
-                            MediaModel media = new MediaModel();
-                            media.setMediaId(Long.valueOf(id));
-                            fetchMedia(mSite, media);
-                        }
-                    }
-                }, "comma-separate media IDs", "", "");
-                dialog.show(getFragmentManager(), "media-ids-dialog");
-            }
+                String[] ids = text1.split(",");
+                for (String id : ids) {
+                    MediaModel media = new MediaModel();
+                    media.setMediaId(Long.valueOf(id));
+                    fetchMedia(mSite, media);
+                }
+            }, "comma-separate media IDs", "", "");
+            dialog.show(getFragmentManager(), "media-ids-dialog");
         });
 
         view.findViewById(R.id.upload_media).setOnClickListener(v -> {
@@ -158,22 +146,19 @@ public class MediaFragment extends Fragment {
             startActivityForResult(intent, RESULT_PICK_MEDIA);
         });
 
-        view.findViewById(R.id.delete_media).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request delete media.");
-                    return;
-                }
-
-                if (mMediaList.getCount() <= 0) {
-                    prependToLog("Please fetch media before attempting to delete.");
-                    return;
-                }
-
-                MediaModel media = (MediaModel) mMediaList.getSelectedItem();
-                deleteMedia(mSite, media);
+        view.findViewById(R.id.delete_media).setOnClickListener(v -> {
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request delete media.");
+                return;
             }
+
+            if (mMediaList.getCount() <= 0) {
+                prependToLog("Please fetch media before attempting to delete.");
+                return;
+            }
+
+            MediaModel media = (MediaModel) mMediaList.getSelectedItem();
+            deleteMedia(mSite, media);
         });
 
         return view;
