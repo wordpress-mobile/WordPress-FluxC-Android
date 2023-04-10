@@ -18,10 +18,6 @@
         "primary": true,
         "link": "https://woocommerce.com/products/hardware/US"
       },
-      "assets": {
-        "background_image_url": "https://wordpress.com/bcg_image.png",
-        "badge_image_url": "https://wordpress.com/badge_image.png"
-      },
       "template": "default",
       "ttl": 300,
       "id": "woomobile_ipp_barcode_users",

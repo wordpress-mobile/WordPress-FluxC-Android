@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
@@ -28,7 +29,7 @@ class MockedStack_JitmTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenValidMessagePathPassedForJitmThenSuccessReturned() = runBlocking {
+    fun whenValidMessagePathPassedForJitmThenSuccessReturnedWithAssets() = runBlocking {
         interceptor.respondWith("jitm-fetch-success.json")
         val messagePath = "woomobile:my_store:admin_notices"
 
@@ -36,6 +37,20 @@ class MockedStack_JitmTest : MockedStack_Base() {
 
         assertFalse(result.isError)
         assertTrue(!result.result.isNullOrEmpty())
+        assertEquals("https://wordpress.com/bcg_image.png", result.result?.get(0)?.assets?.get("background_image_url"))
+        assertEquals("https://wordpress.com/badge_image.png", result.result?.get(0)?.assets?.get("badge_image_url"))
+    }
+
+    @Test
+    fun whenValidMessagePathPassedForJitmWithoutAssetsThenSuccessReturnedWithoutAssets() = runBlocking {
+        interceptor.respondWith("jitm-fetch-success_without_assets.json")
+        val messagePath = "woomobile:my_store:admin_notices"
+
+        val result = restClient.fetchJitmMessage(testSite, messagePath, "")
+
+        assertFalse(result.isError)
+        assertTrue(!result.result.isNullOrEmpty())
+        assertNull(result.result?.get(0)?.assets)
     }
 
     @Test
