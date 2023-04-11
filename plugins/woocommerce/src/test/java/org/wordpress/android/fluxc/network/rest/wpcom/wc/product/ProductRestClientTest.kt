@@ -36,7 +36,7 @@ class ProductRestClientTest {
     private val wpComNetwork: WPComNetwork = mock()
 
     @Before fun setUp() {
-        sut = ProductRestClient(mock(), wooNetwork, wpComNetwork, initCoroutineEngine(), mock())
+        sut = ProductRestClient(mock(), wooNetwork, wpComNetwork, initCoroutineEngine(), mock(), mock())
     }
 
     @Test

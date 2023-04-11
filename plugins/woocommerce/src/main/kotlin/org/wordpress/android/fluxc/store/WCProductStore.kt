@@ -37,9 +37,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAd
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
+import org.wordpress.android.fluxc.persistence.ExtensionPersistenceUtil
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
@@ -61,7 +61,8 @@ class WCProductStore @Inject constructor(
     private val wcProductRestClient: ProductRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
-    private val logger: AppLogWrapper
+    private val logger: AppLogWrapper,
+    private val extensionPersistenceUtil: ExtensionPersistenceUtil
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -971,16 +972,19 @@ class WCProductStore @Inject constructor(
         productId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductModel> =
-            coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
-                wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
-                    .asWooResult()
-                    .model?.asProductModel()
-                    ?.apply {
-                        localSiteId = site.id
-                        ProductSqlUtils.insertOrUpdateProduct(this)
-                    }
-                    ?.let { WooResult(it) }
-            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+        coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
+            wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
+                .asWooResult()
+                .model?.let {
+                    extensionPersistenceUtil.persistExtensionData(site.id, it)
+                    it.asProductModel()
+                }
+                ?.apply {
+                    localSiteId = site.id
+                    ProductSqlUtils.insertOrUpdateProduct(this)
+                }
+                ?.let { WooResult(it) }
+        } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     suspend fun submitVariationAttributeChanges(
         site: SiteModel,
@@ -1326,7 +1330,10 @@ class WCProductStore @Inject constructor(
                     WooResult(result.error)
                 } else {
                     ProductSqlUtils.insertOrUpdateProducts(
-                        result.result?.updatedProducts?.map(ProductDto::asProductModel).orEmpty()
+                        result.result?.updatedProducts?.map{
+                            extensionPersistenceUtil.persistExtensionData(site.id, it)
+                            it.asProductModel()
+                        }.orEmpty()
                     )
                     WooResult(result.result)
                 }

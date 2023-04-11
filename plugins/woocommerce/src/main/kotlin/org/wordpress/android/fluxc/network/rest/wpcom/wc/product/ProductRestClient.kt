@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper.variantModelToProductJsonBody
+import org.wordpress.android.fluxc.persistence.ExtensionPersistenceUtil
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -80,7 +81,8 @@ class ProductRestClient @Inject constructor(
     private val wooNetwork: WooNetwork,
     private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine,
-    private val stripProductVariationMetaData: StripProductVariationMetaData
+    private val stripProductVariationMetaData: StripProductVariationMetaData,
+    private val extensionPersistenceUtil: ExtensionPersistenceUtil
 ) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -287,6 +289,7 @@ class ProductRestClient @Inject constructor(
         return when (response) {
             is WPAPIResponse.Success -> {
                 response.data?.let {
+                    extensionPersistenceUtil.persistExtensionData(site.id, it)
                     val newModel = it.asProductModel().apply {
                         localSiteId = site.id
                     }
@@ -408,6 +411,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     val productModels = response.data?.map {
+                        extensionPersistenceUtil.persistExtensionData(site.id, it)
                         it.asProductModel().apply { localSiteId = site.id }
                     }.orEmpty()
 
@@ -517,6 +521,7 @@ class ProductRestClient @Inject constructor(
 
         return response.toWooPayload { products ->
             products.map {
+                extensionPersistenceUtil.persistExtensionData(site.id, it)
                 it.asProductModel()
                     .apply { localSiteId = site.id }
             }
@@ -866,6 +871,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     response.data?.let {
+                        extensionPersistenceUtil.persistExtensionData(site.id, it)
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
@@ -1179,6 +1185,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     response.data?.let {
+                        extensionPersistenceUtil.persistExtensionData(site.id, it)
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
@@ -1475,6 +1482,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     response.data?.let { product ->
+                        extensionPersistenceUtil.persistExtensionData(site.id, product)
                         val newModel = product.asProductModel().apply {
                             id = product.id?.toInt() ?: 0
                             localSiteId = site.id
