@@ -63,22 +63,6 @@ object ProductSqlUtils {
             .flowOn(Dispatchers.IO)
     }
 
-    fun observeProducts(
-        site: SiteModel,
-        remoteProductIds: List<Long> = emptyList()
-    ): Flow<List<WCProductModel>> {
-        return productsUpdatesTrigger
-            .onStart { emit(Unit) }
-            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
-            .mapLatest {
-                if (remoteProductIds.isEmpty()) {
-                    getProductsForSite(site)
-                } else {
-                    getProductsByRemoteIds(site, remoteProductIds)
-                }
-            }
-            .flowOn(Dispatchers.IO)
-    }
 
     fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> {
         return variationsUpdatesTrigger
