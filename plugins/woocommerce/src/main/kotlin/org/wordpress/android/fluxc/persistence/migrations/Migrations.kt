@@ -742,3 +742,5 @@ internal val MIGRATION_22_23 = object : Migration(22, 23) {
         }
     }
 }
+
+internal class AutoMigration24to25 : AutoMigrationSpec
