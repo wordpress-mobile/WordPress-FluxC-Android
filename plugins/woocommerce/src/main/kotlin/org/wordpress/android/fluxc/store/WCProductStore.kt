@@ -951,6 +951,12 @@ class WCProductStore @Inject constructor(
     ): Flow<List<WCProductModel>> =
         ProductSqlUtils.observeProducts(site, sortType, filterOptions)
 
+    fun observeProducts(
+        site: SiteModel,
+        remoteProductIds: List<Long> = emptyList()
+    ): Flow<List<WCProductModel>> =
+        ProductSqlUtils.observeProducts(site, remoteProductIds)
+
     fun observeVariations(site: SiteModel, productId: Long): Flow<List<WCProductVariationModel>> =
         ProductSqlUtils.observeVariations(site, productId)
 
