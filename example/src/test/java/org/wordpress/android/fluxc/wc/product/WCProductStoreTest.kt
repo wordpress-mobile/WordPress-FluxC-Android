@@ -70,7 +70,8 @@ class WCProductStoreTest {
             addonsDao = mock(),
             logger = mock(),
             coroutineEngine = initCoroutineEngine(),
-            extensionPersistenceUtil = mock()
+            extensionPersistenceUtil = mock(),
+            bundledProductsDao = mock()
     )
 
     @Before
