@@ -167,6 +167,7 @@ data class ProductApiResponse(
             upsellIds = response.upsell_ids?.toString() ?: ""
             groupedProductIds = response.grouped_products?.toString() ?: ""
             metadata = response.metadata?.toString() ?: ""
+            bundledItems = response.bundled_items?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
