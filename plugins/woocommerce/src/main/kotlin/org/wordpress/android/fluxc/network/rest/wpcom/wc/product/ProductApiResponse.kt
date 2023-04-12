@@ -73,10 +73,14 @@ data class ProductApiResponse(
     val grouped_products: JsonElement? = null,
     @SerializedName("meta_data")
     val metadata: JsonArray? = null,
+    val bundle_stock_quantity: String? = null,
+    val bundle_stock_status: String? = null,
+    val bundled_items: JsonArray? = null
 ) {
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
         val response = this
+        val isBundledProduct = response.type == CoreProductType.BUNDLE.value
         return WCProductModel().apply {
             remoteProductId = response.id ?: 0
             name = response.name ?: ""
@@ -122,8 +126,16 @@ data class ProductApiResponse(
                 it == "true" || it == "parent"
             } ?: false
 
-            stockQuantity = response.stock_quantity
-            stockStatus = response.stock_status ?: ""
+            stockQuantity = if (isBundledProduct) {
+                response.bundle_stock_quantity?.toDoubleOrNull() ?: 0.0
+            } else {
+                response.stock_quantity
+            }
+            stockStatus = if (isBundledProduct) {
+                response.bundle_stock_status ?: ""
+            } else {
+                response.stock_status ?: ""
+            }
 
             backorders = response.backorders ?: ""
             backordersAllowed = response.backorders_allowed
