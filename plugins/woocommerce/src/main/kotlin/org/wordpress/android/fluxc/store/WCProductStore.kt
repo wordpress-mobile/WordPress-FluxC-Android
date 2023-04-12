@@ -42,6 +42,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariatio
 import org.wordpress.android.fluxc.persistence.ExtensionPersistenceUtil
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
+import org.wordpress.android.fluxc.persistence.dao.BundledProductsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
@@ -62,7 +63,8 @@ class WCProductStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
     private val logger: AppLogWrapper,
-    private val extensionPersistenceUtil: ExtensionPersistenceUtil
+    private val extensionPersistenceUtil: ExtensionPersistenceUtil,
+    private val bundledProductsDao: BundledProductsDao
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -960,6 +962,16 @@ class WCProductStore @Inject constructor(
         sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
     ): Flow<List<WCProductCategoryModel>> =
         ProductSqlUtils.observeCategories(site, sortType)
+
+    fun observeBundledProducts(
+        site: SiteModel,
+        productId: Long
+    ) = bundledProductsDao.observeBundledProducts(site.localId(), RemoteId(productId))
+
+    suspend fun getBundledProductsCount(
+        site: SiteModel,
+        productId: Long
+    ) = bundledProductsDao.getBundledProductsCount(site.localId(), RemoteId(productId))
 
     suspend fun submitProductAttributeChanges(
         site: SiteModel,
