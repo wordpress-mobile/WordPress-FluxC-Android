@@ -19,6 +19,12 @@ interface BundledProductsDao {
         productId: LocalOrRemoteId.RemoteId
     ): Flow<List<BundledProductEntity>>
 
+    @Query("SELECT COUNT(*) FROM BundledProduct WHERE productId = :productId AND localSiteId = :localSiteId")
+    suspend fun getBundledProductsCount(
+        localSiteId: LocalOrRemoteId.LocalId,
+        productId: LocalOrRemoteId.RemoteId
+    ): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: BundledProductEntity)
 
