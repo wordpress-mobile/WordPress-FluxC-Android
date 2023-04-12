@@ -11,7 +11,9 @@ import org.wordpress.android.fluxc.persistence.entity.BundledProductEntity
 
 @Dao
 interface BundledProductsDao {
-    @Query("SELECT * FROM BundledProduct WHERE productId = :productId AND localSiteId = :localSiteId")
+    @Query("""
+        SELECT * FROM BundledProduct WHERE productId = :productId AND localSiteId = :localSiteId ORDER BY menuOrder
+    """)
     fun observeBundledProducts(
         localSiteId: LocalOrRemoteId.LocalId,
         productId: LocalOrRemoteId.RemoteId
