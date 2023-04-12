@@ -558,10 +558,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         const val MINIMUM_ALLOWED_QUANTITY = "minimum_allowed_quantity"
         const val MAXIMUM_ALLOWED_QUANTITY = "maximum_allowed_quantity"
         const val GROUP_OF_QUANTITY = "group_of_quantity"
+        const val ALLOW_COMBINATION = "allow_combination"
         val ALL_KEYS = setOf(
             MINIMUM_ALLOWED_QUANTITY,
             MAXIMUM_ALLOWED_QUANTITY,
-            GROUP_OF_QUANTITY
+            GROUP_OF_QUANTITY,
+            ALLOW_COMBINATION
         )
     }
 }
