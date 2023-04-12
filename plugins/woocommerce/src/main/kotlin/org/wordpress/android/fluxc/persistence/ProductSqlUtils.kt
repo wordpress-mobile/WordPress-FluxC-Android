@@ -100,7 +100,6 @@ object ProductSqlUtils {
             val responseType = object : TypeToken<List<WCBundledProduct>>() {}.type
             gson.fromJson(it.bundledItems, responseType) as? List<WCBundledProduct>
         } ?: emptyList()
-
     }
 
     fun getBundledProductsCount(site: SiteModel, remoteProductId: Long): Int {
