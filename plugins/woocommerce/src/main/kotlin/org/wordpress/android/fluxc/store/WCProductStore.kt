@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
+import org.wordpress.android.fluxc.model.WCProductComponent
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -967,6 +968,10 @@ class WCProductStore @Inject constructor(
 
     suspend fun getBundledProductsCount(site: SiteModel, remoteProductId: Long): Int {
         return ProductSqlUtils.getBundledProductsCount(site, remoteProductId)
+    }
+
+    suspend fun getCompositeProducts(site: SiteModel, remoteProductId: Long): List<WCProductComponent> {
+        return ProductSqlUtils.getCompositeProducts(site, remoteProductId)
     }
 
     suspend fun submitProductAttributeChanges(
