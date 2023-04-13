@@ -960,6 +960,15 @@ class WCProductStore @Inject constructor(
     ): Flow<List<WCProductCategoryModel>> =
         ProductSqlUtils.observeCategories(site, sortType)
 
+    fun observeBundledProducts(
+        site: SiteModel,
+        remoteProductId: Long
+    ) = ProductSqlUtils.observeBundledProducts(site, remoteProductId)
+
+    suspend fun getBundledProductsCount(site: SiteModel, remoteProductId: Long): Int {
+        return ProductSqlUtils.getBundledProductsCount(site, remoteProductId)
+    }
+
     suspend fun submitProductAttributeChanges(
         site: SiteModel,
         productId: Long,
