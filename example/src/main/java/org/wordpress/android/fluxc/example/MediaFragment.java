@@ -2,10 +2,12 @@ package org.wordpress.android.fluxc.example;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -37,6 +39,7 @@ import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
+import org.wordpress.android.util.PermissionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,7 @@ import dagger.android.support.AndroidSupportInjection;
 
 public class MediaFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;
+    private static final int MEDIA_PERMISSION_REQUEST_CODE = 101;
 
     @Inject SiteStore mSiteStore;
     @Inject MediaStore mMediaStore;
@@ -83,92 +87,94 @@ public class MediaFragment extends Fragment {
                 (site, pos) -> mSite = site));
 
         mCancelButton = view.findViewById(R.id.cancel_upload);
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isAdded()) {
-                    return;
-                }
-
-                if (mCurrentUpload == null) {
-                    mCancelButton.setEnabled(false);
-                    return;
-                }
-
-                cancelMediaUpload(mSite, mCurrentUpload);
+        mCancelButton.setOnClickListener(v -> {
+            if (!isAdded()) {
+                return;
             }
+
+            if (mCurrentUpload == null) {
+                mCancelButton.setEnabled(false);
+                return;
+            }
+
+            cancelMediaUpload(mSite, mCurrentUpload);
         });
 
-        view.findViewById(R.id.fetch_media_list).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request first media page.");
-                    return;
-                }
-                fetchMediaList(mSite);
+        view.findViewById(R.id.fetch_media_list).setOnClickListener(v -> {
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request first media page.");
+                return;
             }
+            fetchMediaList(mSite);
         });
 
-        view.findViewById(R.id.fetch_specified_media).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request media.");
+        view.findViewById(R.id.fetch_specified_media).setOnClickListener(v -> {
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request media.");
+                return;
+            }
+            ThreeEditTextDialog dialog = ThreeEditTextDialog.newInstance((text1, text2, text3) -> {
+                if (TextUtils.isEmpty(text1)) {
+                    prependToLog("You must specify media IDs to fetch.");
                     return;
                 }
-                ThreeEditTextDialog dialog = ThreeEditTextDialog.newInstance(new ThreeEditTextDialog.Listener() {
-                    @Override
-                    public void onClick(String text1, String text2, String text3) {
-                        if (TextUtils.isEmpty(text1)) {
-                            prependToLog("You must specify media IDs to fetch.");
-                            return;
-                        }
 
-                        String[] ids = text1.split(",");
-                        for (String id : ids) {
-                            MediaModel media = new MediaModel();
-                            media.setMediaId(Long.valueOf(id));
-                            fetchMedia(mSite, media);
-                        }
-                    }
-                }, "comma-separate media IDs", "", "");
-                dialog.show(getFragmentManager(), "media-ids-dialog");
-            }
+                String[] ids = text1.split(",");
+                for (String id : ids) {
+                    MediaModel media = new MediaModel();
+                    media.setMediaId(Long.valueOf(id));
+                    fetchMedia(mSite, media);
+                }
+            }, "comma-separate media IDs", "", "");
+            dialog.show(getFragmentManager(), "media-ids-dialog");
         });
 
-        view.findViewById(R.id.upload_media).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request upload media.");
-                    return;
-                }
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("*/*");
-                startActivityForResult(intent, RESULT_PICK_MEDIA);
+        view.findViewById(R.id.upload_media).setOnClickListener(v -> {
+            if (!PermissionUtils.checkAndRequestPermissions(
+                    getActivity(),
+                    MEDIA_PERMISSION_REQUEST_CODE,
+                    getRequiredPermissions())) {
+                return;
             }
+
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request upload media.");
+                return;
+            }
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("*/*");
+            startActivityForResult(intent, RESULT_PICK_MEDIA);
         });
 
-        view.findViewById(R.id.delete_media).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request delete media.");
-                    return;
-                }
-
-                if (mMediaList.getCount() <= 0) {
-                    prependToLog("Please fetch media before attempting to delete.");
-                    return;
-                }
-
-                MediaModel media = (MediaModel) mMediaList.getSelectedItem();
-                deleteMedia(mSite, media);
+        view.findViewById(R.id.delete_media).setOnClickListener(v -> {
+            if (mSite == null) {
+                prependToLog("Site is null, cannot request delete media.");
+                return;
             }
+
+            if (mMediaList.getCount() <= 0) {
+                prependToLog("Please fetch media before attempting to delete.");
+                return;
+            }
+
+            MediaModel media = (MediaModel) mMediaList.getSelectedItem();
+            deleteMedia(mSite, media);
         });
 
         return view;
+    }
+
+    private String[] getRequiredPermissions() {
+        String[] permissions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[]{permission.READ_MEDIA_IMAGES, permission.READ_MEDIA_VIDEO,
+                    permission.READ_MEDIA_AUDIO};
+        } else {
+            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos, Music and Audio
+            // permissions
+            permissions = new String[]{permission.READ_EXTERNAL_STORAGE};
+        }
+        return permissions;
     }
 
     @Override
