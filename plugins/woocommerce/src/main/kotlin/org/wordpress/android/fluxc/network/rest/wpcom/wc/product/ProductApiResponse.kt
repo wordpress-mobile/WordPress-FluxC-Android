@@ -75,7 +75,8 @@ data class ProductApiResponse(
     val metadata: JsonArray? = null,
     val bundle_stock_quantity: String? = null,
     val bundle_stock_status: String? = null,
-    val bundled_items: JsonArray? = null
+    val bundled_items: JsonArray? = null,
+    val composite_components: JsonArray? = null
 ) {
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
