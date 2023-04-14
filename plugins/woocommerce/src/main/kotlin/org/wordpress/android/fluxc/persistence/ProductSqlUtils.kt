@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.onStart
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCBundledProduct
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
+import org.wordpress.android.fluxc.model.WCProductComponent
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -88,6 +89,14 @@ object ProductSqlUtils {
             .flowOn(Dispatchers.IO)
     }
 
+    fun getCompositeProducts(site: SiteModel, remoteProductId: Long): List<WCProductComponent> {
+        val productModel = getProductByRemoteId(site, remoteProductId)
+
+        return productModel?.let {
+            val responseType = object : TypeToken<List<WCProductComponent>>() {}.type
+            gson.fromJson(it.compositeComponents, responseType) as? List<WCProductComponent>
+        } ?: emptyList()
+    }
     private fun getBundledProducts(site: SiteModel, remoteProductId: Long): List<WCBundledProduct> {
         val productModel = WellSql.select(WCProductModel::class.java)
             .where().beginGroup()
