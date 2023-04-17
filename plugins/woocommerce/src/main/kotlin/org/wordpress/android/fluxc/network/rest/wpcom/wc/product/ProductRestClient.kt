@@ -1794,6 +1794,6 @@ class ProductRestClient @Inject constructor(
             "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
             else -> ProductErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return ProductError(productErrorType, wpAPINetworkError.message)
+        return ProductError(productErrorType, wpAPINetworkError.message.orEmpty())
     }
 }
