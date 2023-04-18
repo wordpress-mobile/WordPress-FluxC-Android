@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLine
@@ -133,11 +133,13 @@ class OrderUpdateStore @Inject internal constructor(
         site: SiteModel,
         amount: String,
         isTaxable: Boolean,
-        status: WCOrderStatusModel? = null
+        status: WCOrderStatusModel? = null,
+        customerNote: String? = null
     ): WooResult<OrderEntity> {
         val createOrderRequest = UpdateOrderRequest(
             status = status,
-            feeLines = generateSimplePaymentFeeLineList(amount, isTaxable)
+            feeLines = generateSimplePaymentFeeLineList(amount, isTaxable),
+            customerNote = customerNote
         )
         return createOrder(site, createOrderRequest)
     }
