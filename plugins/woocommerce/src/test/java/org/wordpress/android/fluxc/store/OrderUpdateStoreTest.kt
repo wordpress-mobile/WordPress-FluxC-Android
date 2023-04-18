@@ -417,6 +417,7 @@ class OrderUpdateStoreTest {
         // given
         val newOrder = initialOrder.copy(
                 status = SIMPLE_PAYMENT_ORDER_STATUS.statusKey,
+                customerNote = SIMPLE_PAYMENT_CUSTOMER_NOTE,
                 feeLines = OrderUpdateStore.generateSimplePaymentFeeLineJson(
                         SIMPLE_PAYMENT_AMOUNT,
                         SIMPLE_PAYMENT_IS_TAXABLE,
@@ -439,7 +440,8 @@ class OrderUpdateStoreTest {
             site,
             SIMPLE_PAYMENT_AMOUNT,
             SIMPLE_PAYMENT_IS_TAXABLE,
-            SIMPLE_PAYMENT_ORDER_STATUS
+            SIMPLE_PAYMENT_ORDER_STATUS,
+            SIMPLE_PAYMENT_CUSTOMER_NOTE,
         )
 
         // then
@@ -449,6 +451,7 @@ class OrderUpdateStoreTest {
         assertThat(result.model!!.getFeeLineList()[0].total).isEqualTo(SIMPLE_PAYMENT_AMOUNT)
         assertThat(result.model!!.getFeeLineList()[0].taxStatus!!.value).isEqualTo(SIMPLE_PAYMENT_TAX_STATUS)
         assertThat(result.model!!.status).isEqualTo(SIMPLE_PAYMENT_ORDER_STATUS.statusKey)
+        assertThat(result.model!!.customerNote).isEqualTo(SIMPLE_PAYMENT_CUSTOMER_NOTE)
     }
 
     @Test
