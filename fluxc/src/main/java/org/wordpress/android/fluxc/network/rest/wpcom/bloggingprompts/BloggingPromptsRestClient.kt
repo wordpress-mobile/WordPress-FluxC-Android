@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
+import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV3
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.bloggingprompts.BloggingPromptModel
@@ -89,6 +90,64 @@ class BloggingPromptsRestClient @Inject constructor(
     data class BloggingPromptsRespondentAvatar(
         @SerializedName("avatar") val avatarUrl: String
     )
+
+    // region temporary v2 endpoint support
+    // TODO remove everything in the region once we have successfully migrated to the v3 endpoint
+    suspend fun fetchPromptsV2(
+        site: SiteModel,
+        number: Int,
+        from: Date,
+    ): BloggingPromptsPayload<BloggingPromptsListResponseV2> {
+        val url = WPCOMV2.sites.site(site.siteId).blogging_prompts.url
+        val params = mutableMapOf(
+            "number" to number.toString(),
+            "from" to BloggingPromptsUtils.dateToString(from)
+        )
+        val response = wpComGsonRequestBuilder.syncGetRequest(
+            this,
+            url,
+            params,
+            BloggingPromptsListResponseV2::class.java
+        )
+        return when (response) {
+            is Success -> BloggingPromptsPayload(response.data)
+            is Error -> BloggingPromptsPayload(response.error.toBloggingPromptsError())
+        }
+    }
+
+    data class BloggingPromptsListResponseV2(
+        @SerializedName("prompts") val prompts: List<BloggingPromptResponseV2>?
+    ) {
+        fun toBloggingPrompts() = prompts?.map { it.toBloggingPromptModel() } ?: emptyList()
+    }
+
+    data class BloggingPromptResponseV2(
+        @SerializedName("id") val id: Int,
+        @SerializedName("text") val text: String,
+        @SerializedName("title") val title: String?,
+        @SerializedName("content") val content: String,
+        @SerializedName("date") val date: String,
+        @SerializedName("answered") val isAnswered: Boolean,
+        @SerializedName("attribution") val attribution: String,
+        @SerializedName("answered_users_count") val respondentsCount: Int,
+        @SerializedName("answered_users_sample") val respondentsAvatars: List<BloggingPromptsRespondentAvatar>
+    ) {
+        fun toBloggingPromptModel() = BloggingPromptModel(
+            id = id,
+            text = text,
+            date = BloggingPromptsUtils.stringToDate(date),
+            isAnswered = isAnswered,
+            attribution = attribution,
+            respondentsCount = respondentsCount,
+            respondentsAvatarUrls = respondentsAvatars.map { it.avatarUrl },
+            answeredLink = ANSWERED_LINK_TEMPLATE.format(id),
+        )
+
+        companion object {
+            private const val ANSWERED_LINK_TEMPLATE = "https://wordpress.com/tag/%s"
+        }
+    }
+    // endregion
 }
 
 data class BloggingPromptsPayload<T>(

@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPr
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsListResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient.BloggingPromptsListResponseV2
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.toBloggingPrompts
 import org.wordpress.android.fluxc.persistence.bloggingprompts.BloggingPromptsDao
 import org.wordpress.android.fluxc.store.Store
@@ -29,11 +30,17 @@ class BloggingPromptsStore @Inject constructor(
     suspend fun fetchPrompts(
         site: SiteModel,
         number: Int,
-        from: Date
+        from: Date,
+        useV2Endpoint: Boolean = false,
     ): BloggingPromptsResult<List<BloggingPromptModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchPrompts") {
-            val payload = restClient.fetchPrompts(site, number, from)
-            storePrompts(site, payload)
+            if (useV2Endpoint) {
+                val payload = restClient.fetchPromptsV2(site, number, from)
+                storePromptsV2(site, payload)
+            } else {
+                val payload = restClient.fetchPrompts(site, number, from)
+                storePrompts(site, payload)
+            }
         }
     }
 
@@ -42,9 +49,23 @@ class BloggingPromptsStore @Inject constructor(
         payload: BloggingPromptsPayload<BloggingPromptsListResponse>
     ): BloggingPromptsResult<List<BloggingPromptModel>> = when {
         payload.isError -> handlePayloadError(payload.error)
-        payload.response != null -> handlePayloadResponse(site, payload.response)
+        payload.response != null ->
+            handlePayloadResponse(site, payload.response.toBloggingPrompts())
         else -> BloggingPromptsResult(BloggingPromptsError(INVALID_RESPONSE))
     }
+
+    // region temporary V2 endpoint support
+    // TODO remove everything in the region once we have successfully migrated to the v3 endpoint
+    private suspend fun storePromptsV2(
+        site: SiteModel,
+        payload: BloggingPromptsPayload<BloggingPromptsListResponseV2>
+    ): BloggingPromptsResult<List<BloggingPromptModel>> = when {
+        payload.isError -> handlePayloadError(payload.error)
+        payload.response != null ->
+            handlePayloadResponse(site, payload.response.toBloggingPrompts())
+        else -> BloggingPromptsResult(BloggingPromptsError(INVALID_RESPONSE))
+    }
+    // endregion
 
     private fun handlePayloadError(
         error: BloggingPromptsError
@@ -83,9 +104,8 @@ class BloggingPromptsStore @Inject constructor(
     @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private suspend fun handlePayloadResponse(
         site: SiteModel,
-        response: BloggingPromptsListResponse
+        prompts: List<BloggingPromptModel>
     ): BloggingPromptsResult<List<BloggingPromptModel>> = try {
-        val prompts = response.toBloggingPrompts()
         promptsDao.insertForSite(site.id, prompts)
         BloggingPromptsResult(prompts)
     } catch (e: Exception) {
