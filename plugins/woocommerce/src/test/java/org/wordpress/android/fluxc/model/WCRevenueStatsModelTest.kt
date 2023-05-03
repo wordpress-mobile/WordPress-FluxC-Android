@@ -5,7 +5,6 @@ import org.junit.Test
 import org.wordpress.android.fluxc.utils.json
 
 class WCRevenueStatsModelTest {
-
     @Test
     fun `should assign null value if number of sold items exceeds integer range`() {
         val sut = WCRevenueStatsModel().apply {

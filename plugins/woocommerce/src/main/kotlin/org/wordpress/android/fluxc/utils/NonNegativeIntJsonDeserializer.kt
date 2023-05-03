@@ -6,7 +6,6 @@ import com.google.gson.JsonElement
 import java.lang.reflect.Type
 
 class NonNegativeIntJsonDeserializer : JsonDeserializer<Int?> {
-
     override fun deserialize(
         json: JsonElement?,
         typeOfT: Type?,
