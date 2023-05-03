@@ -1,0 +1,49 @@
+{
+  "prompts": [
+    {
+      "id": 1010,
+      "text": "You have 15 minutes to address the whole world live (on television or radio — choose your format). What would you say?",
+      "title": "Title 1",
+      "content": "Content 1",
+      "date": "2022-01-04",
+      "attribution": "",
+      "answered": false,
+      "answered_users_count": 0,
+      "answered_users_sample": [
+      ]
+    },
+    {
+      "id": 1011,
+      "text": "Do you play in your daily life? What says “playtime” to you?",
+      "title": "Title 2",
+      "content": "Content 2",
+      "date": "2022-01-05",
+      "attribution": "dayone",
+      "answered": true,
+      "answered_users_count": 1,
+      "answered_users_sample": [
+        {
+          "avatar": "http://site/avatar1.jpg"
+        }
+      ]
+    },
+    {
+      "id": 1012,
+      "text": "Are you good at what you do? What would you like to be better at.",
+      "title": "Title 3",
+      "content": "Content 3",
+      "date": "2022-01-06",
+      "attribution": "",
+      "answered": false,
+      "answered_users_count": 2,
+      "answered_users_sample": [
+        {
+          "avatar": "http://site/avatar2.jpg"
+        },
+        {
+          "avatar": "http://site/avatar3.jpg"
+        }
+      ]
+    }
+  ]
+}
