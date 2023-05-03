@@ -144,7 +144,7 @@ class BloggingPromptsRestClient @Inject constructor(
         )
 
         companion object {
-            private const val ANSWERED_LINK_TEMPLATE = "https://wordpress.com/tag/%s"
+            private const val ANSWERED_LINK_TEMPLATE = "https://wordpress.com/tag/dailyprompt-%s"
         }
     }
     // endregion
