@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.store.bloggingprompts
 
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -14,15 +12,13 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.bloggingprompts.BloggingPromptModel
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsError
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsErrorType
-import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsListResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient.BloggingPromptResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient.BloggingPromptResponseV2
+import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient.BloggingPromptsListResponseV2
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsRestClient.BloggingPromptsRespondentAvatar
 import org.wordpress.android.fluxc.network.rest.wpcom.bloggingprompts.BloggingPromptsUtils
 import org.wordpress.android.fluxc.persistence.bloggingprompts.BloggingPromptsDao
-import org.wordpress.android.fluxc.persistence.bloggingprompts.BloggingPromptsDao.BloggingPromptEntity
-import org.wordpress.android.fluxc.store.bloggingprompts.BloggingPromptsStore.BloggingPromptsResult
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import java.util.Date
@@ -32,44 +28,46 @@ import kotlin.test.assertNull
 private const val SITE_LOCAL_ID = 1
 private const val ANSWERED_LINK_PREFIX = "https://wordpress.com/tag/dailyprompt-"
 
-private val PROMPTS_RESPONSE: BloggingPromptsListResponse = listOf(
-    BloggingPromptResponse(
-        id = 1,
-        text = "Cast the movie of your life.",
-        date = "2015-01-12",
-        attribution = "",
-        isAnswered = false,
-        respondentsCount = 0,
-        respondentsAvatars = emptyList(),
-        answeredLink = ANSWERED_LINK_PREFIX + 1,
-        answeredLinkText = "View all responses",
-    ),
-
-    BloggingPromptResponse(
-        id = 2,
-        text = "Cast the movie of your life 2.",
-        date = "2015-01-13",
-        attribution = "dayone",
-        isAnswered = true,
-        respondentsCount = 1,
-        respondentsAvatars = listOf(BloggingPromptsRespondentAvatar("http://site/avatar1.jpg")),
-        answeredLink = ANSWERED_LINK_PREFIX + 2,
-        answeredLinkText = "View all responses",
-    ),
-    BloggingPromptResponse(
-        id = 3,
-        text = "Cast the movie of your life 3.",
-        date = "2015-01-14",
-        attribution = "",
-        isAnswered = false,
-        respondentsCount = 3,
-        respondentsAvatars = listOf(
-            BloggingPromptsRespondentAvatar("http://site/avatar1.jpg"),
-            BloggingPromptsRespondentAvatar("http://site/avatar2.jpg"),
-            BloggingPromptsRespondentAvatar("http://site/avatar3.jpg")
+private val PROMPTS_RESPONSE: BloggingPromptsListResponseV2 = BloggingPromptsListResponseV2(
+    prompts = listOf(
+        BloggingPromptResponseV2(
+            id = 1,
+            title = "Title 1",
+            content = "Content 1",
+            text = "Cast the movie of your life.",
+            date = "2015-01-12",
+            attribution = "",
+            isAnswered = false,
+            respondentsCount = 0,
+            respondentsAvatars = emptyList(),
         ),
-        answeredLink = ANSWERED_LINK_PREFIX + 3,
-        answeredLinkText = "View all responses",
+
+        BloggingPromptResponseV2(
+            id = 2,
+            title = "Title 2",
+            content = "Content 2",
+            text = "Cast the movie of your life 2.",
+            date = "2015-01-13",
+            attribution = "dayone",
+            isAnswered = true,
+            respondentsCount = 1,
+            respondentsAvatars = listOf(BloggingPromptsRespondentAvatar("http://site/avatar1.jpg")),
+        ),
+        BloggingPromptResponseV2(
+            id = 3,
+            title = "Title 3",
+            content = "Content 3",
+            text = "Cast the movie of your life 3.",
+            date = "2015-01-14",
+            attribution = "",
+            isAnswered = false,
+            respondentsCount = 3,
+            respondentsAvatars = listOf(
+                BloggingPromptsRespondentAvatar("http://site/avatar1.jpg"),
+                BloggingPromptsRespondentAvatar("http://site/avatar2.jpg"),
+                BloggingPromptsRespondentAvatar("http://site/avatar3.jpg")
+            ),
+        )
     )
 )
 
@@ -114,55 +112,8 @@ private val THIRD_PROMPT_MODEL = BloggingPromptModel(
 
 private val PROMPT_MODELS = listOf(FIRST_PROMPT_MODEL, SECOND_PROMPT_MODEL, THIRD_PROMPT_MODEL)
 
-/* ENTITY */
-
-private val FIRST_PROMPT_ENTITY = BloggingPromptEntity(
-    id = 1,
-    siteLocalId = SITE_LOCAL_ID,
-    text = "Cast the movie of your life.",
-    date = BloggingPromptsUtils.stringToDate("2015-01-12"),
-    dateString = "2015-01-12",
-    isAnswered = false,
-    respondentsCount = 0,
-    attribution = "",
-    respondentsAvatars = emptyList(),
-    answeredLink = ANSWERED_LINK_PREFIX + 1,
-)
-
-private val SECOND_PROMPT_ENTITY = BloggingPromptEntity(
-    id = 2,
-    siteLocalId = SITE_LOCAL_ID,
-    text = "Cast the movie of your life 2.",
-    date = BloggingPromptsUtils.stringToDate("2015-01-13"),
-    dateString = "2015-01-13",
-    isAnswered = true,
-    respondentsCount = 1,
-    attribution = "dayone",
-    respondentsAvatars = listOf("http://site/avatar1.jpg"),
-    answeredLink = ANSWERED_LINK_PREFIX + 2,
-)
-
-private val THIRD_PROMPT_ENTITY = BloggingPromptEntity(
-    id = 3,
-    siteLocalId = SITE_LOCAL_ID,
-    text = "Cast the movie of your life 3.",
-    date = BloggingPromptsUtils.stringToDate("2015-01-14"),
-    dateString = "2015-01-14",
-    isAnswered = false,
-    respondentsCount = 3,
-    attribution = "",
-    respondentsAvatars = listOf(
-        "http://site/avatar1.jpg",
-        "http://site/avatar2.jpg",
-        "http://site/avatar3.jpg"
-    ),
-    answeredLink = ANSWERED_LINK_PREFIX + 3,
-)
-
-private val PROMPT_ENTITIES = listOf(FIRST_PROMPT_ENTITY, SECOND_PROMPT_ENTITY, THIRD_PROMPT_ENTITY)
-
 @RunWith(MockitoJUnitRunner::class)
-class BloggingPromptsStoreTest {
+class BloggingPromptsStoreV2Test {
     @Mock private lateinit var siteModel: SiteModel
     @Mock private lateinit var restClient: BloggingPromptsRestClient
     @Mock private lateinit var dao: BloggingPromptsDao
@@ -190,14 +141,14 @@ class BloggingPromptsStoreTest {
     fun `when fetch prompts triggered, then all prompt models are inserted into db`() = test {
         val payload = BloggingPromptsPayload(PROMPTS_RESPONSE)
         whenever(
-            restClient.fetchPrompts(
+            restClient.fetchPromptsV2(
                 siteModel,
                 numberOfPromptsToFetch,
                 requestedPromptDate
             )
         ).thenReturn(payload)
 
-        promptsStore.fetchPrompts(siteModel, numberOfPromptsToFetch, requestedPromptDate)
+        promptsStore.fetchPrompts(siteModel, numberOfPromptsToFetch, requestedPromptDate, true)
 
         verify(dao).insertForSite(siteModel.id, PROMPT_MODELS)
     }
@@ -207,7 +158,7 @@ class BloggingPromptsStoreTest {
         test {
             val payload = BloggingPromptsPayload(PROMPTS_RESPONSE)
             whenever(
-                restClient.fetchPrompts(
+                restClient.fetchPromptsV2(
                     siteModel,
                     numberOfPromptsToFetch,
                     requestedPromptDate
@@ -219,7 +170,8 @@ class BloggingPromptsStoreTest {
             val result = promptsStore.fetchPrompts(
                 siteModel,
                 numberOfPromptsToFetch,
-                requestedPromptDate
+                requestedPromptDate,
+                true
             )
 
             assertThat(result.model).isEqualTo(PROMPT_MODELS)
@@ -231,7 +183,7 @@ class BloggingPromptsStoreTest {
         test {
             val payload = BloggingPromptsPayload(PROMPTS_RESPONSE)
             whenever(
-                restClient.fetchPrompts(
+                restClient.fetchPromptsV2(
                     siteModel,
                     numberOfPromptsToFetch,
                     requestedPromptDate
@@ -249,7 +201,8 @@ class BloggingPromptsStoreTest {
             val result = promptsStore.fetchPrompts(
                 siteModel,
                 numberOfPromptsToFetch,
-                requestedPromptDate
+                requestedPromptDate,
+                true
             )
 
             assertThat(result.model).isNull()
@@ -258,60 +211,16 @@ class BloggingPromptsStoreTest {
         }
 
     @Test
-    fun `when get prompts is triggered, then a flow of prompt models is returned`() = test {
-        whenever(dao.getAllPrompts(SITE_LOCAL_ID)).thenReturn(flowOf(PROMPT_ENTITIES))
-
-        val result = promptsStore.getPrompts(siteModel).first()
-
-        assertThat(result).isEqualTo(BloggingPromptsResult(PROMPT_MODELS))
-    }
-
-    @Test
-    fun `when get getPromptByDate is triggered, then a flow with a prompt model is returned`() =
-        test {
-            whenever(
-                dao.getPromptForDate(
-                    SITE_LOCAL_ID,
-                    BloggingPromptsUtils.stringToDate("2015-01-13")
-                )
-            ).thenReturn(flowOf(listOf(SECOND_PROMPT_ENTITY)))
-
-            val result = promptsStore.getPromptForDate(
-                siteModel,
-                BloggingPromptsUtils.stringToDate("2015-01-13")
-            ).first()
-
-            assertThat(result).isEqualTo(BloggingPromptsResult(SECOND_PROMPT_MODEL))
-        }
-
-    @Test
-    fun `when get getPromptById is triggered, then a flow with a prompt model is returned`() =
-        test {
-            whenever(dao.getPrompt(SITE_LOCAL_ID, SECOND_PROMPT_MODEL.id)).thenReturn(
-                flowOf(
-                    listOf(THIRD_PROMPT_ENTITY)
-                )
-            )
-
-            val result = promptsStore.getPromptById(
-                siteModel,
-                SECOND_PROMPT_MODEL.id
-            ).first()
-
-            assertThat(result).isEqualTo(BloggingPromptsResult(THIRD_PROMPT_MODEL))
-        }
-
-    @Test
     fun `given prompts error, when fetch prompts gets triggered, then prompts error is returned`() =
         test {
             val errorType = BloggingPromptsErrorType.API_ERROR
-            val payload = BloggingPromptsPayload<BloggingPromptsListResponse>(
+            val payload = BloggingPromptsPayload<BloggingPromptsListResponseV2>(
                 BloggingPromptsError(
                     errorType
                 )
             )
             whenever(
-                restClient.fetchPrompts(
+                restClient.fetchPromptsV2(
                     siteModel,
                     numberOfPromptsToFetch,
                     requestedPromptDate
@@ -321,7 +230,8 @@ class BloggingPromptsStoreTest {
             val result = promptsStore.fetchPrompts(
                 siteModel,
                 numberOfPromptsToFetch,
-                requestedPromptDate
+                requestedPromptDate,
+                true
             )
 
             assertThat(result.model).isNull()
