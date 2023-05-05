@@ -112,6 +112,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var metadata = ""
     @Column var bundledItems = ""
     @Column var compositeComponents = ""
+    @Column var specialStockStatus = ""
 
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
