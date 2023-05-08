@@ -130,7 +130,7 @@ data class ProductApiResponse(
             stockQuantity = response.stock_quantity
 
             stockStatus = response.stock_status ?: ""
-            if (isBundledProduct && response.stock_status != response.bundle_stock_status) {
+            if (isBundledProduct && (response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
                 specialStockStatus = response.bundle_stock_status ?: ""
             }
 
