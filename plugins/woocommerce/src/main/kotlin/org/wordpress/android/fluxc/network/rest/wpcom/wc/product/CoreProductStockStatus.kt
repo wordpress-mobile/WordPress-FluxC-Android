@@ -10,6 +10,7 @@ enum class CoreProductStockStatus(val value: String) {
 
     companion object {
         private val valueMap = values().associateBy(CoreProductStockStatus::value)
+        val ALL_VALUES = valueMap.keys
 
         /**
          * Convert the base value into the associated CoreProductStockStatus object

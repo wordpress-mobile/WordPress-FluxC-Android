@@ -127,15 +127,11 @@ data class ProductApiResponse(
                 it == "true" || it == "parent"
             } ?: false
 
-            stockQuantity = if (isBundledProduct) {
-                response.bundle_stock_quantity?.toDoubleOrNull() ?: 0.0
-            } else {
-                response.stock_quantity
-            }
-            stockStatus = if (isBundledProduct) {
-                response.bundle_stock_status ?: ""
-            } else {
-                response.stock_status ?: ""
+            stockQuantity = response.stock_quantity
+
+            stockStatus = response.stock_status ?: ""
+            if (isBundledProduct && (response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
+                specialStockStatus = response.bundle_stock_status ?: ""
             }
 
             backorders = response.backorders ?: ""
