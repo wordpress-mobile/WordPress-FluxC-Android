@@ -743,6 +743,7 @@ internal val MIGRATION_22_23 = object : Migration(22, 23) {
     }
 }
 
+//internal class MIGRATION_24_25 : AutoMigrationSpec
 /**
  * We are storing "coupon_lines" array into OrderEntity property.
  * The purpose is to allow adding and removing coupon lines creating and editing
@@ -801,7 +802,7 @@ internal val MIGRATION_24_25 = object : Migration(24, 25) {
                   `shippingLines` TEXT NOT NULL,
                   `feeLines` TEXT NOT NULL,
                   `taxLines` TEXT NOT NULL,
-                  `couponLines` TEXT NOT NULL,
+                  `couponLines` TEXT NOT NULL DEFAULT '',
                   `metaData` TEXT NOT NULL,
                   `paymentUrl` TEXT NOT NULL DEFAULT '',
                   `isEditable` INTEGER NOT NULL DEFAULT 1,
@@ -812,7 +813,7 @@ internal val MIGRATION_24_25 = object : Migration(24, 25) {
             execSQL(
                 // language=RoomSql
                 """
-                    CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId` 
+                    CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId`
                     ON `OrderEntity` (`localSiteId`, `orderId`);
                 """.trimIndent()
             )
