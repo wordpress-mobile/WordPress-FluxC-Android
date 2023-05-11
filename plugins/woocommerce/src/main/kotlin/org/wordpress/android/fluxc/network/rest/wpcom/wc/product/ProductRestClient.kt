@@ -380,7 +380,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: WCProductStore.SkuSearchOptions,
         includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -392,7 +392,7 @@ class ProductRestClient @Inject constructor(
                 sortType = sortType,
                 offset = offset,
                 searchQuery = searchQuery,
-                isSkuSearch = isSkuSearch,
+                skuSearchOptions = skuSearchOptions,
                 includedProductIds = includedProductIds,
                 excludedProductIds = excludedProductIds,
                 filterOptions = filterOptions
@@ -428,7 +428,7 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteSearchProductsPayload(
                             site = site,
                             searchQuery = searchQuery,
-                            isSkuSearch = isSkuSearch,
+                            skuSearchOptions = skuSearchOptions,
                             products = productModels,
                             offset = offset,
                             loadedMore = loadedMore,
@@ -447,7 +447,7 @@ class ProductRestClient @Inject constructor(
                             error = productError,
                             site = site,
                             query = searchQuery,
-                            skuSearch = isSkuSearch,
+                            skuSearchOptions = skuSearchOptions,
                             filterOptions = filterOptions
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
@@ -460,7 +460,7 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: WCProductStore.SkuSearchOptions,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -473,7 +473,7 @@ class ProductRestClient @Inject constructor(
             offset = offset,
             sortType = sorting,
             searchQuery = searchQuery,
-            isSkuSearch = isSkuSearch,
+            skuSearchOptions = skuSearchOptions,
             excludedProductIds = excludedProductIds,
             filterOptions = filterOptions
         )
@@ -493,7 +493,7 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions(),
         filterOptions: Map<ProductFilterOption, String>? = null
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
@@ -501,7 +501,7 @@ class ProductRestClient @Inject constructor(
             sortType = sortType,
             offset = offset,
             searchQuery = searchQuery,
-            isSkuSearch = isSkuSearch,
+            skuSearchOptions = skuSearchOptions,
             includedProductIds = includedProductIds,
             excludedProductIds = excludedProductIds,
             filterOptions = filterOptions
@@ -528,7 +528,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
-        isSkuSearch: Boolean,
+        skuSearchOptions: WCProductStore.SkuSearchOptions,
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null
@@ -561,9 +561,13 @@ class ProductRestClient @Inject constructor(
         }
 
         if (searchQuery.isNullOrEmpty().not()) {
-            if (isSkuSearch) {
-                params["sku"] = searchQuery!! // full SKU match
-                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+            if (skuSearchOptions.isSkuSearch) {
+                if (skuSearchOptions.isExactSkuSearch) {
+                    params["sku"] = searchQuery!! // full SKU match
+                } else {
+                    params["sku"] = searchQuery!! // full SKU match
+                    params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+                }
             } else {
                 params["search"] = searchQuery!!
             }

@@ -85,6 +85,11 @@ class WCProductStore @Inject constructor(
         override fun toString() = name.toLowerCase(Locale.US)
     }
 
+    data class SkuSearchOptions(
+        val isSkuSearch: Boolean = false,
+        val isExactSkuSearch: Boolean = false,
+    )
+
     class FetchProductSkuAvailabilityPayload(
         var site: SiteModel,
         var sku: String
@@ -108,7 +113,7 @@ class WCProductStore @Inject constructor(
     class SearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String,
-        var isSkuSearch: Boolean = false,
+        var skuSearchOptions: SkuSearchOptions,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -432,7 +437,7 @@ class WCProductStore @Inject constructor(
     class RemoteSearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String?,
-        var isSkuSearch: Boolean = false,
+        var skuSearchOptions: SkuSearchOptions,
         var products: List<WCProductModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
@@ -443,12 +448,12 @@ class WCProductStore @Inject constructor(
             error: ProductError,
             site: SiteModel,
             query: String?,
-            skuSearch: Boolean,
+            skuSearchOptions: SkuSearchOptions,
             filterOptions: Map<ProductFilterOption, String>?
         ) : this(
             site = site,
             searchQuery = query,
-            isSkuSearch = skuSearch,
+            skuSearchOptions = skuSearchOptions,
             filterOptions = filterOptions
         ) {
             this.error = error
@@ -750,7 +755,7 @@ class WCProductStore @Inject constructor(
      * returns the corresponding product from the database as a [WCProductModel].
      */
     fun getProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? =
-            ProductSqlUtils.getProductByRemoteId(site, remoteProductId)
+        ProductSqlUtils.getProductByRemoteId(site, remoteProductId)
 
     /**
      * returns the corresponding variation from the database as a [WCProductVariationModel].
@@ -760,44 +765,44 @@ class WCProductStore @Inject constructor(
         remoteProductId: Long,
         remoteVariationId: Long
     ): WCProductVariationModel? =
-            ProductSqlUtils.getVariationByRemoteId(site, remoteProductId, remoteVariationId)
+        ProductSqlUtils.getVariationByRemoteId(site, remoteProductId, remoteVariationId)
 
     /**
      * returns true if the corresponding product exists in the database
      */
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long) =
-            ProductSqlUtils.geProductExistsByRemoteId(site, remoteProductId)
+        ProductSqlUtils.geProductExistsByRemoteId(site, remoteProductId)
 
     /**
      * returns true if the product exists with this [sku] in the database
      */
     fun geProductExistsBySku(site: SiteModel, sku: String) =
-            ProductSqlUtils.getProductExistsBySku(site, sku)
+        ProductSqlUtils.getProductExistsBySku(site, sku)
 
     /**
      * returns a list of variations for a specific product in the database
      */
     fun getVariationsForProduct(site: SiteModel, remoteProductId: Long): List<WCProductVariationModel> =
-            ProductSqlUtils.getVariationsForProduct(site, remoteProductId)
+        ProductSqlUtils.getVariationsForProduct(site, remoteProductId)
 
     /**
      * returns a list of shipping classes for a specific site in the database
      */
     fun getShippingClassListForSite(site: SiteModel): List<WCProductShippingClassModel> =
-            ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        ProductSqlUtils.getProductShippingClassListForSite(site.id)
 
     /**
      * returns the corresponding product shipping class from the database as a [WCProductShippingClassModel].
      */
     fun getShippingClassByRemoteId(site: SiteModel, remoteShippingClassId: Long): WCProductShippingClassModel? =
-            ProductSqlUtils.getProductShippingClassByRemoteId(remoteShippingClassId, site.id)
+        ProductSqlUtils.getProductShippingClassByRemoteId(remoteShippingClassId, site.id)
 
     /**
      * returns a list of [WCProductModel] for the give [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
-            ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
+        ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
     /**
      * Returns a list of [WCProductModel] for the given [SiteModel], [filterOptions] and [searchQuery].
@@ -810,63 +815,63 @@ class WCProductStore @Inject constructor(
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
     ): List<WCProductModel> =
-            ProductSqlUtils.getProducts(site, filterOptions, sortType, excludedProductIds, searchQuery)
+        ProductSqlUtils.getProducts(site, filterOptions, sortType, excludedProductIds, searchQuery)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
-            ProductSqlUtils.getProductsForSite(site, sortType)
+        ProductSqlUtils.getProductsForSite(site, sortType)
 
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
 
     fun getProductReviewsForSite(site: SiteModel): List<WCProductReviewModel> =
-            ProductSqlUtils.getProductReviewsForSite(site)
+        ProductSqlUtils.getProductReviewsForSite(site)
 
     fun getProductReviewsForProductAndSiteId(localSiteId: Int, remoteProductId: Long): List<WCProductReviewModel> =
-            ProductSqlUtils.getProductReviewsForProductAndSiteId(localSiteId, remoteProductId)
+        ProductSqlUtils.getProductReviewsForProductAndSiteId(localSiteId, remoteProductId)
 
     /**
      * returns the count of products for the given [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
     fun getProductCountByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): Int =
-            ProductSqlUtils.getProductCountByRemoteIds(site, remoteProductIds)
+        ProductSqlUtils.getProductCountByRemoteIds(site, remoteProductIds)
 
     /**
      * returns the count of virtual products for the given [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
     fun getVirtualProductCountByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): Int =
-            ProductSqlUtils.getVirtualProductCountByRemoteIds(site, remoteProductIds)
+        ProductSqlUtils.getVirtualProductCountByRemoteIds(site, remoteProductIds)
 
     /**
      * returns a list of tags for a specific site in the database
      */
     fun getTagsForSite(site: SiteModel): List<WCProductTagModel> =
-            ProductSqlUtils.getProductTagsForSite(site.id)
+        ProductSqlUtils.getProductTagsForSite(site.id)
 
     fun getProductTagsByNames(site: SiteModel, tagNames: List<String>) =
-            ProductSqlUtils.getProductTagsByNames(site.id, tagNames)
+        ProductSqlUtils.getProductTagsByNames(site.id, tagNames)
 
     fun getProductTagByName(site: SiteModel, tagName: String) =
-            ProductSqlUtils.getProductTagByName(site.id, tagName)
+        ProductSqlUtils.getProductTagByName(site.id, tagName)
 
     fun getProductReviewByRemoteId(
         localSiteId: Int,
         remoteReviewId: Long
     ): WCProductReviewModel? = ProductSqlUtils
-            .getProductReviewByRemoteId(localSiteId, remoteReviewId)
+        .getProductReviewByRemoteId(localSiteId, remoteReviewId)
 
     fun deleteProductReviewsForSite(site: SiteModel) = ProductSqlUtils.deleteAllProductReviewsForSite(site)
 
     fun deleteAllProductReviews() = ProductSqlUtils.deleteAllProductReviews()
 
     fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long) =
-            ProductSqlUtils.deleteProductImage(site, remoteProductId, remoteMediaId)
+        ProductSqlUtils.deleteProductImage(site, remoteProductId, remoteMediaId)
 
     fun getProductCategoriesForSite(site: SiteModel, sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING) =
-            ProductSqlUtils.getProductCategoriesForSite(site, sortType)
+        ProductSqlUtils.getProductCategoriesForSite(site, sortType)
 
     fun getProductCategoryByRemoteId(site: SiteModel, remoteId: Long) =
-            ProductSqlUtils.getProductCategoryByRemoteId(site.id, remoteId)
+        ProductSqlUtils.getProductCategoryByRemoteId(site.id, remoteId)
 
     fun getProductCategoryByNameAndParentId(
         site: SiteModel,
@@ -979,16 +984,16 @@ class WCProductStore @Inject constructor(
         productId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductModel> =
-            coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
-                wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
-                    .asWooResult()
-                    .model?.asProductModel()
-                    ?.apply {
-                        localSiteId = site.id
-                        ProductSqlUtils.insertOrUpdateProduct(this)
-                    }
-                    ?.let { WooResult(it) }
-            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+        coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
+            wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
+                .asWooResult()
+                .model?.asProductModel()
+                ?.apply {
+                    localSiteId = site.id
+                    ProductSqlUtils.insertOrUpdateProduct(this)
+                }
+                ?.let { WooResult(it) }
+        } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     suspend fun submitVariationAttributeChanges(
         site: SiteModel,
@@ -996,15 +1001,15 @@ class WCProductStore @Inject constructor(
         variationId: Long,
         attributes: List<WCProductModel.ProductAttribute>
     ): WooResult<WCProductVariationModel> =
-            coroutineEngine.withDefaultContext(API, this, "submitVariationAttributes") {
-                wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
-                    .asWooResult()
-                    .model?.asProductVariationModel()
-                    ?.apply {
-                        ProductSqlUtils.insertOrUpdateProductVariation(this)
-                    }
-                    ?.let { WooResult(it) }
-            } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+        coroutineEngine.withDefaultContext(API, this, "submitVariationAttributes") {
+            wcProductRestClient.updateVariationAttributes(site, productId, variationId, Gson().toJson(attributes))
+                .asWooResult()
+                .model?.asProductVariationModel()
+                ?.apply {
+                    ProductSqlUtils.insertOrUpdateProductVariation(this)
+                }
+                ?.let { WooResult(it) }
+        } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
 
     suspend fun generateEmptyVariation(
         site: SiteModel,
@@ -1060,9 +1065,9 @@ class WCProductStore @Inject constructor(
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
                     val domainAddons = mapProductAddonsToDomain(result.product.addons)
                     addonsDao.cacheProductAddons(
-                            productRemoteId = result.product.remoteId,
-                            localSiteId = result.site.localId(),
-                            addons = domainAddons
+                        productRemoteId = result.product.remoteId,
+                        localSiteId = result.site.localId(),
+                        addons = domainAddons
                     )
                 }
 
@@ -1105,13 +1110,14 @@ class WCProductStore @Inject constructor(
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) {
             wcProductRestClient.fetchProducts(
-                    site = site,
-                    pageSize = pageSize,
-                    offset = offset,
-                    sortType = sorting,
-                    includedProductIds = remoteProductIds,
-                    filterOptions = filterOptions,
-                    excludedProductIds = excludedProductIds
+                site = site,
+                pageSize = pageSize,
+                offset = offset,
+                sortType = sorting,
+                includedProductIds = remoteProductIds,
+                filterOptions = filterOptions,
+                excludedProductIds = excludedProductIds,
+                skuSearchOptions = SkuSearchOptions()
             )
         }
     }
@@ -1143,7 +1149,7 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.searchProducts(
                 site = site,
                 searchQuery = searchQuery,
-                isSkuSearch = isSkuSearch,
+                skuSearchOptions = skuSearchOptions,
                 pageSize = pageSize,
                 offset = offset,
                 sorting = sorting,
@@ -1156,8 +1162,8 @@ class WCProductStore @Inject constructor(
     suspend fun fetchProductVariations(payload: FetchProductVariationsPayload): OnProductChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductVariations") {
             val result = with(payload) {
-                    wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset)
-                }
+                wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset)
+            }
             return@withDefaultContext if (result.isError) {
                 OnProductChanged(0, payload.remoteProductId).also { it.error = result.error }
             } else {
@@ -1256,7 +1262,7 @@ class WCProductStore @Inject constructor(
     private fun fetchProductCategories(payloadProduct: FetchProductCategoriesPayload) {
         with(payloadProduct) {
             wcProductRestClient.fetchProductCategories(
-                    site, pageSize, offset, productCategorySorting
+                site, pageSize, offset, productCategorySorting
             )
         }
     }
@@ -1349,7 +1355,7 @@ class WCProductStore @Inject constructor(
      * @param payload Instance of [BatchGenerateVariationsPayload].
      */
     suspend fun batchGenerateVariations(payload: BatchGenerateVariationsPayload):
-        WooResult<BatchProductVariationsApiResponse> =
+            WooResult<BatchProductVariationsApiResponse> =
         coroutineEngine.withDefaultContext(API, this, "batchCreateVariations") {
             val createVariations = payload.variations.map {
                 buildMap { put("attributes", it) }
@@ -1385,7 +1391,7 @@ class WCProductStore @Inject constructor(
      * [BatchUpdateVariationsPayload.Builder] class.
      */
     suspend fun batchUpdateVariations(payload: BatchUpdateVariationsPayload):
-        WooResult<BatchProductVariationsApiResponse> =
+            WooResult<BatchProductVariationsApiResponse> =
         coroutineEngine.withDefaultContext(API, this, "batchUpdateVariations") {
             with(payload) {
                 val updateVariations: List<Map<String, Any>> = remoteVariationsIds.map { variationId ->
@@ -1490,7 +1496,7 @@ class WCProductStore @Inject constructor(
     suspend fun searchProducts(
         site: SiteModel,
         searchString: String,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(),
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE
     ): WooResult<ProductSearchResult> {
@@ -1500,7 +1506,7 @@ class WCProductStore @Inject constructor(
                 offset = offset,
                 pageSize = pageSize,
                 searchQuery = searchString,
-                isSkuSearch = isSkuSearch
+                skuSearchOptions = skuSearchOptions
             )
             when {
                 response.isError -> WooResult(response.error)
@@ -1668,15 +1674,15 @@ class WCProductStore @Inject constructor(
 
     private fun mapProductAddonsToDomain(remoteAddons: Array<RemoteAddonDto>?): List<Addon> {
         return remoteAddons.orEmpty()
-                .toList()
-                .mapNotNull { remoteAddonDto ->
-                    try {
-                        RemoteAddonMapper.toDomain(remoteAddonDto)
-                    } catch (exception: MappingRemoteException) {
-                        logger.e(API, "Exception while parsing $remoteAddonDto: ${exception.message}")
-                        null
-                    }
+            .toList()
+            .mapNotNull { remoteAddonDto ->
+                try {
+                    RemoteAddonMapper.toDomain(remoteAddonDto)
+                } catch (exception: MappingRemoteException) {
+                    logger.e(API, "Exception while parsing $remoteAddonDto: ${exception.message}")
+                    null
                 }
+            }
     }
 
     private fun handleFetchProductSkuAvailabilityCompleted(payload: RemoteProductSkuAvailabilityPayload) {
@@ -1731,7 +1737,7 @@ class WCProductStore @Inject constructor(
             emitChange(
                 OnProductsSearched(
                     searchQuery = payload.searchQuery,
-                    isSkuSearch = payload.isSkuSearch
+                    isSkuSearch = payload.skuSearchOptions.isSkuSearch
                 )
             )
         } else {
@@ -1740,7 +1746,7 @@ class WCProductStore @Inject constructor(
                 emitChange(
                     OnProductsSearched(
                         searchQuery = payload.searchQuery,
-                        isSkuSearch = payload.isSkuSearch,
+                        isSkuSearch = payload.skuSearchOptions.isSkuSearch,
                         searchResults = payload.products,
                         canLoadMore = payload.canLoadMore
                     )
