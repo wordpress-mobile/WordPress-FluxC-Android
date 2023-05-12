@@ -20,7 +20,9 @@ data class LineItem(
     val sku: String? = null,
     val price: String? = null, // The per-item price
     @SerializedName("meta_data")
-    val metaData: List<WCMetaData>? = null
+    val metaData: List<WCMetaData>? = null,
+    @SerializedName("bundled_by")
+    val bundledBy:String? = null
 ) {
     class Attribute(val key: String?, val value: String?)
 
