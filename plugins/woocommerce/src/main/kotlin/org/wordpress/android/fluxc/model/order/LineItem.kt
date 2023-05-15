@@ -22,7 +22,9 @@ data class LineItem(
     @SerializedName("meta_data")
     val metaData: List<WCMetaData>? = null,
     @SerializedName("bundled_by")
-    val bundledBy: String? = null
+    val bundledBy: String? = null,
+    @SerializedName("composite_parent")
+    val compositeParent: String? = null
 ) {
     class Attribute(val key: String?, val value: String?)
 
