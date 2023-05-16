@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
+import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.utils.initCoroutineEngine
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -104,6 +105,37 @@ class ProductRestClientTest {
             clazz = eq(BatchProductApiResponse::class.java),
             body = bodyCaptor.capture()
         )
+    }
+
+    @Test
+    fun `when fetch products called with exact sku search, then correct params is used for network call`() {
+        runBlockingTest {
+            sut.fetchProducts(
+                site = site,
+                searchQuery = "test query",
+                skuSearchOptions = WCProductStore.SkuSearchOptions(
+                    isExactSkuSearch = true,
+                    isSkuSearch = true
+                )
+            )
+            val argumentCaptor = argumentCaptor<MutableMap<String, String>>()
+            verify(wooNetwork).executeGetGsonRequest(
+                any(),
+                any(),
+                clazz = eq(Array<ProductApiResponse>::class.java),
+                params = argumentCaptor.capture(),
+                enableCaching = any(),
+                cacheTimeToLive = any(),
+                forced = any(),
+                requestTimeout = any(),
+                retries = any()
+            )
+
+            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isEqualTo(
+                "test query"
+            )
+            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isNotNull()
+        }
     }
 
     private fun WCProductModel.withRegularPrice(newRegularPrice: String): WCProductModel =
