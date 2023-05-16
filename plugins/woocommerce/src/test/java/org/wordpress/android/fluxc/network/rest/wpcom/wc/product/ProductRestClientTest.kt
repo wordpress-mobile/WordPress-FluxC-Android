@@ -134,7 +134,6 @@ class ProductRestClientTest {
             assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isEqualTo(
                 "test query"
             )
-            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isNotNull
             assertThat(argumentCaptor.firstValue.getOrDefault("search_sku", null)).isNull()
         }
     }
@@ -163,10 +162,9 @@ class ProductRestClientTest {
                 retries = any()
             )
 
-            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isEqualTo(
+            assertThat(argumentCaptor.firstValue.getOrDefault("search_sku", null)).isEqualTo(
                 "test query"
             )
-            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isNotNull()
         }
     }
 
