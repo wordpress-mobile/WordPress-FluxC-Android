@@ -134,6 +134,38 @@ class ProductRestClientTest {
             assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isEqualTo(
                 "test query"
             )
+            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isNotNull
+            assertThat(argumentCaptor.firstValue.getOrDefault("search_sku", null)).isNull()
+        }
+    }
+
+    @Test
+    fun `when fetch products called with partial sku search, then correct params is used for network call`() {
+        runBlockingTest {
+            sut.fetchProducts(
+                site = site,
+                searchQuery = "test query",
+                skuSearchOptions = WCProductStore.SkuSearchOptions(
+                    isExactSkuSearch = false,
+                    isSkuSearch = true
+                )
+            )
+            val argumentCaptor = argumentCaptor<MutableMap<String, String>>()
+            verify(wooNetwork).executeGetGsonRequest(
+                any(),
+                any(),
+                clazz = eq(Array<ProductApiResponse>::class.java),
+                params = argumentCaptor.capture(),
+                enableCaching = any(),
+                cacheTimeToLive = any(),
+                forced = any(),
+                requestTimeout = any(),
+                retries = any()
+            )
+
+            assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isEqualTo(
+                "test query"
+            )
             assertThat(argumentCaptor.firstValue.getOrDefault("sku", null)).isNotNull()
         }
     }
