@@ -380,7 +380,10 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        skuSearchOptions: WCProductStore.SkuSearchOptions,
+        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions(
+            isSkuSearch = false,
+            isExactSkuSearch = false
+        ),
         includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -460,7 +463,10 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
-        skuSearchOptions: WCProductStore.SkuSearchOptions,
+        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions(
+            isSkuSearch = false,
+            isExactSkuSearch = false
+        ),
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
