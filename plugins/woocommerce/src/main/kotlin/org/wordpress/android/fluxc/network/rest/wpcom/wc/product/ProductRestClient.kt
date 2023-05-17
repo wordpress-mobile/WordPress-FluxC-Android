@@ -67,6 +67,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.store.WCProductStore.SkuSearchOptions
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
@@ -380,7 +381,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions(
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(
             isSkuSearch = false,
             isExactSkuSearch = false
         ),
@@ -463,7 +464,7 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
-        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions(
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(
             isSkuSearch = false,
             isExactSkuSearch = false
         ),
@@ -499,7 +500,7 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions(),
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(),
         filterOptions: Map<ProductFilterOption, String>? = null
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
@@ -534,7 +535,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
-        skuSearchOptions: WCProductStore.SkuSearchOptions,
+        skuSearchOptions: SkuSearchOptions,
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null
