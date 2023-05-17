@@ -113,7 +113,7 @@ class WCProductStore @Inject constructor(
     class SearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String,
-        var skuSearchOptions: SkuSearchOptions,
+        var skuSearchOptions: SkuSearchOptions = SkuSearchOptions(isSkuSearch = false),
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,

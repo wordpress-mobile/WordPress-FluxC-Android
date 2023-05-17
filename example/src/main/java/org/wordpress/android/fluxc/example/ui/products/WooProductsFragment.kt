@@ -231,7 +231,7 @@ class WooProductsFragment : StoreSelectingFragment() {
                     val payload = SearchProductsPayload(
                         site = site,
                         searchQuery = editText.text.toString(),
-                        isSkuSearch = true
+                        skuSearchOptions = WCProductStore.SkuSearchOptions(isSkuSearch = true)
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
