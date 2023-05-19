@@ -381,10 +381,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(
-            isSkuSearch = false,
-            isExactSkuSearch = false
-        ),
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -464,10 +461,7 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
-        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(
-            isSkuSearch = false,
-            isExactSkuSearch = false
-        ),
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -500,7 +494,7 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(),
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         filterOptions: Map<ProductFilterOption, String>? = null
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
@@ -568,15 +562,17 @@ class ProductRestClient @Inject constructor(
         }
 
         if (searchQuery.isNullOrEmpty().not()) {
-            if (skuSearchOptions.isSkuSearch) {
-                if (skuSearchOptions.isExactSkuSearch) {
+            when (skuSearchOptions) {
+                SkuSearchOptions.Disabled -> {
+                    params["search"] = searchQuery!!
+                }
+                SkuSearchOptions.ExactSearch -> {
                     params["sku"] = searchQuery!! // full SKU match
-                } else {
+                }
+                SkuSearchOptions.PartialMatch -> {
                     params["sku"] = searchQuery!! // full SKU match
                     params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
                 }
-            } else {
-                params["search"] = searchQuery!!
             }
         }
 

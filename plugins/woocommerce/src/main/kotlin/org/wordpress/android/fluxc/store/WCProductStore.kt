@@ -84,11 +84,9 @@ class WCProductStore @Inject constructor(
 
         override fun toString() = name.toLowerCase(Locale.US)
     }
-
-    data class SkuSearchOptions(
-        val isSkuSearch: Boolean = false,
-        val isExactSkuSearch: Boolean = false,
-    )
+    enum class SkuSearchOptions {
+        Disabled, ExactSearch, PartialMatch
+    }
 
     class FetchProductSkuAvailabilityPayload(
         var site: SiteModel,
@@ -113,7 +111,7 @@ class WCProductStore @Inject constructor(
     class SearchProductsPayload(
         var site: SiteModel,
         var searchQuery: String,
-        var skuSearchOptions: SkuSearchOptions = SkuSearchOptions(isSkuSearch = false),
+        var skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -682,7 +680,7 @@ class WCProductStore @Inject constructor(
 
     class OnProductsSearched(
         var searchQuery: String?,
-        var isSkuSearch: Boolean = false,
+        var isSkuSearch: SkuSearchOptions,
         var searchResults: List<WCProductModel> = emptyList(),
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
@@ -1117,7 +1115,7 @@ class WCProductStore @Inject constructor(
                 includedProductIds = remoteProductIds,
                 filterOptions = filterOptions,
                 excludedProductIds = excludedProductIds,
-                skuSearchOptions = SkuSearchOptions()
+                skuSearchOptions = SkuSearchOptions.Disabled
             )
         }
     }
@@ -1496,7 +1494,7 @@ class WCProductStore @Inject constructor(
     suspend fun searchProducts(
         site: SiteModel,
         searchString: String,
-        skuSearchOptions: SkuSearchOptions = SkuSearchOptions(),
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         offset: Int = 0,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE
     ): WooResult<ProductSearchResult> {
@@ -1737,7 +1735,7 @@ class WCProductStore @Inject constructor(
             emitChange(
                 OnProductsSearched(
                     searchQuery = payload.searchQuery,
-                    isSkuSearch = payload.skuSearchOptions.isSkuSearch
+                    isSkuSearch = payload.skuSearchOptions
                 )
             )
         } else {
@@ -1746,7 +1744,7 @@ class WCProductStore @Inject constructor(
                 emitChange(
                     OnProductsSearched(
                         searchQuery = payload.searchQuery,
-                        isSkuSearch = payload.skuSearchOptions.isSkuSearch,
+                        isSkuSearch = payload.skuSearchOptions,
                         searchResults = payload.products,
                         canLoadMore = payload.canLoadMore
                     )

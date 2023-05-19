@@ -113,10 +113,7 @@ class ProductRestClientTest {
             sut.fetchProducts(
                 site = site,
                 searchQuery = "test query",
-                skuSearchOptions = WCProductStore.SkuSearchOptions(
-                    isExactSkuSearch = true,
-                    isSkuSearch = true
-                )
+                skuSearchOptions = WCProductStore.SkuSearchOptions.ExactSearch
             )
             val argumentCaptor = argumentCaptor<MutableMap<String, String>>()
             verify(wooNetwork).executeGetGsonRequest(
@@ -144,10 +141,7 @@ class ProductRestClientTest {
             sut.fetchProducts(
                 site = site,
                 searchQuery = "test query",
-                skuSearchOptions = WCProductStore.SkuSearchOptions(
-                    isExactSkuSearch = false,
-                    isSkuSearch = true
-                )
+                skuSearchOptions = WCProductStore.SkuSearchOptions.PartialMatch
             )
             val argumentCaptor = argumentCaptor<MutableMap<String, String>>()
             verify(wooNetwork).executeGetGsonRequest(

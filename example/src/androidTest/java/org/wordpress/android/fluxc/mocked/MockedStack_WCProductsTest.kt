@@ -255,7 +255,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNull(payload.error)
         assertEquals(payload.searchQuery, searchQuery)
-        assertEquals(payload.skuSearchOptions.isSkuSearch, false)
+        assertEquals(payload.skuSearchOptions, WCProductStore.SkuSearchOptions.Disabled)
     }
 
     @Test
@@ -264,7 +264,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         productRestClient.searchProducts(
             site = siteModel,
             searchQuery = searchQuery,
-            skuSearchOptions = WCProductStore.SkuSearchOptions(isSkuSearch = true)
+            skuSearchOptions = WCProductStore.SkuSearchOptions.PartialMatch
         )
 
         countDownLatch = CountDownLatch(1)
@@ -274,7 +274,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNull(payload.error)
         assertEquals(payload.searchQuery, searchQuery)
-        assertEquals(payload.skuSearchOptions.isSkuSearch, true)
+        assertEquals(payload.skuSearchOptions, WCProductStore.SkuSearchOptions.PartialMatch)
     }
 
     @Test
