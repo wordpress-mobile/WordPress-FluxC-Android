@@ -20,10 +20,13 @@
 /me/send-verification-email/
 /me/social-login/connect/
 /me/username/
+/me/account/close/
 
 /me/transactions/supported-countries/
 /me/transactions/
 /me/shopping-cart/$site
+
+/me/account/close
 
 /notifications/
 /notifications/$note_id

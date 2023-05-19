@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
@@ -9,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.utils.NonNegativeIntJsonDeserializer
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
@@ -63,6 +65,7 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
         val netRevenue: Double? = null
         @SerializedName("avg_order_value")
         val avgOrderValue: Double? = null
+        @JsonAdapter(NonNegativeIntJsonDeserializer::class)
         @SerializedName("num_items_sold")
         val itemsSold: Int? = null
     }
