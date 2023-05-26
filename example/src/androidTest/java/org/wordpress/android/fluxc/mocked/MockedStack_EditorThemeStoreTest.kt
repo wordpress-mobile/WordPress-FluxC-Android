@@ -63,7 +63,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         assertNotEmpty(cachedTheme)
 
         // Validate Bundle
-        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        val themeBundle = editorTheme!!.themeSupport.toBundle(site)
         assertNotEmpty(themeBundle)
     }
 
@@ -83,7 +83,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         assertEmpty(cachedTheme)
 
         // Validate Bundle
-        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        val themeBundle = editorTheme!!.themeSupport.toBundle(site)
         assertEmpty(themeBundle)
     }
 
@@ -135,7 +135,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         assertEmpty(cachedTheme)
 
         // Validate Bundle
-        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        val themeBundle = editorTheme!!.themeSupport.toBundle(site)
         assertEmpty(themeBundle)
     }
 
@@ -155,7 +155,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         assertNotEmpty(cachedTheme)
 
         // Validate Bundle
-        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        val themeBundle = editorTheme!!.themeSupport.toBundle(site)
         assertNotEmpty(themeBundle)
     }
 
@@ -177,7 +177,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         Assert.assertNotNull(cachedTheme?.themeSupport?.rawStyles)
 
         // Validate Bundle
-        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        val themeBundle = editorTheme!!.themeSupport.toBundle(site)
         assertEmpty(themeBundle)
         val styles = themeBundle.getString("rawStyles")
         val features = themeBundle.getString("rawFeatures")
