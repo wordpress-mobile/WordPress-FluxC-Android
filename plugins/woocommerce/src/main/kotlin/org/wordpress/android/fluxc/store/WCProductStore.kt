@@ -322,6 +322,7 @@ class WCProductStore @Inject constructor(
         // https://github.com/woocommerce/woocommerce/pull/27299
         INVALID_VARIATION_IMAGE_ID,
 
+        PARSE_ERROR,
         GENERIC_ERROR;
 
         companion object {
