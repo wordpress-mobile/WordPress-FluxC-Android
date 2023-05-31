@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
@@ -1777,30 +1778,60 @@ class ProductRestClient @Inject constructor(
     }
 
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
-        val productErrorType = when (wpComError.apiError) {
-            "woocommerce_rest_product_invalid_id" -> ProductErrorType.INVALID_PRODUCT_ID
-            "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
-            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
-            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
-            "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
-            "term_exists" -> ProductErrorType.TERM_EXISTS
-            "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
+        val productErrorType = when {
+            wpComError.apiError == "woocommerce_rest_product_invalid_id" ->
+                ProductErrorType.INVALID_PRODUCT_ID
+            wpComError.apiError == "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            wpComError.apiError == "woocommerce_rest_review_invalid_id" ->
+                ProductErrorType.INVALID_REVIEW_ID
+            wpComError.apiError == "woocommerce_product_invalid_image_id" ->
+                ProductErrorType.INVALID_IMAGE_ID
+            wpComError.apiError == "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            wpComError.apiError == "term_exists" -> ProductErrorType.TERM_EXISTS
+            wpComError.apiError == "woocommerce_variation_invalid_image_id" ->
+                ProductErrorType.INVALID_VARIATION_IMAGE_ID
+            wpComError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
-        return ProductError(productErrorType, wpComError.message)
+        val message = getCombineErrorMessage(
+            errorMessage = wpComError.message,
+            volleyErrorMessage = wpComError.volleyError.message
+        )
+        return ProductError(productErrorType, message)
     }
 
     private fun wpAPINetworkErrorToProductError(wpAPINetworkError: WPAPINetworkError): ProductError {
-        val productErrorType = when (wpAPINetworkError.errorCode) {
-            "woocommerce_rest_product_invalid_id" -> ProductErrorType.INVALID_PRODUCT_ID
-            "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
-            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
-            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
-            "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
-            "term_exists" -> ProductErrorType.TERM_EXISTS
-            "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
+        val productErrorType = when {
+            wpAPINetworkError.errorCode == "woocommerce_rest_product_invalid_id" ->
+                ProductErrorType.INVALID_PRODUCT_ID
+            wpAPINetworkError.errorCode == "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            wpAPINetworkError.errorCode == "woocommerce_rest_review_invalid_id" ->
+                ProductErrorType.INVALID_REVIEW_ID
+            wpAPINetworkError.errorCode == "woocommerce_product_invalid_image_id" ->
+                ProductErrorType.INVALID_IMAGE_ID
+            wpAPINetworkError.errorCode == "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            wpAPINetworkError.errorCode == "term_exists" -> ProductErrorType.TERM_EXISTS
+            wpAPINetworkError.errorCode == "woocommerce_variation_invalid_image_id" ->
+                ProductErrorType.INVALID_VARIATION_IMAGE_ID
+            wpAPINetworkError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return ProductError(productErrorType, wpAPINetworkError.message.orEmpty())
+        val message = getCombineErrorMessage(
+            errorMessage = wpAPINetworkError.message,
+            volleyErrorMessage = wpAPINetworkError.volleyError.message
+        )
+        return ProductError(productErrorType, message)
+    }
+
+    private fun getCombineErrorMessage(errorMessage:String?, volleyErrorMessage: String?): String {
+        return if (volleyErrorMessage.isNullOrEmpty()) {
+            errorMessage.orEmpty()
+        } else {
+            if (errorMessage.isNullOrEmpty()) {
+                volleyErrorMessage
+            } else {
+                "$errorMessage • $volleyErrorMessage"
+            }
+        }
     }
 }
