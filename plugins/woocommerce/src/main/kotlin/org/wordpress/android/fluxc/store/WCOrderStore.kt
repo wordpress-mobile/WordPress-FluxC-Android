@@ -297,6 +297,7 @@ class WCOrderStore @Inject constructor(
         PLUGIN_NOT_ACTIVE,
         INVALID_RESPONSE,
         GENERIC_ERROR,
+        PARSE_ERROR,
         EMPTY_BILLING_EMAIL;
 
         companion object {
