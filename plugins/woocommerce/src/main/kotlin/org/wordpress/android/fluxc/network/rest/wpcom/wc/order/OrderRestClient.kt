@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
@@ -892,13 +893,14 @@ class OrderRestClient @Inject constructor(
     }
 
     private fun wpAPINetworkErrorToOrderError(wpAPINetworkError: WPAPINetworkError): OrderError {
-        val orderErrorType = when (wpAPINetworkError.errorCode) {
-            "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
-            "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
-            "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
+        val orderErrorType = when {
+            wpAPINetworkError.errorCode == "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
+            wpAPINetworkError.errorCode == "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
+            wpAPINetworkError.errorCode == "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
+            wpAPINetworkError.type == BaseRequest.GenericErrorType.PARSE_ERROR -> OrderErrorType.PARSE_ERROR
             else -> OrderErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return OrderError(orderErrorType, wpAPINetworkError.message.orEmpty())
+        return OrderError(orderErrorType, wpAPINetworkError.combinedErrorMessage)
     }
 
     private fun orderStatusResponseToOrderStatusModel(
