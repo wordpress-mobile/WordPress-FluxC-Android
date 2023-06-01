@@ -1793,11 +1793,7 @@ class ProductRestClient @Inject constructor(
             wpComError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
-        val message = getCombineErrorMessage(
-            errorMessage = wpComError.message,
-            volleyErrorMessage = wpComError.volleyError.message
-        )
-        return ProductError(productErrorType, message)
+        return ProductError(productErrorType, wpComError.combinedErrorMessage)
     }
 
     private fun wpAPINetworkErrorToProductError(wpAPINetworkError: WPAPINetworkError): ProductError {
@@ -1816,22 +1812,6 @@ class ProductRestClient @Inject constructor(
             wpAPINetworkError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        val message = getCombineErrorMessage(
-            errorMessage = wpAPINetworkError.message,
-            volleyErrorMessage = wpAPINetworkError.volleyError.message
-        )
-        return ProductError(productErrorType, message)
-    }
-
-    private fun getCombineErrorMessage(errorMessage:String?, volleyErrorMessage: String?): String {
-        return if (volleyErrorMessage.isNullOrEmpty()) {
-            errorMessage.orEmpty()
-        } else {
-            if (errorMessage.isNullOrEmpty()) {
-                volleyErrorMessage
-            } else {
-                "$errorMessage • $volleyErrorMessage"
-            }
-        }
+        return ProductError(productErrorType, wpAPINetworkError.combinedErrorMessage)
     }
 }
