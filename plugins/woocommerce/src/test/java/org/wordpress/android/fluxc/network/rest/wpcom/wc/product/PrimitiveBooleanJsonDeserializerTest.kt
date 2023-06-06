@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import org.assertj.core.api.Assertions.assertThat
@@ -155,6 +156,17 @@ class PrimitiveBooleanJsonDeserializerTest {
     @Test
     fun `when value is not valid then null is returned`() {
         val jsonElement = JsonObject()
+        val result = sut.deserialize(
+            json = jsonElement,
+            typeOfT = null,
+            context = null
+        )
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `when value is null then null is returned`() {
+        val jsonElement = JsonNull.INSTANCE
         val result = sut.deserialize(
             json = jsonElement,
             typeOfT = null,
