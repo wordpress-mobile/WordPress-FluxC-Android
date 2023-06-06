@@ -2,9 +2,11 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.fluxc.utils.PrimitiveBooleanJsonDeserializer
 
 typealias ProductDto = ProductApiResponse
 
@@ -29,6 +31,7 @@ data class ProductApiResponse(
     val sale_price: String? = null,
     val on_sale: Boolean = false,
     val total_sales: Long = 0L,
+    @JsonAdapter(PrimitiveBooleanJsonDeserializer::class)
     val purchasable: Boolean = false,
     val virtual: Boolean = false,
     val downloadable: Boolean = false,
