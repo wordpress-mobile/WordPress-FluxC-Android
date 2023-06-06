@@ -55,7 +55,7 @@ class PrimitiveBooleanJsonDeserializerTest {
     }
 
     @Test
-    fun `when value is a number and is not 1 then false value is returned`() {
+    fun `when value is a number and is not 1 then null value is returned`() {
         val jsonElement = JsonPrimitive(189)
         val result = sut.deserialize(
             json = jsonElement,
