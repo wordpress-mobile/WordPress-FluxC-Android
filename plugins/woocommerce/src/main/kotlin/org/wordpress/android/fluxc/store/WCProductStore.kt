@@ -1451,7 +1451,9 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    // Returns a boolean indicating whether more coupons can be fetched
+    /**
+     * @return Boolean indicating whether more products can be fetched.
+     */
     @Suppress("ComplexCondition")
     suspend fun fetchProducts(
         site: SiteModel,
@@ -1460,7 +1462,8 @@ class WCProductStore @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        forceRefresh: Boolean = false
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
             val response = wcProductRestClient.fetchProductsWithSyncRequest(
@@ -1475,7 +1478,8 @@ class WCProductStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    if (offset == 0 &&
+                    if (forceRefresh &&
+                        offset == 0 &&
                         includedProductIds.isEmpty() &&
                         excludedProductIds.isEmpty() &&
                         filterOptions.isEmpty()
@@ -1560,7 +1564,9 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    // Returns a boolean indicating whether more coupons can be fetched
+    /**
+     * @return Boolean indicating whether more variations can be fetched.
+     */
     suspend fun fetchProductVariations(
         site: SiteModel,
         productId: Long,
