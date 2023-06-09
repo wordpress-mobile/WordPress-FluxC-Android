@@ -31,9 +31,10 @@ class JetpackAIFragment : StoreSelectingFragment() {
         generate_haiku.setOnClickListener {
             selectedSite?.let {
                 lifecycleScope.launch {
-                    val result = store.fetchJetpackAICompletions(
+                    val result = store.fetchJetpackAICompletionsForSite(
                         site = it,
-                        prompt = "Please make me a haiku"
+                        prompt = "Please make me a haiku",
+                        skipCache = true
                     )
 
                     when (result) {
