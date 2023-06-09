@@ -1463,7 +1463,7 @@ class WCProductStore @Inject constructor(
         includedProductIds: List<Long> = emptyList(),
         excludedProductIds: List<Long> = emptyList(),
         filterOptions: Map<ProductFilterOption, String> = emptyMap(),
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = true
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProducts") {
             val response = wcProductRestClient.fetchProductsWithSyncRequest(
