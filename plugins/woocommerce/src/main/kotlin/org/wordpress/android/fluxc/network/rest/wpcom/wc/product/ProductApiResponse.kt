@@ -6,6 +6,7 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.fluxc.utils.NonNegativeDoubleJsonDeserializer
 import org.wordpress.android.fluxc.utils.PrimitiveBooleanJsonDeserializer
 
 typealias ProductDto = ProductApiResponse
@@ -42,7 +43,8 @@ data class ProductApiResponse(
     val tax_status: String? = null,
     val tax_class: String? = null,
     val manage_stock: String? = null,
-    val stock_quantity:Double = 0.0,
+    @JsonAdapter(NonNegativeDoubleJsonDeserializer::class)
+    val stock_quantity:Double? = 0.0,
     val stock_status: String? = null,
     val date_on_sale_from: String? = null,
     val date_on_sale_to: String? = null,
@@ -130,7 +132,7 @@ data class ProductApiResponse(
                 it == "true" || it == "parent"
             } ?: false
 
-            stockQuantity = response.stock_quantity
+            stockQuantity = response.stock_quantity ?: 0.0
 
             stockStatus = response.stock_status ?: ""
             if (isBundledProduct && (response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
