@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSortin
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_ASC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.REGISTERED_DATE_DESC
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerFromAnalyticsDTO
 import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.toWooPayload
@@ -125,8 +126,8 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
         sortType: CustomerSorting = NAME_ASC,
         searchQuery: String? = null,
         searchBy: String? = null,
-    ): WooPayload<Array<CustomerDTO>> {
-        val url = WOOCOMMERCE.wc_analytics.reports.customers.pathV3
+    ): WooPayload<Array<CustomerFromAnalyticsDTO>> {
+        val url = WOOCOMMERCE.reports.customers.pathV4Analytics
 
         val orderBy = when (sortType) {
             NAME_ASC, NAME_DESC -> "name"
@@ -146,14 +147,14 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
             "page" to page.toString(),
         ).run {
             putIfNotEmpty("search" to searchQuery)
-            putIfNotEmpty("searchBy" to searchBy)
+            putIfNotEmpty("searchby" to searchBy)
         }
 
         val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = url,
             params = params,
-            clazz = Array<CustomerDTO>::class.java
+            clazz = Array<CustomerFromAnalyticsDTO>::class.java
         )
 
         return response.toWooPayload()

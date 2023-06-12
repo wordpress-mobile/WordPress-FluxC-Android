@@ -83,4 +83,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_SiteTestWPAPI test);
 
     void inject(ReleaseStack_ApplicationPasswordNetwork test);
+
+    void inject(ReleaseStack_WCCustomerTest test);
 }
