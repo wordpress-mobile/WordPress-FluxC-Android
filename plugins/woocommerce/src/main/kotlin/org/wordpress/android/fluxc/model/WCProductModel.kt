@@ -347,7 +347,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                     )
                 }
             }
-        } catch (e: JsonParseException) {
+        } catch (e: Exception) {
             AppLog.e(T.API, e)
         }
         return attrList
