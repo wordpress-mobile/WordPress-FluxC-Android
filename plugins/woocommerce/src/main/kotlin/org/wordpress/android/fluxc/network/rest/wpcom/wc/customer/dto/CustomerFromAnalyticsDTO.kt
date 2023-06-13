@@ -4,56 +4,37 @@ import com.google.gson.annotations.SerializedName
 
 data class CustomerFromAnalyticsDTO(
     @SerializedName("avg_order_value")
-    val avgOrderValue: Double,
+    val avgOrderValue: Double? = null,
     @SerializedName("city")
-    val city: String,
+    val city: String? = null,
     @SerializedName("country")
-    val country: String,
+    val country: String? = null,
     @SerializedName("date_last_active")
-    val dateLastActive: String,
+    val dateLastActive: String? = null,
     @SerializedName("date_last_active_gmt")
-    val dateLastActiveGmt: String,
+    val dateLastActiveGmt: String? = null,
     @SerializedName("date_last_order")
-    val dateLastOrder: String,
+    val dateLastOrder: String? = null,
     @SerializedName("date_registered")
-    val dateRegistered: String,
+    val dateRegistered: String? = null,
     @SerializedName("date_registered_gmt")
-    val dateRegisteredGmt: String,
+    val dateRegisteredGmt: String? = null,
     @SerializedName("email")
-    val email: String,
+    val email: String? = null,
     @SerializedName("id")
-    val id: Int,
-    @SerializedName("_links")
-    val links: Links,
+    val id: Long? = null,
     @SerializedName("name")
-    val name: String,
+    val name: String? = null,
     @SerializedName("orders_count")
-    val ordersCount: Int,
+    val ordersCount: Int? = null,
     @SerializedName("postcode")
-    val postcode: String,
+    val postcode: String? = null,
     @SerializedName("state")
-    val state: String,
+    val state: String? = null,
     @SerializedName("total_spend")
-    val totalSpend: Double,
+    val totalSpend: Double? = null,
     @SerializedName("user_id")
-    val userId: Int,
+    val userId: Int? = null,
     @SerializedName("username")
-    val username: String
-) {
-    data class Links(
-        @SerializedName("collection")
-        val collection: List<Collection>,
-        @SerializedName("customer")
-        val customer: List<Customer>
-    ) {
-        data class Collection(
-            @SerializedName("href")
-            val href: String
-        )
-
-        data class Customer(
-            @SerializedName("href")
-            val href: String
-        )
-    }
-}
+    val username: String? = null
+)

@@ -29,6 +29,8 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
             assertThat(result.model?.get(0)?.email).isEqualTo("null@bia.is")
             assertThat(result.model?.get(0)?.country).isEqualTo("CA")
             assertThat(result.model?.get(0)?.postcode).isEqualTo("M6H 1Z8")
+            assertThat(result.model?.get(0)?.username).isEqualTo("admin")
+            assertThat(result.model?.get(0)?.userId).isEqualTo(1)
         }
     }
 

@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import android.util.Log
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -14,7 +13,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.NAME_ASC
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerFromAnalyticsDTO
 import org.wordpress.android.fluxc.persistence.CustomerSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -185,7 +183,7 @@ class WCCustomerStore @Inject constructor(
         sortType: CustomerSorting = DEFAULT_CUSTOMER_SORTING,
         searchQuery: String? = null,
         searchBy: String? = null,
-    ): WooResult<List<CustomerFromAnalyticsDTO>> {
+    ): WooResult<List<WCCustomerModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersFromAnalytics") {
             val response = restClient.fetchCustomersFromAnalytics(
                 site = site,
@@ -201,7 +199,11 @@ class WCCustomerStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    WooResult(response.result.toList())
+                    val customers = response.result.map { mapper.mapToModel(site, it) }
+                    if (page == 1) CustomerSqlUtils.deleteCustomersForSite(site)
+                    CustomerSqlUtils.insertOrUpdateCustomers(customers)
+
+                    WooResult(customers)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
