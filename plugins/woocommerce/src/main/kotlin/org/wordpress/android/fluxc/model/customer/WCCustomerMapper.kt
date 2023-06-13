@@ -87,7 +87,7 @@ class WCCustomerMapper @Inject constructor() {
     fun mapToModel(site: SiteModel, dto: CustomerFromAnalyticsDTO): WCCustomerModel {
         return WCCustomerModel().apply {
             localSiteId = site.id
-            remoteCustomerId = dto.id ?: 0
+            remoteCustomerId = dto.userId ?: 0
             email = dto.email ?: ""
             firstName = dto.name.firstNameFromName()
             lastName = dto.name.lastNameFromName()

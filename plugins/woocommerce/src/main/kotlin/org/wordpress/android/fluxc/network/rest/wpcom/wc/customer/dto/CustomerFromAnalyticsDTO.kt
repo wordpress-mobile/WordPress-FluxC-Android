@@ -34,7 +34,7 @@ data class CustomerFromAnalyticsDTO(
     @SerializedName("total_spend")
     val totalSpend: Double? = null,
     @SerializedName("user_id")
-    val userId: Int? = null,
+    val userId: Long? = null,
     @SerializedName("username")
     val username: String? = null
 )
