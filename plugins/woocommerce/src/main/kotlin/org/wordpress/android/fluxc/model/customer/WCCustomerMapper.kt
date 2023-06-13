@@ -84,6 +84,7 @@ class WCCustomerMapper @Inject constructor() {
         )
     }
 
+    @Suppress("ComplexMethod")
     fun mapToModel(site: SiteModel, dto: CustomerFromAnalyticsDTO): WCCustomerModel {
         return WCCustomerModel().apply {
             localSiteId = site.id
