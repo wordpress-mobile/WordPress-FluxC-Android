@@ -24,13 +24,16 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(sSite, page = 1)
             assertThat(result.model?.size).isEqualTo(1)
             assertThat(result.model?.get(0)?.id).isEqualTo(1)
-            assertThat(result.model?.get(0)?.name).isEqualTo("John Johnson")
-            assertThat(result.model?.get(0)?.city).isEqualTo("Toronto")
+            assertThat(result.model?.get(0)?.firstName).isEqualTo("John")
+            assertThat(result.model?.get(0)?.lastName).isEqualTo("Johnson")
             assertThat(result.model?.get(0)?.email).isEqualTo("null@bia.is")
-            assertThat(result.model?.get(0)?.country).isEqualTo("CA")
-            assertThat(result.model?.get(0)?.postcode).isEqualTo("M6H 1Z8")
             assertThat(result.model?.get(0)?.username).isEqualTo("admin")
-            assertThat(result.model?.get(0)?.userId).isEqualTo(1)
+            assertThat(result.model?.get(0)?.billingCity).isEqualTo("Toronto")
+            assertThat(result.model?.get(0)?.billingCountry).isEqualTo("CA")
+            assertThat(result.model?.get(0)?.billingPostcode).isEqualTo("M6H 1Z8")
+            assertThat(result.model?.get(0)?.shippingCity).isEqualTo("Toronto")
+            assertThat(result.model?.get(0)?.shippingCountry).isEqualTo("CA")
+            assertThat(result.model?.get(0)?.shippingPostcode).isEqualTo("M6H 1Z8")
         }
     }
 
