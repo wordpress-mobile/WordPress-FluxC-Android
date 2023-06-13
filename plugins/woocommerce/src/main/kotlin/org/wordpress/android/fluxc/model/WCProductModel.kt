@@ -317,6 +317,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return null
     }
 
+    @Suppress("SwallowedException", "TooGenericExceptionCaught")
     fun getAttributeList(): List<ProductAttribute> {
         fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
