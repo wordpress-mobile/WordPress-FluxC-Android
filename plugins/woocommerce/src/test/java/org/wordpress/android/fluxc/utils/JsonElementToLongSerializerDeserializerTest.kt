@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.utils
 
-import com.google.gson.GsonBuilder
+import com.google.gson.Gson
 import com.google.gson.JsonPrimitive
 import com.google.gson.annotations.JsonAdapter
 import org.assertj.core.api.Assertions.assertThat
@@ -59,9 +59,7 @@ class JsonElementToLongSerializerDeserializerTest {
 
     @Test
     fun `test serialization deserialization`() {
-        val gsonBuilder = GsonBuilder()
-        val gson = gsonBuilder.registerTypeAdapter(Long::class.java, sut).create()
-
+        val gson = Gson()
         val value = 12345L
         val json = gson.toJson(TestData(value))
         val deserialized = gson.fromJson(json, TestData::class.java)
