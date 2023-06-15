@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.utils
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
+import com.google.gson.annotations.JsonAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -67,5 +68,8 @@ class JsonElementToLongSerializerDeserializerTest {
         assertThat(deserialized.value).isEqualTo(value)
     }
 
-    data class TestData(val value: Long)
+    data class TestData(
+        @JsonAdapter(JsonElementToLongSerializerDeserializer::class)
+        val value: Long
+    )
 }
