@@ -1,11 +1,10 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
+package org.wordpress.android.fluxc.utils
 
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.wordpress.android.fluxc.utils.PrimitiveBooleanJsonDeserializer
 
 class PrimitiveBooleanJsonDeserializerTest {
     private val sut = PrimitiveBooleanJsonDeserializer()
