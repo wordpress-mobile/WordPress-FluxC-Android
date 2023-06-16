@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WCGlobalAttributeSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.util.AppLog
+import org.wordpress.android.fluxc.utils.AppLogWrapper
 import org.wordpress.android.util.AppLog.T
 
 /**
@@ -25,7 +25,10 @@ import org.wordpress.android.util.AppLog.T
  * Note that products have more properties than we support below
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+data class WCProductModel(
+    @PrimaryKey @Column private var id: Int = 0,
+    var appLogWrapper: AppLogWrapper = AppLogWrapper()
+) : Identifiable {
     companion object {
         private const val ADDONS_METADATA_KEY = "_product_addons"
     }
@@ -275,10 +278,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 val jsonElement = Gson().fromJson(images, JsonElement::class.java)
                 getImageList(jsonElement.asJsonArray)
             } catch (e: JsonParseException) {
-                AppLog.e(T.API, e)
+                appLogWrapper.e(T.API, e.message.orEmpty())
                 emptyList()
             } catch (e: IllegalStateException) {
-                AppLog.e(T.API, e)
+                appLogWrapper.e(T.API, e.message.orEmpty())
                 emptyList()
             }
         } else {
@@ -312,7 +315,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 }
             }
         } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
+            appLogWrapper.e(T.API, e.message.orEmpty())
         }
         return null
     }
@@ -326,9 +329,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                     options.add(it.asString)
                 }
             } catch (e: ClassCastException) {
-                AppLog.e(T.API, e)
+                appLogWrapper.e(T.API, e.message.orEmpty())
             } catch (e: IllegalStateException) {
-                AppLog.e(T.API, e)
+                appLogWrapper.e(T.API, e.message.orEmpty())
             }
             return options
         }
@@ -349,7 +352,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 }
             }
         } catch (e: Exception) {
-            AppLog.e(T.API, e)
+            appLogWrapper.e(T.API, e.message.orEmpty())
         }
         return attrList
     }
@@ -370,7 +373,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 }
             }
         } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
+            appLogWrapper.e(T.API, e.message.orEmpty())
         }
         return fileList
     }
@@ -397,7 +400,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 val jsonElement = Gson().fromJson(jsonString, JsonElement::class.java)
                 parseJsonIfNotEmpty(jsonElement)
             } catch (e: JsonParseException) {
-                AppLog.e(T.API, e)
+                appLogWrapper.e(T.API, e.message.orEmpty())
                 emptyList()
             }
         } else {
@@ -465,7 +468,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 val jsonElement = Gson().fromJson(jsonStr, JsonElement::class.java)
                 getTriplets(jsonElement)
             } catch (e: JsonParseException) {
-                AppLog.e(T.API, e)
+                appLogWrapper.e(T.API, e.message.orEmpty())
                 emptyList()
             }
         } else {
