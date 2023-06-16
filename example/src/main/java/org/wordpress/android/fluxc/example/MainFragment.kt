@@ -110,6 +110,7 @@ class MainFragment : Fragment() {
         plugins.setOnClickListener(getOnClickListener(PluginsFragment()))
         plans.setOnClickListener(getOnClickListener(PlansFragment()))
         domains.setOnClickListener(getOnClickListener(DomainsFragment()))
+        jetpackai.setOnClickListener(getOnClickListener(JetpackAIFragment()))
     }
 
     // Private methods
