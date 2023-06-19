@@ -34,18 +34,21 @@ class WCCustomerStore @Inject constructor(
      * returns a cached customer with provided remote id or null if not in cache
      */
     fun getCustomerByRemoteId(site: SiteModel, remoteCustomerId: Long) =
-            CustomerSqlUtils.getCustomerByRemoteId(site, remoteCustomerId)
+        CustomerSqlUtils.getCustomerByRemoteId(site, remoteCustomerId)
 
     /**
      * returns a cached customers with provided remote ids or empty list if not in cache
      */
     fun getCustomerByRemoteIds(site: SiteModel, remoteCustomerId: List<Long>) =
-            CustomerSqlUtils.getCustomerByRemoteIds(site, remoteCustomerId)
+        CustomerSqlUtils.getCustomerByRemoteIds(site, remoteCustomerId)
 
     /**
      * returns a customer with provided remote id
      */
-    suspend fun fetchSingleCustomer(site: SiteModel, remoteCustomerId: Long): WooResult<WCCustomerModel> {
+    suspend fun fetchSingleCustomer(
+        site: SiteModel,
+        remoteCustomerId: Long
+    ): WooResult<WCCustomerModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchSingleCustomer") {
             val response = restClient.fetchSingleCustomer(site, remoteCustomerId)
             when {
@@ -55,6 +58,7 @@ class WCCustomerStore @Inject constructor(
                     CustomerSqlUtils.insertOrUpdateCustomer(customer)
                     WooResult(customer)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -77,16 +81,16 @@ class WCCustomerStore @Inject constructor(
     ): WooResult<List<WCCustomerModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomers") {
             val response = restClient.fetchCustomers(
-                    site = site,
-                    pageSize = pageSize,
-                    sortType = sortType,
-                    offset = offset,
-                    searchQuery = searchQuery,
-                    email = email,
-                    role = role,
-                    context = context,
-                    remoteCustomerIds = remoteCustomerIds,
-                    excludedCustomerIds = excludedCustomerIds
+                site = site,
+                pageSize = pageSize,
+                sortType = sortType,
+                offset = offset,
+                searchQuery = searchQuery,
+                email = email,
+                role = role,
+                context = context,
+                remoteCustomerIds = remoteCustomerIds,
+                excludedCustomerIds = excludedCustomerIds
             )
             when {
                 response.isError -> WooResult(response.error)
@@ -99,6 +103,7 @@ class WCCustomerStore @Inject constructor(
 
                     WooResult(customers)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -118,9 +123,9 @@ class WCCustomerStore @Inject constructor(
             remoteCustomerIds: List<Long>
         ): WooResult<Unit> {
             val response = restClient.fetchCustomers(
-                    site = site,
-                    pageSize = pageSize,
-                    remoteCustomerIds = remoteCustomerIds
+                site = site,
+                pageSize = pageSize,
+                remoteCustomerIds = remoteCustomerIds
             )
             return when {
                 response.isError -> WooResult(response.error)
@@ -129,11 +134,16 @@ class WCCustomerStore @Inject constructor(
                     CustomerSqlUtils.insertOrUpdateCustomers(customers)
                     WooResult(Unit)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
 
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersByIdsAndCache") {
+        return coroutineEngine.withDefaultContext(
+            AppLog.T.API,
+            this,
+            "fetchCustomersByIdsAndCache"
+        ) {
             val jobs = mutableListOf<Deferred<WooResult<Unit>>>()
             remoteCustomerIds.chunked(pageSize).forEach { idsToFetch ->
                 jobs.add(async { doFetch(site, pageSize, idsToFetch) })
@@ -149,12 +159,52 @@ class WCCustomerStore @Inject constructor(
     /**
      * creates a customer on the backend
      */
-    suspend fun createCustomer(site: SiteModel, customer: WCCustomerModel): WooResult<WCCustomerModel> {
+    suspend fun createCustomer(
+        site: SiteModel,
+        customer: WCCustomerModel
+    ): WooResult<WCCustomerModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createCustomer") {
             val response = restClient.createCustomer(site, mapper.mapToDTO(customer))
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> WooResult(mapper.mapToModel(site, response.result))
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    /**
+     * returns customers from analytics
+     */
+    suspend fun fetchCustomersFromAnalytics(
+        site: SiteModel,
+        page: Int,
+        pageSize: Int = DEFAULT_CUSTOMER_PAGE_SIZE,
+        sortType: CustomerSorting = DEFAULT_CUSTOMER_SORTING,
+        searchQuery: String? = null,
+        searchBy: String? = null,
+    ): WooResult<List<WCCustomerModel>> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersFromAnalytics") {
+            val response = restClient.fetchCustomersFromAnalytics(
+                site = site,
+                pageSize = pageSize,
+                page = page,
+                sortType = sortType,
+                searchQuery = searchQuery,
+                searchBy = searchBy,
+            )
+            when {
+                response.isError -> {
+                    AppLog.e(AppLog.T.API, "Error fetching customers from analytics: ${response.error.message}")
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val customers = response.result.map { mapper.mapToModel(site, it) }
+                    if (page == 1) CustomerSqlUtils.deleteCustomersForSite(site)
+                    CustomerSqlUtils.insertOrUpdateCustomers(customers)
+
+                    WooResult(customers)
+                }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
