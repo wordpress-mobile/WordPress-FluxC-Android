@@ -2,36 +2,26 @@ package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
 import com.google.gson.JsonArray
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
 import org.wordpress.android.fluxc.model.WCProductModel.QuantityRulesMetadataKeys
-import org.wordpress.android.fluxc.utils.JsonStringUtils
-import org.wordpress.android.fluxc.utils.isJsonEmptyElement
+import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
+import org.wordpress.android.fluxc.utils.isElementNullOrEmpty
 import javax.inject.Inject
 
 class StripProductMetaData @Inject internal constructor(private val gson: Gson) {
     operator fun invoke(metadata: String?): String {
-        if (metadata.isNullOrEmpty()) return JsonStringUtils.EMPTY.ARRAY
+        if (metadata.isNullOrEmpty()) return EMPTY_JSON_ARRAY
 
         return gson.fromJson(metadata, JsonArray::class.java)
             .mapNotNull { it as? JsonObject }
             .asSequence()
             .filter { jsonObject ->
-                val isNullOrEmpty = isElementNullOrEmpty(jsonObject[WCMetaData.VALUE])
+                val isNullOrEmpty = jsonObject[WCMetaData.VALUE].isElementNullOrEmpty()
                 jsonObject[WCMetaData.KEY]?.asString.orEmpty() in SUPPORTED_KEYS && isNullOrEmpty.not()
             }.toList()
             .takeIf { it.isNotEmpty() }
-            ?.let { gson.toJson(it) } ?: JsonStringUtils.EMPTY.ARRAY
-    }
-
-    private fun isElementNullOrEmpty(jsonElement: JsonElement?): Boolean {
-        return jsonElement?.let {
-            if (it.isJsonNull) return@let true
-
-            val valueString = gson.toJson(jsonElement)
-            valueString.isJsonEmptyElement()
-        } ?: true
+            ?.let { gson.toJson(it) } ?: EMPTY_JSON_ARRAY
     }
 
     companion object {

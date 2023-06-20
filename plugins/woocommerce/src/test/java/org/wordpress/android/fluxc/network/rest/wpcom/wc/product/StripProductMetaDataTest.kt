@@ -7,7 +7,7 @@ import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.WCMetaData
-import org.wordpress.android.fluxc.utils.JsonStringUtils
+import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 
 class StripProductMetaDataTest {
     private val gson = Gson()
@@ -34,7 +34,7 @@ class StripProductMetaDataTest {
         val metadata = getOneItemMetadata(supportedKey, value)
         val result = sut.invoke(metadata)
 
-        Assertions.assertThat(result).isEqualTo(JsonStringUtils.EMPTY.ARRAY)
+        Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
     }
 
     @Test
@@ -45,7 +45,7 @@ class StripProductMetaDataTest {
         val metadata = getOneItemMetadata(supportedKey, value)
         val result = sut.invoke(metadata)
 
-        Assertions.assertThat(result).isEqualTo(JsonStringUtils.EMPTY.ARRAY)
+        Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
     }
 
     @Test
@@ -66,7 +66,7 @@ class StripProductMetaDataTest {
     @Test
     fun `when metadata is null, then empty array is return`() {
         val result = sut.invoke(null)
-        Assertions.assertThat(result).isEqualTo(JsonStringUtils.EMPTY.ARRAY)
+        Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
     }
 
     private fun getOneItemMetadata(itemKey: String, itemValue: String?): String {
