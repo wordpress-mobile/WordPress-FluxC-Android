@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.StripProductVariationMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -82,6 +83,7 @@ class ProductRestClient @Inject constructor(
     private val wooNetwork: WooNetwork,
     private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine,
+    private val stripProductMetaData: StripProductMetaData,
     private val stripProductVariationMetaData: StripProductVariationMetaData
 ) {
     /**
@@ -291,6 +293,7 @@ class ProductRestClient @Inject constructor(
                 response.data?.let {
                     val newModel = it.asProductModel().apply {
                         localSiteId = site.id
+                        metadata = stripProductMetaData(metadata)
                     }
                     RemoteProductPayload(newModel, site)
                 } ?: RemoteProductPayload(
@@ -410,7 +413,10 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     val productModels = response.data?.map {
-                        it.asProductModel().apply { localSiteId = site.id }
+                        it.asProductModel().apply {
+                            localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
+                        }
                     }.orEmpty()
 
                     val loadedMore = offset > 0
@@ -520,7 +526,10 @@ class ProductRestClient @Inject constructor(
         return response.toWooPayload { products ->
             products.map {
                 it.asProductModel()
-                    .apply { localSiteId = site.id }
+                    .apply {
+                        localSiteId = site.id
+                        metadata = stripProductMetaData(metadata)
+                    }
             }
         }
     }
@@ -876,6 +885,7 @@ class ProductRestClient @Inject constructor(
                     response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
                         }
                         val payload = RemoteUpdateProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
@@ -1189,6 +1199,7 @@ class ProductRestClient @Inject constructor(
                     response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
                         }
                         val payload = RemoteUpdateProductImagesPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
@@ -1486,6 +1497,7 @@ class ProductRestClient @Inject constructor(
                         val newModel = product.asProductModel().apply {
                             id = product.id?.toInt() ?: 0
                             localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
                         }
                         val payload = RemoteAddProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
