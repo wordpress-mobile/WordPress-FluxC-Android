@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys.ADDONS_METADATA_KEY
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.utils.getBoolean
@@ -26,9 +27,6 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    companion object {
-        private const val ADDONS_METADATA_KEY = "_product_addons"
-    }
 
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
@@ -555,6 +553,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val updatedFiles = updatedProduct.getDownloadableFiles()
         val storedFiles = getDownloadableFiles()
         return storedFiles == updatedFiles
+    }
+
+    object AddOnsMetadataKeys {
+        const val ADDONS_METADATA_KEY = "_product_addons"
     }
 
     object QuantityRulesMetadataKeys {
