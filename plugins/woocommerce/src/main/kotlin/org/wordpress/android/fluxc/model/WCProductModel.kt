@@ -27,7 +27,6 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
     val remoteId
