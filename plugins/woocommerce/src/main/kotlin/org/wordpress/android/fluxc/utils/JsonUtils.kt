@@ -6,7 +6,6 @@ const val EMPTY_JSON_ARRAY = "[]"
 
 fun JsonElement?.isElementNullOrEmpty(): Boolean {
     return this?.let {
-        if (it.isJsonNull) return@let true
         when{
             this.isJsonObject -> this.asJsonObject.size() == 0
             this.isJsonArray -> this.asJsonArray.size()== 0
