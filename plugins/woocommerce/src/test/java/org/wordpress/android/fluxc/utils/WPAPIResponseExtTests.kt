@@ -54,4 +54,18 @@ class WPAPIResponseExtTests {
         assertThat(result.error.original).isEqualTo(error.toWooError().original)
         assertThat(result.error.message).isEqualTo(error.toWooError().message)
     }
+
+    @Test
+    fun `given invalid coupon error, when converting, then map the error type`() {
+        val error = WPAPINetworkError(
+            BaseNetworkError(BaseRequest.GenericErrorType.UNKNOWN),
+            "woocommerce_rest_invalid_coupon"
+        )
+        val response = WPAPIResponse.Error<String>(error)
+
+        val result = response.toWooPayload { it.hashCode() }
+
+        assertThat(result.isError).isTrue
+        assertThat(result.error.type).isEqualTo(WooErrorType.INVALID_COUPON)
+    }
 }
