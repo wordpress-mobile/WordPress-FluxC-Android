@@ -61,6 +61,41 @@ class StripProductVariationMetaDataTest {
         assertThat(resultItem[WCMetaData.VALUE].asString).isEqualTo(value)
     }
 
+    @Test
+    fun `when metadata is null, then null is return`() {
+        val result = sut.invoke(null)
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `when metadata is empty, then null is return`() {
+        val result = sut.invoke("")
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `when metadata contains a supported key with an ARRAY value, then value is kept`() {
+        val supportedKey = StripProductVariationMetaData.SUPPORTED_KEYS.first()
+        val value = JsonArray().apply {
+            add("Value 1")
+            add("Value 2")
+        }
+        val item = JsonObject().apply {
+            addProperty(WCMetaData.KEY, supportedKey)
+            add(WCMetaData.VALUE, value)
+        }
+        val jsonArray = JsonArray().apply { add(item) }
+        val metadata = gson.toJson(jsonArray)
+
+        val result = sut.invoke(metadata)
+
+        val jsonResult = gson.fromJson(result, JsonArray::class.java)
+        val resultItem = jsonResult[0] as JsonObject
+        assertThat(result).isNotNull
+        assertThat(resultItem[WCMetaData.KEY].asString).isEqualTo(supportedKey)
+        assertThat(resultItem[WCMetaData.VALUE].asJsonArray).isEqualTo(value)
+    }
+
     private fun getOneItemMetadata(itemKey: String, itemValue: String?): String {
         val item = JsonObject().apply {
             addProperty(WCMetaData.KEY, itemKey)

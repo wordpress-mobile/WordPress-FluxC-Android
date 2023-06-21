@@ -3,12 +3,15 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
+import org.wordpress.android.fluxc.model.WCProductModel.QuantityRulesMetadataKeys
+import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 import org.wordpress.android.fluxc.utils.isElementNullOrEmpty
 import javax.inject.Inject
 
-class StripProductVariationMetaData @Inject internal constructor(private val gson: Gson) {
-    operator fun invoke(metadata: String?): String? {
-        if (metadata.isNullOrEmpty()) return null
+class StripProductMetaData @Inject internal constructor(private val gson: Gson) {
+    operator fun invoke(metadata: String?): String {
+        if (metadata.isNullOrEmpty()) return EMPTY_JSON_ARRAY
 
         return gson.fromJson(metadata, JsonArray::class.java)
             .mapNotNull { it as? JsonObject }
@@ -18,13 +21,13 @@ class StripProductVariationMetaData @Inject internal constructor(private val gso
                 jsonObject[WCMetaData.KEY]?.asString.orEmpty() in SUPPORTED_KEYS && isNullOrEmpty.not()
             }.toList()
             .takeIf { it.isNotEmpty() }
-            ?.let { gson.toJson(it) }
+            ?.let { gson.toJson(it) } ?: EMPTY_JSON_ARRAY
     }
 
     companion object {
         val SUPPORTED_KEYS: Set<String> = buildSet {
-            addAll(WCProductVariationModel.SubscriptionMetadataKeys.ALL_KEYS)
-            addAll(WCProductVariationModel.QuantityRulesMetadataKeys.ALL_KEYS)
+            add(AddOnsMetadataKeys.ADDONS_METADATA_KEY)
+            addAll(QuantityRulesMetadataKeys.ALL_KEYS)
         }
     }
 }
