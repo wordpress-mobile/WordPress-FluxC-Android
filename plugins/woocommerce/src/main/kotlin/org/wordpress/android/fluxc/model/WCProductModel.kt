@@ -321,7 +321,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * Returns the list of products attributes. The function returns an empty list
      * when the attributes json deserialization fails.
      */
-    @Suppress("SwallowedException", "TooGenericExceptionCaught")
     fun getAttributeList(): List<ProductAttribute> {
         fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
@@ -337,25 +336,26 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             return options
         }
 
-        val attrList = ArrayList<ProductAttribute>()
-        try {
-            Gson().fromJson(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    attrList.add(
-                            ProductAttribute(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    variation = this.getBoolean("variation", true),
-                                    visible = this.getBoolean("visible", true),
-                                    options = getAttributeOptions(this.getAsJsonArray("options"))
-                            )
+        return kotlin.runCatching {
+            Gson().fromJson(attributes, JsonElement::class.java)
+                .asJsonArray.asSequence()
+                .map { it.asJsonObject }
+                .map { json ->
+                    ProductAttribute(
+                        id = json.getLong("id"),
+                        name = json.getString("name") ?: "",
+                        variation = json.getBoolean("variation", true),
+                        visible = json.getBoolean("visible", true),
+                        options = getAttributeOptions(json.getAsJsonArray("options"))
                     )
-                }
+                }.toList()
+        }.fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                AppLog.e(T.API, e)
+                emptyList()
             }
-        } catch (e: Exception) {
-            AppLog.e(T.API, e)
-        }
-        return attrList
+        )
     }
 
     fun getDownloadableFiles(): List<WCProductFileModel> {
