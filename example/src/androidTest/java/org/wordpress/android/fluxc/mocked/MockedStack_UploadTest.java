@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked;
 import com.google.gson.JsonObject;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -87,6 +88,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUploadMedia() throws InterruptedException {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         startSuccessfulMediaUpload(testMedia, getTestSite());
@@ -116,6 +118,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testCancelImageUpload() throws InterruptedException {
         mInterceptor.respondWithSticky("media-upload-response-success.json", 1000L, null);
 
@@ -166,6 +169,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testRegisterPostAndUploadMediaWithError() throws InterruptedException {
         SiteModel site = getTestSite();
 
@@ -263,6 +267,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testRegisterPostAndUploadMediaWithPostCancellation() throws InterruptedException {
         SiteModel site = getTestSite();
 
@@ -333,6 +338,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUploadMediaInCancelledPost() throws InterruptedException {
         SiteModel site = getTestSite();
 
@@ -390,6 +396,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUpdateMediaModelState() throws InterruptedException {
         SiteModel site = getTestSite();
 

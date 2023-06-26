@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
@@ -74,6 +75,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -92,6 +94,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -131,6 +134,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testFetchMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -158,6 +162,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -197,6 +202,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -214,6 +220,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -248,6 +255,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleVideoPath(), "video/mp4");

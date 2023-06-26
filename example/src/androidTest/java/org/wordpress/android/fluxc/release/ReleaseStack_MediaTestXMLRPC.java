@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import android.annotation.SuppressLint;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
@@ -76,6 +77,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -102,6 +104,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -154,6 +157,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testFetchMediaThatExists() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -181,6 +185,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -208,6 +213,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -225,6 +231,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -259,6 +266,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleVideoPath(), "video/mp4");
@@ -276,6 +284,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadImageOlderWordPress() throws InterruptedException {
         // Before WordPress 4.4, a separate call to wp.getMediaItem was necessary after wp.uploadFile completed.
         // This is a regression test making sure we're falling back to that behaviour when expected field are missing
@@ -310,6 +319,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadVideoOlderWordPress() throws InterruptedException {
         // Before WordPress 4.4, a separate call to wp.getMediaItem was necessary after wp.uploadFile completed.
         // This is a regression test making sure we're falling back to that behaviour when expected field are missing

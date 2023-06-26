@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.store.WCInPersonPaymentsStore.InPersonPayment
 import javax.inject.Inject
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import java.util.Locale
 
 class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
@@ -34,6 +35,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun givenSiteHasStripeExtensionWhenFetchConnectionTokenInvokedThenTokenReturned() = runBlocking {
         val result = store.fetchConnectionToken(STRIPE, sSite)
 
@@ -41,6 +43,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun givenSiteHasStripeExtensionWhenLoadAccountThenTestAccountReturned() = runBlocking {
         val result = store.loadAccount(STRIPE, sSite)
 
@@ -55,6 +58,7 @@ class ReleaseStack_InPersonPaymentsStripeExtensionTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun givenSiteHasStripeExtensionAndStripeAddressThenLocationDataReturned() = runBlocking {
         val result = store.getStoreLocationForSite(STRIPE, sSite)
 

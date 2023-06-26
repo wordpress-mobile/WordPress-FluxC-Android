@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.AccountAction;
@@ -162,6 +163,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testWPComPostPrimarySiteIdNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;

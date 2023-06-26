@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.mocked;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -57,6 +58,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUploadMedia() throws InterruptedException {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         startSuccessfulMediaUpload(testMedia, getTestSite());

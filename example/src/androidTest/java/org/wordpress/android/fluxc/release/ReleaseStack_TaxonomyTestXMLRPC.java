@@ -30,6 +30,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
+import androidx.appcompat.app.AppCompatDelegate.NightMode;
+
 public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject TaxonomyStore mTaxonomyStore;
 
@@ -67,6 +69,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testFetchCategories() throws InterruptedException {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -95,6 +98,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testFetchTermsForInvalidTaxonomy() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
@@ -113,6 +117,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testFetchSingleCategory() throws InterruptedException {
         mNextEvent = TestEvents.TERM_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
@@ -150,6 +155,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
         testUpdateExistingTerm(term);

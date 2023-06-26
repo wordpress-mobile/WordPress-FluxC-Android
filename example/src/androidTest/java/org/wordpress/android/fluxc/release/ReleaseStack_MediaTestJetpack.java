@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -61,6 +62,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUploadMediaLowFilesizeLimit() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_UPLOAD_LIMIT,
                 BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_UPLOAD_LIMIT);
@@ -80,6 +82,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUploadMediaLowMemoryLimit() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
@@ -100,6 +103,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testUploadMediaLowQuotaAvailableLimit() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);

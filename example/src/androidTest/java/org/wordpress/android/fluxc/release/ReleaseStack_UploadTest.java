@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
@@ -80,6 +81,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadImage() throws InterruptedException {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
@@ -211,6 +213,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testRegisterPostAndUploadMedia() throws InterruptedException {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");

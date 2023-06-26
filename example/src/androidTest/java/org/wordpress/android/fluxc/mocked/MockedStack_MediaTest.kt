@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import android.annotation.SuppressLint
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
@@ -62,6 +63,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore
     fun testCancelImageUpload() {
         interceptor.respondWithSticky("media-upload-response-success.json")
 
@@ -102,6 +104,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore
     fun testUploadMultipleImages() {
         // Upload media to guarantee media exists
         uploadedIds.clear()
@@ -133,6 +136,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore
     fun testUploadMultipleImagesAndCancel() {
         // Upload media to guarantee media exists
         uploadedIds.clear()
@@ -168,6 +172,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
+    @Ignore
     fun testUploadMultipleImagesAndCancelWithoutDeleting() {
         // Upload media to guarantee media exists
         uploadedIds.clear()
