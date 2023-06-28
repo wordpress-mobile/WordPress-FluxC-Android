@@ -85,4 +85,32 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
             assertThat(result.model?.get(0)?.id).isEqualTo(1)
         }
     }
+
+    @Test
+    fun testFetchOrdersFilterEmptyAndSearchByWithResults() {
+        runBlocking {
+            val result = wcCustomerStore.fetchCustomersFromAnalytics(
+                sSite,
+                page = 1,
+                searchQuery = "John",
+                searchBy = "name",
+                filterEmpty = listOf("email", "city", "state", "country")
+            )
+            assertThat(result.model?.size).isEqualTo(1)
+            assertThat(result.model?.get(0)?.id).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun testFetchOrdersFilterEmptyWithResults() {
+        runBlocking {
+            val result = wcCustomerStore.fetchCustomersFromAnalytics(
+                sSite,
+                page = 1,
+                filterEmpty = listOf("email")
+            )
+            assertThat(result.model?.size).isEqualTo(1)
+            assertThat(result.model?.get(0)?.id).isEqualTo(1)
+        }
+    }
 }
