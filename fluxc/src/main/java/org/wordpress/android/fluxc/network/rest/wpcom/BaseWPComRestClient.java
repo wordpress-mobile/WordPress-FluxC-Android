@@ -27,6 +27,8 @@ public abstract class BaseWPComRestClient {
     private static final String WPCOM_V2_PREFIX = "/wpcom/v2";
     private static final String LOCALE_PARAM_NAME_FOR_V1 = "locale";
     private static final String LOCALE_PARAM_NAME_FOR_V2 = "_locale";
+    private static final String ACCEPT_HEADER = "Accept";
+    private static final String ACCEPT_JSON_HEADER_VALUE = "application/json";
 
     private AccessToken mAccessToken;
     private final RequestQueue mRequestQueue;
@@ -34,18 +36,24 @@ public abstract class BaseWPComRestClient {
     protected final Context mAppContext;
     protected final Dispatcher mDispatcher;
     protected UserAgent mUserAgent;
+    protected Boolean mAddAcceptJsonHeader;
 
     private OnAuthFailedListener mOnAuthFailedListener;
     private OnParseErrorListener mOnParseErrorListener;
     private OnJetpackTunnelTimeoutListener mOnJetpackTunnelTimeoutListener;
 
     public BaseWPComRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue,
-                               AccessToken accessToken, UserAgent userAgent) {
+        AccessToken accessToken, UserAgent userAgent) {
+        this(appContext, dispatcher, requestQueue, accessToken, userAgent, false);
+    }
+    public BaseWPComRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue,
+                               AccessToken accessToken, UserAgent userAgent, Boolean addAcceptJsonHeader) {
         mRequestQueue = requestQueue;
         mDispatcher = dispatcher;
         mAccessToken = accessToken;
         mUserAgent = userAgent;
         mAppContext = appContext;
+        mAddAcceptJsonHeader = addAcceptJsonHeader;
         mOnAuthFailedListener = new OnAuthFailedListener() {
             @Override
             public void onAuthFailed(AuthenticateErrorPayload authError) {
@@ -120,6 +128,9 @@ public abstract class BaseWPComRestClient {
         request.setOnParseErrorListener(mOnParseErrorListener);
         if (request.shouldCache() && request.shouldForceUpdate()) {
             mRequestQueue.getCache().invalidate(request.mUri.toString(), true);
+        }
+        if (mAddAcceptJsonHeader) {
+            request.addHeader(ACCEPT_HEADER, ACCEPT_JSON_HEADER_VALUE);
         }
         return mRequestQueue.add(request);
     }
