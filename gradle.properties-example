@@ -6,3 +6,5 @@ org.gradle.jvmargs=-Xmx6G -XX:+HeapDumpOnOutOfMemoryError
 
 android.useAndroidX=true
 android.enableJetifier=false
+
+android.nonTransitiveRClass=true
