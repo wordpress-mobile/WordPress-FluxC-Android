@@ -9,9 +9,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsRestClient
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -24,10 +23,10 @@ import javax.inject.Singleton
 @Singleton
 class WCLeaderboardsStore @Inject constructor(
     private val restClient: LeaderboardsRestClient,
-    private val productStore: WCProductStore,
     private val mapper: WCProductLeaderboardsMapper,
     private val coroutineEngine: CoroutineEngine,
     private val topPerformersDao: TopPerformerProductsDao,
+    private val reportsRestClient: ReportsRestClient
 ) {
     @Suppress("Unused")
     fun observeTopPerformerProducts(
@@ -48,63 +47,51 @@ class WCLeaderboardsStore @Inject constructor(
     suspend fun fetchTopPerformerProducts(
         site: SiteModel,
         granularity: StatsGranularity,
-        quantity: Int? = null,
-        addProductsPath: Boolean = false,
-        forceRefresh: Boolean = false,
+        quantity: Int = 5,
     ): WooResult<List<TopPerformerProductEntity>> {
         val startDate = granularity.startDateTime(site)
         val endDate = granularity.endDateTime(site)
-        val interval = OrderStatsRestClient.OrderStatsApiUnit.fromStatsGranularity(granularity).toString()
         return fetchTopPerformerProducts(
             site = site,
             startDate = startDate,
             endDate = endDate,
-            quantity = quantity,
-            addProductsPath = addProductsPath,
-            forceRefresh = forceRefresh,
-            interval = interval
+            quantity = quantity
         )
     }
 
-    @Suppress("LongParameterList")
     suspend fun fetchTopPerformerProducts(
         site: SiteModel,
         startDate: String,
         endDate: String,
-        quantity: Int? = null,
-        addProductsPath: Boolean = false,
-        forceRefresh: Boolean = false,
-        interval: String = ""
+        quantity: Int = 5,
     ): WooResult<List<TopPerformerProductEntity>> {
-        val period = DateUtils.getDatePeriod(startDate, endDate)
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
-            fetchAllLeaderboards(
-                site = site,
-                startDate = startDate,
-                endDate = endDate,
-                quantity = quantity,
-                addProductsPath = addProductsPath,
-                forceRefresh = forceRefresh,
-                interval = interval
-            )
-                .model
-                ?.firstOrNull { it.type == PRODUCTS }
-                ?.run {
-                    mapper.mapTopPerformerProductsEntity(
-                        response = this,
-                        site = site,
-                        productStore = productStore,
-                        datePeriod = period
-                    )
+        val response = reportsRestClient.fetchTopPerformerProducts(
+            site = site,
+            startDate = startDate,
+            endDate = endDate,
+            quantity = quantity
+        )
+
+        return when {
+            response.isError -> WooResult(response.error)
+            response.result != null -> {
+                if(response.result.isEmpty()) return WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+
+                val period = DateUtils.getDatePeriod(startDate, endDate)
+                val topPerformers = response.result.map { item ->
+                    mapper.mapTopPerformerProductsEntity(item, site, period)
                 }
-                ?.let {
-                    topPerformersDao.updateTopPerformerProductsFor(
-                        localSiteId = site.localId(),
-                        datePeriod = period,
-                        topPerformerProducts = it
-                    )
-                    WooResult(it)
-                } ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+
+                topPerformersDao.updateTopPerformerProductsFor(
+                    localSiteId = site.localId(),
+                    datePeriod = period,
+                    topPerformerProducts = topPerformers
+                )
+
+                WooResult(topPerformers)
+            }
+
+            else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
     }
 
