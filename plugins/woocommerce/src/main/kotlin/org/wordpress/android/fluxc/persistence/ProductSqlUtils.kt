@@ -225,7 +225,7 @@ object ProductSqlUtils {
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        skuSearchOptions: WCProductStore.SkuSearchOptions,
+        skuSearchOptions: WCProductStore.SkuSearchOptions = WCProductStore.SkuSearchOptions.Disabled
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -247,14 +247,31 @@ object ProductSqlUtils {
             queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
         }
         if (searchQuery?.isNotEmpty() == true) {
-            queryBuilder
-                    .beginGroup()
-                    .contains(WCProductModelTable.NAME, searchQuery)
-                    .or()
-                    .contains(WCProductModelTable.DESCRIPTION, searchQuery)
-                    .or()
-                    .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
-                    .endGroup()
+            when(skuSearchOptions) {
+                WCProductStore.SkuSearchOptions.Disabled -> {
+                    queryBuilder
+                        .beginGroup()
+                        .contains(WCProductModelTable.NAME, searchQuery)
+                        .or()
+                        .contains(WCProductModelTable.DESCRIPTION, searchQuery)
+                        .or()
+                        .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
+                        .endGroup()
+                }
+                WCProductStore.SkuSearchOptions.ExactSearch -> {
+                    queryBuilder
+                        .beginGroup()
+                        .equals(WCProductModelTable.SKU, searchQuery.lowercase())
+                        .endGroup()
+                }
+                WCProductStore.SkuSearchOptions.PartialMatch -> {
+                    queryBuilder
+                        .beginGroup()
+                        .contains(WCProductModelTable.SKU, searchQuery)
+                        .endGroup()
+                }
+            }
+
         }
 
         excludedProductIds?.let {
