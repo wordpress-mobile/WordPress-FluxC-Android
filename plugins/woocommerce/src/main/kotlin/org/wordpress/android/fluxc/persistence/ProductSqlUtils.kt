@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
@@ -224,6 +225,7 @@ object ProductSqlUtils {
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
+        skuSearchOptions: WCProductStore.SkuSearchOptions,
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
