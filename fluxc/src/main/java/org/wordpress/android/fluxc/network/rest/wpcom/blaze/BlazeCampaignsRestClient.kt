@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.AcceptHeaderStrategy
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -26,8 +27,9 @@ class BlazeCampaignsRestClient @Inject constructor(
     appContext: Context?,
     @Named("regular") requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
-) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent, true) {
+    userAgent: UserAgent,
+    acceptStrategy: AcceptHeaderStrategy.JsonAcceptHeader
+) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent, acceptStrategy) {
     suspend fun fetchBlazeCampaigns(
         site: SiteModel,
         page: Int = 1
