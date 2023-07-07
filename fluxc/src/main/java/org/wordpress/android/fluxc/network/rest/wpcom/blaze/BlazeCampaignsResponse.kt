@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.model.blaze.BlazeCampaignModel
 import org.wordpress.android.fluxc.model.blaze.BlazeCampaignsModel
 
 data class AudienceList(
-    val oSS: String?,
+    @SerializedName("OSs") val oSS: String?,
     val countries: String?,
     val devices: String?,
     val languages: String?,
@@ -14,7 +14,7 @@ data class AudienceList(
 
 data class ContentConfig(
     val clickUrl: String?,
-    val imageUrl: String,
+    val imageUrl: String?,
     val snippet: String?,
     val title: String
 )
@@ -23,7 +23,7 @@ data class Campaign(
     @SerializedName("alt_text") val altText: String?,
     @SerializedName("audience_list") val audienceList: AudienceList?,
     @SerializedName("avatar_url") val avatarUrl: String?,
-    @SerializedName("budget_cents") val budgetCents: Int?,
+    @SerializedName("budget_cents") val budgetCents: Long?,
     @SerializedName("campaign_id") val campaignId: Int?,
     @SerializedName("clicks") val clicks: String?,
     @SerializedName("content_config") val contentConfig: ContentConfig,
@@ -78,7 +78,7 @@ data class Campaign(
             startDate = BlazeCampaignsUtils.stringToDate(startDate),
             endDate = endDate?.let { BlazeCampaignsUtils.stringToDate(it) },
             uiStatus = uiStatus,
-            budgetCents = (budgetCents?.toDouble() ?: 0) as Double,
+            budgetCents = budgetCents?:0,
             impressions = impressions?.toLong() ?: 0,
             clicks = clicks?.toLong() ?: 0
         )

@@ -91,11 +91,11 @@ abstract class BlazeCampaignsDao {
         val siteId: Long,
         val campaignId: Long,
         val title: String,
-        val imageUrl: String,
+        val imageUrl: String?,
         val startDate: Date,
         val endDate: Date?,
         val uiStatus: String,
-        val budgetCents: Double,
+        val budgetCents: Long,
         val impressions: Long,
         val clicks: Long,
     ) {
