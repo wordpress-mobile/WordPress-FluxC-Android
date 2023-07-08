@@ -263,10 +263,6 @@ class BlazeCampaignsRestClientTest {
         }
     }
 
-    private fun assertSuccessCampaign(expected: Campaign, actual: Campaign) {
-
-    }
-
     private fun getResponseFromJsonString(json: String): BlazeCampaignsResponse {
         val responseType = object : TypeToken<BlazeCampaignsResponse>() {}.type
         return GsonBuilder()
