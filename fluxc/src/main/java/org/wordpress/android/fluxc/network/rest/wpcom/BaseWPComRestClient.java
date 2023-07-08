@@ -47,7 +47,8 @@ public abstract class BaseWPComRestClient {
     }
 
     public BaseWPComRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue,
-                               AccessToken accessToken, UserAgent userAgent, AcceptHeaderStrategy acceptHeaderStrategy) {
+                               AccessToken accessToken, UserAgent userAgent,
+                               AcceptHeaderStrategy acceptHeaderStrategy) {
         mRequestQueue = requestQueue;
         mDispatcher = dispatcher;
         mAccessToken = accessToken;
