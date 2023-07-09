@@ -9,7 +9,7 @@ import java.util.Locale
 object BlazeCampaignsUtils {
     private val DATE_FORMAT: ThreadLocal<DateFormat> = object : ThreadLocal<DateFormat>() {
         override fun initialValue(): DateFormat {
-            return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT)
+            return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ROOT)
         }
     }
 
