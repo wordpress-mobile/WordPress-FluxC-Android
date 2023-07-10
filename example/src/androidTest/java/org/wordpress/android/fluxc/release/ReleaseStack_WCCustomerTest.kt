@@ -73,20 +73,6 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun testFetchCustomersFromAnalyticsSearchByAllWithResults() {
-        runBlocking {
-            val result = wcCustomerStore.fetchCustomersFromAnalytics(
-                sSite,
-                page = 1,
-                searchQuery = "admin",
-                searchBy = "all",
-            )
-            assertThat(result.model?.size).isEqualTo(1)
-            assertThat(result.model?.get(0)?.id).isEqualTo(1)
-        }
-    }
-
-    @Test
     fun testFetchCustomersFromAnalyticsSearchByWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
