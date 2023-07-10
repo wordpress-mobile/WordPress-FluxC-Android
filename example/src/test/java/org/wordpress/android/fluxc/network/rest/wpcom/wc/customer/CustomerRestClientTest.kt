@@ -16,7 +16,7 @@ class CustomerRestClientTest {
     private val client = CustomerRestClient(wooNetwork)
 
     @Test
-    fun `given searchQuery and searchBy, when fetchCustomersFromAnalytics, then that passed to API`() {
+    fun `given searchQuery searchBy filter empty, when fetchCustomersFromAnalytics, then that passed to API`() {
         test {
             // GIVEN
             val searchQuery = "searchQuery"
@@ -36,7 +36,8 @@ class CustomerRestClientTest {
                         "order" to "asc",
                         "orderby" to "name",
                         "search" to searchQuery,
-                        "searchby" to searchBy
+                        "searchby" to searchBy,
+                        "filter_empty" to "email,city,state,country"
                     ),
                     clazz = Array<CustomerFromAnalyticsDTO>::class.java
                 )
@@ -53,7 +54,8 @@ class CustomerRestClientTest {
                 page = page,
                 sortType = sortType,
                 searchQuery = searchQuery,
-                searchBy = searchBy
+                searchBy = searchBy,
+                filterEmpty = listOf("email", "city", "state", "country")
             )
 
             // THEN
@@ -66,7 +68,8 @@ class CustomerRestClientTest {
                     "order" to "asc",
                     "orderby" to "name",
                     "search" to searchQuery,
-                    "searchby" to searchBy
+                    "searchby" to searchBy,
+                    "filter_empty" to "email,city,state,country"
                 ),
                 clazz = Array<CustomerFromAnalyticsDTO>::class.java
             )
