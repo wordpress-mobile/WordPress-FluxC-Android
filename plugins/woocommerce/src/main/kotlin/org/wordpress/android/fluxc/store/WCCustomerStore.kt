@@ -183,6 +183,7 @@ class WCCustomerStore @Inject constructor(
         sortType: CustomerSorting = DEFAULT_CUSTOMER_SORTING,
         searchQuery: String? = null,
         searchBy: String? = null,
+        filterEmpty: List<String>? = null,
     ): WooResult<List<WCCustomerModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchCustomersFromAnalytics") {
             val response = restClient.fetchCustomersFromAnalytics(
@@ -192,6 +193,7 @@ class WCCustomerStore @Inject constructor(
                 sortType = sortType,
                 searchQuery = searchQuery,
                 searchBy = searchBy,
+                filterEmpty = filterEmpty,
             )
             when {
                 response.isError -> {
