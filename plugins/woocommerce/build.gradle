@@ -6,6 +6,8 @@ plugins {
 }
 
 android {
+    namespace "org.wordpress.android.fluxc.plugins.woocommerce"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
