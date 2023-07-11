@@ -44,7 +44,7 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         warning 'InvalidPackage'
     }
 
