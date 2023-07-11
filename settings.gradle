@@ -39,6 +39,9 @@ dependencyResolutionManagement {
         sharedLibs {
             from("com.automattic:dependency-catalog:$catalogVersion")
 
+            // TODO: Remove the below once https://github.com/Automattic/android-dependency-catalog/pull/20
+            //  gets ready for review and the CI is able to publish the new catalog.
+            version("androidGradlePlugin", "8.0.2")
             version("androidx-annotation", "1.0.2")
             version("androidx-appcompat", "1.0.2")
             version("androidx-constraintlayout", "1.1.3")
