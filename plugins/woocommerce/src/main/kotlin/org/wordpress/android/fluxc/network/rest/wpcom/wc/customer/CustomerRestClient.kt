@@ -126,6 +126,7 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
         sortType: CustomerSorting = NAME_ASC,
         searchQuery: String? = null,
         searchBy: String? = null,
+        filterEmpty: List<String>? = null,
     ): WooPayload<Array<CustomerFromAnalyticsDTO>> {
         val url = WOOCOMMERCE.reports.customers.pathV4Analytics
 
@@ -148,6 +149,10 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
         ).run {
             putIfNotEmpty("search" to searchQuery)
             putIfNotEmpty("searchby" to searchBy)
+        }
+
+        if (!filterEmpty.isNullOrEmpty()) {
+            params["filter_empty"] = filterEmpty.joinToString(",")
         }
 
         val response = wooNetwork.executeGetGsonRequest(
