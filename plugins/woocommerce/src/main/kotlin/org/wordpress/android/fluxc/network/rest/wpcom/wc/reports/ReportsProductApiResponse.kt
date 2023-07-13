@@ -22,13 +22,13 @@ data class ReportProductItem(
     val imageHTML: String? = null
 ) {
     companion object {
-        private val ORIGINAL_FILE_REGEX = Regex("data-orig-file=\"(.*?)\"")
+        private val SRC_REGEX = Regex("src=\"(.*?)\"")
     }
 
     fun getImageUrl() = imageHTML
         ?.let {
-            ORIGINAL_FILE_REGEX.find(it)?.value
-                ?.replace("data-orig-file=", "")
+            SRC_REGEX.find(it)?.value
+                ?.replace("src=", "")
                 ?.replace("\"", "")
         }
 }
