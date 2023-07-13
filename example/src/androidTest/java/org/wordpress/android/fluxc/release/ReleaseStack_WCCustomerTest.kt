@@ -19,7 +19,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun testFetchOrdersFirstPage() {
+    fun testFetchCustomersFromAnalyticsFirstPage() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(sSite, page = 1)
             assertThat(result.model?.size).isEqualTo(1)
@@ -38,7 +38,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun testFetchOrdersSecondPage() {
+    fun testFetchCustomersFromAnalyticsSecondPage() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(sSite, page = 2)
             assertThat(result.model?.size).isEqualTo(0)
@@ -46,7 +46,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun testFetchOrdersSearchWithResults() {
+    fun testFetchCustomersFromAnalyticsSearchWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
                 sSite,
@@ -60,7 +60,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun testFetchOrdersSearchByEmailWithoutResults() {
+    fun testFetchCustomersFromAnalyticsSearchByEmailWithoutResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
                 sSite,
@@ -73,13 +73,41 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
-    fun testFetchOrdersSearchByWithResults() {
+    fun testFetchCustomersFromAnalyticsSearchByWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
                 sSite,
                 page = 1,
                 searchQuery = "bia",
                 searchBy = "email",
+            )
+            assertThat(result.model?.size).isEqualTo(1)
+            assertThat(result.model?.get(0)?.id).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun testFetchCustomersFromAnalyticsFilterEmptyAndSearchByWithResults() {
+        runBlocking {
+            val result = wcCustomerStore.fetchCustomersFromAnalytics(
+                sSite,
+                page = 1,
+                searchQuery = "John",
+                searchBy = "name",
+                filterEmpty = listOf("email", "city", "state", "country")
+            )
+            assertThat(result.model?.size).isEqualTo(1)
+            assertThat(result.model?.get(0)?.id).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun testFetchCustomersFromAnalyticsFilterEmptyWithResults() {
+        runBlocking {
+            val result = wcCustomerStore.fetchCustomersFromAnalytics(
+                sSite,
+                page = 1,
+                filterEmpty = listOf("email")
             )
             assertThat(result.model?.size).isEqualTo(1)
             assertThat(result.model?.get(0)?.id).isEqualTo(1)
