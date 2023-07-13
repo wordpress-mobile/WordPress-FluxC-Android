@@ -302,6 +302,7 @@ class WCLeaderboardsStoreTest {
                     millisSinceLastUpdated = 0
                 )
             )
+        @Suppress("MaxLineLength")
         val TOP_PERFORMER_ENTITY_REPORTS_LIST =
             listOf(
                 TopPerformerProductEntity(
