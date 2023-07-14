@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.example.CommentsFragment
 import org.wordpress.android.fluxc.example.DomainsFragment
 import org.wordpress.android.fluxc.example.EditorThemeFragment
 import org.wordpress.android.fluxc.example.ExperimentsFragment
+import org.wordpress.android.fluxc.example.JetpackAIFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
@@ -196,4 +197,7 @@ internal interface FragmentsModule {
 
     @ContributesAndroidInjector
     fun provideOnboardingFragment(): WooOnboardingFragment
+
+    @ContributesAndroidInjector
+    fun provideJetpackAIFragment(): JetpackAIFragment
 }

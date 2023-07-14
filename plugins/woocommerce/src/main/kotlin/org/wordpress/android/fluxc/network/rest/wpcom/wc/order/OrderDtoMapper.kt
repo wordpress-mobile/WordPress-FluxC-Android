@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -73,6 +74,7 @@ class OrderDtoMapper @Inject internal constructor(
                     shippingLines = this.shipping_lines.toString(),
                     feeLines = this.fee_lines.toString(),
                     taxLines = this.tax_lines.toString(),
+                    couponLines = Gson().toJson(this.coupon_lines),
                     metaData = this.meta_data.toString(),
                     paymentUrl = this.payment_url ?: "",
                     isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES)

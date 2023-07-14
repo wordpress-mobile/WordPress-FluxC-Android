@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys.ADDONS_METADATA_KEY
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.utils.getBoolean
@@ -26,10 +27,6 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    companion object {
-        private const val ADDONS_METADATA_KEY = "_product_addons"
-    }
-
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
     val remoteId
@@ -112,6 +109,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var metadata = ""
     @Column var bundledItems = ""
     @Column var compositeComponents = ""
+    @Column var specialStockStatus = ""
 
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
@@ -316,6 +314,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return null
     }
 
+    /**
+     * Returns the list of products attributes. The function returns an empty list
+     * when the attributes json deserialization fails.
+     */
     fun getAttributeList(): List<ProductAttribute> {
         fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
@@ -331,25 +333,26 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             return options
         }
 
-        val attrList = ArrayList<ProductAttribute>()
-        try {
-            Gson().fromJson(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    attrList.add(
-                            ProductAttribute(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    variation = this.getBoolean("variation", true),
-                                    visible = this.getBoolean("visible", true),
-                                    options = getAttributeOptions(this.getAsJsonArray("options"))
-                            )
+        return kotlin.runCatching {
+            Gson().fromJson(attributes, JsonElement::class.java)
+                .asJsonArray.asSequence()
+                .map { it.asJsonObject }
+                .map { json ->
+                    ProductAttribute(
+                        id = json.getLong("id"),
+                        name = json.getString("name") ?: "",
+                        variation = json.getBoolean("variation", true),
+                        visible = json.getBoolean("visible", true),
+                        options = getAttributeOptions(json.getAsJsonArray("options"))
                     )
-                }
+                }.toList()
+        }.fold(
+            onSuccess = { it },
+            onFailure = { e ->
+                AppLog.e(T.API, e)
+                emptyList()
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-        }
-        return attrList
+        )
     }
 
     fun getDownloadableFiles(): List<WCProductFileModel> {
@@ -554,6 +557,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val updatedFiles = updatedProduct.getDownloadableFiles()
         val storedFiles = getDownloadableFiles()
         return storedFiles == updatedFiles
+    }
+
+    object AddOnsMetadataKeys {
+        const val ADDONS_METADATA_KEY = "_product_addons"
     }
 
     object QuantityRulesMetadataKeys {

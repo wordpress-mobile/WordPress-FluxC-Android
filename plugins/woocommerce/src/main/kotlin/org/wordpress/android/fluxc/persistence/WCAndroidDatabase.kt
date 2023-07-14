@@ -42,6 +42,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_15_16
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_20_21
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_21_22
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_22_23
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_24_25
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
@@ -51,7 +52,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-    version = 24,
+    version = 25,
     entities = [
         AddonEntity::class,
         AddonOptionEntity::class,
@@ -73,7 +74,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         AutoMigration(from = 17, to = 18, spec = AutoMigration17to18::class),
         AutoMigration(from = 18, to = 19, spec = AutoMigration18to19::class),
         AutoMigration(from = 19, to = 20, spec = AutoMigration19to20::class),
-        AutoMigration(from = 23, to = 24, spec = AutoMigration23to24::class)
+        AutoMigration(from = 23, to = 24, spec = AutoMigration23to24::class),
     ]
 )
 @TypeConverters(
@@ -114,6 +115,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
             .addMigrations(MIGRATION_20_21)
             .addMigrations(MIGRATION_21_22)
             .addMigrations(MIGRATION_22_23)
+            .addMigrations(MIGRATION_24_25)
             .build()
     }
 

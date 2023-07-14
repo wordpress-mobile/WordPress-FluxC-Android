@@ -1,8 +1,10 @@
 package org.wordpress.android.fluxc.model.customer
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerFromAnalyticsDTO
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -20,44 +22,44 @@ class WCCustomerMapperTest {
         val site = SiteModel().apply { id = siteId }
 
         val billing = CustomerDTO.Billing(
-                address1 = "address1",
-                address2 = "address2",
-                city = "city",
-                company = "company",
-                country = "country",
-                email = "email",
-                firstName = "firstName",
-                lastName = "lastName",
-                phone = "phone",
-                postcode = "postcode",
-                state = "state"
+            address1 = "address1",
+            address2 = "address2",
+            city = "city",
+            company = "company",
+            country = "country",
+            email = "email",
+            firstName = "firstName",
+            lastName = "lastName",
+            phone = "phone",
+            postcode = "postcode",
+            state = "state"
         )
         val shipping = CustomerDTO.Shipping(
-                address1 = "address1",
-                address2 = "address2",
-                city = "city",
-                company = "company",
-                country = "country",
-                firstName = "firstName",
-                lastName = "lastName",
-                postcode = "postcode",
-                state = "state"
+            address1 = "address1",
+            address2 = "address2",
+            city = "city",
+            company = "company",
+            country = "country",
+            firstName = "firstName",
+            lastName = "lastName",
+            postcode = "postcode",
+            state = "state"
         )
         val response = CustomerDTO(
-                avatarUrl = "avatarUrl",
-                billing = billing,
-                dateCreated = "dateCreated",
-                dateCreatedGmt = "dateCreatedGmt",
-                dateModified = "dateModified",
-                dateModifiedGmt = "dateModifiedGmt",
-                email = "email",
-                firstName = "firstName",
-                id = remoteId,
-                isPayingCustomer = true,
-                lastName = "lastName",
-                role = "role",
-                shipping = shipping,
-                username = "username"
+            avatarUrl = "avatarUrl",
+            billing = billing,
+            dateCreated = "dateCreated",
+            dateCreatedGmt = "dateCreatedGmt",
+            dateModified = "dateModified",
+            dateModifiedGmt = "dateModifiedGmt",
+            email = "email",
+            firstName = "firstName",
+            id = remoteId,
+            isPayingCustomer = true,
+            lastName = "lastName",
+            role = "role",
+            shipping = shipping,
+            username = "username"
         )
 
         // when
@@ -181,5 +183,94 @@ class WCCustomerMapperTest {
             assertEquals("email", billing?.email)
             assertEquals("phone", billing?.phone)
         }
+    }
+
+    @Test
+    fun `given total spend more than 0, when mapToModel, then maps to correct model with  paying true`() {
+        // GIVEN
+        val remoteId = 13L
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val response = CustomerFromAnalyticsDTO(
+            avgOrderValue = 1.0,
+            city = "city",
+            country = "country",
+            dateLastActive = "dateLastActive",
+            dateLastActiveGmt = "dateLastActiveGmt",
+            dateLastOrder = "dateLastOrder",
+            dateRegistered = "dateRegistered",
+            dateRegisteredGmt = "dateRegisteredGmt",
+            email = "email",
+            id = remoteId,
+            name = "firstname lastname",
+            ordersCount = 1,
+            postcode = "postcode",
+            state = "state",
+            totalSpend = 1.0,
+            userId = 1L
+        )
+
+        // WHEN
+        val result = mapper.mapToModel(site, response)
+
+        // THEN
+        assertThat(result.firstName).isEqualTo("firstname")
+        assertThat(result.lastName).isEqualTo("lastname")
+        assertThat(result.email).isEqualTo("email")
+        assertThat(result.isPayingCustomer).isEqualTo(true)
+        assertThat(result.remoteCustomerId).isEqualTo(1L)
+        assertThat(result.dateCreated).isEqualTo("dateRegistered")
+        assertThat(result.dateModified).isEqualTo("dateLastActive")
+
+        assertThat(result.billingCountry).isEqualTo("country")
+        assertThat(result.shippingCountry).isEqualTo("country")
+
+        assertThat(result.billingCity).isEqualTo("city")
+        assertThat(result.shippingCity).isEqualTo("city")
+
+        assertThat(result.shippingFirstName).isEqualTo("firstname")
+        assertThat(result.shippingLastName).isEqualTo("lastname")
+        assertThat(result.billingFirstName).isEqualTo("firstname")
+        assertThat(result.billingLastName).isEqualTo("lastname")
+
+        assertThat(result.billingPostcode).isEqualTo("postcode")
+        assertThat(result.shippingPostcode).isEqualTo("postcode")
+
+        assertThat(result.billingState).isEqualTo("state")
+        assertThat(result.shippingState).isEqualTo("state")
+    }
+
+    @Test
+    fun `given total spend 0, when mapToModel, then maps to correct model with paying false`() {
+        // GIVEN
+        val remoteId = 13L
+        val siteId = 23
+        val site = SiteModel().apply { id = siteId }
+
+        val response = CustomerFromAnalyticsDTO(
+            avgOrderValue = 1.0,
+            city = "city",
+            country = "country",
+            dateLastActive = "dateLastActive",
+            dateLastActiveGmt = "dateLastActiveGmt",
+            dateLastOrder = "dateLastOrder",
+            dateRegistered = "dateRegistered",
+            dateRegisteredGmt = "dateRegisteredGmt",
+            email = "email",
+            id = remoteId,
+            name = "firstname lastname",
+            ordersCount = 1,
+            postcode = "postcode",
+            state = "state",
+            totalSpend = 0.0,
+            userId = 1L
+        )
+
+        // WHEN
+        val result = mapper.mapToModel(site, response)
+
+        // THEN
+        assertThat(result.isPayingCustomer).isEqualTo(false)
     }
 }

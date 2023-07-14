@@ -1021,6 +1021,7 @@ class SiteRestClient @Inject constructor(
             site.setIsVideoPressSupported(from.options.videopress_enabled)
             site.setIsAutomatedTransfer(from.options.is_automated_transfer)
             site.setIsWpComStore(from.options.is_wpcom_store)
+            site.publishedStatus = from.options.blog_public
             site.hasWooCommerce = from.options.woocommerce_is_active
             site.adminUrl = from.options.admin_url
             site.loginUrl = from.options.login_url
@@ -1034,6 +1035,7 @@ class SiteRestClient @Inject constructor(
             site.showOnFront = from.options.show_on_front
             site.pageOnFront = from.options.page_on_front
             site.pageForPosts = from.options.page_for_posts
+            site.canBlaze = from.options.can_blaze
             site.setIsPublicizePermanentlyDisabled(from.options.publicize_permanently_disabled)
             if (from.options.active_modules != null) {
                 site.activeModules = from.options.active_modules.joinToString(",")
@@ -1137,6 +1139,7 @@ class SiteRestClient @Inject constructor(
             site.setIsWPCom(true)
         }
         site.origin = SiteModel.ORIGIN_WPCOM_REST
+        site.planActiveFeatures = (from.plan?.features?.active?.joinToString(",")).orEmpty()
         return site
     }
 

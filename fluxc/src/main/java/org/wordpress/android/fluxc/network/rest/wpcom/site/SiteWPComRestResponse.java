@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.site;
 
+import androidx.annotation.Nullable;
+
 import org.wordpress.android.fluxc.network.Response;
 
 import java.util.List;
@@ -35,12 +37,19 @@ public class SiteWPComRestResponse implements Response {
         public List<String> active_modules;
         public List<String> jetpack_connection_active_plugins;
         public BloggingPromptsSettings blogging_prompts_settings;
+        public int blog_public;
+        public boolean can_blaze;
     }
 
     public static class Plan {
         public String product_id;
         public String product_name_short;
         public boolean is_free;
+        @Nullable public Features features;
+    }
+
+    public class Features {
+        @Nullable public List<String> active;
     }
 
     public static class Capabilities {

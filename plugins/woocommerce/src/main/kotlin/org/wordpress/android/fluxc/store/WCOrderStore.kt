@@ -30,7 +30,9 @@ import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
+import org.wordpress.android.fluxc.store.ListStore.OnListDataFailure
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -297,6 +299,7 @@ class WCOrderStore @Inject constructor(
         PLUGIN_NOT_ACTIVE,
         INVALID_RESPONSE,
         GENERIC_ERROR,
+        PARSE_ERROR,
         EMPTY_BILLING_EMAIL;
 
         companion object {
@@ -831,20 +834,37 @@ class WCOrderStore @Inject constructor(
                     payload.fetchedOrders.map { it.first }.map { it.orderId })
             }
 
+            // Notify listeners that the list of orders has changed (only call this if there is no error)
+            val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = payload.site.id)
+
             if (!payload.isError) {
                 // Save the list of orders to the database
 
                 insertOrder(*payload.fetchedOrders.toTypedArray())
 
-                // Notify listeners that the list of orders has changed (only call this if there is no error)
-                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = payload.site.id)
                 mDispatcher.dispatch(
                     ListActionBuilder.newListDataInvalidatedAction(
                         listTypeIdentifier
                     )
                 )
-            }
+            } else {
+                val errorType = if(payload.error.type == PARSE_ERROR){
+                    ListErrorType.PARSE_ERROR
+                } else {
+                    ListErrorType.GENERIC_ERROR
+                }
 
+                mDispatcher.dispatch(
+                    ListActionBuilder.newListDataFailureAction(
+                            OnListDataFailure(listTypeIdentifier).apply {
+                                error = ListError(
+                                    errorType,
+                                    payload.error.message
+                                )
+                            }
+                    )
+                )
+            }
             emitChange(onOrdersFetchedByIds)
         }
     }
