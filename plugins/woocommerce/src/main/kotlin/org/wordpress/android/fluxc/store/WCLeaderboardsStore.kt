@@ -23,13 +23,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Suppress("LongParameterList")
 class WCLeaderboardsStore @Inject constructor(
     private val restClient: LeaderboardsRestClient,
     private val productStore: WCProductStore,
     private val mapper: WCProductLeaderboardsMapper,
     private val coroutineEngine: CoroutineEngine,
     private val topPerformersDao: TopPerformerProductsDao,
-    private val reportsRestClient: ReportsRestClient
+    private val reportsRestClient: ReportsRestClient,
+    private val wooCommerceStore: WooCommerceStore
 ) {
     @Suppress("Unused")
     fun observeTopPerformerProducts(
@@ -143,8 +145,9 @@ class WCLeaderboardsStore @Inject constructor(
             response.isError -> WooResult(response.error)
             response.result != null -> {
                 val period = DateUtils.getDatePeriod(startDate, endDate)
+                val currency = wooCommerceStore.getSiteSettings(site)?.currencyCode ?: ""
                 val topPerformers = response.result.map { item ->
-                    mapper.mapTopPerformerProductsEntity(item, site, period)
+                    mapper.mapTopPerformerProductsEntity(item, site, period, currency)
                 }
 
                 topPerformersDao.updateTopPerformerProductsFor(

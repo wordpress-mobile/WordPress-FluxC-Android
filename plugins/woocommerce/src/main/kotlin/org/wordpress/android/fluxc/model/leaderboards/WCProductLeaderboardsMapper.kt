@@ -78,7 +78,8 @@ class WCProductLeaderboardsMapper @Inject constructor() {
     fun mapTopPerformerProductsEntity(
         response: ReportsProductApiResponse,
         site: SiteModel,
-        datePeriod: String
+        datePeriod: String,
+        currencyCode: String
     ): TopPerformerProductEntity {
         val imageURL = response.product?.getImageUrl()
         return TopPerformerProductEntity(
@@ -88,7 +89,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
             name = response.product?.name ?: "",
             imageUrl = imageURL,
             quantity = response.itemsSold ?: 0,
-            currency = "",
+            currency = currencyCode,
             total = response.netRevenue ?: 0.0,
             millisSinceLastUpdated = System.currentTimeMillis()
         )

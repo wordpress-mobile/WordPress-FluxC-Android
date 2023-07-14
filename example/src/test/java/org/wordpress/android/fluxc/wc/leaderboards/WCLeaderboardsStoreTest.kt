@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
+import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
@@ -49,6 +50,7 @@ class WCLeaderboardsStoreTest {
     private val productStore: WCProductStore = mock()
     private var mapper: WCProductLeaderboardsMapper = spy { WCProductLeaderboardsMapper() }
     private val topPerformersDao: TopPerformerProductsDao = mock()
+    private val wooCommerceStore: WooCommerceStore = mock()
 
     private lateinit var storeUnderTest: WCLeaderboardsStore
 
@@ -104,7 +106,12 @@ class WCLeaderboardsStoreTest {
 
         storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
 
-        verify(mapper, times(1)).mapTopPerformerProductsEntity(any(), any(), any(), any())
+        verify(mapper, times(1)).mapTopPerformerProductsEntity(
+            any<LeaderboardsApiResponse>(),
+            any(),
+            any(),
+            any()
+        )
     }
 
     @Test
@@ -232,7 +239,8 @@ class WCLeaderboardsStoreTest {
             mapper,
             initCoroutineEngine(),
             topPerformersDao,
-            reportsRestClient
+            reportsRestClient,
+            wooCommerceStore
         )
     }
 
@@ -291,6 +299,7 @@ class WCLeaderboardsStoreTest {
                     millisSinceLastUpdated = 0
                 )
             )
+
         @Suppress("MaxLineLength")
         val TOP_PERFORMER_ENTITY_REPORTS_LIST =
             listOf(
