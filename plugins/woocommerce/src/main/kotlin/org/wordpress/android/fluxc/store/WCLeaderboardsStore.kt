@@ -142,8 +142,6 @@ class WCLeaderboardsStore @Inject constructor(
         return when {
             response.isError -> WooResult(response.error)
             response.result != null -> {
-                if(response.result.isEmpty()) return WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-
                 val period = DateUtils.getDatePeriod(startDate, endDate)
                 val topPerformers = response.result.map { item ->
                     mapper.mapTopPerformerProductsEntity(item, site, period)

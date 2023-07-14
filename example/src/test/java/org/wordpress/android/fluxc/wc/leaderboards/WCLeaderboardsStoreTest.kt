@@ -81,17 +81,6 @@ class WCLeaderboardsStoreTest {
     }
 
     @Test
-    fun `fetch top performer products with empty result should return WooError`() = test {
-        givenFetchTopPerformerReturns(emptyArray())
-        setup()
-
-        val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
-
-        assertThat(result.model).isNull()
-        assertThat(result.error).isNotNull
-    }
-
-    @Test
     fun `fetch top performer products legacy should filter leaderboards by PRODUCTS type`() = test {
         setup { mapper = spy() }
         val response = generateSampleLeaderboardsApiResponse()
