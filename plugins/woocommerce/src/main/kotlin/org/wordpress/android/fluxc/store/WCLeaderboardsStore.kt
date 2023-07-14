@@ -22,8 +22,8 @@ import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 @Suppress("LongParameterList")
+@Singleton
 class WCLeaderboardsStore @Inject constructor(
     private val restClient: LeaderboardsRestClient,
     private val productStore: WCProductStore,
