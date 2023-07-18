@@ -81,7 +81,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         datePeriod: String,
         currencyCode: String
     ): TopPerformerProductEntity {
-        val imageURL = response.product?.getImageUrl()
+        val imageURL = response.product?.imageUrl
         return TopPerformerProductEntity(
             localSiteId = site.localId(),
             datePeriod = datePeriod,

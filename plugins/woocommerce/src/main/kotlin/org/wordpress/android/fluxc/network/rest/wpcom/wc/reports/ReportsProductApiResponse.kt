@@ -24,7 +24,6 @@ data class ReportProductItem(
     companion object {
         private val SRC_REGEX = Regex("src=\"(.*?)\"")
     }
-
         val imageUrl: String?
         get() = imageHTML
             ?.let { SRC_REGEX.find(it)?.value }
