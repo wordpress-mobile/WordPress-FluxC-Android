@@ -6,6 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
@@ -22,27 +23,34 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
 import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsProductApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsRestClient
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
+import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleTopPerformerApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCLeaderboardsStoreTest {
-    private val restClient: LeaderboardsRestClient = mock()
+    private val leaderboardsRestClient: LeaderboardsRestClient = mock()
+    private val reportsRestClient: ReportsRestClient = mock()
     private val productStore: WCProductStore = mock()
-    private var mapper: WCProductLeaderboardsMapper = mock()
+    private var mapper: WCProductLeaderboardsMapper = spy { WCProductLeaderboardsMapper() }
     private val topPerformersDao: TopPerformerProductsDao = mock()
+    private val wooCommerceStore: WooCommerceStore = mock()
 
     private lateinit var storeUnderTest: WCLeaderboardsStore
 
@@ -64,23 +72,23 @@ class WCLeaderboardsStoreTest {
     }
 
     @Test
-    fun `fetch top performer products with empty result should return WooError`() = test {
+    fun `fetch top performer products legacy with empty result should return WooError`() = test {
         givenFetchLeaderBoardsReturns(emptyArray())
         setup()
 
-        val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+        val result = storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
 
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
     }
 
     @Test
-    fun `fetch top performer products should filter leaderboards by PRODUCTS type`() = test {
+    fun `fetch top performer products legacy should filter leaderboards by PRODUCTS type`() = test {
         setup { mapper = spy() }
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
-        storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+        storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
 
         verify(mapper).mapTopPerformerProductsEntity(
             response?.firstOrNull { it.type == PRODUCTS }!!,
@@ -91,18 +99,23 @@ class WCLeaderboardsStoreTest {
     }
 
     @Test
-    fun `fetch top performer products should call mapper once`() = test {
+    fun `fetch top performer products legacy should call mapper once`() = test {
         setup()
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
-        storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+        storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
 
-        verify(mapper, times(1)).mapTopPerformerProductsEntity(any(), any(), any(), any())
+        verify(mapper, times(1)).mapTopPerformerProductsEntity(
+            any<LeaderboardsApiResponse>(),
+            any(),
+            any(),
+            any()
+        )
     }
 
     @Test
-    fun `fetch top performer products should return mapped top performer entities correctly`() =
+    fun `fetch top performer products legacy should return mapped top performer entities correctly`() =
         test {
             setup()
             val response = generateSampleLeaderboardsApiResponse()
@@ -112,7 +125,7 @@ class WCLeaderboardsStoreTest {
                 returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
             )
 
-            val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+            val result = storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
 
             assertThat(result.model).isNotNull
             assertThat(result.model).isEqualTo(TOP_PERFORMER_ENTITY_LIST)
@@ -120,25 +133,38 @@ class WCLeaderboardsStoreTest {
         }
 
     @Test
-    fun `fetch top performer products from a invalid site ID should return WooResult with error`() =
+    fun `fetch top performer products should return mapped top performer entities correctly`() =
         test {
             setup()
-            val response = generateSampleLeaderboardsApiResponse()
-            givenFetchLeaderBoardsReturns(response)
-            givenTopPerformersMapperReturns(
-                givenResponse = response?.firstOrNull { it.type == PRODUCTS }!!,
-                returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST,
-                SiteModel().apply { id = 100 },
-            )
+            val response = generateSampleTopPerformerApiResponse()
+            givenFetchTopPerformerReturns(response)
 
-            val result = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+            val topPerformers = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+            val result = setMillisSinceLastUpdated(topPerformers, DEFAULT_MILLIS_SINCE_LAST_UPDATE)
 
-            assertThat(result.model).isNull()
-            assertThat(result.error).isNotNull
+            assertThat(result.model).isNotNull
+            assertThat(result.model).isEqualTo(TOP_PERFORMER_ENTITY_REPORTS_LIST)
+            assertThat(result.error).isNull()
         }
 
     @Test
     fun `fetching top performer products should update database with new data`() =
+        test {
+            setup()
+            val response = generateSampleTopPerformerApiResponse()
+            givenFetchTopPerformerReturns(response)
+
+            storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+
+            verify(topPerformersDao).updateTopPerformerProductsFor(
+                eq(stubSite.localId()),
+                eq(DAYS.datePeriod(stubSite)),
+                any()
+            )
+        }
+
+    @Test
+    fun `fetching top performer products legacy should update database with new data`() =
         test {
             setup()
             val response = generateSampleLeaderboardsApiResponse()
@@ -148,7 +174,7 @@ class WCLeaderboardsStoreTest {
                 returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
             )
 
-            storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+            storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
 
             verify(topPerformersDao, times(1))
                 .updateTopPerformerProductsFor(
@@ -183,7 +209,7 @@ class WCLeaderboardsStoreTest {
 
     private suspend fun givenFetchLeaderBoardsReturns(response: Array<LeaderboardsApiResponse>?) {
         whenever(
-            restClient.fetchLeaderboards(
+            leaderboardsRestClient.fetchLeaderboards(
                 site = any(),
                 startDate = any(),
                 endDate = any(),
@@ -195,13 +221,26 @@ class WCLeaderboardsStoreTest {
         ).thenReturn(WooPayload(response))
     }
 
+    private suspend fun givenFetchTopPerformerReturns(response: Array<ReportsProductApiResponse>?) {
+        whenever(
+            reportsRestClient.fetchTopPerformerProducts(
+                site = any(),
+                startDate = any(),
+                endDate = any(),
+                quantity = any()
+            )
+        ).thenReturn(WooPayload(response))
+    }
+
     private fun createStoreUnderTest() {
         storeUnderTest = WCLeaderboardsStore(
-            restClient,
+            leaderboardsRestClient,
             productStore,
             mapper,
             initCoroutineEngine(),
-            topPerformersDao
+            topPerformersDao,
+            reportsRestClient,
+            wooCommerceStore
         )
     }
 
@@ -220,7 +259,18 @@ class WCLeaderboardsStoreTest {
         ).thenReturn(returnedTopPerformersList)
     }
 
+    private fun setMillisSinceLastUpdated(
+        result: WooResult<List<TopPerformerProductEntity>>,
+        millis: Long
+    ): WooResult<List<TopPerformerProductEntity>> {
+        val updatedList = result.model?.map { entity ->
+            entity.copy(millisSinceLastUpdated = millis)
+        }
+        return WooResult(updatedList)
+    }
+
     companion object {
+        const val DEFAULT_MILLIS_SINCE_LAST_UPDATE = 100L
         val TOP_PERFORMER_ENTITY_LIST =
             listOf(
                 TopPerformerProductEntity(
@@ -247,6 +297,44 @@ class WCLeaderboardsStoreTest {
                     currency = "USD",
                     total = 10.5,
                     millisSinceLastUpdated = 0
+                )
+            )
+
+        @Suppress("MaxLineLength")
+        val TOP_PERFORMER_ENTITY_REPORTS_LIST =
+            listOf(
+                TopPerformerProductEntity(
+                    localSiteId = LocalId(321),
+                    datePeriod = DAYS.datePeriod(stubSite),
+                    productId = RemoteId(14),
+                    name = "Polo",
+                    imageUrl = "https://superlativecentaur.wpcomstaging.com/wp-content/uploads/2023/01/polo-2-600x599.jpg",
+                    quantity = 25,
+                    currency = "",
+                    total = 506.0000000000001,
+                    millisSinceLastUpdated = DEFAULT_MILLIS_SINCE_LAST_UPDATE
+                ),
+                TopPerformerProductEntity(
+                    localSiteId = LocalId(321),
+                    datePeriod = DAYS.datePeriod(stubSite),
+                    productId = RemoteId(22),
+                    name = "Sunglasses Subscription",
+                    imageUrl = "https://superlativecentaur.wpcomstaging.com/wp-content/uploads/2023/01/sunglasses-2-600x600.jpg",
+                    quantity = 25,
+                    currency = "",
+                    total = 1374.0,
+                    millisSinceLastUpdated = DEFAULT_MILLIS_SINCE_LAST_UPDATE
+                ),
+                TopPerformerProductEntity(
+                    localSiteId = LocalId(321),
+                    datePeriod = DAYS.datePeriod(stubSite),
+                    productId = RemoteId(15),
+                    name = "Beanie",
+                    imageUrl = "https://superlativecentaur.wpcomstaging.com/wp-content/uploads/2023/01/beanie-2-600x600.jpg",
+                    quantity = 21,
+                    currency = "",
+                    total = 385.0,
+                    millisSinceLastUpdated = DEFAULT_MILLIS_SINCE_LAST_UPDATE
                 )
             )
     }
