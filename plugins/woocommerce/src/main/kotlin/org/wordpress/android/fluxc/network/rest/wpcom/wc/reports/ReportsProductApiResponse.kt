@@ -25,11 +25,10 @@ data class ReportProductItem(
         private val SRC_REGEX = Regex("src=\"(.*?)\"")
     }
 
-    fun getImageUrl() = imageHTML
-        ?.let {
-            SRC_REGEX.find(it)?.value
-                ?.replace("src=", "")
-                ?.replace("\"", "")
-        }
+        val imageUrl: String?
+        get() = imageHTML
+            ?.let { SRC_REGEX.find(it)?.value }
+            ?.replace("src=", "")
+            ?.replace("\"", "")
 }
 
