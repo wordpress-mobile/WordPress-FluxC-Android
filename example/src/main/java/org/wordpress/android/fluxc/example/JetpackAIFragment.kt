@@ -10,7 +10,8 @@ import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_jetpackai.*
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Error
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Success
 import org.wordpress.android.fluxc.store.jetpackai.JetpackAIStore
 import javax.inject.Inject
 
@@ -31,17 +32,17 @@ class JetpackAIFragment : StoreSelectingFragment() {
         generate_haiku.setOnClickListener {
             selectedSite?.let {
                 lifecycleScope.launch {
-                    val result = store.fetchJetpackAICompletionsForSite(
+                    val result = store.fetchJetpackAICompletions(
                         site = it,
                         prompt = "Please make me a haiku",
-                        skipCache = true
+                        feature = "fluxc-example"
                     )
 
                     when (result) {
-                        is JetpackAIRestClient.JetpackAICompletionsResponse.Success -> {
+                        is Success -> {
                             prependToLog("Haiku:\n${result.completion}")
                         }
-                        is JetpackAIRestClient.JetpackAICompletionsResponse.Error -> {
+                        is Error -> {
                             prependToLog("Error fetching haiku: ${result.message}")
                         }
                     }
