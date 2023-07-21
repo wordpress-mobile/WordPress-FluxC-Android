@@ -45,6 +45,9 @@ dependencyResolutionManagement {
             // TODO: Remove the below once https://github.com/Automattic/android-dependency-catalog/pull/20
             //  gets ready for review and the CI is able to publish the new catalog.
             version("kotlin", "1.6.20")
+            // TODO: Remove the below once https://github.com/Automattic/android-dependency-catalog/pull/21
+            //  gets ready for review and the CI is able to publish the new catalog.
+            version("restAssured", "5.3.1")
             version("androidx-annotation", "1.0.2")
             version("androidx-appcompat", "1.0.2")
             version("androidx-constraintlayout", "1.1.3")
