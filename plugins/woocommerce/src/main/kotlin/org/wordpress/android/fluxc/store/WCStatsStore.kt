@@ -826,4 +826,9 @@ class WCStatsStore @Inject constructor(
         return WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, granularity, startDate, endDate)
     }
+
+    fun getRawRevenueStatsFromId(
+        site: SiteModel,
+        revenueRangeId: Int
+    ) = WCStatsSqlUtils.getRevenueStatsForId(site, revenueRangeId)
 }
