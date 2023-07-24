@@ -171,7 +171,8 @@ class OrderStatsRestClient @Inject constructor(
         startDate: String,
         endDate: String,
         perPage: Int,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
+        customRevenueId: Int = 0
     ): FetchRevenueStatsResponsePayload {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val params = mapOf(
@@ -195,7 +196,7 @@ class OrderStatsRestClient @Inject constructor(
         return when (response) {
             is WPAPIResponse.Success -> {
                 response.data?.let {
-                        val model = WCRevenueStatsModel().apply {
+                        val model = WCRevenueStatsModel(id = customRevenueId).apply {
                             this.localSiteId = site.id
                             this.interval = granularity.toString()
                             this.data = it.intervals.toString()
