@@ -15,9 +15,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.check
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
@@ -44,8 +46,10 @@ import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.store.InsertOrder
 import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.HasOrdersResult
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
@@ -396,6 +400,50 @@ class WCOrderStoreTest {
             assertThat(count).isEqualTo(1)
         }
     }
+
+    @Test
+    fun testHasOrdersWithoutLocalOrders() {
+        runBlocking {
+            // Given there are NO orders in the local database
+            val orderModel = OrderTestUtils.generateSampleOrder(42)
+            val site = SiteModel().apply { id = orderModel.localSiteId.value }
+            val hasOrdersResponse = FetchHasOrdersResponsePayload(site = site, hasOrders = false)
+            whenever(orderRestClient.fetchHasOrders(any(), anyOrNull()))
+                .thenReturn(hasOrdersResponse)
+
+            // When checking if the store has orders
+            val result = orderStore.hasOrders(site)
+
+            // Then check with the API if the store has orders
+            verify(orderRestClient).fetchHasOrders(site,null)
+            assertThat(result).isInstanceOf(HasOrdersResult.Success::class.java)
+            (result as? HasOrdersResult.Success)?.let { success ->
+                assertThat(success.hasOrders).isEqualTo(hasOrdersResponse.hasOrders)
+            }
+        }
+    }
+
+    @Test
+    fun testHasOrdersWithLocalOrders() {
+        runBlocking {
+            // Given there are orders in the local database
+            val orderModel = OrderTestUtils.generateSampleOrder(42)
+            val site = SiteModel().apply { id = orderModel.localSiteId.value }
+            orderModel.saveToDb()
+
+            // When checking if the store has orders
+            val result = orderStore.hasOrders(site)
+
+            // Then use the database as proof that the store has orders and avoid
+            // fetching data from the API
+            verify(orderRestClient, never()).fetchHasOrders(site,null)
+            assertThat(result).isInstanceOf(HasOrdersResult.Success::class.java)
+            (result as? HasOrdersResult.Success)?.let { success ->
+                assertThat(success.hasOrders).isEqualTo(true)
+            }
+        }
+    }
+
 
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, OrderEntity?> {
         return mutableMapOf<WCOrderSummaryModel, OrderEntity?>().apply {
