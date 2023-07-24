@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsProductApiResponse
 
 object WCLeaderboardsTestFixtures {
     val stubSite = SiteModel().apply {
@@ -26,6 +27,11 @@ object WCLeaderboardsTestFixtures {
             UnitTestUtils
                     .getStringFromResourceFile(this.javaClass, "wc/leaderboards-response-example.json")
                     ?.run { Gson().fromJson(this, Array<LeaderboardsApiResponse>::class.java) }
+
+    fun generateSampleTopPerformerApiResponse() =
+        UnitTestUtils
+            .getStringFromResourceFile(this.javaClass, "wc/reports-product-response-example.json")
+            ?.run { Gson().fromJson(this, Array<ReportsProductApiResponse>::class.java) }
 
     val generateStubbedProductIdList = listOf(14L, 22L, 15L)
 }

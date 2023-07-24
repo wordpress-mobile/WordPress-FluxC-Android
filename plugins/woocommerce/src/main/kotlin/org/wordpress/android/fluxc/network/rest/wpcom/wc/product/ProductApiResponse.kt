@@ -53,6 +53,7 @@ data class ProductApiResponse(
     val backorders: String? = null,
     val backorders_allowed:Boolean = false,
     val backordered:Boolean = false,
+    @JsonAdapter(PrimitiveBooleanJsonDeserializer::class)
     val sold_individually:Boolean = false,
     val weight: String? = null,
     val dimensions: JsonElement? = null,
