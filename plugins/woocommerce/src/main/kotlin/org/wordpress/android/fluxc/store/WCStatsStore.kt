@@ -139,7 +139,8 @@ class WCStatsStore @Inject constructor(
         val granularity: StatsGranularity,
         val startDate: String? = null,
         val endDate: String? = null,
-        val forced: Boolean = false
+        val forced: Boolean = false,
+        val revenueRangeId: Int = 0
     ) : Payload<BaseNetworkError>()
 
     class FetchRevenueStatsResponsePayload(
