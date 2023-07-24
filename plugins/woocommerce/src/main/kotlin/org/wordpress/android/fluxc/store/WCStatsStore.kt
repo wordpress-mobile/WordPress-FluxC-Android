@@ -688,7 +688,8 @@ class WCStatsStore @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity),
-                forceRefresh = payload.forced
+                forceRefresh = payload.forced,
+                revenueRangeId = payload.revenueRangeId
             )
 
             with(result) {
