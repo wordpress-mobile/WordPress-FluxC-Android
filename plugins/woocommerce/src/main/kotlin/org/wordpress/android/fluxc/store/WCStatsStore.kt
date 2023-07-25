@@ -827,8 +827,8 @@ class WCStatsStore @Inject constructor(
                 site, granularity, startDate, endDate)
     }
 
-    fun getRawRevenueStatsFromId(
+    fun getRawRevenueStatsFromRangeId(
         site: SiteModel,
         revenueRangeId: Int
-    ) = WCStatsSqlUtils.getRevenueStatsForId(site, revenueRangeId)
+    ) = WCStatsSqlUtils.getRevenueStatsFromRangeId(site, revenueRangeId)
 }
