@@ -156,14 +156,14 @@ object WCStatsSqlUtils {
                 .asModel.firstOrNull()
     }
 
-    fun getRevenueStatsForId(
+    fun getRevenueStatsFromRangeId(
         site: SiteModel,
         revenueRangeId: Int
     ) = WellSql.select(WCRevenueStatsModel::class.java)
         .where()
         .beginGroup()
         .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, site.id)
-        .equals(WCRevenueStatsModelTable.ID, revenueRangeId)
+        .equals(WCRevenueStatsModelTable.RANGE_ID, revenueRangeId)
         .endGroup().endWhere()
         .asModel.firstOrNull()
 }
