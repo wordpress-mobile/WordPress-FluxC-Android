@@ -196,13 +196,14 @@ class OrderStatsRestClient @Inject constructor(
         return when (response) {
             is WPAPIResponse.Success -> {
                 response.data?.let {
-                        val model = WCRevenueStatsModel(id = revenueRangeId).apply {
+                        val model = WCRevenueStatsModel().apply {
                             this.localSiteId = site.id
                             this.interval = granularity.toString()
                             this.data = it.intervals.toString()
                             this.total = it.totals.toString()
                             this.startDate = startDate
                             this.endDate = endDate
+                            this.rangeId = revenueRangeId
                         }
 
                     FetchRevenueStatsResponsePayload(site, granularity, model)
