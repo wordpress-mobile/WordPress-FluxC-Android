@@ -1,4 +1,10 @@
+# Project-wide Gradle settings.
+
 org.gradle.jvmargs=-Xmx6G -XX:+HeapDumpOnOutOfMemoryError
+
+# WordPress-Flux-Android properties.
+
 android.useAndroidX=true
-android.enableJetifier=true
-android.jetifier.ignorelist=bcprov
+android.enableJetifier=false
+
+android.nonTransitiveRClass=true

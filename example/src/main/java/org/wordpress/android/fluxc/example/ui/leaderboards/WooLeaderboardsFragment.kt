@@ -82,11 +82,7 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         coroutineScope.launch {
             try {
                 takeAsyncRequestWithValidSite {
-                    wcLeaderboardsStore.fetchTopPerformerProducts(
-                        it,
-                        unit,
-                        forceRefresh = false
-                    )
+                    wcLeaderboardsStore.fetchTopPerformerProducts(it, unit)
                 }
                         ?.model
                         ?.let { logLeaderboardResponse(it, unit) }
