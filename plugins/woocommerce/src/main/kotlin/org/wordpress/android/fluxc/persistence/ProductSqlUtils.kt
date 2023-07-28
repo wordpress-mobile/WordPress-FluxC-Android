@@ -260,6 +260,7 @@ object ProductSqlUtils {
                 }
                 SkuSearchOptions.ExactSearch -> {
                     queryBuilder.beginGroup()
+                        // The search is case sensitive
                         .equals(WCProductModelTable.SKU, searchQuery)
                         .endGroup()
                 }
