@@ -139,7 +139,8 @@ class WCStatsStore @Inject constructor(
         val granularity: StatsGranularity,
         val startDate: String? = null,
         val endDate: String? = null,
-        val forced: Boolean = false
+        val forced: Boolean = false,
+        val revenueRangeId: Int = 0
     ) : Payload<BaseNetworkError>()
 
     class FetchRevenueStatsResponsePayload(
@@ -687,7 +688,8 @@ class WCStatsStore @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity),
-                forceRefresh = payload.forced
+                forceRefresh = payload.forced,
+                revenueRangeId = payload.revenueRangeId
             )
 
             with(result) {
@@ -824,4 +826,9 @@ class WCStatsStore @Inject constructor(
         return WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, granularity, startDate, endDate)
     }
+
+    fun getRawRevenueStatsFromRangeId(
+        site: SiteModel,
+        revenueRangeId: Int
+    ) = WCStatsSqlUtils.getRevenueStatsFromRangeId(site, revenueRangeId)
 }
