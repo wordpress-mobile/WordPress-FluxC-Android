@@ -6,6 +6,8 @@ plugins {
 }
 
 android {
+    namespace "org.wordpress.android.fluxc.plugins.woocommerce"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
@@ -102,7 +104,6 @@ project.afterEvaluate {
 
                 groupId "org.wordpress.fluxc.plugins"
                 artifactId "woocommerce"
-                artifact tasks.named("androidSourcesJar") // This task is added by 'publish-to-s3' plugin
                 // version is set by 'publish-to-s3' plugin
             }
         }
