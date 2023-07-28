@@ -260,7 +260,7 @@ object ProductSqlUtils {
                 }
                 SkuSearchOptions.ExactSearch -> {
                     queryBuilder.beginGroup()
-                        .equals(WCProductModelTable.SKU, searchQuery.lowercase())
+                        .equals(WCProductModelTable.SKU, searchQuery)
                         .endGroup()
                 }
                 SkuSearchOptions.PartialMatch -> {
