@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.SkuSearchOptions
 import java.util.Locale
 
 @Suppress("LargeClass")
@@ -224,6 +225,7 @@ object ProductSqlUtils {
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -245,14 +247,29 @@ object ProductSqlUtils {
             queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
         }
         if (searchQuery?.isNotEmpty() == true) {
-            queryBuilder
-                    .beginGroup()
-                    .contains(WCProductModelTable.NAME, searchQuery)
-                    .or()
-                    .contains(WCProductModelTable.DESCRIPTION, searchQuery)
-                    .or()
-                    .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
-                    .endGroup()
+            when(skuSearchOptions) {
+                SkuSearchOptions.Disabled -> {
+                    queryBuilder
+                        .beginGroup()
+                        .contains(WCProductModelTable.NAME, searchQuery)
+                        .or()
+                        .contains(WCProductModelTable.DESCRIPTION, searchQuery)
+                        .or()
+                        .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
+                        .endGroup()
+                }
+                SkuSearchOptions.ExactSearch -> {
+                    queryBuilder.beginGroup()
+                        // The search is case sensitive
+                        .equals(WCProductModelTable.SKU, searchQuery)
+                        .endGroup()
+                }
+                SkuSearchOptions.PartialMatch -> {
+                    queryBuilder.beginGroup()
+                        .contains(WCProductModelTable.SKU, searchQuery)
+                        .endGroup()
+                }
+            }
         }
 
         excludedProductIds?.let {
@@ -261,14 +278,8 @@ object ProductSqlUtils {
             }
         }
 
-        val sortOrder = when (sortType) {
-            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
-            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
-        }
-        val sortField = when (sortType) {
-            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
-            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
-        }
+        val sortOrder = getSortOrder(sortType)
+        val sortField = getSortField(sortType)
 
         val products = queryBuilder
                 .endGroup().endWhere()
@@ -315,14 +326,8 @@ object ProductSqlUtils {
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
     ): List<WCProductModel> {
-        val sortOrder = when (sortType) {
-            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
-            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
-        }
-        val sortField = when (sortType) {
-            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
-            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
-        }
+        val sortOrder = getSortOrder(sortType)
+        val sortField = getSortField(sortType)
         val products = WellSql.select(WCProductModel::class.java)
                 .where()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
@@ -336,6 +341,18 @@ object ProductSqlUtils {
             products
         }
     }
+
+    private fun getSortField(sortType: ProductSorting) =
+        when (sortType) {
+            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
+            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
+        }
+
+    private fun getSortOrder(sortType: ProductSorting) =
+        when (sortType) {
+            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
+            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
+        }
 
     fun deleteProductsForSite(site: SiteModel): Int {
         return WellSql.delete(WCProductModel::class.java)

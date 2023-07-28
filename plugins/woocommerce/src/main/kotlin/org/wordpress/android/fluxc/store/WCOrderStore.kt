@@ -542,6 +542,17 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
+    suspend fun hasOrders(site: SiteModel): HasOrdersResult {
+        return coroutineEngine.withDefaultContext(T.API, this, "checkIfHasOrders") {
+            val ordersCount = ordersDao.getOrderCountForSite(site.localId())
+            return@withDefaultContext if (ordersCount > 0) {
+                HasOrdersResult.Success(true)
+            } else {
+                fetchHasOrders(site, null)
+            }
+        }
+    }
+
     suspend fun fetchHasOrders(site: SiteModel, status: String?): HasOrdersResult {
         return coroutineEngine.withDefaultContext(T.API, this, "fetchHasOrders") {
             val result = wcOrderRestClient.fetchHasOrders(site, status)

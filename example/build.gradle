@@ -6,6 +6,8 @@ plugins {
 }
 
 android {
+    namespace "org.wordpress.android.fluxc.example"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     compileOptions {
@@ -42,7 +44,7 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         warning 'InvalidPackage'
     }
 
@@ -61,7 +63,10 @@ android {
         }
     }
 
-    buildFeatures.viewBinding true
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
 
     sourceSets {
         // Adds exported schema location as test app assets.

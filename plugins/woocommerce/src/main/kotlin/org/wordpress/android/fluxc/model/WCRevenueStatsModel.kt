@@ -20,6 +20,7 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     @Column var endDate = "" // The end date of the data
     @Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period
     @Column var total = "" // JSON - A map of total stats for a given time period
+    @Column var rangeId = 0 // A ID for easily fetch the Revenue Stats for a given start and end date
 
     companion object {
         private val gson by lazy { Gson() }
