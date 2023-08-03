@@ -89,7 +89,7 @@ class ReactNativeStoreWPAPITest {
                 .thenReturn(restUrl)
 
         // retrieves nonce
-        val nonce = Available("a_nonce", site.username)
+        val nonce = Available("a_nonce", site.username!!)
         whenever(nonceRestClient.requestNonce(site))
                 .thenReturn(nonce)
 
@@ -121,7 +121,7 @@ class ReactNativeStoreWPAPITest {
             .thenReturn(restUrl)
 
         // retrieves nonce
-        val nonce = Available("a_nonce", site.username)
+        val nonce = Available("a_nonce", site.username!!)
         whenever(nonceRestClient.requestNonce(site))
             .thenReturn(nonce)
 
@@ -296,7 +296,7 @@ class ReactNativeStoreWPAPITest {
     fun `refreshed nonce leads to unauthorized error, so returns error`() = test {
         // nonce never requested, so retrieves nonce
         initStore(null)
-        val nonce = Available("a_nonce", site.username)
+        val nonce = Available("a_nonce", site.username!!)
         whenever(nonceRestClient.getNonce(site))
                 .thenReturn(nonce)
 
@@ -316,7 +316,7 @@ class ReactNativeStoreWPAPITest {
 
     @Test
     fun `reusing saved nonce leads to unauthorized error, updates nonce but nonce is same, so returns error`() = test {
-        val savedNonce = Available("saved_nonce", site.username)
+        val savedNonce = Available("saved_nonce", site.username!!)
         initStore(savedNonce)
 
         // initial fetch uses saved nonce and fails with unauthorized
@@ -339,7 +339,7 @@ class ReactNativeStoreWPAPITest {
 
     @Test
     fun `reusing saved nonce leads to unauthorized error, successfully updates nonce, so tries call again`() = test {
-        val savedNonce = Available("saved_nonce", site.username)
+        val savedNonce = Available("saved_nonce", site.username!!)
         initStore(savedNonce)
 
         // initial fetch uses saved nonce and fails with unauthorized
@@ -349,7 +349,7 @@ class ReactNativeStoreWPAPITest {
                 .thenReturn(initialResponseWithUnauthorizedError)
 
         // fetches new nonce successfully
-        val updatedNonce = Available("updated_nonce", site.username)
+        val updatedNonce = Available("updated_nonce", site.username!!)
         whenever(nonceRestClient.requestNonce(site))
                 .thenReturn(updatedNonce)
 
@@ -370,7 +370,7 @@ class ReactNativeStoreWPAPITest {
 
     @Test
     fun `reusing saved nonce leads to unauthorized error, fails to update nonce, so returns original error`() = test {
-        val savedNonce = Available("saved_nonce", site.username)
+        val savedNonce = Available("saved_nonce", site.username!!)
         initStore(savedNonce)
 
         // initial fetch uses saved nonce and fails with unauthorized
@@ -396,7 +396,7 @@ class ReactNativeStoreWPAPITest {
         // previous nonce faield, and was "recent"
         val fourMinuteOldFailedNonceRequest = FailedRequest(
             currentTime - 4 * 60 * 1000,
-            site.username,
+            site.username!!,
             Nonce.CookieNonceErrorType.GENERIC_ERROR
         )
         initStore(fourMinuteOldFailedNonceRequest)
@@ -418,13 +418,13 @@ class ReactNativeStoreWPAPITest {
         // previous nonce request failed, but was not "recent"
         val sixMinuteOldUnavailableNonce = FailedRequest(
             currentTime - 6 * 60 * 1000,
-            site.username,
+            site.username!!,
             Nonce.CookieNonceErrorType.GENERIC_ERROR
         )
         initStore(sixMinuteOldUnavailableNonce)
 
         // refreshes nonce because latest attempt to refresh nonce was not recent
-        val nonce = Available("a_nonce", site.username)
+        val nonce = Available("a_nonce", site.username!!)
         whenever(nonceRestClient.requestNonce(site))
                 .thenReturn(nonce)
 
@@ -444,10 +444,10 @@ class ReactNativeStoreWPAPITest {
     @Test
     fun `nonce unknown, so requests nonce`() = test {
         // previous nonce request unknown
-        initStore(Unknown(site.username))
+        initStore(Unknown(site.username!!))
 
         // refreshes nonce because latest attempt to refresh nonce was not recent
-        val nonce = Available("a_nonce", site.username)
+        val nonce = Available("a_nonce", site.username!!)
         whenever(nonceRestClient.requestNonce(site))
                 .thenReturn(nonce)
 
