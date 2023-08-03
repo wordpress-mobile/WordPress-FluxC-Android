@@ -36,8 +36,8 @@ class NonceRestClient @Inject constructor(
      *  [rest-nonce endpoint](https://developer.wordpress.org/reference/functions/wp_ajax_rest_nonce/)
      *  that became available in WordPress 5.3.
      */
-    suspend fun requestNonce(site: SiteModel): Nonce {
-        return requestNonce(site.url, site.username, site.password)
+    suspend fun requestNonce(site: SiteModel) = site.username?.let { username ->
+        requestNonce(site.url, username, site.password)
     }
 
     /**
