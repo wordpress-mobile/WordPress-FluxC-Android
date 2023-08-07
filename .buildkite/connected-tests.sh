@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# Connected tests are disabled because of how unreliable they have been in Firebase.
-# We are looking into possibilities to run these tests on a separate machine, but it'll
-# be a while until that happens. We are also hoping to improve general flakiness of the
-# tests which also will take time.
-#
-# Instead of completely disabling this job, we'll only assemble the tests so that
-# we at least keep that module up to date.
-
 set -euo pipefail
 
 echo "--- :closed_lock_with_key: Installing Secrets"
@@ -22,6 +14,18 @@ echo -e "\n--- :open_file_folder: Merge Properties Files"
 
 echo -e "\n--- :hammer_and_wrench: Building Tests"
 ./gradlew example:assembleDebug example:assembleDebugAndroidTest
+
+INFO_MESSAGE=$(cat <<-END
+Connected tests are disabled because of how unreliable they have been in Firebase.
+We are looking into possibilities to run these tests on a separate machine, but it'll
+be a while until that happens. We are also hoping to improve general flakiness of the
+tests which also will take time.
+
+Instead of completely disabling connected tests, we'll only assemble the module so that
+we can at least keep it up to date.
+END
+)
+buildkite-agent annotate "$INFO_MESSAGE" --style "info" --context "ctx-info"
 
 # echo -e "\n--- :firebase: Run Tests"
 # mkdir -p build/test-results
