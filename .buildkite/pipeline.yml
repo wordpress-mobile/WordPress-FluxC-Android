@@ -88,15 +88,14 @@ steps:
   ############################
   # Connected Tests
   ############################
-  - label: "🔬 Connected Tests"
+  - label: "🔬 Build Connected Tests"
     key: connected-tests
     command: .buildkite/connected-tests.sh
     artifact_paths: *artifact_paths
     plugins: *common_plugins
-    # The connected tests are currently failing. We want to keep running these tests to collect
-    # data about the failures. However, we don't want to publish the GitHub status to avoid confusion.
-    # That's why we don't have a `notify` block for this step.
-    # See: https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2515
+    notify:
+      - github_commit_status:
+          context: "Publish :fluxc-build-connected-tests"
 
   ############################
   # Publish artefacts to S3
