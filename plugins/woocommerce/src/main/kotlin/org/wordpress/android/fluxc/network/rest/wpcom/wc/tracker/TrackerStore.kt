@@ -31,7 +31,7 @@ class TrackerStore @Inject internal constructor(
         val formattedInstallationDate = installationDate?.let { ISO8601_FORMAT.format(it) }
         appLogWrapper.d(
             STATS,
-            "Sending Telemetry. Values: appVersion=$appVersion, site=${site.id}, " +
+            "Sending Telemetry. Values: appVersion=$appVersion, site=${site.siteId}, " +
                     "installationDate=$formattedInstallationDate"
         )
         return restClient.sendTelemetry(appVersion, site, formattedInstallationDate)
