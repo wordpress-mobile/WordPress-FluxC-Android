@@ -140,7 +140,8 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         val length: Float,
         val width: Float,
         val weight: Float,
-        @SerializedName("is_letter") val isLetter: Boolean = false
+        @SerializedName("is_letter") val isLetter: Boolean = false,
+        val hazmat: String = ""
     )
 
     class SelectedPackage {
