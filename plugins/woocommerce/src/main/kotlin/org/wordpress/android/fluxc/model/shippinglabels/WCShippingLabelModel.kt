@@ -141,7 +141,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         val width: Float,
         val weight: Float,
         @SerializedName("is_letter") val isLetter: Boolean = false,
-        val hazmat: String = ""
+        val hazmat: HazmatCategory? = null
     )
 
     class SelectedPackage {
@@ -166,5 +166,38 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     class WCShippingLabelRefundModel {
         val status: String? = null
         @SerializedName("request_date") val requestDate: Long? = null
+    }
+    enum class HazmatCategory {
+        PRIMARY_CONTAINED,
+        PRIMARY_PACKED,
+        PRIMARY,
+        SECONDARY_CONTAINED,
+        SECONDARY_PACKED,
+        SECONDARY,
+        ORMD,
+        LITHIUM,
+        LIMITED_QUANTITY,
+        AIR_ELIGIBLE_ETHANOL,
+        CLASS_1,
+        CLASS_3,
+        CLASS_7,
+        CLASS_8_CORROSIVE,
+        CLASS_8_WET_BATTERY,
+        CLASS_9_NEW_LITHIUM_INDIVIDUAL,
+        CLASS_9_USED_LITHIUM,
+        CLASS_9_NEW_LITHIUM_DEVICE,
+        CLASS_9_DRY_ICE,
+        CLASS_9_UNMARKED_LITHIUM,
+        CLASS_9_MAGNETIZED,
+        DIVISION_4_1,
+        DIVISION_5_1,
+        DIVISION_5_2,
+        DIVISION_6_1,
+        DIVISION_6_2,
+        EXCEPTED_QUANTITY_PROVISION,
+        GROUND_ONLY,
+        ID8000,
+        LIGHTERS,
+        SMALL_QUANTITY_PROVISION
     }
 }
