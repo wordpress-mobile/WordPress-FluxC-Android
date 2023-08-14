@@ -7,6 +7,7 @@ import org.wordpress.android.util.AppLog.T.STATS
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,6 +18,9 @@ class TrackerStore @Inject internal constructor(
 ) {
     private companion object {
         val ISO8601_FORMAT = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ROOT)
+            .apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
     }
 
     suspend fun sendTelemetry(
@@ -27,7 +31,7 @@ class TrackerStore @Inject internal constructor(
         val formattedInstallationDate = installationDate?.let { ISO8601_FORMAT.format(it) }
         appLogWrapper.d(
             STATS,
-            "Sending Telemetry. Values: appVersion=$appVersion, siteId=${site.id}, " +
+            "Sending Telemetry. Values: appVersion=$appVersion, site=${site.id}, " +
                     "installationDate=$formattedInstallationDate"
         )
         return restClient.sendTelemetry(appVersion, site, formattedInstallationDate)
