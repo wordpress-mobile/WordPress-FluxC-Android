@@ -10,7 +10,7 @@ class TrackerStore @Inject internal constructor(private val restClient: TrackerR
     suspend fun sendTelemetry(
         appVersion: String,
         site: SiteModel,
-        installationDateIso8601: String? = null
+        installationDateIso8601: String?
     ): WooPayload<Unit> {
         return restClient.sendTelemetry(appVersion, site, installationDateIso8601)
     }
