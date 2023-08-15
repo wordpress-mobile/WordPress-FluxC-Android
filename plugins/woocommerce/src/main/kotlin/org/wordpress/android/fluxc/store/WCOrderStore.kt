@@ -543,12 +543,12 @@ class WCOrderStore @Inject constructor(
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
-        with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
+        with(payload) { wcOrderRestClient.fetchOrderCountSync(site, statusFilter) }
     }
 
-    suspend fun fetchOrdersCount(site: SiteModel): OrdersCountResult {
+    suspend fun fetchOrdersCount(site: SiteModel, filterByStatus: String? = null): OrdersCountResult {
         return coroutineEngine.withDefaultContext(API, this, "checkIfHasOrders") {
-            val result = wcOrderRestClient.fetchOrderCount(site)
+            val result = wcOrderRestClient.fetchOrderCountSync(site, filterByStatus)
             return@withDefaultContext if (result.isError) {
                  OrdersCountResult.Failure(result.error)
             } else {

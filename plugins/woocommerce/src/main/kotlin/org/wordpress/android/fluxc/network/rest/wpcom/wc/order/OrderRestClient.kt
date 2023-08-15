@@ -384,7 +384,7 @@ class OrderRestClient @Inject constructor(
      *
      * @param [filterByStatus] The order status to return a count for
      */
-    fun fetchOrderCount(site: SiteModel, filterByStatus: String) {
+    fun fetchOrderCountSync(site: SiteModel, filterByStatus: String) {
         coroutineEngine.launch(T.API, this, "fetchOrderCount") {
             dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(
                 doFetchOrderCount(site, filterByStatus))
@@ -392,7 +392,8 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    suspend fun fetchOrderCount(site: SiteModel) = doFetchOrderCount(site, null)
+    suspend fun fetchOrderCountSync(site: SiteModel, filterByStatus: String?) =
+        doFetchOrderCount(site, filterByStatus)
 
     /**
      * Makes a GET request to `/wp-json/wc/v3/orders` for a single order of a specific type (or any type) in order to
@@ -850,7 +851,11 @@ class OrderRestClient @Inject constructor(
 
         return when (response) {
             is WPAPIResponse.Success -> {
-                val total = response.data?.find { it.slug == filterByStatus }?.total
+                val total = if (filterByStatus == null) {
+                    response.data?.sumOf { it.total }
+                } else {
+                    response.data?.find { it.slug == filterByStatus }?.total
+                }
 
                 total?.let {
                     FetchOrdersCountResponsePayload(site, filterByStatus, it)
