@@ -1639,6 +1639,21 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    suspend fun fetchProductsCount(
+        site: SiteModel,
+    ): WooResult<Long> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductsCount") {
+            val response = wcProductRestClient.fetchProductsTotals(site)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    WooResult(response.result.sumOf { it.total })
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     private fun saveVariationsInDatabase(
         result: WooResult<BatchProductVariationsApiResponse>,
         productId: RemoteId,

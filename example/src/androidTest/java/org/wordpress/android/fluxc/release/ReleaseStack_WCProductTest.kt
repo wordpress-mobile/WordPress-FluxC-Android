@@ -6,6 +6,7 @@ import kotlinx.coroutines.withTimeout
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -709,6 +710,14 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 WCProductActionBuilder.newAddedProductAction(RemoteAddProductPayload(sSite, productModel))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+    }
+
+    @Test
+    fun testFetchProductsCountShouldReturnAllProductsCount() = runBlocking {
+        val result = productStore.fetchProductsCount(sSite)
+
+        assertFalse(result.isError)
+        assertEquals(42L, result.model)
     }
 
     /**
