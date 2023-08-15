@@ -99,7 +99,7 @@ class ReleaseStack_WPApiPluginTest : ReleaseStack_Base() {
     ): SitePluginModel {
         pluginCoroutineStore.syncConfigureSitePlugin(site, plugin.name, plugin.slug, true)
 
-        val activatedPlugin = PluginSqlUtils.getSitePluginBySlug(site, plugin.slug)
+        val activatedPlugin = requireNotNull(PluginSqlUtils.getSitePluginBySlug(site, plugin.slug))
 
         assertTrue(activatedPlugin.isActive)
         return activatedPlugin
@@ -111,7 +111,7 @@ class ReleaseStack_WPApiPluginTest : ReleaseStack_Base() {
     ): SitePluginModel {
         pluginCoroutineStore.syncConfigureSitePlugin(site, plugin.name, plugin.slug, false)
 
-        val deactivatedPlugin = PluginSqlUtils.getSitePluginBySlug(site, plugin.slug)
+        val deactivatedPlugin = requireNotNull(PluginSqlUtils.getSitePluginBySlug(site, plugin.slug))
 
         assertFalse(deactivatedPlugin.isActive)
         return deactivatedPlugin
@@ -120,11 +120,11 @@ class ReleaseStack_WPApiPluginTest : ReleaseStack_Base() {
     private suspend fun installPlugin(
         site: SiteModel
     ): SitePluginModel {
-        val result = pluginCoroutineStore.syncInstallSitePlugin(site, pluginSlug)
+        val result = requireNotNull(pluginCoroutineStore.syncInstallSitePlugin(site, pluginSlug))
 
         assertFalse(result.isError)
 
-        val installedPlugin = PluginSqlUtils.getSitePluginBySlug(site, pluginSlug)
+        val installedPlugin = requireNotNull(PluginSqlUtils.getSitePluginBySlug(site, pluginSlug))
 
         assertNotNull(installedPlugin)
         assertTrue(installedPlugin.isActive)

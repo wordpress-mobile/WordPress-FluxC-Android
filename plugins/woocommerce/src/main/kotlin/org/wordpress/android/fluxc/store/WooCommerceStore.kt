@@ -3,6 +3,9 @@ package org.wordpress.android.fluxc.store
 import android.content.Context
 import com.wellsql.generated.SiteModelTable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -98,16 +101,19 @@ open class WooCommerceStore @Inject constructor(
             )
         }
 
-        var rowsAffected = fetchResult.rowsAffected
         // Fetch WooCommerce availability for non-Jetpack sites
-        siteStore.sites
+        val updatedSites = siteStore.sites
             .filter { it.needsAdditionalCheckForWooInstallation }
-            .forEach { site ->
+            .pmap { site ->
                 val isResultUpdated = fetchAndUpdateNonJetpackSite(site)
                 if (isResultUpdated.model == true && !fetchResult.updatedSites.contains(site)) {
-                    rowsAffected++
+                    1
+                } else {
+                    0
                 }
-            }
+            }.sum()
+
+        val rowsAffected = fetchResult.rowsAffected + updatedSites
 
         emitChange(OnSiteChanged(rowsAffected, fetchResult.updatedSites))
 
@@ -508,5 +514,9 @@ open class WooCommerceStore @Inject constructor(
         applyDecimalFormatting: Boolean
     ): String {
         return formatCurrencyForDisplay(amount.toString(), site, currencyCode, applyDecimalFormatting)
+    }
+
+    private suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): List<B> = coroutineScope {
+        map { async { f(it) } }.awaitAll()
     }
 }
