@@ -7,7 +7,11 @@ import javax.inject.Singleton
 
 @Singleton
 class TrackerStore @Inject internal constructor(private val restClient: TrackerRestClient) {
-    suspend fun sendTelemetry(appVersion: String, site: SiteModel): WooPayload<Unit> {
-        return restClient.sendTelemetry(appVersion, site)
+    suspend fun sendTelemetry(
+        appVersion: String,
+        site: SiteModel,
+        installationDateIso8601: String?
+    ): WooPayload<Unit> {
+        return restClient.sendTelemetry(appVersion, site, installationDateIso8601)
     }
 }
