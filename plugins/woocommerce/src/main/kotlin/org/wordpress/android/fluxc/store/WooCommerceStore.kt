@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
+import org.wordpress.android.fluxc.model.WCTaxBasedOnSettingsModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -33,6 +34,7 @@ import org.wordpress.android.fluxc.persistence.PluginSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
+import org.wordpress.android.fluxc.persistence.WCTaxBasedOnSettingsSqlUtils
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -176,6 +178,9 @@ open class WooCommerceStore @Inject constructor(
      */
     open fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
         WCProductSettingsSqlUtils.getProductSettingsForSite(site)
+
+    fun getTaxBasedOnSettings(site: SiteModel): WCTaxBasedOnSettingsModel? =
+        WCTaxBasedOnSettingsSqlUtils.getTaxBasedOnSettingsForSite(site)
 
     /**
      * Given a [SiteModel], returns its WooCommerce store country name,
@@ -427,6 +432,29 @@ open class WooCommerceStore @Inject constructor(
                     WooResult(settings)
                 }
 
+                else -> {
+                    WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+                }
+            }
+        }
+    }
+
+    suspend fun fetchSiteTaxBasedOnSettings(site: SiteModel): WooResult<WCTaxBasedOnSettingsModel> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSiteTaxBasedOnSettings") {
+            val response = wcCoreRestClient.fetchSiteSettingsTaxBasedOn(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    AppLog.w(
+                        T.API,
+                        "Failed to fetch Woo \"tax based on\" setting for site ${site.siteId}"
+                    )
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val settings = settingsMapper.mapTaxBasedOnSettings(response.result, site)
+                    WCTaxBasedOnSettingsSqlUtils.insertOrUpdateTaxBasedOnSettings(settings)
+                    WooResult(settings)
+                }
                 else -> {
                     WooResult(WooError(GENERIC_ERROR, UNKNOWN))
                 }

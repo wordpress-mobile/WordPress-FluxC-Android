@@ -4,6 +4,8 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
+import org.wordpress.android.fluxc.model.WCTaxBasedOnSettingsModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingsResponse
 import javax.inject.Inject
 
@@ -51,6 +53,17 @@ class WCSettingsMapper
             this.dimensionUnit = dimensionUnit ?: ""
             this.weightUnit = weightUnit ?: ""
         }
+    }
+
+    fun mapTaxBasedOnSettings(
+        response: SiteSettingOptionResponse,
+        site: SiteModel
+    ): WCTaxBasedOnSettingsModel {
+        return WCTaxBasedOnSettingsModel(
+            localSiteId = site.id,
+            availableOptions = response.options?.toString() ?: "",
+            selectedOption = response.value ?: "",
+        )
     }
 
     private fun getValueForSettingsField(settingsResponse: List<SiteSettingsResponse>, field: String): String? {
