@@ -384,47 +384,16 @@ class OrderRestClient @Inject constructor(
      *
      * @param [filterByStatus] The order status to return a count for
      */
-    fun fetchOrderCount(site: SiteModel, filterByStatus: String) {
+    fun fetchOrderCountSync(site: SiteModel, filterByStatus: String) {
         coroutineEngine.launch(T.API, this, "fetchOrderCount") {
-            val url = WOOCOMMERCE.reports.orders.totals.pathV3
-            val params = mapOf("status" to filterByStatus)
-
-            val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<OrderCountApiResponse>::class.java,
-                params = params
+            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(
+                doFetchOrderCount(site, filterByStatus))
             )
-
-            when (response) {
-                is WPAPIResponse.Success -> {
-                    val total = response.data?.find { it.slug == filterByStatus }?.total
-
-                    total?.let {
-                        val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
-                        dispatcher.dispatch(
-                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
-                        )
-                    } ?: run {
-                        val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
-                        val payload = FetchOrdersCountResponsePayload(
-                            orderError,
-                            site,
-                            filterByStatus
-                        )
-                        dispatcher.dispatch(
-                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
-                        )
-                    }
-                }
-                is WPAPIResponse.Error -> {
-                    val orderError = wpAPINetworkErrorToOrderError(response.error)
-                    val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
-                }
-            }
         }
     }
+
+    suspend fun fetchOrderCountSync(site: SiteModel, filterByStatus: String?) =
+        doFetchOrderCount(site, filterByStatus)
 
     /**
      * Makes a GET request to `/wp-json/wc/v3/orders` for a single order of a specific type (or any type) in order to
@@ -867,6 +836,43 @@ class OrderRestClient @Inject constructor(
         return when (response) {
             is WPAPIResponse.Success -> WooPayload(Unit)
             is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+        }
+    }
+
+    private suspend fun doFetchOrderCount(site: SiteModel, filterByStatus: String?): FetchOrdersCountResponsePayload {
+        val url = WOOCOMMERCE.reports.orders.totals.pathV3
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderCountApiResponse>::class.java,
+            params = if (filterByStatus != null) mapOf("status" to filterByStatus) else emptyMap()
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                val total = if (filterByStatus == null) {
+                    response.data?.sumOf { it.total }
+                } else {
+                    response.data?.find { it.slug == filterByStatus }?.total
+                }
+
+                total?.let {
+                    FetchOrdersCountResponsePayload(site, filterByStatus, it)
+                } ?: run {
+                    val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
+                    FetchOrdersCountResponsePayload(
+                        orderError,
+                        site,
+                        filterByStatus
+                    )
+                }
+            }
+
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
+                FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
+            }
         }
     }
 

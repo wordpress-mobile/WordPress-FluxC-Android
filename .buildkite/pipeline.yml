@@ -97,16 +97,14 @@ steps:
       - github_commit_status:
           context: "Publish :fluxc-build-connected-tests"
 
+  - wait: ~
+    if: build.branch == "trunk" || build.tag != null
+
   ############################
   # Publish artefacts to S3
   ############################
   - group: 🚀 Publish to S3
     key: publish-to-s3
-    depends_on:
-      - all-linters
-      - all-unit-tests
-      # Note: Dependency on `connected-tests` is disabled for now until they are more stable to not become a blocker
-      # - connected-tests
     steps:
       - label: "🚀 Publish :fluxc-annotations"
         key: "publish-fluxc-annotations"
