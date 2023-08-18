@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
+import org.wordpress.android.fluxc.model.WCTaxBasedOnSettingsModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
@@ -105,6 +106,7 @@ class WooCommerceStoreTest {
 
     private val siteSettingsResponse = WCSettingsTestUtils.getSiteSettingsResponse()
     private val siteProductSettingsResponse = WCSettingsTestUtils.getSiteProductSettingsResponse()
+    private val taxBasedOnSettingsResponse = WCSettingsTestUtils.getTaxBasedOnSettingsResponse()
 
     @Before
     fun setUp() {
@@ -114,7 +116,8 @@ class WooCommerceStoreTest {
                 SitePluginModel::class.java,
                 SiteModel::class.java,
                 WCProductSettingsModel::class.java,
-                WCSettingsBuilder::class.java
+                WCSettingsBuilder::class.java,
+                WCTaxBasedOnSettingsModel::class.java,
             ),
             WellSqlConfig.ADDON_WOOCOMMERCE
         )
@@ -235,6 +238,29 @@ class WooCommerceStoreTest {
             val result: WooResult<WCProductSettingsModel> = fetchSiteProductSettings(isError = true)
             assertThat(result.error).isEqualTo(error)
             assertThat(result.model).isNull()
+        }
+    }
+
+    @Test
+    fun `when fetch tax based on settings fails, the error returned`() {
+        runBlocking {
+            val result = fetchTaxBasedOnSettings(isError = true)
+            assertThat(result.error).isEqualTo(error)
+        }
+    }
+
+    @Test
+    fun `when fetch tax based on settings succeeds, the success returned`() {
+        runBlocking {
+            val expectedModel = settingsMapper.mapTaxBasedOnSettings(taxBasedOnSettingsResponse!!, site)
+            val result = fetchTaxBasedOnSettings()
+            assertThat(result.isError).isFalse
+            with (result.model) {
+                assertThat(this).isNotNull
+                assertThat(this?.localSiteId).isEqualTo(expectedModel.localSiteId)
+                assertThat(this?.availableOptions).isEqualTo(expectedModel.availableOptions)
+                assertThat(this?.selectedOption).isEqualTo(expectedModel.selectedOption)
+            }
         }
     }
 
@@ -457,5 +483,15 @@ class WooCommerceStoreTest {
             whenever(wcrestClient.fetchSiteSettingsProducts(site)).thenReturn(payload)
         }
         return wooCommerceStore.fetchSiteProductSettings(site)
+    }
+
+    private suspend fun fetchTaxBasedOnSettings(isError: Boolean = false) : WooResult<WCTaxBasedOnSettingsModel> {
+        val payload = WooPayload(taxBasedOnSettingsResponse)
+        if (isError) {
+            whenever(wcrestClient.fetchSiteSettingsTaxBasedOn(site)).thenReturn(WooPayload(error))
+        } else {
+            whenever(wcrestClient.fetchSiteSettingsTaxBasedOn(site)).thenReturn(payload)
+        }
+        return wooCommerceStore.fetchSiteTaxBasedOnSettings(site)
     }
 }
