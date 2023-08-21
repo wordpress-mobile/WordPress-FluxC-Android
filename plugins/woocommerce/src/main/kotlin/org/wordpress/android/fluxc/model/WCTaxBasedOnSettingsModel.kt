@@ -1,10 +1,13 @@
 package org.wordpress.android.fluxc.model
 
+import android.util.TypedValue
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.network.utils.toMap
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 /**
@@ -26,8 +29,11 @@ data class WCTaxBasedOnSettingsModel(
 
     private val gson by lazy { Gson() }
 
-    val availableOptionList: Array<TaxOption> =
-        gson.fromJson(availableOptions, Array<TaxOption>::class.java)
+    val availableOptionList: List<TaxOption>
+        get() = gson.fromJson(availableOptions, JsonObject::class.java)
+            .toMap()
+            .toList()
+            .map { TaxOption(it.first, it.second.toString()) }
 
     data class TaxOption(
         val key: String,
