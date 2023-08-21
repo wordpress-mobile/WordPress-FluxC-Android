@@ -27,11 +27,7 @@ data class WCTaxBasedOnSettingsModel(
     private val gson by lazy { Gson() }
 
     val availableOptionList: Array<TaxOption> =
-        try {
-            gson.fromJson(availableOptions, Array<TaxOption>::class.java)
-        } catch (e: Exception) {
-            emptyArray<TaxOption>()
-        }
+        gson.fromJson(availableOptions, Array<TaxOption>::class.java)
 
     data class TaxOption(
         val key: String,
