@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.model.shippinglabels
 
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.HazmatCategory
 
 data class WCShippingLabelPackageData(
     val id: String,
