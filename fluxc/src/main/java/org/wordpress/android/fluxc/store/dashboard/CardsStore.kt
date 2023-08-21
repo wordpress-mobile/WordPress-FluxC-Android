@@ -53,7 +53,7 @@ class CardsStore @Inject constructor(
         response: CardsResponse
     ): CardsResult<List<CardModel>> = try {
         cardsDao.insertWithDate(site.id, response.toCards())
-        CardsResult()
+        CardsResult(response.toCards())
     } catch (e: Exception) {
         CardsResult(CardsError(CardsErrorType.GENERIC_ERROR))
     }
