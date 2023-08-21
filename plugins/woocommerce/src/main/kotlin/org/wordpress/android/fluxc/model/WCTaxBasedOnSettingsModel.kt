@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.model
 
-import android.util.TypedValue
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.yarolegovich.wellsql.core.Identifiable
