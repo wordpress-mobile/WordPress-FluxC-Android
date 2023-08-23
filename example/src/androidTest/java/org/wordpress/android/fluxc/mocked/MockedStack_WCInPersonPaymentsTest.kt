@@ -160,7 +160,7 @@ class MockedStack_InPersonPaymentsTest : MockedStack_Base() {
     }
 
     @Test
-    fun whenLoadAccountEnabledStatusThenRestrictedSoonStatusReturned() = runBlocking {
+    fun whenLoadAccountEnabledStatusThenEnabledStatusReturned() = runBlocking {
         interceptor.respondWith("wc-pay-load-account-response-enabled-status.json")
 
         val result = restClient.loadAccount(WOOCOMMERCE_PAYMENTS, testSite)
