@@ -10,6 +10,7 @@ data class WCShippingLabelPackageData(
     val width: Float,
     val height: Float,
     val weight: Float,
+    val hazmat: String? = null,
     @SerializedName("shipment_id") val shipmentId: String,
     @SerializedName("rate_id") val rateId: String,
     @SerializedName("service_id") val serviceId: String,
