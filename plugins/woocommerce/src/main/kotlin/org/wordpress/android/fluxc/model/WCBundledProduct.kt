@@ -11,6 +11,6 @@ class WCBundledProduct(
     @SerializedName("stock_status") val stockStatus: String,
     @SerializedName("quantity_min") val quantityMin: Long,
     @SerializedName("quantity_max") val quantityMax: Long,
-    @SerializedName("quantity_default") val quantityDefault: Long = 0,
-    @SerializedName("optional") val isOptional: Boolean = false,
+    @SerializedName("quantity_default") val quantityDefault: Long,
+    @SerializedName("optional") val isOptional: Boolean
 )
