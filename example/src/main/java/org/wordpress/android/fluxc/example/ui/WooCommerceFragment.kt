@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.storecreation.WooStoreCreationFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
+import org.wordpress.android.fluxc.example.ui.wooadmin.WooAdminFragment
 import org.wordpress.android.fluxc.store.WCDataStore
 import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -232,6 +233,10 @@ class WooCommerceFragment : StoreSelectingFragment() {
 
         store_onboarding.setOnClickListener {
             replaceFragment(WooOnboardingFragment())
+        }
+
+        woo_admin.setOnClickListener {
+            replaceFragment(WooAdminFragment())
         }
     }
 
