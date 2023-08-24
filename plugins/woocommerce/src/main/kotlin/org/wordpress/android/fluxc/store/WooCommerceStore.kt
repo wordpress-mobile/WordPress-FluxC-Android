@@ -19,9 +19,9 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
-import org.wordpress.android.fluxc.model.WCTaxBasedOnSettingsModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
+import org.wordpress.android.fluxc.model.taxes.TaxBasedOnSettingEntity
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -34,7 +34,7 @@ import org.wordpress.android.fluxc.persistence.PluginSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
-import org.wordpress.android.fluxc.persistence.WCTaxBasedOnSettingsSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.TaxBasedOnDao
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -56,7 +56,8 @@ open class WooCommerceStore @Inject constructor(
     private val wcCoreRestClient: WooCommerceRestClient,
     private val settingsMapper: WCSettingsMapper,
     private val siteSqlUtils: SiteSqlUtils,
-    private val accountStore: AccountStore
+    private val accountStore: AccountStore,
+    private val taxBasedOnDao: TaxBasedOnDao,
 ) : Store(dispatcher) {
     enum class WooPlugin(val pluginName: String) {
         WOO_CORE("woocommerce/woocommerce"),
@@ -179,8 +180,8 @@ open class WooCommerceStore @Inject constructor(
     open fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
         WCProductSettingsSqlUtils.getProductSettingsForSite(site)
 
-    fun getTaxBasedOnSettings(site: SiteModel): WCTaxBasedOnSettingsModel? =
-        WCTaxBasedOnSettingsSqlUtils.getTaxBasedOnSettingsForSite(site)
+    suspend fun getTaxBasedOnSettings(site: SiteModel): TaxBasedOnSettingEntity =
+        taxBasedOnDao.getTaxBasedOnSetting(site.localId())
 
     /**
      * Given a [SiteModel], returns its WooCommerce store country name,
@@ -439,8 +440,8 @@ open class WooCommerceStore @Inject constructor(
         }
     }
 
-    suspend fun fetchSiteTaxBasedOnSettings(site: SiteModel): WooResult<WCTaxBasedOnSettingsModel> {
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchSiteTaxBasedOnSettings") {
+    suspend fun fetchTaxBasedOnSettings(site: SiteModel): WooResult<TaxBasedOnSettingEntity> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchTaxBasedOnSettings") {
             val response = wcCoreRestClient.fetchSiteSettingsTaxBasedOn(site)
             return@withDefaultContext when {
                 response.isError -> {
@@ -451,8 +452,9 @@ open class WooCommerceStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    val settings = settingsMapper.mapTaxBasedOnSettings(response.result, site)
-                    WCTaxBasedOnSettingsSqlUtils.insertOrUpdateTaxBasedOnSettings(settings)
+                    val settings = settingsMapper.mapTaxBasedOnSettings(response.result, site.localId())
+                    taxBasedOnDao.deleteAll(site.localId())
+                    taxBasedOnDao.insertOrUpdate(settings)
                     WooResult(settings)
                 }
                 else -> {

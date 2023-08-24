@@ -1,10 +1,11 @@
 package org.wordpress.android.fluxc.model.settings
 
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
-import org.wordpress.android.fluxc.model.WCTaxBasedOnSettingsModel
+import org.wordpress.android.fluxc.model.taxes.TaxBasedOnSettingEntity
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingOptionResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.SiteSettingsResponse
 import javax.inject.Inject
@@ -57,10 +58,10 @@ class WCSettingsMapper
 
     fun mapTaxBasedOnSettings(
         response: SiteSettingOptionResponse,
-        site: SiteModel
-    ): WCTaxBasedOnSettingsModel {
-        return WCTaxBasedOnSettingsModel(
-            localSiteId = site.id,
+        localSiteId: LocalId
+    ): TaxBasedOnSettingEntity {
+        return TaxBasedOnSettingEntity(
+            localSiteId = localSiteId,
             availableOptions = response.options?.toString() ?: "",
             selectedOption = response.value ?: "",
         )
