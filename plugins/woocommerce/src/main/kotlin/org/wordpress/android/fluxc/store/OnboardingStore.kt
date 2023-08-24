@@ -35,6 +35,7 @@ class OnboardingStore @Inject constructor(
                         .firstOrNull { it.id == ONBOARDING_TASKS_KEY }
                         ?.tasks ?: emptyList()
                 )
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -48,12 +49,17 @@ class OnboardingStore @Inject constructor(
                 response.result?.title != null -> {
                     val fetchResult = wooCommerceStore.fetchWooCommerceSite(site)
                     if (fetchResult.isError) {
-                        AppLog.e(API, "Error fetching WooCommerce site: ${fetchResult.error.message}")
-                        WooResult(response.error)
+                        AppLog.e(
+                            API,
+                            "Error fetching WooCommerce site after saving title: " +
+                                "${fetchResult.error.message}"
+                        )
+                        WooResult(WooError(fetchResult.error.type, fetchResult.error.original))
                     } else {
                         WooResult(response.result.title)
                     }
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
