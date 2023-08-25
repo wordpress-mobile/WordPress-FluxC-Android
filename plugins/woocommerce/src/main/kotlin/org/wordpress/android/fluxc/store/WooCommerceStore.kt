@@ -453,7 +453,6 @@ open class WooCommerceStore @Inject constructor(
                 }
                 response.result != null -> {
                     val settings = settingsMapper.mapTaxBasedOnSettings(response.result, site.localId())
-                    taxBasedOnDao.deleteAll(site.localId())
                     taxBasedOnDao.insertOrUpdate(settings)
                     WooResult(settings)
                 }

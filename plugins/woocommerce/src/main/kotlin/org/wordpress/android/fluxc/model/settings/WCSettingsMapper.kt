@@ -62,7 +62,6 @@ class WCSettingsMapper
     ): TaxBasedOnSettingEntity {
         return TaxBasedOnSettingEntity(
             localSiteId = localSiteId,
-            availableOptions = response.options?.toString() ?: "",
             selectedOption = response.value ?: "",
         )
     }

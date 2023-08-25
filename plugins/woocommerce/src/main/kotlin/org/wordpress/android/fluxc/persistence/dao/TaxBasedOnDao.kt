@@ -12,9 +12,6 @@ interface TaxBasedOnDao {
     @Query("SELECT * FROM TaxBasedOnSetting WHERE localSiteId = :localSiteId")
     suspend fun getTaxBasedOnSetting(localSiteId: LocalOrRemoteId.LocalId): TaxBasedOnSettingEntity
 
-    @Query("DELETE FROM TaxBasedOnSetting WHERE localSiteId = :localSiteId")
-    suspend fun deleteAll(localSiteId: LocalOrRemoteId.LocalId)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(taxBasedOnSetting: TaxBasedOnSettingEntity): Long
 }

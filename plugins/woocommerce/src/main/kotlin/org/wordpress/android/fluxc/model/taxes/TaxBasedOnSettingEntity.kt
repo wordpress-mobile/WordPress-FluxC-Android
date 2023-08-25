@@ -6,8 +6,6 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 
 @Entity(tableName = "TaxBasedOnSetting")
 data class TaxBasedOnSettingEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val localSiteId: LocalId,
+    @PrimaryKey val localSiteId: LocalId,
     val selectedOption: String,
-    val availableOptions: String,
 )

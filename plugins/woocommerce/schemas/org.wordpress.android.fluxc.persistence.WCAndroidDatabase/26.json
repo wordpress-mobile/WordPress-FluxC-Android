@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 26,
-    "identityHash": "6d2eb935d8e02ff65f2de9f166085308",
+    "identityHash": "53e39092d40d7d55ad7d717d69b86547",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1177,14 +1177,8 @@
       },
       {
         "tableName": "TaxBasedOnSetting",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `localSiteId` INTEGER NOT NULL, `selectedOption` TEXT NOT NULL, `availableOptions` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `selectedOption` TEXT NOT NULL, PRIMARY KEY(`localSiteId`))",
         "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "localSiteId",
             "columnName": "localSiteId",
@@ -1196,19 +1190,13 @@
             "columnName": "selectedOption",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "availableOptions",
-            "columnName": "availableOptions",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "id"
+            "localSiteId"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
@@ -1217,7 +1205,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6d2eb935d8e02ff65f2de9f166085308')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '53e39092d40d7d55ad7d717d69b86547')"
     ]
   }
 }
