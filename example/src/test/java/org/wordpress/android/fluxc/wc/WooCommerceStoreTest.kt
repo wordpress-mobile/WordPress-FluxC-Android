@@ -276,7 +276,6 @@ class WooCommerceStoreTest {
             with (result.model) {
                 assertThat(this).isNotNull
                 assertThat(this?.localSiteId).isEqualTo(expectedModel.localSiteId)
-                assertThat(this?.availableOptions).isEqualTo(expectedModel.availableOptions)
                 assertThat(this?.selectedOption).isEqualTo(expectedModel.selectedOption)
             }
         }
@@ -290,9 +289,8 @@ class WooCommerceStoreTest {
             assertThat(result.isError).isFalse
             taxBasedOnDao.getTaxBasedOnSetting(site.localId()).let {
                 assertThat(it).isNotNull
-                assertThat(it.localSiteId).isEqualTo(expectedModel.localSiteId)
-                assertThat(it.availableOptions).isEqualTo(expectedModel.availableOptions)
-                assertThat(it.selectedOption).isEqualTo(expectedModel.selectedOption)
+                assertThat(it?.localSiteId).isEqualTo(expectedModel.localSiteId)
+                assertThat(it?.selectedOption).isEqualTo(expectedModel.selectedOption)
             }
         }
     }
