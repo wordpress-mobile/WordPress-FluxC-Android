@@ -180,7 +180,7 @@ open class WooCommerceStore @Inject constructor(
     open fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
         WCProductSettingsSqlUtils.getProductSettingsForSite(site)
 
-    suspend fun getTaxBasedOnSettings(site: SiteModel): TaxBasedOnSettingEntity =
+    suspend fun getTaxBasedOnSettings(site: SiteModel): TaxBasedOnSettingEntity? =
         taxBasedOnDao.getTaxBasedOnSetting(site.localId())
 
     /**
