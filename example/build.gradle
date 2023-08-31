@@ -59,6 +59,10 @@ android {
         }
     }
 
+    lint {
+        enable += 'UnknownNullness'
+    }
+
     buildFeatures {
         buildConfig true
         viewBinding true
