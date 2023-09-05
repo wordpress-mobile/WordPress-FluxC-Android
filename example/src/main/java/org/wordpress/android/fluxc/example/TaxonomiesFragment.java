@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -122,7 +123,7 @@ public class TaxonomiesFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTermUploaded(OnTermUploaded event) {
+    public void onTermUploaded(@NonNull OnTermUploaded event) {
         prependToLog("Term uploaded! Remote category id: " + event.term.getRemoteTermId());
     }
 

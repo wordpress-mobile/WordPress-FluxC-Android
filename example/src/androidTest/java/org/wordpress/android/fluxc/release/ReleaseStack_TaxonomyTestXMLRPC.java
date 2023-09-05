@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -318,7 +320,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onTermUploaded(OnTermUploaded event) {
+    public void onTermUploaded(@NonNull OnTermUploaded event) {
         AppLog.i(T.API, "Received OnTermUploaded");
         if (event.isError()) {
             AppLog.i(T.API, "OnTermUploaded has error: " + event.error.type + " - " + event.error.message);

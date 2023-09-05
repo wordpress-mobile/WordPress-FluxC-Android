@@ -301,7 +301,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onTermUploaded(OnTermUploaded event) {
+    public void onTermUploaded(@NonNull OnTermUploaded event) {
         AppLog.i(T.API, "Received OnTermUploaded");
         if (event.isError()) {
             AppLog.i(T.API, "OnTermUploaded has error: " + event.error.type + " - " + event.error.message);
