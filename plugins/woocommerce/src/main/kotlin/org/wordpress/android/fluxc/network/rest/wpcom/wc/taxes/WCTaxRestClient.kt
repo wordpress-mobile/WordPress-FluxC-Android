@@ -23,8 +23,36 @@ class WCTaxRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         return response.toWooPayload()
     }
 
+    suspend fun fetchTaxRateList(site: SiteModel): WooPayload<Array<TaxRateApiResponse>> {
+        val url = WOOCOMMERCE.taxes.pathV3
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site,
+            url,
+            Array<TaxRateApiResponse>::class.java
+        )
+        return response.toWooPayload()
+    }
+
     data class TaxClassApiResponse(
         val name: String? = null,
         val slug: String? = null
+    )
+
+    data class TaxRateApiResponse(
+        val id: Int,
+        val country: String = "",
+        val state: String = "",
+        val postcode: String = "",
+        val city: String = "",
+        val postCodes: List<String>? = null,
+        val cities: List<String>? = null,
+        val rate: String = "",
+        val name: String = "",
+        val priority: Int = 0,
+        val compound: Boolean = false,
+        val shipping: Boolean = false,
+        val order: Int = 0,
+        val taxClass: String = "",
     )
 }

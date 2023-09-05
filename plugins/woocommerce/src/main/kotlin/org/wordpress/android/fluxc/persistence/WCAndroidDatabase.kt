@@ -9,6 +9,7 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.taxes.TaxBasedOnSettingEntity
+import org.wordpress.android.fluxc.model.taxes.TaxRateEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
@@ -20,6 +21,7 @@ import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.TaxBasedOnDao
+import org.wordpress.android.fluxc.persistence.dao.TaxRateDao
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
@@ -68,6 +70,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         InboxNoteActionEntity::class,
         TopPerformerProductEntity::class,
         TaxBasedOnSettingEntity::class,
+        TaxRateEntity::class
     ],
     autoMigrations = [
         AutoMigration(from = 12, to = 13),
@@ -98,6 +101,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val inboxNotesDao: InboxNotesDao
     abstract val topPerformerProductsDao: TopPerformerProductsDao
     abstract val taxBasedOnSettingDao: TaxBasedOnDao
+    abstract val taxRateDao: TaxRateDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(

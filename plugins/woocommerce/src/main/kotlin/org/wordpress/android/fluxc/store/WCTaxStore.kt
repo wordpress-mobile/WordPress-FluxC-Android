@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.taxes.TaxRateEntity
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassMapper
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -42,6 +43,26 @@ class WCTaxStore @Inject constructor(
                     WCTaxSqlUtils.deleteTaxClassesForSite(site)
                     WCTaxSqlUtils.insertOrUpdateTaxClasses(taxClassModels)
                     WooResult(taxClassModels)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+    suspend fun fetchTaxRateList(site: SiteModel): WooResult<List<TaxRateEntity>> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxRateList") {
+            val response = restClient.fetchTaxRateList(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    val taxRateEntities = response.result.map {
+                        TaxRateEntity(
+                            localSiteId = site.id.toLong(),
+                            id = it.id.toLong()
+                        )
+                    }
+                    WooResult(taxRateEntities)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
