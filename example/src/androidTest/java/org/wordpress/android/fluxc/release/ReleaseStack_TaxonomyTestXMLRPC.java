@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
@@ -368,9 +369,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private TermModel createNewCategory() {
         TermModel term = mTaxonomyStore.instantiateCategory(sSite);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new category!");
+        }
 
         return term;
     }
@@ -378,9 +383,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private TermModel createNewTag() {
         TermModel term = mTaxonomyStore.instantiateTag(sSite);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new tag!");
+        }
 
         return term;
     }
@@ -388,9 +397,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private TermModel createNewTerm(TaxonomyModel taxonomy) {
         TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new term!");
+        }
 
         return term;
     }
