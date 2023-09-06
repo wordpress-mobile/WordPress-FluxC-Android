@@ -265,7 +265,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onTaxonomyChanged(OnTaxonomyChanged event) {
+    public void onTaxonomyChanged(@NonNull OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnTaxonomyChanged has error: " + event.error.type + " - " + event.error.message);

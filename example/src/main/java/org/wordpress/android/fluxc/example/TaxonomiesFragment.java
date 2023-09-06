@@ -107,7 +107,7 @@ public class TaxonomiesFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTaxonomyChanged(OnTaxonomyChanged event) {
+    public void onTaxonomyChanged(@NonNull OnTaxonomyChanged event) {
         AppLog.i(T.API, "OnTaxonomyChanged: rowsAffected=" + event.rowsAffected);
         if (event.isError()) {
             String error = "Error: " + event.error.type + " - " + event.error.message;
