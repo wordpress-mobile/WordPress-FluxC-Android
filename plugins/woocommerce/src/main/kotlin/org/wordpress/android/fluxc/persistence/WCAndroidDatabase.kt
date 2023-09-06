@@ -82,6 +82,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         AutoMigration(from = 19, to = 20, spec = AutoMigration19to20::class),
         AutoMigration(from = 23, to = 24, spec = AutoMigration23to24::class),
         AutoMigration(from = 25, to = 26),
+        AutoMigration(from = 26, to = 27)
     ]
 )
 @TypeConverters(
