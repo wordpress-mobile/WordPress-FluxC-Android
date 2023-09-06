@@ -22,7 +22,7 @@ data class WhatsNewAnnouncementModel(
     data class WhatsNewAnnouncementFeature(
         val title: String?,
         val subtitle: String?,
-        val icon: List<Icon>
+        val icons: List<Icon>
     ) : Parcelable
 
     @Parcelize

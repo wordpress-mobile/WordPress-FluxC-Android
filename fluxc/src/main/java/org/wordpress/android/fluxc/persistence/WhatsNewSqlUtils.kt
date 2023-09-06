@@ -7,6 +7,8 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel
+import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.Icon
+import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.IconType.*
 import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.WhatsNewAnnouncementFeature
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -116,13 +118,13 @@ class WhatsNewSqlUtils
         @Column var announcementId: Int = 0,
         @Column var title: String? = null,
         @Column var subtitle: String? = null,
-        @Column var iconUrl: String? = null,
-        @Column var iconBase64: String? = null
+        @Column var lightIconUrl: String? = null,
+        @Column var darkIconUrl: String? = null
     ) : Identifiable {
         constructor() : this(-1, -1, "", "", "", "")
 
         fun build(): WhatsNewAnnouncementFeature {
-            return WhatsNewAnnouncementFeature(title, subtitle, iconBase64, iconUrl)
+            return WhatsNewAnnouncementFeature(title, subtitle, listOf(Icon(lightIconUrl, LIGHT), Icon(darkIconUrl, DARK)))
         }
 
         override fun getId(): Int {
@@ -139,8 +141,8 @@ class WhatsNewSqlUtils
                 announcementId = announcementId,
                 title = this.title,
                 subtitle = this.subtitle,
-                iconBase64 = this.iconBase64,
-                iconUrl = this.iconUrl
+                lightIconUrl = this.icons.find { it.iconType == LIGHT }?.iconUrl,
+                darkIconUrl = this.icons.find { it.iconType == DARK }?.iconUrl
         )
     }
 

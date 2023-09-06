@@ -87,7 +87,7 @@ class WhatsNewRestClient @Inject constructor(
         WhatsNewAnnouncementFeature(
             title = it.title,
             subtitle = it.subtitle,
-            icon = it.icons.map { icon ->
+            icons = it.icons.map { icon ->
                 Icon(
                     iconUrl = icon.iconUrl,
                     iconType = when (icon.iconType) {
