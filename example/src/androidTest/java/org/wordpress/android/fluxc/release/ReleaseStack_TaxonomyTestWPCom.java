@@ -281,7 +281,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
                 break;
             case FETCH_TERMS:
                 if (mNextEvent.equals(TestEvents.TERMS_FETCHED)) {
-                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " " + event.taxonomyName + " terms");
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " terms");
                     mCountDownLatch.countDown();
                 }
                 break;

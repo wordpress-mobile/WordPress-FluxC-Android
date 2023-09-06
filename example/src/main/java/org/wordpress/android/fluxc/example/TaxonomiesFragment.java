@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.TaxonomyAction;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.TermModel;
@@ -114,9 +115,18 @@ public class TaxonomiesFragment extends Fragment {
             prependToLog(error);
             AppLog.i(T.TESTS, error);
         } else {
-            List<TermModel> terms = mTaxonomyStore.getTermsForSite(getFirstSite(), event.taxonomyName);
-            for (TermModel term : terms) {
-                prependToLog(event.taxonomyName + " " + term.getRemoteTermId() + ": " + term.getName());
+            if (event.causeOfChange == TaxonomyAction.FETCH_CATEGORIES) {
+                List<TermModel> terms = mTaxonomyStore.getCategoriesForSite(getFirstSite());
+                for (TermModel term : terms) {
+                    prependToLog("category" + " " + term.getRemoteTermId() + ": " + term.getName());
+                }
+            } else if (event.causeOfChange == TaxonomyAction.FETCH_TAGS) {
+                List<TermModel> terms = mTaxonomyStore.getTagsForSite(getFirstSite());
+                for (TermModel term : terms) {
+                    prependToLog("tag" + " " + term.getRemoteTermId() + ": " + term.getName());
+                }
+            } else {
+                prependToLog(event.causeOfChange + " " + event.rowsAffected);
             }
         }
     }
