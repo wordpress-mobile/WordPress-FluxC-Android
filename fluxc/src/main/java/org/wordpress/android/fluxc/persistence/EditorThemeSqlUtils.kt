@@ -102,6 +102,7 @@ class EditorThemeSqlUtils {
         @Column var galleryWithImageBlocks: Boolean = false
         @Column var quoteBlockV2: Boolean = false
         @Column var listBlockV2: Boolean = false
+        @Column var gutenbergVersion: String? = null
 
         override fun setId(id: Int) {
             this.mId = id
@@ -132,7 +133,8 @@ class EditorThemeSqlUtils {
                     isBlockBasedTheme,
                     galleryWithImageBlocks,
                     quoteBlockV2,
-                    listBlockV2
+                    listBlockV2,
+                    gutenbergVersion
             )
 
             return EditorTheme(editorThemeSupport, stylesheet, version)
