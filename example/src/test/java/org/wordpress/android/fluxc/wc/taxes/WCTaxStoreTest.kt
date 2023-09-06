@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.wc.taxes
 
 import com.yarolegovich.wellsql.WellSql
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -84,6 +85,27 @@ class WCTaxStoreTest {
 
         val invalidRequestResult = store.getTaxClassListForSite(errorSite)
         assertThat(invalidRequestResult.size).isEqualTo(0)
+    }
+
+    @Test
+    fun`when fetch tax rate fails, then error is returned` () {
+        runBlocking {
+            val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
+            whenever(restClient.fetchTaxRateList(site, 1, 100)).thenReturn(WooPayload(error))
+            val result = store.fetchTaxRateList(site)
+            assertThat(result.error).isEqualTo(error)
+        }
+    }
+
+    @Test
+    fun `when fetch tax rate succeeds, then success returns` () {
+        runBlocking {
+            val taxRateApiResponse = TaxTestUtils.generateSampleTaxRateApiResponse()
+            whenever(restClient.fetchTaxRateList(site, 1, 100)).thenReturn(WooPayload(taxRateApiResponse))
+            val result = store.fetchTaxRateList(site)
+            assertThat(result.isError).isFalse
+            assertThat(result.result).isEqualTo(taxRateApiResponse)
+        }
     }
 
     private suspend fun fetchTaxClassListForSite(): WooResult<List<WCTaxClassModel>> {

@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.wc.taxes
 
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxClassApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxRateApiResponse
 
 object TaxTestUtils {
     private fun generateSampleTaxClass(
@@ -31,4 +32,12 @@ object TaxTestUtils {
         return listOf(TaxClassApiResponse("example1", "example1"),
                 TaxClassApiResponse("example2", "example2"))
     }
+
+    fun generateSampleTaxRateApiResponse(): Array<TaxRateApiResponse> {
+        return arrayOf(
+            TaxRateApiResponse(1),
+            TaxRateApiResponse(2)
+        )
+    }
 }
+
