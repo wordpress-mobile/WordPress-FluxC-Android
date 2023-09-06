@@ -365,7 +365,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         term.setDescription(TERM_DEFAULT_DESCRIPTION);
     }
 
-    private TermModel createNewCategory() throws InterruptedException {
+    private TermModel createNewCategory() {
         TermModel term = mTaxonomyStore.instantiateCategory(sSite);
 
         assertEquals(0, term.getRemoteTermId());
@@ -375,7 +375,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         return term;
     }
 
-    private TermModel createNewTag() throws InterruptedException {
+    private TermModel createNewTag() {
         TermModel term = mTaxonomyStore.instantiateTag(sSite);
 
         assertEquals(0, term.getRemoteTermId());
@@ -385,7 +385,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         return term;
     }
 
-    private TermModel createNewTerm(TaxonomyModel taxonomy) throws InterruptedException {
+    private TermModel createNewTerm(TaxonomyModel taxonomy) {
         TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
 
         assertEquals(0, term.getRemoteTermId());
