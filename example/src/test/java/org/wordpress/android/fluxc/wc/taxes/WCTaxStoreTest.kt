@@ -92,7 +92,7 @@ class WCTaxStoreTest {
         runBlocking {
             val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
             whenever(restClient.fetchTaxRateList(site, 1, 100)).thenReturn(WooPayload(error))
-            val result = store.fetchTaxRateList(site)
+            val result = store.fetchTaxRateList(site, 1, 100)
             assertThat(result.error).isEqualTo(error)
         }
     }
@@ -102,7 +102,7 @@ class WCTaxStoreTest {
         runBlocking {
             val taxRateApiResponse = TaxTestUtils.generateSampleTaxRateApiResponse()
             whenever(restClient.fetchTaxRateList(site, 1, 100)).thenReturn(WooPayload(taxRateApiResponse))
-            val result = store.fetchTaxRateList(site)
+            val result = store.fetchTaxRateList(site, 1, 100)
             assertThat(result.isError).isFalse
             assertThat(result.result).isEqualTo(taxRateApiResponse)
         }

@@ -49,7 +49,7 @@ class WCTaxStore @Inject constructor(
             }
         }
     }
-    suspend fun fetchTaxRateList(site: SiteModel): WooPayload<Array<TaxRateApiResponse>> {
-        return restClient.fetchTaxRateList(site, 1, 100)
+    suspend fun fetchTaxRateList(site: SiteModel, page: Int, pageSize: Int): WooPayload<Array<TaxRateApiResponse>> {
+        return restClient.fetchTaxRateList(site, page, pageSize)
     }
 }
