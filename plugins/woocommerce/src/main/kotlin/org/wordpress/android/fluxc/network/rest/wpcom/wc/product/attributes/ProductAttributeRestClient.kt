@@ -69,11 +69,13 @@ class ProductAttributeRestClient @Inject constructor(private val wooNetwork: Woo
             .delete<AttributeTermApiResponse>(site)
 
     private suspend inline fun <reified T : Any> String.request(
-        site: SiteModel
+        site: SiteModel,
+        params: Map<String, String> = emptyMap()
     ) = wooNetwork.executeGetGsonRequest(
         site = site,
         path = this,
-        clazz = T::class.java
+        clazz = T::class.java,
+        params = params
     ).toWooPayload()
 
     private suspend inline fun <reified T : Any> String.post(
