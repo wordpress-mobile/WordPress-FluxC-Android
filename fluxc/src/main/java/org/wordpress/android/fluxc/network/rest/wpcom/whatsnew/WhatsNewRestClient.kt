@@ -101,8 +101,12 @@ class WhatsNewRestClient @Inject constructor(
         data class Feature(
             val title: String,
             val subtitle: String,
-            val iconBase64: String,
-            val iconUrl: String
+            val icons: List<Icon>,
+        )
+
+        data class Icon(
+            val iconUrl: String,
+            val iconType: String,
         )
     }
 }
