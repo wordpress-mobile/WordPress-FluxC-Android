@@ -296,6 +296,15 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
                     mCountDownLatch.countDown();
                 }
                 break;
+            case FETCH_TERM:
+            case PUSH_TERM:
+            case DELETE_TERM:
+            case FETCHED_TERMS:
+            case FETCHED_TERM:
+            case PUSHED_TERM:
+            case DELETED_TERM:
+            case REMOVE_ALL_TERMS:
+                break;
         }
     }
 
