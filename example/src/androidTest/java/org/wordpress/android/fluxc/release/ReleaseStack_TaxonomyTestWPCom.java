@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
@@ -27,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     @Inject TaxonomyStore mTaxonomyStore;
@@ -327,37 +330,52 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
-    private void setupTermAttributes(TermModel term) {
+    private void setupTermAttributes(@NonNull TermModel term) {
         term.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
         term.setDescription(TERM_DEFAULT_DESCRIPTION);
     }
 
+    @NonNull
     private TermModel createNewCategory() {
         TermModel term = mTaxonomyStore.instantiateCategory(sSite);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new category!");
+        }
 
         return term;
     }
 
+    @NonNull
     private TermModel createNewTag() {
         TermModel term = mTaxonomyStore.instantiateTag(sSite);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new tag!");
+        }
 
         return term;
     }
 
-    private TermModel createNewTerm(TaxonomyModel taxonomy) {
+    @NonNull
+    private TermModel createNewTerm(@NonNull TaxonomyModel taxonomy) {
         TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new term!");
+        }
 
         return term;
     }
