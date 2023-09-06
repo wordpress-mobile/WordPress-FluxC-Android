@@ -5,6 +5,10 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel
+import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.Icon
+import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.IconType.DARK
+import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.IconType.LIGHT
+import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.IconType.UNKNOWN
 import org.wordpress.android.fluxc.model.whatsnew.WhatsNewAnnouncementModel.WhatsNewAnnouncementFeature
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.UserAgent
@@ -13,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.whatsnew.WhatsNewRestClient.WhatsNewResponse.Announcement
+import org.wordpress.android.fluxc.network.rest.wpcom.whatsnew.WhatsNewRestClient.WhatsNewResponse.Feature
 import org.wordpress.android.fluxc.store.WhatsNewStore.WhatsNewAppId
 import org.wordpress.android.fluxc.store.WhatsNewStore.WhatsNewFetchedPayload
 import javax.inject.Inject
@@ -72,16 +77,27 @@ class WhatsNewRestClient @Inject constructor(
                     isLocalized = announce.isLocalized,
                     responseLocale = announce.responseLocale,
                     features = announce.features.map {
-                        WhatsNewAnnouncementFeature(
-                                title = it.title,
-                                subtitle = it.subtitle,
-                                iconBase64 = it.iconBase64,
-                                iconUrl = it.iconUrl
-                        )
+                        buildWhatsNewFeature(it)
                     }
             )
         })
     }
+
+    private fun buildWhatsNewFeature(it: Feature) =
+        WhatsNewAnnouncementFeature(
+            title = it.title,
+            subtitle = it.subtitle,
+            icon = it.icons.map { icon ->
+                Icon(
+                    iconUrl = icon.iconUrl,
+                    iconType = when (icon.iconType) {
+                        "dark" -> DARK
+                        "light" -> LIGHT
+                        else -> UNKNOWN
+                    }
+                )
+            }
+        )
 
     data class WhatsNewResponse(
         val announcements: List<Announcement>?

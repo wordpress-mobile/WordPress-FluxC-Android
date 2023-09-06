@@ -22,7 +22,19 @@ data class WhatsNewAnnouncementModel(
     data class WhatsNewAnnouncementFeature(
         val title: String?,
         val subtitle: String?,
-        val iconBase64: String?,
-        val iconUrl: String?
+        val icon: List<Icon>
     ) : Parcelable
+
+    @Parcelize
+    data class Icon(
+        val iconUrl: String?,
+        val iconType: IconType?,
+    )
+
+    @Parcelize
+    enum class IconType {
+        DARK,
+        LIGHT,
+        UNKNOWN
+    }
 }
