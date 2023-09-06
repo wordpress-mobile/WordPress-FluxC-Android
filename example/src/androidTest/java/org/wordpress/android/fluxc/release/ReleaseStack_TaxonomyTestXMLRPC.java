@@ -32,6 +32,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject TaxonomyStore mTaxonomyStore;
 

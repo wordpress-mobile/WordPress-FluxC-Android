@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     @Inject TaxonomyStore mTaxonomyStore;
 
