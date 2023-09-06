@@ -29,7 +29,6 @@ class WCTaxRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         site: SiteModel,
         page: Int,
         pageSize: Int,
-        searchQuery: String? = null
     ): WooPayload<Array<TaxRateApiResponse>> {
         val url = WOOCOMMERCE.taxes.pathV3
 
@@ -40,9 +39,6 @@ class WCTaxRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
             mutableMapOf<String, String>().apply {
                 put("page", page.toString())
                 put("per_page", pageSize.toString())
-                searchQuery?.let {
-                    put("search", searchQuery)
-                }
             }
         )
         return when (response) {
