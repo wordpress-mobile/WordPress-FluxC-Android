@@ -42,9 +42,13 @@ class ProductAttributeRestClient @Inject constructor(private val wooNetwork: Woo
 
     suspend fun fetchAllAttributeTerms(
         site: SiteModel,
-        attributeID: Long
+        attributeID: Long,
+        pageSize: Int = 100
     ) = WOOCOMMERCE.products.attributes.attribute(attributeID).terms.pathV3
-            .request<Array<AttributeTermApiResponse>>(site)
+            .request<Array<AttributeTermApiResponse>>(
+                site = site,
+                params = mapOf("per_page" to pageSize.toString())
+            )
 
     suspend fun postNewTerm(
         site: SiteModel,
