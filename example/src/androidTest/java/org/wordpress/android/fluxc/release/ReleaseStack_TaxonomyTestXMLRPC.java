@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
@@ -416,7 +416,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
 
         String newDescription = "newDescription";
-        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        assertNotEquals(newDescription, uploadedTerm.getDescription());
         uploadedTerm.setDescription(newDescription);
 
         uploadTerm(uploadedTerm);
