@@ -55,8 +55,9 @@ class WCGlobalAttributeStore @Inject constructor(
     suspend fun fetchAttributeTerms(
         site: SiteModel,
         attributeID: Long,
+        page: Int,
         pageSize: Int = 100
-    ) = restClient.fetchAllAttributeTerms(site, attributeID, pageSize)
+    ) = restClient.fetchAllAttributeTerms(site, attributeID, page, pageSize)
             .result?.map { mapper.responseToAttributeTermModel(it, attributeID.toInt(), site) }
             ?.apply {
                 insertAttributeTermsFromScratch(attributeID.toInt(), site.id, this)
