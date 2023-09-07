@@ -49,7 +49,16 @@ class WCTaxStore @Inject constructor(
             }
         }
     }
-    suspend fun fetchTaxRateList(site: SiteModel, page: Int, pageSize: Int): WooPayload<Array<TaxRateApiResponse>> {
-        return restClient.fetchTaxRateList(site, page, pageSize)
+    suspend fun fetchTaxRateList(
+        site: SiteModel,
+        page: Int,
+        pageSize: Int
+    ): WooResult<List<TaxRateApiResponse>> {
+        val response = restClient.fetchTaxRateList(site, page, pageSize)
+        return when {
+            response.isError -> WooResult(response.error)
+            response.result != null -> WooResult(response.result.toList())
+            else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+        }
     }
 }

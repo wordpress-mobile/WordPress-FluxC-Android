@@ -104,7 +104,7 @@ class WCTaxStoreTest {
             whenever(restClient.fetchTaxRateList(site, 1, 100)).thenReturn(WooPayload(taxRateApiResponse))
             val result = store.fetchTaxRateList(site, 1, 100)
             assertThat(result.isError).isFalse
-            assertThat(result.result).isEqualTo(taxRateApiResponse)
+            assertThat(result.model).isEqualTo(taxRateApiResponse.toList())
         }
     }
 
