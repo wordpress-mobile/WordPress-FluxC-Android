@@ -94,16 +94,13 @@ public class TaxonomiesFragment extends Fragment {
     }
 
     private void createCategory() {
-        TermModel newCategory = mTaxonomyStore.instantiateCategory(getFirstSite());
-        if (newCategory != null) {
-            newCategory.setName("FluxC-category-" + new Random().nextLong());
-            newCategory.setDescription("From FluxC example app");
-
-            RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
-            mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
-        } else {
-            prependToLog("Error: no category found!");
-        }
+        TermModel newCategory = new TermModel();
+        newCategory.setLocalSiteId(getFirstSite().getId());
+        newCategory.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
+        newCategory.setName("FluxC-category-" + new Random().nextLong());
+        newCategory.setDescription("From FluxC example app");
+        RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
+        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
     }
 
     @SuppressWarnings("unused")

@@ -1,6 +1,9 @@
 package org.wordpress.android.fluxc.release;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.yarolegovich.wellsql.WellSql;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Ignore;
@@ -8,6 +11,7 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.utils.RandomStringUtils;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
 import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
@@ -367,7 +371,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private TermModel createNewCategory() {
-        TermModel term = mTaxonomyStore.instantiateCategory(sSite);
+        TermModel term = instantiateTermModel(sSite, TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         if (term != null) {
             assertEquals(0, term.getRemoteTermId());
@@ -381,7 +385,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private TermModel createNewTag() {
-        TermModel term = mTaxonomyStore.instantiateTag(sSite);
+        TermModel term = instantiateTermModel(sSite, TaxonomyStore.DEFAULT_TAXONOMY_TAG);
 
         if (term != null) {
             assertEquals(0, term.getRemoteTermId());
@@ -395,7 +399,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private TermModel createNewTerm(TaxonomyModel taxonomy) {
-        TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
+        TermModel term = instantiateTermModel(sSite, taxonomy.getName());
 
         if (term != null) {
             assertEquals(0, term.getRemoteTermId());
@@ -447,5 +451,27 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mDispatcher.dispatch(TaxonomyActionBuilder.newDeleteTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Nullable
+    private TermModel instantiateTermModel(@NonNull SiteModel site, @NonNull String taxonomyName) {
+        TermModel newTerm = new TermModel();
+        newTerm.setLocalSiteId(site.getId());
+        newTerm.setTaxonomy(taxonomyName);
+
+        // Insert the term into the db, updating the object to include the local ID
+        TermModel insertedTerm = insertTermForResult(newTerm);
+
+        // id is set to -1 if insertion fails
+        if (insertedTerm.getId() == -1) {
+            return null;
+        }
+        return insertedTerm;
+    }
+
+    @NonNull
+    public static TermModel insertTermForResult(@NonNull TermModel term) {
+        WellSql.insert(term).asSingleTransaction(true).execute();
+        return term;
     }
 }
