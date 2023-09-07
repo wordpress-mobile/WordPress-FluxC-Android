@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.wc.taxes
 
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxClassApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxRateModel
 
