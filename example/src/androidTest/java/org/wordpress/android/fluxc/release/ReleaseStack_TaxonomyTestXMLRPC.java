@@ -107,8 +107,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("roads");
+        TaxonomyModel taxonomyModel = new TaxonomyModel("roads");
 
         FetchTermsPayload payload = new FetchTermsPayload(sSite, taxonomyModel);
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
@@ -188,8 +187,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
+        TaxonomyModel taxonomyModel = new TaxonomyModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         // Instantiate new term
         TermModel termModel = createNewTerm(taxonomyModel);
@@ -208,8 +206,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("roads");
+        TaxonomyModel taxonomyModel = new TaxonomyModel("roads");
 
         // Instantiate new term
         TermModel term = createNewTerm(taxonomyModel);

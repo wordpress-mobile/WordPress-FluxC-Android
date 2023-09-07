@@ -100,8 +100,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_INVALID_TAXONOMY;
         mCountDownLatch = new CountDownLatch(1);
 
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("roads");
+        TaxonomyModel taxonomyModel = new TaxonomyModel("roads");
 
         FetchTermsPayload payload = new FetchTermsPayload(sSite, taxonomyModel);
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
@@ -189,8 +188,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
+        TaxonomyModel taxonomyModel = new TaxonomyModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         // Instantiate new term
         TermModel term = createNewTerm(taxonomyModel);
@@ -209,8 +207,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("roads");
+        TaxonomyModel taxonomyModel = new TaxonomyModel("roads");
 
         // Instantiate new term
         TermModel term = createNewTerm(taxonomyModel);
