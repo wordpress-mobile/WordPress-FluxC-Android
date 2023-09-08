@@ -94,11 +94,11 @@ public class TaxonomiesFragment extends Fragment {
     }
 
     private void createCategory() {
-        TermModel newCategory = new TermModel();
-        newCategory.setLocalSiteId(getFirstSite().getId());
-        newCategory.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
-        newCategory.setName("FluxC-category-" + new Random().nextLong());
-        newCategory.setDescription("From FluxC example app");
+        TermModel newCategory = new TermModel(
+                TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY,
+                "FluxC-Category-" + new Random().nextLong(),
+                0
+        );
         RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
     }

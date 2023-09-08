@@ -124,8 +124,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.TERM_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        TermModel term = new TermModel();
-        term.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
+        TermModel term = new TermModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
         term.setSlug("uncategorized");
         term.setRemoteTermId(1);
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
@@ -452,9 +451,8 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Nullable
     private TermModel instantiateTermModel(@NonNull SiteModel site, @NonNull String taxonomyName) {
-        TermModel newTerm = new TermModel();
+        TermModel newTerm = new TermModel(taxonomyName);
         newTerm.setLocalSiteId(site.getId());
-        newTerm.setTaxonomy(taxonomyName);
 
         // Insert the term into the db, updating the object to include the local ID
         TermModel insertedTerm = insertTermForResult(newTerm);
