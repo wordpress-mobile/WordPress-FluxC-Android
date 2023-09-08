@@ -52,6 +52,7 @@ import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
 import javax.inject.Inject
 import kotlin.collections.MutableMap.MutableEntry
+import android.util.Log
 
 @Suppress("LargeClass", "TooManyFunctions")
 class OrderRestClient @Inject constructor(
@@ -987,7 +988,9 @@ class OrderRestClient @Inject constructor(
             "total_tax",
             "meta_data",
             "payment_url",
-            "is_editable"
+            "is_editable",
+            "needs_payment",
+            "needs_processing"
         ).joinToString(separator = ",")
 
         private val TRACKING_FIELDS = arrayOf(
