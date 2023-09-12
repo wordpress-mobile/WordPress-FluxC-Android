@@ -524,6 +524,13 @@ class WCOrderStore @Inject constructor(
         wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
     }
 
+    suspend fun fetchOrdersSync(
+        site: SiteModel,
+        offset: Int,
+        perPage: Int,
+        statusFilter: String? = null
+    ) = wcOrderRestClient.fetchOrdersSync(site, offset,perPage, statusFilter)
+
     private fun fetchOrderList(payload: FetchOrderListPayload) {
         wcOrderRestClient.fetchOrderListSummaries(
             listDescriptor = payload.listDescriptor,
