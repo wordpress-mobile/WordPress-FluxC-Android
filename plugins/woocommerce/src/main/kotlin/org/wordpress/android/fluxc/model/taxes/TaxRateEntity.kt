@@ -11,4 +11,11 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 data class TaxRateEntity (
     val id: RemoteId,
     val localSiteId: LocalId,
+    val country: String? = null,
+    val state: String? = null,
+    val postcode: String? = null,
+    val city: String? = null,
+    val rate: String? = null,
+    val name: String? = null,
+    val taxClass: String? = null,
 )
