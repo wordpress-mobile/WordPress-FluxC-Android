@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.taxes.TaxRateEntity
+import org.wordpress.android.fluxc.persistence.entity.CouponWithEmails
 
 @Dao
 interface TaxRateDao {
@@ -21,6 +22,6 @@ interface TaxRateDao {
     suspend fun deleteAll(localSiteId: LocalId)
 
     @Transaction
-    @Query("SELECT * FROM TaxRate WHERE localSiteId = :localSiteId AND id IN (:taxRateId)")
+    @Query("SELECT * FROM TaxRate WHERE localSiteId = :localSiteId AND id = :taxRateId")
     suspend fun getTaxRate(localSiteId: LocalId, taxRateId: RemoteId): TaxRateEntity?
 }
