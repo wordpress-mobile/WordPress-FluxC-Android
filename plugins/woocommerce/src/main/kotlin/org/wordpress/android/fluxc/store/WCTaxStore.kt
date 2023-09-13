@@ -1,7 +1,11 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.taxes.TaxRateEntity
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassMapper
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -24,6 +28,12 @@ class WCTaxStore @Inject constructor(
     private val mapper: WCTaxClassMapper,
     private val taxRateDao: TaxRateDao,
 ) {
+    companion object {
+        // Just get everything
+        const val DEFAULT_PAGE_SIZE = 100
+        const val DEFAULT_PAGE = 1
+    }
+
     /**
      * returns a list of tax classes for a specific site in the database
      */
@@ -54,27 +64,35 @@ class WCTaxStore @Inject constructor(
         }
     }
 
+    // Returns a boolean indicating whether more Tax Rates can be fetched
     suspend fun fetchTaxRateList(
         site: SiteModel,
-        page: Int,
-        pageSize: Int
-    ): WooResult<List<TaxRateDto>> {
-        val response = restClient.fetchTaxRateList(site, page, pageSize)
-        return when {
-            response.isError -> WooResult(response.error)
-            response.result != null -> {
-                if (page == 1) {
-                    taxRateDao.deleteAll(site.localId())
-                    response.result.forEach { insertTaxRateToDatabase(it, site) }
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxRateList") {
+            val response = restClient.fetchTaxRateList(site, page, pageSize)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    if (page == 1) {
+                        taxRateDao.deleteAll(site.localId())
+                        response.result.forEach { insertTaxRateToDatabase(it, site) }
+                    }
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(canLoadMore)
                 }
-                WooResult(response.result.toList())
-            }
 
-            else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
         }
     }
 
-    suspend fun insertTaxRateToDatabase(dto: TaxRateDto, site: SiteModel) {
+    @ExperimentalCoroutinesApi
+    fun observeTaxRates(site: SiteModel): Flow<List<TaxRateEntity>> =
+        taxRateDao.observeTaxRates(site.localId()).distinctUntilChanged()
+
+    private suspend fun insertTaxRateToDatabase(dto: TaxRateDto, site: SiteModel) {
         taxRateDao.insertOrUpdate(dto.toDataModel(site.localId()))
     }
 
