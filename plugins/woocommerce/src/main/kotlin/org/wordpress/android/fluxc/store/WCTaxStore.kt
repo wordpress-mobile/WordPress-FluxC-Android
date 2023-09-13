@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ER
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.TaxRateDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
-import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.WCTaxSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.TaxRateDao
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -28,7 +27,6 @@ class WCTaxStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val mapper: WCTaxClassMapper,
     private val taxRateDao: TaxRateDao,
-    private val database: TransactionExecutor
 ) {
     companion object {
         // Just get everything
@@ -77,7 +75,6 @@ class WCTaxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    database.executeInTransaction {
                         if (page == 1) {
                             taxRateDao.deleteAll(site.localId())
                             response.result.forEach { insertTaxRateToDatabase(it, site) }
@@ -85,7 +82,6 @@ class WCTaxStore @Inject constructor(
                         val canLoadMore = response.result.size == pageSize
                         WooResult(canLoadMore)
                     }
-                }
 
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }

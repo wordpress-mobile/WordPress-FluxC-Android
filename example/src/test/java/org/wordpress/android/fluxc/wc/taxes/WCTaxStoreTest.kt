@@ -36,7 +36,7 @@ class WCTaxStoreTest {
     private val errorSite = SiteModel().apply { id = 123 }
     private val mapper = WCTaxClassMapper()
     private lateinit var store: WCTaxStore
-    private val taxClassDao = mock<TaxRateDao>()
+    private val taxRateDao = mock<TaxRateDao>()
 
     private val sampleTaxClassList = TaxTestUtils.generateSampleTaxClassApiResponse()
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
@@ -56,7 +56,7 @@ class WCTaxStoreTest {
                 restClient,
                 initCoroutineEngine(),
                 mapper,
-                taxClassDao
+                taxRateDao
         )
 
         // Insert the site into the db so it's available later when fetching tax classes
@@ -108,7 +108,7 @@ class WCTaxStoreTest {
             val result = store.fetchTaxRateList(site, 1, 100)
             assertThat(this).isNotNull
             assertThat(result.isError).isFalse
-            assertThat(result.model).isEqualTo(taxRateApiResponse?.toList())
+            assertThat(result).isEqualTo(WooResult(false))
         }
     }
 
