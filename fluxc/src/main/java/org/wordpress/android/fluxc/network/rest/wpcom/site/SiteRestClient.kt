@@ -1001,6 +1001,16 @@ class SiteRestClient @Inject constructor(
         add(request)
     }
 
+    suspend fun fetchJetpackSocial(remoteSiteId: Long): Response<JetpackSocialResponse> {
+        val url = WPCOMV2.sites.site(remoteSiteId).jetpack_social.url
+        return wpComGsonRequestBuilder.syncGetRequest(
+            restClient = this,
+            url = url,
+            params = mapOf(),
+            clazz = JetpackSocialResponse::class.java
+        )
+    }
+
     @Suppress("LongMethod", "ComplexMethod")
     private fun siteResponseToSiteModel(from: SiteWPComRestResponse): SiteModel {
         val site = SiteModel()
@@ -1093,6 +1103,7 @@ class SiteRestClient @Inject constructor(
                 }
             }
             site.planShortName = from.plan.product_name_short
+            site.planProductSlug = from.plan.product_slug
             site.hasFreePlan = from.plan.is_free
         }
         if (from.capabilities != null) {
@@ -1140,6 +1151,7 @@ class SiteRestClient @Inject constructor(
         }
         site.origin = SiteModel.ORIGIN_WPCOM_REST
         site.planActiveFeatures = (from.plan?.features?.active?.joinToString(",")).orEmpty()
+        site.wasEcommerceTrial = from.was_ecommerce_trial
         return site
     }
 
@@ -1201,7 +1213,8 @@ class SiteRestClient @Inject constructor(
     companion object {
         private const val NEW_SITE_TIMEOUT_MS = 90000
         private const val SITE_FIELDS = "ID,URL,name,description,jetpack,jetpack_connection,visible,is_private," +
-                "options,plan,capabilities,quota,icon,meta,zendesk_site_meta,organization_id"
+                "options,plan,capabilities,quota,icon,meta,zendesk_site_meta,organization_id," +
+                "was_ecommerce_trial"
         private const val FIELDS = "fields"
         private const val FILTERS = "filters"
     }

@@ -198,7 +198,8 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
                     val customs = customsData?.first { it.id == labelPackage.id }
                     labelPackage.toMap() + (customs?.toMap() ?: emptyMap())
                 },
-                "email_receipt" to emailReceipts
+                "email_receipt" to emailReceipts,
+                "source" to "wc-android",
         )
 
         return wooNetwork.executePostGsonRequest(

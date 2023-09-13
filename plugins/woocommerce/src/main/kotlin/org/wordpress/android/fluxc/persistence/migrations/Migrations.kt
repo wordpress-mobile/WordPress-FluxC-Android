@@ -743,7 +743,6 @@ internal val MIGRATION_22_23 = object : Migration(22, 23) {
     }
 }
 
-//internal class MIGRATION_24_25 : AutoMigrationSpec
 /**
  * We are storing "coupon_lines" array into OrderEntity property.
  * The purpose is to allow adding and removing coupon lines creating and editing

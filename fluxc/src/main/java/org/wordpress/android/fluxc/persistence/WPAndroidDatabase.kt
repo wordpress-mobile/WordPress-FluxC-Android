@@ -27,9 +27,11 @@ import org.wordpress.android.fluxc.persistence.dashboard.CardsDao
 import org.wordpress.android.fluxc.persistence.dashboard.CardsDao.CardEntity
 import org.wordpress.android.fluxc.persistence.domains.DomainDao
 import org.wordpress.android.fluxc.persistence.domains.DomainDao.DomainEntity
+import org.wordpress.android.fluxc.persistence.jetpacksocial.JetpackSocialDao
+import org.wordpress.android.fluxc.persistence.jetpacksocial.JetpackSocialDao.JetpackSocialEntity
 
 @Database(
-        version = 17,
+        version = 20,
         entities = [
             BloggingReminders::class,
             PlanOffer::class,
@@ -43,13 +45,15 @@ import org.wordpress.android.fluxc.persistence.domains.DomainDao.DomainEntity
             JetpackCPConnectedSiteEntity::class,
             DomainEntity::class,
             BlazeCampaignEntity::class,
-            BlazeCampaignsPaginationEntity::class
+            BlazeCampaignsPaginationEntity::class,
+            JetpackSocialEntity::class,
         ],
         autoMigrations = [
             AutoMigration(from = 11, to = 12),
             AutoMigration(from = 12, to = 13),
             AutoMigration(from = 13, to = 14),
-            AutoMigration(from = 16, to = 17)
+            AutoMigration(from = 16, to = 17),
+            AutoMigration(from = 17, to = 18),
         ]
 )
 @TypeConverters(
@@ -78,6 +82,8 @@ abstract class WPAndroidDatabase : RoomDatabase() {
 
     abstract fun blazeCampaignsDao(): BlazeCampaignsDao
 
+    abstract fun jetpackSocialDao(): JetpackSocialDao
+
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
         const val WP_DB_NAME = "wp-android-database"
@@ -95,6 +101,8 @@ abstract class WPAndroidDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_7_8)
                 .addMigrations(MIGRATION_14_15)
                 .addMigrations(MIGRATION_15_16)
+                .addMigrations(MIGRATION_18_19)
+                .addMigrations(MIGRATION_19_20)
                 .build()
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -233,6 +241,60 @@ abstract class WPAndroidDatabase : RoomDatabase() {
                 database.apply {
                     execSQL(
                         "DROP TABLE IF EXISTS `BlazeStatus`"
+                    )
+                }
+            }
+        }
+
+        val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.apply {
+                    execSQL("DROP TABLE IF EXISTS `BlazeCampaigns`")
+                    execSQL("DELETE FROM `BlazeCampaignsPagination`")
+                    execSQL("CREATE TABLE `BlazeCampaigns` (" +
+                        "`siteId` INTEGER NOT NULL, " +
+                        "`campaignId` INTEGER NOT NULL, " +
+                        "`title` TEXT NOT NULL, " +
+                        "`imageUrl` TEXT, " +
+                        "`startDate` TEXT NOT NULL, " +
+                        "`endDate` TEXT, " +
+                        "`uiStatus` TEXT NOT NULL, " +
+                        "`budgetCents` INTEGER NOT NULL, " +
+                        "`impressions` INTEGER NOT NULL, " +
+                        "`clicks` INTEGER NOT NULL, " +
+                        "PRIMARY KEY (`siteId`, `campaignId`)" +
+                        ")"
+                    )
+                    execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_BlazeCampaigns_siteId` " +
+                            "ON `BlazeCampaigns` (`siteId`)"
+                    )
+                }
+            }
+        }
+
+        val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.apply {
+                    execSQL("DROP TABLE IF EXISTS `BlazeCampaigns`")
+                    execSQL("DELETE FROM `BlazeCampaignsPagination`")
+                    execSQL("CREATE TABLE `BlazeCampaigns` (" +
+                            "`siteId` INTEGER NOT NULL, " +
+                            "`campaignId` INTEGER NOT NULL, " +
+                            "`title` TEXT NOT NULL, " +
+                            "`imageUrl` TEXT, " +
+                            "`createdAt` TEXT NOT NULL, " +
+                            "`endDate` TEXT, " +
+                            "`uiStatus` TEXT NOT NULL, " +
+                            "`budgetCents` INTEGER NOT NULL, " +
+                            "`impressions` INTEGER NOT NULL, " +
+                            "`clicks` INTEGER NOT NULL, " +
+                            "PRIMARY KEY (`siteId`, `campaignId`)" +
+                            ")"
+                    )
+                    execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_BlazeCampaigns_siteId` " +
+                                "ON `BlazeCampaigns` (`siteId`)"
                     )
                 }
             }

@@ -813,8 +813,9 @@ class WCProductStore @Inject constructor(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
     ): List<WCProductModel> =
-        ProductSqlUtils.getProducts(site, filterOptions, sortType, excludedProductIds, searchQuery)
+        ProductSqlUtils.getProducts(site, filterOptions, sortType, excludedProductIds, searchQuery, skuSearchOptions)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
         ProductSqlUtils.getProductsForSite(site, sortType)
@@ -1635,6 +1636,21 @@ class WCProductStore @Inject constructor(
             anySuccessfulResponse
                 ?: anyFailureResponse
                 ?: WooResult(error = WooError(WooErrorType.GENERIC_ERROR, NETWORK_ERROR))
+        }
+    }
+
+    suspend fun fetchProductsCount(
+        site: SiteModel,
+    ): WooResult<Long> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchProductsCount") {
+            val response = wcProductRestClient.fetchProductsTotals(site)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    WooResult(response.result.sumOf { it.total })
+                }
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+            }
         }
     }
 

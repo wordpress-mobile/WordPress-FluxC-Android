@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.blaze.BlazeCampaignsRestCl
 import org.wordpress.android.fluxc.network.rest.wpcom.blaze.BlazeCampaignsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.blaze.BlazeCampaignsUtils
 import org.wordpress.android.fluxc.network.rest.wpcom.blaze.Campaign
+import org.wordpress.android.fluxc.network.rest.wpcom.blaze.CampaignStats
 import org.wordpress.android.fluxc.network.rest.wpcom.blaze.ContentConfig
 import org.wordpress.android.fluxc.persistence.blaze.BlazeCampaignsDao
 import org.wordpress.android.fluxc.test
@@ -31,10 +32,10 @@ import org.wordpress.android.fluxc.tools.initCoroutineEngine
 const val SITE_ID = 1L
 
 /* Campaign */
-const val CAMPAIGN_ID = 1L
+const val CAMPAIGN_ID = 1
 const val TITLE = "title"
 const val IMAGE_URL = "imageUrl"
-const val START_DATE = "2023-06-02T00:00:00.000Z"
+const val CREATED_AT = "2023-06-02T00:00:00.000Z"
 const val END_DATE = "2023-06-02T00:00:00.000Z"
 const val UI_STATUS = "rejected"
 const val BUDGET_CENTS = 5000L
@@ -60,16 +61,20 @@ private val CONTENT_CONFIG_RESPONSE = ContentConfig(
     imageUrl = IMAGE_URL
 )
 
+private val CONTENT_CAMPAIGN_STATS = CampaignStats(
+    impressionsTotal = 0,
+    clicksTotal = 0
+)
+
 private val CAMPAIGN_RESPONSE = Campaign(
     campaignId = CAMPAIGN_ID,
-    startDate = START_DATE,
+    createdAt = CREATED_AT,
     endDate = END_DATE,
-    clicks = CLICKS,
-    impressions = IMPRESSIONS,
     budgetCents = BUDGET_CENTS,
     uiStatus = UI_STATUS,
     audienceList = AUDIENCE_LIST_RESPONSE,
-    contentConfig = CONTENT_CONFIG_RESPONSE
+    contentConfig = CONTENT_CONFIG_RESPONSE,
+    campaignStats = CONTENT_CAMPAIGN_STATS
 )
 
 private val BLAZE_CAMPAIGNS_RESPONSE = BlazeCampaignsResponse(
@@ -83,7 +88,7 @@ private val BLAZE_CAMPAIGN_MODEL = BlazeCampaignModel(
     campaignId = CAMPAIGN_ID,
     title = TITLE,
     imageUrl = IMAGE_URL,
-    startDate = BlazeCampaignsUtils.stringToDate(START_DATE),
+    createdAt = BlazeCampaignsUtils.stringToDate(CREATED_AT),
     endDate = BlazeCampaignsUtils.stringToDate(END_DATE),
     uiStatus = UI_STATUS,
     budgetCents = BUDGET_CENTS,
@@ -170,7 +175,7 @@ class BlazeCampaignsStoreTest {
         assertEquals(result?.campaignId, CAMPAIGN_ID)
         assertEquals(result?.title, TITLE)
         assertEquals(result?.imageUrl, IMAGE_URL)
-        assertEquals(result?.startDate, BlazeCampaignsUtils.stringToDate(START_DATE))
+        assertEquals(result?.createdAt, BlazeCampaignsUtils.stringToDate(CREATED_AT))
         assertEquals(result?.endDate, BlazeCampaignsUtils.stringToDate(END_DATE))
         assertEquals(result?.uiStatus, UI_STATUS)
         assertEquals(result?.budgetCents, BUDGET_CENTS)

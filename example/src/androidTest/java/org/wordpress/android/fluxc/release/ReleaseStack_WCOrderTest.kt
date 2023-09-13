@@ -255,6 +255,22 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(trackings.isEmpty())
     }
 
+    @Test
+    fun testFetchOrderWithStatusCompletedReturnsCountOfCompletedOrders() = runBlocking {
+        val result = orderStore.fetchOrdersCount(sSite, CoreOrderStatus.COMPLETED.value)
+
+        assertTrue(result is WCOrderStore.OrdersCountResult.Success)
+        assertEquals(81, (result as WCOrderStore.OrdersCountResult.Success).count)
+    }
+
+    @Test
+    fun testFetchOrdersWithNullFilterCountReturnsSumOfAllOrders() = runBlocking {
+        val result = orderStore.fetchOrdersCount(sSite)
+
+        assertTrue(result is WCOrderStore.OrdersCountResult.Success)
+        assertEquals(301, (result as WCOrderStore.OrdersCountResult.Success).count)
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = MAIN)
     fun onOrderChanged(event: OnOrderChanged) {

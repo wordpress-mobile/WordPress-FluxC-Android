@@ -16,6 +16,7 @@ class WooSystemRestClient @Inject constructor(private val wooNetwork: WooNetwork
     companion object {
         private const val NOT_FOUND = 404
         private const val FORBIDDEN = 403
+        private const val SAVE_SITE_TITLE_RESPONSE_FIELD = "title"
     }
 
     suspend fun fetchInstalledPlugins(site: SiteModel): WooPayload<WCSystemPluginResponse> {
@@ -87,6 +88,26 @@ class WooSystemRestClient @Inject constructor(private val wooNetwork: WooNetwork
 
         return response.toWooPayload()
     }
+
+    suspend fun saveSiteTitle(site: SiteModel, siteTitle: String): WooPayload<SaveSiteTitleResponse> {
+        val url = WPAPI.settings.urlV2
+
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = SaveSiteTitleResponse::class.java,
+            body = mapOf(
+                "title" to siteTitle,
+                "_fields" to SAVE_SITE_TITLE_RESPONSE_FIELD
+            )
+        )
+
+        return response.toWooPayload()
+    }
+
+    data class SaveSiteTitleResponse(
+        @SerializedName("title") val title: String? = null
+    )
 
     data class SSRResponse(
         val environment: JsonElement? = null,

@@ -10,10 +10,10 @@ data class BlazeCampaignsModel(
 )
 
 data class BlazeCampaignModel(
-    val campaignId: Long,
+    val campaignId: Int,
     val title: String,
     val imageUrl: String?,
-    val startDate: Date,
+    val createdAt: Date,
     val endDate: Date?,
     val uiStatus: String,
     val budgetCents: Long,

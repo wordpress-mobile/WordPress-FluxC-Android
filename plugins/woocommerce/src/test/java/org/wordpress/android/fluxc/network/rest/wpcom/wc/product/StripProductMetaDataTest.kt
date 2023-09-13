@@ -7,6 +7,9 @@ import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
+import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
+import org.wordpress.android.fluxc.model.WCProductModel.QuantityRulesMetadataKeys
 import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 
 class StripProductMetaDataTest {
@@ -67,6 +70,24 @@ class StripProductMetaDataTest {
     fun `when metadata is null, then empty array is return`() {
         val result = sut.invoke(null)
         Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
+    }
+
+    @Test
+    fun `assert no regression in subscription metadata`() {
+        Assertions.assertThat(StripProductMetaData.SUPPORTED_KEYS)
+            .containsAll(SubscriptionMetadataKeys.ALL_KEYS)
+    }
+
+    @Test
+    fun `assert no regression in quantity rules metadata`() {
+        Assertions.assertThat(StripProductMetaData.SUPPORTED_KEYS)
+            .containsAll(QuantityRulesMetadataKeys.ALL_KEYS)
+    }
+
+    @Test
+    fun `assert no regression in add-ons metadata`() {
+        Assertions.assertThat(StripProductMetaData.SUPPORTED_KEYS)
+            .contains(AddOnsMetadataKeys.ADDONS_METADATA_KEY)
     }
 
     private fun getOneItemMetadata(itemKey: String, itemValue: String?): String {

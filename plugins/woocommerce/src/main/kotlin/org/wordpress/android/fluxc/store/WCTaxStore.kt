@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxRateModel
 import org.wordpress.android.fluxc.persistence.WCTaxSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -45,6 +46,18 @@ class WCTaxStore @Inject constructor(
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
+        }
+    }
+    suspend fun fetchTaxRateList(
+        site: SiteModel,
+        page: Int,
+        pageSize: Int
+    ): WooResult<List<TaxRateModel>> {
+        val response = restClient.fetchTaxRateList(site, page, pageSize)
+        return when {
+            response.isError -> WooResult(response.error)
+            response.result != null -> WooResult(response.result.toList())
+            else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
     }
 }

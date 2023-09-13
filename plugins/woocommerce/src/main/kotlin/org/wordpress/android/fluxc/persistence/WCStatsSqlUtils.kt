@@ -118,14 +118,7 @@ object WCStatsSqlUtils {
      * Methods to support the new v4 revenue stats api
      */
     fun insertOrUpdateRevenueStats(stats: WCRevenueStatsModel): Int {
-        val statsResult = WellSql.select(WCRevenueStatsModel::class.java)
-                .where().beginGroup()
-                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
-                .equals(WCRevenueStatsModelTable.INTERVAL, stats.interval)
-                .equals(WCRevenueStatsModelTable.START_DATE, stats.startDate)
-                .equals(WCRevenueStatsModelTable.END_DATE, stats.endDate)
-                .endGroup().endWhere()
-                .asModel
+        val statsResult = searchMatchingRevenueStatsInDatabase(stats)
 
         return if (statsResult.isEmpty()) {
             // insert
@@ -136,6 +129,26 @@ object WCStatsSqlUtils {
             val oldId = statsResult[0].id
             WellSql.update(WCRevenueStatsModel::class.java).whereId(oldId)
                     .put(stats, UpdateAllExceptId(WCRevenueStatsModel::class.java)).execute()
+        }
+    }
+
+    private fun searchMatchingRevenueStatsInDatabase(stats: WCRevenueStatsModel): List<WCRevenueStatsModel> {
+        return if (stats.rangeId != 0) {
+            WellSql.select(WCRevenueStatsModel::class.java)
+                .where().beginGroup()
+                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
+                .equals(WCRevenueStatsModelTable.RANGE_ID, stats.rangeId)
+                .endGroup().endWhere()
+                .asModel
+        } else {
+            WellSql.select(WCRevenueStatsModel::class.java)
+                .where().beginGroup()
+                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
+                .equals(WCRevenueStatsModelTable.INTERVAL, stats.interval)
+                .equals(WCRevenueStatsModelTable.START_DATE, stats.startDate)
+                .equals(WCRevenueStatsModelTable.END_DATE, stats.endDate)
+                .endGroup().endWhere()
+                .asModel
         }
     }
 
@@ -155,4 +168,15 @@ object WCStatsSqlUtils {
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }
+
+    fun getRevenueStatsFromRangeId(
+        site: SiteModel,
+        revenueRangeId: Int
+    ) = WellSql.select(WCRevenueStatsModel::class.java)
+        .where()
+        .beginGroup()
+        .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, site.id)
+        .equals(WCRevenueStatsModelTable.RANGE_ID, revenueRangeId)
+        .endGroup().endWhere()
+        .asModel.firstOrNull()
 }
