@@ -22,13 +22,13 @@ class WCTaxStore @Inject constructor(
     private val restClient: WCTaxRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val mapper: WCTaxClassMapper,
-    private val taxRateDao: TaxRateDao
+    private val taxRateDao: TaxRateDao,
 ) {
     /**
      * returns a list of tax classes for a specific site in the database
      */
     fun getTaxClassListForSite(site: SiteModel): List<WCTaxClassModel> =
-            WCTaxSqlUtils.getTaxClassesForSite(site.id)
+        WCTaxSqlUtils.getTaxClassesForSite(site.id)
 
     suspend fun fetchTaxClassList(site: SiteModel): WooResult<List<WCTaxClassModel>> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxClassList") {
@@ -37,6 +37,7 @@ class WCTaxStore @Inject constructor(
                 response.isError -> {
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
                     val taxClassModels = response.result.map {
                         mapper.map(it).apply { localSiteId = site.id }
@@ -47,10 +48,12 @@ class WCTaxStore @Inject constructor(
                     WCTaxSqlUtils.insertOrUpdateTaxClasses(taxClassModels)
                     WooResult(taxClassModels)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
+
     suspend fun fetchTaxRateList(
         site: SiteModel,
         page: Int,
@@ -59,11 +62,22 @@ class WCTaxStore @Inject constructor(
         val response = restClient.fetchTaxRateList(site, page, pageSize)
         return when {
             response.isError -> WooResult(response.error)
-            response.result != null -> WooResult(response.result.toList())
+            response.result != null -> {
+                if (page == 1) {
+                    taxRateDao.deleteAll(site.localId())
+                    response.result.forEach { insertTaxRateToDatabase(it, site) }
+                }
+                WooResult(response.result.toList())
+            }
+
             else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
     }
 
+    suspend fun insertTaxRateToDatabase(dto: TaxRateDto, site: SiteModel) {
+        taxRateDao.insertOrUpdate(dto.toDataModel(site.localId()))
+    }
+
     suspend fun getTaxRate(site: SiteModel, taxRateId: Long) =
-            taxRateDao.getTaxRate(site.localId(), RemoteId(taxRateId))
+        taxRateDao.getTaxRate(site.localId(), RemoteId(taxRateId))
 }
