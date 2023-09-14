@@ -29,7 +29,6 @@ class WCTaxStore @Inject constructor(
     private val taxRateDao: TaxRateDao,
 ) {
     companion object {
-        // Just get everything
         const val DEFAULT_PAGE_SIZE = 100
         const val DEFAULT_PAGE = 1
     }
@@ -64,7 +63,9 @@ class WCTaxStore @Inject constructor(
         }
     }
 
-    // Returns a boolean indicating whether more Tax Rates can be fetched
+    /**
+     * returns a boolean indicating whether more Tax Rates can be fetched.
+     */
     suspend fun fetchTaxRateList(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
@@ -75,14 +76,14 @@ class WCTaxStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                        if (page == 1) {
-                            taxRateDao.deleteAll(site.localId())
-                        }
+                    if (page == 1) {
+                        taxRateDao.deleteAll(site.localId())
+                    }
                     response.result.forEach { insertTaxRateToDatabase(it, site) }
 
-                        val canLoadMore = response.result.size == pageSize
-                        WooResult(canLoadMore)
-                    }
+                    val canLoadMore = response.result.size == pageSize
+                    WooResult(canLoadMore)
+                }
 
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
