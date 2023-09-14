@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
 import org.wordpress.android.fluxc.persistence.WCTaxSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.TaxRateDao
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,7 +41,7 @@ class WCTaxStore @Inject constructor(
         WCTaxSqlUtils.getTaxClassesForSite(site.id)
 
     suspend fun fetchTaxClassList(site: SiteModel): WooResult<List<WCTaxClassModel>> {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxClassList") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchTaxClassList") {
             val response = restClient.fetchTaxClassList(site)
             return@withDefaultContext when {
                 response.isError -> {
@@ -70,15 +70,16 @@ class WCTaxStore @Inject constructor(
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<Boolean> {
-        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxRateList") {
+        return coroutineEngine.withDefaultContext(API, this, "fetchTaxRateList") {
             val response = restClient.fetchTaxRateList(site, page, pageSize)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                         if (page == 1) {
                             taxRateDao.deleteAll(site.localId())
-                            response.result.forEach { insertTaxRateToDatabase(it, site) }
                         }
+                    response.result.forEach { insertTaxRateToDatabase(it, site) }
+
                         val canLoadMore = response.result.size == pageSize
                         WooResult(canLoadMore)
                     }
