@@ -55,8 +55,8 @@ class WCGlobalAttributeStore @Inject constructor(
     suspend fun fetchAttributeTerms(
         site: SiteModel,
         attributeID: Long,
-        page: Int = 1,
-        pageSize: Int = 100
+        page: Int = DEFAULT_PAGE_INDEX,
+        pageSize: Int = DEFAULT_PAGE_SIZE
     ) = restClient.fetchAllAttributeTerms(site, attributeID, page, pageSize)
             .result?.map { mapper.responseToAttributeTermModel(it, attributeID.toInt(), site) }
             ?.apply {
@@ -193,5 +193,10 @@ class WCGlobalAttributeStore @Inject constructor(
         fetchAttribute(site, attributeID)
                 .model
                 ?.let { updateSingleAttributeTermsMapping(attributeID.toInt(), termsId, site.id) }
+    }
+
+    companion object {
+        const val DEFAULT_PAGE_SIZE = 100
+        const val DEFAULT_PAGE_INDEX = 1
     }
 }
