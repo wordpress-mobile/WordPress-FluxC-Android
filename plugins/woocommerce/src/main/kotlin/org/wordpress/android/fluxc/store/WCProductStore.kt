@@ -1233,7 +1233,7 @@ class WCProductStore @Inject constructor(
                 // Clear existing product reviews if this is a fresh fetch (loadMore = false).
                 // This is the simplest way to keep our local reviews in sync with remote reviews
                 // in case of deletions.
-                if (!response.loadedMore) {
+                if (!response.loadedMore && payload.reviewIds == null) {
                     ProductSqlUtils.deleteAllProductReviewsForSite(response.site)
                 }
                 val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(response.reviews)
