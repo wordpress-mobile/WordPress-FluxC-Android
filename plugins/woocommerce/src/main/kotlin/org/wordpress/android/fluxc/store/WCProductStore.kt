@@ -1221,7 +1221,10 @@ class WCProductStore @Inject constructor(
         with(payload) { wcProductRestClient.fetchProductShippingClassList(site, pageSize, offset) }
     }
 
-    suspend fun fetchProductReviews(payload: FetchProductReviewsPayload): OnProductReviewChanged {
+    suspend fun fetchProductReviews(
+        payload: FetchProductReviewsPayload,
+        deletePreviouslyCachedReviews: Boolean = true
+    ): OnProductReviewChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductReviews") {
             val response = with(payload) {
                 wcProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus)
@@ -1232,8 +1235,8 @@ class WCProductStore @Inject constructor(
             } else {
                 // Clear existing product reviews if this is a fresh fetch (loadMore = false).
                 // This is the simplest way to keep our local reviews in sync with remote reviews
-                // in case of deletions.
-                if (!response.loadedMore && payload.reviewIds == null) {
+                // in case of deletions or status updates.
+                if (deletePreviouslyCachedReviews) {
                     ProductSqlUtils.deleteAllProductReviewsForSite(response.site)
                 }
                 val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(response.reviews)
