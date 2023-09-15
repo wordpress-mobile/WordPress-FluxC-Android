@@ -568,7 +568,6 @@ class WCProductStore @Inject constructor(
         val reviews: List<WCProductReviewModel> = emptyList(),
         val filterProductIds: List<Long>? = null,
         val filterByStatus: List<String>? = null,
-        val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
         constructor(error: ProductError, site: SiteModel) : this(site) {
