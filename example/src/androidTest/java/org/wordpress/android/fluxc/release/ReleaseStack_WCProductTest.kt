@@ -81,7 +81,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     }
 
     @Inject internal lateinit var productStore: WCProductStore
-    @Inject internal lateinit var mediaStore: MediaStore // must be injected for onMediaListFetched()
+
+    @Inject
+    internal lateinit var mediaStore: MediaStore // must be injected for onMediaListFetched()
 
     private var nextEvent: TestEvent = TestEvent.NONE
     private val productModel = WCProductModel(8).apply {
@@ -131,7 +133,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         ProductSqlUtils.deleteProductsForSite(sSite)
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 0)
 
-        productStore.fetchSingleProduct(FetchSingleProductPayload(sSite, productModel.remoteProductId))
+        productStore.fetchSingleProduct(
+            FetchSingleProductPayload(
+                sSite,
+                productModel.remoteProductId
+            )
+        )
 
         // Verify results
         val fetchedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
@@ -147,10 +154,16 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Test
     fun testFetchSingleVariation() = runBlocking {
         // remove all variation for this site and verify there are none
-        ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
+        ProductSqlUtils.deleteVariationsForProduct(
+            sSite,
+            productModelWithVariations.remoteProductId
+        )
         assertEquals(
-                ProductSqlUtils.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId).size,
-                0
+            ProductSqlUtils.getVariationsForProduct(
+                sSite,
+                productModelWithVariations.remoteProductId
+            ).size,
+            0
         )
 
         val result = productStore.fetchSingleVariation(
@@ -164,16 +177,19 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify results
         val fetchedVariation = productStore.getVariationByRemoteId(
-                sSite,
-                variationModel.remoteProductId,
-                variationModel.remoteVariationId
+            sSite,
+            variationModel.remoteProductId,
+            variationModel.remoteVariationId
         )
         assertNotNull(fetchedVariation)
         assertEquals(fetchedVariation!!.remoteProductId, variationModel.remoteProductId)
         assertEquals(fetchedVariation.remoteVariationId, variationModel.remoteVariationId)
 
         // Verify there's only one variation for this site
-        assertEquals(1, ProductSqlUtils.getVariationsForProduct(sSite, variationModel.remoteProductId).size)
+        assertEquals(
+            1,
+            ProductSqlUtils.getVariationsForProduct(sSite, variationModel.remoteProductId).size
+        )
     }
 
     @Throws(InterruptedException::class)
@@ -186,8 +202,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_PRODUCTS
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder
-                        .newFetchProductsAction(FetchProductsPayload(sSite))
+            WCProductActionBuilder
+                .newFetchProductsAction(FetchProductsPayload(sSite))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -200,8 +216,16 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Test
     fun testFetchProductVariations() = runBlocking {
         // remove all variations for this product and verify there are none
-        ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
-        assertEquals(ProductSqlUtils.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId).size, 0)
+        ProductSqlUtils.deleteVariationsForProduct(
+            sSite,
+            productModelWithVariations.remoteProductId
+        )
+        assertEquals(
+            ProductSqlUtils.getVariationsForProduct(
+                sSite,
+                productModelWithVariations.remoteProductId
+            ).size, 0
+        )
 
         productStore.fetchProductVariations(
             FetchProductVariationsPayload(
@@ -211,7 +235,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         )
 
         // Verify results
-        val fetchedVariations = productStore.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
+        val fetchedVariations = productStore.getVariationsForProduct(
+            sSite,
+            productModelWithVariations.remoteProductId
+        )
         assertNotEquals(fetchedVariations.size, 0)
     }
 
@@ -228,9 +255,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductShippingClassListAction(
-                        FetchProductShippingClassListPayload(sSite)
-                )
+            WCProductActionBuilder.newFetchProductShippingClassListAction(
+                FetchProductShippingClassListPayload(sSite)
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -253,15 +280,15 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchSingleProductShippingClassAction(
-                        FetchSingleProductShippingClassPayload(sSite, remoteShippingClassId)
-                )
+            WCProductActionBuilder.newFetchSingleProductShippingClassAction(
+                FetchSingleProductShippingClassPayload(sSite, remoteShippingClassId)
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
         val fetchedShippingClasses = productStore.getShippingClassByRemoteId(
-                sSite, remoteShippingClassId
+            sSite, remoteShippingClassId
         )
         assertNotNull(fetchedShippingClasses)
     }
@@ -276,7 +303,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCH_PRODUCT_CATEGORIES
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductCategoriesAction(FetchProductCategoriesPayload(sSite))
+            WCProductActionBuilder.newFetchProductCategoriesAction(
+                FetchProductCategoriesPayload(
+                    sSite
+                )
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -300,9 +331,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             name = "Test" + Random.nextInt(0, 10000)
         }
         mDispatcher.dispatch(
-                WCProductActionBuilder.newAddProductCategoryAction(
-                        AddProductCategoryPayload(sSite, productCategoryModel)
-                )
+            WCProductActionBuilder.newAddProductCategoryAction(
+                AddProductCategoryPayload(sSite, productCategoryModel)
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -322,7 +353,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        productStore.fetchProductReviews(FetchProductReviewsPayload(sSite, offset = 0))
+        productStore.fetchProductReviews(
+            FetchProductReviewsPayload(sSite, offset = 0),
+            deletePreviouslyCachedReviews = false
+        )
 
         // Verify results
         val fetchedReviewsAll = productStore.getProductReviewsForSite(sSite)
@@ -338,7 +372,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        productStore.fetchProductReviews(FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0))
+        productStore.fetchProductReviews(
+            FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0),
+            deletePreviouslyCachedReviews = false
+        )
 
         // Verify results
         val fetchReviewsId = productStore.getProductReviewsForSite(sSite)
@@ -352,13 +389,25 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Check to see how many reviews currently exist for these product IDs before deleting
         // from the database
-        val reviewsByProduct = productIdsToFetch.map { productStore.getProductReviewsForProductAndSiteId(sSite.id, it) }
+        val reviewsByProduct = productIdsToFetch.map {
+            productStore.getProductReviewsForProductAndSiteId(
+                sSite.id,
+                it
+            )
+        }
 
         // Remove all product reviews from the database
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        productStore.fetchProductReviews(FetchProductReviewsPayload(sSite, productIds = productIdsToFetch, offset = 0))
+        productStore.fetchProductReviews(
+            FetchProductReviewsPayload(
+                sSite,
+                productIds = productIdsToFetch,
+                offset = 0
+            ),
+            deletePreviouslyCachedReviews = false
+        )
 
         // Verify results
         val fetchedReviewsForProduct = productStore.getProductReviewsForSite(sSite)
@@ -372,14 +421,14 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.UPDATED_PRODUCT_PASSWORD
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder
-                        .newUpdateProductPasswordAction(
-                                UpdateProductPasswordPayload(
-                                        sSite,
-                                        productModel.remoteProductId,
-                                        updatedPassword
-                                )
-                        )
+            WCProductActionBuilder
+                .newUpdateProductPasswordAction(
+                    UpdateProductPasswordPayload(
+                        sSite,
+                        productModel.remoteProductId,
+                        updatedPassword
+                    )
+                )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -387,8 +436,13 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_PRODUCT_PASSWORD
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder
-                        .newFetchProductPasswordAction(FetchProductPasswordPayload(sSite, productModel.remoteProductId))
+            WCProductActionBuilder
+                .newFetchProductPasswordAction(
+                    FetchProductPasswordPayload(
+                        sSite,
+                        productModel.remoteProductId
+                    )
+                )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
@@ -400,7 +454,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
-        productStore.fetchSingleProductReview(FetchSingleProductReviewPayload(sSite, remoteProductReviewId))
+        productStore.fetchSingleProductReview(
+            FetchSingleProductReviewPayload(
+                sSite,
+                remoteProductReviewId
+            )
+        )
 
         // Verify results
         val review = productStore.getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
@@ -413,7 +472,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results - review should be deleted from db
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
             assertNull(savedReview)
         }
 
@@ -425,7 +484,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
             assertNotNull(savedReview)
             assertEquals(newStatus, savedReview!!.status)
         }
@@ -437,7 +496,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results - review should be deleted from db
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
             assertNull(savedReview)
         }
 
@@ -448,7 +507,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
             assertNotNull(savedReview)
             assertEquals(newStatus, savedReview!!.status)
         }
@@ -474,9 +533,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             it.add(WCProductImageModel.fromMediaModel(mediaModelForProduct))
         }
         mDispatcher.dispatch(
-                WCProductActionBuilder.newUpdateProductImagesAction(
-                        UpdateProductImagesPayload(sSite, productModel.remoteProductId, imageList)
-                )
+            WCProductActionBuilder.newUpdateProductImagesAction(
+                UpdateProductImagesPayload(sSite, productModel.remoteProductId, imageList)
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -539,7 +598,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
+            WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -591,7 +650,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
+            WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -626,9 +685,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         val updatedVariation = productStore.getVariationByRemoteId(
-                sSite,
-                variationModel.remoteProductId,
-                variationModel.remoteVariationId
+            sSite,
+            variationModel.remoteProductId,
+            variationModel.remoteVariationId
         )
         assertNotNull(updatedVariation)
         assertEquals(variationModel.remoteProductId, updatedVariation?.remoteProductId)
@@ -647,7 +706,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         nextEvent = TestEvent.FETCHED_PRODUCT_TAGS
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCProductActionBuilder.newFetchProductTagsAction(FetchProductTagsPayload(sSite)))
+        mDispatcher.dispatch(
+            WCProductActionBuilder.newFetchProductTagsAction(
+                FetchProductTagsPayload(sSite)
+            )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -667,9 +730,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         val productTags = listOf("Test" + Date().time, "Test1" + Date().time)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newAddProductTagsAction(
-                        AddProductTagsPayload(sSite, productTags)
-                )
+            WCProductActionBuilder.newAddProductTagsAction(
+                AddProductTagsPayload(sSite, productTags)
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -707,7 +770,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(
-                WCProductActionBuilder.newAddedProductAction(RemoteAddProductPayload(sSite, productModel))
+            WCProductActionBuilder.newAddedProductAction(
+                RemoteAddProductPayload(
+                    sSite,
+                    productModel
+                )
+            )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
@@ -745,6 +813,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_PRODUCTS, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
@@ -809,7 +878,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged) {
         event.error?.let {
             throw AssertionError(
-                    "OnProductShippingClassesChanged has unexpected error: ${it.type}, ${it.message}"
+                "OnProductShippingClassesChanged has unexpected error: ${it.type}, ${it.message}"
             )
         }
 
@@ -820,10 +889,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
@@ -842,10 +913,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCH_PRODUCT_CATEGORIES, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             WCProductAction.ADDED_PRODUCT_CATEGORY -> {
                 assertEquals(TestEvent.ADDED_PRODUCT_CATEGORY, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
@@ -855,7 +928,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     fun onProductTagChanged(event: OnProductTagChanged) {
         event.error?.let {
             throw AssertionError(
-                    "OnProductTagChanged has unexpected error: ${it.type}, ${it.message}"
+                "OnProductTagChanged has unexpected error: ${it.type}, ${it.message}"
             )
         }
 
@@ -866,10 +939,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_PRODUCT_TAGS, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             WCProductAction.ADDED_PRODUCT_TAGS -> {
                 assertEquals(TestEvent.ADDED_PRODUCT_TAGS, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
@@ -889,6 +964,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(event.remoteProductId, productModel.remoteProductId)
                 mCountDownLatch.countDown()
             }
+
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
