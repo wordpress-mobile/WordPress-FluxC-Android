@@ -82,8 +82,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Inject internal lateinit var productStore: WCProductStore
 
-    @Inject
-    internal lateinit var mediaStore: MediaStore // must be injected for onMediaListFetched()
+    @Inject internal lateinit var mediaStore: MediaStore // must be injected for onMediaListFetched()
 
     private var nextEvent: TestEvent = TestEvent.NONE
     private val productModel = WCProductModel(8).apply {
