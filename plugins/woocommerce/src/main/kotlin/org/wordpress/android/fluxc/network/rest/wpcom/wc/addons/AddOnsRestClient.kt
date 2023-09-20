@@ -21,7 +21,11 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         return response.toWooPayload { it.toList() }
     }
 
-    suspend fun createGlobalAddonGroup(site: SiteModel): WooPayload<List<AddOnGroupDto>> {
+    suspend fun createGlobalAddonGroup(
+        name: String,
+        categoryIds: List<Long>,
+        site: SiteModel
+    ): WooPayload<List<AddOnGroupDto>> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executePostGsonRequest(
@@ -33,7 +37,12 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         return response.toWooPayload { it.toList() }
     }
 
-    suspend fun updateGlobalAddonGroup(site: SiteModel): WooPayload<List<AddOnGroupDto>> {
+    suspend fun updateGlobalAddonGroup(
+        groupId: Long,
+        name: String? = null,
+        categoryIds: List<Long>? = null,
+        site: SiteModel
+    ): WooPayload<List<AddOnGroupDto>> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executePutGsonRequest(
@@ -45,7 +54,10 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         return response.toWooPayload { it.toList() }
     }
 
-    suspend fun deleteGlobalAddonGroup(site: SiteModel): WooPayload<List<AddOnGroupDto>> {
+    suspend fun deleteGlobalAddonGroup(
+        groupId: Long,
+        site: SiteModel
+    ): WooPayload<List<AddOnGroupDto>> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executeDeleteGsonRequest(
