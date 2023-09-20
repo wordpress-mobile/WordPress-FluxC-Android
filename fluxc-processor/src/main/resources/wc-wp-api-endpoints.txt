@@ -28,9 +28,9 @@
 /products/tags/<id>/
 /products/tags/batch/
 
-
-
 /product-add-ons/
+/product-add-ons/<group_id>/
+
 
 /customers/<id>
 /customers/
