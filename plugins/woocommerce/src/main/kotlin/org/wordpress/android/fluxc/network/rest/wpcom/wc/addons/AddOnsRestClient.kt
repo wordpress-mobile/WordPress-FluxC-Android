@@ -13,9 +13,9 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<AddOnGroupDto>::class.java
+            site = site,
+            path = url,
+            clazz = Array<AddOnGroupDto>::class.java
         )
 
         return response.toWooPayload { it.toList() }
@@ -25,16 +25,16 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         name: String,
         categoryIds: List<Long>,
         site: SiteModel
-    ): WooPayload<List<AddOnGroupDto>> {
+    ): WooPayload<AddOnGroupDto> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executePostGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<AddOnGroupDto>::class.java
+            site = site,
+            path = url,
+            clazz = AddOnGroupDto::class.java
         )
 
-        return response.toWooPayload { it.toList() }
+        return response.toWooPayload()
     }
 
     suspend fun updateGlobalAddonGroup(
@@ -42,30 +42,30 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         name: String? = null,
         categoryIds: List<Long>? = null,
         site: SiteModel
-    ): WooPayload<List<AddOnGroupDto>> {
+    ): WooPayload<AddOnGroupDto> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executePutGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<AddOnGroupDto>::class.java
+            site = site,
+            path = url,
+            clazz = AddOnGroupDto::class.java
         )
 
-        return response.toWooPayload { it.toList() }
+        return response.toWooPayload()
     }
 
     suspend fun deleteGlobalAddonGroup(
         groupId: Long,
         site: SiteModel
-    ): WooPayload<List<AddOnGroupDto>> {
+    ): WooPayload<AddOnGroupDto> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
 
         val response = wooNetwork.executeDeleteGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<AddOnGroupDto>::class.java
+            site = site,
+            path = url,
+            clazz = AddOnGroupDto::class.java
         )
 
-        return response.toWooPayload { it.toList() }
+        return response.toWooPayload()
     }
 }
