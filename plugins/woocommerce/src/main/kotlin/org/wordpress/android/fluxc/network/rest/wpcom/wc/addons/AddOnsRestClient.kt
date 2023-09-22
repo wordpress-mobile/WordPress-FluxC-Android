@@ -27,10 +27,15 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         site: SiteModel
     ): WooPayload<AddOnGroupDto> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
+        val body = buildMap {
+            put("name", name)
+            put("category_ids", categoryIds)
+        }
 
         val response = wooNetwork.executePostGsonRequest(
             site = site,
             path = url,
+            body = body,
             clazz = AddOnGroupDto::class.java
         )
 
@@ -44,10 +49,16 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         site: SiteModel
     ): WooPayload<AddOnGroupDto> {
         val url = WOOCOMMERCE.product_add_ons.pathV1Addons
+        val body = buildMap {
+            put("id", groupId)
+            name?.let { put("name", it) }
+            categoryIds?.let { put("category_ids", it) }
+        }
 
         val response = wooNetwork.executePutGsonRequest(
             site = site,
             path = url,
+            body = body,
             clazz = AddOnGroupDto::class.java
         )
 
@@ -63,6 +74,7 @@ class AddOnsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         val response = wooNetwork.executeDeleteGsonRequest(
             site = site,
             path = url,
+            params = mapOf("id" to groupId.toString()),
             clazz = AddOnGroupDto::class.java
         )
 
