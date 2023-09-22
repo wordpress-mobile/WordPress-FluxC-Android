@@ -104,6 +104,24 @@ class WCAddonsStore @Inject internal constructor(
         }
     }
 
+    suspend fun deleteGlobalAddonGroup(
+        groupId: Long,
+        site: SiteModel
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(API, this, "deleteGlobalAddonGroup") {
+            val response = restClient.deleteGlobalAddonGroup(groupId, site)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val domain = remoteGlobalAddonGroupMapper.toDomain(response.result)
+                    dao.cacheGroups(listOf(domain), site.localId())
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     fun observeAllAddonsForProduct(site: SiteModel, product: WCProductModel): Flow<List<Addon>> {
         return dao.observeGlobalAddonsForSite(localSiteId = site.localId())
                 .map { globalGroupsEntities ->
