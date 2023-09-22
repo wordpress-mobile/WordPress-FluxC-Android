@@ -65,6 +65,25 @@ class WCAddonsStore @Inject internal constructor(
                 }
     }
 
+    suspend fun createGlobalAddonGroup(
+        name: String,
+        categoryIds: List<Long>,
+        site: SiteModel
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(API, this, "createGlobalAddonGroup") {
+            val response = restClient.createGlobalAddonGroup(name, categoryIds, site)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val domain = remoteGlobalAddonGroupMapper.toDomain(response.result)
+                    dao.cacheGroups(listOf(domain), site.localId())
+                    WooResult(Unit)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
     fun observeAllAddonsForProduct(site: SiteModel, product: WCProductModel): Flow<List<Addon>> {
         return dao.observeGlobalAddonsForSite(localSiteId = site.localId())
                 .map { globalGroupsEntities ->
