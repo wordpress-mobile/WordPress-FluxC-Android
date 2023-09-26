@@ -1726,9 +1726,12 @@ class WCProductStore @Inject constructor(
                 // remove the existing products for this site if this is the first page of results
                 // or if the remoteProductIds or excludedProductIds are null, otherwise
                 // products deleted outside of the app will persist
-                if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
-                    ProductSqlUtils.deleteProductsForSite(payload.site)
-                }
+//                if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
+//                    ProductSqlUtils.deleteProductsForSite(payload.site)
+//                }
+
+                // TODO: Delete once in a month or when pull to refresh is triggered. Double check why we have
+                //  remoteProductIds and ExcludeProductIds in the condition before
 
                 val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
                 onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
