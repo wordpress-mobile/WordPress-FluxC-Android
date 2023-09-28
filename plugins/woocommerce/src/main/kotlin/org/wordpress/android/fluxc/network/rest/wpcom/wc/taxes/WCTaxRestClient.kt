@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes
 
-import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
@@ -30,13 +29,13 @@ class WCTaxRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
         site: SiteModel,
         page: Int,
         pageSize: Int,
-    ): WooPayload<Array<TaxRateModel>> {
+    ): WooPayload<Array<TaxRateDto>> {
         val url = WOOCOMMERCE.taxes.pathV3
 
         val response = wooNetwork.executeGetGsonRequest(
             site,
             url,
-            Array<TaxRateModel>::class.java,
+            Array<TaxRateDto>::class.java,
             mutableMapOf<String, String>().apply {
                 put("page", page.toString())
                 put("per_page", pageSize.toString())
@@ -55,22 +54,5 @@ class WCTaxRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     data class TaxClassApiResponse(
         val name: String? = null,
         val slug: String? = null
-    )
-
-    data class TaxRateModel(
-        val id: Int,
-        val country: String? = null,
-        val state: String? = null,
-        val postcode: String? = null,
-        val city: String? = null,
-        @SerializedName("postcodes") val postCodes: List<String>? = null,
-        val cities: List<String>? = null,
-        val rate: String? = null,
-        val name: String? = null,
-        val priority: Int? = null,
-        val compound: Boolean? = null,
-        val shipping: Boolean? = null,
-        val order: Int? = null,
-        @SerializedName("class") val taxClass: String? = null,
     )
 }

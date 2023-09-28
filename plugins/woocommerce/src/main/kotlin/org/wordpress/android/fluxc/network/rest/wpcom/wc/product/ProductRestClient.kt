@@ -1488,8 +1488,7 @@ class ProductRestClient @Inject constructor(
                         reviews,
                         productIds,
                         filterByStatus,
-                        offset > 0,
-                        reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                        canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                     )
                 } else {
                     FetchProductReviewsResponsePayload(

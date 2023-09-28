@@ -119,6 +119,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             ?.find { it.key == ADDONS_METADATA_KEY }
             ?.addons
 
+    val isSampleProduct: Boolean
+        get() = Gson().fromJson(metadata, Array<WCMetaData>::class.java)
+            ?.any { it.key == OtherKeys.HEAD_START_POST && it.value == "_hs_extra" }
+            ?: false
+
     @Suppress("SwallowedException", "TooGenericExceptionCaught") private val WCMetaData.addons
         get() =
             try {
@@ -595,5 +600,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             GROUP_OF_QUANTITY,
             ALLOW_COMBINATION
         )
+    }
+
+    object OtherKeys {
+        const val HEAD_START_POST = "_headstart_post"
     }
 }

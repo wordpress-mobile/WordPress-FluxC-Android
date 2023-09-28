@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.TaxRateDao
 import org.wordpress.android.fluxc.store.WCTaxStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
@@ -35,6 +36,7 @@ class WCTaxStoreTest {
     private val errorSite = SiteModel().apply { id = 123 }
     private val mapper = WCTaxClassMapper()
     private lateinit var store: WCTaxStore
+    private val taxRateDao = mock<TaxRateDao>()
 
     private val sampleTaxClassList = TaxTestUtils.generateSampleTaxClassApiResponse()
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
@@ -53,7 +55,8 @@ class WCTaxStoreTest {
         store = WCTaxStore(
                 restClient,
                 initCoroutineEngine(),
-                mapper
+                mapper,
+                taxRateDao
         )
 
         // Insert the site into the db so it's available later when fetching tax classes
@@ -105,7 +108,7 @@ class WCTaxStoreTest {
             val result = store.fetchTaxRateList(site, 1, 100)
             assertThat(this).isNotNull
             assertThat(result.isError).isFalse
-            assertThat(result.model).isEqualTo(taxRateApiResponse?.toList())
+            assertThat(result).isEqualTo(WooResult(false))
         }
     }
 
