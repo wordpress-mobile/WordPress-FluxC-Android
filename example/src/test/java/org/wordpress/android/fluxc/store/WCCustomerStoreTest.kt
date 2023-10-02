@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerFromAnalyticsDTO
 import org.wordpress.android.fluxc.persistence.CustomerSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.test
@@ -394,95 +393,6 @@ class WCCustomerStoreTest {
         assertFalse(result.isError)
         assertEquals(customerModel, result.model)
     }
-
-    @Test
-    fun `given page 1, when fetchCustomersFromAnalytics, then result deleted and stored`() =
-        test {
-            // given
-            val siteModelId = 1
-            val siteModel = SiteModel().apply { id = siteModelId }
-            val customerOne: CustomerFromAnalyticsDTO = mock()
-            val customerTwo: CustomerFromAnalyticsDTO = mock()
-            val response = arrayOf(customerOne, customerTwo)
-            whenever(
-                restClient.fetchCustomersFromAnalytics(
-                    siteModel,
-                    page = 1,
-                    pageSize = 25
-                )
-            ).thenReturn(WooPayload(response))
-            val modelOne = WCCustomerModel().apply {
-                remoteCustomerId = 1L
-                localSiteId = siteModelId
-            }
-            val modelTwo = WCCustomerModel().apply {
-                remoteCustomerId = 2L
-                localSiteId = siteModelId
-            }
-            whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
-            whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
-
-            // when
-            val result = store.fetchCustomersFromAnalytics(siteModel, 1)
-
-            // then
-            assertThat(result.isError).isFalse
-            assertThat(result.model).isEqualTo(listOf(modelOne, modelTwo))
-            assertThat(CustomerSqlUtils.getCustomersForSite(siteModel)).isEqualTo(
-                listOf(modelOne, modelTwo)
-            )
-        }
-
-    @Test
-    fun `given page 1 then page 2, when fetchCustomersFromAnalytics, then both result stored`() =
-        test {
-            // given
-            val siteModelId = 1
-            val siteModel = SiteModel().apply { id = siteModelId }
-            val customerOne: CustomerFromAnalyticsDTO = mock()
-            val customerTwo: CustomerFromAnalyticsDTO = mock()
-            val response = arrayOf(customerOne, customerTwo)
-            whenever(
-                restClient.fetchCustomersFromAnalytics(
-                    siteModel,
-                    page = 1,
-                    pageSize = 25
-                )
-            ).thenReturn(WooPayload(response))
-            whenever(
-                restClient.fetchCustomersFromAnalytics(
-                    siteModel,
-                    page = 2,
-                    pageSize = 25
-                )
-            ).thenReturn(WooPayload(response))
-            val modelOne = WCCustomerModel().apply {
-                remoteCustomerId = 1L
-                localSiteId = siteModelId
-            }
-            val modelTwo = WCCustomerModel().apply {
-                remoteCustomerId = 2L
-                localSiteId = siteModelId
-            }
-            whenever(mapper.mapToModel(siteModel, customerOne)).thenReturn(modelOne)
-            whenever(mapper.mapToModel(siteModel, customerTwo)).thenReturn(modelTwo)
-
-            // when
-            val result = store.fetchCustomersFromAnalytics(siteModel, 1)
-            val result2 = store.fetchCustomersFromAnalytics(siteModel, 2)
-
-            // then
-            assertThat(result.isError).isFalse
-            assertThat(result.model).isEqualTo(listOf(modelOne, modelTwo))
-            assertThat(CustomerSqlUtils.getCustomersForSite(siteModel)).isEqualTo(
-                listOf(modelOne, modelTwo)
-            )
-            assertThat(result2.isError).isFalse
-            assertThat(result2.model).isEqualTo(listOf(modelOne, modelTwo))
-            assertThat(CustomerSqlUtils.getCustomersForSite(siteModel)).isEqualTo(
-                listOf(modelOne, modelTwo)
-            )
-        }
 
     @Test
     fun `given error, when fetchCustomersFromAnalytics, then nothing is stored and error`() =

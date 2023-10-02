@@ -42,6 +42,14 @@ class WCCustomerStore @Inject constructor(
     fun getCustomerByRemoteIds(site: SiteModel, remoteCustomerId: List<Long>) =
         CustomerSqlUtils.getCustomerByRemoteIds(site, remoteCustomerId)
 
+    fun saveCustomers(customers: List<WCCustomerModel>) {
+        CustomerSqlUtils.insertCustomers(customers)
+    }
+
+    fun deleteCustomersForSite(site: SiteModel) {
+        CustomerSqlUtils.deleteCustomersForSite(site)
+    }
+
     /**
      * returns a customer with provided remote id
      */
@@ -201,11 +209,7 @@ class WCCustomerStore @Inject constructor(
                     WooResult(response.error)
                 }
                 response.result != null -> {
-                    val customers = response.result.map { mapper.mapToModel(site, it) }
-                    if (page == 1) CustomerSqlUtils.deleteCustomersForSite(site)
-                    CustomerSqlUtils.insertOrUpdateCustomers(customers)
-
-                    WooResult(customers)
+                    WooResult(response.result.map { mapper.mapToModel(site, it) })
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
