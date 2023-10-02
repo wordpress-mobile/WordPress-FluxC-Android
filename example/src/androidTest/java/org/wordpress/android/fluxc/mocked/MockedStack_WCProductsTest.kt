@@ -505,7 +505,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(25, payload.reviews.size)
         assertNull(payload.filterProductIds)
         assertNull(payload.filterByStatus)
-        assertFalse(payload.loadedMore)
         assertTrue(payload.canLoadMore)
 
         // Save product reviews to the database

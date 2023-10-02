@@ -491,6 +491,15 @@ object ProductSqlUtils {
                 .asModel
     }
 
+    fun getProductReviewsByReviewIds(reviewIds: List<Long>): List<WCProductReviewModel> {
+        return WellSql.select(WCProductReviewModel::class.java)
+                .where()
+                .isIn(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, reviewIds)
+                .endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .asModel
+    }
+
     fun getProductReviewsForProductAndSiteId(
         localSiteId: Int,
         remoteProductId: Long
