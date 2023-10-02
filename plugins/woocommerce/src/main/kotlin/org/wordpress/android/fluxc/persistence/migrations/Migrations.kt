@@ -824,7 +824,7 @@ internal val MIGRATION_24_25 = object : Migration(24, 25) {
  * We are storing "needs_payment" and "needs_processing" into OrderEntity property.
  * This information will make rendering the UI easier.
  */
-internal val MIGRATION_26_27 = object : Migration(25, 26) {
+internal val MIGRATION_27_28 = object : Migration(27, 28) {
     @Suppress("LongMethod")
     override fun migrate(database: SupportSQLiteDatabase) {
         database.apply {
@@ -881,8 +881,8 @@ internal val MIGRATION_26_27 = object : Migration(25, 26) {
                   `metaData` TEXT NOT NULL,
                   `paymentUrl` TEXT NOT NULL DEFAULT '',
                   `isEditable` INTEGER NOT NULL DEFAULT 1,
-                  `needsPayment` INTEGER NOT NULL DEFAULT 0,
-                  `needsProcessing` INTEGER NOT NULL DEFAULT 0,
+                  `needsPayment` INTEGER,
+                  `needsProcessing` INTEGER,
                   PRIMARY KEY(`localSiteId`, `orderId`)
                 )
             """.trimIndent()
