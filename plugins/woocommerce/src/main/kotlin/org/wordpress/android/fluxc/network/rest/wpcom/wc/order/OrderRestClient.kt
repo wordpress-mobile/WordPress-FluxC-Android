@@ -52,7 +52,6 @@ import org.wordpress.android.util.AppLog.T
 import java.util.Calendar
 import javax.inject.Inject
 import kotlin.collections.MutableMap.MutableEntry
-import android.util.Log
 
 @Suppress("LargeClass", "TooManyFunctions")
 class OrderRestClient @Inject constructor(
