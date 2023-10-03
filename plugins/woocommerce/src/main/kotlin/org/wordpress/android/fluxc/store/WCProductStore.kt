@@ -84,6 +84,7 @@ class WCProductStore @Inject constructor(
 
         override fun toString() = name.toLowerCase(Locale.US)
     }
+
     enum class SkuSearchOptions {
         Disabled, ExactSearch, PartialMatch
     }
@@ -567,7 +568,6 @@ class WCProductStore @Inject constructor(
         val reviews: List<WCProductReviewModel> = emptyList(),
         val filterProductIds: List<Long>? = null,
         val filterByStatus: List<String>? = null,
-        val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
         constructor(error: ProductError, site: SiteModel) : this(site) {
@@ -825,6 +825,9 @@ class WCProductStore @Inject constructor(
     fun getProductReviewsForSite(site: SiteModel): List<WCProductReviewModel> =
         ProductSqlUtils.getProductReviewsForSite(site)
 
+    fun getProductReviewsByReviewId(reviewIds: List<Long>): List<WCProductReviewModel> =
+        ProductSqlUtils.getProductReviewsByReviewIds(reviewIds)
+
     fun getProductReviewsForProductAndSiteId(localSiteId: Int, remoteProductId: Long): List<WCProductReviewModel> =
         ProductSqlUtils.getProductReviewsForProductAndSiteId(localSiteId, remoteProductId)
 
@@ -887,64 +890,92 @@ class WCProductStore @Inject constructor(
             // remote actions
             WCProductAction.FETCH_PRODUCT_SKU_AVAILABILITY ->
                 fetchProductSkuAvailability(action.payload as FetchProductSkuAvailabilityPayload)
+
             WCProductAction.FETCH_PRODUCTS ->
                 fetchProducts(action.payload as FetchProductsPayload)
+
             WCProductAction.SEARCH_PRODUCTS ->
                 searchProducts(action.payload as SearchProductsPayload)
+
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
+
             WCProductAction.UPDATE_PRODUCT ->
                 updateProduct(action.payload as UpdateProductPayload)
+
             WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS ->
                 fetchProductShippingClass(action.payload as FetchSingleProductShippingClassPayload)
+
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST ->
                 fetchProductShippingClasses(action.payload as FetchProductShippingClassListPayload)
+
             WCProductAction.FETCH_PRODUCT_PASSWORD ->
                 fetchProductPassword(action.payload as FetchProductPasswordPayload)
+
             WCProductAction.UPDATE_PRODUCT_PASSWORD ->
                 updateProductPassword(action.payload as UpdateProductPasswordPayload)
+
             WCProductAction.FETCH_PRODUCT_CATEGORIES ->
                 fetchProductCategories(action.payload as FetchProductCategoriesPayload)
+
             WCProductAction.ADD_PRODUCT_CATEGORY ->
                 addProductCategory(action.payload as AddProductCategoryPayload)
+
             WCProductAction.FETCH_PRODUCT_TAGS ->
                 fetchProductTags(action.payload as FetchProductTagsPayload)
+
             WCProductAction.ADD_PRODUCT_TAGS ->
                 addProductTags(action.payload as AddProductTagsPayload)
+
             WCProductAction.ADD_PRODUCT ->
                 addProduct(action.payload as AddProductPayload)
+
             WCProductAction.DELETE_PRODUCT ->
                 deleteProduct(action.payload as DeleteProductPayload)
 
             // remote responses
             WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY ->
                 handleFetchProductSkuAvailabilityCompleted(action.payload as RemoteProductSkuAvailabilityPayload)
+
             WCProductAction.FETCHED_PRODUCTS ->
                 handleFetchProductsCompleted(action.payload as RemoteProductListPayload)
+
             WCProductAction.SEARCHED_PRODUCTS ->
                 handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
+
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
+
             WCProductAction.UPDATED_PRODUCT ->
                 handleUpdateProduct(action.payload as RemoteUpdateProductPayload)
+
             WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST ->
                 handleFetchProductShippingClassesCompleted(action.payload as RemoteProductShippingClassListPayload)
+
             WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS ->
                 handleFetchProductShippingClassCompleted(action.payload as RemoteProductShippingClassPayload)
+
             WCProductAction.FETCHED_PRODUCT_PASSWORD ->
                 handleFetchProductPasswordCompleted(action.payload as RemoteProductPasswordPayload)
+
             WCProductAction.UPDATED_PRODUCT_PASSWORD ->
                 handleUpdatedProductPasswordCompleted(action.payload as RemoteUpdatedProductPasswordPayload)
+
             WCProductAction.FETCHED_PRODUCT_CATEGORIES ->
                 handleFetchProductCategories(action.payload as RemoteProductCategoriesPayload)
+
             WCProductAction.ADDED_PRODUCT_CATEGORY ->
                 handleAddProductCategory(action.payload as RemoteAddProductCategoryResponsePayload)
+
             WCProductAction.FETCHED_PRODUCT_TAGS ->
                 handleFetchProductTagsCompleted(action.payload as RemoteProductTagsPayload)
+
             WCProductAction.ADDED_PRODUCT_TAGS ->
                 handleAddProductTags(action.payload as RemoteAddProductTagsResponsePayload)
+
             WCProductAction.ADDED_PRODUCT ->
                 handleAddNewProduct(action.payload as RemoteAddProductPayload)
+
             WCProductAction.DELETED_PRODUCT ->
                 handleDeleteProduct(action.payload as RemoteDeleteProductPayload)
         }
@@ -1189,7 +1220,10 @@ class WCProductStore @Inject constructor(
         with(payload) { wcProductRestClient.fetchProductShippingClassList(site, pageSize, offset) }
     }
 
-    suspend fun fetchProductReviews(payload: FetchProductReviewsPayload): OnProductReviewChanged {
+    suspend fun fetchProductReviews(
+        payload: FetchProductReviewsPayload,
+        deletePreviouslyCachedReviews: Boolean
+    ): OnProductReviewChanged {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductReviews") {
             val response = with(payload) {
                 wcProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus)
@@ -1200,8 +1234,8 @@ class WCProductStore @Inject constructor(
             } else {
                 // Clear existing product reviews if this is a fresh fetch (loadMore = false).
                 // This is the simplest way to keep our local reviews in sync with remote reviews
-                // in case of deletions.
-                if (!response.loadedMore) {
+                // in case of deletions or status updates.
+                if (deletePreviouslyCachedReviews) {
                     ProductSqlUtils.deleteAllProductReviewsForSite(response.site)
                 }
                 val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(response.reviews)
@@ -1447,6 +1481,7 @@ class WCProductStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
                 }
+
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -1492,6 +1527,7 @@ class WCProductStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
                 }
+
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -1525,6 +1561,7 @@ class WCProductStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(ProductSearchResult(products, canLoadMore))
                 }
+
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -1560,6 +1597,7 @@ class WCProductStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(ProductCategorySearchResult(categories, canLoadMore))
                 }
+
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -1599,6 +1637,7 @@ class WCProductStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
                 }
+
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -1649,6 +1688,7 @@ class WCProductStore @Inject constructor(
                 response.result != null -> {
                     WooResult(response.result.sumOf { it.total })
                 }
+
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
