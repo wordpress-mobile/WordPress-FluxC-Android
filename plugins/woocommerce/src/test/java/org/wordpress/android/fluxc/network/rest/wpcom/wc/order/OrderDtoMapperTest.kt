@@ -67,7 +67,7 @@ internal class OrderDtoMapperTest {
     }
 
     @Test
-    fun `when needs_payment is not is json the order dto needs_payment property is null`() {
+    fun `when needs_payment is not in json the order dto needs_payment property is null`() {
         val json = JsonObject()
         val orderDto = Gson().fromJson(json, OrderDto::class.java)
         val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
@@ -87,7 +87,7 @@ internal class OrderDtoMapperTest {
     }
 
     @Test
-    fun `when needs_processing is not is json the order dto needs_processing property is null`() {
+    fun `when needs_processing is not in json the order dto needs_processing property is null`() {
         val json = JsonObject()
         val orderDto = Gson().fromJson(json, OrderDto::class.java)
         val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
