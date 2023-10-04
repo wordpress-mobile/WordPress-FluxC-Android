@@ -1315,7 +1315,15 @@ class WCProductStore @Inject constructor(
         )
 
         if (!result.isError) {
-            result.result?.forEach { category ->
+            val addedCategories = result.result!!
+            if (addedCategories.size < categories.size) {
+                AppLog.w(
+                    API,
+                    "addProductCategories: not all categories were added. " +
+                        "Expected: ${categories.size}, added: ${addedCategories.size}")
+            }
+
+            addedCategories.forEach { category ->
                 ProductSqlUtils.insertOrUpdateProductCategory(category)
             }
         }
