@@ -370,7 +370,8 @@ class WooUpdateProductFragment : Fragment() {
                                 fragment = this,
                                 productCategories = categories,
                                 resultCode = LIST_RESULT_CODE_CATEGORIES,
-                                selectedProductCategories = selectedProductCategories?.toMutableList()
+                                selectedProductCategories = selectedProductCategories?.toMutableList(),
+                                selectedSitePosition = selectedSitePosition
                         )
                 )
             }
