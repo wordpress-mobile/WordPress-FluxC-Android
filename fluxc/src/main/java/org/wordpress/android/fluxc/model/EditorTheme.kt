@@ -27,6 +27,7 @@ const val MAP_KEY_GALLERY_WITH_IMAGE_BLOCKS: String = "galleryWithImageBlocks"
 const val MAP_KEY_QUOTE_BLOCK_V2: String = "quoteBlockV2"
 const val MAP_KEY_LIST_BLOCK_V2: String = "listBlockV2"
 const val MAP_KEY_HAS_BLOCK_TEMPLATES: String = "hasBlockTemplates"
+const val MAP_KEY_GUTENBERG_VERSION: String = "gutenbergVersion"
 
 data class EditorTheme(
     @SerializedName("theme_supports") val themeSupport: EditorThemeSupport,
@@ -43,7 +44,8 @@ data class EditorTheme(
                     blockEditorSettings.isBlockBasedTheme,
                     blockEditorSettings.galleryWithImageBlocks,
                     blockEditorSettings.quoteBlockV2,
-                    blockEditorSettings.listBlockV2
+                    blockEditorSettings.listBlockV2,
+                    blockEditorSettings.gutenbergVersion
             ),
             stylesheet = null,
             version = null
@@ -61,6 +63,7 @@ data class EditorTheme(
         element.quoteBlockV2 = themeSupport.quoteBlockV2
         element.listBlockV2 = themeSupport.listBlockV2
         element.hasBlockTemplates = themeSupport.hasBlockTemplates ?: false
+        element.gutenbergVersion = themeSupport.gutenbergVersion
 
         return element
     }
@@ -81,6 +84,7 @@ data class BlockEditorSettings(
     @SerializedName("__experimentalEnableListBlockV2") val listBlockV2: Boolean,
     @SerializedName("__experimentalStyles") val styles: JsonElement?,
     @SerializedName("__experimentalFeatures") val features: JsonElement?,
+    @SerializedName("gutenbergVersion") val gutenbergVersion: String?,
     @JsonAdapter(EditorThemeElementListSerializer::class) val colors: List<EditorThemeElement>?,
     @JsonAdapter(EditorThemeElementListSerializer::class) val gradients: List<EditorThemeElement>?
 )
@@ -99,7 +103,8 @@ data class EditorThemeSupport(
     val isBlockBasedTheme: Boolean,
     val galleryWithImageBlocks: Boolean?,
     val quoteBlockV2: Boolean,
-    val listBlockV2: Boolean
+    val listBlockV2: Boolean,
+    val gutenbergVersion: String?
 ) {
     fun toBundle(site: SiteModel): Bundle {
         val bundle = Bundle()
@@ -125,6 +130,7 @@ data class EditorThemeSupport(
         bundle.putBoolean(MAP_KEY_QUOTE_BLOCK_V2, quoteBlockV2)
         bundle.putBoolean(MAP_KEY_LIST_BLOCK_V2, listBlockV2)
         bundle.putBoolean(MAP_KEY_HAS_BLOCK_TEMPLATES, hasBlockTemplates ?: false)
+        bundle.putString(MAP_KEY_GUTENBERG_VERSION, gutenbergVersion)
 
         return bundle
     }

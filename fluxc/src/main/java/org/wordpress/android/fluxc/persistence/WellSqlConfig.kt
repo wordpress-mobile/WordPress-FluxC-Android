@@ -41,7 +41,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 195
+        return 196
     }
 
     override fun getDbName(): String {
@@ -1975,6 +1975,9 @@ open class WellSqlConfig : DefaultWellConfig {
                 }
                 194 -> migrate(version) {
                     db.execSQL("DROP TABLE IF EXISTS DynamicCard")
+                }
+                195 -> migrate(version) {
+                    db.execSQL("ALTER TABLE EditorTheme ADD GUTENBERG_VERSION TEXT")
                 }
             }
         }
