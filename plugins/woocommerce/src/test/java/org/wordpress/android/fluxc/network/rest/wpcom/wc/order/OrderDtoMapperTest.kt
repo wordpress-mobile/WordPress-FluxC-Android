@@ -65,4 +65,44 @@ internal class OrderDtoMapperTest {
         }
         return Gson().fromJson(json, OrderDto::class.java)
     }
+
+    @Test
+    fun `when needs_payment is not in json the order dto needs_payment property is null`() {
+        val json = JsonObject()
+        val orderDto = Gson().fromJson(json, OrderDto::class.java)
+        val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
+
+        assertThat(orderEntity.needsPayment).isNull()
+    }
+
+    @Test
+    fun `when needs_payment is in json the order dto needs_payment property is parsed`() {
+        val json = JsonObject().apply {
+            addProperty("needs_payment", "true")
+        }
+        val orderDto = Gson().fromJson(json, OrderDto::class.java)
+        val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
+
+        assertThat(orderEntity.needsPayment).isTrue()
+    }
+
+    @Test
+    fun `when needs_processing is not in json the order dto needs_processing property is null`() {
+        val json = JsonObject()
+        val orderDto = Gson().fromJson(json, OrderDto::class.java)
+        val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
+
+        assertThat(orderEntity.needsProcessing).isNull()
+    }
+
+    @Test
+    fun `when needs_processing is in json the order dto needs_processing property is parsed`() {
+        val json = JsonObject().apply {
+            addProperty("needs_processing", "true")
+        }
+        val orderDto = Gson().fromJson(json, OrderDto::class.java)
+        val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
+
+        assertThat(orderEntity.needsProcessing).isTrue()
+    }
 }

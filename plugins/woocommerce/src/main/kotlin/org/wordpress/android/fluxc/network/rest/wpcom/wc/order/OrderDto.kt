@@ -71,4 +71,6 @@ class OrderDto : Response {
     val tax_lines: JsonElement? = null
     val payment_url: String? = null
     val is_editable: Boolean? = null
+    val needs_payment: Boolean? = null
+    val needs_processing: Boolean? = null
 }

@@ -987,7 +987,9 @@ class OrderRestClient @Inject constructor(
             "total_tax",
             "meta_data",
             "payment_url",
-            "is_editable"
+            "is_editable",
+            "needs_payment",
+            "needs_processing"
         ).joinToString(separator = ",")
 
         private val TRACKING_FIELDS = arrayOf(
