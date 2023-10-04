@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
@@ -26,9 +27,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper.variantModelToProductJsonBody
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -1431,6 +1435,55 @@ class ProductRestClient @Inject constructor(
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
                 }
             }
+        }
+    }
+
+    suspend fun addProductCategories(
+        site: SiteModel,
+        categories: List<WCProductCategoryModel>
+    ): WooPayload<List<WCProductCategoryModel>> {
+        val path = WOOCOMMERCE.products.categories.batch.pathV3
+
+        val body = mutableMapOf(
+            "create" to categories.map { category ->
+                mapOf(
+                    "name" to category.name,
+                    "parent" to category.parent.toString()
+                )
+            }
+        )
+
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = path,
+            body = body,
+            clazz = ProductCategoryBatchApiResponse::class.java
+        )
+
+        return when {
+            response is WPAPIResponse.Success && response.data == null -> WooPayload(
+                WooError(
+                    type = WooErrorType.EMPTY_RESPONSE,
+                    original = GenericErrorType.UNKNOWN,
+                    message = "Success response with empty data"
+                )
+            )
+
+            response is WPAPIResponse.Success -> {
+                WooPayload(
+                    response.data!!.createdCategories
+                        .filter { it.error == null }
+                        .map {
+                            it.asProductCategoryModel().apply {
+                                localSiteId = site.id
+                            }
+                        }
+                )
+            }
+
+            else -> return WooPayload(
+                error = (response as WPAPIResponse.Error).error.toWooError()
+            )
         }
     }
 
