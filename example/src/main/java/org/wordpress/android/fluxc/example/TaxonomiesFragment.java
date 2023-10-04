@@ -7,11 +7,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.TaxonomyAction;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.TermModel;
@@ -92,37 +94,43 @@ public class TaxonomiesFragment extends Fragment {
     }
 
     private void createCategory() {
-        TermModel newCategory = mTaxonomyStore.instantiateCategory(getFirstSite());
-        if (newCategory != null) {
-            newCategory.setName("FluxC-category-" + new Random().nextLong());
-            newCategory.setDescription("From FluxC example app");
-
-            RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
-            mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
-        } else {
-            prependToLog("Error: no category found!");
-        }
+        TermModel newCategory = new TermModel(
+                TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY,
+                "FluxC-Category-" + new Random().nextLong(),
+                0
+        );
+        RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
+        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTaxonomyChanged(OnTaxonomyChanged event) {
+    public void onTaxonomyChanged(@NonNull OnTaxonomyChanged event) {
         AppLog.i(T.API, "OnTaxonomyChanged: rowsAffected=" + event.rowsAffected);
         if (event.isError()) {
             String error = "Error: " + event.error.type + " - " + event.error.message;
             prependToLog(error);
             AppLog.i(T.TESTS, error);
         } else {
-            List<TermModel> terms = mTaxonomyStore.getTermsForSite(getFirstSite(), event.taxonomyName);
-            for (TermModel term : terms) {
-                prependToLog(event.taxonomyName + " " + term.getRemoteTermId() + ": " + term.getName());
+            if (event.causeOfChange == TaxonomyAction.FETCH_CATEGORIES) {
+                List<TermModel> terms = mTaxonomyStore.getCategoriesForSite(getFirstSite());
+                for (TermModel term : terms) {
+                    prependToLog("category" + " " + term.getRemoteTermId() + ": " + term.getName());
+                }
+            } else if (event.causeOfChange == TaxonomyAction.FETCH_TAGS) {
+                List<TermModel> terms = mTaxonomyStore.getTagsForSite(getFirstSite());
+                for (TermModel term : terms) {
+                    prependToLog("tag" + " " + term.getRemoteTermId() + ": " + term.getName());
+                }
+            } else {
+                prependToLog(event.causeOfChange + " " + event.rowsAffected);
             }
         }
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTermUploaded(OnTermUploaded event) {
+    public void onTermUploaded(@NonNull OnTermUploaded event) {
         prependToLog("Term uploaded! Remote category id: " + event.term.getRemoteTermId());
     }
 
