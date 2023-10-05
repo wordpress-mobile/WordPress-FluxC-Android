@@ -1404,7 +1404,7 @@ class ProductRestClient @Inject constructor(
 
             val body = mutableMapOf(
                 "name" to category.name,
-                "parent" to category.parent.toString()
+                "parent" to category.parent
             )
 
             val response = wooNetwork.executePostGsonRequest(
