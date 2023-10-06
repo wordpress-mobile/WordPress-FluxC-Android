@@ -7,19 +7,19 @@ import org.wordpress.android.fluxc.model.JWTToken
 
 class JWTTokenTests {
     @Test
-    fun given_a_valid_token__when_takeIfValid_is_called__then_return_it() {
+    fun given_a_valid_token__when_validateExpiryDate_is_called__then_return_it() {
         val token = generateToken(expired = false)
 
-        val result = token.takeIfValid()
+        val result = token.validateExpiryDate()
 
         Assert.assertNotNull(result)
     }
 
     @Test
-    fun given_an_expired_token__when_takeIfValid_is_called__then_return_null() {
+    fun given_an_expired_token__when_validateExpiryDate_is_called__then_return_null() {
         val token = generateToken(expired = true)
 
-        val result = token.takeIfValid()
+        val result = token.validateExpiryDate()
 
         Assert.assertNull(result)
     }
