@@ -133,7 +133,7 @@ object WCStatsSqlUtils {
     }
 
     private fun searchMatchingRevenueStatsInDatabase(stats: WCRevenueStatsModel): List<WCRevenueStatsModel> {
-        return if (stats.rangeId != 0) {
+        return if (stats.rangeId.isNotEmpty()) {
             WellSql.select(WCRevenueStatsModel::class.java)
                 .where().beginGroup()
                 .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
@@ -171,7 +171,7 @@ object WCStatsSqlUtils {
 
     fun getRevenueStatsFromRangeId(
         site: SiteModel,
-        revenueRangeId: Int
+        revenueRangeId: String
     ) = WellSql.select(WCRevenueStatsModel::class.java)
         .where()
         .beginGroup()
