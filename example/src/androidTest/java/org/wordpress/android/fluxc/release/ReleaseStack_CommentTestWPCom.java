@@ -45,6 +45,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
     @Inject PostStore mPostStore;
