@@ -1,8 +1,9 @@
 package org.wordpress.android.fluxc.release;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.yarolegovich.wellsql.WellSql;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
@@ -23,13 +25,19 @@ import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+import org.wordpress.android.util.DateTimeUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject CommentStore mCommentStore;
@@ -328,14 +336,13 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     // Private methods
 
-    private CommentModel createNewComment() {
-        CommentModel comment = mCommentStore.instantiateCommentModel(sSite);
+    private void createNewComment() {
+        CommentModel comment = instantiateCommentModel(sSite);
 
         assertNotNull(comment);
         assertTrue(comment.getId() != 0);
 
         mNewComment = comment;
-        return comment;
     }
 
     private void fetchFirstComments() throws InterruptedException {
@@ -356,5 +363,34 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Nullable
+    public CommentModel instantiateCommentModel(SiteModel site) {
+        CommentModel comment = new CommentModel();
+        comment.setLocalSiteId(site.getId());
+        // Init with defaults
+        comment.setContent("");
+        comment.setDatePublished(DateTimeUtils.iso8601UTCFromDate(new Date()));
+        comment.setStatus(CommentStatus.APPROVED.toString());
+        comment.setAuthorName("");
+        comment.setAuthorEmail("");
+        comment.setAuthorUrl("");
+        comment.setUrl("");
+        // Insert in the DB
+        comment = insertCommentForResult(comment);
+
+        if (comment.getId() == -1) {
+            comment = null;
+        }
+
+        return comment;
+    }
+
+    @NonNull
+    public CommentModel insertCommentForResult(CommentModel comment) {
+        WellSql.insert(comment).asSingleTransaction(true).execute();
+
+        return comment;
     }
 }
