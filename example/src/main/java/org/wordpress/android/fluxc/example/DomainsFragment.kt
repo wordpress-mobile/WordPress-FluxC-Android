@@ -67,5 +67,24 @@ class DomainsFragment : StoreSelectingFragment() {
                 }
             }
         }
+
+        fetch_all_domains.setOnClickListener {
+            lifecycleScope.launch {
+                val result = store.fetchAllDomains(noWpCom = false) // fetching wpcom too for debugging purposes
+                when {
+                    result.isError -> {
+                        prependToLog("Error fetching all domains: ${result.error.message}")
+                    }
+                    else -> {
+                        prependToLog("All domains count: ${result.domains?.size}")
+                        val domains = result.domains
+                            ?.joinToString(separator = "\n") {
+                                "${it.domain} (type: ${it.type}), expiry: ${it.expiry}"
+                            }
+                        prependToLog("Domains:\n$domains")
+                    }
+                }
+            }
+        }
     }
 }
