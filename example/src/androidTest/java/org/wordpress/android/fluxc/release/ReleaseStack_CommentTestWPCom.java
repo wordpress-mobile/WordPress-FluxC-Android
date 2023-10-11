@@ -80,7 +80,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
     // Note: This test is not specific to WPCOM (local changes only)
     @Test
-    public void testInstantiateComment() throws InterruptedException {
+    public void testInstantiateComment() {
         // New Comment
         createNewComment();
 
