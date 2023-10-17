@@ -1,9 +1,31 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.passkey
 
-import org.wordpress.android.fluxc.model.SiteModel
+import android.content.Context
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.network.UserAgent
+import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import javax.inject.Inject
 
-class PasskeyRestClient {
+class PasskeyRestClient @Inject constructor(
+    context: Context,
+    dispatcher: Dispatcher,
+    requestQueue: RequestQueue,
+    accessToken: AccessToken,
+    userAgent: UserAgent
+): BaseWPComRestClient(
+    context,
+    dispatcher,
+    requestQueue,
+    accessToken,
+    userAgent
+) {
     fun requestWebauthnChallenge(
         userId: Long,
         twoStepNonce: String
