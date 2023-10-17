@@ -10,8 +10,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import javax.inject.Inject
+import kotlin.Exception
+import kotlin.coroutines.suspendCoroutine
 
 class PasskeyRestClient @Inject constructor(
     context: Context,
@@ -19,38 +20,37 @@ class PasskeyRestClient @Inject constructor(
     requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
-): BaseWPComRestClient(
+) : BaseWPComRestClient(
     context,
     dispatcher,
     requestQueue,
     accessToken,
     userAgent
 ) {
-    fun requestWebauthnChallenge(
+    suspend fun requestWebauthnChallenge(
         userId: Long,
         twoStepNonce: String
-    ): WooPayload<WebauthnChallengeInfo> {
+    ): WebauthnChallengeInfo {
         val parameters = mapOf(
             "user_id" to userId.toString(),
             "two_step_nonce" to twoStepNonce,
             "auth_type" to "webauthn"
         )
 
-        triggerAccountRequest(
-            url = webauthnChallengeEndpointUrl,
-            body = parameters,
-            onSuccess = { WooPayload(it.asChallengeInfo) },
-            onFailure = { WooPayload(it) }
-        )
+        return suspendCoroutine { cont ->
+            triggerAccountRequest(
+                url = webauthnChallengeEndpointUrl,
+                body = parameters,
+                onSuccess = {
+                    cont.resumeWith(Result.success(it.asChallengeInfo))
 
-        return WooPayload(
-            WebauthnChallengeInfo(
-                challenge = "challenge",
-                rpId = "rpId",
-                twoStepNonce = "twoStepNonce",
-                allowedCredentials = listOf("allowedCredentials")
+                },
+                onFailure = {
+                    val exception = Exception(it.message)
+                    cont.resumeWith(Result.failure(exception))
+                }
             )
-        )
+        }
     }
 
     private fun triggerAccountRequest(
@@ -82,7 +82,6 @@ class PasskeyRestClient @Inject constructor(
                 .run { this as? List<*> }
                 ?.map { it as String }
         )
-
 
     companion object {
         private const val baseURLWithAction = "wp-login.php?action"
