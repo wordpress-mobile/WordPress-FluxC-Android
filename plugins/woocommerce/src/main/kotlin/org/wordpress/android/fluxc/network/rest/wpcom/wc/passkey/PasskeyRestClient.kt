@@ -39,19 +39,8 @@ class PasskeyRestClient @Inject constructor(
         triggerAccountRequest(
             url = "",
             body = parameters,
-            onSuccess = { response ->
-                val challengeInfo = WebauthnChallengeInfo(
-                    challenge = response["challenge"] as String,
-                    rpId = response["rpId"] as String,
-                    twoStepNonce = response["twoStepNonce"] as String,
-                    allowedCredentials = response["allowedCredentials"] as List<String>
-                )
-
-                WooPayload(challengeInfo)
-            },
-            onFailure = { error ->
-                WooPayload(error)
-            }
+            onSuccess = { WooPayload(it.asChallengeInfo) },
+            onFailure = { WooPayload(it) }
         )
 
         return WooPayload(
@@ -64,7 +53,7 @@ class PasskeyRestClient @Inject constructor(
         )
     }
 
-    fun triggerAccountRequest(
+    private fun triggerAccountRequest(
         url: String,
         body: Map<String, Any>,
         onSuccess: (response: Map<String, Any>) -> Unit,
@@ -83,6 +72,15 @@ class PasskeyRestClient @Inject constructor(
 
         add(request)
     }
+
+    private val Map<String, Any>.asChallengeInfo: WebauthnChallengeInfo
+        get() = WebauthnChallengeInfo(
+            challenge = this["challenge"] as String,
+            rpId = this["rpId"] as String,
+            twoStepNonce = this["twoStepNonce"] as String,
+            allowedCredentials = this["allowedCredentials"] as List<String>
+        )
+
 
     companion object {
         const val baseURLWithAction = "wp-login.php?action"
