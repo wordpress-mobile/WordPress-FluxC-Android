@@ -37,7 +37,7 @@ class PasskeyRestClient @Inject constructor(
         )
 
         triggerAccountRequest(
-            url = "",
+            url = webauthnChallengeEndpointUrl,
             body = parameters,
             onSuccess = { WooPayload(it.asChallengeInfo) },
             onFailure = { WooPayload(it) }
@@ -85,8 +85,9 @@ class PasskeyRestClient @Inject constructor(
 
 
     companion object {
-        const val baseURLWithAction = "wp-login.php?action"
-        const val challengeEndpoint = "webauthn-challenge-endpoint"
-        const val authEndpoint = "webauthn-authentication-endpoint"
+        private const val baseURLWithAction = "wp-login.php?action"
+        private const val challengeEndpoint = "webauthn-challenge-endpoint"
+        private const val authEndpoint = "webauthn-authentication-endpoint"
+        const val webauthnChallengeEndpointUrl = "$baseURLWithAction=$challengeEndpoint"
     }
 }
