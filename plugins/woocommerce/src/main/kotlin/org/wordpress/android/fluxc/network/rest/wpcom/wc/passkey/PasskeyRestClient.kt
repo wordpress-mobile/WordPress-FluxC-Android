@@ -29,12 +29,16 @@ class PasskeyRestClient @Inject constructor(
 ) {
     suspend fun requestWebauthnChallenge(
         userId: Long,
+        clientId: Long,
+        secret: String,
         twoStepNonce: String
     ): WebauthnChallengeInfo {
         val parameters = mapOf(
             "user_id" to userId.toString(),
-            "two_step_nonce" to twoStepNonce,
-            "auth_type" to "webauthn"
+            "client_id" to clientId.toString(),
+            "client_secret" to secret,
+            "auth_type" to "webauthn",
+            "two_step_nonce" to twoStepNonce
         )
 
         return suspendCoroutine { cont ->
