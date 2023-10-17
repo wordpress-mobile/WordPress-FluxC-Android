@@ -36,6 +36,24 @@ class PasskeyRestClient @Inject constructor(
             "auth_type" to "webauthn"
         )
 
+        triggerAccountRequest(
+            url = "",
+            body = parameters,
+            onSuccess = { response ->
+                val challengeInfo = WebauthnChallengeInfo(
+                    challenge = response["challenge"] as String,
+                    rpId = response["rpId"] as String,
+                    twoStepNonce = response["twoStepNonce"] as String,
+                    allowedCredentials = response["allowedCredentials"] as List<String>
+                )
+
+                WooPayload(challengeInfo)
+            },
+            onFailure = { error ->
+                WooPayload(error)
+            }
+        )
+
         return WooPayload(
             WebauthnChallengeInfo(
                 challenge = "challenge",
@@ -44,6 +62,26 @@ class PasskeyRestClient @Inject constructor(
                 allowedCredentials = listOf("allowedCredentials")
             )
         )
+    }
+
+    fun triggerAccountRequest(
+        url: String,
+        body: Map<String, Any>,
+        onSuccess: (response: Map<String, Any>) -> Unit,
+        onFailure: (error: WPComGsonNetworkError) -> Unit
+    ) {
+        val successListener = Response.Listener<Map<String, Any>> { onSuccess(it) }
+        val failureListener = WPComErrorListener { onFailure(it) }
+
+        val request = WPComGsonRequest.buildPostRequest(
+            url,
+            body,
+            Map::class.java,
+            successListener,
+            failureListener
+        )
+
+        add(request)
     }
 
     companion object {
