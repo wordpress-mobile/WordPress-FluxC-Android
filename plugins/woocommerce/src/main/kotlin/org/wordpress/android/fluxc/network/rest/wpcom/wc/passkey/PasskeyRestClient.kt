@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.passkey
 
 import android.content.Context
+import android.util.Base64
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import org.wordpress.android.fluxc.Dispatcher
@@ -55,6 +56,29 @@ class PasskeyRestClient @Inject constructor(
                 }
             )
         }
+    }
+
+    suspend fun authenticateWebauthnSignature(
+        userId: Long,
+        twoStepNonce: String,
+        credentialId: ByteArray,
+        clientDataJson: ByteArray,
+        authenticatorData: ByteArray,
+        signature: ByteArray,
+        userHandle: ByteArray
+    ) {
+        val clientData = mapOf(
+            "id" to Base64.encode(credentialId, Base64.DEFAULT),
+            "rawId" to Base64.encode(credentialId, Base64.DEFAULT),
+            "type" to "public-key",
+            "clientExtensionResults" to mapOf<String, Any>(),
+            "response" to mapOf(
+                "clientDataJSON" to Base64.encode(clientDataJson, Base64.DEFAULT),
+                "authenticatorData" to Base64.encode(authenticatorData, Base64.DEFAULT),
+                "signature" to Base64.encode(signature, Base64.DEFAULT),
+                "userHandle" to Base64.encode(userHandle, Base64.DEFAULT)
+            )
+        )
     }
 
     private fun triggerAccountRequest(
