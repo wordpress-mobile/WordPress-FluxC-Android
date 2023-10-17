@@ -78,7 +78,9 @@ class PasskeyRestClient @Inject constructor(
             challenge = this["challenge"] as String,
             rpId = this["rpId"] as String,
             twoStepNonce = this["twoStepNonce"] as String,
-            allowedCredentials = this["allowedCredentials"] as List<String>
+            allowedCredentials = this["allowedCredentials"]
+                .run { this as? List<*> }
+                ?.map { it as String }
         )
 
 
