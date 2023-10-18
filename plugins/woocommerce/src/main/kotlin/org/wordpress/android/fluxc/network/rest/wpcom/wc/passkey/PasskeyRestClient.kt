@@ -99,7 +99,7 @@ class PasskeyRestClient @Inject constructor(
                 url = webauthnAuthEndpointUrl,
                 body = parameters,
                 onSuccess = {
-                    cont.resumeWith(Result.success(""))
+                    cont.resumeWith(Result.success(it.asBearerToken))
                 },
                 onFailure = {
                     val exception = Exception(it.message)
@@ -138,6 +138,12 @@ class PasskeyRestClient @Inject constructor(
                 .run { this as? List<*> }
                 ?.map { it as String }
         )
+
+    private val Map<String, Any>.asBearerToken: String
+        get() = this["data"]
+            ?.run { this as? Map<*, *> }
+            ?.let { this["bearer_token"] as? String }
+            .orEmpty()
 
     companion object {
         private const val baseURLWithAction = "wp-login.php?action"
