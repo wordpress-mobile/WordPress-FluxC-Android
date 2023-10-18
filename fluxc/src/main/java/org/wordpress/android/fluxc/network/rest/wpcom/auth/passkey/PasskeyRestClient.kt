@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.passkey
+package org.wordpress.android.fluxc.network.rest.wpcom.auth.passkey
 
 import android.content.Context
 import android.util.Base64

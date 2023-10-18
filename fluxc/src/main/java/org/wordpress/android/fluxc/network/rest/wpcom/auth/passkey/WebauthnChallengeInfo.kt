@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.network.rest.wpcom.wc.passkey
+package org.wordpress.android.fluxc.network.rest.wpcom.auth.passkey
 
 data class WebauthnChallengeInfo(
     val challenge: String,
