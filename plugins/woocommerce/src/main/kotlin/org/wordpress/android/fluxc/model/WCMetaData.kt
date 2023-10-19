@@ -17,9 +17,13 @@ data class WCMetaData(
         const val DISPLAY_VALUE = "display_value"
         val SUPPORTED_KEYS: Set<String> = buildSet {
             add(SubscriptionMetadataKeys.SUBSCRIPTION_RENEWAL)
+            add(BundleMetadataKeys.BUNDLED_ITEM_ID)
         }
     }
     object SubscriptionMetadataKeys {
         const val SUBSCRIPTION_RENEWAL = "_subscription_renewal"
+    }
+    object BundleMetadataKeys {
+        const val BUNDLED_ITEM_ID = "_bundled_item_id"
     }
 }
