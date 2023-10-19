@@ -38,4 +38,17 @@ data class LineItem(
             Attribute(it.displayKey, it.displayValue as String)
         } ?: emptyList()
     }
+
+    fun getConfigurationKey(): Long? {
+        return when {
+            bundledBy.isNullOrBlank().not() -> {
+                (metaData?.first { meta ->
+                    meta.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID
+                }?.value.toString())
+                    .toLongOrNull()
+            }
+
+            else -> null
+        }
+    }
 }
