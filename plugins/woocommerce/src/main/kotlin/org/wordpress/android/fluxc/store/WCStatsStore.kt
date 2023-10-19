@@ -140,7 +140,7 @@ class WCStatsStore @Inject constructor(
         val startDate: String? = null,
         val endDate: String? = null,
         val forced: Boolean = false,
-        val revenueRangeId: Int = 0
+        val revenueRangeId: String = ""
     ) : Payload<BaseNetworkError>()
 
     class FetchRevenueStatsResponsePayload(
@@ -829,6 +829,6 @@ class WCStatsStore @Inject constructor(
 
     fun getRawRevenueStatsFromRangeId(
         site: SiteModel,
-        revenueRangeId: Int
+        revenueRangeId: String
     ) = WCStatsSqlUtils.getRevenueStatsFromRangeId(site, revenueRangeId)
 }

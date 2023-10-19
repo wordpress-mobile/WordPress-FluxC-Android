@@ -1305,6 +1305,32 @@ class WCProductStore @Inject constructor(
         with(payload) { wcProductRestClient.addProductCategory(site, category) }
     }
 
+    suspend fun addProductCategories(
+        site: SiteModel,
+        categories: List<WCProductCategoryModel>
+    ): WooResult<List<WCProductCategoryModel>> = coroutineEngine.withDefaultContext(API, this, "addProductCategories") {
+        val result = wcProductRestClient.addProductCategories(
+            site = site,
+            categories = categories
+        )
+
+        if (!result.isError) {
+            val addedCategories = result.result!!
+            if (addedCategories.size < categories.size) {
+                AppLog.w(
+                    API,
+                    "addProductCategories: not all categories were added. " +
+                        "Expected: ${categories.size}, added: ${addedCategories.size}")
+            }
+
+            addedCategories.forEach { category ->
+                ProductSqlUtils.insertOrUpdateProductCategory(category)
+            }
+        }
+
+        return@withDefaultContext result.asWooResult()
+    }
+
     private fun fetchProductTags(payload: FetchProductTagsPayload) {
         with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset, searchQuery) }
     }
