@@ -109,6 +109,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
@@ -172,6 +173,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertEquals(comment.getContent(), mNewComment.getContent());
         assertEquals(comment.getAuthorId(), firstComment.getAuthorId());
         assertEquals(comment.getParentId(), firstComment.getRemoteCommentId());
@@ -196,6 +198,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
+        assertNotNull(comment);
         assertEquals(comment.getContent(), firstComment.getContent());
     }
 
@@ -235,6 +238,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
 
         // Delete
@@ -246,6 +250,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Make sure the comment is still here but state changed
         comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
@@ -266,6 +271,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
 
         // Delete once (ie. move to trash)
@@ -302,6 +308,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Check the new comment response contains URL
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertNotNull(comment.getUrl());
     }
 
