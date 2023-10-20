@@ -532,9 +532,8 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         return testMedia;
     }
 
-    private PostModel createNewPost(SiteModel site) throws InterruptedException {
+    private void createNewPost(SiteModel site) throws InterruptedException {
         mPost = mPostStore.instantiatePostModel(site, false);
-        return mPost;
     }
 
     private void setupPostAttributes() {
