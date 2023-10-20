@@ -40,6 +40,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @SuppressLint("UseSparseArrays")
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 

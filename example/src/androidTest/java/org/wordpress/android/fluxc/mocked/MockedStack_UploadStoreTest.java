@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
  * Tests the interactions between the MediaStore/PostStore and the UploadStore, without directly injecting the
  * UploadStore in the test class.
  */
+@SuppressWarnings("NewClassNamingConvention")
 public class MockedStack_UploadStoreTest extends MockedStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject MediaStore mMediaStore;

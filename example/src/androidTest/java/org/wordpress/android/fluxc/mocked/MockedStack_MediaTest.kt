@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
+@Suppress("ClassNaming")
 @SuppressLint("UseSparseArrays")
 class MockedStack_MediaTest : MockedStack_Base() {
     @Inject lateinit var dispatcher: Dispatcher

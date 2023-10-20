@@ -50,6 +50,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  */
+@SuppressWarnings("NewClassNamingConvention")
 public class MockedStack_UploadTest extends MockedStack_Base {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";

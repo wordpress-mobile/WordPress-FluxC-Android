@@ -39,6 +39,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @SuppressLint("UseSparseArrays")
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @SuppressWarnings("unused")
     @Inject AccountStore mAccountStore;
