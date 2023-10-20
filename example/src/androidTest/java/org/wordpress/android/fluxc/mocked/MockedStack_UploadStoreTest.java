@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
- *
+ * <p>
  * Tests the interactions between the MediaStore/PostStore and the UploadStore, without directly injecting the
  * UploadStore in the test class.
  */
