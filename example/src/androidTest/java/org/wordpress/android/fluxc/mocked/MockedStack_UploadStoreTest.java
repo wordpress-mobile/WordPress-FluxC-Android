@@ -59,7 +59,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
 
     @Test
     public void testUploadMedia() throws InterruptedException {
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         startSuccessfulMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -90,11 +90,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
         }
     }
 
-    private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        return newMediaModel("Test Title", mediaPath, mimeType);
-    }
-
-    private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
+    private MediaModel newMediaModel(String mediaPath) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
@@ -102,9 +98,9 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType);
+        testMedia.setMimeType("image/jpeg");
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
-        testMedia.setTitle(testTitle);
+        testMedia.setTitle("Test Title");
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
