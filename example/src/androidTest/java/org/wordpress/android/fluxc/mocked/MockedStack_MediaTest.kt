@@ -293,7 +293,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
             // Wait a bit and issue the cancel command
             TestUtils.waitFor(300)
 
-            // We'e only cancelling the first n=howManyFirstToCancel uploads
+            // We're only cancelling the first n=howManyFirstToCancel uploads
             for (i in 0 until howManyFirstToCancel) {
                 val media = mediaList[i]
                 val payload = CancelMediaPayload(testSite, media, delete)
