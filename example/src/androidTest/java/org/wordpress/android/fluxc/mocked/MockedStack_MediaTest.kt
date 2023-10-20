@@ -206,7 +206,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(amountToCancel, mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size)
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "ThrowsCount")
     @Subscribe
     fun onMediaUploaded(event: OnMediaUploaded) {
         if (event.isError) {
