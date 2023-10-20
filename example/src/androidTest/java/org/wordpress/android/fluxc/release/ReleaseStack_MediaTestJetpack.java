@@ -10,7 +10,6 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
@@ -36,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 @SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
-    @Inject AccountStore mAccountStore;
     @Inject MediaStore mMediaStore;
 
     private enum TestEvents {
