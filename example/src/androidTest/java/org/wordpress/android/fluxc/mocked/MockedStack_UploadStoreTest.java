@@ -97,9 +97,9 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
 
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
+        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
         testMedia.setMimeType("image/jpeg");
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
+        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
         testMedia.setTitle("Test Title");
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
