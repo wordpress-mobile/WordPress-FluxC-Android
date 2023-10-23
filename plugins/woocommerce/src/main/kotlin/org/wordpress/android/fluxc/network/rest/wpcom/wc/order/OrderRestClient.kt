@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
@@ -383,47 +384,16 @@ class OrderRestClient @Inject constructor(
      *
      * @param [filterByStatus] The order status to return a count for
      */
-    fun fetchOrderCount(site: SiteModel, filterByStatus: String) {
+    fun fetchOrderCountSync(site: SiteModel, filterByStatus: String) {
         coroutineEngine.launch(T.API, this, "fetchOrderCount") {
-            val url = WOOCOMMERCE.reports.orders.totals.pathV3
-            val params = mapOf("status" to filterByStatus)
-
-            val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                clazz = Array<OrderCountApiResponse>::class.java,
-                params = params
+            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(
+                doFetchOrderCount(site, filterByStatus))
             )
-
-            when (response) {
-                is WPAPIResponse.Success -> {
-                    val total = response.data?.find { it.slug == filterByStatus }?.total
-
-                    total?.let {
-                        val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
-                        dispatcher.dispatch(
-                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
-                        )
-                    } ?: run {
-                        val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
-                        val payload = FetchOrdersCountResponsePayload(
-                            orderError,
-                            site,
-                            filterByStatus
-                        )
-                        dispatcher.dispatch(
-                            WCOrderActionBuilder.newFetchedOrdersCountAction(payload)
-                        )
-                    }
-                }
-                is WPAPIResponse.Error -> {
-                    val orderError = wpAPINetworkErrorToOrderError(response.error)
-                    val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
-                }
-            }
         }
     }
+
+    suspend fun fetchOrderCountSync(site: SiteModel, filterByStatus: String?) =
+        doFetchOrderCount(site, filterByStatus)
 
     /**
      * Makes a GET request to `/wp-json/wc/v3/orders` for a single order of a specific type (or any type) in order to
@@ -869,6 +839,43 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    private suspend fun doFetchOrderCount(site: SiteModel, filterByStatus: String?): FetchOrdersCountResponsePayload {
+        val url = WOOCOMMERCE.reports.orders.totals.pathV3
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<OrderCountApiResponse>::class.java,
+            params = if (filterByStatus != null) mapOf("status" to filterByStatus) else emptyMap()
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                val total = if (filterByStatus == null) {
+                    response.data?.sumOf { it.total }
+                } else {
+                    response.data?.find { it.slug == filterByStatus }?.total
+                }
+
+                total?.let {
+                    FetchOrdersCountResponsePayload(site, filterByStatus, it)
+                } ?: run {
+                    val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
+                    FetchOrdersCountResponsePayload(
+                        orderError,
+                        site,
+                        filterByStatus
+                    )
+                }
+            }
+
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
+                FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
+            }
+        }
+    }
+
     private fun UpdateOrderRequest.toNetworkRequest(): Map<String, Any> {
         return mutableMapOf<String, Any>().apply {
             customerId?.let { put("customer_id", it) }
@@ -879,6 +886,7 @@ class OrderRestClient @Inject constructor(
             feeLines?.let { put("fee_lines", it) }
             shippingLines?.let { put("shipping_lines", it) }
             customerNote?.let { put("customer_note", it) }
+            couponLines?.let { put("coupon_lines", it) }
         }
     }
 
@@ -891,13 +899,14 @@ class OrderRestClient @Inject constructor(
     }
 
     private fun wpAPINetworkErrorToOrderError(wpAPINetworkError: WPAPINetworkError): OrderError {
-        val orderErrorType = when (wpAPINetworkError.errorCode) {
-            "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
-            "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
-            "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
+        val orderErrorType = when {
+            wpAPINetworkError.errorCode == "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
+            wpAPINetworkError.errorCode == "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
+            wpAPINetworkError.errorCode == "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
+            wpAPINetworkError.type == BaseRequest.GenericErrorType.PARSE_ERROR -> OrderErrorType.PARSE_ERROR
             else -> OrderErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return OrderError(orderErrorType, wpAPINetworkError.message.orEmpty())
+        return OrderError(orderErrorType, wpAPINetworkError.combinedErrorMessage)
     }
 
     private fun orderStatusResponseToOrderStatusModel(
@@ -978,7 +987,9 @@ class OrderRestClient @Inject constructor(
             "total_tax",
             "meta_data",
             "payment_url",
-            "is_editable"
+            "is_editable",
+            "needs_payment",
+            "needs_processing"
         ).joinToString(separator = ",")
 
         private val TRACKING_FIELDS = arrayOf(

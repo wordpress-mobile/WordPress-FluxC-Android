@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.example.CommentsFragment
 import org.wordpress.android.fluxc.example.DomainsFragment
 import org.wordpress.android.fluxc.example.EditorThemeFragment
 import org.wordpress.android.fluxc.example.ExperimentsFragment
+import org.wordpress.android.fluxc.example.JetpackAIFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
@@ -50,6 +51,7 @@ import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.storecreation.WooStoreCreationFragment
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
+import org.wordpress.android.fluxc.example.ui.wooadmin.WooAdminFragment
 
 @Module
 internal interface FragmentsModule {
@@ -196,4 +198,10 @@ internal interface FragmentsModule {
 
     @ContributesAndroidInjector
     fun provideOnboardingFragment(): WooOnboardingFragment
+
+    @ContributesAndroidInjector
+    fun provideJetpackAIFragment(): JetpackAIFragment
+
+    @ContributesAndroidInjector
+    fun provideWooAdminFragment(): WooAdminFragment
 }

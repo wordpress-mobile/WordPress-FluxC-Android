@@ -1,10 +1,16 @@
 package org.wordpress.android.fluxc.release;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.yarolegovich.wellsql.WellSql;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.utils.RandomStringUtils;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
 import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
@@ -24,10 +30,12 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     @Inject TaxonomyStore mTaxonomyStore;
 
@@ -92,8 +100,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_INVALID_TAXONOMY;
         mCountDownLatch = new CountDownLatch(1);
 
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("roads");
+        TaxonomyModel taxonomyModel = new TaxonomyModel("roads");
 
         FetchTermsPayload payload = new FetchTermsPayload(sSite, taxonomyModel);
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
@@ -106,8 +113,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.TERM_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        TermModel term = new TermModel();
-        term.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
+        TermModel term = new TermModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
         term.setSlug("uncategorized");
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
 
@@ -181,8 +187,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
+        TaxonomyModel taxonomyModel = new TaxonomyModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         // Instantiate new term
         TermModel term = createNewTerm(taxonomyModel);
@@ -201,8 +206,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
-        TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("roads");
+        TaxonomyModel taxonomyModel = new TaxonomyModel("roads");
 
         // Instantiate new term
         TermModel term = createNewTerm(taxonomyModel);
@@ -243,7 +247,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onTaxonomyChanged(OnTaxonomyChanged event) {
+    public void onTaxonomyChanged(@NonNull OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnTaxonomyChanged has error: " + event.error.type + " - " + event.error.message);
@@ -277,7 +281,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
                 break;
             case FETCH_TERMS:
                 if (mNextEvent.equals(TestEvents.TERMS_FETCHED)) {
-                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " " + event.taxonomyName + " terms");
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " terms");
                     mCountDownLatch.countDown();
                 }
                 break;
@@ -293,12 +297,21 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
                     mCountDownLatch.countDown();
                 }
                 break;
+            case FETCH_TERM:
+            case PUSH_TERM:
+            case DELETE_TERM:
+            case FETCHED_TERMS:
+            case FETCHED_TERM:
+            case PUSHED_TERM:
+            case DELETED_TERM:
+            case REMOVE_ALL_TERMS:
+                break;
         }
     }
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onTermUploaded(OnTermUploaded event) {
+    public void onTermUploaded(@NonNull OnTermUploaded event) {
         AppLog.i(T.API, "Received OnTermUploaded");
         if (event.isError()) {
             AppLog.i(T.API, "OnTermUploaded has error: " + event.error.type + " - " + event.error.message);
@@ -327,37 +340,52 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
-    private void setupTermAttributes(TermModel term) {
+    private void setupTermAttributes(@NonNull TermModel term) {
         term.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
         term.setDescription(TERM_DEFAULT_DESCRIPTION);
     }
 
+    @NonNull
     private TermModel createNewCategory() {
-        TermModel term = mTaxonomyStore.instantiateCategory(sSite);
+        TermModel term = instantiateTermModel(sSite, TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new category!");
+        }
 
         return term;
     }
 
+    @NonNull
     private TermModel createNewTag() {
-        TermModel term = mTaxonomyStore.instantiateTag(sSite);
+        TermModel term = instantiateTermModel(sSite, TaxonomyStore.DEFAULT_TAXONOMY_TAG);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new tag!");
+        }
 
         return term;
     }
 
-    private TermModel createNewTerm(TaxonomyModel taxonomy) {
-        TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
+    @NonNull
+    private TermModel createNewTerm(@NonNull TaxonomyModel taxonomy) {
+        TermModel term = instantiateTermModel(sSite, taxonomy.getName());
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        if (term != null) {
+            assertEquals(0, term.getRemoteTermId());
+            assertNotSame(0, term.getId());
+            assertNotSame(0, term.getLocalSiteId());
+        } else {
+            fail("Failed to instantiate new term!");
+        }
 
         return term;
     }
@@ -393,7 +421,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
 
         String newDescription = "newDescription";
-        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        assertNotEquals(newDescription, uploadedTerm.getDescription());
         uploadedTerm.setDescription(newDescription);
 
         uploadTerm(uploadedTerm);
@@ -401,5 +429,26 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TermModel updatedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
         assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
         assertEquals(updatedTerm.getDescription(), newDescription);
+    }
+
+    @Nullable
+    private TermModel instantiateTermModel(@NonNull SiteModel site, @NonNull String taxonomyName) {
+        TermModel newTerm = new TermModel(taxonomyName);
+        newTerm.setLocalSiteId(site.getId());
+
+        // Insert the term into the db, updating the object to include the local ID
+        TermModel insertedTerm = insertTermForResult(newTerm);
+
+        // id is set to -1 if insertion fails
+        if (insertedTerm.getId() == -1) {
+            return null;
+        }
+        return insertedTerm;
+    }
+
+    @NonNull
+    public static TermModel insertTermForResult(@NonNull TermModel term) {
+        WellSql.insert(term).asSingleTransaction(true).execute();
+        return term;
     }
 }

@@ -171,7 +171,8 @@ class OrderStatsRestClient @Inject constructor(
         startDate: String,
         endDate: String,
         perPage: Int,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
+        revenueRangeId: String = ""
     ): FetchRevenueStatsResponsePayload {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val params = mapOf(
@@ -202,6 +203,7 @@ class OrderStatsRestClient @Inject constructor(
                             this.total = it.totals.toString()
                             this.startDate = startDate
                             this.endDate = endDate
+                            this.rangeId = revenueRangeId
                         }
 
                     FetchRevenueStatsResponsePayload(site, granularity, model)

@@ -2,9 +2,12 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.fluxc.utils.NonNegativeDoubleJsonDeserializer
+import org.wordpress.android.fluxc.utils.PrimitiveBooleanJsonDeserializer
 
 typealias ProductDto = ProductApiResponse
 
@@ -29,6 +32,7 @@ data class ProductApiResponse(
     val sale_price: String? = null,
     val on_sale: Boolean = false,
     val total_sales: Long = 0L,
+    @JsonAdapter(PrimitiveBooleanJsonDeserializer::class)
     val purchasable: Boolean = false,
     val virtual: Boolean = false,
     val downloadable: Boolean = false,
@@ -39,7 +43,8 @@ data class ProductApiResponse(
     val tax_status: String? = null,
     val tax_class: String? = null,
     val manage_stock: String? = null,
-    val stock_quantity:Double = 0.0,
+    @JsonAdapter(NonNegativeDoubleJsonDeserializer::class)
+    val stock_quantity:Double? = 0.0,
     val stock_status: String? = null,
     val date_on_sale_from: String? = null,
     val date_on_sale_to: String? = null,
@@ -48,6 +53,7 @@ data class ProductApiResponse(
     val backorders: String? = null,
     val backorders_allowed:Boolean = false,
     val backordered:Boolean = false,
+    @JsonAdapter(PrimitiveBooleanJsonDeserializer::class)
     val sold_individually:Boolean = false,
     val weight: String? = null,
     val dimensions: JsonElement? = null,
@@ -127,15 +133,11 @@ data class ProductApiResponse(
                 it == "true" || it == "parent"
             } ?: false
 
-            stockQuantity = if (isBundledProduct) {
-                response.bundle_stock_quantity?.toDoubleOrNull() ?: 0.0
-            } else {
-                response.stock_quantity
-            }
-            stockStatus = if (isBundledProduct) {
-                response.bundle_stock_status ?: ""
-            } else {
-                response.stock_status ?: ""
+            stockQuantity = response.stock_quantity ?: 0.0
+
+            stockStatus = response.stock_status ?: ""
+            if (isBundledProduct && (response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
+                specialStockStatus = response.bundle_stock_status ?: ""
             }
 
             backorders = response.backorders ?: ""

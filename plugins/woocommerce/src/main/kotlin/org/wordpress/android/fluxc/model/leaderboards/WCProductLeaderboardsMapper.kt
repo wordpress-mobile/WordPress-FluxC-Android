@@ -1,9 +1,11 @@
 package org.wordpress.android.fluxc.model.leaderboards
 
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardProductItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsProductApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.geProductExistsByRemoteId
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
@@ -72,4 +74,24 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         total = productItem.total?.toDoubleOrNull() ?: 0.0,
         millisSinceLastUpdated = System.currentTimeMillis()
     )
+
+    fun mapTopPerformerProductsEntity(
+        response: ReportsProductApiResponse,
+        site: SiteModel,
+        datePeriod: String,
+        currencyCode: String
+    ): TopPerformerProductEntity {
+        val imageURL = response.product?.imageUrl
+        return TopPerformerProductEntity(
+            localSiteId = site.localId(),
+            datePeriod = datePeriod,
+            productId = RemoteId(response.productId ?: 0L),
+            name = response.product?.name ?: "",
+            imageUrl = imageURL,
+            quantity = response.itemsSold ?: 0,
+            currency = currencyCode,
+            total = response.netRevenue ?: 0.0,
+            millisSinceLastUpdated = System.currentTimeMillis()
+        )
+    }
 }

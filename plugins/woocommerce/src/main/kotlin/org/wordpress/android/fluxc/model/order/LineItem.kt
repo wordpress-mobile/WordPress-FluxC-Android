@@ -1,9 +1,12 @@
 package org.wordpress.android.fluxc.model.order
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.utils.JsonElementToLongSerializerDeserializer
 
 data class LineItem(
+    @JsonAdapter(JsonElementToLongSerializerDeserializer::class)
     val id: Long? = null,
     val name: String? = null,
     @SerializedName("parent_name")
@@ -20,7 +23,11 @@ data class LineItem(
     val sku: String? = null,
     val price: String? = null, // The per-item price
     @SerializedName("meta_data")
-    val metaData: List<WCMetaData>? = null
+    val metaData: List<WCMetaData>? = null,
+    @SerializedName("bundled_by")
+    val bundledBy: String? = null,
+    @SerializedName("composite_parent")
+    val compositeParent: String? = null
 ) {
     class Attribute(val key: String?, val value: String?)
 

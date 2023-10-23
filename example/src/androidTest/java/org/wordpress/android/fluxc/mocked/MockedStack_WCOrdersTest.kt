@@ -156,7 +156,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val statusFilter = CoreOrderStatus.COMPLETED.value
 
         interceptor.respondWith("wc-order-count-response-success.json")
-        orderRestClient.fetchOrderCount(siteModel, statusFilter)
+        orderRestClient.fetchOrderCountSync(siteModel, statusFilter)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))

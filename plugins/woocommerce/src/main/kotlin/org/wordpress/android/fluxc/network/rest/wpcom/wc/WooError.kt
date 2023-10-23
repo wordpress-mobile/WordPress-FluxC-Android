@@ -33,7 +33,8 @@ enum class WooErrorType {
     AUTHORIZATION_REQUIRED,
     INVALID_PARAM,
     PLUGIN_NOT_ACTIVE,
-    EMPTY_RESPONSE
+    EMPTY_RESPONSE,
+    INVALID_COUPON
 }
 
 fun WPComGsonNetworkError.toWooError(): WooError {
@@ -79,6 +80,7 @@ fun WPAPINetworkError.toWooError(): WooError {
             when (errorCode) {
                 "rest_invalid_param" -> WooErrorType.INVALID_PARAM
                 "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
+                "woocommerce_rest_invalid_coupon" -> WooErrorType.INVALID_COUPON
                 else -> WooErrorType.GENERIC_ERROR
             }
         }

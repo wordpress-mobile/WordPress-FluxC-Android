@@ -58,6 +58,12 @@ data class WCPaymentAccountResult(
         COMPLETE,
 
         /**
+         * This account has provided enough information to process payments and receive payouts.
+         * More information will eventually be required when they process enough volume.
+         */
+        ENABLED,
+
+        /**
          * This state occurs when there is required business information missing from the account.
          * If `hasOverdueRequirements` is also true, then the deadline for providing that information HAS PASSED and
          * the merchant will probably NOT be able to collect card present payments.
@@ -119,6 +125,7 @@ data class WCPaymentAccountResult(
             ): WCPaymentAccountStatus =
                     when (json.asString) {
                         "complete" -> COMPLETE
+                        "enabled" -> ENABLED
                         "restricted" -> RESTRICTED
                         "restricted_soon" -> RESTRICTED_SOON
                         "rejected.fraud" -> REJECTED_FRAUD

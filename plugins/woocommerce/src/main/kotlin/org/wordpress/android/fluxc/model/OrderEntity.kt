@@ -6,6 +6,7 @@ import androidx.room.Index
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.order.CouponLine
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -66,11 +67,17 @@ data class OrderEntity(
     val shippingLines: String = "",
     val feeLines: String = "",
     val taxLines: String = "",
+    @ColumnInfo(name = "couponLines", defaultValue = "")
+    val couponLines: String = "",
     val metaData: String = "", // this is a small subset of the metadata, see OrderMetaDataEntity for full metadata
     @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = "",
     @ColumnInfo(name = "isEditable", defaultValue = "1")
-    val isEditable: Boolean = true
+    val isEditable: Boolean = true,
+    @ColumnInfo(name = "needsPayment")
+    val needsPayment: Boolean? = null,
+    @ColumnInfo(name = "needsProcessing")
+    val needsProcessing: Boolean? = null
 ) {
     companion object {
         private val gson by lazy { Gson() }
@@ -124,6 +131,14 @@ data class OrderEntity(
     fun getFeeLineList(): List<FeeLine> {
         val responseType = object : TypeToken<List<FeeLine>>() {}.type
         return gson.fromJson(feeLines, responseType) as? List<FeeLine> ?: emptyList()
+    }
+
+    /**
+     * Deserializes the JSON contained in [couponLines] into a list of [CouponLine] objects.
+     */
+    fun getCouponLineList(): List<CouponLine> {
+        val responseType = object : TypeToken<List<CouponLine>>() {}.type
+        return gson.fromJson(couponLines, responseType) as? List<CouponLine> ?: emptyList()
     }
 
     /**

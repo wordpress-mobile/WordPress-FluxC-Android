@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.model.customer
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerFromAnalyticsDTO
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -50,36 +51,71 @@ class WCCustomerMapper @Inject constructor() {
 
     fun mapToDTO(model: WCCustomerModel): CustomerDTO {
         val billing = CustomerDTO.Billing(
-                firstName = model.billingFirstName,
-                lastName = model.billingLastName,
-                company = model.billingCompany,
-                address1 = model.billingAddress1,
-                address2 = model.billingAddress2,
-                city = model.billingCity,
-                state = model.billingState,
-                postcode = model.billingPostcode,
-                country = model.billingCountry,
-                email = model.billingEmail,
-                phone = model.billingPhone
+            firstName = model.billingFirstName,
+            lastName = model.billingLastName,
+            company = model.billingCompany,
+            address1 = model.billingAddress1,
+            address2 = model.billingAddress2,
+            city = model.billingCity,
+            state = model.billingState,
+            postcode = model.billingPostcode,
+            country = model.billingCountry,
+            email = model.billingEmail,
+            phone = model.billingPhone
         )
         val shipping = CustomerDTO.Shipping(
-                firstName = model.billingFirstName,
-                lastName = model.billingLastName,
-                company = model.billingCompany,
-                address1 = model.billingAddress1,
-                address2 = model.billingAddress2,
-                city = model.billingCity,
-                state = model.billingState,
-                postcode = model.billingPostcode,
-                country = model.billingCountry
+            firstName = model.billingFirstName,
+            lastName = model.billingLastName,
+            company = model.billingCompany,
+            address1 = model.billingAddress1,
+            address2 = model.billingAddress2,
+            city = model.billingCity,
+            state = model.billingState,
+            postcode = model.billingPostcode,
+            country = model.billingCountry
         )
         return CustomerDTO(
-                email = model.email,
-                firstName = model.firstName,
-                lastName = model.lastName,
-                username = model.username,
-                billing = billing,
-                shipping = shipping
+            email = model.email,
+            firstName = model.firstName,
+            lastName = model.lastName,
+            username = model.username,
+            billing = billing,
+            shipping = shipping
         )
     }
+
+    @Suppress("ComplexMethod")
+    fun mapToModel(site: SiteModel, dto: CustomerFromAnalyticsDTO): WCCustomerModel {
+        return WCCustomerModel().apply {
+            localSiteId = site.id
+            remoteCustomerId = dto.userId ?: 0
+            email = dto.email ?: ""
+            firstName = dto.name.firstNameFromName()
+            lastName = dto.name.lastNameFromName()
+            username = dto.username ?: ""
+            dateCreated = dto.dateRegistered ?: ""
+            dateCreatedGmt = dto.dateRegisteredGmt ?: ""
+            dateModified = dto.dateLastActive ?: ""
+            dateModifiedGmt = dto.dateLastActiveGmt ?: ""
+            isPayingCustomer = (dto.totalSpend ?: 0.0) > 0
+
+            billingCountry = dto.country ?: ""
+            billingCity = dto.city ?: ""
+            billingEmail = dto.email ?: ""
+            billingFirstName = dto.name?.firstNameFromName() ?: ""
+            billingLastName = dto.name?.lastNameFromName() ?: ""
+            billingPostcode = dto.postcode ?: ""
+            billingState = dto.state ?: ""
+
+            shippingCountry = dto.country ?: ""
+            shippingCity = dto.city ?: ""
+            shippingFirstName = dto.name?.firstNameFromName() ?: ""
+            shippingLastName = dto.name?.lastNameFromName() ?: ""
+            shippingPostcode = dto.postcode ?: ""
+            shippingState = dto.state ?: ""
+        }
+    }
+
+    private fun String?.firstNameFromName() = this?.split(" ")?.firstOrNull() ?: ""
+    private fun String?.lastNameFromName() = this?.split(" ")?.lastOrNull() ?: ""
 }

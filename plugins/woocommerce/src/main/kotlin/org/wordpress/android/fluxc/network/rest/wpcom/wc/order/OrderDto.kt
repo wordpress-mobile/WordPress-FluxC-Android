@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.JsonElement
+import org.wordpress.android.fluxc.model.order.CouponLine
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName", "VariableNaming")
@@ -33,10 +34,6 @@ class OrderDto : Response {
         val country: String? = null,
         val phone: String? = null
     )
-
-    class CouponLine {
-        val code: String? = null
-    }
 
     class Refund {
         val total: String? = null
@@ -74,4 +71,6 @@ class OrderDto : Response {
     val tax_lines: JsonElement? = null
     val payment_url: String? = null
     val is_editable: Boolean? = null
+    val needs_payment: Boolean? = null
+    val needs_processing: Boolean? = null
 }

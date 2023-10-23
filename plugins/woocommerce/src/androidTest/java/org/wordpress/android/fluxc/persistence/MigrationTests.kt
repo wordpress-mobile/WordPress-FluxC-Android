@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_20_21
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_21_22
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_22_23
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_27_28
 
 @RunWith(AndroidJUnit4::class)
 class MigrationTests {
@@ -208,6 +209,38 @@ class MigrationTests {
         helper.apply {
             createDatabase(TEST_DB, 23).close()
             runMigrationsAndValidate(TEST_DB, 24, false)
+        }
+    }
+
+    @Test
+    fun testMigrate24to25() {
+        helper.apply {
+            createDatabase(TEST_DB, 24).close()
+            runMigrationsAndValidate(TEST_DB, 25, false)
+        }
+    }
+
+    @Test
+    fun testMigrate25to26() {
+        helper.apply {
+            createDatabase(TEST_DB, 25).close()
+            runMigrationsAndValidate(TEST_DB, 26, false)
+        }
+    }
+
+    @Test
+    fun testMigrate26to27() {
+        helper.apply {
+            createDatabase(TEST_DB, 26).close()
+            runMigrationsAndValidate(TEST_DB, 27, false)
+        }
+    }
+
+    @Test
+    fun testMigrate27to28() {
+        helper.apply {
+            createDatabase(TEST_DB, 27).close()
+            runMigrationsAndValidate(TEST_DB, 28, true, MIGRATION_27_28)
         }
     }
 

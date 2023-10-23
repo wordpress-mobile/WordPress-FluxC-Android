@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPAPI
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.StripProductVariationMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -18,15 +19,20 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper.variantModelToProductJsonBody
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
@@ -67,6 +73,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
+import org.wordpress.android.fluxc.store.WCProductStore.SkuSearchOptions
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.putIfNotNull
@@ -80,6 +87,7 @@ class ProductRestClient @Inject constructor(
     private val wooNetwork: WooNetwork,
     private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine,
+    private val stripProductMetaData: StripProductMetaData,
     private val stripProductVariationMetaData: StripProductVariationMetaData
 ) {
     /**
@@ -108,9 +116,14 @@ class ProductRestClient @Inject constructor(
                             it, site
                         ).apply { localSiteId = site.id }
                         val payload = RemoteProductShippingClassPayload(newModel, site)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
+                        dispatcher.dispatch(
+                            WCProductActionBuilder.newFetchedSingleProductShippingClassAction(
+                                payload
+                            )
+                        )
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductShippingClassPayload(
@@ -118,7 +131,11 @@ class ProductRestClient @Inject constructor(
                         WCProductShippingClassModel().apply { this.remoteShippingClassId = remoteShippingClassId },
                         site
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedSingleProductShippingClassAction(
+                            payload
+                        )
+                    )
                 }
             }
         }
@@ -162,12 +179,21 @@ class ProductRestClient @Inject constructor(
                     val payload = RemoteProductShippingClassListPayload(
                         site, shippingClassList, offset, loadedMore, canLoadMore
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductShippingClassListAction(
+                            payload
+                        )
+                    )
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductShippingClassListPayload(productError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductShippingClassListAction(
+                            payload
+                        )
+                    )
                 }
             }
         }
@@ -211,9 +237,17 @@ class ProductRestClient @Inject constructor(
 
                     val loadedMore = offset > 0
                     val canLoadMore = tags.size == pageSize
-                    val payload = RemoteProductTagsPayload(site, tags, offset, loadedMore, canLoadMore, searchQuery)
+                    val payload = RemoteProductTagsPayload(
+                        site,
+                        tags,
+                        offset,
+                        loadedMore,
+                        canLoadMore,
+                        searchQuery
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductTagsPayload(productError, site)
@@ -258,6 +292,7 @@ class ProductRestClient @Inject constructor(
                     val payload = RemoteAddProductTagsResponsePayload(site, addedTags)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductTagsResponsePayload(productError, site)
@@ -289,6 +324,7 @@ class ProductRestClient @Inject constructor(
                 response.data?.let {
                     val newModel = it.asProductModel().apply {
                         localSiteId = site.id
+                        metadata = stripProductMetaData(metadata)
                     }
                     RemoteProductPayload(newModel, site)
                 } ?: RemoteProductPayload(
@@ -297,6 +333,7 @@ class ProductRestClient @Inject constructor(
                     site
                 )
             }
+
             is WPAPIResponse.Error -> {
                 val productError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductPayload(
@@ -354,6 +391,7 @@ class ProductRestClient @Inject constructor(
                     )
                 }
             }
+
             is WPAPIResponse.Error -> {
                 RemoteVariationPayload(
                     wpAPINetworkErrorToProductError(response.error),
@@ -380,7 +418,7 @@ class ProductRestClient @Inject constructor(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         includedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null,
         excludedProductIds: List<Long>? = null
@@ -392,7 +430,7 @@ class ProductRestClient @Inject constructor(
                 sortType = sortType,
                 offset = offset,
                 searchQuery = searchQuery,
-                isSkuSearch = isSkuSearch,
+                skuSearchOptions = skuSearchOptions,
                 includedProductIds = includedProductIds,
                 excludedProductIds = excludedProductIds,
                 filterOptions = filterOptions
@@ -408,7 +446,10 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     val productModels = response.data?.map {
-                        it.asProductModel().apply { localSiteId = site.id }
+                        it.asProductModel().apply {
+                            localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
+                        }
                     }.orEmpty()
 
                     val loadedMore = offset > 0
@@ -428,7 +469,7 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteSearchProductsPayload(
                             site = site,
                             searchQuery = searchQuery,
-                            isSkuSearch = isSkuSearch,
+                            skuSearchOptions = skuSearchOptions,
                             products = productModels,
                             offset = offset,
                             loadedMore = loadedMore,
@@ -437,6 +478,7 @@ class ProductRestClient @Inject constructor(
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     if (searchQuery == null) {
@@ -447,7 +489,7 @@ class ProductRestClient @Inject constructor(
                             error = productError,
                             site = site,
                             query = searchQuery,
-                            skuSearch = isSkuSearch,
+                            skuSearchOptions = skuSearchOptions,
                             filterOptions = filterOptions
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
@@ -460,7 +502,7 @@ class ProductRestClient @Inject constructor(
     fun searchProducts(
         site: SiteModel,
         searchQuery: String,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
@@ -473,7 +515,7 @@ class ProductRestClient @Inject constructor(
             offset = offset,
             sortType = sorting,
             searchQuery = searchQuery,
-            isSkuSearch = isSkuSearch,
+            skuSearchOptions = skuSearchOptions,
             excludedProductIds = excludedProductIds,
             filterOptions = filterOptions
         )
@@ -493,7 +535,7 @@ class ProductRestClient @Inject constructor(
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        isSkuSearch: Boolean = false,
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
         filterOptions: Map<ProductFilterOption, String>? = null
     ): WooPayload<List<WCProductModel>> {
         val params = buildProductParametersMap(
@@ -501,7 +543,7 @@ class ProductRestClient @Inject constructor(
             sortType = sortType,
             offset = offset,
             searchQuery = searchQuery,
-            isSkuSearch = isSkuSearch,
+            skuSearchOptions = skuSearchOptions,
             includedProductIds = includedProductIds,
             excludedProductIds = excludedProductIds,
             filterOptions = filterOptions
@@ -518,9 +560,27 @@ class ProductRestClient @Inject constructor(
         return response.toWooPayload { products ->
             products.map {
                 it.asProductModel()
-                    .apply { localSiteId = site.id }
+                    .apply {
+                        localSiteId = site.id
+                        metadata = stripProductMetaData(metadata)
+                    }
             }
         }
+    }
+
+    /**
+     * Makes a GET request to `/wp-json/wc/v3/reports/products/totals/` retrieving count of products for the given sute
+     */
+    suspend fun fetchProductsTotals(site: SiteModel): WooPayload<List<ProductCountApiResponse>> {
+        val url = WOOCOMMERCE.reports.products.totals.pathV3
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = emptyMap(),
+            clazz = Array<ProductCountApiResponse>::class.java
+        )
+
+        return response.toWooPayload { it.toList() }
     }
 
     private fun buildProductParametersMap(
@@ -528,7 +588,7 @@ class ProductRestClient @Inject constructor(
         sortType: ProductSorting,
         offset: Int,
         searchQuery: String?,
-        isSkuSearch: Boolean,
+        skuSearchOptions: SkuSearchOptions,
         includedProductIds: List<Long>? = null,
         excludedProductIds: List<Long>? = null,
         filterOptions: Map<ProductFilterOption, String>? = null
@@ -561,11 +621,19 @@ class ProductRestClient @Inject constructor(
         }
 
         if (searchQuery.isNullOrEmpty().not()) {
-            if (isSkuSearch) {
-                params["sku"] = searchQuery!! // full SKU match
-                params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
-            } else {
-                params["search"] = searchQuery!!
+            when (skuSearchOptions) {
+                SkuSearchOptions.Disabled -> {
+                    params["search"] = searchQuery!!
+                }
+
+                SkuSearchOptions.ExactSearch -> {
+                    params["sku"] = searchQuery!! // full SKU match
+                }
+
+                SkuSearchOptions.PartialMatch -> {
+                    params["sku"] = searchQuery!! // full SKU match
+                    params["search_sku"] = searchQuery // partial SKU match, added in core v6.6
+                }
             }
         }
 
@@ -647,14 +715,23 @@ class ProductRestClient @Inject constructor(
                 is WPAPIResponse.Success -> {
                     val available = response.data?.isEmpty() ?: false
                     val payload = RemoteProductSkuAvailabilityPayload(site, sku, available)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(
+                            payload
+                        )
+                    )
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     // If there is a network error of some sort that prevents us from knowing if a sku is available
                     // then just consider sku as available
                     val payload = RemoteProductSkuAvailabilityPayload(productError, site, sku, true)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(
+                            payload
+                        )
+                    )
                 }
             }
         }
@@ -676,13 +753,26 @@ class ProductRestClient @Inject constructor(
 
             when (response) {
                 is WPComGsonRequestBuilder.Response.Success -> {
-                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.data.password ?: "")
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                    val payload = RemoteProductPasswordPayload(
+                        remoteProductId,
+                        site,
+                        response.data.password ?: ""
+                    )
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductPasswordAction(
+                            payload
+                        )
+                    )
                 }
+
                 is WPComGsonRequestBuilder.Response.Error -> {
                     val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
                     payload.error = networkErrorToProductError(response.error)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductPasswordAction(
+                            payload
+                        )
+                    )
                 }
             }
         }
@@ -716,12 +806,21 @@ class ProductRestClient @Inject constructor(
                         site,
                         response.data.password ?: ""
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newUpdatedProductPasswordAction(
+                            payload
+                        )
+                    )
                 }
+
                 is WPComGsonRequestBuilder.Response.Error -> {
                     val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
                     payload.error = networkErrorToProductError(response.error)
-                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newUpdatedProductPasswordAction(
+                            payload
+                        )
+                    )
                 }
             }
         }
@@ -778,6 +877,7 @@ class ProductRestClient @Inject constructor(
                     site, productId, variationModels, offset, loadedMore, canLoadMore
                 )
             }
+
             is WPAPIResponse.Error -> {
                 val productError = wpAPINetworkErrorToProductError(response.error)
                 return RemoteProductVariationsPayload(
@@ -868,11 +968,13 @@ class ProductRestClient @Inject constructor(
                     response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
                         }
                         val payload = RemoteUpdateProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteUpdateProductPayload(
@@ -901,7 +1003,10 @@ class ProductRestClient @Inject constructor(
         val remoteProductId = updatedProductVariationModel.remoteProductId
         val remoteVariationId = updatedProductVariationModel.remoteVariationId
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
-        val body = variantModelToProductJsonBody(storedWCProductVariationModel, updatedProductVariationModel)
+        val body = variantModelToProductJsonBody(
+            storedWCProductVariationModel,
+            updatedProductVariationModel
+        )
 
         val response = wooNetwork.executePutGsonRequest(
             site = site,
@@ -928,6 +1033,7 @@ class ProductRestClient @Inject constructor(
                     }
                 )
             }
+
             is WPAPIResponse.Error -> {
                 val productError = wpAPINetworkErrorToProductError(response.error)
                 RemoteUpdateVariationPayload(
@@ -1156,7 +1262,11 @@ class ProductRestClient @Inject constructor(
      * @param [remoteProductId] Unique server id of the product to update
      * @param [imageList] list of product images to assign to the product
      */
-    fun updateProductImages(site: SiteModel, remoteProductId: Long, imageList: List<WCProductImageModel>) {
+    fun updateProductImages(
+        site: SiteModel,
+        remoteProductId: Long,
+        imageList: List<WCProductImageModel>
+    ) {
         coroutineEngine.launch(AppLog.T.API, this, "updateProductImages") {
             val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
 
@@ -1181,11 +1291,17 @@ class ProductRestClient @Inject constructor(
                     response.data?.let {
                         val newModel = it.asProductModel().apply {
                             localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
                         }
                         val payload = RemoteUpdateProductImagesPayload(site, newModel)
-                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
+                        dispatcher.dispatch(
+                            WCProductActionBuilder.newUpdatedProductImagesAction(
+                                payload
+                            )
+                        )
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteUpdateProductImagesPayload(
@@ -1250,13 +1366,22 @@ class ProductRestClient @Inject constructor(
                         val payload = RemoteProductCategoriesPayload(
                             site, categories, offset, loadedMore, canLoadMore
                         )
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
+                        dispatcher.dispatch(
+                            WCProductActionBuilder.newFetchedProductCategoriesAction(
+                                payload
+                            )
+                        )
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productCategoryError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteProductCategoriesPayload(productCategoryError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
+                    dispatcher.dispatch(
+                        WCProductActionBuilder.newFetchedProductCategoriesAction(
+                            payload
+                        )
+                    )
                 }
             }
         }
@@ -1279,7 +1404,7 @@ class ProductRestClient @Inject constructor(
 
             val body = mutableMapOf(
                 "name" to category.name,
-                "parent" to category.parent.toString()
+                "parent" to category.parent
             )
 
             val response = wooNetwork.executePostGsonRequest(
@@ -1299,12 +1424,66 @@ class ProductRestClient @Inject constructor(
                     val payload = RemoteAddProductCategoryResponsePayload(site, categoryResponse)
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
                 }
+
                 is WPAPIResponse.Error -> {
                     val productCategorySaveError = wpAPINetworkErrorToProductError(response.error)
-                    val payload = RemoteAddProductCategoryResponsePayload(productCategorySaveError, site, category)
+                    val payload = RemoteAddProductCategoryResponsePayload(
+                        productCategorySaveError,
+                        site,
+                        category
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
                 }
             }
+        }
+    }
+
+    suspend fun addProductCategories(
+        site: SiteModel,
+        categories: List<WCProductCategoryModel>
+    ): WooPayload<List<WCProductCategoryModel>> {
+        val path = WOOCOMMERCE.products.categories.batch.pathV3
+
+        val body = mutableMapOf(
+            "create" to categories.map { category ->
+                mapOf(
+                    "name" to category.name,
+                    "parent" to category.parent.toString()
+                )
+            }
+        )
+
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = path,
+            body = body,
+            clazz = ProductCategoryBatchApiResponse::class.java
+        )
+
+        return when {
+            response is WPAPIResponse.Success && response.data == null -> WooPayload(
+                WooError(
+                    type = WooErrorType.EMPTY_RESPONSE,
+                    original = GenericErrorType.UNKNOWN,
+                    message = "Success response with empty data"
+                )
+            )
+
+            response is WPAPIResponse.Success -> {
+                WooPayload(
+                    response.data!!.createdCategories
+                        .filter { it.error == null }
+                        .map {
+                            it.asProductCategoryModel().apply {
+                                localSiteId = site.id
+                            }
+                        }
+                )
+            }
+
+            else -> return WooPayload(
+                error = (response as WPAPIResponse.Error).error.toWooError()
+            )
         }
     }
 
@@ -1362,8 +1541,7 @@ class ProductRestClient @Inject constructor(
                         reviews,
                         productIds,
                         filterByStatus,
-                        offset > 0,
-                        reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                        canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                     )
                 } else {
                     FetchProductReviewsResponsePayload(
@@ -1375,6 +1553,7 @@ class ProductRestClient @Inject constructor(
                     )
                 }
             }
+
             is WPAPIResponse.Error -> {
                 FetchProductReviewsResponsePayload(
                     wpAPINetworkErrorToProductError(response.error),
@@ -1391,7 +1570,10 @@ class ProductRestClient @Inject constructor(
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote id of the review to fetch
      */
-    suspend fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long): RemoteProductReviewPayload {
+    suspend fun fetchProductReviewById(
+        site: SiteModel,
+        remoteReviewId: Long
+    ): RemoteProductReviewPayload {
         val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val response = wooNetwork.executeGetGsonRequest(
             site = site,
@@ -1411,6 +1593,7 @@ class ProductRestClient @Inject constructor(
                     site = site
                 )
             }
+
             is WPAPIResponse.Error -> {
                 val productReviewError = wpAPINetworkErrorToProductError(response.error)
                 RemoteProductReviewPayload(error = productReviewError, site = site)
@@ -1478,11 +1661,13 @@ class ProductRestClient @Inject constructor(
                         val newModel = product.asProductModel().apply {
                             id = product.id?.toInt() ?: 0
                             localSiteId = site.id
+                            metadata = stripProductMetaData(metadata)
                         }
                         val payload = RemoteAddProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteAddProductPayload(
@@ -1528,6 +1713,7 @@ class ProductRestClient @Inject constructor(
                         dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
                     }
                 }
+
                 is WPAPIResponse.Error -> {
                     val productError = wpAPINetworkErrorToProductError(response.error)
                     val payload = RemoteDeleteProductPayload(
@@ -1770,30 +1956,48 @@ class ProductRestClient @Inject constructor(
     }
 
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
-        val productErrorType = when (wpComError.apiError) {
-            "woocommerce_rest_product_invalid_id" -> ProductErrorType.INVALID_PRODUCT_ID
-            "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
-            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
-            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
-            "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
-            "term_exists" -> ProductErrorType.TERM_EXISTS
-            "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
+        val productErrorType = when {
+            wpComError.apiError == "woocommerce_rest_product_invalid_id" ->
+                ProductErrorType.INVALID_PRODUCT_ID
+
+            wpComError.apiError == "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            wpComError.apiError == "woocommerce_rest_review_invalid_id" ->
+                ProductErrorType.INVALID_REVIEW_ID
+
+            wpComError.apiError == "woocommerce_product_invalid_image_id" ->
+                ProductErrorType.INVALID_IMAGE_ID
+
+            wpComError.apiError == "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            wpComError.apiError == "term_exists" -> ProductErrorType.TERM_EXISTS
+            wpComError.apiError == "woocommerce_variation_invalid_image_id" ->
+                ProductErrorType.INVALID_VARIATION_IMAGE_ID
+
+            wpComError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
-        return ProductError(productErrorType, wpComError.message)
+        return ProductError(productErrorType, wpComError.combinedErrorMessage)
     }
 
     private fun wpAPINetworkErrorToProductError(wpAPINetworkError: WPAPINetworkError): ProductError {
-        val productErrorType = when (wpAPINetworkError.errorCode) {
-            "woocommerce_rest_product_invalid_id" -> ProductErrorType.INVALID_PRODUCT_ID
-            "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
-            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
-            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
-            "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
-            "term_exists" -> ProductErrorType.TERM_EXISTS
-            "woocommerce_variation_invalid_image_id" -> ProductErrorType.INVALID_VARIATION_IMAGE_ID
+        val productErrorType = when {
+            wpAPINetworkError.errorCode == "woocommerce_rest_product_invalid_id" ->
+                ProductErrorType.INVALID_PRODUCT_ID
+
+            wpAPINetworkError.errorCode == "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            wpAPINetworkError.errorCode == "woocommerce_rest_review_invalid_id" ->
+                ProductErrorType.INVALID_REVIEW_ID
+
+            wpAPINetworkError.errorCode == "woocommerce_product_invalid_image_id" ->
+                ProductErrorType.INVALID_IMAGE_ID
+
+            wpAPINetworkError.errorCode == "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            wpAPINetworkError.errorCode == "term_exists" -> ProductErrorType.TERM_EXISTS
+            wpAPINetworkError.errorCode == "woocommerce_variation_invalid_image_id" ->
+                ProductErrorType.INVALID_VARIATION_IMAGE_ID
+
+            wpAPINetworkError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
-        return ProductError(productErrorType, wpAPINetworkError.message.orEmpty())
+        return ProductError(productErrorType, wpAPINetworkError.combinedErrorMessage)
     }
 }
