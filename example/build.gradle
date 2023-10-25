@@ -164,6 +164,8 @@ dependencies {
     // Coroutines
     implementation sharedLibs.kotlinx.coroutines.core
     implementation sharedLibs.kotlinx.coroutines.android
+
+    lintChecks sharedLibs.wordpress.lint
 }
 
 def loadPropertiesOrUseExampleProperties(fileName, warningDetail) {
