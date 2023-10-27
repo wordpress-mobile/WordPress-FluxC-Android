@@ -32,6 +32,8 @@ class StripProductMetaData @Inject internal constructor(private val gson: Gson) 
             addAll(QuantityRulesMetadataKeys.ALL_KEYS)
             addAll(SubscriptionMetadataKeys.ALL_KEYS)
             add(OtherKeys.HEAD_START_POST)
+            add(WCMetaData.BundleMetadataKeys.BUNDLE_MIN_SIZE)
+            add(WCMetaData.BundleMetadataKeys.BUNDLE_MAX_SIZE)
         }
     }
 }
