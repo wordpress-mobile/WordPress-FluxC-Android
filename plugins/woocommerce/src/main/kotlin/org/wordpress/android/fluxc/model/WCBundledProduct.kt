@@ -11,12 +11,12 @@ class WCBundledProduct(
     @SerializedName("menu_order") val menuOrder: Int,
     @SerializedName("title") val title: String,
     @SerializedName("stock_status") val stockStatus: String,
-    @JsonAdapter(JsonElementToLongSerializerDeserializer::class)
-    @SerializedName("quantity_min") val quantityMin: Long?,
-    @JsonAdapter(JsonElementToLongSerializerDeserializer::class)
-    @SerializedName("quantity_max") val quantityMax: Long?,
-    @JsonAdapter(JsonElementToLongSerializerDeserializer::class)
-    @SerializedName("quantity_default") val quantityDefault: Long?,
+    @JsonAdapter(JsonElementToFloatSerializerDeserializer::class)
+    @SerializedName("quantity_min") val quantityMin: Float?,
+    @JsonAdapter(JsonElementToFloatSerializerDeserializer::class)
+    @SerializedName("quantity_max") val quantityMax: Float?,
+    @JsonAdapter(JsonElementToFloatSerializerDeserializer::class)
+    @SerializedName("quantity_default") val quantityDefault: Float?,
     @SerializedName("optional") val isOptional: Boolean
 )
 
