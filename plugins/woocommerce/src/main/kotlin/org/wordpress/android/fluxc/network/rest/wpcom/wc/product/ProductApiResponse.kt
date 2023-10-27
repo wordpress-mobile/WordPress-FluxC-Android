@@ -4,6 +4,9 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys.BUNDLE_MAX_SIZE
+import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys.BUNDLE_MIN_SIZE
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.utils.NonNegativeDoubleJsonDeserializer
@@ -171,7 +174,21 @@ data class ProductApiResponse(
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
             groupedProductIds = response.grouped_products?.toString() ?: ""
-            metadata = response.metadata?.toString() ?: ""
+            metadata = if (
+                isBundledProduct
+                && response.metadata != null
+                && (response.bundle_min_size.isNullOrEmpty().not() || response.bundle_max_size.isNullOrEmpty().not())
+            ) {
+                response.bundle_max_size?.let { value ->
+                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
+                }
+                response.bundle_min_size?.let { value ->
+                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MIN_SIZE, value)
+                }
+                response.metadata.toString()
+            } else {
+                response.metadata?.toString() ?: ""
+            }
             bundledItems = response.bundled_items?.toString() ?: ""
             compositeComponents = response.composite_components?.toString() ?: ""
 

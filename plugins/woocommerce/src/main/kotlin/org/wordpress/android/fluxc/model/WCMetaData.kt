@@ -10,7 +10,7 @@ data class WCMetaData(
     @SerializedName(VALUE) val value: Any,
     @SerializedName(DISPLAY_KEY) val displayKey: String?,
     @SerializedName(DISPLAY_VALUE) val displayValue: Any?
-){
+) {
     companion object {
         const val ID = "id"
         const val KEY = "key"
@@ -36,5 +36,7 @@ data class WCMetaData(
     }
     object BundleMetadataKeys {
         const val BUNDLED_ITEM_ID = "_bundled_item_id"
+        const val BUNDLE_MIN_SIZE = "_bundle_min_size"
+        const val BUNDLE_MAX_SIZE = "_bundle_max_size"
     }
 }
