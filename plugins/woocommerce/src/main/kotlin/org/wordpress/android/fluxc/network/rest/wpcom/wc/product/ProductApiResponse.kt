@@ -174,10 +174,15 @@ data class ProductApiResponse(
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
             groupedProductIds = response.grouped_products?.toString() ?: ""
+
+            val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
+            val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
+            val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
+
             metadata = if (
                 isBundledProduct
                 && response.metadata != null
-                && (response.bundle_min_size.isNullOrEmpty().not() || response.bundle_max_size.isNullOrEmpty().not())
+                && hasBundleQuantityRules
             ) {
                 response.bundle_max_size?.let { value ->
                     WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
