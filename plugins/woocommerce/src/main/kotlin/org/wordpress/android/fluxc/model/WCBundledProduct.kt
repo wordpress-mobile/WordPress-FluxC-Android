@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.model
 
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.utils.JsonElementToLongSerializerDeserializer
+import org.wordpress.android.fluxc.utils.JsonElementToFloatSerializerDeserializer
 
 @Suppress("LongParameterList")
 class WCBundledProduct(
