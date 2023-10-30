@@ -108,7 +108,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
             Assert.assertEquals(1, mediaStore.getSiteMediaCount(testSite))
 
             val canceledMedia = mediaStore.getMediaWithLocalId(testMedia.id)
-            Assert.assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.uploadState)
+            Assert.assertEquals(MediaUploadState.FAILED.toString(), canceledMedia?.uploadState)
         }
     }
 
