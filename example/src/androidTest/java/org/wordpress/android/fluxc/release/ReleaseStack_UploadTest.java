@@ -321,18 +321,20 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
             }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (event.completed) {
-             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
-                mLastUploadedId = event.media.getMediaId();
+        if (event.media != null) {
+            if (event.completed) {
+                if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
+                    mLastUploadedId = event.media.getMediaId();
+                } else {
+                    throw new AssertionError("Unexpected completion for media: " + event.media.getId());
+                }
+                mCountDownLatch.countDown();
             } else {
-                throw new AssertionError("Unexpected completion for media: " + event.media.getId());
-            }
-            mCountDownLatch.countDown();
-        } else {
-            // General checks that the UploadStore is keeping an updated progress value for the media
-            if (getMediaUploadModelForMediaModel(event.media) != null) {
-                assertTrue(mUploadStore.getUploadProgressForMedia(event.media) > 0F);
-                assertTrue(mUploadStore.getUploadProgressForMedia(event.media) < 1F);
+                // General checks that the UploadStore is keeping an updated progress value for the media
+                if (getMediaUploadModelForMediaModel(event.media) != null) {
+                    assertTrue(mUploadStore.getUploadProgressForMedia(event.media) > 0F);
+                    assertTrue(mUploadStore.getUploadProgressForMedia(event.media) < 1F);
+                }
             }
         }
     }

@@ -206,41 +206,46 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(amountToCancel, mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size)
     }
 
-    @Suppress("unused", "ThrowsCount")
     @Subscribe
+    @Suppress("unused", "ThrowsCount", "CyclomaticComplexMethod", "NestedBlockDepth")
     fun onMediaUploaded(event: OnMediaUploaded) {
-        if (event.isError) {
+        if (event.isError || event.media == null) {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
-        if (event.canceled) {
-            if (nextEvent == TestEvents.CANCELED_MEDIA || nextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+        event.media?.let {
+            if (event.canceled) {
+                if (nextEvent == TestEvents.CANCELED_MEDIA ||
+                    nextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+                    countDownLatch.countDown()
+                } else {
+                    throw AssertionError("Unexpected cancellation for media: " + it.id)
+                }
+            } else if (event.completed) {
+                when (nextEvent) {
+                    TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL -> {
+                        uploadedIds.add(it.mediaId)
+                        // Update our own map object with the new media id
+                        val media = uploadedMediaModels[it.id]?.apply {
+                            mediaId = it.mediaId
+                        } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + it.id)
+                        Assert.assertNotNull(media)
+                    }
+
+                    TestEvents.UPLOADED_MULTIPLE_MEDIA -> {
+                        uploadedIds.add(it.mediaId)
+                        // Update our own map object with the new media id
+                        val media = uploadedMediaModels[it.id]?.apply {
+                            mediaId = it.mediaId
+                        } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + it.id)
+                        Assert.assertNotNull(media)
+                    }
+
+                    else -> {
+                        throw AssertionError("Unexpected completion for media: " + it.id)
+                    }
+                }
                 countDownLatch.countDown()
-            } else {
-                throw AssertionError("Unexpected cancellation for media: " + event.media.id)
             }
-        } else if (event.completed) {
-            when (nextEvent) {
-                TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL -> {
-                    uploadedIds.add(event.media.mediaId)
-                    // Update our own map object with the new media id
-                    val media = uploadedMediaModels[event.media.id]?.apply {
-                        mediaId = event.media.mediaId
-                    } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + event.media.id)
-                    Assert.assertNotNull(media)
-                }
-                TestEvents.UPLOADED_MULTIPLE_MEDIA -> {
-                    uploadedIds.add(event.media.mediaId)
-                    // Update our own map object with the new media id
-                    val media = uploadedMediaModels[event.media.id]?.apply {
-                        mediaId = event.media.mediaId
-                    } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + event.media.id)
-                    Assert.assertNotNull(media)
-                }
-                else -> {
-                    throw AssertionError("Unexpected completion for media: " + event.media.id)
-                }
-            }
-            countDownLatch.countDown()
         }
     }
 

@@ -352,7 +352,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (event.completed) {
+        if (event.media != null && event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
             } else {
