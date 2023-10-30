@@ -351,8 +351,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Subscribe
     public void onStockMediaUploaded(OnStockMediaUploaded event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: "
-                                     + event.error.type);
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
         boolean isSingleUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
