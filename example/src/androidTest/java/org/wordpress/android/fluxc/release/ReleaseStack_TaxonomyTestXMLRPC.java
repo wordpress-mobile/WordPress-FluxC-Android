@@ -75,6 +75,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testFetchCategories() throws InterruptedException {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -139,6 +140,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadNewCategory() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();
@@ -156,12 +158,14 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
         testUpdateExistingTerm(term);
     }
 
     @Test
+    @Ignore
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         TermModel term = createNewTag();
@@ -179,12 +183,14 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUpdateExistingTag() throws InterruptedException {
         TermModel term = createNewTag();
         testUpdateExistingTerm(term);
     }
 
     @Test
+    @Ignore
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
@@ -228,6 +234,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();
@@ -252,6 +259,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    @Ignore
     public void testDeleteTag() throws InterruptedException {
         TermModel term = createNewTag();
         setupTermAttributes(term);

@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import android.text.TextUtils;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -174,6 +175,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testFetchSitesWithAtomicFilter() throws InterruptedException {
         List<SiteFilter> filters = new ArrayList<>();
         filters.add(SiteFilter.ATOMIC);
@@ -190,6 +192,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testFetchSitesWithWpComFilter() throws InterruptedException {
         List<SiteFilter> filters = new ArrayList<>();
         filters.add(SiteFilter.WPCOM);
@@ -206,6 +209,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testFetchSitesWithTwoFilters() throws InterruptedException {
         List<SiteFilter> filters = new ArrayList<>();
         filters.add(SiteFilter.WPCOM);

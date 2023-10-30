@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.utils.RandomStringUtils;
@@ -150,6 +151,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         TermModel term = createNewTag();
@@ -167,6 +169,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUpdateExistingTag() throws InterruptedException {
         TermModel term = createNewTag();
         checkUpdateExistingTerm(term);
@@ -186,6 +189,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 

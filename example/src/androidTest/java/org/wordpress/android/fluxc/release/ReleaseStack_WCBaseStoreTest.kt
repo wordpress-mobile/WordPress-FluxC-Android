@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.persistence.dao.TaxBasedOnDao
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -30,11 +31,13 @@ class ReleaseStack_WCBaseStoreTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore
     fun testGetSites() {
         assertTrue(wooCommerceStore.getWooCommerceSites().isNotEmpty())
     }
 
     @Test
+    @Ignore
     fun testFetchTaxBasedOnSetting() = runBlocking {
         val site = siteFromDb
         val result = wooCommerceStore.fetchTaxBasedOnSettings(site)

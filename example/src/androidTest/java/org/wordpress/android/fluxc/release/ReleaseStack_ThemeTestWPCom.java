@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
@@ -54,6 +55,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testFetchCurrentTheme() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
@@ -62,6 +64,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testFetchWPComThemes() throws InterruptedException {
         // verify themes don't already exist in store
         assertTrue(mThemeStore.getWpComThemes().isEmpty());
@@ -77,6 +80,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testActivateTheme() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));

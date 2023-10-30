@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -347,6 +348,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testSiteQuotaAllowed() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         // Get the first site

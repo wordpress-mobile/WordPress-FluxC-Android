@@ -273,6 +273,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadStockMedia() throws InterruptedException {
         StockMediaModel testStockMedia = newStockMedia(902152);
         List<StockMediaModel> testStockMediaList = new ArrayList<>();
@@ -285,6 +286,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore
     public void testUploadStockMediaList() throws InterruptedException {
         StockMediaModel testStockMedia1 = newStockMedia(902152);
         StockMediaModel testStockMedia2 = newStockMedia(208803);

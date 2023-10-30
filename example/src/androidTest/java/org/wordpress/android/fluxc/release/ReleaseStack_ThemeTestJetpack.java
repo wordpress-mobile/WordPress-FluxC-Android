@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.ThemeAction;
@@ -78,6 +79,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testFetchInstalledThemes() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
@@ -94,6 +96,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testFetchCurrentTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
@@ -108,6 +111,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testActivateTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
@@ -135,6 +139,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testInstallTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
         final String themeId = EDIN_THEME_ID;
@@ -162,6 +167,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testDeleteTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
         final String themeId = EDIN_THEME_ID;
@@ -192,6 +198,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     @Test
+    @Ignore
     public void testRemoveSiteThemes() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 

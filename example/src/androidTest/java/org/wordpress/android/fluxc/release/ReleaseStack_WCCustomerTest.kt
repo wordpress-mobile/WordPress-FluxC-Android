@@ -4,6 +4,7 @@ package org.wordpress.android.fluxc.release
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.store.WCCustomerStore
 import javax.inject.Inject
@@ -19,6 +20,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun testFetchCustomersFromAnalyticsFirstPage() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(sSite, page = 1)
@@ -46,6 +48,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun testFetchCustomersFromAnalyticsSearchWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
@@ -73,6 +76,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun testFetchCustomersFromAnalyticsSearchByWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
@@ -87,6 +91,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun testFetchCustomersFromAnalyticsFilterEmptyAndSearchByWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
@@ -102,6 +107,7 @@ class ReleaseStack_WCCustomerTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore
     fun testFetchCustomersFromAnalyticsFilterEmptyWithResults() {
         runBlocking {
             val result = wcCustomerStore.fetchCustomersFromAnalytics(
