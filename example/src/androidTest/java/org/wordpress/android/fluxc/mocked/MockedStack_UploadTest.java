@@ -515,21 +515,21 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     private MediaModel newMediaModel(String mediaPath) {
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
+        MediaModel testMedia = new MediaModel(
+                0,
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                "image/jpeg",
+                "Test Title",
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
-        testMedia.setMimeType("image/jpeg");
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
-        testMedia.setTitle("Test Title");
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void createNewPost(SiteModel site) {

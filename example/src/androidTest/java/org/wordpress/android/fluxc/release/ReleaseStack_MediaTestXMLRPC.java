@@ -96,10 +96,11 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
-        MediaModel testMedia = new MediaModel();
-        testMedia.setMediaId(9999999L);
         mNextEvent = TestEvents.NOT_FOUND_ERROR;
-        deleteMedia(testMedia);
+        deleteMedia(new MediaModel(
+                sSite.getId(),
+                9999999L
+        ));
     }
 
     @Test
@@ -148,9 +149,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mediaIds.add(9999989L);
         mNextEvent = TestEvents.NOT_FOUND_ERROR;
         for (Long id : mediaIds) {
-            MediaModel media = new MediaModel();
-            media.setMediaId(id);
-            fetchMedia(media);
+            fetchMedia(new MediaModel(
+                    sSite.getId(),
+                    id
+            ));
         }
     }
 
@@ -404,22 +406,21 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
+        MediaModel testMedia = new MediaModel(
+                sSite.getId(),
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                mimeType,
+                "Test Title",
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
-        testMedia.setMimeType(mimeType);
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
-        testMedia.setTitle("Test Title");
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setLocalSiteId(sSite.getId());
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void pushMedia(MediaModel media) throws InterruptedException {

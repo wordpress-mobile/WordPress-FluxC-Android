@@ -419,22 +419,21 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     }
 
     private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
+        MediaModel testMedia = new MediaModel(
+                sSite.getId(),
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                mimeType,
+                testTitle,
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType);
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setLocalSiteId(sSite.getId());
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {

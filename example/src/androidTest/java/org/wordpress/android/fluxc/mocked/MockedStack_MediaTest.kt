@@ -67,7 +67,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         interceptor.respondWithSticky("media-upload-response-success.json")
 
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        newMediaModel("Test Title", sampleImagePath).let { testMedia ->
+        newMediaModel("Test Title", sampleImagePath)?.let { testMedia ->
             countDownLatch = CountDownLatch(1)
             nextEvent = TestEvents.CANCELED_MEDIA
             val payload = UploadMediaPayload(testSite, testMedia, true)
@@ -83,7 +83,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         }
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        newMediaModel("Test Title", sampleImagePath).let { testMedia ->
+        newMediaModel("Test Title", sampleImagePath)?.let { testMedia ->
             countDownLatch = CountDownLatch(1)
             nextEvent = TestEvents.CANCELED_MEDIA
             val payload = UploadMediaPayload(testSite, testMedia, true)
@@ -246,25 +246,25 @@ class MockedStack_MediaTest : MockedStack_Base() {
 
     private fun addMediaModelToUploadArray(title: String) {
         val mediaModel = newMediaModel(title, sampleImagePath)
-        uploadedMediaModels[mediaModel.id] = mediaModel
+        mediaModel?.let { uploadedMediaModels[mediaModel.id] = it }
     }
 
-    private fun newMediaModel(testTitle: String, mediaPath: String): MediaModel {
-        val testDescription = "Test Description"
-        val testCaption = "Test Caption"
-        val testAlt = "Test Alt"
+    private fun newMediaModel(testTitle: String, mediaPath: String): MediaModel? {
+        val testMedia = MediaModel(
+            testSite.id,
+            null,
+            mediaPath.substring(mediaPath.lastIndexOf("/")),
+            mediaPath,
+            mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+            "image/jpeg",
+            testTitle,
+            null
+        )
+        testMedia.description = "Test Description"
+        testMedia.caption = "Test Caption"
+        testMedia.alt = "Test Alt"
 
-        return mediaStore.instantiateMediaModel().apply {
-            filePath = mediaPath
-            fileExtension = mediaPath.substring(mediaPath.lastIndexOf(".") + 1)
-            this.mimeType = "image/jpeg"
-            fileName = mediaPath.substring(mediaPath.lastIndexOf("/"))
-            title = testTitle
-            description = testDescription
-            caption = testCaption
-            alt = testAlt
-            localSiteId = testSite.id
-        }
+        return mediaStore.instantiateMediaModel(testMedia)
     }
 
     private fun uploadMultipleMedia(

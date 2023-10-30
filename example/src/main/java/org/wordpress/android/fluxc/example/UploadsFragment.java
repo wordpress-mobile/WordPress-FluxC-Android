@@ -224,26 +224,34 @@ public class UploadsFragment extends Fragment {
         examplePost.setContent("Hi there, I'm a post from FluxC! [image]");
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(examplePost));
 
-        mCurrentMediaUpload = mMediaStore.instantiateMediaModel();
-        mCurrentMediaUpload.setFileName(MediaUtils.getFileName(mediaUri));
-        mCurrentMediaUpload.setFilePath(mediaUri);
-        mCurrentMediaUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
-        mCurrentMediaUpload.setLocalPostId(examplePost.getId());
+        MediaModel media = new MediaModel(
+                site.getId(),
+                null,
+                MediaUtils.getFileName(mediaUri),
+                mediaUri,
+                null,
+                MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)),
+                "",
+                null
+        );
+        media.setLocalPostId(examplePost.getId());
+        mCurrentMediaUpload = mMediaStore.instantiateMediaModel(media);
+        if (mCurrentMediaUpload != null) {
+            List<MediaModel> associatedMediaList = new ArrayList<>();
+            associatedMediaList.add(mCurrentMediaUpload);
 
-        List<MediaModel> associatedMediaList = new ArrayList<>();
-        associatedMediaList.add(mCurrentMediaUpload);
+            // Register this post with the UploadStore. This will track the upload activity of the media it contains,
+            // as well as associate any media upload failures/error messages with the post
+            mUploadStore.registerPostModel(examplePost, associatedMediaList);
 
-        // Register this post with the UploadStore. This will track the upload activity of the media it contains,
-        // as well as associate any media upload failures/error messages with the post
-        mUploadStore.registerPostModel(examplePost, associatedMediaList);
+            // Upload the media contained in the post
+            UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentMediaUpload, true);
+            prependToLog("Dispatching upload event for media localId=" + mCurrentMediaUpload.getId());
 
-        // Upload the media contained in the post
-        UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentMediaUpload, true);
-        prependToLog("Dispatching upload event for media localId=" + mCurrentMediaUpload.getId());
-
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        mUploadButton.setEnabled(false);
-        mCancelButton.setEnabled(true);
+            mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+            mUploadButton.setEnabled(false);
+            mCancelButton.setEnabled(true);
+        }
     }
 
     private void cancelMediaUpload(@NonNull SiteModel site, @NonNull MediaModel media) {
