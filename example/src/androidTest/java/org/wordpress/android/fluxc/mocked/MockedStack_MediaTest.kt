@@ -78,7 +78,12 @@ class MockedStack_MediaTest : MockedStack_Base() {
             val cancelPayload = CancelMediaPayload(testSite, testMedia)
             dispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload))
 
-            Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+            Assert.assertTrue(
+                countDownLatch.await(
+                    TestUtils.DEFAULT_TIMEOUT_MS.toLong(),
+                    TimeUnit.MILLISECONDS
+                )
+            )
             Assert.assertEquals(0, mediaStore.getSiteMediaCount(testSite))
         }
 
@@ -94,7 +99,12 @@ class MockedStack_MediaTest : MockedStack_Base() {
             val cancelPayload = CancelMediaPayload(testSite, testMedia, false)
             dispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload))
 
-            Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+            Assert.assertTrue(
+                countDownLatch.await(
+                    TestUtils.DEFAULT_TIMEOUT_MS.toLong(),
+                    TimeUnit.MILLISECONDS
+                )
+            )
             Assert.assertEquals(1, mediaStore.getSiteMediaCount(testSite))
 
             val canceledMedia = mediaStore.getMediaWithLocalId(testMedia.id)
@@ -120,15 +130,17 @@ class MockedStack_MediaTest : MockedStack_Base() {
         // Verify all have been uploaded
         Assert.assertEquals(uploadedMediaModels.size, uploadedIds.size)
         Assert.assertEquals(
-                uploadedMediaModels.size,
-                mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
+            uploadedMediaModels.size,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
         )
 
         // Verify they exist in the MediaStore
         val iterator = uploadedMediaModels.values.iterator()
         while (iterator.hasNext()) {
             iterator.next().let { uploadedMediaModel ->
-                Assert.assertNotNull(mediaStore.getSiteMediaWithId(testSite, uploadedMediaModel.mediaId))
+                Assert.assertNotNull(
+                    mediaStore.getSiteMediaWithId(testSite, uploadedMediaModel.mediaId)
+                )
             }
         }
     }
@@ -164,8 +176,10 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(uploadedIds.size, mediaStore.getSiteMediaCount(testSite))
 
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        Assert.assertEquals(uploadedIds.size,
-                mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size)
+        Assert.assertEquals(
+            uploadedIds.size,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
+        )
     }
 
     @Test
@@ -199,11 +213,16 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(uploadedMediaModels.size, mediaStore.getSiteMediaCount(testSite))
 
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        Assert.assertEquals(uploadedIds.size, mediaStore.getSiteMediaWithState(testSite,
-                MediaUploadState.UPLOADED).size)
+        Assert.assertEquals(
+            uploadedIds.size,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
+        )
 
         // All cancelled media should have a FAILED state
-        Assert.assertEquals(amountToCancel, mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size)
+        Assert.assertEquals(
+            amountToCancel,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size
+        )
     }
 
     @Subscribe
@@ -284,7 +303,8 @@ class MockedStack_MediaTest : MockedStack_Base() {
             // To imitate a real set of media upload requests as much as possible, each one should return a unique
             // remote media id. This also makes sure the MediaModel table doesn't treat these as duplicate entries and
             // deletes them, failing the test.
-            defaultId: String -> defaultId.replace("9999", remoteIdQueue.poll()?.toString() ?: "")
+            defaultId: String ->
+            defaultId.replace("9999", remoteIdQueue.poll()?.toString() ?: "")
         }
 
         countDownLatch = CountDownLatch(mediaList.size)
@@ -306,6 +326,11 @@ class MockedStack_MediaTest : MockedStack_Base() {
             }
         }
 
-        Assert.assertTrue(countDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        Assert.assertTrue(
+            countDownLatch.await(
+                TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS.toLong(),
+                TimeUnit.MILLISECONDS
+            )
+        )
     }
 }
