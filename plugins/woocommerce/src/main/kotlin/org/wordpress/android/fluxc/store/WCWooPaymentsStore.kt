@@ -22,8 +22,18 @@ class WCWooPaymentsStore @Inject constructor(
             restClient.fetchDepositsOverview(site)
         }
 
-    suspend fun getDepositsOverviewAll(): WooPaymentsDepositsOverviewEntity? =
+    suspend fun getDepositsOverviewAll(site: SiteModel): WooPaymentsDepositsOverviewEntity? =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "getDepositsOverviewAll") {
-            dao.getDepositsOverviewAll()
+            dao.get(site.localId())
+        }
+
+    suspend fun insertDepositsOverview(depositsOverview: WooPaymentsDepositsOverviewEntity) =
+        coroutineEngine.withDefaultContext(AppLog.T.API, this, "insertDepositsOverview") {
+            dao.insert(depositsOverview)
+        }
+
+    suspend fun deleteDepositsOverview(site: SiteModel) =
+        coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteDepositsOverview") {
+            dao.delete(site.localId())
         }
 }
