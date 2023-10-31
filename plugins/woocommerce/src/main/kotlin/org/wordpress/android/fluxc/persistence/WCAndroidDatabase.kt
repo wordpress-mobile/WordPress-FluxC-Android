@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverviewEntity
 import org.wordpress.android.fluxc.model.taxes.TaxBasedOnSettingEntity
 import org.wordpress.android.fluxc.model.taxes.TaxRateEntity
 import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
@@ -72,7 +73,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         InboxNoteActionEntity::class,
         TopPerformerProductEntity::class,
         TaxBasedOnSettingEntity::class,
-        TaxRateEntity::class
+        TaxRateEntity::class,
+        WooPaymentsDepositsOverviewEntity::class,
     ],
     autoMigrations = [
         AutoMigration(from = 12, to = 13),
@@ -86,6 +88,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         AutoMigration(from = 25, to = 26),
         AutoMigration(from = 26, to = 27),
         AutoMigration(from = 28, to = 29),
+        AutoMigration(from = 29, to = 30),
     ]
 )
 @TypeConverters(

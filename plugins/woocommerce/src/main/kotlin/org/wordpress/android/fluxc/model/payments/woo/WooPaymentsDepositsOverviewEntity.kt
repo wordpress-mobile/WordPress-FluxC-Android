@@ -1,20 +1,12 @@
 package org.wordpress.android.fluxc.model.payments.woo
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 
-@Entity(
-    tableName = "WooPaymentsDepositsOverview",
-    primaryKeys = ["localSiteId"]
-)
+@Entity(tableName = "WooPaymentsDepositsOverview")
 data class WooPaymentsDepositsOverviewEntity(
     @PrimaryKey(autoGenerate = false)
-    val id: Long = 0, // only one overview per site
-
-    @ColumnInfo(name = "localSiteId")
     val localSiteId: LocalId,
 
     val account: AccountEntity?,
@@ -110,9 +102,7 @@ data class WooPaymentsDepositsOverviewEntity(
 
         @Entity
         data class ManualDeposit(
-            @SerializedName("currency")
             val currency: String?,
-            @SerializedName("date")
             val date: String?
         )
     }
