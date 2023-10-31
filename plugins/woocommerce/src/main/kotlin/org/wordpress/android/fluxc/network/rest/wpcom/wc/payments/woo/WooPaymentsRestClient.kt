@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 class WooPaymentsRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
     suspend fun fetchDepositsOverview(site: SiteModel): WooPayload<WooPaymentsDepositsOverviewApiResponse> {
-        val response = wooNetwork.executePostGsonRequest(
+        val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = WOOCOMMERCE.payments.deposits.overview_all.pathV3,
             clazz = WooPaymentsDepositsOverviewApiResponse::class.java
