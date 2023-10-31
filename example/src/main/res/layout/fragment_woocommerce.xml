@@ -147,5 +147,11 @@
             android:layout_height="wrap_content"
             android:text="Store onboarding" />
 
+        <Button
+            android:id="@+id/woo_admin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WooCommerce Admin" />
+
     </LinearLayout>
 </ScrollView>

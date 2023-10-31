@@ -1,10 +1,12 @@
 package org.wordpress.android.fluxc.wc
 
 import android.app.Application
+import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -25,6 +27,7 @@ import org.wordpress.android.fluxc.model.WCSSRModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel
 import org.wordpress.android.fluxc.model.settings.WCSettingsMapper
+import org.wordpress.android.fluxc.model.taxes.TaxBasedOnSettingEntity
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
@@ -38,8 +41,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCSystemPluginRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient.WPSiteSettingsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.toDomainModel
+import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils.WCSettingsBuilder
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.TaxBasedOnDao
 import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.SiteStore
@@ -48,6 +53,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.settings.WCSettingsTestUtils
+import java.io.IOException
 import kotlin.test.assertEquals
 
 @Config(manifest = Config.NONE)
@@ -66,17 +72,23 @@ class WooCommerceStoreTest {
     private val settingsMapper = WCSettingsMapper()
     private val dispatcher: Dispatcher = mock()
 
-    private val wooCommerceStore = WooCommerceStore(
-        appContext = appContext,
-        dispatcher = dispatcher,
-        coroutineEngine = initCoroutineEngine(),
-        siteStore = siteStore,
-        systemRestClient = restClient,
-        wcCoreRestClient = wcrestClient,
-        siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
-        settingsMapper = settingsMapper,
-        accountStore = accountStore
-    )
+    private lateinit var db: WCAndroidDatabase
+    private lateinit var taxBasedOnDao: TaxBasedOnDao
+
+    private val wooCommerceStore by lazy {
+        WooCommerceStore(
+            appContext = appContext,
+            dispatcher = dispatcher,
+            coroutineEngine = initCoroutineEngine(),
+            siteStore = siteStore,
+            systemRestClient = restClient,
+            wcCoreRestClient = wcrestClient,
+            siteSqlUtils = TestSiteSqlUtils.siteSqlUtils,
+            settingsMapper = settingsMapper,
+            accountStore = accountStore,
+            taxBasedOnDao = taxBasedOnDao,
+        )
+    }
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
     private val site = SiteModel().apply {
         id = 1
@@ -105,6 +117,7 @@ class WooCommerceStoreTest {
 
     private val siteSettingsResponse = WCSettingsTestUtils.getSiteSettingsResponse()
     private val siteProductSettingsResponse = WCSettingsTestUtils.getSiteProductSettingsResponse()
+    private val taxBasedOnSettingsResponse = WCSettingsTestUtils.getTaxBasedOnSettingsResponse()
 
     @Before
     fun setUp() {
@@ -114,12 +127,20 @@ class WooCommerceStoreTest {
                 SitePluginModel::class.java,
                 SiteModel::class.java,
                 WCProductSettingsModel::class.java,
-                WCSettingsBuilder::class.java
+                WCSettingsBuilder::class.java,
             ),
             WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
         config.reset()
+        db = Room.inMemoryDatabaseBuilder(appContext, WCAndroidDatabase::class.java).build()
+        taxBasedOnDao = db.taxBasedOnSettingDao
+    }
+
+    @After
+    @Throws(IOException::class)
+    fun tearDown() {
+        db.close()
     }
 
     @Test
@@ -235,6 +256,42 @@ class WooCommerceStoreTest {
             val result: WooResult<WCProductSettingsModel> = fetchSiteProductSettings(isError = true)
             assertThat(result.error).isEqualTo(error)
             assertThat(result.model).isNull()
+        }
+    }
+
+    @Test
+    fun `when fetch tax based on settings fails, the error returned`() {
+        runBlocking {
+            val result = fetchTaxBasedOnSettings(isError = true)
+            assertThat(result.error).isEqualTo(error)
+        }
+    }
+
+    @Test
+    fun `when fetch tax based on settings succeeds, the success returned`() {
+        runBlocking {
+            val expectedModel = settingsMapper.mapTaxBasedOnSettings(taxBasedOnSettingsResponse!!, site.localId())
+            val result = fetchTaxBasedOnSettings()
+            assertThat(result.isError).isFalse
+            with (result.model) {
+                assertThat(this).isNotNull
+                assertThat(this?.localSiteId).isEqualTo(expectedModel.localSiteId)
+                assertThat(this?.selectedOption).isEqualTo(expectedModel.selectedOption)
+            }
+        }
+    }
+
+    @Test
+    fun `when fetch tax based on settings succeeds, the setting is saved in db`() {
+        runBlocking {
+            val expectedModel = settingsMapper.mapTaxBasedOnSettings(taxBasedOnSettingsResponse!!, site.localId())
+            val result = fetchTaxBasedOnSettings()
+            assertThat(result.isError).isFalse
+            taxBasedOnDao.getTaxBasedOnSetting(site.localId()).let {
+                assertThat(it).isNotNull
+                assertThat(it?.localSiteId).isEqualTo(expectedModel.localSiteId)
+                assertThat(it?.selectedOption).isEqualTo(expectedModel.selectedOption)
+            }
         }
     }
 
@@ -457,5 +514,15 @@ class WooCommerceStoreTest {
             whenever(wcrestClient.fetchSiteSettingsProducts(site)).thenReturn(payload)
         }
         return wooCommerceStore.fetchSiteProductSettings(site)
+    }
+
+    private suspend fun fetchTaxBasedOnSettings(isError: Boolean = false) : WooResult<TaxBasedOnSettingEntity> {
+        val payload = WooPayload(taxBasedOnSettingsResponse)
+        if (isError) {
+            whenever(wcrestClient.fetchSiteSettingsTaxBasedOn(site)).thenReturn(WooPayload(error))
+        } else {
+            whenever(wcrestClient.fetchSiteSettingsTaxBasedOn(site)).thenReturn(payload)
+        }
+        return wooCommerceStore.fetchTaxBasedOnSettings(site)
     }
 }

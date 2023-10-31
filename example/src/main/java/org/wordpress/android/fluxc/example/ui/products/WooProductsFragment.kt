@@ -307,7 +307,8 @@ class WooProductsFragment : StoreSelectingFragment() {
                                     FetchProductReviewsPayload(
                                             site,
                                             productIds = listOf(remoteProductId)
-                                    )
+                                    ),
+                                    deletePreviouslyCachedReviews = false
                             )
                             prependToLog("Fetched ${result.rowsAffected} product reviews")
                         }
@@ -321,7 +322,10 @@ class WooProductsFragment : StoreSelectingFragment() {
                 coroutineScope.launch {
                     prependToLog("Submitting request to fetch product reviews for site ${site.id}")
                     val payload = FetchProductReviewsPayload(site)
-                    val result = wcProductStore.fetchProductReviews(payload)
+                    val result = wcProductStore.fetchProductReviews(
+                        payload,
+                        deletePreviouslyCachedReviews = false
+                    )
                     prependToLog("Fetched ${result.rowsAffected} product reviews")
                 }
             }

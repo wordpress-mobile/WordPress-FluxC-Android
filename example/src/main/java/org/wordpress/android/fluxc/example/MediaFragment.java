@@ -18,6 +18,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -266,8 +267,10 @@ public class MediaFragment extends Fragment {
         }
     }
 
-    private void prependToLog(final String s) {
-        ((MainExampleActivity) getActivity()).prependToLog(s);
+    private void prependToLog(@Nullable final String s) {
+        if (s != null) {
+            ((MainExampleActivity) getActivity()).prependToLog(s);
+        }
     }
 
     private void fetchMediaList(@NonNull SiteModel site) {

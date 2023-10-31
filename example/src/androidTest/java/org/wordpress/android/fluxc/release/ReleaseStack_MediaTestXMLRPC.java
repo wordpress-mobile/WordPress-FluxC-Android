@@ -39,6 +39,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @SuppressLint("UseSparseArrays")
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @SuppressWarnings("unused")
     @Inject AccountStore mAccountStore;
@@ -403,10 +404,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        return newMediaModel("Test Title", mediaPath, mimeType);
-    }
-
-    private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
@@ -416,7 +413,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
         testMedia.setMimeType(mimeType);
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
-        testMedia.setTitle(testTitle);
+        testMedia.setTitle("Test Title");
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);

@@ -24,11 +24,17 @@ android {
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    lint {
+        lintConfig file("${project.rootDir}/config/lint/lint.xml")
+        enable += 'UnknownNullness'
     }
 
     sourceSets {
@@ -94,6 +100,8 @@ dependencies {
     androidTestImplementation sharedLibs.androidx.test.runner
     androidTestImplementation sharedLibs.androidx.test.ext.junit
     androidTestImplementation sharedLibs.assertj.core
+
+    lintChecks sharedLibs.wordpress.lint
 }
 
 project.afterEvaluate {

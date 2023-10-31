@@ -42,6 +42,10 @@ interface WCDatabaseModule {
         @Provides fun provideInboxNotesDao(database: WCAndroidDatabase) = database.inboxNotesDao
 
         @Provides fun provideTopPerformerProductsDao(database: WCAndroidDatabase) = database.topPerformerProductsDao
+
+        @Provides fun provideTaxBasedOnDao(database: WCAndroidDatabase) = database.taxBasedOnSettingDao
+
+        @Provides fun provideTaxRateDao(database: WCAndroidDatabase) = database.taxRateDao
     }
     @Binds fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
 }

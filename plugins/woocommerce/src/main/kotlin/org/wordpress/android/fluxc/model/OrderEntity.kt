@@ -42,6 +42,8 @@ data class OrderEntity(
     val discountTotal: String = "",
     val discountCodes: String = "",
     val refundTotal: BigDecimal = BigDecimal.ZERO, // The total refund value for this order (usually a negative number)
+    @ColumnInfo(name = "customerId", defaultValue = "0")
+    val customerId: Long = 0,
     val billingFirstName: String = "",
     val billingLastName: String = "",
     val billingCompany: String = "",
@@ -73,7 +75,11 @@ data class OrderEntity(
     @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = "",
     @ColumnInfo(name = "isEditable", defaultValue = "1")
-    val isEditable: Boolean = true
+    val isEditable: Boolean = true,
+    @ColumnInfo(name = "needsPayment")
+    val needsPayment: Boolean? = null,
+    @ColumnInfo(name = "needsProcessing")
+    val needsProcessing: Boolean? = null
 ) {
     companion object {
         private val gson by lazy { Gson() }

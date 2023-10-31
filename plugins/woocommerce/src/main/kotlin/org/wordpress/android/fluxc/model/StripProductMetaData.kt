@@ -3,9 +3,10 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
 import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
+import org.wordpress.android.fluxc.model.WCProductModel.OtherKeys
 import org.wordpress.android.fluxc.model.WCProductModel.QuantityRulesMetadataKeys
+import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
 import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 import org.wordpress.android.fluxc.utils.isElementNullOrEmpty
 import javax.inject.Inject
@@ -30,6 +31,7 @@ class StripProductMetaData @Inject internal constructor(private val gson: Gson) 
             add(AddOnsMetadataKeys.ADDONS_METADATA_KEY)
             addAll(QuantityRulesMetadataKeys.ALL_KEYS)
             addAll(SubscriptionMetadataKeys.ALL_KEYS)
+            add(OtherKeys.HEAD_START_POST)
         }
     }
 }

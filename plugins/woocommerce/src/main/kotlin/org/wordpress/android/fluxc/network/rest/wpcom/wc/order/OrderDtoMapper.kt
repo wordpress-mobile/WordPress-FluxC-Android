@@ -49,6 +49,7 @@ class OrderDtoMapper @Inject internal constructor(
                         // store their sum as a 'Double'.
                         refunds.sumOf { it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO }
                     } ?: BigDecimal.ZERO,
+                    customerId = this.customer_id ?: 0,
                     billingFirstName = this.billing?.first_name ?: "",
                     billingLastName = this.billing?.last_name ?: "",
                     billingCompany = this.billing?.company ?: "",
@@ -77,7 +78,9 @@ class OrderDtoMapper @Inject internal constructor(
                     couponLines = Gson().toJson(this.coupon_lines),
                     metaData = this.meta_data.toString(),
                     paymentUrl = this.payment_url ?: "",
-                    isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES)
+                    isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES),
+                    needsPayment = this.needs_payment,
+                    needsProcessing = this.needs_processing,
             )
         }
 

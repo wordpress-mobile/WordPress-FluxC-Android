@@ -65,7 +65,13 @@ object CustomerSqlUtils {
     }
 
     fun insertOrUpdateCustomers(customers: List<WCCustomerModel>): Int {
-        return customers.sumBy { insertOrUpdateCustomer(it) }
+        return customers.sumOf { insertOrUpdateCustomer(it) }
+    }
+
+    fun insertCustomers(customers: List<WCCustomerModel>) {
+        customers.forEach {
+            WellSql.insert(it).asSingleTransaction(true).execute()
+        }
     }
     // endregion
 

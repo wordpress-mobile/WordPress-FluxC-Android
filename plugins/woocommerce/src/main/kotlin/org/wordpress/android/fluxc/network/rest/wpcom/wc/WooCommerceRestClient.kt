@@ -14,6 +14,9 @@ class WooCommerceRestClient @Inject constructor(private val wooNetwork: WooNetwo
     companion object {
         const val COUPONS_SETTING_GROUP = "general"
         const val COUPONS_SETTING_ID = "woocommerce_enable_coupons"
+        const val TAX_SETTING_GROUP = "tax"
+        const val TAX_SETTING_ID = "woocommerce_tax_based_on"
+
         private const val ROOT_ENDPOINT_TIMEOUT_MS = 15000
     }
 
@@ -79,5 +82,15 @@ class WooCommerceRestClient @Inject constructor(private val wooNetwork: WooNetwo
         )
 
         return response.toWooPayload { it.let { it.value == "yes" } }
+    }
+
+    suspend fun fetchSiteSettingsTaxBasedOn(site: SiteModel): WooPayload<SiteSettingOptionResponse> {
+        val url = WOOCOMMERCE.settings.group(TAX_SETTING_GROUP).id(TAX_SETTING_ID).pathV3
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = SiteSettingOptionResponse::class.java
+        )
+        return response.toWooPayload { it }
     }
 }
