@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model.payments.woo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 
 @Entity(
@@ -36,21 +37,16 @@ data class WooPaymentsDepositsOverviewEntity(
 
     @Entity
     data class BalanceEntity(
-        val available: List<AvailableEntity?>?,
-        val instant: List<InstantEntity?>?,
-        val pending: List<PendingEntity?>?
+        val available: List<AvailableEntity>?,
+        val instant: List<InstantEntity>?,
+        val pending: List<PendingEntity>?
     ) {
         @Entity
         data class AvailableEntity(
             val amount: Int?,
             val currency: String?,
             val sourceTypes: SourceTypesEntity?
-        ) {
-            @Entity
-            data class SourceTypesEntity(
-                val card: Int?
-            )
-        }
+        )
 
         @Entity
         data class InstantEntity(
@@ -59,7 +55,7 @@ data class WooPaymentsDepositsOverviewEntity(
             val fee: Int?,
             val feePercentage: Double?,
             val net: Int?,
-            val transactionIds: List<String?>?
+            val transactionIds: List<String>?
         )
 
         @Entity
@@ -68,19 +64,19 @@ data class WooPaymentsDepositsOverviewEntity(
             val currency: String?,
             val depositsCount: Int?,
             val sourceTypes: SourceTypesEntity?
-        ) {
-            @Entity
-            data class SourceTypesEntity(
-                val card: Int?
-            )
-        }
+        )
+
+        @Entity
+        data class SourceTypesEntity(
+            val card: Int?
+        )
     }
 
     @Entity
     data class DepositEntity(
-        val lastManualDeposits: List<Any?>?,
-        val lastPaid: List<LastPaidEntity?>?,
-        val nextScheduled: List<NextScheduledEntity?>?
+        val lastManualDeposits: List<ManualDeposit>?,
+        val lastPaid: List<LastPaidEntity>?,
+        val nextScheduled: List<NextScheduledEntity>?
     ) {
         @Entity
         data class LastPaidEntity(
@@ -110,6 +106,14 @@ data class WooPaymentsDepositsOverviewEntity(
             val accountId: String?,
             val status: String?,
             val type: String?
+        )
+
+        @Entity
+        data class ManualDeposit(
+            @SerializedName("currency")
+            val currency: String?,
+            @SerializedName("date")
+            val date: String?
         )
     }
 }
