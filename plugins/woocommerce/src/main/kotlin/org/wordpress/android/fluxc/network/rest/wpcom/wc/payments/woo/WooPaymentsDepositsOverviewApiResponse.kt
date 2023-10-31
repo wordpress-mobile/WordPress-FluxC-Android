@@ -108,7 +108,7 @@ data class WooPaymentsDepositsOverviewApiResponse(
             @SerializedName("fee_percentage")
             val feePercentage: Int?,
             @SerializedName("id")
-            val id: String?,
+            val accountId: String?,
             @SerializedName("status")
             val status: String?,
             @SerializedName("type")
@@ -133,7 +133,7 @@ data class WooPaymentsDepositsOverviewApiResponse(
             @SerializedName("fee_percentage")
             val feePercentage: Int?,
             @SerializedName("id")
-            val id: String?,
+            val accountId: String?,
             @SerializedName("status")
             val status: String?,
             @SerializedName("type")
