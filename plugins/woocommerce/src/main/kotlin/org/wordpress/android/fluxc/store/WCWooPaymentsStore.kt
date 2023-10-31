@@ -1,9 +1,8 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverviewEntity
+import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverview
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsDepositsOverviewApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsRestClient
 import org.wordpress.android.fluxc.persistence.dao.WooPaymentsDepositsOverviewDao
 import org.wordpress.android.fluxc.persistence.mappers.WooPaymentsDepositsOverviewMapper
@@ -19,20 +18,32 @@ class WCWooPaymentsStore @Inject constructor(
     private val dao: WooPaymentsDepositsOverviewDao,
     private val mapper: WooPaymentsDepositsOverviewMapper
 ) {
-    suspend fun fetchDepositsOverview(site: SiteModel): WooPayload<WooPaymentsDepositsOverviewApiResponse> =
+    suspend fun fetchDepositsOverview(site: SiteModel): WooPayload<WooPaymentsDepositsOverview> =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchDepositsOverview") {
-            restClient.fetchDepositsOverview(site)
+            val result = restClient.fetchDepositsOverview(site)
+            if (result.result != null) {
+                WooPayload(mapper.mapApiResponseToModel(result.result))
+            } else {
+                WooPayload(result.error)
+            }
         }
 
-    suspend fun getDepositsOverviewAll(site: SiteModel): WooPaymentsDepositsOverviewEntity? =
+    suspend fun getDepositsOverviewAll(site: SiteModel): WooPaymentsDepositsOverview? =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "getDepositsOverviewAll") {
-            dao.get(site.localId())
+            val result = dao.get(site.localId())
+            if (result != null) {
+                mapper.mapEntityToModel(result)
+            } else {
+                null
+            }
         }
 
-    suspend fun insertDepositsOverview(depositsOverview: WooPaymentsDepositsOverviewEntity) =
-        coroutineEngine.withDefaultContext(AppLog.T.API, this, "insertDepositsOverview") {
-            dao.insert(depositsOverview)
-        }
+    suspend fun insertDepositsOverview(
+        site: SiteModel,
+        depositsOverview: WooPaymentsDepositsOverview
+    ) = coroutineEngine.withDefaultContext(AppLog.T.API, this, "insertDepositsOverview") {
+        dao.insert(mapper.mapModelToEntity(depositsOverview, site))
+    }
 
     suspend fun deleteDepositsOverview(site: SiteModel) =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "deleteDepositsOverview") {
