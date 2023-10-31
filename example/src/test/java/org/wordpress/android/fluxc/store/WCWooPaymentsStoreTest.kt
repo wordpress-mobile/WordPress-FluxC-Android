@@ -28,7 +28,7 @@ class WCWooPaymentsStoreTest {
         whenever(restClient.fetchDepositsOverview(any())).thenReturn(restResult)
 
         // WHEN
-        val result = store.fetchConnectionToken(mock())
+        val result = store.fetchDepositsOverview(mock())
 
         // THEN
         assertThat(result).isEqualTo(restResult)
@@ -42,7 +42,7 @@ class WCWooPaymentsStoreTest {
         whenever(restClient.fetchDepositsOverview(any())).thenReturn(restResult)
 
         // WHEN
-        val result = store.fetchConnectionToken(mock())
+        val result = store.fetchDepositsOverview(mock())
 
         // THEN
         assertThat(result).isEqualTo(restResult)

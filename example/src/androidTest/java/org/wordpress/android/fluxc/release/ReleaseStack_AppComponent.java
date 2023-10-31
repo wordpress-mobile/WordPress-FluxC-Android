@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.jetbrains.annotations.NotNull;
 import org.wordpress.android.fluxc.di.WCDatabaseModule;
 import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.example.di.ApplicationPasswordsModule;
@@ -85,4 +86,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_ApplicationPasswordNetwork test);
 
     void inject(ReleaseStack_WCCustomerTest test);
+
+    void inject(ReleaseStack_WooPaymentsTest test);
 }

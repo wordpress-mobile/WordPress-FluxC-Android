@@ -14,7 +14,7 @@ class WCWooPaymentsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val restClient: WooPaymentsRestClient,
 ) {
-    suspend fun fetchConnectionToken(site: SiteModel): WooPayload<WooPaymentsDepositsOverviewApiResponse> =
+    suspend fun fetchDepositsOverview(site: SiteModel): WooPayload<WooPaymentsDepositsOverviewApiResponse> =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchDepositsOverview") {
             restClient.fetchDepositsOverview(site)
         }
