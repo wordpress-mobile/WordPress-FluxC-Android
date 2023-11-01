@@ -24,5 +24,8 @@ class WCBundledProduct(
 )
 
 fun WCBundledProduct.isConfigurable(): Boolean {
-    return (quantityMin != quantityMax) || (quantityMin == null) || isOptional
+    return (quantityMin != quantityMax)
+            || (quantityMin == null)
+            || isOptional
+            || (variationIds?.size == 1 && attributesDefault.isNullOrEmpty())
 }
