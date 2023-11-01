@@ -17,7 +17,10 @@ class WCBundledProduct(
     @SerializedName("quantity_max") val quantityMax: Float?,
     @JsonAdapter(JsonElementToFloatSerializerDeserializer::class)
     @SerializedName("quantity_default") val quantityDefault: Float?,
-    @SerializedName("optional") val isOptional: Boolean
+    @SerializedName("optional") val isOptional: Boolean,
+    @SerializedName("default_variation_attributes")
+    val attributesDefault: List<WCProductVariationModel.ProductVariantOption>?,
+    @SerializedName("allowed_variations") val variationIds: List<Long>?
 )
 
 fun WCBundledProduct.isConfigurable(): Boolean {
