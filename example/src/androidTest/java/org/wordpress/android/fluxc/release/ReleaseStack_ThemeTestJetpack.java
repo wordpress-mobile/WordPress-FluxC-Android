@@ -83,7 +83,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // verify that installed themes list is empty first
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() == 0);
+        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
