@@ -42,6 +42,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("NewClassNamingConvention")
@@ -253,7 +254,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        assertSame(mNextEvent, TestEvents.FETCHED_CURRENT_THEME);
         assertNotNull(event.theme);
         mCountDownLatch.countDown();
     }
@@ -264,7 +265,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        assertSame(mNextEvent, TestEvents.ACTIVATED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -274,7 +275,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
+        assertSame(mNextEvent, TestEvents.INSTALLED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -284,7 +285,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.DELETED_THEME);
+        assertSame(mNextEvent, TestEvents.DELETED_THEME);
         mCountDownLatch.countDown();
     }
 
