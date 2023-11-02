@@ -40,6 +40,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -423,7 +424,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             activateTheme(jetpackSite, otherThemeToActivate);
 
             // Make sure another theme is activated
-            assertFalse(theme.getThemeId().equals(mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId()));
+            assertNotEquals(theme.getThemeId(), mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId());
         }
         // delete existing theme from site
         deleteTheme(jetpackSite, theme);
