@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOvervie
 import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverview.Deposit.ManualDeposit
 import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverviewComposedEntities
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsBalance
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsDeposit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsDepositsOverviewApiResponse
 import org.wordpress.android.fluxc.persistence.entity.BalanceType
 import org.wordpress.android.fluxc.persistence.entity.DepositType
@@ -40,15 +41,9 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
             },
             balance = apiResponse.balance?.let {
                 Balance(
-                    available = it.available?.map { available ->
-                        mapApiResponseBalanceToModel(available)
-                    },
-                    instant = it.instant?.map { instant ->
-                        mapApiResponseBalanceToModel(instant)
-                    },
-                    pending = it.pending?.map { pending ->
-                        mapApiResponseBalanceToModel(pending)
-                    }
+                    available = it.available?.map { available -> mapApiResponseBalanceToModel(available) },
+                    instant = it.instant?.map { instant -> mapApiResponseBalanceToModel(instant) },
+                    pending = it.pending?.map { pending -> mapApiResponseBalanceToModel(pending) }
                 )
             },
             deposit = apiResponse.deposit?.let {
@@ -59,57 +54,31 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
                             date = manualDeposit.date
                         )
                     },
-                    lastPaid = it.lastPaid?.map { info ->
-                        Info(
-                            amount = info.amount,
-                            automatic = info.automatic,
-                            bankAccount = info.bankAccount,
-                            created = info.created,
-                            currency = info.currency,
-                            date = info.date,
-                            fee = info.fee,
-                            feePercentage = info.feePercentage,
-                            status = info.status,
-                            type = info.type,
-                            depositId = info.id
-                        )
+                    lastPaid = it.lastPaid?.map { info -> mapApiDepositToModel(info)
                     },
-                    nextScheduled = it.nextScheduled?.map { info ->
-                        Info(
-                            amount = info.amount,
-                            automatic = info.automatic,
-                            bankAccount = info.bankAccount,
-                            created = info.created,
-                            currency = info.currency,
-                            date = info.date,
-                            fee = info.fee,
-                            feePercentage = info.feePercentage,
-                            status = info.status,
-                            type = info.type,
-                            depositId = info.id
-                        )
+                    nextScheduled = it.nextScheduled?.map { info -> mapApiDepositToModel(info)
                     }
                 )
             }
         )
 
     fun mapEntityToModel(entity: WooPaymentsDepositsOverviewComposedEntities?) =
-        entity?.let { ent ->
+        entity?.let { entity ->
             WooPaymentsDepositsOverview(
-                account = mapEntityAccountToModel(ent.overview.account),
+                account = mapEntityAccountToModel(entity.overview.account),
                 balance = Balance(
-                    available = ent.availableBalances?.map { mapBonusToEntity(it) },
-                    instant = ent.instantBalances?.map { mapBonusToEntity(it) },
-                    pending = ent.pendingBalances?.map { mapBonusToEntity(it) },
+                    available = entity.availableBalances?.map { mapBonusToEntity(it) },
+                    instant = entity.instantBalances?.map { mapBonusToEntity(it) },
+                    pending = entity.pendingBalances?.map { mapBonusToEntity(it) },
                 ),
                 deposit = Deposit(
-                    lastManualDeposits = ent.lastManualDeposits?.map {
+                    lastManualDeposits = entity.lastManualDeposits?.map {
                         ManualDeposit(
                             currency = it.currency,
                             date = it.date
                         )
                     },
-                    lastPaid = ent.lastPaidDeposits?.map {
+                    lastPaid = entity.lastPaidDeposits?.map {
                         Info(
                             amount = it.amount,
                             automatic = it.automatic,
@@ -124,7 +93,7 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
                             depositId = it.depositId
                         )
                     },
-                    nextScheduled = ent.nextScheduledDeposits?.map {
+                    nextScheduled = entity.nextScheduledDeposits?.map {
                         Info(
                             amount = it.amount,
                             automatic = it.automatic,
@@ -268,4 +237,19 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
                 interval = it.interval
             )
         }
+
+    private fun mapApiDepositToModel(info: WooPaymentsDeposit) =
+        Info(
+            amount = info.amount,
+            automatic = info.automatic,
+            bankAccount = info.bankAccount,
+            created = info.created,
+            currency = info.currency,
+            date = info.date,
+            fee = info.fee,
+            feePercentage = info.feePercentage,
+            status = info.status,
+            type = info.type,
+            depositId = info.id
+        )
 }

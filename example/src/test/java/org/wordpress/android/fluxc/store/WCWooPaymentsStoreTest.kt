@@ -38,7 +38,8 @@ class WCWooPaymentsStoreTest {
         val result = store.fetchDepositsOverview(mock())
 
         // THEN
-        assertThat(result).isEqualTo(WooPayload(restResult))
+        assertThat(result.isError).isTrue
+        assertThat(result.error).isEqualTo(error)
     }
 
     @Test

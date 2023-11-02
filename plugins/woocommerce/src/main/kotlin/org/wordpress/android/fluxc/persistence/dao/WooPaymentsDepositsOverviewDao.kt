@@ -80,6 +80,7 @@ interface WooPaymentsDepositsOverviewDao {
     suspend fun insertBalance(balance: WooPaymentsBalanceEntity)
 
     @Transaction
+    @Suppress("LongParameterList")
     suspend fun insertOverviewAll(
         localSiteId: LocalId,
         overviewEntity: WooPaymentsDepositsOverviewEntity,
