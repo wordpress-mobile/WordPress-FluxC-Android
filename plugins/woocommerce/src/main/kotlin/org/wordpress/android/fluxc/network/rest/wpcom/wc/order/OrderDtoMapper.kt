@@ -49,6 +49,7 @@ class OrderDtoMapper @Inject internal constructor(
                         // store their sum as a 'Double'.
                         refunds.sumOf { it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO }
                     } ?: BigDecimal.ZERO,
+                    customerId = this.customer_id ?: 0,
                     billingFirstName = this.billing?.first_name ?: "",
                     billingLastName = this.billing?.last_name ?: "",
                     billingCompany = this.billing?.company ?: "",

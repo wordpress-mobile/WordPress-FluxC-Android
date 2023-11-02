@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
+@Suppress("ClassNaming")
 @SuppressLint("UseSparseArrays")
 class MockedStack_MediaTest : MockedStack_Base() {
     @Inject lateinit var dispatcher: Dispatcher
@@ -66,7 +67,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         interceptor.respondWithSticky("media-upload-response-success.json")
 
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        newMediaModel("Test Title", sampleImagePath, "image/jpeg").let { testMedia ->
+        newMediaModel("Test Title", sampleImagePath).let { testMedia ->
             countDownLatch = CountDownLatch(1)
             nextEvent = TestEvents.CANCELED_MEDIA
             val payload = UploadMediaPayload(testSite, testMedia, true)
@@ -82,7 +83,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         }
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        newMediaModel("Test Title", sampleImagePath, "image/jpeg").let { testMedia ->
+        newMediaModel("Test Title", sampleImagePath).let { testMedia ->
             countDownLatch = CountDownLatch(1)
             nextEvent = TestEvents.CANCELED_MEDIA
             val payload = UploadMediaPayload(testSite, testMedia, true)
@@ -205,7 +206,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(amountToCancel, mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size)
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "ThrowsCount")
     @Subscribe
     fun onMediaUploaded(event: OnMediaUploaded) {
         if (event.isError) {
@@ -244,11 +245,11 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     private fun addMediaModelToUploadArray(title: String) {
-        val mediaModel = newMediaModel(title, sampleImagePath, "image/jpeg")
+        val mediaModel = newMediaModel(title, sampleImagePath)
         uploadedMediaModels[mediaModel.id] = mediaModel
     }
 
-    private fun newMediaModel(testTitle: String, mediaPath: String, mimeType: String): MediaModel {
+    private fun newMediaModel(testTitle: String, mediaPath: String): MediaModel {
         val testDescription = "Test Description"
         val testCaption = "Test Caption"
         val testAlt = "Test Alt"
@@ -256,7 +257,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         return mediaStore.instantiateMediaModel().apply {
             filePath = mediaPath
             fileExtension = mediaPath.substring(mediaPath.lastIndexOf(".") + 1)
-            this.mimeType = mimeType
+            this.mimeType = "image/jpeg"
             fileName = mediaPath.substring(mediaPath.lastIndexOf("/"))
             title = testTitle
             description = testDescription
@@ -278,7 +279,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
             // To imitate a real set of media upload requests as much as possible, each one should return a unique
             // remote media id. This also makes sure the MediaModel table doesn't treat these as duplicate entries and
             // deletes them, failing the test.
-            defaultId: String -> defaultId.replace("9999", remoteIdQueue.poll().toString())
+            defaultId: String -> defaultId.replace("9999", remoteIdQueue.poll()?.toString() ?: "")
         }
 
         countDownLatch = CountDownLatch(mediaList.size)
@@ -292,7 +293,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
             // Wait a bit and issue the cancel command
             TestUtils.waitFor(300)
 
-            // We'e only cancelling the first n=howManyFirstToCancel uploads
+            // We're only cancelling the first n=howManyFirstToCancel uploads
             for (i in 0 until howManyFirstToCancel) {
                 val media = mediaList[i]
                 val payload = CancelMediaPayload(testSite, media, delete)

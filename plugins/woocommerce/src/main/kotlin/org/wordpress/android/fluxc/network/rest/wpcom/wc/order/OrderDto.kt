@@ -39,6 +39,7 @@ class OrderDto : Response {
         val total: String? = null
     }
 
+    val customer_id: Long? = null
     val billing: Billing? = null
     val coupon_lines: List<CouponLine>? = null
     val currency: String? = null
