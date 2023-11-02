@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOvervie
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsRestClient
 import org.wordpress.android.fluxc.persistence.dao.WooPaymentsDepositsOverviewDao
+import org.wordpress.android.fluxc.persistence.entity.DepositType
 import org.wordpress.android.fluxc.persistence.mappers.WooPaymentsDepositsOverviewMapper
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -28,21 +29,30 @@ class WCWooPaymentsStore @Inject constructor(
             }
         }
 
-    suspend fun getDepositsOverviewAll(site: SiteModel): WooPaymentsDepositsOverview? =
+    suspend fun getDepositsOverviewAll(site: SiteModel): WooPaymentsDepositsOverview =
         coroutineEngine.withDefaultContext(AppLog.T.API, this, "getDepositsOverviewAll") {
-            val result = dao.get(site.localId())
-            if (result != null) {
-                mapper.mapEntityToModel(result)
-            } else {
-                null
-            }
+             dao.getOverviewComposed(site.localId()).let {
+                 mapper.mapEntityToModel(it)
+             }
         }
 
     suspend fun insertDepositsOverview(
         site: SiteModel,
         depositsOverview: WooPaymentsDepositsOverview
     ) = coroutineEngine.withDefaultContext(AppLog.T.API, this, "insertDepositsOverview") {
-        dao.insert(mapper.mapModelToEntity(depositsOverview, site))
+        dao.insertOverviewAll(
+            localSiteId = site.localId(),
+            overviewEntity = mapper.mapModelToEntity(depositsOverview, site),
+            lastPaidDepositsEntities = depositsOverview.deposit?.lastPaid?.map {
+                mapper.mapModelDepositToEntity(it, site, DepositType.LAST_PAID)
+            }.orEmpty(),
+            nextScheduledDepositsEntities = depositsOverview.deposit?.nextScheduled?.map {
+                mapper.mapModelDepositToEntity(it, site, DepositType.NEXT_SCHEDULED)
+            }.orEmpty(),
+            manualDepositEntities = depositsOverview.deposit?.lastManualDeposits?.map {
+                mapper.mapModelManualDepositToEntity(it, site)
+            }.orEmpty()
+        )
     }
 
     suspend fun deleteDepositsOverview(site: SiteModel) =

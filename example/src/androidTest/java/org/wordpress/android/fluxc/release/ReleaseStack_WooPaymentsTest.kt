@@ -53,7 +53,7 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals(1644192000000, result.result?.deposit?.lastPaid?.get(0)?.date)
         assertEquals(0, result.result?.deposit?.lastPaid?.get(0)?.fee)
         assertEquals(0, result.result?.deposit?.lastPaid?.get(0)?.feePercentage)
-        assertEquals("po_1KQLho2HswaZkMX3M9Qhzf4W", result.result?.deposit?.lastPaid?.get(0)?.accountId)
+        assertEquals("po_1KQLho2HswaZkMX3M9Qhzf4W", result.result?.deposit?.lastPaid?.get(0)?.depositId)
         assertEquals("paid", result.result?.deposit?.lastPaid?.get(0)?.status)
         assertEquals("deposit", result.result?.deposit?.lastPaid?.get(0)?.type)
         assertEquals(0, result.result?.deposit?.nextScheduled?.size)

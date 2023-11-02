@@ -3,143 +3,65 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo
 import com.google.gson.annotations.SerializedName
 
 data class WooPaymentsDepositsOverviewApiResponse(
-    @SerializedName("account")
-    val account: Account?,
-    @SerializedName("balance")
-    val balance: Balance?,
-    @SerializedName("deposit")
-    val deposit: Deposit?
-) {
-    data class Account(
-        @SerializedName("default_currency")
-        val defaultCurrency: String?,
-        @SerializedName("deposits_blocked")
-        val depositsBlocked: Boolean?,
-        @SerializedName("deposits_enabled")
-        val depositsEnabled: Boolean?,
-        @SerializedName("deposits_schedule")
-        val depositsSchedule: DepositsSchedule?
-    ) {
-        data class DepositsSchedule(
-            @SerializedName("delay_days")
-            val delayDays: Int?,
-            @SerializedName("interval")
-            val interval: String?
-        )
-    }
+    val deposit: WooPaymentsCurrencyDeposits?,
+    val balance: WooPaymentsCurrencyBalances?,
+    val account: WooPaymentsAccountDepositSummary?
+)
 
-    data class Balance(
-        @SerializedName("available")
-        val available: List<Available>?,
-        @SerializedName("instant")
-        val instant: List<Instant>?,
-        @SerializedName("pending")
-        val pending: List<Pending>?
-    ) {
-        data class Available(
-            @SerializedName("amount")
-            val amount: Int?,
-            @SerializedName("currency")
-            val currency: String?,
-            @SerializedName("source_types")
-            val sourceTypes: SourceTypes?
-        )
+data class WooPaymentsCurrencyDeposits(
+    @SerializedName("last_paid") val lastPaid: List<WooPaymentsDeposit>?,
+    @SerializedName("next_scheduled") val nextScheduled: List<WooPaymentsDeposit>?,
+    @SerializedName("last_manual_deposits") val lastManualDeposits: List<WooPaymentsManualDeposit>?
+)
 
-        data class Instant(
-            @SerializedName("amount")
-            val amount: Int?,
-            @SerializedName("currency")
-            val currency: String?,
-            @SerializedName("fee")
-            val fee: Int?,
-            @SerializedName("fee_percentage")
-            val feePercentage: Double?,
-            @SerializedName("net")
-            val net: Int?,
-            @SerializedName("transaction_ids")
-            val transactionIds: List<String>?
-        )
+data class WooPaymentsDeposit(
+    val id: String?,
+    val date: Long?,
+    val type: String?,
+    val amount: Int?,
+    val status: String?,
+    @SerializedName("bank_account") val bankAccount: String?,
+    val currency: String,
+    val automatic: Boolean?,
+    val fee: Long?,
+    @SerializedName("fee_percentage") val feePercentage: Double?,
+    val created: Long?
+)
 
-        data class Pending(
-            @SerializedName("amount")
-            val amount: Int?,
-            @SerializedName("currency")
-            val currency: String?,
-            @SerializedName("deposits_count")
-            val depositsCount: Int?,
-            @SerializedName("source_types")
-            val sourceTypes: SourceTypes?
-        )
+data class WooPaymentsManualDeposit(
+    val currency: String?,
+    val date: Long?
+)
 
-        data class SourceTypes(
-            @SerializedName("card")
-            val card: Int?
-        )
-    }
+data class WooPaymentsCurrencyBalances(
+    val pending: List<WooPaymentsBalance>?,
+    val available: List<WooPaymentsBalance>?,
+    val instant: List<WooPaymentsBalance>?
+)
 
-    data class Deposit(
-        @SerializedName("last_manual_deposits")
-        val lastManualDeposits: List<ManualDeposit>?,
-        @SerializedName("last_paid")
-        val lastPaid: List<LastPaid>?,
-        @SerializedName("next_scheduled")
-        val nextScheduled: List<NextScheduled>?
-    ) {
-        data class LastPaid(
-            @SerializedName("amount")
-            val amount: Int?,
-            @SerializedName("automatic")
-            val automatic: Boolean?,
-            @SerializedName("bankAccount")
-            val bankAccount: String?,
-            @SerializedName("created")
-            val created: Int?,
-            @SerializedName("currency")
-            val currency: String?,
-            @SerializedName("date")
-            val date: Long?,
-            @SerializedName("fee")
-            val fee: Int?,
-            @SerializedName("fee_percentage")
-            val feePercentage: Int?,
-            @SerializedName("id")
-            val accountId: String?,
-            @SerializedName("status")
-            val status: String?,
-            @SerializedName("type")
-            val type: String?
-        )
+data class WooPaymentsBalance(
+    val amount: Int?,
+    val currency: String?,
+    @SerializedName("source_types") val sourceTypes: WooPaymentsSourceTypes?,
+    @SerializedName("deposits_count") val depositsCount: Int?,
+    @SerializedName("fee_percentage") val feePercentage: Double?,
+    @SerializedName("net") val net: Long?,
+    @SerializedName("transaction_ids") val transactionIds: List<String>?,
+    val fee: Long?,
+)
 
-        data class NextScheduled(
-            @SerializedName("amount")
-            val amount: Int?,
-            @SerializedName("automatic")
-            val automatic: Boolean?,
-            @SerializedName("bankAccount")
-            val bankAccount: String?,
-            @SerializedName("created")
-            val created: Int?,
-            @SerializedName("currency")
-            val currency: String?,
-            @SerializedName("date")
-            val date: Long?,
-            @SerializedName("fee")
-            val fee: Int?,
-            @SerializedName("fee_percentage")
-            val feePercentage: Int?,
-            @SerializedName("id")
-            val accountId: String?,
-            @SerializedName("status")
-            val status: String?,
-            @SerializedName("type")
-            val type: String?
-        )
+data class WooPaymentsSourceTypes(
+    val card: Int?
+)
 
-        data class ManualDeposit(
-            @SerializedName("currency")
-            val currency: String?,
-            @SerializedName("date")
-            val date: String?
-        )
-    }
-}
+data class WooPaymentsAccountDepositSummary(
+    @SerializedName("deposits_enabled") val depositsEnabled: Boolean?,
+    @SerializedName("deposits_blocked") val depositsBlocked: Boolean?,
+    @SerializedName("deposits_schedule") val depositsSchedule: WooPaymentsDepositsSchedule?,
+    @SerializedName("default_currency") val defaultCurrency: String?
+)
+
+data class WooPaymentsDepositsSchedule(
+    @SerializedName("delay_days") val delayDays: Int?,
+    val interval: String?
+)

@@ -18,29 +18,17 @@ data class WooPaymentsDepositsOverview(
     }
 
     data class Balance(
-        val available: List<Available>?,
-        val instant: List<Instant>?,
-        val pending: List<Pending>?
+        val available: List<Info>?,
+        val instant: List<Info>?,
+        val pending: List<Info>?
     ) {
-        data class Available(
+        data class Info(
             val amount: Int?,
             val currency: String?,
-            val sourceTypes: SourceTypes?
-        )
-
-        data class Instant(
-            val amount: Int?,
-            val currency: String?,
-            val fee: Int?,
+            val fee: Long?,
             val feePercentage: Double?,
-            val net: Int?,
-            val transactionIds: List<String>?
-        )
-
-        data class Pending(
-            val amount: Int?,
-            val currency: String?,
-            val depositsCount: Int?,
+            val net: Long?,
+            val transactionIds: List<String>?,
             val sourceTypes: SourceTypes?
         )
 
@@ -51,40 +39,26 @@ data class WooPaymentsDepositsOverview(
 
     data class Deposit(
         val lastManualDeposits: List<ManualDeposit>?,
-        val lastPaid: List<LastPaid>?,
-        val nextScheduled: List<NextScheduled>?
+        val lastPaid: List<Info>?,
+        val nextScheduled: List<Info>?
     ) {
-        data class LastPaid(
+        data class Info(
             val amount: Int?,
             val automatic: Boolean?,
             val bankAccount: String?,
-            val created: Int?,
+            val created: Long?,
             val currency: String?,
             val date: Long?,
-            val fee: Int?,
-            val feePercentage: Int?,
-            val accountId: String?,
-            val status: String?,
-            val type: String?
-        )
-
-        data class NextScheduled(
-            val amount: Int?,
-            val automatic: Boolean?,
-            val bankAccount: String?,
-            val created: Int?,
-            val currency: String?,
-            val date: Long?,
-            val fee: Int?,
-            val feePercentage: Int?,
-            val accountId: String?,
+            val fee: Long?,
+            val feePercentage: Double?,
+            val depositId: String?,
             val status: String?,
             val type: String?
         )
 
         data class ManualDeposit(
             val currency: String?,
-            val date: String?
+            val date: Long?
         )
     }
 }
