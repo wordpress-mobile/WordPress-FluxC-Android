@@ -7,9 +7,11 @@ import androidx.room.Query
 import androidx.room.Transaction
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverviewComposedEntities
+import org.wordpress.android.fluxc.persistence.entity.BalanceType
 import org.wordpress.android.fluxc.persistence.entity.DepositType
 import org.wordpress.android.fluxc.persistence.entity.DepositType.LAST_PAID
 import org.wordpress.android.fluxc.persistence.entity.DepositType.NEXT_SCHEDULED
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsBalanceEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositsOverviewEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsManualDepositEntity
@@ -17,16 +19,23 @@ import org.wordpress.android.fluxc.persistence.entity.WooPaymentsManualDepositEn
 @Dao
 interface WooPaymentsDepositsOverviewDao {
     @Transaction
-    suspend fun getOverviewComposed(localSiteId: LocalId) =
-        WooPaymentsDepositsOverviewComposedEntities(
-            overview = getWooPaymentsDepositsOverviewEntity(localSiteId),
+    suspend fun getOverviewComposed(localSiteId: LocalId): WooPaymentsDepositsOverviewComposedEntities? {
+        val overview = getWooPaymentsDepositsOverviewEntity(localSiteId) ?: return null
+        return WooPaymentsDepositsOverviewComposedEntities(
+            overview = overview,
+
             lastPaidDeposits = getDeposits(localSiteId, LAST_PAID),
             nextScheduledDeposits = getDeposits(localSiteId, NEXT_SCHEDULED),
-            lastManualDeposits = getWooPaymentsManualDeposits(localSiteId)
+            lastManualDeposits = getManualDeposits(localSiteId),
+
+            pendingBalances = getBalances(localSiteId, BalanceType.PENDING),
+            availableBalances = getBalances(localSiteId, BalanceType.AVAILABLE),
+            instantBalances = getBalances(localSiteId, BalanceType.INSTANT)
         )
+    }
 
     @Query("SELECT * FROM WooPaymentsDepositsOverview WHERE localSiteId = :localSiteId")
-    suspend fun getWooPaymentsDepositsOverviewEntity(localSiteId: LocalId): WooPaymentsDepositsOverviewEntity
+    suspend fun getWooPaymentsDepositsOverviewEntity(localSiteId: LocalId): WooPaymentsDepositsOverviewEntity?
 
     @Query(
         """
@@ -41,11 +50,22 @@ interface WooPaymentsDepositsOverviewDao {
 
     @Query(
         """
-        SELECT * FROM WooPaymentsDeposits 
+        SELECT * FROM WooPaymentsManualDeposits 
         WHERE localSiteId = :localSiteId
     """
     )
-    fun getWooPaymentsManualDeposits(localSiteId: LocalId): List<WooPaymentsManualDepositEntity>
+    fun getManualDeposits(localSiteId: LocalId): List<WooPaymentsManualDepositEntity>
+
+    @Query(
+        """
+        SELECT * FROM WooPaymentsBalance
+        WHERE localSiteId = :localSiteId AND balanceType = :balanceType
+    """
+    )
+    fun getBalances(
+        localSiteId: LocalId,
+        balanceType: BalanceType,
+    ): List<WooPaymentsBalanceEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOverview(overview: WooPaymentsDepositsOverviewEntity)
@@ -56,19 +76,29 @@ interface WooPaymentsDepositsOverviewDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertManualDeposit(manualDeposit: WooPaymentsManualDepositEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBalance(balance: WooPaymentsBalanceEntity)
+
     @Transaction
     suspend fun insertOverviewAll(
         localSiteId: LocalId,
         overviewEntity: WooPaymentsDepositsOverviewEntity,
         lastPaidDepositsEntities: List<WooPaymentsDepositEntity>,
         nextScheduledDepositsEntities: List<WooPaymentsDepositEntity>,
-        manualDepositEntities: List<WooPaymentsManualDepositEntity>
+        manualDepositEntities: List<WooPaymentsManualDepositEntity>,
+        pendingBalancesEntities: List<WooPaymentsBalanceEntity>,
+        availableBalancesEntities: List<WooPaymentsBalanceEntity>,
+        instantBalancesEntities: List<WooPaymentsBalanceEntity>
     ) {
         insertOverview(overviewEntity)
 
         lastPaidDepositsEntities.forEach { insertDeposit(it) }
         nextScheduledDepositsEntities.forEach { insertDeposit(it) }
         manualDepositEntities.forEach { insertManualDeposit(it) }
+
+        pendingBalancesEntities.forEach { insertBalance(it) }
+        availableBalancesEntities.forEach { insertBalance(it) }
+        instantBalancesEntities.forEach { insertBalance(it) }
     }
 
     @Query("DELETE FROM WooPaymentsDepositsOverview WHERE localSiteId = :localSiteId")

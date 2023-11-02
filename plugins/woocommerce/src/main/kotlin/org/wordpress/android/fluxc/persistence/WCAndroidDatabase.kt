@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsBalanceEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositsOverviewEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsManualDepositEntity
@@ -80,6 +81,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         WooPaymentsDepositsOverviewEntity::class,
         WooPaymentsDepositEntity::class,
         WooPaymentsManualDepositEntity::class,
+        WooPaymentsBalanceEntity::class,
     ],
     autoMigrations = [
         AutoMigration(from = 12, to = 13),

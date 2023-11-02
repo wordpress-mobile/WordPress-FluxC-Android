@@ -20,7 +20,7 @@ data class WooPaymentsDeposit(
     val type: String?,
     val amount: Int?,
     val status: String?,
-    @SerializedName("bank_account") val bankAccount: String?,
+    val bankAccount: String?,
     val currency: String,
     val automatic: Boolean?,
     val fee: Long?,

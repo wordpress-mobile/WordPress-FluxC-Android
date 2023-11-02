@@ -82,3 +82,41 @@ data class WooPaymentsManualDepositEntity(
     val currency: String?,
     val date: Long?
 )
+
+@Entity(
+    tableName = "WooPaymentsBalance",
+    foreignKeys = [ForeignKey(
+        entity = WooPaymentsDepositsOverviewEntity::class,
+        parentColumns = ["localSiteId"],
+        childColumns = ["localSiteId"],
+        onDelete = CASCADE
+    )]
+)
+data class WooPaymentsBalanceEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+
+    val localSiteId: LocalOrRemoteId.LocalId,
+
+    val amount: Int?,
+    val currency: String?,
+    val fee: Long?,
+    val feePercentage: Double?,
+    val net: Long?,
+    val transactionIds: List<String>?,
+
+    @Embedded
+    val sourceTypes: SourceTypes?,
+
+    val balanceType: BalanceType,
+)
+
+data class SourceTypes(
+    val card: Int?
+)
+
+enum class BalanceType {
+    PENDING,
+    AVAILABLE,
+    INSTANT,
+}

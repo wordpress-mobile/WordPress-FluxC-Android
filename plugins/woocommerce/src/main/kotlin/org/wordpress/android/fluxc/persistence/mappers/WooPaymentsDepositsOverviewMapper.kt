@@ -12,8 +12,10 @@ import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOvervie
 import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverviewComposedEntities
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsBalance
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsDepositsOverviewApiResponse
+import org.wordpress.android.fluxc.persistence.entity.BalanceType
 import org.wordpress.android.fluxc.persistence.entity.DepositType
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsAccountDepositSummaryEntity
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsBalanceEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositsOverviewEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositsSchedule
@@ -91,48 +93,69 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
             }
         )
 
-    fun mapEntityToModel(entity: WooPaymentsDepositsOverviewComposedEntities) =
-        WooPaymentsDepositsOverview(
-            account = mapEntityAccountToModel(entity.overview.account),
-            balance = null,
-            deposit = Deposit(
-                lastManualDeposits = entity.lastManualDeposits?.map {
-                    ManualDeposit(
-                        currency = it.currency,
-                        date = it.date
-                    )
-                },
-                lastPaid = entity.lastPaidDeposits?.map {
-                    Info(
-                        amount = it.amount,
-                        automatic = it.automatic,
-                        bankAccount = it.bankAccount,
-                        created = it.created,
-                        currency = it.currency,
-                        date = it.date,
-                        fee = it.fee,
-                        feePercentage = it.feePercentage,
-                        status = it.status,
-                        type = it.type,
-                        depositId = it.depositId
-                    )
-                },
-                nextScheduled = entity.nextScheduledDeposits?.map {
-                    Info(
-                        amount = it.amount,
-                        automatic = it.automatic,
-                        bankAccount = it.bankAccount,
-                        created = it.created,
-                        currency = it.currency,
-                        date = it.date,
-                        fee = it.fee,
-                        feePercentage = it.feePercentage,
-                        status = it.status,
-                        type = it.type,
-                        depositId = it.depositId
-                    )
-                }
+    fun mapEntityToModel(entity: WooPaymentsDepositsOverviewComposedEntities?) =
+        entity?.let { ent ->
+            WooPaymentsDepositsOverview(
+                account = mapEntityAccountToModel(ent.overview.account),
+                balance = Balance(
+                    available = ent.availableBalances?.map { mapBonusToEntity(it) },
+                    instant = ent.instantBalances?.map { mapBonusToEntity(it) },
+                    pending = ent.pendingBalances?.map { mapBonusToEntity(it) },
+                ),
+                deposit = Deposit(
+                    lastManualDeposits = ent.lastManualDeposits?.map {
+                        ManualDeposit(
+                            currency = it.currency,
+                            date = it.date
+                        )
+                    },
+                    lastPaid = ent.lastPaidDeposits?.map {
+                        Info(
+                            amount = it.amount,
+                            automatic = it.automatic,
+                            bankAccount = it.bankAccount,
+                            created = it.created,
+                            currency = it.currency,
+                            date = it.date,
+                            fee = it.fee,
+                            feePercentage = it.feePercentage,
+                            status = it.status,
+                            type = it.type,
+                            depositId = it.depositId
+                        )
+                    },
+                    nextScheduled = ent.nextScheduledDeposits?.map {
+                        Info(
+                            amount = it.amount,
+                            automatic = it.automatic,
+                            bankAccount = it.bankAccount,
+                            created = it.created,
+                            currency = it.currency,
+                            date = it.date,
+                            fee = it.fee,
+                            feePercentage = it.feePercentage,
+                            status = it.status,
+                            type = it.type,
+                            depositId = it.depositId
+                        )
+                    }
+                )
             )
+        }
+
+    private fun mapBonusToEntity(it: WooPaymentsBalanceEntity) =
+        Balance.Info(
+            amount = it.amount,
+            currency = it.currency,
+            sourceTypes = it.sourceTypes?.let { sourceTypes ->
+                SourceTypes(
+                    card = sourceTypes.card
+                )
+            },
+            fee = it.fee,
+            feePercentage = it.feePercentage,
+            net = it.net,
+            transactionIds = it.transactionIds
         )
 
     fun mapModelDepositToEntity(
@@ -164,6 +187,27 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
             localSiteId = site.localId(),
             currency = manualDeposit.currency,
             date = manualDeposit.date
+        )
+
+    fun mapModelBalanceToEntity(
+        balance: Balance.Info,
+        site: SiteModel,
+        balanceType: BalanceType,
+    ): WooPaymentsBalanceEntity =
+        WooPaymentsBalanceEntity(
+            localSiteId = site.localId(),
+            amount = balance.amount,
+            currency = balance.currency,
+            sourceTypes = balance.sourceTypes?.let { sourceTypes ->
+                org.wordpress.android.fluxc.persistence.entity.SourceTypes(
+                    card = sourceTypes.card
+                )
+            },
+            fee = balance.fee,
+            feePercentage = balance.feePercentage,
+            net = balance.net,
+            transactionIds = balance.transactionIds,
+            balanceType = balanceType
         )
 
     fun mapModelToEntity(
