@@ -339,8 +339,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     private SiteModel signIntoWpComAccountWithJetpackSite() throws InterruptedException {
         // sign into a WP.com account with a Jetpack site
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+        authenticateWPComAndFetchSites();
 
         // verify Jetpack site is available
         final SiteModel jetpackSite = getJetpackSite();
@@ -348,9 +347,12 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return jetpackSite;
     }
 
-    private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
+    private void authenticateWPComAndFetchSites() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        AuthenticatePayload payload = new AuthenticatePayload(
+                BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY
+        );
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
