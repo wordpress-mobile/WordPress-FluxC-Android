@@ -194,7 +194,7 @@ class ThemeFragment : Fragment() {
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: theme = " + event.theme.name)
+            prependToLog("success: theme = " + event.theme?.name)
         }
     }
 
