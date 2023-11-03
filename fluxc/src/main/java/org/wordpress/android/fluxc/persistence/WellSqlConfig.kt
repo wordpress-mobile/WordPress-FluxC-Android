@@ -41,7 +41,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 197
+        return 198
     }
 
     override fun getDbName(): String {
@@ -1992,6 +1992,32 @@ open class WellSqlConfig : DefaultWellConfig {
                 }
                 196 -> migrate(version) {
                     db.execSQL("ALTER TABLE SiteModel ADD IS_SINGLE_USER_SITE BOOLEAN")
+                }
+                197 -> migrate(version) {
+                    val cursor = db.rawQuery("PRAGMA table_info(SiteModel)", null)
+                    var columnExists = false
+
+                    cursor.use { cur ->
+                        val nameColumnIndex = cur.getColumnIndex("name")
+
+                        while (cur.moveToNext()) {
+                            if (nameColumnIndex != -1) {
+                                val columnName = cur.getString(nameColumnIndex)
+                                if (columnName == "IS_SINGLE_USER_SITE") {
+                                    columnExists = true
+                                    break
+                                }
+                            }
+                        }
+                    }
+
+                    if (!columnExists) {
+                        // Add the IS_SINGLE_USER_SITE column with a default value of false
+                        db.execSQL("ALTER TABLE SiteModel ADD IS_SINGLE_USER_SITE BOOLEAN NOT NULL DEFAULT 0")
+                    } else {
+                        // Update existing rows where IS_SINGLE_USER_SITE is null to false
+                        db.execSQL("UPDATE SiteModel SET IS_SINGLE_USER_SITE = 0 WHERE IS_SINGLE_USER_SITE IS NULL")
+                    }
                 }
             }
         }

@@ -259,7 +259,7 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
     @Column
     private Boolean mWasEcommerceTrial;
     @Column
-    private Boolean mIsSingleUserSite;
+    private boolean mIsSingleUserSite;
 
     @Override
     public int getId() {
@@ -1114,11 +1114,11 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
         this.mPlanActiveFeatures = planActiveFeatures;
     }
 
-    public Boolean isSingleUserSite() {
+    public boolean isSingleUserSite() {
         return mIsSingleUserSite;
     }
 
-    public void setIsSingleUserSite(Boolean isSingleUserSite) {
+    public void setIsSingleUserSite(boolean isSingleUserSite) {
         mIsSingleUserSite = isSingleUserSite;
     }
 }
