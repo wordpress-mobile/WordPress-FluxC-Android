@@ -8,6 +8,32 @@
     android:orientation="vertical"
     tools:ignore="HardcodedText">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/theme_select_site"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="@dimen/activity_start_end_half_margin"
+            android:paddingEnd="@dimen/activity_start_end_half_margin"
+            android:text="Select Site" />
+
+        <TextView
+            android:id="@+id/theme_selected_site"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="@dimen/activity_start_end_half_margin"
+            android:paddingEnd="@dimen/activity_start_end_half_margin"
+            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+            android:textColor="@android:color/holo_blue_bright" />
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/fetch_wpcom_themes"
         android:layout_width="match_parent"
