@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 30,
-    "identityHash": "b7e693d6d18df49d5b52c96b9cd32036",
+    "identityHash": "46e29ce7aa2fba81c03063031e265024",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1501,7 +1501,7 @@
       },
       {
         "tableName": "WooPaymentsBalance",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `localSiteId` INTEGER NOT NULL, `amount` INTEGER, `currency` TEXT, `fee` INTEGER, `feePercentage` REAL, `net` INTEGER, `transactionIds` TEXT, `balanceType` TEXT NOT NULL, `card` INTEGER, FOREIGN KEY(`localSiteId`) REFERENCES `WooPaymentsDepositsOverview`(`localSiteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `localSiteId` INTEGER NOT NULL, `amount` INTEGER, `currency` TEXT, `fee` INTEGER, `feePercentage` REAL, `net` INTEGER, `transactionIds` TEXT, `depositsCount` INTEGER, `balanceType` TEXT NOT NULL, `card` INTEGER, FOREIGN KEY(`localSiteId`) REFERENCES `WooPaymentsDepositsOverview`(`localSiteId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -1552,6 +1552,12 @@
             "notNull": false
           },
           {
+            "fieldPath": "depositsCount",
+            "columnName": "depositsCount",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
             "fieldPath": "balanceType",
             "columnName": "balanceType",
             "affinity": "TEXT",
@@ -1589,7 +1595,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b7e693d6d18df49d5b52c96b9cd32036')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '46e29ce7aa2fba81c03063031e265024')"
     ]
   }
 }

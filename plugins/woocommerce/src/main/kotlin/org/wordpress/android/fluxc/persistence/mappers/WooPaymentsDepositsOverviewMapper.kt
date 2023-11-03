@@ -124,7 +124,8 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
             fee = it.fee,
             feePercentage = it.feePercentage,
             net = it.net,
-            transactionIds = it.transactionIds
+            transactionIds = it.transactionIds,
+            depositsCount = it.depositsCount
         )
 
     fun mapModelDepositToEntity(
@@ -176,7 +177,8 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
             feePercentage = balance.feePercentage,
             net = balance.net,
             transactionIds = balance.transactionIds,
-            balanceType = balanceType
+            balanceType = balanceType,
+            depositsCount = balance.depositsCount
         )
 
     fun mapModelToEntity(
@@ -199,7 +201,8 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
             fee = available.fee,
             feePercentage = available.feePercentage,
             net = available.net,
-            transactionIds = available.transactionIds
+            transactionIds = available.transactionIds,
+            depositsCount = available.depositsCount
         )
 
     private fun mapEntityAccountToModel(account: WooPaymentsAccountDepositSummaryEntity?) =

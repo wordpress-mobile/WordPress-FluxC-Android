@@ -29,7 +29,8 @@ data class WooPaymentsDepositsOverview(
             val feePercentage: Double?,
             val net: Long?,
             val transactionIds: List<String>?,
-            val sourceTypes: SourceTypes?
+            val sourceTypes: SourceTypes?,
+            val depositsCount: Int?,
         )
 
         data class SourceTypes(

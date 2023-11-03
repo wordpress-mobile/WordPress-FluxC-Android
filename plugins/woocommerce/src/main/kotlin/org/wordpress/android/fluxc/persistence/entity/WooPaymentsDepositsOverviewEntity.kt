@@ -104,6 +104,7 @@ data class WooPaymentsBalanceEntity(
     val feePercentage: Double?,
     val net: Long?,
     val transactionIds: List<String>?,
+    val depositsCount: Int?,
 
     @Embedded
     val sourceTypes: SourceTypes?,
