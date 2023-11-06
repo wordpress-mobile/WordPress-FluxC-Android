@@ -105,7 +105,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals("paid", getResult?.deposit?.lastPaid?.get(0)?.status)
         assertEquals("deposit", getResult?.deposit?.lastPaid?.get(0)?.type)
         assertEquals(0, getResult?.deposit?.nextScheduled?.size)
-
     }
 
     @Test
