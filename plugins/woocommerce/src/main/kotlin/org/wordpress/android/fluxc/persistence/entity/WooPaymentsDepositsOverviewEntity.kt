@@ -47,7 +47,7 @@ data class WooPaymentsDepositEntity(
     val depositId: String?,
     val date: Long?,
     val type: String?,
-    val amount: Int?,
+    val amount: Long?,
     val status: String?,
     val bankAccount: String?,
     val currency: String?,
@@ -98,7 +98,7 @@ data class WooPaymentsBalanceEntity(
 
     val localSiteId: LocalOrRemoteId.LocalId,
 
-    val amount: Int?,
+    val amount: Long?,
     val currency: String?,
     val fee: Long?,
     val feePercentage: Double?,

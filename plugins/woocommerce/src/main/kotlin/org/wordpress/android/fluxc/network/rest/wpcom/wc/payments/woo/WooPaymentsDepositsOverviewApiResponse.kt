@@ -18,7 +18,7 @@ data class WooPaymentsDeposit(
     val id: String?,
     val date: Long?,
     val type: String?,
-    val amount: Int?,
+    val amount: Long?,
     val status: String?,
     val bankAccount: String?,
     val currency: String,
@@ -40,7 +40,7 @@ data class WooPaymentsCurrencyBalances(
 )
 
 data class WooPaymentsBalance(
-    val amount: Int?,
+    val amount: Long?,
     val currency: String?,
     @SerializedName("source_types") val sourceTypes: WooPaymentsSourceTypes?,
     @SerializedName("deposits_count") val depositsCount: Int?,

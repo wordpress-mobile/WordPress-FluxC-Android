@@ -23,7 +23,7 @@ data class WooPaymentsDepositsOverview(
         val pending: List<Info>?
     ) {
         data class Info(
-            val amount: Int?,
+            val amount: Long?,
             val currency: String?,
             val fee: Long?,
             val feePercentage: Double?,
@@ -44,7 +44,7 @@ data class WooPaymentsDepositsOverview(
         val nextScheduled: List<Info>?
     ) {
         data class Info(
-            val amount: Int?,
+            val amount: Long?,
             val automatic: Boolean?,
             val bankAccount: String?,
             val created: Long?,
