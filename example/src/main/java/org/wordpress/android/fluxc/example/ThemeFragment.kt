@@ -80,7 +80,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No WP.com site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -98,7 +98,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -116,7 +116,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -134,7 +134,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)

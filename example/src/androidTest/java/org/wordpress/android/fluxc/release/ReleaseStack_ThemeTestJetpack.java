@@ -156,7 +156,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         }
 
         // install the theme
-        ThemeModel themeToInstall = new ThemeModel();
+        @SuppressWarnings("deprecation") ThemeModel themeToInstall = new ThemeModel();
         themeToInstall.setThemeId(themeId);
         installTheme(jetpackSite, themeToInstall);
         assertTrue(isThemeInstalled(jetpackSite, themeId));
@@ -178,7 +178,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // Install edin if necessary before attempting to delete
         if (!isThemeInstalled(jetpackSite, themeId)) {
-            ThemeModel themeToInstall = new ThemeModel();
+            @SuppressWarnings("deprecation") ThemeModel themeToInstall = new ThemeModel();
             themeToInstall.setThemeId(themeId);
             installTheme(jetpackSite, themeToInstall);
 
