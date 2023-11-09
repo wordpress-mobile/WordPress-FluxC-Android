@@ -26,12 +26,12 @@ import javax.inject.Inject
 class WooPaymentsDepositsOverviewMapper @Inject constructor() {
     fun mapApiResponseToModel(apiResponse: WooPaymentsDepositsOverviewApiResponse) =
         WooPaymentsDepositsOverview(
-            account = apiResponse.account?.let {
+            account = apiResponse.account?.let { summary ->
                 Account(
-                    defaultCurrency = it.defaultCurrency,
-                    depositsBlocked = it.depositsBlocked,
-                    depositsEnabled = it.depositsEnabled,
-                    depositsSchedule = it.depositsSchedule?.let {
+                    defaultCurrency = summary.defaultCurrency,
+                    depositsBlocked = summary.depositsBlocked,
+                    depositsEnabled = summary.depositsEnabled,
+                    depositsSchedule = summary.depositsSchedule?.let {
                         DepositsSchedule(
                             delayDays = it.delayDays,
                             interval = it.interval
@@ -54,9 +54,11 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
                             date = manualDeposit.date
                         )
                     },
-                    lastPaid = it.lastPaid?.map { info -> mapApiDepositToModel(info)
+                    lastPaid = it.lastPaid?.map {
+                        info -> mapApiDepositToModel(info)
                     },
-                    nextScheduled = it.nextScheduled?.map { info -> mapApiDepositToModel(info)
+                    nextScheduled = it.nextScheduled?.map {
+                        info -> mapApiDepositToModel(info)
                     }
                 )
             }
