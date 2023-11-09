@@ -85,4 +85,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_ApplicationPasswordNetwork test);
 
     void inject(ReleaseStack_WCCustomerTest test);
+
+    void inject(ReleaseStack_WooPaymentsTest test);
 }
