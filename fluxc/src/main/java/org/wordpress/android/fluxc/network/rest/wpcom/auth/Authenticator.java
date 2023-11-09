@@ -22,6 +22,10 @@ import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeInfo;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeRequest;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnTokenRequest;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailError;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
@@ -50,6 +54,7 @@ public class Authenticator {
     public static final String GRANT_TYPE_PARAM_NAME = "grant_type";
     public static final String USERNAME_PARAM_NAME = "username";
     public static final String PASSWORD_PARAM_NAME = "password";
+    public static final String WITH_AUTH_TYPES = "with_auth_types";
 
     public static final String PASSWORD_GRANT_TYPE = "password";
     public static final String BEARER_GRANT_TYPE = "bearer";
@@ -66,7 +71,7 @@ public class Authenticator {
     private final RequestQueue mRequestQueue;
     private AppSecrets mAppSecrets;
 
-    public interface Listener extends Response.Listener<Token> {
+    public interface Listener extends Response.Listener<OauthResponse> {
     }
 
     public interface ErrorListener extends Response.ErrorListener {
@@ -81,9 +86,9 @@ public class Authenticator {
     }
 
     @Inject public Authenticator(Context appContext,
-                         Dispatcher dispatcher,
-                         @Named("regular") RequestQueue requestQueue,
-                         AppSecrets secrets) {
+                                 Dispatcher dispatcher,
+                                 @Named("regular") RequestQueue requestQueue,
+                                 AppSecrets secrets) {
         mAppContext = appContext;
         mDispatcher = dispatcher;
         mRequestQueue = requestQueue;
@@ -92,30 +97,56 @@ public class Authenticator {
 
     public void authenticate(String username, String password, String twoStepCode, boolean shouldSendTwoStepSMS,
                              Listener listener, ErrorListener errorListener) {
-        TokenRequest tokenRequest = makeRequest(username, password, twoStepCode, shouldSendTwoStepSMS, listener,
+        OauthRequest request = makeRequest(username, password, twoStepCode, shouldSendTwoStepSMS, listener,
                 errorListener);
-        mRequestQueue.add(tokenRequest);
+        mRequestQueue.add(request);
     }
 
     public String getAuthorizationURL() {
         return String.format(AUTHORIZE_ENDPOINT_FORMAT, AUTHORIZE_ENDPOINT, mAppSecrets.getAppId());
     }
 
-    public TokenRequest makeRequest(String username, String password, String twoStepCode, boolean shouldSendTwoStepSMS,
+    public OauthRequest makeRequest(String username, String password, String twoStepCode, boolean shouldSendTwoStepSMS,
                                     Listener listener, ErrorListener errorListener) {
         return new PasswordRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), username, password, twoStepCode,
                 shouldSendTwoStepSMS, listener, errorListener);
     }
 
-    public TokenRequest makeRequest(String code, Listener listener, ErrorListener errorListener) {
-        return new BearerRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), code, listener, errorListener);
+    public void makeRequest(String userId, String webauthnNonce,
+                            Response.Listener<WebauthnChallengeInfo> listener,
+                            ErrorListener errorListener) {
+        WebauthnChallengeRequest request = new WebauthnChallengeRequest(
+                userId,
+                webauthnNonce,
+                mAppSecrets.getAppId(),
+                mAppSecrets.getAppSecret(),
+                listener,
+                errorListener
+        );
+        mRequestQueue.add(request);
     }
 
-    private static class TokenRequest extends Request<Token> {
+    public void makeRequest(String userId, String twoStepNonce,
+                            String clientData, Response.Listener<WebauthnToken> listener,
+                            ErrorListener errorListener) {
+        WebauthnTokenRequest request = new WebauthnTokenRequest(
+                userId,
+                twoStepNonce,
+                mAppSecrets.getAppId(),
+                mAppSecrets.getAppSecret(),
+                clientData,
+                listener,
+                errorListener
+        );
+        mRequestQueue.add(request);
+    }
+
+    private static class OauthRequest extends Request<OauthResponse> {
+        private static final String DATA = "data";
         private final Listener mListener;
         protected Map<String, String> mParams = new HashMap<>();
 
-        TokenRequest(String appId, String appSecret, Listener listener, ErrorListener errorListener) {
+        OauthRequest(String appId, String appSecret, Listener listener, ErrorListener errorListener) {
             super(Method.POST, TOKEN_ENDPOINT, errorListener);
             mListener = listener;
             mParams.put(CLIENT_ID_PARAM_NAME, appId);
@@ -128,31 +159,37 @@ public class Authenticator {
         }
 
         @Override
-        public void deliverResponse(Token token) {
-            mListener.onResponse(token);
+        public void deliverResponse(OauthResponse response) {
+            mListener.onResponse(response);
         }
 
         @Override
-        protected Response<Token> parseNetworkResponse(NetworkResponse response) {
+        protected Response<OauthResponse> parseNetworkResponse(NetworkResponse response) {
             try {
                 String jsonString = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
-                JSONObject tokenData = new JSONObject(jsonString);
-                return Response.success(Token.fromJSONObject(tokenData), HttpHeaderParser.parseCacheHeaders(response));
-            } catch (UnsupportedEncodingException e) {
+                JSONObject responseData = new JSONObject(jsonString);
+                JSONObject successData = responseData.optJSONObject(DATA);
+                if (successData != null) {
+                    return Response.success(new WebauthnResponse(successData),
+                            HttpHeaderParser.parseCacheHeaders(response));
+                }
+
+                return Response.success(Token.fromJSONObject(responseData),
+                        HttpHeaderParser.parseCacheHeaders(response));
+            } catch (UnsupportedEncodingException | JSONException e) {
                 return Response.error(new ParseError(e));
-            } catch (JSONException je) {
-                return Response.error(new ParseError(je));
             }
         }
     }
 
-    public static class PasswordRequest extends TokenRequest {
+    public static class PasswordRequest extends OauthRequest {
         public PasswordRequest(String appId, String appSecret, String username, String password, String twoStepCode,
                                boolean shouldSendTwoStepSMS, Listener listener, ErrorListener errorListener) {
             super(appId, appSecret, listener, errorListener);
             mParams.put(USERNAME_PARAM_NAME, username);
             mParams.put(PASSWORD_PARAM_NAME, password);
             mParams.put(GRANT_TYPE_PARAM_NAME, PASSWORD_GRANT_TYPE);
+            mParams.put(WITH_AUTH_TYPES, "true");
 
             if (!TextUtils.isEmpty(twoStepCode)) {
                 mParams.put("wpcom_otp", twoStepCode);
@@ -165,7 +202,7 @@ public class Authenticator {
         }
     }
 
-    public static class BearerRequest extends TokenRequest {
+    public static class BearerRequest extends OauthRequest {
         public BearerRequest(String appId, String appSecret, String code, Listener listener,
                              ErrorListener errorListener) {
             super(appId, appSecret, listener, errorListener);
@@ -174,7 +211,9 @@ public class Authenticator {
         }
     }
 
-    public static class Token {
+    public interface OauthResponse {}
+
+    public static class Token implements OauthResponse {
         private static final String TOKEN_TYPE_FIELD_NAME = "token_type";
         private static final String ACCESS_TOKEN_FIELD_NAME = "access_token";
         private static final String SITE_URL_FIELD_NAME = "blog_url";
@@ -205,8 +244,28 @@ public class Authenticator {
 
         public static Token fromJSONObject(JSONObject tokenJSON) throws JSONException {
             return new Token(tokenJSON.getString(ACCESS_TOKEN_FIELD_NAME), tokenJSON.getString(SITE_URL_FIELD_NAME),
-                    tokenJSON.getString(SITE_ID_FIELD_NAME), tokenJSON.getString(SCOPE_FIELD_NAME), tokenJSON.getString(
-                    TOKEN_TYPE_FIELD_NAME));
+                    tokenJSON.getString(SITE_ID_FIELD_NAME), tokenJSON.getString(SCOPE_FIELD_NAME),
+                    tokenJSON.getString(TOKEN_TYPE_FIELD_NAME));
+        }
+    }
+
+    public static class WebauthnResponse implements OauthResponse {
+        private static final String USER_ID = "user_id";
+        private static final String TWO_STEP_WEBAUTHN_NONCE = "two_step_nonce_webauthn";
+        private String mUserId;
+        private String mTwoStepWebauthnNonce;
+
+        public WebauthnResponse(JSONObject data) throws JSONException {
+            mUserId = data.getString(USER_ID);
+            mTwoStepWebauthnNonce = data.getString(TWO_STEP_WEBAUTHN_NONCE);
+        }
+
+        public String getUserId() {
+            return mUserId;
+        }
+
+        public String getWebauthnNonce() {
+            return mTwoStepWebauthnNonce;
         }
     }
 
@@ -256,7 +315,7 @@ public class Authenticator {
                         mDispatcher.dispatch(AuthenticationActionBuilder.newSentAuthEmailAction(responsePayload));
                     }
                 }
-        );
+                                                                    );
         request.addQueryParameter("locale", LanguageUtils.getPatchedCurrentDeviceLanguage(mAppContext));
 
         mRequestQueue.add(request);

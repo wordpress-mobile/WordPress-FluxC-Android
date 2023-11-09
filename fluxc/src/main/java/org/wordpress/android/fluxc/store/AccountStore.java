@@ -38,7 +38,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEmailResponsePayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.OauthResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.WebauthnResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeInfo;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest.XmlRpcErrorType;
 import org.wordpress.android.fluxc.persistence.AccountSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -326,6 +330,31 @@ public class AccountStore extends Store {
         NOTIFICATION_POST
     }
 
+    public static class StartWebauthnChallengePayload extends Payload<BaseNetworkError> {
+        public String mUserId;
+        public String mWebauthnNonce;
+
+        public StartWebauthnChallengePayload(String mUserId, String mWebauthnNonce) {
+            this.mUserId = mUserId;
+            this.mWebauthnNonce = mWebauthnNonce;
+        }
+    }
+
+    public static class WebauthnChallengeReceived extends OnChanged<AuthenticationError> {
+        public WebauthnChallengeInfo mChallengeInfo;
+        public String mUserId;
+    }
+
+    public static class FinishWebauthnChallengePayload {
+        public String mUserId;
+        public String mTwoStepNonce;
+        public String mClientData;
+    }
+
+    public static class WebauthnPasskeyAuthenticated extends OnChanged<AuthenticationError> {
+        public WebauthnToken mWebauthnToken;
+    }
+
     /**
      * Error for any of these methods:
      * {@link AccountRestClient#updateSubscriptionEmailComment(String,
@@ -424,6 +453,16 @@ public class AccountStore extends Store {
         public String username;
     }
 
+    public static class OnSecurityKeyAuthStarted extends OnChanged<AuthenticationError> {
+        public String userId;
+        public String webauthnNonce;
+
+        public OnSecurityKeyAuthStarted(String userId, String webauthnNonce) {
+            this.userId = userId;
+            this.webauthnNonce = webauthnNonce;
+        }
+    }
+
     public static class OnUsernameSuggestionsFetched extends OnChanged<AccountFetchUsernameSuggestionsError> {
         public List<String> suggestions;
     }
@@ -511,10 +550,12 @@ public class AccountStore extends Store {
         INVALID_REQUEST,
         INVALID_TOKEN,
         NEEDS_2FA,
+        NEEDS_SECURITY_KEY,
         UNSUPPORTED_GRANT_TYPE,
         UNSUPPORTED_RESPONSE_TYPE,
         UNKNOWN_TOKEN,
         EMAIL_LOGIN_NOT_ALLOWED,
+        WEBAUTHN_FAILED,
 
         // From response's "message" field - sadly... (be careful with i18n)
         INCORRECT_USERNAME_OR_PASSWORD,
@@ -833,8 +874,8 @@ public class AccountStore extends Store {
     private SelfHostedEndpointFinder mSelfHostedEndpointFinder;
 
     @Inject public AccountStore(Dispatcher dispatcher, AccountRestClient accountRestClient,
-                        SelfHostedEndpointFinder selfHostedEndpointFinder, Authenticator authenticator,
-                        AccessToken accessToken) {
+                                SelfHostedEndpointFinder selfHostedEndpointFinder, Authenticator authenticator,
+                                AccessToken accessToken) {
         super(dispatcher);
         mAuthenticator = authenticator;
         mAccountRestClient = accountRestClient;
@@ -999,6 +1040,12 @@ public class AccountStore extends Store {
             case SENT_AUTH_EMAIL:
                 handleSentAuthEmail((AuthEmailResponsePayload) payload);
                 break;
+            case START_SECURITY_KEY_CHALLENGE:
+                requestWebauthnChallenge((StartWebauthnChallengePayload) payload);
+                break;
+            case FINISH_SECURITY_KEY_CHALLENGE:
+                submitWebauthnChallengeResult((FinishWebauthnChallengePayload) payload);
+                break;
         }
     }
 
@@ -1117,11 +1164,11 @@ public class AccountStore extends Store {
             OnSocialChanged event = new OnSocialChanged();
             event.error = payload.error;
             emitChange(event);
-        // Two-factor authentication code sent via SMS; emit only social change.
+            // Two-factor authentication code sent via SMS; emit only social change.
         } else if (payload.hasPhoneNumber()) {
             OnSocialChanged event = new OnSocialChanged(payload);
             emitChange(event);
-        // Two-factor authentication or social connect is required; emit only social change.
+            // Two-factor authentication or social connect is required; emit only social change.
         } else if (!payload.hasToken()) {
             OnSocialChanged event = new OnSocialChanged(payload);
             event.requiresTwoStepAuth = payload.hasTwoStepTypes();
@@ -1280,26 +1327,42 @@ public class AccountStore extends Store {
 
     private void authenticate(final AuthenticatePayload payload) {
         mAuthenticator.authenticate(payload.username, payload.password, payload.twoStepCode,
-                payload.shouldSendTwoStepSms, new Authenticator.Listener() {
-                    @Override
-                    public void onResponse(Token token) {
-                        mAccessToken.set(token.getAccessToken());
-                        if (payload.nextAction != null) {
-                            mDispatcher.dispatch(payload.nextAction);
-                        }
-                        emitChange(new OnAuthenticationChanged());
-                    }
-                }, new Authenticator.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        AppLog.e(T.API, "Authentication error");
-                        OnAuthenticationChanged event = new OnAuthenticationChanged();
-                        event.error = new AuthenticationError(
-                                Authenticator.volleyErrorToAuthenticationError(volleyError),
-                                Authenticator.volleyErrorToErrorMessage(volleyError));
-                        emitChange(event);
-                    }
-                });
+                payload.shouldSendTwoStepSms,
+                response -> handleAuthResponse(response, payload),
+                this::handleAuthError);
+    }
+
+    private void handleAuthError(VolleyError volleyError) {
+        AppLog.e(T.API, "Authentication error");
+        OnAuthenticationChanged event = new OnAuthenticationChanged();
+        event.error = new AuthenticationError(
+                Authenticator.volleyErrorToAuthenticationError(volleyError),
+                Authenticator.volleyErrorToErrorMessage(volleyError));
+        emitChange(event);
+    }
+
+    private void handleAuthResponse(OauthResponse response, AuthenticatePayload payload) {
+        // Oauth endpoint can return a Token or a WebauthnResponse
+        if (response instanceof Token) {
+            Token token = (Token) response;
+            mAccessToken.set(token.getAccessToken());
+            if (payload.nextAction != null) {
+                mDispatcher.dispatch(payload.nextAction);
+            }
+            emitChange(new OnAuthenticationChanged());
+        } else if (response instanceof WebauthnResponse) {
+            WebauthnResponse webauthnResponse = (WebauthnResponse) response;
+            OnSecurityKeyAuthStarted event = new OnSecurityKeyAuthStarted(webauthnResponse.getUserId(),
+                    webauthnResponse.getWebauthnNonce());
+            if (payload.nextAction != null) {
+                mDispatcher.dispatch(payload.nextAction);
+            }
+            emitChange(event);
+        } else {
+            OnAuthenticationChanged event = new OnAuthenticationChanged();
+            event.error = new AuthenticationError(AuthenticationErrorType.GENERIC_ERROR, "");
+            emitChange(event);
+        }
     }
 
     private void handleSentAuthEmail(final AuthEmailResponsePayload payload) {
@@ -1311,6 +1374,38 @@ public class AccountStore extends Store {
             OnAuthEmailSent event = new OnAuthEmailSent(payload.isSignup);
             emitChange(event);
         }
+    }
+
+    private void requestWebauthnChallenge(final StartWebauthnChallengePayload payload) {
+        mAuthenticator.makeRequest(payload.mUserId, payload.mWebauthnNonce,
+                info -> {
+                    WebauthnChallengeReceived event = new WebauthnChallengeReceived();
+                    event.mChallengeInfo = info;
+                    event.mUserId = payload.mUserId;
+                    emitChange(event);
+                },
+                error -> {
+                    WebauthnChallengeReceived event = new WebauthnChallengeReceived();
+                    event.error = new AuthenticationError(AuthenticationErrorType.WEBAUTHN_FAILED,
+                            "Webauthn failed");
+                    emitChange(event);
+                });
+    }
+
+    private void submitWebauthnChallengeResult(final FinishWebauthnChallengePayload payload) {
+        mAuthenticator.makeRequest(payload.mUserId, payload.mTwoStepNonce, payload.mClientData,
+                token -> {
+                    WebauthnPasskeyAuthenticated event = new WebauthnPasskeyAuthenticated();
+                    event.mWebauthnToken = token;
+                    mAccessToken.set(token.getBearerToken());
+                    emitChange(event);
+                },
+                error -> {
+                    WebauthnPasskeyAuthenticated event = new WebauthnPasskeyAuthenticated();
+                    event.error = new AuthenticationError(AuthenticationErrorType.WEBAUTHN_FAILED,
+                            "Webauthn failed");
+                    emitChange(event);
+                });
     }
 
     private boolean checkError(AccountRestPayload payload, String log) {

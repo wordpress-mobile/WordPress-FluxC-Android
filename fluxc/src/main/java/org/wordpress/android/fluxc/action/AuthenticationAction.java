@@ -6,8 +6,10 @@ import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryResultPayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEmailResponsePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.StartWebauthnChallengePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FinishWebauthnChallengePayload;
 
 @ActionEnum
 public enum AuthenticationAction implements IAction {
@@ -25,5 +27,10 @@ public enum AuthenticationAction implements IAction {
     @Action(payloadType = DiscoveryResultPayload.class)
     DISCOVERY_RESULT,
     @Action(payloadType = AuthEmailResponsePayload.class)
-    SENT_AUTH_EMAIL
+    SENT_AUTH_EMAIL,
+    @Action(payloadType = StartWebauthnChallengePayload.class)
+    START_SECURITY_KEY_CHALLENGE,
+
+    @Action(payloadType = FinishWebauthnChallengePayload.class)
+    FINISH_SECURITY_KEY_CHALLENGE
 }
