@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.model.payments.woo
 
+import com.google.gson.annotations.SerializedName
+
 data class WooPaymentsDepositsOverview(
     val account: Account?,
     val balance: Balance?,
@@ -13,6 +15,8 @@ data class WooPaymentsDepositsOverview(
     ) {
         data class DepositsSchedule(
             val delayDays: Int?,
+            val weeklyAnchor: String?,
+            val monthlyAnchor: Int?,
             val interval: String?
         )
     }

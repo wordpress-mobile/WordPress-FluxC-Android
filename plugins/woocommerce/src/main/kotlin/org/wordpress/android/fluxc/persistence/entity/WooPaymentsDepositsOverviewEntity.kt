@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 
 @Entity(tableName = "WooPaymentsDepositsOverview")
@@ -26,6 +27,8 @@ data class WooPaymentsAccountDepositSummaryEntity(
 
 data class WooPaymentsDepositsSchedule(
     val delayDays: Int?,
+    val weeklyAnchor: String?,
+    val monthlyAnchor: Int?,
     val interval: String?
 )
 
