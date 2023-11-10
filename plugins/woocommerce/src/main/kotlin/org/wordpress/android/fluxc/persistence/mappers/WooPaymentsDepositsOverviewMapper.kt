@@ -34,6 +34,8 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
                     depositsSchedule = summary.depositsSchedule?.let {
                         DepositsSchedule(
                             delayDays = it.delayDays,
+                            weeklyAnchor = it.weeklyAnchor,
+                            monthlyAnchor = it.monthlyAnchor,
                             interval = it.interval
                         )
                     }
@@ -221,6 +223,8 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
         depositsSchedule?.let {
             DepositsSchedule(
                 delayDays = it.delayDays,
+                weeklyAnchor = it.weeklyAnchor,
+                monthlyAnchor = it.monthlyAnchor,
                 interval = it.interval
             )
         }
@@ -239,6 +243,8 @@ class WooPaymentsDepositsOverviewMapper @Inject constructor() {
         depositsSchedule?.let {
             WooPaymentsDepositsSchedule(
                 delayDays = it.delayDays,
+                weeklyAnchor = it.weeklyAnchor,
+                monthlyAnchor = it.monthlyAnchor,
                 interval = it.interval
             )
         }
