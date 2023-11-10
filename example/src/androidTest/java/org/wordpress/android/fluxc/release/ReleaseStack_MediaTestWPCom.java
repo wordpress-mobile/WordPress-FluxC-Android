@@ -40,6 +40,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @SuppressLint("UseSparseArrays")
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
@@ -296,7 +297,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (event.completed) {
+        if (event.media != null && event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
             } else {
@@ -350,8 +351,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Subscribe
     public void onStockMediaUploaded(OnStockMediaUploaded event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: "
-                                     + event.error.type);
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
         boolean isSingleUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
@@ -370,7 +370,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private boolean eventHasKnownImages(OnMediaChanged event) {
-        if (event == null || event.mediaList == null || event.mediaList.isEmpty()) return false;
+        if (event == null || event.mediaList.isEmpty()) return false;
         String[] splitIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1.split(",");
         if (splitIds.length != event.mediaList.size()) return false;
         for (MediaModel mediaItem : event.mediaList) {
@@ -380,26 +380,21 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        return newMediaModel("Test Title", mediaPath, mimeType);
-    }
+        MediaModel testMedia = new MediaModel(
+                sSite.getId(),
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                mimeType,
+                "Test Title",
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-    private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
-
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
-        testMedia.setMimeType(mimeType);
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setLocalSiteId(sSite.getId());
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void pushMedia(MediaModel media) throws InterruptedException {

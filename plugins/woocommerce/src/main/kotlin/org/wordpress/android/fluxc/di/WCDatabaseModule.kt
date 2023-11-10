@@ -46,6 +46,9 @@ interface WCDatabaseModule {
         @Provides fun provideTaxBasedOnDao(database: WCAndroidDatabase) = database.taxBasedOnSettingDao
 
         @Provides fun provideTaxRateDao(database: WCAndroidDatabase) = database.taxRateDao
+
+        @Provides fun provideWooPaymentsDepositsOverviewDao(database: WCAndroidDatabase) =
+            database.wooPaymentsDepositsOverviewDao
     }
     @Binds fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
 }
