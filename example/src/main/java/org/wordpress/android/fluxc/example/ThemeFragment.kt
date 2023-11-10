@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_themes.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.ThemeModel
@@ -30,6 +31,9 @@ class ThemeFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher
+
+    private var selectedSite: SiteModel? = null
+    private var selectedPos: Int = -1
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -52,6 +56,20 @@ class ThemeFragment : Fragment() {
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        theme_select_site.setOnClickListener {
+            showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
+                override fun onSiteSelected(site: SiteModel, pos: Int) {
+                    selectedSite = site
+                    selectedPos = pos
+                    val wpcomSite = if (site.isWPCom) "WP" else ""
+                    val jetpackSite = if (site.isJetpackConnected) "JP" else ""
+                    val siteName = site.name ?: site.displayName
+                    val selectedSite = "[$wpcomSite$jetpackSite] $siteName"
+                    theme_selected_site.text = selectedSite
+                }
+            })
+        }
 
         activate_theme_wpcom.setOnClickListener {
             val id = getThemeIdFromInput(view)
@@ -194,7 +212,7 @@ class ThemeFragment : Fragment() {
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: theme = " + event.theme.name)
+            prependToLog("success: theme = " + event.theme?.name)
         }
     }
 
@@ -241,10 +259,18 @@ class ThemeFragment : Fragment() {
     }
 
     private fun getWpComSite(): SiteModel? {
-        return siteStore.sites.firstOrNull { it != null && it.isWPCom }
+        return if (selectedSite?.isWPCom == true) {
+            selectedSite
+        } else {
+            null
+        }
     }
 
     private fun getJetpackConnectedSite(): SiteModel? {
-        return siteStore.sites.firstOrNull { it != null && it.isJetpackConnected }
+        return if (selectedSite?.isJetpackConnected == true) {
+            selectedSite
+        } else {
+            null
+        }
     }
 }

@@ -321,18 +321,20 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
             }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (event.completed) {
-             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
-                mLastUploadedId = event.media.getMediaId();
+        if (event.media != null) {
+            if (event.completed) {
+                if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
+                    mLastUploadedId = event.media.getMediaId();
+                } else {
+                    throw new AssertionError("Unexpected completion for media: " + event.media.getId());
+                }
+                mCountDownLatch.countDown();
             } else {
-                throw new AssertionError("Unexpected completion for media: " + event.media.getId());
-            }
-            mCountDownLatch.countDown();
-        } else {
-            // General checks that the UploadStore is keeping an updated progress value for the media
-            if (getMediaUploadModelForMediaModel(event.media) != null) {
-                assertTrue(mUploadStore.getUploadProgressForMedia(event.media) > 0F);
-                assertTrue(mUploadStore.getUploadProgressForMedia(event.media) < 1F);
+                // General checks that the UploadStore is keeping an updated progress value for the media
+                if (getMediaUploadModelForMediaModel(event.media) != null) {
+                    assertTrue(mUploadStore.getUploadProgressForMedia(event.media) > 0F);
+                    assertTrue(mUploadStore.getUploadProgressForMedia(event.media) < 1F);
+                }
             }
         }
     }
@@ -419,22 +421,21 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     }
 
     private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
+        MediaModel testMedia = new MediaModel(
+                sSite.getId(),
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                mimeType,
+                testTitle,
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType);
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setLocalSiteId(sSite.getId());
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
