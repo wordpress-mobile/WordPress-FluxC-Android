@@ -244,6 +244,22 @@ class MigrationTests {
         }
     }
 
+    @Test
+    fun testMigration28to29() {
+        helper.apply {
+            createDatabase(TEST_DB, 28).close()
+            runMigrationsAndValidate(TEST_DB, 29, false)
+        }
+    }
+
+    @Test
+    fun testMigration29to30() {
+        helper.apply {
+            createDatabase(TEST_DB, 29).close()
+            runMigrationsAndValidate(TEST_DB, 30, false)
+        }
+    }
+
     companion object {
         private const val TEST_DB = "migration-test"
     }

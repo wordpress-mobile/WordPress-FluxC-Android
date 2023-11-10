@@ -42,6 +42,8 @@ data class OrderEntity(
     val discountTotal: String = "",
     val discountCodes: String = "",
     val refundTotal: BigDecimal = BigDecimal.ZERO, // The total refund value for this order (usually a negative number)
+    @ColumnInfo(name = "customerId", defaultValue = "0")
+    val customerId: Long = 0,
     val billingFirstName: String = "",
     val billingLastName: String = "",
     val billingCompany: String = "",

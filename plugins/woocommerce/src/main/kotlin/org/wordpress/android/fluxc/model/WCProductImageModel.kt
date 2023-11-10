@@ -13,8 +13,8 @@ class WCProductImageModel(val id: Long) {
         fun fromMediaModel(media: MediaModel): WCProductImageModel {
             with(WCProductImageModel(media.mediaId)) {
                 dateCreated = media.uploadDate ?: DateUtils.getCurrentDateString()
-                src = media.url ?: ""
-                alt = media.alt ?: ""
+                src = media.url
+                alt = media.alt
                 name = media.fileName ?: ""
                 return this
             }
