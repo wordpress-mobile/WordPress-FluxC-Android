@@ -156,6 +156,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
@@ -174,6 +175,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getILike());
 
         // Unlike comment
@@ -185,6 +187,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check comment has been modified in the DB
         comment = mCommentStore.getCommentByLocalId(firstComment.getId());
+        assertNotNull(comment);
         assertFalse(comment.getILike());
     }
 
@@ -205,6 +208,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
 
         // Delete
@@ -216,6 +220,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Make sure the comment is still here but state changed
         comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
@@ -236,6 +241,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
 
         // Delete once (ie. move to trash)
@@ -326,6 +332,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
 
         // Using .contains() in the assert below because server might wrap the response in <p>
+        assertNotNull(comment);
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
         assertNotSame(mNewComment.getRemoteCommentId(), comment.getRemoteCommentId());
         assertNotSame(mNewComment.getRemoteSiteId(), comment.getRemoteSiteId());
@@ -415,6 +422,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check the new comment response contains URL
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment);
         assertNotNull(comment.getUrl());
     }
 
