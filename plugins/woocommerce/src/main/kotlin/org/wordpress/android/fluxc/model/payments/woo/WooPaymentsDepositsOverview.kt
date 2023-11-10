@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.model.payments.woo
 
-import com.google.gson.annotations.SerializedName
-
 data class WooPaymentsDepositsOverview(
     val account: Account?,
     val balance: Balance?,

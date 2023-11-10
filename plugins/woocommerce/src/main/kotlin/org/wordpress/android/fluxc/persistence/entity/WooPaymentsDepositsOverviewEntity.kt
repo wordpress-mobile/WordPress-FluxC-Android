@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 
 @Entity(tableName = "WooPaymentsDepositsOverview")
