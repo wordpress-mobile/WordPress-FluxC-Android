@@ -148,23 +148,21 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     }
 
     private MediaModel newMediaModel(SiteModel site, String mediaPath) {
-        final String testTitle = "Test Title";
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
+        MediaModel testMedia = new MediaModel(
+                site.getId(),
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                "image/jpeg",
+                "Test Title",
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
-        testMedia.setMimeType("image/jpeg");
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setLocalSiteId(site.getId());
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void uploadMedia(SiteModel site, MediaModel media) throws InterruptedException {
