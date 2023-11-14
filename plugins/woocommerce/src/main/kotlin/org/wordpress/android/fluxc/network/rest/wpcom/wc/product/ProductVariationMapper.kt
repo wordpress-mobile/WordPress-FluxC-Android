@@ -107,6 +107,16 @@ object ProductVariationMapper {
                 }
             }
         }
+        if (storedVariationModel.metadata != updatedVariationModel.metadata) {
+            JsonParser().apply {
+                body["meta_data"] = try {
+                    parse(updatedVariationModel.metadata).asJsonArray
+                } catch (ex: Exception) {
+                    JsonArray()
+                }
+            }
+        }
+
         return body
     }
 }
