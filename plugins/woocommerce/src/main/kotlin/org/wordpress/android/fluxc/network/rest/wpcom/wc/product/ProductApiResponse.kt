@@ -47,28 +47,28 @@ data class ProductApiResponse(
     val tax_class: String? = null,
     val manage_stock: String? = null,
     @JsonAdapter(NonNegativeDoubleJsonDeserializer::class)
-    val stock_quantity:Double? = 0.0,
+    val stock_quantity: Double? = 0.0,
     val stock_status: String? = null,
     val date_on_sale_from: String? = null,
     val date_on_sale_to: String? = null,
     val date_on_sale_from_gmt: String? = null,
     val date_on_sale_to_gmt: String? = null,
     val backorders: String? = null,
-    val backorders_allowed:Boolean = false,
-    val backordered:Boolean = false,
+    val backorders_allowed: Boolean = false,
+    val backordered: Boolean = false,
     @JsonAdapter(PrimitiveBooleanJsonDeserializer::class)
-    val sold_individually:Boolean = false,
+    val sold_individually: Boolean = false,
     val weight: String? = null,
     val dimensions: JsonElement? = null,
     val shipping_required: Boolean = false,
-    val shipping_taxable:Boolean = false,
+    val shipping_taxable: Boolean = false,
     val shipping_class: String? = null,
-    val shipping_class_id:Int = 0,
-    val reviews_allowed:Boolean = true,
+    val shipping_class_id: Int = 0,
+    val reviews_allowed: Boolean = true,
     val average_rating: String? = null,
-    val rating_count:Int = 0,
-    val parent_id:Long = 0L,
-    val menu_order:Int = 0,
+    val rating_count: Int = 0,
+    val parent_id: Long = 0L,
+    val menu_order: Int = 0,
     val purchase_note: String? = null,
     val categories: JsonElement? = null,
     val tags: JsonElement? = null,
@@ -182,32 +182,28 @@ data class ProductApiResponse(
         return applyBundledProductChanges(model)
     }
 
-    private fun applyBundledProductChanges(model: WCProductModel): WCProductModel{
-        val response = this
-        return if(response.type != CoreProductType.BUNDLE.value) {
-            model
-        } else {
-            model.apply {
-                if ((response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
-                    specialStockStatus = response.bundle_stock_status ?: ""
-                }
+    private fun applyBundledProductChanges(model: WCProductModel): WCProductModel {
+        if (this.type == CoreProductType.BUNDLE.value) {
+            val response = this
+            if ((response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
+                model.specialStockStatus = response.bundle_stock_status ?: ""
+            }
+            val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
+            val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
+            val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
 
-                val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
-                val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
-                val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
-
-                metadata = if (response.metadata != null && hasBundleQuantityRules) {
-                    response.bundle_max_size?.let { value ->
-                        WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
-                    }
-                    response.bundle_min_size?.let { value ->
-                        WCMetaData.addAsMetadata(response.metadata, BUNDLE_MIN_SIZE, value)
-                    }
-                    response.metadata.toString()
-                } else {
-                    response.metadata?.toString() ?: ""
+            model.metadata = if (response.metadata != null && hasBundleQuantityRules) {
+                response.bundle_max_size?.let { value ->
+                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
                 }
+                response.bundle_min_size?.let { value ->
+                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MIN_SIZE, value)
+                }
+                response.metadata.toString()
+            } else {
+                response.metadata?.toString() ?: ""
             }
         }
+        return model
     }
 }
