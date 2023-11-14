@@ -39,16 +39,10 @@ data class LineItem(
         } ?: emptyList()
     }
 
-    fun getConfigurationKey(): Long? {
-        return when {
-            bundledBy.isNullOrBlank().not() -> {
-                (metaData?.first { meta ->
-                    meta.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID
-                }?.value.toString())
-                    .toLongOrNull()
-            }
-
-            else -> null
-        }
+    val configurationKey
+        get() = bundledBy.takeIf { it.isNullOrBlank().not() }
+            ?.let { metaData }
+            ?.find { it.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID }
+            ?.value.toString().toLongOrNull()
     }
 }
