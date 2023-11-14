@@ -38,4 +38,10 @@ data class LineItem(
             Attribute(it.displayKey, it.displayValue as String)
         } ?: emptyList()
     }
+
+    val configurationKey
+        get() = bundledBy.takeIf { it.isNullOrBlank().not() }
+            ?.let { metaData }
+            ?.find { it.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID }
+            ?.value.toString().toLongOrNull()
 }

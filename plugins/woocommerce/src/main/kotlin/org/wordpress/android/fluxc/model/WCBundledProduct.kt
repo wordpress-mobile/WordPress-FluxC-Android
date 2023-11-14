@@ -19,3 +19,7 @@ class WCBundledProduct(
     @SerializedName("quantity_default") val quantityDefault: Long?,
     @SerializedName("optional") val isOptional: Boolean
 )
+
+fun WCBundledProduct.isConfigurable(): Boolean {
+    return (quantityMin != quantityMax) || (quantityMin == null) || isOptional
+}
