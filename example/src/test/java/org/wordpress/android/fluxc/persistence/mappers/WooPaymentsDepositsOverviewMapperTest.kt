@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.persistence.mappers
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOverviewComposedEntities
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.payments.woo.WooPaymentsAccountDepositSummary
@@ -118,8 +117,10 @@ class WooPaymentsDepositsOverviewMapperTest {
                 depositsEnabled = true,
                 depositsBlocked = true,
                 depositsSchedule = WooPaymentsDepositsSchedule(
-                    delayDays = 1,
-                    interval = "interval"
+                    interval = "interval",
+                    weeklyAnchor = "monday",
+                    monthlyAnchor = 10,
+                    delayDays = 1
                 ),
                 defaultCurrency = "defaultCurrency"
             )
@@ -181,6 +182,8 @@ class WooPaymentsDepositsOverviewMapperTest {
         assertThat(result.account?.depositsBlocked).isEqualTo(true)
         assertThat(result.account?.depositsEnabled).isEqualTo(true)
         assertThat(result.account?.depositsSchedule?.delayDays).isEqualTo(1)
+        assertThat(result.account?.depositsSchedule?.monthlyAnchor).isEqualTo(10)
+        assertThat(result.account?.depositsSchedule?.weeklyAnchor).isEqualTo("monday")
         assertThat(result.account?.depositsSchedule?.interval).isEqualTo("interval")
     }
 
@@ -190,13 +193,15 @@ class WooPaymentsDepositsOverviewMapperTest {
         // GIVEN
         val entity = WooPaymentsDepositsOverviewComposedEntities(
             overview = WooPaymentsDepositsOverviewEntity(
-                localSiteId = LocalOrRemoteId.LocalId(1),
+                localSiteId = LocalId(1),
                 account = WooPaymentsAccountDepositSummaryEntity(
                     depositsEnabled = true,
                     depositsBlocked = true,
                     depositsSchedule = WooPaymentsDepositsScheduleEntity(
                         delayDays = 1,
-                        interval = "interval"
+                        interval = "interval",
+                        monthlyAnchor = null,
+                        weeklyAnchor = null,
                     ),
                     defaultCurrency = "defaultCurrency"
                 )
@@ -348,6 +353,8 @@ class WooPaymentsDepositsOverviewMapperTest {
         assertThat(result.account?.depositsBlocked).isEqualTo(true)
         assertThat(result.account?.depositsEnabled).isEqualTo(true)
         assertThat(result.account?.depositsSchedule?.delayDays).isEqualTo(1)
+        assertThat(result.account?.depositsSchedule?.monthlyAnchor).isNull()
+        assertThat(result.account?.depositsSchedule?.weeklyAnchor).isNull()
         assertThat(result.account?.depositsSchedule?.interval).isEqualTo("interval")
     }
 }
