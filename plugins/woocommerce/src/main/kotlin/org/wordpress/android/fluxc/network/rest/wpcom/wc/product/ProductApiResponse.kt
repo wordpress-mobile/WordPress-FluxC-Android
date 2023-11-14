@@ -92,8 +92,7 @@ data class ProductApiResponse(
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
         val response = this
-        val isBundledProduct = response.type == CoreProductType.BUNDLE.value
-        return WCProductModel().apply {
+        val model = WCProductModel().apply {
             remoteProductId = response.id ?: 0
             name = response.name ?: ""
             slug = response.slug ?: ""
@@ -141,9 +140,6 @@ data class ProductApiResponse(
             stockQuantity = response.stock_quantity ?: 0.0
 
             stockStatus = response.stock_status ?: ""
-            if (isBundledProduct && (response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
-                specialStockStatus = response.bundle_stock_status ?: ""
-            }
 
             backorders = response.backorders ?: ""
             backordersAllowed = response.backorders_allowed
@@ -174,26 +170,6 @@ data class ProductApiResponse(
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
             groupedProductIds = response.grouped_products?.toString() ?: ""
-
-            val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
-            val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
-            val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
-
-            metadata = if (
-                isBundledProduct
-                && response.metadata != null
-                && hasBundleQuantityRules
-            ) {
-                response.bundle_max_size?.let { value ->
-                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
-                }
-                response.bundle_min_size?.let { value ->
-                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MIN_SIZE, value)
-                }
-                response.metadata.toString()
-            } else {
-                response.metadata?.toString() ?: ""
-            }
             bundledItems = response.bundled_items?.toString() ?: ""
             compositeComponents = response.composite_components?.toString() ?: ""
 
@@ -201,6 +177,36 @@ data class ProductApiResponse(
                 length = json.getString("length") ?: ""
                 width = json.getString("width") ?: ""
                 height = json.getString("height") ?: ""
+            }
+        }
+        return applyBundledProductChanges(model)
+    }
+
+    private fun applyBundledProductChanges(model: WCProductModel): WCProductModel{
+        val response = this
+        return if(response.type != CoreProductType.BUNDLE.value) {
+            model
+        } else {
+            model.apply {
+                if ((response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
+                    specialStockStatus = response.bundle_stock_status ?: ""
+                }
+
+                val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
+                val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
+                val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
+
+                metadata = if (response.metadata != null && hasBundleQuantityRules) {
+                    response.bundle_max_size?.let { value ->
+                        WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
+                    }
+                    response.bundle_min_size?.let { value ->
+                        WCMetaData.addAsMetadata(response.metadata, BUNDLE_MIN_SIZE, value)
+                    }
+                    response.metadata.toString()
+                } else {
+                    response.metadata?.toString() ?: ""
+                }
             }
         }
     }
