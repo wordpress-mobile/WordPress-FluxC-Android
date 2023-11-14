@@ -1909,6 +1909,15 @@ class ProductRestClient @Inject constructor(
                 }
             }
         }
+        if (storedWCProductModel.metadata != updatedProductModel.metadata) {
+            JsonParser().apply {
+                body["meta_data"] = try {
+                    parse(updatedProductModel.metadata).asJsonArray
+                } catch (ex: Exception) {
+                    JsonArray()
+                }
+            }
+        }
 
         return body
     }
