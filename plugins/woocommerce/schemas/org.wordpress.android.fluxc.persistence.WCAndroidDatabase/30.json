@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 30,
-    "identityHash": "46e29ce7aa2fba81c03063031e265024",
+    "identityHash": "1e3ad3f4fb750ae397a8fee0c724ed14",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1291,7 +1291,7 @@
       },
       {
         "tableName": "WooPaymentsDepositsOverview",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `depositsEnabled` INTEGER, `depositsBlocked` INTEGER, `defaultCurrency` TEXT, `delayDays` INTEGER, `interval` TEXT, PRIMARY KEY(`localSiteId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `depositsEnabled` INTEGER, `depositsBlocked` INTEGER, `defaultCurrency` TEXT, `delayDays` INTEGER, `weeklyAnchor` TEXT, `monthlyAnchor` INTEGER, `interval` TEXT, PRIMARY KEY(`localSiteId`))",
         "fields": [
           {
             "fieldPath": "localSiteId",
@@ -1320,6 +1320,18 @@
           {
             "fieldPath": "account.depositsSchedule.delayDays",
             "columnName": "delayDays",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "account.depositsSchedule.weeklyAnchor",
+            "columnName": "weeklyAnchor",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "account.depositsSchedule.monthlyAnchor",
+            "columnName": "monthlyAnchor",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -1595,7 +1607,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '46e29ce7aa2fba81c03063031e265024')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1e3ad3f4fb750ae397a8fee0c724ed14')"
     ]
   }
 }

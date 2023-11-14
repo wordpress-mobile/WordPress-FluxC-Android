@@ -13,6 +13,8 @@ data class WooPaymentsDepositsOverview(
     ) {
         data class DepositsSchedule(
             val delayDays: Int?,
+            val weeklyAnchor: String?,
+            val monthlyAnchor: Int?,
             val interval: String?
         )
     }
