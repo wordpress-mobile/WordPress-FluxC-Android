@@ -44,5 +44,4 @@ data class LineItem(
             ?.let { metaData }
             ?.find { it.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID }
             ?.value.toString().toLongOrNull()
-    }
 }
