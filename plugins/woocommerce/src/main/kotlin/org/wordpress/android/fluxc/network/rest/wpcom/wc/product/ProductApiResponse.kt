@@ -172,6 +172,7 @@ data class ProductApiResponse(
             groupedProductIds = response.grouped_products?.toString() ?: ""
             bundledItems = response.bundled_items?.toString() ?: ""
             compositeComponents = response.composite_components?.toString() ?: ""
+            metadata = response.metadata?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
@@ -192,16 +193,15 @@ data class ProductApiResponse(
             val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
             val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
 
-            model.metadata = if (response.metadata != null && hasBundleQuantityRules) {
+            if (hasBundleQuantityRules) {
+                val metadata = response.metadata ?: JsonArray()
                 response.bundle_max_size?.let { value ->
-                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MAX_SIZE, value)
+                    WCMetaData.addAsMetadata(metadata, BUNDLE_MAX_SIZE, value)
                 }
                 response.bundle_min_size?.let { value ->
-                    WCMetaData.addAsMetadata(response.metadata, BUNDLE_MIN_SIZE, value)
+                    WCMetaData.addAsMetadata(metadata, BUNDLE_MIN_SIZE, value)
                 }
-                response.metadata.toString()
-            } else {
-                response.metadata?.toString() ?: ""
+                model.metadata = metadata.toString()
             }
         }
         return model
