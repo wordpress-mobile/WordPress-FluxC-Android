@@ -26,6 +26,8 @@ data class WooPaymentsAccountDepositSummaryEntity(
 
 data class WooPaymentsDepositsSchedule(
     val delayDays: Int?,
+    val weeklyAnchor: String?,
+    val monthlyAnchor: Int?,
     val interval: String?
 )
 

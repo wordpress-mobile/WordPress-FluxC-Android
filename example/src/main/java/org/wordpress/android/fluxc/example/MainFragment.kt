@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.network.rest.wpapi.CookieNonceAuthenticator.C
 import org.wordpress.android.fluxc.network.rest.wpapi.CookieNonceAuthenticator.CookieNonceAuthenticationResult.Success
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticateTwoFactorPayload
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -55,8 +56,10 @@ class MainFragment : Fragment() {
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private var selfHostedPayload: RefreshSitesXMLRPCPayload? = null
 
-    // Used for 2fa
     private var authenticatePayload: AuthenticatePayload? = null
+
+    // Used for 2fa
+    private var authenticateTwoFactorPayload: AuthenticateTwoFactorPayload? = null
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -174,8 +177,9 @@ class MainFragment : Fragment() {
     }
 
     private fun signIn2fa(twoStepCode: String) {
-        authenticatePayload?.twoStepCode = twoStepCode
-        dispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(authenticatePayload))
+        authenticateTwoFactorPayload?.twoStepCode = twoStepCode
+        dispatcher.dispatch(AuthenticationActionBuilder
+            .newAuthenticateTwoFactorAction(authenticateTwoFactorPayload))
     }
 
     private fun showHTTPAuthDialog(url: String) {

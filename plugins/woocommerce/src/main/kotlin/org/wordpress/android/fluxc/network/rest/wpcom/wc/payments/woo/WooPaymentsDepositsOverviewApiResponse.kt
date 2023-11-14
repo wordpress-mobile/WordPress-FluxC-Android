@@ -63,5 +63,7 @@ data class WooPaymentsAccountDepositSummary(
 
 data class WooPaymentsDepositsSchedule(
     @SerializedName("delay_days") val delayDays: Int?,
+    @SerializedName("weekly_anchor") val weeklyAnchor: String?,
+    @SerializedName("monthly_anchor") val monthlyAnchor: Int?,
     val interval: String?
 )
