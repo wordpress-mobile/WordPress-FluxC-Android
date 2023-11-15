@@ -1914,6 +1914,7 @@ class ProductRestClient @Inject constructor(
                 body["meta_data"] = try {
                     parse(updatedProductModel.metadata).asJsonArray
                 } catch (ex: Exception) {
+                    AppLog.e(AppLog.T.API, "Error parsing product metadata", ex)
                     JsonArray()
                 }
             }
