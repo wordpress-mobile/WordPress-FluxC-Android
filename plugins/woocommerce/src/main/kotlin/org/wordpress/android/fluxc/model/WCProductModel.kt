@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys.ADDONS_METADATA_KEY
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
@@ -124,7 +125,17 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             ?.any { it.key == OtherKeys.HEAD_START_POST && it.value == "_hs_extra" }
             ?: false
 
-    @Suppress("SwallowedException", "TooGenericExceptionCaught") private val WCMetaData.addons
+    val isConfigurable: Boolean
+        get() = when (type) {
+            CoreProductType.BUNDLE.value -> {
+                Gson().fromJson(bundledItems, Array<WCBundledProduct>::class.java)
+                    ?.any { it.isConfigurable() } ?: false
+            }
+            else -> false
+        }
+
+    @Suppress("SwallowedException", "TooGenericExceptionCaught")
+    private val WCMetaData.addons
         get() =
             try {
                 Gson().run {
