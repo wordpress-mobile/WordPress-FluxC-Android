@@ -584,6 +584,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         const val SUBSCRIPTION_TRIAL_PERIOD = "_subscription_trial_period"
         const val SUBSCRIPTION_TRIAL_LENGTH = "_subscription_trial_length"
         const val SUBSCRIPTION_ONE_TIME_SHIPPING = "_subscription_one_time_shipping"
+        const val SUBSCRIPTION_PAYMENT_SYNC_DATE = "_subscription_payment_sync_date"
         val ALL_KEYS = setOf(
             SUBSCRIPTION_PRICE,
             SUBSCRIPTION_TRIAL_LENGTH,
@@ -592,7 +593,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             SUBSCRIPTION_PERIOD_INTERVAL,
             SUBSCRIPTION_LENGTH,
             SUBSCRIPTION_TRIAL_PERIOD,
-            SUBSCRIPTION_ONE_TIME_SHIPPING
+            SUBSCRIPTION_ONE_TIME_SHIPPING,
+            SUBSCRIPTION_PAYMENT_SYNC_DATE
         )
     }
 
