@@ -887,6 +887,7 @@ class OrderRestClient @Inject constructor(
             shippingLines?.let { put("shipping_lines", it) }
             customerNote?.let { put("customer_note", it) }
             couponLines?.let { put("coupon_lines", it) }
+            giftCard?.let { put("gift_cards", it) }
         }
     }
 
