@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.persistence.converters.BigDecimalConverter
 import org.wordpress.android.fluxc.persistence.converters.LocalIdConverter
 import org.wordpress.android.fluxc.persistence.converters.LongListConverter
 import org.wordpress.android.fluxc.persistence.converters.RemoteIdConverter
+import org.wordpress.android.fluxc.persistence.converters.StringListConverter
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.TaxBasedOnDao
 import org.wordpress.android.fluxc.persistence.dao.TaxRateDao
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
+import org.wordpress.android.fluxc.persistence.dao.WooPaymentsDepositsOverviewDao
 import org.wordpress.android.fluxc.persistence.entity.AddonEntity
 import org.wordpress.android.fluxc.persistence.entity.AddonOptionEntity
 import org.wordpress.android.fluxc.persistence.entity.CouponEmailEntity
@@ -33,6 +35,10 @@ import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsBalanceEntity
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositEntity
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositsOverviewEntity
+import org.wordpress.android.fluxc.persistence.entity.WooPaymentsManualDepositEntity
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration13to14
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration14to15
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration16to17
@@ -57,7 +63,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-    version = 29,
+    version = 30,
     entities = [
         AddonEntity::class,
         AddonOptionEntity::class,
@@ -71,7 +77,11 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         InboxNoteActionEntity::class,
         TopPerformerProductEntity::class,
         TaxBasedOnSettingEntity::class,
-        TaxRateEntity::class
+        TaxRateEntity::class,
+        WooPaymentsDepositsOverviewEntity::class,
+        WooPaymentsDepositEntity::class,
+        WooPaymentsManualDepositEntity::class,
+        WooPaymentsBalanceEntity::class,
     ],
     autoMigrations = [
         AutoMigration(from = 12, to = 13),
@@ -85,12 +95,14 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         AutoMigration(from = 25, to = 26),
         AutoMigration(from = 26, to = 27),
         AutoMigration(from = 28, to = 29),
+        AutoMigration(from = 29, to = 30),
     ]
 )
 @TypeConverters(
     value = [
         LocalIdConverter::class,
         LongListConverter::class,
+        StringListConverter::class,
         RemoteIdConverter::class,
         BigDecimalConverter::class
     ]
@@ -105,6 +117,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val topPerformerProductsDao: TopPerformerProductsDao
     abstract val taxBasedOnSettingDao: TaxBasedOnDao
     abstract val taxRateDao: TaxRateDao
+    abstract val wooPaymentsDepositsOverviewDao: WooPaymentsDepositsOverviewDao
 
     companion object {
         fun buildDb(applicationContext: Context) = Room.databaseBuilder(

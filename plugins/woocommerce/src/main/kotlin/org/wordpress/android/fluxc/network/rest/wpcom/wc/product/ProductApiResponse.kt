@@ -4,6 +4,9 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys.BUNDLE_MAX_SIZE
+import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys.BUNDLE_MIN_SIZE
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.utils.NonNegativeDoubleJsonDeserializer
@@ -44,28 +47,28 @@ data class ProductApiResponse(
     val tax_class: String? = null,
     val manage_stock: String? = null,
     @JsonAdapter(NonNegativeDoubleJsonDeserializer::class)
-    val stock_quantity:Double? = 0.0,
+    val stock_quantity: Double? = 0.0,
     val stock_status: String? = null,
     val date_on_sale_from: String? = null,
     val date_on_sale_to: String? = null,
     val date_on_sale_from_gmt: String? = null,
     val date_on_sale_to_gmt: String? = null,
     val backorders: String? = null,
-    val backorders_allowed:Boolean = false,
-    val backordered:Boolean = false,
+    val backorders_allowed: Boolean = false,
+    val backordered: Boolean = false,
     @JsonAdapter(PrimitiveBooleanJsonDeserializer::class)
-    val sold_individually:Boolean = false,
+    val sold_individually: Boolean = false,
     val weight: String? = null,
     val dimensions: JsonElement? = null,
     val shipping_required: Boolean = false,
-    val shipping_taxable:Boolean = false,
+    val shipping_taxable: Boolean = false,
     val shipping_class: String? = null,
-    val shipping_class_id:Int = 0,
-    val reviews_allowed:Boolean = true,
+    val shipping_class_id: Int = 0,
+    val reviews_allowed: Boolean = true,
     val average_rating: String? = null,
-    val rating_count:Int = 0,
-    val parent_id:Long = 0L,
-    val menu_order:Int = 0,
+    val rating_count: Int = 0,
+    val parent_id: Long = 0L,
+    val menu_order: Int = 0,
     val purchase_note: String? = null,
     val categories: JsonElement? = null,
     val tags: JsonElement? = null,
@@ -82,13 +85,14 @@ data class ProductApiResponse(
     val bundle_stock_quantity: String? = null,
     val bundle_stock_status: String? = null,
     val bundled_items: JsonArray? = null,
-    val composite_components: JsonArray? = null
+    val composite_components: JsonArray? = null,
+    val bundle_min_size: String? = null,
+    val bundle_max_size: String? = null,
 ) {
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
         val response = this
-        val isBundledProduct = response.type == CoreProductType.BUNDLE.value
-        return WCProductModel().apply {
+        val model = WCProductModel().apply {
             remoteProductId = response.id ?: 0
             name = response.name ?: ""
             slug = response.slug ?: ""
@@ -136,9 +140,6 @@ data class ProductApiResponse(
             stockQuantity = response.stock_quantity ?: 0.0
 
             stockStatus = response.stock_status ?: ""
-            if (isBundledProduct && (response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
-                specialStockStatus = response.bundle_stock_status ?: ""
-            }
 
             backorders = response.backorders ?: ""
             backordersAllowed = response.backorders_allowed
@@ -169,9 +170,9 @@ data class ProductApiResponse(
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
             groupedProductIds = response.grouped_products?.toString() ?: ""
-            metadata = response.metadata?.toString() ?: ""
             bundledItems = response.bundled_items?.toString() ?: ""
             compositeComponents = response.composite_components?.toString() ?: ""
+            metadata = response.metadata?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
@@ -179,5 +180,30 @@ data class ProductApiResponse(
                 height = json.getString("height") ?: ""
             }
         }
+        return applyBundledProductChanges(model)
+    }
+
+    private fun applyBundledProductChanges(model: WCProductModel): WCProductModel {
+        if (this.type == CoreProductType.BUNDLE.value) {
+            val response = this
+            if ((response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
+                model.specialStockStatus = response.bundle_stock_status ?: ""
+            }
+            val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
+            val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
+            val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
+
+            if (hasBundleQuantityRules) {
+                val metadata = response.metadata ?: JsonArray()
+                response.bundle_max_size?.let { value ->
+                    WCMetaData.addAsMetadata(metadata, BUNDLE_MAX_SIZE, value)
+                }
+                response.bundle_min_size?.let { value ->
+                    WCMetaData.addAsMetadata(metadata, BUNDLE_MIN_SIZE, value)
+                }
+                model.metadata = metadata.toString()
+            }
+        }
+        return model
     }
 }

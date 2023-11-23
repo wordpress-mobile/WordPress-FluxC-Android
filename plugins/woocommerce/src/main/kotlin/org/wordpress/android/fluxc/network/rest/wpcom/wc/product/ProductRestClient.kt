@@ -1909,6 +1909,16 @@ class ProductRestClient @Inject constructor(
                 }
             }
         }
+        if (storedWCProductModel.metadata != updatedProductModel.metadata) {
+            JsonParser().apply {
+                body["meta_data"] = try {
+                    parse(updatedProductModel.metadata).asJsonArray
+                } catch (ex: Exception) {
+                    AppLog.e(AppLog.T.API, "Error parsing product metadata", ex)
+                    JsonArray()
+                }
+            }
+        }
 
         return body
     }
