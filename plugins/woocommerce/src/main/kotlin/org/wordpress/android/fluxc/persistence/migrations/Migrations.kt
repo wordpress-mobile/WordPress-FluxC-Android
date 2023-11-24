@@ -898,8 +898,6 @@ internal val MIGRATION_27_28 = object : Migration(27, 28) {
     }
 }
 
-
-
 /**
  * We are storing "giftCards" into OrderEntity property as a new extensions support.
  */
