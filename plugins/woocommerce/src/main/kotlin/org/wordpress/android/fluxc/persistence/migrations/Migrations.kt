@@ -900,7 +900,7 @@ internal val MIGRATION_27_28 = object : Migration(27, 28) {
     /**
      * We are storing "giftCards" into OrderEntity property as a new extensions support.
      */
-    internal val MIGRATION_28_29 = object : Migration(28, 29) {
+    internal val MIGRATION_30_31 = object : Migration(30, 31) {
         @Suppress("LongMethod")
         override fun migrate(database: SupportSQLiteDatabase) {
             database.apply {
