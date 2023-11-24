@@ -896,18 +896,21 @@ internal val MIGRATION_27_28 = object : Migration(27, 28) {
             )
         }
     }
+}
 
-    /**
-     * We are storing "giftCards" into OrderEntity property as a new extensions support.
-     */
-    internal val MIGRATION_30_31 = object : Migration(30, 31) {
-        @Suppress("LongMethod")
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.apply {
-                execSQL("DROP TABLE OrderEntity")
-                // language=RoomSql
-                execSQL(
-                    /* sql = */ """
+
+
+/**
+ * We are storing "giftCards" into OrderEntity property as a new extensions support.
+ */
+internal val MIGRATION_30_31 = object : Migration(30, 31) {
+    @Suppress("LongMethod")
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE OrderEntity")
+            // language=RoomSql
+            execSQL(
+                /* sql = */ """
                 CREATE TABLE IF NOT EXISTS  `OrderEntity` (
                   `localSiteId` INTEGER NOT NULL,
                   `orderId` INTEGER NOT NULL,
@@ -963,15 +966,14 @@ internal val MIGRATION_27_28 = object : Migration(27, 28) {
                   PRIMARY KEY(`localSiteId`, `orderId`)
                 )
             """.trimIndent()
-                )
-                execSQL(
-                    // language=RoomSql
-                    """
+            )
+            execSQL(
+                // language=RoomSql
+                """
                     CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId`
                     ON `OrderEntity` (`localSiteId`, `orderId`);
                 """.trimIndent()
-                )
-            }
+            )
         }
     }
 }
