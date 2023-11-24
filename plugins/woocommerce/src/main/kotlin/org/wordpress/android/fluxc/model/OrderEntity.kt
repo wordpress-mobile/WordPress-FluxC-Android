@@ -79,7 +79,9 @@ data class OrderEntity(
     @ColumnInfo(name = "needsPayment")
     val needsPayment: Boolean? = null,
     @ColumnInfo(name = "needsProcessing")
-    val needsProcessing: Boolean? = null
+    val needsProcessing: Boolean? = null,
+    @ColumnInfo(name = "giftCards", defaultValue = "")
+    val giftCard: String = ""
 ) {
     companion object {
         private val gson by lazy { Gson() }
