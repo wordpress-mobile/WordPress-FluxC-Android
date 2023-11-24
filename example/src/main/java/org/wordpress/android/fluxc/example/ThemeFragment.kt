@@ -158,9 +158,16 @@ class ThemeFragment : Fragment() {
                     message = "Enter filter (Optional)",
                     isNumeric = false
                 )
+                val limit = showSingleLineDialog(
+                    activity = requireActivity(),
+                    message = "Limit results? (Optional, defaults to 500)",
+                    isNumeric = true
+                )
                 dispatcher.dispatch(
                     ThemeActionBuilder.newFetchWpComThemesAction(
-                        FetchWPComThemesPayload(filter)
+                        limit?.let {
+                            FetchWPComThemesPayload(filter, it.toInt())
+                        } ?: FetchWPComThemesPayload(filter)
                     )
                 )
             }
