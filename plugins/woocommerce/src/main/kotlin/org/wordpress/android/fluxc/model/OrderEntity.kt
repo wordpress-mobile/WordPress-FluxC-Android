@@ -80,7 +80,7 @@ data class OrderEntity(
     val needsPayment: Boolean? = null,
     @ColumnInfo(name = "needsProcessing")
     val needsProcessing: Boolean? = null,
-    @ColumnInfo(name = "giftCards", defaultValue = "")
+    @ColumnInfo(name = "giftCards")
     val giftCard: String = ""
 ) {
     companion object {
