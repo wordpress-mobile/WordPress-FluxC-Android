@@ -67,7 +67,9 @@ open class WooCommerceStore @Inject constructor(
         WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking"),
         WOO_SUBSCRIPTIONS("woocommerce-subscriptions/woocommerce-subscriptions"),
         WOO_GIFT_CARDS("woocommerce-gift-cards/woocommerce-gift-cards"),
-        WOO_MIN_MAX_QUANTITIES("woocommerce-min-max-quantities/woocommerce-min-max-quantities")
+        WOO_MIN_MAX_QUANTITIES("woocommerce-min-max-quantities/woocommerce-min-max-quantities"),
+        WOO_PRODUCT_BUNDLES("woocommerce-product-bundles/woocommerce-product-bundles"),
+        WOO_COMPOSITE_PRODUCTS("woocommerce-composite-products/woocommerce-composite-products")
     }
 
     companion object {
