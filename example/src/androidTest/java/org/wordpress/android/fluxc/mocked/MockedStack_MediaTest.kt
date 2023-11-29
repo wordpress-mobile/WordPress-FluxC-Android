@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
+@Suppress("ClassNaming")
 @SuppressLint("UseSparseArrays")
 class MockedStack_MediaTest : MockedStack_Base() {
     @Inject lateinit var dispatcher: Dispatcher
@@ -68,7 +69,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         interceptor.respondWithSticky("media-upload-response-success.json")
 
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        newMediaModel("Test Title", sampleImagePath, "image/jpeg").let { testMedia ->
+        newMediaModel("Test Title", sampleImagePath)?.let { testMedia ->
             countDownLatch = CountDownLatch(1)
             nextEvent = TestEvents.CANCELED_MEDIA
             val payload = UploadMediaPayload(testSite, testMedia, true)
@@ -79,12 +80,17 @@ class MockedStack_MediaTest : MockedStack_Base() {
             val cancelPayload = CancelMediaPayload(testSite, testMedia)
             dispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload))
 
-            Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+            Assert.assertTrue(
+                countDownLatch.await(
+                    TestUtils.DEFAULT_TIMEOUT_MS.toLong(),
+                    TimeUnit.MILLISECONDS
+                )
+            )
             Assert.assertEquals(0, mediaStore.getSiteMediaCount(testSite))
         }
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        newMediaModel("Test Title", sampleImagePath, "image/jpeg").let { testMedia ->
+        newMediaModel("Test Title", sampleImagePath)?.let { testMedia ->
             countDownLatch = CountDownLatch(1)
             nextEvent = TestEvents.CANCELED_MEDIA
             val payload = UploadMediaPayload(testSite, testMedia, true)
@@ -95,11 +101,16 @@ class MockedStack_MediaTest : MockedStack_Base() {
             val cancelPayload = CancelMediaPayload(testSite, testMedia, false)
             dispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload))
 
-            Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+            Assert.assertTrue(
+                countDownLatch.await(
+                    TestUtils.DEFAULT_TIMEOUT_MS.toLong(),
+                    TimeUnit.MILLISECONDS
+                )
+            )
             Assert.assertEquals(1, mediaStore.getSiteMediaCount(testSite))
 
             val canceledMedia = mediaStore.getMediaWithLocalId(testMedia.id)
-            Assert.assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.uploadState)
+            Assert.assertEquals(MediaUploadState.FAILED.toString(), canceledMedia?.uploadState)
         }
     }
 
@@ -122,15 +133,17 @@ class MockedStack_MediaTest : MockedStack_Base() {
         // Verify all have been uploaded
         Assert.assertEquals(uploadedMediaModels.size, uploadedIds.size)
         Assert.assertEquals(
-                uploadedMediaModels.size,
-                mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
+            uploadedMediaModels.size,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
         )
 
         // Verify they exist in the MediaStore
         val iterator = uploadedMediaModels.values.iterator()
         while (iterator.hasNext()) {
             iterator.next().let { uploadedMediaModel ->
-                Assert.assertNotNull(mediaStore.getSiteMediaWithId(testSite, uploadedMediaModel.mediaId))
+                Assert.assertNotNull(
+                    mediaStore.getSiteMediaWithId(testSite, uploadedMediaModel.mediaId)
+                )
             }
         }
     }
@@ -167,8 +180,10 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(uploadedIds.size, mediaStore.getSiteMediaCount(testSite))
 
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        Assert.assertEquals(uploadedIds.size,
-                mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size)
+        Assert.assertEquals(
+            uploadedIds.size,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
+        )
     }
 
     @Test
@@ -203,72 +218,82 @@ class MockedStack_MediaTest : MockedStack_Base() {
         Assert.assertEquals(uploadedMediaModels.size, mediaStore.getSiteMediaCount(testSite))
 
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        Assert.assertEquals(uploadedIds.size, mediaStore.getSiteMediaWithState(testSite,
-                MediaUploadState.UPLOADED).size)
+        Assert.assertEquals(
+            uploadedIds.size,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size
+        )
 
         // All cancelled media should have a FAILED state
-        Assert.assertEquals(amountToCancel, mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size)
+        Assert.assertEquals(
+            amountToCancel,
+            mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size
+        )
     }
 
-    @Suppress("unused")
     @Subscribe
+    @Suppress("unused", "ThrowsCount", "CyclomaticComplexMethod", "NestedBlockDepth")
     fun onMediaUploaded(event: OnMediaUploaded) {
-        if (event.isError) {
+        if (event.isError || event.media == null) {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
-        if (event.canceled) {
-            if (nextEvent == TestEvents.CANCELED_MEDIA || nextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+        event.media?.let {
+            if (event.canceled) {
+                if (nextEvent == TestEvents.CANCELED_MEDIA ||
+                    nextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+                    countDownLatch.countDown()
+                } else {
+                    throw AssertionError("Unexpected cancellation for media: " + it.id)
+                }
+            } else if (event.completed) {
+                when (nextEvent) {
+                    TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL -> {
+                        uploadedIds.add(it.mediaId)
+                        // Update our own map object with the new media id
+                        val media = uploadedMediaModels[it.id]?.apply {
+                            mediaId = it.mediaId
+                        } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + it.id)
+                        Assert.assertNotNull(media)
+                    }
+
+                    TestEvents.UPLOADED_MULTIPLE_MEDIA -> {
+                        uploadedIds.add(it.mediaId)
+                        // Update our own map object with the new media id
+                        val media = uploadedMediaModels[it.id]?.apply {
+                            mediaId = it.mediaId
+                        } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + it.id)
+                        Assert.assertNotNull(media)
+                    }
+
+                    else -> {
+                        throw AssertionError("Unexpected completion for media: " + it.id)
+                    }
+                }
                 countDownLatch.countDown()
-            } else {
-                throw AssertionError("Unexpected cancellation for media: " + event.media.id)
             }
-        } else if (event.completed) {
-            when (nextEvent) {
-                TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL -> {
-                    uploadedIds.add(event.media.mediaId)
-                    // Update our own map object with the new media id
-                    val media = uploadedMediaModels[event.media.id]?.apply {
-                        mediaId = event.media.mediaId
-                    } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + event.media.id)
-                    Assert.assertNotNull(media)
-                }
-                TestEvents.UPLOADED_MULTIPLE_MEDIA -> {
-                    uploadedIds.add(event.media.mediaId)
-                    // Update our own map object with the new media id
-                    val media = uploadedMediaModels[event.media.id]?.apply {
-                        mediaId = event.media.mediaId
-                    } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + event.media.id)
-                    Assert.assertNotNull(media)
-                }
-                else -> {
-                    throw AssertionError("Unexpected completion for media: " + event.media.id)
-                }
-            }
-            countDownLatch.countDown()
         }
     }
 
     private fun addMediaModelToUploadArray(title: String) {
-        val mediaModel = newMediaModel(title, sampleImagePath, "image/jpeg")
-        uploadedMediaModels[mediaModel.id] = mediaModel
+        val mediaModel = newMediaModel(title, sampleImagePath)
+        mediaModel?.let { uploadedMediaModels[mediaModel.id] = it }
     }
 
-    private fun newMediaModel(testTitle: String, mediaPath: String, mimeType: String): MediaModel {
-        val testDescription = "Test Description"
-        val testCaption = "Test Caption"
-        val testAlt = "Test Alt"
+    private fun newMediaModel(testTitle: String, mediaPath: String): MediaModel? {
+        val testMedia = MediaModel(
+            testSite.id,
+            null,
+            mediaPath.substring(mediaPath.lastIndexOf("/")),
+            mediaPath,
+            mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+            "image/jpeg",
+            testTitle,
+            null
+        )
+        testMedia.description = "Test Description"
+        testMedia.caption = "Test Caption"
+        testMedia.alt = "Test Alt"
 
-        return mediaStore.instantiateMediaModel().apply {
-            filePath = mediaPath
-            fileExtension = mediaPath.substring(mediaPath.lastIndexOf(".") + 1)
-            this.mimeType = mimeType
-            fileName = mediaPath.substring(mediaPath.lastIndexOf("/"))
-            title = testTitle
-            description = testDescription
-            caption = testCaption
-            alt = testAlt
-            localSiteId = testSite.id
-        }
+        return mediaStore.instantiateMediaModel(testMedia)
     }
 
     private fun uploadMultipleMedia(
@@ -283,7 +308,8 @@ class MockedStack_MediaTest : MockedStack_Base() {
             // To imitate a real set of media upload requests as much as possible, each one should return a unique
             // remote media id. This also makes sure the MediaModel table doesn't treat these as duplicate entries and
             // deletes them, failing the test.
-            defaultId: String -> defaultId.replace("9999", remoteIdQueue.poll().toString())
+            defaultId: String ->
+            defaultId.replace("9999", remoteIdQueue.poll()?.toString() ?: "")
         }
 
         countDownLatch = CountDownLatch(mediaList.size)
@@ -297,7 +323,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
             // Wait a bit and issue the cancel command
             TestUtils.waitFor(300)
 
-            // We'e only cancelling the first n=howManyFirstToCancel uploads
+            // We're only cancelling the first n=howManyFirstToCancel uploads
             for (i in 0 until howManyFirstToCancel) {
                 val media = mediaList[i]
                 val payload = CancelMediaPayload(testSite, media, delete)
@@ -305,6 +331,11 @@ class MockedStack_MediaTest : MockedStack_Base() {
             }
         }
 
-        Assert.assertTrue(countDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        Assert.assertTrue(
+            countDownLatch.await(
+                TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS.toLong(),
+                TimeUnit.MILLISECONDS
+            )
+        )
     }
 }

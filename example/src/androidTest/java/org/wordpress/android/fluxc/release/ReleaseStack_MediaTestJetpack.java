@@ -11,7 +11,6 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
@@ -34,9 +33,9 @@ import javax.inject.Inject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
-    @Inject AccountStore mAccountStore;
     @Inject MediaStore mMediaStore;
 
     private enum TestEvents {
@@ -74,7 +73,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site = mSiteStore.getSites().get(0);
 
         // Attempt to upload an image that exceeds the site's maximum upload_max_filesize or post_max_size
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath());
         mNextEvent = TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -95,7 +94,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site.setMemoryLimit(1985); // Artificially set the site's memory limit, in bytes
 
         // Attempt to upload an image that exceeds the site's memory limit
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath());
         mNextEvent = TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -120,7 +119,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site.setSpaceUsed(50);
 
         // Attempt to upload an image that exceeds the site's memory limit
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath());
         mNextEvent = TestEvents.ERROR_EXCEEDS_SITE_SPACE_QUOTA_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -152,24 +151,22 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         }
     }
 
-    private MediaModel newMediaModel(SiteModel site, String mediaPath, String mimeType) {
-        final String testTitle = "Test Title";
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
+    private MediaModel newMediaModel(SiteModel site, String mediaPath) {
+        MediaModel testMedia = new MediaModel(
+                site.getId(),
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                "image/jpeg",
+                "Test Title",
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
 
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType);
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setLocalSiteId(site.getId());
-
-        return testMedia;
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
     private void uploadMedia(SiteModel site, MediaModel media) throws InterruptedException {

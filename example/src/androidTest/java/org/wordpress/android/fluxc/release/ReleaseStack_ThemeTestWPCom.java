@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.FetchWPComThemesPayload;
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.OnStarterDesignsFetched;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     enum TestEvents {
         NONE,
@@ -228,7 +230,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // no need to sign into account, this is a test for an endpoint that does not require authentication
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction(new FetchWPComThemesPayload()));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

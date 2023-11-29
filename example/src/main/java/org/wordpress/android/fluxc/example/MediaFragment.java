@@ -18,6 +18,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -121,9 +122,10 @@ public class MediaFragment extends Fragment {
 
                 String[] ids = text1.split(",");
                 for (String id : ids) {
-                    MediaModel media = new MediaModel();
-                    media.setMediaId(Long.valueOf(id));
-                    fetchMedia(mSite, media);
+                    fetchMedia(mSite, new MediaModel(
+                            mSite.getId(),
+                            Long.parseLong(id)
+                    ));
                 }
             }, "comma-separate media IDs", "", "");
             dialog.show(getFragmentManager(), "media-ids-dialog");
@@ -247,7 +249,7 @@ public class MediaFragment extends Fragment {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(OnMediaUploaded event) {
-        if (!event.isError()) {
+        if (event.media != null && !event.isError()) {
             if (event.canceled) {
                 prependToLog("Upload canceled: " + event.media.getFileName());
                 mCancelButton.setEnabled(false);
@@ -266,8 +268,10 @@ public class MediaFragment extends Fragment {
         }
     }
 
-    private void prependToLog(final String s) {
-        ((MainExampleActivity) getActivity()).prependToLog(s);
+    private void prependToLog(@Nullable final String s) {
+        if (s != null) {
+            ((MainExampleActivity) getActivity()).prependToLog(s);
+        }
     }
 
     private void fetchMediaList(@NonNull SiteModel site) {
@@ -286,17 +290,25 @@ public class MediaFragment extends Fragment {
     private void uploadMedia(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
 
-        mCurrentUpload = mMediaStore.instantiateMediaModel();
-        mCurrentUpload.setFileName(MediaUtils.getFileName(mediaUri));
-        mCurrentUpload.setFilePath(mediaUri);
-        mCurrentUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
+        MediaModel media = new MediaModel(
+                site.getId(),
+                null,
+                MediaUtils.getFileName(mediaUri),
+                mediaUri,
+                null,
+                MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)),
+                "",
+                null
+        );
+        mCurrentUpload = mMediaStore.instantiateMediaModel(media);
+        if (mCurrentUpload != null) {
+            // Upload
+            UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentUpload, true);
+            prependToLog("Dispatching upload event for media localId=" + mCurrentUpload.getId());
 
-        // Upload
-        UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentUpload, true);
-        prependToLog("Dispatching upload event for media localId=" + mCurrentUpload.getId());
-
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        mCancelButton.setEnabled(true);
+            mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+            mCancelButton.setEnabled(true);
+        }
     }
 
     private void deleteMedia(@NonNull SiteModel site, @NonNull MediaModel media) {

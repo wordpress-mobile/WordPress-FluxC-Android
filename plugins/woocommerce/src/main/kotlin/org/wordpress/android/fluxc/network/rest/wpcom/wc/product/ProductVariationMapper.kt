@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.util.AppLog
 
 object ProductVariationMapper {
     /**
@@ -14,7 +15,13 @@ object ProductVariationMapper {
      * fields of [variationModel]. This is to ensure that we do not update product fields that do not contain any
      * changes.
      */
-    @Suppress("ForbiddenComment", "LongMethod", "ComplexMethod", "SwallowedException", "TooGenericExceptionCaught")
+    @Suppress(
+        "ForbiddenComment",
+        "LongMethod",
+        "ComplexMethod",
+        "SwallowedException",
+        "TooGenericExceptionCaught"
+    )
     fun variantModelToProductJsonBody(
         variationModel: WCProductVariationModel?,
         updatedVariationModel: WCProductVariationModel
@@ -107,6 +114,17 @@ object ProductVariationMapper {
                 }
             }
         }
+        if (storedVariationModel.metadata != updatedVariationModel.metadata) {
+            JsonParser().apply {
+                body["meta_data"] = try {
+                    parse(updatedVariationModel.metadata).asJsonArray
+                } catch (ex: Exception) {
+                    AppLog.e(AppLog.T.API, "Error parsing product variation metadata", ex)
+                    JsonArray()
+                }
+            }
+        }
+
         return body
     }
 }

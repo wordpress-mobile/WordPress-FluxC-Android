@@ -51,6 +51,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  */
+@SuppressWarnings("NewClassNamingConvention")
 public class MockedStack_UploadTest extends MockedStack_Base {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
@@ -90,7 +91,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     @Test
     @Ignore
     public void testUploadMedia() throws InterruptedException {
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         startSuccessfulMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -103,7 +104,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
     @Test
     public void testUploadMediaError() throws InterruptedException {
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         startFailingMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -123,7 +124,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mInterceptor.respondWithSticky("media-upload-response-success.json", 1000L, null);
 
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         UploadMediaPayload payload = new UploadMediaPayload(getTestSite(), testMedia, true);
@@ -144,7 +145,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertNull(mediaUploadModel);
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        testMedia = newMediaModel(getSampleImagePath());
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         payload = new UploadMediaPayload(getTestSite(), testMedia, true);
@@ -178,7 +179,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         testMedia.setLocalPostId(mPost.getId());
         startFailingMediaUpload(testMedia, site);
 
@@ -276,7 +277,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         testMedia.setLocalPostId(mPost.getId());
         startSuccessfulMediaUpload(testMedia, site);
 
@@ -347,7 +348,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         testMedia.setLocalPostId(mPost.getId());
         startFailingMediaUpload(testMedia, site);
 
@@ -378,7 +379,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         clearMedia(mPost, mUploadStore.getFailedMediaForPost(mPost));
 
         // Upload a new media item to the cancelled post
-        testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        testMedia = newMediaModel(getSampleImagePath());
         testMedia.setLocalPostId(mPost.getId());
         startFailingMediaUpload(testMedia, site);
 
@@ -405,7 +406,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
+        MediaModel testMedia = newMediaModel(getSampleImagePath());
         testMedia.setLocalPostId(mPost.getId());
         startSuccessfulMediaUpload(testMedia, site);
 
@@ -520,31 +521,26 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         }
     }
 
-    private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        return newMediaModel("Test Title", mediaPath, mimeType);
+    private MediaModel newMediaModel(String mediaPath) {
+        MediaModel testMedia = new MediaModel(
+                0,
+                null,
+                mediaPath.substring(mediaPath.lastIndexOf("/")),
+                mediaPath,
+                mediaPath.substring(mediaPath.lastIndexOf(".") + 1),
+                "image/jpeg",
+                "Test Title",
+                null
+        );
+        testMedia.setDescription("Test Description");
+        testMedia.setCaption("Test Caption");
+        testMedia.setAlt("Test Alt");
+
+        return mMediaStore.instantiateMediaModel(testMedia);
     }
 
-    private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
-
-        MediaModel testMedia = mMediaStore.instantiateMediaModel();
-        testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType);
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-
-        return testMedia;
-    }
-
-    private PostModel createNewPost(SiteModel site) throws InterruptedException {
+    private void createNewPost(SiteModel site) {
         mPost = mPostStore.instantiatePostModel(site, false);
-        return mPost;
     }
 
     private void setupPostAttributes() {

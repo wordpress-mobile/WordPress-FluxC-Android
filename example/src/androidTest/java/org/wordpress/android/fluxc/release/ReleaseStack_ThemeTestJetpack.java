@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.FetchWPComThemesPayload;
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
 import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
@@ -41,10 +42,13 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
@@ -84,7 +88,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // verify that installed themes list is empty first
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() == 0);
+        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
@@ -259,7 +263,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        assertSame(mNextEvent, TestEvents.FETCHED_CURRENT_THEME);
         assertNotNull(event.theme);
         mCountDownLatch.countDown();
     }
@@ -270,7 +274,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        assertSame(mNextEvent, TestEvents.ACTIVATED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -280,7 +284,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
+        assertSame(mNextEvent, TestEvents.INSTALLED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -290,7 +294,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.DELETED_THEME);
+        assertSame(mNextEvent, TestEvents.DELETED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -343,8 +347,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     private SiteModel signIntoWpComAccountWithJetpackSite() throws InterruptedException {
         // sign into a WP.com account with a Jetpack site
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+        authenticateWPComAndFetchSites();
 
         // verify Jetpack site is available
         final SiteModel jetpackSite = getJetpackSite();
@@ -352,9 +355,12 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return jetpackSite;
     }
 
-    private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
+    private void authenticateWPComAndFetchSites() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        AuthenticatePayload payload = new AuthenticatePayload(
+                BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY
+        );
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
@@ -387,7 +393,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     private void fetchWpComThemes() throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction(new FetchWPComThemesPayload()));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -428,7 +434,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             activateTheme(jetpackSite, otherThemeToActivate);
 
             // Make sure another theme is activated
-            assertFalse(theme.getThemeId().equals(mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId()));
+            assertNotEquals(theme.getThemeId(), mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId());
         }
         // delete existing theme from site
         deleteTheme(jetpackSite, theme);

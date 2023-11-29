@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.theme.ThemeRestClient;
 import org.wordpress.android.fluxc.persistence.ThemeSqlUtils;
 import org.wordpress.android.util.AppLog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -32,10 +33,29 @@ public class ThemeStore extends Store {
     public static final String MOBILE_FRIENDLY_CATEGORY_WEBSITE = "starting-website";
     public static final String MOBILE_FRIENDLY_CATEGORY_PORTFOLIO = "starting-portfolio";
 
+    // A high number to ensure we get all themes in one request
+    private static final int DEFAULT_LIMIT_OF_THEME_RESULTS = 500;
+
     // Payloads
+    public static class FetchWPComThemesPayload extends Payload<BaseNetworkError> {
+        @Nullable public String filter;
+        public int resultsLimit = DEFAULT_LIMIT_OF_THEME_RESULTS;
+
+        public FetchWPComThemesPayload() {}
+
+        public FetchWPComThemesPayload(@Nullable String filter) {
+            this.filter = filter;
+        }
+
+        public FetchWPComThemesPayload(@Nullable String filter, int resultsLimit) {
+            this.filter = filter;
+            this.resultsLimit = resultsLimit;
+        }
+    }
+
     public static class FetchedCurrentThemePayload extends Payload<ThemesError> {
-        public SiteModel site;
-        public ThemeModel theme;
+        @NonNull public SiteModel site;
+        @Nullable public ThemeModel theme;
 
         public FetchedCurrentThemePayload(@NonNull SiteModel site, @NonNull ThemesError error) {
             this.site = site;
@@ -49,8 +69,8 @@ public class ThemeStore extends Store {
     }
 
     public static class FetchedSiteThemesPayload extends Payload<ThemesError> {
-        public SiteModel site;
-        public List<ThemeModel> themes;
+        @NonNull public SiteModel site;
+        @Nullable public List<ThemeModel> themes;
 
         public FetchedSiteThemesPayload(@NonNull SiteModel site, @NonNull ThemesError error) {
             this.site = site;
@@ -64,10 +84,11 @@ public class ThemeStore extends Store {
     }
 
     public static class FetchedWpComThemesPayload extends Payload<ThemesError> {
-        public List<ThemeModel> themes;
+        @NonNull public List<ThemeModel> themes;
 
         public FetchedWpComThemesPayload(@NonNull ThemesError error) {
             this.error = error;
+            this.themes = new ArrayList<>();
         }
 
         public FetchedWpComThemesPayload(@NonNull List<ThemeModel> themes) {
@@ -76,8 +97,8 @@ public class ThemeStore extends Store {
     }
 
     public static class SiteThemePayload extends Payload<ThemesError> {
-        public SiteModel site;
-        public ThemeModel theme;
+        @NonNull public SiteModel site;
+        @NonNull public ThemeModel theme;
 
         public SiteThemePayload(@NonNull SiteModel site, @NonNull ThemeModel theme) {
             this.site = site;
@@ -91,8 +112,11 @@ public class ThemeStore extends Store {
         @Nullable public Float scale;
         @Nullable public String[] groups;
 
-        public FetchStarterDesignsPayload(@Nullable Float previewWidth, @Nullable Float previewHeight,
-                                          @Nullable Float scale, @Nullable String... groups) {
+        public FetchStarterDesignsPayload(
+                @Nullable Float previewWidth,
+                @Nullable Float previewHeight,
+                @Nullable Float scale,
+                @Nullable String... groups) {
             this.previewWidth = previewWidth;
             this.previewHeight = previewHeight;
             this.scale = scale;
@@ -101,15 +125,18 @@ public class ThemeStore extends Store {
     }
 
     public static class FetchedStarterDesignsPayload extends Payload<ThemesError> {
-        public List<StarterDesign> designs;
-        public List<StarterDesignCategory> categories;
+        @NonNull public List<StarterDesign> designs;
+        @NonNull public List<StarterDesignCategory> categories;
 
         public FetchedStarterDesignsPayload(@NonNull ThemesError error) {
             this.error = error;
+            this.designs = new ArrayList<>();
+            this.categories = new ArrayList<>();
         }
 
-        public FetchedStarterDesignsPayload(@NonNull List<StarterDesign> designs,
-                                            @NonNull List<StarterDesignCategory> categories) {
+        public FetchedStarterDesignsPayload(
+                @NonNull List<StarterDesign> designs,
+                @NonNull List<StarterDesignCategory> categories) {
             this.designs = designs;
             this.categories = categories;
         }
@@ -154,10 +181,10 @@ public class ThemeStore extends Store {
     // OnChanged events
     @SuppressWarnings("WeakerAccess")
     public static class OnSiteThemesChanged extends OnChanged<ThemesError> {
-        public SiteModel site;
-        public ThemeAction origin;
+        @NonNull public SiteModel site;
+        @NonNull public ThemeAction origin;
 
-        public OnSiteThemesChanged(SiteModel site, ThemeAction origin) {
+        public OnSiteThemesChanged(@NonNull SiteModel site, @NonNull ThemeAction origin) {
             this.site = site;
             this.origin = origin;
         }
@@ -168,10 +195,10 @@ public class ThemeStore extends Store {
 
     @SuppressWarnings("WeakerAccess")
     public static class OnCurrentThemeFetched extends OnChanged<ThemesError> {
-        public SiteModel site;
-        public ThemeModel theme;
+        @NonNull public SiteModel site;
+        @Nullable public ThemeModel theme;
 
-        public OnCurrentThemeFetched(SiteModel site, ThemeModel theme) {
+        public OnCurrentThemeFetched(@NonNull SiteModel site, @Nullable ThemeModel theme) {
             this.site = site;
             this.theme = theme;
         }
@@ -222,11 +249,13 @@ public class ThemeStore extends Store {
     }
 
     public static class OnStarterDesignsFetched extends OnChanged<ThemesError> {
-        public List<StarterDesign> designs;
-        public List<StarterDesignCategory> categories;
+        @NonNull public List<StarterDesign> designs;
+        @NonNull public List<StarterDesignCategory> categories;
 
-        public OnStarterDesignsFetched(List<StarterDesign> designs, List<StarterDesignCategory> categories,
-                                       ThemesError error) {
+        public OnStarterDesignsFetched(
+                @NonNull List<StarterDesign> designs,
+                @NonNull List<StarterDesignCategory> categories,
+                @Nullable ThemesError error) {
             this.designs = designs;
             this.categories = categories;
             this.error = error;
@@ -242,6 +271,7 @@ public class ThemeStore extends Store {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     @Override
+    @SuppressWarnings("rawtypes")
     public void onAction(Action action) {
         IAction actionType = action.getType();
         if (!(actionType instanceof ThemeAction)) {
@@ -249,7 +279,7 @@ public class ThemeStore extends Store {
         }
         switch ((ThemeAction) actionType) {
             case FETCH_WP_COM_THEMES:
-                fetchWpComThemes();
+                fetchWpComThemes((FetchWPComThemesPayload) action.getPayload());
                 break;
             case FETCHED_WP_COM_THEMES:
                 handleWpComThemesFetched((FetchedWpComThemesPayload) action.getPayload());
@@ -305,6 +335,10 @@ public class ThemeStore extends Store {
         return ThemeSqlUtils.getWpComThemes();
     }
 
+    public List<ThemeModel> getWpComThemes(@NonNull List<String> themeIds) {
+        return ThemeSqlUtils.getWpComThemes(themeIds);
+    }
+
     public List<ThemeModel> getWpComMobileFriendlyThemes(String categorySlug) {
         return ThemeSqlUtils.getWpComMobileFriendlyThemes(categorySlug);
     }
@@ -337,13 +371,16 @@ public class ThemeStore extends Store {
         ThemeSqlUtils.insertOrReplaceActiveThemeForSite(site, theme);
     }
 
-    private void fetchWpComThemes() {
-        mThemeRestClient.fetchWpComThemes();
+    private void fetchWpComThemes(@NonNull FetchWPComThemesPayload payload) {
+        mThemeRestClient.fetchWpComThemes(payload.filter, payload.resultsLimit);
     }
 
-    private void fetchStarterDesigns(FetchStarterDesignsPayload payload) {
-        mThemeRestClient.fetchStarterDesigns(payload.previewWidth, payload.previewHeight,
-                payload.scale, payload.groups);
+    private void fetchStarterDesigns(@NonNull FetchStarterDesignsPayload payload) {
+        mThemeRestClient.fetchStarterDesigns(
+                payload.previewWidth,
+                payload.previewHeight,
+                payload.scale,
+                payload.groups);
     }
 
     private void handleWpComThemesFetched(@NonNull FetchedWpComThemesPayload payload) {
@@ -371,7 +408,11 @@ public class ThemeStore extends Store {
         if (payload.isError()) {
             event.error = payload.error;
         } else {
-            ThemeSqlUtils.insertOrReplaceInstalledThemes(payload.site, payload.themes);
+            if (payload.themes != null) {
+                ThemeSqlUtils.insertOrReplaceInstalledThemes(payload.site, payload.themes);
+            } else {
+                AppLog.w(AppLog.T.THEMES, "Fetched site themes payload themes is null.");
+            }
         }
         emitChange(event);
     }
@@ -391,7 +432,11 @@ public class ThemeStore extends Store {
         if (payload.isError()) {
             event.error = payload.error;
         } else {
-            ThemeSqlUtils.insertOrReplaceActiveThemeForSite(payload.site, payload.theme);
+            if (payload.theme != null) {
+                ThemeSqlUtils.insertOrReplaceActiveThemeForSite(payload.site, payload.theme);
+            } else {
+                AppLog.w(AppLog.T.THEMES, "Fetched current theme payload theme is null.");
+            }
         }
         emitChange(event);
     }

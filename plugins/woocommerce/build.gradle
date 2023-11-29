@@ -100,6 +100,8 @@ dependencies {
     androidTestImplementation sharedLibs.androidx.test.runner
     androidTestImplementation sharedLibs.androidx.test.ext.junit
     androidTestImplementation sharedLibs.assertj.core
+
+    lintChecks sharedLibs.wordpress.lint
 }
 
 project.afterEvaluate {
