@@ -1039,7 +1039,7 @@ internal val MIGRATION_31_32 = object : Migration(31, 32) {
                   `isEditable` INTEGER NOT NULL DEFAULT 1,
                   `needsPayment` INTEGER,
                   `needsProcessing` INTEGER,
-                  `customerId` INTEGER,
+                  `customerId` INTEGER NOT NULL,
                   `giftCards` TEXT NOT NULL,
                   PRIMARY KEY(`localSiteId`, `orderId`)
                 )
