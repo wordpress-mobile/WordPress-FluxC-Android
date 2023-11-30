@@ -961,7 +961,7 @@ internal val MIGRATION_30_31 = object : Migration(30, 31) {
                   `isEditable` INTEGER NOT NULL DEFAULT 1,
                   `needsPayment` INTEGER,
                   `needsProcessing` INTEGER,
-                  `customerId` INTEGER,
+                  `customerId` INTEGER NOT NULL,
                   PRIMARY KEY(`localSiteId`, `orderId`)
                 )
             """.trimIndent()
