@@ -33,7 +33,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
-import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -55,6 +54,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.utils.putIfNotNull
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -547,7 +547,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                             UpdateOrderRequest(
                                     status = status,
                                     lineItems = products.map {
-                                        LineItem(productId = it, quantity = 1f)
+                                        buildMap {
+                                            putIfNotNull("product_id" to it)
+                                            put("quantity", 1f)
+                                        }
                                     },
                                     shippingAddress = shippingAddress,
                                     billingAddress = billingAddress,

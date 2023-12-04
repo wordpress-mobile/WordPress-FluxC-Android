@@ -8,17 +8,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_themes.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.ThemeModel
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.ThemeCoroutineStore
 import org.wordpress.android.fluxc.store.ThemeStore
+import org.wordpress.android.fluxc.store.ThemeStore.FetchWPComThemesPayload
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched
 import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged
 import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated
@@ -31,6 +38,7 @@ class ThemeFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var themeCoroutineStore: ThemeCoroutineStore
 
     private var selectedSite: SiteModel? = null
     private var selectedPos: Int = -1
@@ -50,8 +58,12 @@ class ThemeFragment : Fragment() {
         dispatcher.unregister(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_themes, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
+        inflater.inflate(R.layout.fragment_themes, container, false)
 
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,14 +156,36 @@ class ThemeFragment : Fragment() {
         }
 
         fetch_wpcom_themes.setOnClickListener {
-            dispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction())
+            lifecycleScope.launch {
+                val filter = showSingleLineDialog(
+                    activity = requireActivity(),
+                    message = "Enter filter (Optional)",
+                    isNumeric = false
+                )
+                val limit = showSingleLineDialog(
+                    activity = requireActivity(),
+                    message = "Limit results? (Optional, defaults to 500)",
+                    isNumeric = true
+                )
+                dispatcher.dispatch(
+                    ThemeActionBuilder.newFetchWpComThemesAction(
+                        limit?.let {
+                            FetchWPComThemesPayload(filter, it.toInt())
+                        } ?: FetchWPComThemesPayload(filter)
+                    )
+                )
+            }
         }
 
         fetch_installed_themes.setOnClickListener {
             if (getJetpackConnectedSite() == null) {
                 prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                dispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(getJetpackConnectedSite()))
+                dispatcher.dispatch(
+                    ThemeActionBuilder.newFetchInstalledThemesAction(
+                        getJetpackConnectedSite()
+                    )
+                )
             }
         }
 
@@ -159,7 +193,11 @@ class ThemeFragment : Fragment() {
             if (getJetpackConnectedSite() == null) {
                 prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getJetpackConnectedSite()))
+                dispatcher.dispatch(
+                    ThemeActionBuilder.newFetchCurrentThemeAction(
+                        getJetpackConnectedSite()
+                    )
+                )
             }
         }
 
@@ -168,6 +206,15 @@ class ThemeFragment : Fragment() {
                 prependToLog("No WP.com site found, unable to test.")
             } else {
                 dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getWpComSite()))
+            }
+        }
+
+        fetch_demo_themes_pages.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val response = themeCoroutineStore.fetchDemoThemePages("https://zainodemo.wpcomstaging.com")
+                withContext(Dispatchers.Main) {
+                    prependToLog("Demo themes pages fetched: $response")
+                }
             }
         }
     }
@@ -240,8 +287,11 @@ class ThemeFragment : Fragment() {
         } else {
             prependToLog("success: WP.com themes fetched count = " + themeStore.wpComThemes.size)
 
-            listOf(ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG, ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE,
-                    ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO).forEach { category ->
+            listOf(
+                ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG,
+                ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE,
+                ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO
+            ).forEach { category ->
                 val mobileFriendlyThemes = themeStore.getWpComMobileFriendlyThemes(category)
                 prependToLog(category + " theme count = " + mobileFriendlyThemes.size)
                 mobileFriendlyThemes.forEach { theme ->
