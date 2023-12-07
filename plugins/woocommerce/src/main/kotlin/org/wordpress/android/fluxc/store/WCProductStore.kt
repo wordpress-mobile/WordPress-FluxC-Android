@@ -1347,19 +1347,20 @@ class WCProductStore @Inject constructor(
 
     /**
      * Update product category on the backend.
-     * This does not update local data on success, so clients need to refresh data manually afterward.
+     * This does not update local data on success, so clients need to refresh data manually
+     * afterward, if needed.
      */
     suspend fun updateProductCategory(
         site: SiteModel,
         id: Long,
         payload: UpdateProductCategoryPayload
-    ): WooResult<Unit> = coroutineEngine.withDefaultContext(API, this, "updateProductCategory") {
+    ): WooResult<WCProductCategoryModel> = coroutineEngine.withDefaultContext(API, this, "updateProductCategory") {
         val response = wcProductRestClient.updateProductCategory(site, id, payload)
 
         if (response.isError || response.result == null) {
             WooResult(response.error)
         } else {
-            WooResult(Unit)
+            WooResult(response.result.asProductCategoryModel())
         }
     }
 
