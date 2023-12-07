@@ -1331,6 +1331,19 @@ class WCProductStore @Inject constructor(
         return@withDefaultContext result.asWooResult()
     }
 
+    suspend fun deleteProductCategory(
+        site: SiteModel,
+        categoryId: Long
+    ): WooResult<Unit> = coroutineEngine.withDefaultContext(API, this, "deleteProductCategory") {
+        val response = wcProductRestClient.deleteProductCategory(site, categoryId)
+
+        if (response.isError || response.result == null) {
+            WooResult(response.error)
+        } else {
+            WooResult(Unit)
+        }
+    }
+
     private fun fetchProductTags(payload: FetchProductTagsPayload) {
         with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset, searchQuery) }
     }
