@@ -1490,15 +1490,14 @@ class ProductRestClient @Inject constructor(
     suspend fun deleteProductCategory(
         site: SiteModel,
         id: Long
-    ): WooPayload<Unit> {
-        val url = WOOCOMMERCE.products.categories.id(id).pathV3
-        val response = wooNetwork.executeDeleteGsonRequest(
-            site = site,
-            path = url,
-            clazz = Unit::class.java
-        )
-        return response.toWooPayload()
-    }
+    ) = WOOCOMMERCE.products.categories.id(id).pathV3
+        .let { url ->
+            wooNetwork.executeDeleteGsonRequest(
+                site = site,
+                path = url,
+                clazz = Unit::class.java
+            ).toWooPayload()
+        }
 
     suspend fun updateProductCategory(
         site: SiteModel,
