@@ -1502,10 +1502,10 @@ class ProductRestClient @Inject constructor(
     suspend fun updateProductCategory(
         site: SiteModel,
         id: Long,
-        request: UpdateProductCategoryRequest
+        payload: UpdateProductCategoryPayload
     ) = WOOCOMMERCE.products.categories.id(id).pathV3
         .let { url ->
-            val params = request.toNetworkRequest()
+            val params = payload.toNetworkRequest()
 
             wooNetwork.executePutGsonRequest(
                 site = site,
@@ -2043,7 +2043,7 @@ class ProductRestClient @Inject constructor(
         return ProductError(productErrorType, wpAPINetworkError.combinedErrorMessage)
     }
 
-    data class UpdateProductCategoryRequest(
+    data class UpdateProductCategoryPayload(
         val name: String? = null,
         val parentId: Long? = null
     ) {
