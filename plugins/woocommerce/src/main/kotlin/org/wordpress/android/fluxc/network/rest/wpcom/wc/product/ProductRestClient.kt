@@ -1500,6 +1500,26 @@ class ProductRestClient @Inject constructor(
         return response.toWooPayload()
     }
 
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        id: Long,
+        request: UpdateProductCategoryRequest
+    ) = WOOCOMMERCE.products.categories.id(id).pathV3
+        .let { url ->
+            val params = request.toNetworkRequest()
+
+            wooNetwork.executePutGsonRequest(
+                site = site,
+                path = url,
+                body = params,
+                clazz = ProductCategoryApiResponse::class.java
+            ).let { response ->
+                when (response) {
+                    is WPAPIResponse.Success -> WooPayload(response.data) // We do not care about the content of the response.
+                    is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
+                }
+            }
+        }
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/reviews` retrieving a list of product reviews
      * for a given WooCommerce [SiteModel].
@@ -2023,4 +2043,17 @@ class ProductRestClient @Inject constructor(
         }
         return ProductError(productErrorType, wpAPINetworkError.combinedErrorMessage)
     }
+
+    data class UpdateProductCategoryRequest(
+        val name: String? = null,
+        val parentId: Long? = null
+    ) {
+        fun toNetworkRequest(): Map<String, Any> {
+            return mutableMapOf<String, Any>().apply {
+                name?.let { put("name", it) }
+                parentId?.let { put("parent", it) }
+            }
+        }
+    }
 }
+
