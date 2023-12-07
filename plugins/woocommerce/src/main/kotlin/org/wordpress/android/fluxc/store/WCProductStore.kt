@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient.UpdateProductCategoryRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
@@ -1336,6 +1337,24 @@ class WCProductStore @Inject constructor(
         categoryId: Long
     ): WooResult<Unit> = coroutineEngine.withDefaultContext(API, this, "deleteProductCategory") {
         val response = wcProductRestClient.deleteProductCategory(site, categoryId)
+
+        if (response.isError || response.result == null) {
+            WooResult(response.error)
+        } else {
+            WooResult(Unit)
+        }
+    }
+
+    /**
+     * Update product category on the backend.
+     * This does not update local data on success, so clients need to refresh data manually afterward.
+     */
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        id: Long,
+        updateProductCategoryRequest: UpdateProductCategoryRequest
+    ): WooResult<Unit> = coroutineEngine.withDefaultContext(API, this, "updateProductCategory") {
+        val response = wcProductRestClient.updateProductCategory(site, id, updateProductCategoryRequest)
 
         if (response.isError || response.result == null) {
             WooResult(response.error)
