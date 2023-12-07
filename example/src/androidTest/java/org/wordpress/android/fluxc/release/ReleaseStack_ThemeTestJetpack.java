@@ -162,7 +162,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         }
 
         // install the theme
-        ThemeModel themeToInstall = new ThemeModel();
+        @SuppressWarnings("deprecation") ThemeModel themeToInstall = new ThemeModel();
         themeToInstall.setThemeId(themeId);
         installTheme(jetpackSite, themeToInstall);
         assertTrue(isThemeInstalled(jetpackSite, themeId));
@@ -185,7 +185,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // Install edin if necessary before attempting to delete
         if (!isThemeInstalled(jetpackSite, themeId)) {
-            ThemeModel themeToInstall = new ThemeModel();
+            @SuppressWarnings("deprecation") ThemeModel themeToInstall = new ThemeModel();
             themeToInstall.setThemeId(themeId);
             installTheme(jetpackSite, themeToInstall);
 
@@ -195,8 +195,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // Get the theme from store to make sure the "active" state is correct, so we can deactivate it before deletion
         ThemeModel themeToDelete = mThemeStore.getInstalledThemeByThemeId(jetpackSite, EDIN_THEME_ID);
-        // if Edin is active update site's active theme to something else and delete Edin
-        deactivateAndDeleteTheme(jetpackSite, themeToDelete);
+        if (themeToDelete != null) {
+            // if Edin is active update site's active theme to something else and delete Edin
+            deactivateAndDeleteTheme(jetpackSite, themeToDelete);
+        }
 
         signOutWPCom();
     }
@@ -434,7 +436,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             activateTheme(jetpackSite, otherThemeToActivate);
 
             // Make sure another theme is activated
-            assertNotEquals(theme.getThemeId(), mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId());
+            ThemeModel activeTheme = mThemeStore.getActiveThemeForSite(jetpackSite);
+            assertNotNull(activeTheme);
+            assertNotEquals(theme.getThemeId(), activeTheme.getThemeId());
         }
         // delete existing theme from site
         deleteTheme(jetpackSite, theme);
