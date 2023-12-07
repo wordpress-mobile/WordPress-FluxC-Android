@@ -1487,6 +1487,19 @@ class ProductRestClient @Inject constructor(
         }
     }
 
+    suspend fun deleteProductCategory(
+        site: SiteModel,
+        id: Long
+    ): WooPayload<Unit> {
+        val url = WOOCOMMERCE.products.categories.id(id).pathV3
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = url,
+            clazz = Unit::class.java
+        )
+        return response.toWooPayload()
+    }
+
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/reviews` retrieving a list of product reviews
      * for a given WooCommerce [SiteModel].
