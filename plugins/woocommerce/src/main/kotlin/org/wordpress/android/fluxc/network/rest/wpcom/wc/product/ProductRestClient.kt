@@ -1515,7 +1515,7 @@ class ProductRestClient @Inject constructor(
                 clazz = ProductCategoryApiResponse::class.java
             ).let { response ->
                 when (response) {
-                    is WPAPIResponse.Success -> WooPayload(response.data) // We do not care about the content of the response.
+                    is WPAPIResponse.Success -> WooPayload(response.data)
                     is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
                 }
             }
