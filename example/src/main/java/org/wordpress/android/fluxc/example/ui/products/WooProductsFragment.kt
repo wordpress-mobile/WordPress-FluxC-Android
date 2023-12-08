@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient.UpdateProductCategoryPayload
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCAddonsStore
 import org.wordpress.android.fluxc.store.WCProductStore
@@ -469,6 +470,41 @@ class WooProductsFragment : StoreSelectingFragment() {
                         dispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(payload))
                     } else {
                         prependToLog("No category name entered...doing nothing")
+                    }
+                }
+            }
+        }
+
+        update_product_category.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val categories = wcProductStore.observeCategories(site).first()
+                    if (categories.isEmpty()) {
+                        prependToLog("No categories found... run Fetch Product Categories first")
+                    }
+                    else {
+                        val categoryToUpdate = categories.random()
+                        val newCategoryName = showSingleLineDialog(
+                            requireActivity(),
+                            "Enter a new category name for this randomly selected category: ${categoryToUpdate.name}:"
+                        )
+
+                        newCategoryName?.let {
+                            val result = wcProductStore.updateProductCategory(
+                                site,
+                                categoryToUpdate.remoteCategoryId,
+                                UpdateProductCategoryPayload(name = it)
+                            )
+
+                            if (!result.isError) {
+                                prependToLog("Category updated successfully")
+                            } else {
+                                prependToLog(
+                                    "Category update failed, " +
+                                        "${result.error.type} ${result.error.message}"
+                                )
+                            }
+                        }
                     }
                 }
             }
