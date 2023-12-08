@@ -161,6 +161,13 @@
             android:text="Add Product Category" />
 
         <Button
+            android:id="@+id/delete_product_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Delete Product Category" />
+
+        <Button
             android:id="@+id/update_product_images"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

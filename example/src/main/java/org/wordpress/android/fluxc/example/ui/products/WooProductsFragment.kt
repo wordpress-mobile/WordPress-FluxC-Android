@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.example.utils.showTwoButtonsDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
@@ -468,6 +469,28 @@ class WooProductsFragment : StoreSelectingFragment() {
                         dispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(payload))
                     } else {
                         prependToLog("No category name entered...doing nothing")
+                    }
+                }
+            }
+        }
+
+        delete_product_category.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val categories = wcProductStore.observeCategories(site).first()
+                    if (categories.isEmpty()) {
+                        prependToLog("No categories found... run Fetch Product Categories first")
+                    }
+                    else {
+                        val categoryToDelete = categories.random()
+                        val shouldDelete = showTwoButtonsDialog(
+                            activity = requireActivity(),
+                            message = "Delete this randomly selected category: id: ${categoryToDelete.id} name: ${categoryToDelete.name}?"
+                        )
+
+                        if (shouldDelete) {
+                            prependToLog("Trying to delete category id: ${categoryToDelete.id} name: ${categoryToDelete.name}")
+                        }
                     }
                 }
             }
