@@ -68,6 +68,8 @@ open class WooCommerceStore @Inject constructor(
         WOO_SUBSCRIPTIONS("woocommerce-subscriptions/woocommerce-subscriptions"),
         WOO_GIFT_CARDS("woocommerce-gift-cards/woocommerce-gift-cards"),
         WOO_MIN_MAX_QUANTITIES("woocommerce-min-max-quantities/woocommerce-min-max-quantities"),
+        WOO_PRODUCT_BUNDLES("woocommerce-product-bundles/woocommerce-product-bundles"),
+        WOO_COMPOSITE_PRODUCTS("woocommerce-composite-products/woocommerce-composite-products"),
         WOO_SQUARE("woocommerce-square/woocommerce-square"),
     }
 

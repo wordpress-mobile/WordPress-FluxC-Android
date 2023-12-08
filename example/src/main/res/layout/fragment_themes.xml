@@ -89,4 +89,10 @@
         android:layout_height="wrap_content"
         android:text="Delete theme on Jetpack site" />
 
+    <Button
+        android:id="@+id/fetch_demo_themes_pages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fetch demo pages for theme" />
+
 </LinearLayout>

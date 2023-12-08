@@ -11,7 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_themes.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -21,6 +23,7 @@ import org.wordpress.android.fluxc.generated.ThemeActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.ThemeModel
 import org.wordpress.android.fluxc.store.SiteStore
+import org.wordpress.android.fluxc.store.ThemeCoroutineStore
 import org.wordpress.android.fluxc.store.ThemeStore
 import org.wordpress.android.fluxc.store.ThemeStore.FetchWPComThemesPayload
 import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched
@@ -35,6 +38,7 @@ class ThemeFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var themeCoroutineStore: ThemeCoroutineStore
 
     private var selectedSite: SiteModel? = null
     private var selectedPos: Int = -1
@@ -88,7 +92,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No WP.com site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -106,7 +110,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -124,7 +128,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -142,7 +146,7 @@ class ThemeFragment : Fragment() {
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
-                    val theme = ThemeModel()
+                    @Suppress("DEPRECATION") val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
                     val payload = ThemeStore.SiteThemePayload(site, theme)
@@ -202,6 +206,15 @@ class ThemeFragment : Fragment() {
                 prependToLog("No WP.com site found, unable to test.")
             } else {
                 dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getWpComSite()))
+            }
+        }
+
+        fetch_demo_themes_pages.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val response = themeCoroutineStore.fetchDemoThemePages("https://zainodemo.wpcomstaging.com")
+                withContext(Dispatchers.Main) {
+                    prependToLog("Demo themes pages fetched: $response")
+                }
             }
         }
     }
