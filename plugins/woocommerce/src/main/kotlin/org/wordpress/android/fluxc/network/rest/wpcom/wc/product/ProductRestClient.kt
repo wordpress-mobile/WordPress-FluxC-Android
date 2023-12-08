@@ -1495,7 +1495,8 @@ class ProductRestClient @Inject constructor(
             wooNetwork.executeDeleteGsonRequest(
                 site = site,
                 path = url,
-                clazz = Unit::class.java
+                clazz = Unit::class.java,
+                params = mapOf("force" to "true") // Required to be true, as per API documentation.
             ).toWooPayload()
         }
 
