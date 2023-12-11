@@ -521,11 +521,15 @@ class WooProductsFragment : StoreSelectingFragment() {
                         val categoryToDelete = categories.random()
                         val shouldDelete = showTwoButtonsDialog(
                             activity = requireActivity(),
-                            message = "Delete this randomly selected category: id: ${categoryToDelete.remoteCategoryId} name: ${categoryToDelete.name}?"
+                            message = "Delete this randomly selected category:" +
+                                " id: ${categoryToDelete.remoteCategoryId} " +
+                                "name: ${categoryToDelete.name}?"
                         )
 
                         if (shouldDelete) {
-                            prependToLog("Trying to delete category id: ${categoryToDelete.remoteCategoryId} name: ${categoryToDelete.name}")
+                            prependToLog("Trying to delete category id:" +
+                                " ${categoryToDelete.remoteCategoryId} " +
+                                "name: ${categoryToDelete.name}")
                             val result = wcProductStore.deleteProductCategory(site, categoryToDelete.remoteCategoryId)
                             if (!result.isError) {
                                 prependToLog("Category deleted successfully")
