@@ -144,7 +144,7 @@ object ProductSqlUtils {
 
         return if (productResult == null) {
             // Insert
-            WellSql.insert(product).asSingleTransaction(true).execute()
+            WellSql.insert(product).execute()
             productsUpdatesTrigger.tryEmit(Unit)
             1
         } else {
@@ -162,8 +162,10 @@ object ProductSqlUtils {
 
     fun insertOrUpdateProducts(products: List<WCProductModel>): Int {
         var rowsAffected = 0
-        products.forEach {
-            rowsAffected += insertOrUpdateProduct(it)
+        executeInTransaction {
+            products.forEach {
+                rowsAffected += insertOrUpdateProduct(it)
+            }
         }
         return rowsAffected
     }
@@ -379,7 +381,7 @@ object ProductSqlUtils {
 
         return if (result == null) {
             // Insert
-            WellSql.insert(variation).asSingleTransaction(true).execute()
+            WellSql.insert(variation).execute()
             variationsUpdatesTrigger.tryEmit(Unit)
             1
         } else {
@@ -394,8 +396,10 @@ object ProductSqlUtils {
 
     fun insertOrUpdateProductVariations(variations: List<WCProductVariationModel>): Int {
         var rowsAffected = 0
-        variations.forEach {
-            rowsAffected += insertOrUpdateProductVariation(it)
+        executeInTransaction {
+            variations.forEach {
+                rowsAffected += insertOrUpdateProductVariation(it)
+            }
         }
         return rowsAffected
     }
@@ -432,8 +436,10 @@ object ProductSqlUtils {
 
     fun insertOrUpdateProductReviews(productReviews: List<WCProductReviewModel>): Int {
         var rowsAffected = 0
-        productReviews.forEach {
-            rowsAffected += insertOrUpdateProductReview(it)
+        executeInTransaction {
+            productReviews.forEach {
+                rowsAffected += insertOrUpdateProductReview(it)
+            }
         }
         return rowsAffected
     }
@@ -452,7 +458,7 @@ object ProductSqlUtils {
 
         return if (result == null) {
             // Insert
-            WellSql.insert(productReview).asSingleTransaction(true).execute()
+            WellSql.insert(productReview).execute()
             1
         } else {
             // Update
@@ -600,8 +606,10 @@ object ProductSqlUtils {
 
     fun insertOrUpdateProductShippingClassList(shippingClassList: List<WCProductShippingClassModel>): Int {
         var rowsAffected = 0
-        shippingClassList.forEach {
-            rowsAffected += insertOrUpdateProductShippingClass(it)
+        executeInTransaction {
+            shippingClassList.forEach {
+                rowsAffected += insertOrUpdateProductShippingClass(it)
+            }
         }
         return rowsAffected
     }
@@ -620,7 +628,7 @@ object ProductSqlUtils {
 
         return if (result == null) {
             // Insert
-            WellSql.insert(shippingClass).asSingleTransaction(true).execute()
+            WellSql.insert(shippingClass).execute()
             1
         } else {
             // Update
@@ -711,8 +719,10 @@ object ProductSqlUtils {
 
     fun insertOrUpdateProductCategories(productCategories: List<WCProductCategoryModel>): Int {
         var rowsAffected = 0
-        productCategories.forEach {
-            rowsAffected += insertOrUpdateProductCategory(it)
+        executeInTransaction {
+            productCategories.forEach {
+                rowsAffected += insertOrUpdateProductCategory(it)
+            }
         }
         return rowsAffected
     }
@@ -731,7 +741,7 @@ object ProductSqlUtils {
 
         return if (result == null) {
             // Insert
-            WellSql.insert(productCategory).asSingleTransaction(true).execute()
+            WellSql.insert(productCategory).execute()
             categoriesUpdatesTrigger.tryEmit(Unit)
             1
         } else {
@@ -843,6 +853,18 @@ object ProductSqlUtils {
             val oldId = result.id
             WellSql.update(WCProductTagModel::class.java).whereId(oldId)
                     .put(tag, UpdateAllExceptId(WCProductTagModel::class.java)).execute()
+        }
+    }
+
+    private fun executeInTransaction(block: () -> Unit) {
+        val db = WellSql.giveMeWritableDb()
+        db.beginTransaction()
+
+        try {
+            block()
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
         }
     }
 
