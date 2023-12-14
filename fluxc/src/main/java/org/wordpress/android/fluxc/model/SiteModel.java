@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.model;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.yarolegovich.wellsql.core.Identifiable;
 import com.yarolegovich.wellsql.core.annotation.Column;
@@ -96,7 +97,7 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
     // The siteId for self hosted sites. Jetpack sites will also have a mSiteId, which is their id on wpcom
     @Column
     private long mSelfHostedSiteId;
-    @Column
+    @Nullable @Column
     private String mUsername;
     @Column
     private String mPassword;
@@ -340,11 +341,11 @@ public class SiteModel extends Payload<BaseNetworkError> implements Identifiable
         mIsWPCom = wpCom;
     }
 
-    public String getUsername() {
+    @Nullable public String getUsername() {
         return mUsername;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(@Nullable String username) {
         mUsername = username;
     }
 

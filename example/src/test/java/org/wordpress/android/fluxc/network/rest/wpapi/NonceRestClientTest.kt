@@ -67,7 +67,7 @@ class NonceRestClientTest {
 
         val actual = subject.requestNonce(site)
 
-        TestCase.assertEquals(Nonce.Available(expectedNonce, site.username), actual)
+        TestCase.assertEquals(Nonce.Available(expectedNonce, site.username!!), actual)
     }
 
     @Test
@@ -152,7 +152,7 @@ class NonceRestClientTest {
         givenLoginResponse(WPAPIResponse.Error(baseNetworkError))
 
         val actual = subject.requestNonce(site)
-        TestCase.assertEquals(Nonce.Unknown(site.username), actual)
+        TestCase.assertEquals(Nonce.Unknown(site.username!!), actual)
     }
 
     @Test
@@ -212,7 +212,7 @@ class NonceRestClientTest {
 
     private suspend fun givenLoginResponse(response: WPAPIResponse<String>) {
         val body = mapOf(
-            "log" to site.username,
+            "log" to site.username!!,
             "pwd" to site.password,
             "redirect_to" to nonceRequestUrl
         )
