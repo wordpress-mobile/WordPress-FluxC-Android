@@ -1040,7 +1040,8 @@ internal val MIGRATION_31_32 = object : Migration(31, 32) {
                   `needsPayment` INTEGER,
                   `needsProcessing` INTEGER,
                   `customerId` INTEGER NOT NULL DEFAULT 0,
-                  `giftCards` TEXT NOT NULL DEFAULT '',
+                  `giftCardCode` TEXT NOT NULL DEFAULT '',
+                  `giftCardAmount` TEXT NOT NULL DEFAULT '',
                   PRIMARY KEY(`localSiteId`, `orderId`)
                 )
             """.trimIndent()
