@@ -128,12 +128,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     val isConfigurable: Boolean
         get() = when (type) {
             CoreProductType.BUNDLE.value -> {
-                try {
-                    Gson().fromJson(bundledItems, Array<WCBundledProduct>::class.java)
-                        .any { it.isConfigurable() }
-                } catch (error: Throwable) {
-                    false
-                }
+                runCatching { Gson().fromJson(bundledItems, Array<WCBundledProduct>::class.java) }
+                    .takeIf { it.isSuccess }?.getOrNull()
+                    ?.let { products ->
+                        products.any { it.isConfigurable() }
+                    } ?: false
             }
             else -> false
         }
