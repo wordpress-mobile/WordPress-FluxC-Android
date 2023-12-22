@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class WCProductModelTest {
@@ -38,5 +39,16 @@ class WCProductModelTest {
         val result = sut.getAttributeList()
 
         Assertions.assertThat(result).isNotEmpty
+    }
+
+    @Test
+    fun `isConfigurable should return false when bundledItems is malformed JSON`() {
+        val sut = WCProductModel().apply {
+            this.bundledItems = "#ˆ%*(!@*#ˆ%(*!#ˆ(%*!"
+        }
+
+        val result = sut.isConfigurable
+
+        assertThat(result).isFalse
     }
 }
