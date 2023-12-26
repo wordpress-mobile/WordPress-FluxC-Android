@@ -161,6 +161,14 @@ class OrderStatsRestClient @Inject constructor(
      * @param[granularity] one of 'hour', 'day', 'week', 'month', or 'year'
      * @param[startDate] the start date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
      * @param[endDate] the end date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
+     * @param[perPage] the number of items to return in a paginated response
+     * @param[forceRefresh] a boolean value indicating whether we should avoid cached data
+     * @param[revenueRangeId] a unique id for this request. We will use this id to save the response in the local db.
+     * @param[dateType] override the "woocommerce_date_type" option that is used for revenue reports.
+     * Product stats are based on the order creation date, while the order/revenue
+     * stats are based on a store option in the analytics settings with the order paid date as the default.
+     * In WC version 8.6+, a new parameter `date_type` is available to override the date type so that we can
+     * show the order/revenue and product stats based on the same date column, order creation date.
      *
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [granularity], [startDate], or [endDate] are invalid or incompatible
@@ -172,7 +180,8 @@ class OrderStatsRestClient @Inject constructor(
         endDate: String,
         perPage: Int,
         forceRefresh: Boolean = false,
-        revenueRangeId: String = ""
+        revenueRangeId: String = "",
+        dateType: String = "date_created",
     ): FetchRevenueStatsResponsePayload {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val params = mapOf(
@@ -181,7 +190,8 @@ class OrderStatsRestClient @Inject constructor(
             "before" to endDate,
             "per_page" to perPage.toString(),
             "order" to "asc",
-            "force_cache_refresh" to forceRefresh.toString()
+            "force_cache_refresh" to forceRefresh.toString(),
+            "date_type" to dateType
         )
 
         val response = wooNetwork.executeGetGsonRequest(
