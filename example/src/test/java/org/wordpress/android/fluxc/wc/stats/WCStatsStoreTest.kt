@@ -1249,7 +1249,7 @@ class WCStatsStoreTest {
     @Test
     fun testFetchCurrentDayRevenueStatsDate() = runBlocking {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
-            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any())
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
@@ -1260,7 +1260,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
-                    dateArgument.capture(), any(), any(), any(), any())
+                    dateArgument.capture(), any(), any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -1269,7 +1269,7 @@ class WCStatsStoreTest {
         reset(mockOrderStatsRestClient)
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
-            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any())
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
@@ -1280,7 +1280,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
-                    any(), any(), any())
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -1296,7 +1296,7 @@ class WCStatsStoreTest {
     @Test
     fun testFetchCurrentDayRevenueStatsDateSpecificEndDate() = runBlocking {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
-            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any())
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
@@ -1309,7 +1309,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
-                    dateArgument.capture(), any(), any(), any(), any())
+                    dateArgument.capture(), any(), any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -1318,7 +1318,7 @@ class WCStatsStoreTest {
         reset(mockOrderStatsRestClient)
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
-            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any())
+            whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
@@ -1329,7 +1329,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
-                    any(), any(), any())
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -1349,7 +1349,7 @@ class WCStatsStoreTest {
         val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
         val site = SiteModel().apply { id = currentDayStatsModel.localSiteId }
         val currentDayGranularity = StatsGranularity.valueOf(currentDayStatsModel.interval.toUpperCase())
-        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any()))
+        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(
                         FetchRevenueStatsResponsePayload(
                                 site,
@@ -1388,7 +1388,7 @@ class WCStatsStoreTest {
         val currentWeekPayload = FetchRevenueStatsResponsePayload(
                 site, curretnWeekGranularity, currentWeekStatsModel
         )
-        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any()))
+        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(currentWeekPayload)
         wcStatsStore.fetchRevenueStats(
                 FetchRevenueStatsPayload(
@@ -1421,7 +1421,7 @@ class WCStatsStoreTest {
         val currentMonthPayload = FetchRevenueStatsResponsePayload(
                 site, currentMonthGranularity, currentMonthStatsModel
         )
-        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any()))
+        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(currentMonthPayload)
         wcStatsStore.fetchRevenueStats(
                 FetchRevenueStatsPayload(
@@ -1454,7 +1454,7 @@ class WCStatsStoreTest {
         val allSiteCurrentDayPayload = FetchRevenueStatsResponsePayload(
                 site, allSiteCurrentDayGranularity, altSiteOrderStatsModel
         )
-        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any()))
+        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(allSiteCurrentDayPayload)
         wcStatsStore.fetchRevenueStats(
                 FetchRevenueStatsPayload(
@@ -1484,7 +1484,7 @@ class WCStatsStoreTest {
         val nonExistentPayload = FetchRevenueStatsResponsePayload(
                 nonExistentSite, nonExistentSiteGranularity, altSiteOrderStatsModel
         )
-        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any()))
+        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(nonExistentPayload)
         wcStatsStore.fetchRevenueStats(
                 FetchRevenueStatsPayload(
@@ -1509,7 +1509,7 @@ class WCStatsStoreTest {
         assertTrue(nonExistentOrderStats.isEmpty())
 
         // missing data
-        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any()))
+        whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(nonExistentPayload)
         wcStatsStore.fetchRevenueStats(
                 FetchRevenueStatsPayload(
