@@ -20,6 +20,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
@@ -1947,5 +1948,46 @@ class WCStatsStoreTest {
         )
         assertTrue(customMonthVisitorStats2.isNotEmpty())
         assertTrue(customMonthVisitorStats.isNotEmpty())
+    }
+
+    @Test
+    fun testGetNewVisitorStatsWithInvalidData(){
+        // wrong-visitor-stats-data.json includes different wrong formatted data to ensure
+        // that getNewVisitorStats is resilient and can recover from unexpected data
+        //
+        val defaultWeekVisitorStatsModel = WCStatsTestUtils.generateSampleNewVisitorStatsModel(
+            granularity = WEEKS.toString(),
+            data = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/wrong-visitor-stats-data.json")
+        )
+        val site = SiteModel().apply { id = defaultWeekVisitorStatsModel.localSiteId }
+        WCVisitorStatsSqlUtils.insertOrUpdateNewVisitorStats(defaultWeekVisitorStatsModel)
+
+        val defaultWeekVisitorStats = wcStatsStore.getNewVisitorStats(site, WEEKS)
+        assertTrue(defaultWeekVisitorStats.isNotEmpty())
+        assertEquals(defaultWeekVisitorStats["2019-06-23"],10)
+        assertEquals(defaultWeekVisitorStats["2019-06-22"],20)
+        assertEquals(defaultWeekVisitorStats["2019-07-16"],0)
+        assertEquals(defaultWeekVisitorStats["2019-07-17"],0)
+        assertEquals(defaultWeekVisitorStats["2019-07-18"],0)
+    }
+
+    @Test
+    fun testGetVisitorStatsWithInvalidData(){
+        // wrong-visitor-stats-data.json includes different wrong formatted data to ensure
+        // that getNewVisitorStats is resilient and can recover from unexpected data
+        //
+        val defaultWeekVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel(
+            data = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/wrong-visitor-stats-data.json")
+        )
+        val site = SiteModel().apply { id = defaultWeekVisitorStatsModel.localSiteId }
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(defaultWeekVisitorStatsModel)
+
+        val defaultWeekVisitorStats = wcStatsStore.getVisitorStats(site, DAYS)
+        assertTrue(defaultWeekVisitorStats.isNotEmpty())
+        assertEquals(defaultWeekVisitorStats["2019-06-23"],10)
+        assertEquals(defaultWeekVisitorStats["2019-06-22"],20)
+        assertEquals(defaultWeekVisitorStats["2019-07-16"],0)
+        assertEquals(defaultWeekVisitorStats["2019-07-17"],0)
+        assertEquals(defaultWeekVisitorStats["2019-07-18"],0)
     }
 }
