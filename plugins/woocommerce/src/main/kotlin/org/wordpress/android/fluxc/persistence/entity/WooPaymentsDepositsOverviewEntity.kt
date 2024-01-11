@@ -63,7 +63,6 @@ data class WooPaymentsDepositEntity(
 
 enum class DepositType {
     LAST_PAID,
-    NEXT_SCHEDULED
 }
 
 @Entity(
@@ -105,8 +104,6 @@ data class WooPaymentsBalanceEntity(
     val fee: Long?,
     val feePercentage: Double?,
     val net: Long?,
-    val transactionIds: List<String>?,
-    val depositsCount: Int?,
 
     @Embedded
     val sourceTypes: SourceTypes?,

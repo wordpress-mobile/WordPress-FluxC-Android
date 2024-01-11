@@ -1056,3 +1056,9 @@ internal val MIGRATION_31_32 = object : Migration(31, 32) {
         }
     }
 }
+
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "WooPaymentsBalance", columnName = "transactionIds"),
+    DeleteColumn(tableName = "WooPaymentsBalance", columnName = "depositsCount"),
+)
+internal class AutoMigration32to33 : AutoMigrationSpec
