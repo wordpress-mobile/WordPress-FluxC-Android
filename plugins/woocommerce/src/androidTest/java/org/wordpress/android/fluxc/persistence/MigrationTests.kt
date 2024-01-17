@@ -11,6 +11,13 @@ import org.junit.runner.RunWith
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_15_16
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_20_21
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_21_22
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_22_23
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_24_25
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_27_28
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_30_31
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_31_32
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
@@ -18,10 +25,6 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_6_7
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_7_8
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
-import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_20_21
-import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_21_22
-import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_22_23
-import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_27_28
 
 @RunWith(AndroidJUnit4::class)
 class MigrationTests {
@@ -216,7 +219,7 @@ class MigrationTests {
     fun testMigrate24to25() {
         helper.apply {
             createDatabase(TEST_DB, 24).close()
-            runMigrationsAndValidate(TEST_DB, 25, false)
+            runMigrationsAndValidate(TEST_DB, 25, true, MIGRATION_24_25)
         }
     }
 
@@ -257,6 +260,30 @@ class MigrationTests {
         helper.apply {
             createDatabase(TEST_DB, 29).close()
             runMigrationsAndValidate(TEST_DB, 30, false)
+        }
+    }
+
+    @Test
+    fun testMigration30to31() {
+        helper.apply {
+            createDatabase(TEST_DB, 30).close()
+            runMigrationsAndValidate(TEST_DB, 31, false, MIGRATION_30_31)
+        }
+    }
+
+    @Test
+    fun testMigration31to32() {
+        helper.apply {
+            createDatabase(TEST_DB, 31).close()
+            runMigrationsAndValidate(TEST_DB, 32, false, MIGRATION_31_32)
+        }
+    }
+
+    @Test
+    fun testMigration32to33() {
+        helper.apply {
+            createDatabase(TEST_DB, 32).close()
+            runMigrationsAndValidate(TEST_DB, 33, false)
         }
     }
 
