@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.logging.FluxCCrashLoggerProvider.crashLogger
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
@@ -27,6 +28,7 @@ import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
+import java.lang.NumberFormatException
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
@@ -364,10 +366,11 @@ class WCStatsStore @Inject constructor(
             return if (periodIndex == -1 || fieldIndex == -1) {
                 mapOf()
             } else {
-                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-                visitorStatsModel.dataList.map {
-                    it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
-                }.toMap()
+                getVisitorsMap(
+                    periodIndex = periodIndex,
+                    fieldIndex = fieldIndex,
+                    dataList = visitorStatsModel.dataList
+                )
             }
         } ?: return mapOf()
     }
@@ -392,12 +395,36 @@ class WCStatsStore @Inject constructor(
             return if (periodIndex == -1 || fieldIndex == -1) {
                 mapOf()
             } else {
-                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-                visitorStatsModel.dataList.map {
-                    it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
-                }.toMap()
+                getVisitorsMap(
+                    periodIndex = periodIndex,
+                    fieldIndex = fieldIndex,
+                    dataList = visitorStatsModel.dataList
+                )
             }
         } ?: return mapOf()
+    }
+
+    private fun getVisitorsMap(
+        periodIndex: Int, fieldIndex: Int, dataList: List<List<Any>>
+    ): Map<String, Int> {
+        return dataList.associate {
+            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+            val period = it[periodIndex].toString().removeSuffix(".0")
+
+            // Some plugins can change the field type
+            val visitsRawValue = it[fieldIndex]
+            val visits = if (visitsRawValue is Number) {
+                visitsRawValue.toInt()
+            } else {
+                crashLogger?.recordException(
+                    exception = NumberFormatException("$visitsRawValue is not a valid number"),
+                    category = null
+                )
+                (visitsRawValue as? String)?.toDoubleOrNull()?.toInt() ?: 0
+            }
+
+            period to visits
+        }
     }
 
     /**

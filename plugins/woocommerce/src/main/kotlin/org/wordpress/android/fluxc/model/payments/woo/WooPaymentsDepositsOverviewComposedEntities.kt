@@ -9,7 +9,6 @@ data class WooPaymentsDepositsOverviewComposedEntities(
     val overview: WooPaymentsDepositsOverviewEntity,
 
     val lastPaidDeposits: List<WooPaymentsDepositEntity>?,
-    val nextScheduledDeposits: List<WooPaymentsDepositEntity>?,
     val lastManualDeposits: List<WooPaymentsManualDepositEntity>?,
 
     val pendingBalances: List<WooPaymentsBalanceEntity>?,

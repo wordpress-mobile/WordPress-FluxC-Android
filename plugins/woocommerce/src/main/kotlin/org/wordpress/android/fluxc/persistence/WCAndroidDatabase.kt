@@ -46,6 +46,7 @@ import org.wordpress.android.fluxc.persistence.migrations.AutoMigration17to18
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration18to19
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration19to20
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration23to24
+import org.wordpress.android.fluxc.persistence.migrations.AutoMigration32to33
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_15_16
@@ -55,6 +56,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_22_23
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_24_25
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_27_28
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_30_31
+import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_31_32
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_3_4
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_4_5
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_5_6
@@ -64,7 +66,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-    version = 31,
+    version = 33,
     entities = [
         AddonEntity::class,
         AddonOptionEntity::class,
@@ -97,6 +99,8 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         AutoMigration(from = 26, to = 27),
         AutoMigration(from = 28, to = 29),
         AutoMigration(from = 29, to = 30),
+        AutoMigration(from = 31, to = 32),
+        AutoMigration(from = 32, to = 33, spec = AutoMigration32to33::class),
     ]
 )
 @TypeConverters(
@@ -144,6 +148,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
             .addMigrations(MIGRATION_24_25)
             .addMigrations(MIGRATION_27_28)
             .addMigrations(MIGRATION_30_31)
+            .addMigrations(MIGRATION_31_32)
             .build()
     }
 

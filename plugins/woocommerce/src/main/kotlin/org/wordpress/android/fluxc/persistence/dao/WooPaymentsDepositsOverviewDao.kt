@@ -10,7 +10,6 @@ import org.wordpress.android.fluxc.model.payments.woo.WooPaymentsDepositsOvervie
 import org.wordpress.android.fluxc.persistence.entity.BalanceType
 import org.wordpress.android.fluxc.persistence.entity.DepositType
 import org.wordpress.android.fluxc.persistence.entity.DepositType.LAST_PAID
-import org.wordpress.android.fluxc.persistence.entity.DepositType.NEXT_SCHEDULED
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsBalanceEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositEntity
 import org.wordpress.android.fluxc.persistence.entity.WooPaymentsDepositsOverviewEntity
@@ -25,7 +24,6 @@ interface WooPaymentsDepositsOverviewDao {
             overview = overview,
 
             lastPaidDeposits = getDeposits(localSiteId, LAST_PAID),
-            nextScheduledDeposits = getDeposits(localSiteId, NEXT_SCHEDULED),
             lastManualDeposits = getManualDeposits(localSiteId),
 
             pendingBalances = getBalances(localSiteId, BalanceType.PENDING),
@@ -85,7 +83,6 @@ interface WooPaymentsDepositsOverviewDao {
         localSiteId: LocalId,
         overviewEntity: WooPaymentsDepositsOverviewEntity,
         lastPaidDepositsEntities: List<WooPaymentsDepositEntity>,
-        nextScheduledDepositsEntities: List<WooPaymentsDepositEntity>,
         manualDepositEntities: List<WooPaymentsManualDepositEntity>,
         pendingBalancesEntities: List<WooPaymentsBalanceEntity>,
         availableBalancesEntities: List<WooPaymentsBalanceEntity>,
@@ -94,7 +91,6 @@ interface WooPaymentsDepositsOverviewDao {
         insertOverview(overviewEntity)
 
         lastPaidDepositsEntities.forEach { insertDeposit(it) }
-        nextScheduledDepositsEntities.forEach { insertDeposit(it) }
         manualDepositEntities.forEach { insertManualDeposit(it) }
 
         pendingBalancesEntities.forEach { insertBalance(it) }

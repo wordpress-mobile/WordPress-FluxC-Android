@@ -976,3 +976,89 @@ internal val MIGRATION_30_31 = object : Migration(30, 31) {
         }
     }
 }
+
+/**
+ * We are storing "giftCards" into OrderEntity property as a new extensions support.
+ */
+internal val MIGRATION_31_32 = object : Migration(31, 32) {
+    @Suppress("LongMethod")
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.apply {
+            execSQL("DROP TABLE OrderEntity")
+            // language=RoomSql
+            execSQL(
+                /* sql = */ """
+                CREATE TABLE IF NOT EXISTS  `OrderEntity` (
+                  `localSiteId` INTEGER NOT NULL,
+                  `orderId` INTEGER NOT NULL,
+                  `number` TEXT NOT NULL,
+                  `status` TEXT NOT NULL,
+                  `currency` TEXT NOT NULL,
+                  `orderKey` TEXT NOT NULL,
+                  `dateCreated` TEXT NOT NULL,
+                  `dateModified` TEXT NOT NULL,
+                  `total` TEXT NOT NULL,
+                  `totalTax` TEXT NOT NULL,
+                  `shippingTotal` TEXT NOT NULL,
+                  `paymentMethod` TEXT NOT NULL,
+                  `paymentMethodTitle` TEXT NOT NULL,
+                  `datePaid` TEXT NOT NULL,
+                  `pricesIncludeTax` INTEGER NOT NULL,
+                  `customerNote` TEXT NOT NULL,
+                  `discountTotal` TEXT NOT NULL,
+                  `discountCodes` TEXT NOT NULL,
+                  `refundTotal` TEXT NOT NULL,
+                  `billingFirstName` TEXT NOT NULL,
+                  `billingLastName` TEXT NOT NULL,
+                  `billingCompany` TEXT NOT NULL,
+                  `billingAddress1` TEXT NOT NULL,
+                  `billingAddress2` TEXT NOT NULL,
+                  `billingCity` TEXT NOT NULL,
+                  `billingState` TEXT NOT NULL,
+                  `billingPostcode` TEXT NOT NULL,
+                  `billingCountry` TEXT NOT NULL,
+                  `billingEmail` TEXT NOT NULL,
+                  `billingPhone` TEXT NOT NULL,
+                  `shippingFirstName` TEXT NOT NULL,
+                  `shippingLastName` TEXT NOT NULL,
+                  `shippingCompany` TEXT NOT NULL,
+                  `shippingAddress1` TEXT NOT NULL,
+                  `shippingAddress2` TEXT NOT NULL,
+                  `shippingCity` TEXT NOT NULL,
+                  `shippingState` TEXT NOT NULL,
+                  `shippingPostcode` TEXT NOT NULL,
+                  `shippingCountry` TEXT NOT NULL,
+                  `shippingPhone` TEXT NOT NULL,
+                  `lineItems` TEXT NOT NULL,
+                  `shippingLines` TEXT NOT NULL,
+                  `feeLines` TEXT NOT NULL,
+                  `taxLines` TEXT NOT NULL,
+                  `couponLines` TEXT NOT NULL DEFAULT '',
+                  `metaData` TEXT NOT NULL,
+                  `paymentUrl` TEXT NOT NULL DEFAULT '',
+                  `isEditable` INTEGER NOT NULL DEFAULT 1,
+                  `needsPayment` INTEGER,
+                  `needsProcessing` INTEGER,
+                  `customerId` INTEGER NOT NULL DEFAULT 0,
+                  `giftCardCode` TEXT NOT NULL DEFAULT '',
+                  `giftCardAmount` TEXT NOT NULL DEFAULT '',
+                  PRIMARY KEY(`localSiteId`, `orderId`)
+                )
+            """.trimIndent()
+            )
+            execSQL(
+                // language=RoomSql
+                """
+                    CREATE INDEX IF NOT EXISTS `index_OrderEntity_localSiteId_orderId`
+                    ON `OrderEntity` (`localSiteId`, `orderId`);
+                """.trimIndent()
+            )
+        }
+    }
+}
+
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "WooPaymentsBalance", columnName = "transactionIds"),
+    DeleteColumn(tableName = "WooPaymentsBalance", columnName = "depositsCount"),
+)
+internal class AutoMigration32to33 : AutoMigrationSpec

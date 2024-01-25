@@ -48,9 +48,6 @@ class WCWooPaymentsStore @Inject constructor(
             lastPaidDepositsEntities = depositsOverview.deposit?.lastPaid?.map {
                 mapper.mapModelDepositToEntity(it, site, DepositType.LAST_PAID)
             }.orEmpty(),
-            nextScheduledDepositsEntities = depositsOverview.deposit?.nextScheduled?.map {
-                mapper.mapModelDepositToEntity(it, site, DepositType.NEXT_SCHEDULED)
-            }.orEmpty(),
             manualDepositEntities = depositsOverview.deposit?.lastManualDeposits?.map {
                 mapper.mapModelManualDepositToEntity(it, site)
             }.orEmpty(),

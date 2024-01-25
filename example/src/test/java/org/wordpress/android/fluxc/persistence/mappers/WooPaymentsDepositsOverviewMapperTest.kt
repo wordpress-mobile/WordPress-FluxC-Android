@@ -47,21 +47,6 @@ class WooPaymentsDepositsOverviewMapperTest {
                         created = 1L
                     )
                 ),
-                nextScheduled = listOf(
-                    WooPaymentsDeposit(
-                        id = "id",
-                        date = 1L,
-                        type = "type",
-                        amount = 1L,
-                        status = "status",
-                        bankAccount = "bankAccount",
-                        currency = "currency",
-                        automatic = true,
-                        fee = 1L,
-                        feePercentage = 1.0,
-                        created = 1L
-                    )
-                ),
                 lastManualDeposits = listOf(
                     WooPaymentsManualDeposit(
                         currency = "currency",
@@ -77,10 +62,8 @@ class WooPaymentsDepositsOverviewMapperTest {
                         sourceTypes = WooPaymentsSourceTypes(
                             card = 1
                         ),
-                        depositsCount = 1,
                         feePercentage = 1.0,
                         net = 1L,
-                        transactionIds = listOf("transactionIds1"),
                         fee = 1L
                     )
                 ),
@@ -91,10 +74,8 @@ class WooPaymentsDepositsOverviewMapperTest {
                         sourceTypes = WooPaymentsSourceTypes(
                             card = 1
                         ),
-                        depositsCount = 1,
                         feePercentage = 1.0,
                         net = 1L,
-                        transactionIds = listOf("transactionIds2"),
                         fee = 1L
                     )
                 ),
@@ -105,10 +86,8 @@ class WooPaymentsDepositsOverviewMapperTest {
                         sourceTypes = WooPaymentsSourceTypes(
                             card = 1
                         ),
-                        depositsCount = 1,
                         feePercentage = 1.0,
                         net = 1L,
-                        transactionIds = listOf("transactionIds3"),
                         fee = 1L
                     )
                 )
@@ -143,41 +122,24 @@ class WooPaymentsDepositsOverviewMapperTest {
         assertThat(result.deposit?.lastPaid?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.deposit?.lastPaid?.get(0)?.status).isEqualTo("status")
         assertThat(result.deposit?.lastPaid?.get(0)?.type).isEqualTo("type")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.amount).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.automatic).isEqualTo(true)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.bankAccount).isEqualTo("bankAccount")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.created).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.currency).isEqualTo("currency")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.date).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.depositId).isEqualTo("id")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.fee).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.feePercentage).isEqualTo(1.0)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.status).isEqualTo("status")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.type).isEqualTo("type")
         assertThat(result.balance?.available?.get(0)?.amount).isEqualTo(1L)
         assertThat(result.balance?.available?.get(0)?.currency).isEqualTo("usd")
-        assertThat(result.balance?.available?.get(0)?.depositsCount).isEqualTo(1)
         assertThat(result.balance?.available?.get(0)?.fee).isEqualTo(1L)
         assertThat(result.balance?.available?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.balance?.available?.get(0)?.net).isEqualTo(1L)
         assertThat(result.balance?.available?.get(0)?.sourceTypes?.card).isEqualTo(1)
-        assertThat(result.balance?.available?.get(0)?.transactionIds?.get(0)).isEqualTo("transactionIds2")
         assertThat(result.balance?.instant?.get(0)?.amount).isEqualTo(1L)
         assertThat(result.balance?.instant?.get(0)?.currency).isEqualTo("eur")
-        assertThat(result.balance?.instant?.get(0)?.depositsCount).isEqualTo(1)
         assertThat(result.balance?.instant?.get(0)?.fee).isEqualTo(1L)
         assertThat(result.balance?.instant?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.balance?.instant?.get(0)?.net).isEqualTo(1L)
         assertThat(result.balance?.instant?.get(0)?.sourceTypes?.card).isEqualTo(1)
-        assertThat(result.balance?.instant?.get(0)?.transactionIds?.get(0)).isEqualTo("transactionIds3")
         assertThat(result.balance?.pending?.get(0)?.amount).isEqualTo(1L)
         assertThat(result.balance?.pending?.get(0)?.currency).isEqualTo("rub")
-        assertThat(result.balance?.pending?.get(0)?.depositsCount).isEqualTo(1)
         assertThat(result.balance?.pending?.get(0)?.fee).isEqualTo(1L)
         assertThat(result.balance?.pending?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.balance?.pending?.get(0)?.net).isEqualTo(1L)
         assertThat(result.balance?.pending?.get(0)?.sourceTypes?.card).isEqualTo(1)
-        assertThat(result.balance?.pending?.get(0)?.transactionIds?.get(0)).isEqualTo("transactionIds1")
         assertThat(result.account?.defaultCurrency).isEqualTo("defaultCurrency")
         assertThat(result.account?.depositsBlocked).isEqualTo(true)
         assertThat(result.account?.depositsEnabled).isEqualTo(true)
@@ -223,23 +185,6 @@ class WooPaymentsDepositsOverviewMapperTest {
                     depositType = DepositType.LAST_PAID
                 )
             ),
-            nextScheduledDeposits = listOf(
-                WooPaymentsDepositEntity(
-                    localSiteId = LocalId(1),
-                    depositId = "id",
-                    date = 1L,
-                    type = "type",
-                    amount = 1L,
-                    status = "status2",
-                    bankAccount = "bankAccount2",
-                    currency = "rub",
-                    automatic = true,
-                    fee = 1L,
-                    feePercentage = 1.0,
-                    created = 1L,
-                    depositType = DepositType.NEXT_SCHEDULED
-                )
-            ),
             lastManualDeposits = listOf(
                 WooPaymentsManualDepositEntity(
                     localSiteId = LocalId(1),
@@ -255,10 +200,8 @@ class WooPaymentsDepositsOverviewMapperTest {
                     sourceTypes = WooPaymentsSourceTypesEntity(
                         card = 1
                     ),
-                    depositsCount = 1,
                     feePercentage = 1.0,
                     net = 1L,
-                    transactionIds = listOf("transactionIds1"),
                     fee = 1L,
                     balanceType = BalanceType.AVAILABLE,
                 )
@@ -271,10 +214,8 @@ class WooPaymentsDepositsOverviewMapperTest {
                     sourceTypes = WooPaymentsSourceTypesEntity(
                         card = 1
                     ),
-                    depositsCount = 1,
                     feePercentage = 1.0,
                     net = 1L,
-                    transactionIds = listOf("transactionIds2"),
                     fee = 1L,
                     balanceType = BalanceType.AVAILABLE,
                 )
@@ -287,10 +228,8 @@ class WooPaymentsDepositsOverviewMapperTest {
                     sourceTypes = WooPaymentsSourceTypesEntity(
                         card = 1
                     ),
-                    depositsCount = 1,
                     feePercentage = 1.0,
                     net = 1L,
-                    transactionIds = listOf("transactionIds3"),
                     fee = 1L,
                     balanceType = BalanceType.AVAILABLE,
                 )
@@ -314,41 +253,24 @@ class WooPaymentsDepositsOverviewMapperTest {
         assertThat(result.deposit?.lastPaid?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.deposit?.lastPaid?.get(0)?.status).isEqualTo("status1")
         assertThat(result.deposit?.lastPaid?.get(0)?.type).isEqualTo("type")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.amount).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.automatic).isEqualTo(true)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.bankAccount).isEqualTo("bankAccount2")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.created).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.currency).isEqualTo("rub")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.date).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.depositId).isEqualTo("id")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.fee).isEqualTo(1L)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.feePercentage).isEqualTo(1.0)
-        assertThat(result.deposit?.nextScheduled?.get(0)?.status).isEqualTo("status2")
-        assertThat(result.deposit?.nextScheduled?.get(0)?.type).isEqualTo("type")
         assertThat(result.balance?.available?.get(0)?.amount).isEqualTo(1L)
         assertThat(result.balance?.available?.get(0)?.currency).isEqualTo("usd")
-        assertThat(result.balance?.available?.get(0)?.depositsCount).isEqualTo(1)
         assertThat(result.balance?.available?.get(0)?.fee).isEqualTo(1L)
         assertThat(result.balance?.available?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.balance?.available?.get(0)?.net).isEqualTo(1L)
         assertThat(result.balance?.available?.get(0)?.sourceTypes?.card).isEqualTo(1)
-        assertThat(result.balance?.available?.get(0)?.transactionIds?.get(0)).isEqualTo("transactionIds2")
         assertThat(result.balance?.instant?.get(0)?.amount).isEqualTo(1L)
         assertThat(result.balance?.instant?.get(0)?.currency).isEqualTo("eur")
-        assertThat(result.balance?.instant?.get(0)?.depositsCount).isEqualTo(1)
         assertThat(result.balance?.instant?.get(0)?.fee).isEqualTo(1L)
         assertThat(result.balance?.instant?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.balance?.instant?.get(0)?.net).isEqualTo(1L)
         assertThat(result.balance?.instant?.get(0)?.sourceTypes?.card).isEqualTo(1)
-        assertThat(result.balance?.instant?.get(0)?.transactionIds?.get(0)).isEqualTo("transactionIds3")
         assertThat(result.balance?.pending?.get(0)?.amount).isEqualTo(1L)
         assertThat(result.balance?.pending?.get(0)?.currency).isEqualTo("rub")
-        assertThat(result.balance?.pending?.get(0)?.depositsCount).isEqualTo(1)
         assertThat(result.balance?.pending?.get(0)?.fee).isEqualTo(1L)
         assertThat(result.balance?.pending?.get(0)?.feePercentage).isEqualTo(1.0)
         assertThat(result.balance?.pending?.get(0)?.net).isEqualTo(1L)
         assertThat(result.balance?.pending?.get(0)?.sourceTypes?.card).isEqualTo(1)
-        assertThat(result.balance?.pending?.get(0)?.transactionIds?.get(0)).isEqualTo("transactionIds1")
         assertThat(result.account?.defaultCurrency).isEqualTo("defaultCurrency")
         assertThat(result.account?.depositsBlocked).isEqualTo(true)
         assertThat(result.account?.depositsEnabled).isEqualTo(true)
