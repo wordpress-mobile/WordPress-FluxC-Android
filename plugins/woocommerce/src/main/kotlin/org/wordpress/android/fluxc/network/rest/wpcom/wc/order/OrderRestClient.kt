@@ -839,6 +839,16 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun fetchOrdersReceipt(
+        site: SiteModel,
+        orderId: Long,
+        expirationDate: String? = null,
+        expirationDays: Int? = null,
+        forceNew: Boolean? = null
+    ): WooPayload<OrderReceiptResponse> {
+
+    }
+
     private suspend fun doFetchOrderCount(site: SiteModel, filterByStatus: String?): FetchOrdersCountResponsePayload {
         val url = WOOCOMMERCE.reports.orders.totals.pathV3
 
