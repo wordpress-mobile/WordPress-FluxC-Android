@@ -840,6 +840,11 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    /**
+     * expirationDate: Formatted as yyyy-mm-dd.
+     * expirationDays: A number, 0 is today, 1 is tomorrow, etc.
+     * forceNew: Defaults to false, if true, creates a new receipt even if one already exists for the order.
+     */
     suspend fun fetchOrdersReceipt(
         site: SiteModel,
         orderId: Long,
