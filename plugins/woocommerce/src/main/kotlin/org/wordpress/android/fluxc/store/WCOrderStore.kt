@@ -635,6 +635,20 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    suspend fun fetchOrdersReceipt(
+        site: SiteModel,
+        orderId: Long,
+        expirationDate: String? = null,
+        expirationDays: Int? = null,
+        forceNew: Boolean? = null
+    ) = wcOrderRestClient.fetchOrdersReceipt(
+        site,
+        orderId,
+        expirationDate,
+        expirationDays,
+        forceNew
+    )
+
     private suspend fun updateOrderStatusLocally(orderId: Long, localSiteId: LocalId, newStatus: String) {
         val updatedOrder = ordersDao.getOrder(orderId, localSiteId)!!
             .copy(status = newStatus)
