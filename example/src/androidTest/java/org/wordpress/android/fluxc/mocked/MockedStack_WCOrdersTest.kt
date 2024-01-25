@@ -541,6 +541,30 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }
 
+    @Test
+    fun testFetchOrdersReceipt() = runBlocking {
+        interceptor.respondWith("wc-order-receipt-success.json")
+
+        val result = orderRestClient.fetchOrdersReceipt(
+            siteModel,
+            0,
+            expirationDate = "2024-01-23",
+            expirationDays = 365,
+            forceNew = false,
+        )
+
+        assertFalse(result.isError)
+        assertEquals(
+            "https://test.site/wc/file/transient/7e811783b66f468b61b4738231287b2a706ce1",
+            result.result!!.receiptUrl
+        )
+        assertEquals(
+            "2024-01-23",
+            result.result!!.expirationDate
+        )
+
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
