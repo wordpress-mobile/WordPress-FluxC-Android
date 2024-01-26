@@ -562,7 +562,6 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             "2024-01-23",
             result.result!!.expirationDate
         )
-
     }
 
     @Suppress("unused")
