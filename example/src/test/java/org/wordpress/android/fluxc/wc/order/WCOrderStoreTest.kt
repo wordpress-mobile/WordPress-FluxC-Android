@@ -444,6 +444,33 @@ class WCOrderStoreTest {
         }
     }
 
+    @Test
+    fun testFetchOrdersReceipt() {
+        runBlocking {
+            val orderModel = OrderTestUtils.generateSampleOrder(42)
+            val site = SiteModel().apply { id = orderModel.localSiteId.value }
+            val orderId = 42L
+            val expirationDate = "2021-01-05"
+            val expirationDays = 30
+            val forceNew = true
+
+            orderStore.fetchOrdersReceipt(
+                site,
+                orderId,
+                expirationDate,
+                expirationDays,
+                forceNew
+            )
+
+            verify(orderRestClient).fetchOrdersReceipt(
+                site,
+                orderId,
+                expirationDate,
+                expirationDays,
+                forceNew
+            )
+        }
+    }
 
     private fun setupMissingOrders(): MutableMap<WCOrderSummaryModel, OrderEntity?> {
         return mutableMapOf<WCOrderSummaryModel, OrderEntity?>().apply {

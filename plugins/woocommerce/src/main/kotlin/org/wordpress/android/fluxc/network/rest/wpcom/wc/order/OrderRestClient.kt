@@ -2,6 +2,7 @@
 
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import android.net.Uri
 import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -837,6 +838,40 @@ class OrderRestClient @Inject constructor(
             is WPAPIResponse.Success -> WooPayload(Unit)
             is WPAPIResponse.Error -> WooPayload(response.error.toWooError())
         }
+    }
+
+    /**
+     * expirationDate: Formatted as yyyy-mm-dd.
+     * expirationDays: A number, 0 is today, 1 is tomorrow, etc.
+     * forceNew: Defaults to false, if true, creates a new receipt even if one already exists for the order.
+     */
+    suspend fun fetchOrdersReceipt(
+        site: SiteModel,
+        orderId: Long,
+        expirationDate: String? = null,
+        expirationDays: Int? = null,
+        forceNew: Boolean? = null
+    ): WooPayload<OrderReceiptResponse> {
+        val params = mutableMapOf<String, String>().apply {
+            expirationDate?.let { put("expiration_date", it) }
+            expirationDays?.let { put("expiration_days", it.toString()) }
+            forceNew?.let { put("force_new", it.toString()) }
+        }
+
+        val url = Uri.parse(WOOCOMMERCE.orders.id(orderId).receipt.pathV3)
+            .buildUpon().apply {
+                params.forEach { (key, value) ->
+                    appendQueryParameter(key, value)
+                }
+            }.build().toString()
+
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            clazz = OrderReceiptResponse::class.java
+        )
+
+        return response.toWooPayload { it }
     }
 
     private suspend fun doFetchOrderCount(site: SiteModel, filterByStatus: String?): FetchOrdersCountResponsePayload {
