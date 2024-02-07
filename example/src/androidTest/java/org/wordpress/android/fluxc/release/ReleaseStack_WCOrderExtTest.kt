@@ -222,4 +222,14 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         val providers = orderStore.getShipmentProvidersForSite(sSite)
         assertTrue(providers.isNotEmpty())
     }
+
+    @Test
+    fun givenOrderDoesntExit_WhenFetchOrderReceipt_ThenErrorReturned() = runBlocking {
+        val result = orderStore.fetchOrdersReceipt(
+            sSite,
+            Long.MAX_VALUE,
+        )
+
+        assertTrue(result.isError)
+    }
 }
