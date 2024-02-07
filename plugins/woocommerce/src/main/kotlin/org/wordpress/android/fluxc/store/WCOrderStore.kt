@@ -827,8 +827,13 @@ class WCOrderStore @Inject constructor(
             loadedMore = payload.loadedMore,
             canLoadMore = payload.canLoadMore,
             error = payload.error?.let { fetchError ->
-                // TODO: Use the actual error type
-                ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
+                ListError(
+                    type = when (fetchError.type) {
+                        PARSE_ERROR -> ListErrorType.PARSE_ERROR
+                        else -> ListErrorType.GENERIC_ERROR
+                    },
+                    message = fetchError.message
+                )
             }
         )))
     }
