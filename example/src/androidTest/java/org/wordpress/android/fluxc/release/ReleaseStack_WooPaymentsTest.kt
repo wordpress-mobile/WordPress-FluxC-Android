@@ -36,7 +36,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals(2, result.result?.account?.depositsSchedule?.delayDays)
         assertEquals("daily", result.result?.account?.depositsSchedule?.interval)
         assertEquals(0L, result.result?.balance?.available?.get(0)?.amount)
-        assertEquals(null, result.result?.balance?.available?.get(0)?.depositsCount)
         assertEquals("usd", result.result?.balance?.available?.get(0)?.currency)
         assertEquals(0, result.result?.balance?.available?.get(0)?.sourceTypes?.card)
         assertEquals(0, result.result?.balance?.instant?.size)
@@ -45,7 +44,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals(null, result.result?.balance?.pending?.get(0)?.fee)
         assertEquals(null, result.result?.balance?.pending?.get(0)?.feePercentage)
         assertEquals(null, result.result?.balance?.pending?.get(0)?.net)
-        assertEquals(0, result.result?.balance?.pending?.get(0)?.depositsCount)
         assertEquals(0, result.result?.balance?.pending?.get(0)?.sourceTypes?.card)
         assertEquals(0, result.result?.deposit?.lastManualDeposits?.size)
         assertEquals(1, result.result?.deposit?.lastPaid?.size)
@@ -60,7 +58,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals("po_1KQLho2HswaZkMX3M9Qhzf4W", result.result?.deposit?.lastPaid?.get(0)?.depositId)
         assertEquals("paid", result.result?.deposit?.lastPaid?.get(0)?.status)
         assertEquals("deposit", result.result?.deposit?.lastPaid?.get(0)?.type)
-        assertEquals(0, result.result?.deposit?.nextScheduled?.size)
     }
 
     @Test
@@ -80,7 +77,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals(2, getResult?.account?.depositsSchedule?.delayDays)
         assertEquals("daily", getResult?.account?.depositsSchedule?.interval)
         assertEquals(0L, getResult?.balance?.available?.get(0)?.amount)
-        assertEquals(null, getResult?.balance?.available?.get(0)?.depositsCount)
         assertEquals("usd", getResult?.balance?.available?.get(0)?.currency)
         assertEquals(0, getResult?.balance?.available?.get(0)?.sourceTypes?.card)
         assertEquals(0, getResult?.balance?.instant?.size)
@@ -89,7 +85,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals(null, getResult?.balance?.pending?.get(0)?.fee)
         assertEquals(null, getResult?.balance?.pending?.get(0)?.feePercentage)
         assertEquals(null, getResult?.balance?.pending?.get(0)?.net)
-        assertEquals(0, getResult?.balance?.pending?.get(0)?.depositsCount)
         assertEquals(0, getResult?.balance?.pending?.get(0)?.sourceTypes?.card)
         assertEquals(0, getResult?.deposit?.lastManualDeposits?.size)
         assertEquals(1, getResult?.deposit?.lastPaid?.size)
@@ -104,7 +99,6 @@ class ReleaseStack_WooPaymentsTest : ReleaseStack_WCBase() {
         assertEquals("po_1KQLho2HswaZkMX3M9Qhzf4W", getResult?.deposit?.lastPaid?.get(0)?.depositId)
         assertEquals("paid", getResult?.deposit?.lastPaid?.get(0)?.status)
         assertEquals("deposit", getResult?.deposit?.lastPaid?.get(0)?.type)
-        assertEquals(0, getResult?.deposit?.nextScheduled?.size)
     }
 
     @Test

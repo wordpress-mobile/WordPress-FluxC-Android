@@ -10,7 +10,6 @@ data class WooPaymentsDepositsOverviewApiResponse(
 
 data class WooPaymentsCurrencyDeposits(
     @SerializedName("last_paid") val lastPaid: List<WooPaymentsDeposit>?,
-    @SerializedName("next_scheduled") val nextScheduled: List<WooPaymentsDeposit>?,
     @SerializedName("last_manual_deposits") val lastManualDeposits: List<WooPaymentsManualDeposit>?
 )
 
@@ -43,10 +42,8 @@ data class WooPaymentsBalance(
     val amount: Long?,
     val currency: String?,
     @SerializedName("source_types") val sourceTypes: WooPaymentsSourceTypes?,
-    @SerializedName("deposits_count") val depositsCount: Int?,
     @SerializedName("fee_percentage") val feePercentage: Double?,
     @SerializedName("net") val net: Long?,
-    @SerializedName("transaction_ids") val transactionIds: List<String>?,
     val fee: Long?,
 )
 

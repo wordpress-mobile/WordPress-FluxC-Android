@@ -3,9 +3,11 @@ package org.wordpress.android.fluxc.persistence
 import android.content.Context
 import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.DeleteTable
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import org.wordpress.android.fluxc.persistence.BloggingRemindersDao.BloggingReminders
@@ -35,7 +37,7 @@ import org.wordpress.android.fluxc.persistence.jetpacksocial.JetpackSocialDao
 import org.wordpress.android.fluxc.persistence.jetpacksocial.JetpackSocialDao.JetpackSocialEntity
 
 @Database(
-        version = 24,
+        version = 26,
         entities = [
             BloggingReminders::class,
             PlanOffer::class,
@@ -53,7 +55,7 @@ import org.wordpress.android.fluxc.persistence.jetpacksocial.JetpackSocialDao.Je
             JetpackSocialEntity::class,
             BlazeTargetingLanguageEntity::class,
             BlazeTargetingDeviceEntity::class,
-            BlazeTargetingTopicEntity::class,
+            BlazeTargetingTopicEntity::class
         ],
         autoMigrations = [
             AutoMigration(from = 11, to = 12),
@@ -63,6 +65,8 @@ import org.wordpress.android.fluxc.persistence.jetpacksocial.JetpackSocialDao.Je
             AutoMigration(from = 17, to = 18),
             AutoMigration(from = 22, to = 23),
             AutoMigration(from = 23, to = 24),
+            AutoMigration(from = 24, to = 25),
+            AutoMigration(from = 25, to = 26, spec = AutoMigration25to26::class)
         ]
 )
 @TypeConverters(
@@ -322,3 +326,8 @@ abstract class WPAndroidDatabase : RoomDatabase() {
         }
     }
 }
+
+@DeleteTable.Entries(
+    DeleteTable(tableName = "BlazeAdSuggestions")
+)
+internal class AutoMigration25to26 : AutoMigrationSpec
