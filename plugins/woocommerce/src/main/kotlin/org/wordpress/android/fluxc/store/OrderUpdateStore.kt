@@ -5,6 +5,7 @@ import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
@@ -242,6 +243,10 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
+
+                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = site.localId().value)
+                ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier)
+
                 // Emit a request to refresh the list of order summaries to make sure the added order is
                 // added to the list
                 dispatcher.dispatch(
@@ -267,6 +272,10 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
                 ordersDao.insertOrUpdateOrder(model)
+
+                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = site.localId().value)
+                ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier)
+
                 WooResult(model)
             }
         }
@@ -284,6 +293,10 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 ordersDao.deleteOrder(site.localId(), orderId)
+
+                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = site.localId().value)
+                ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier)
+
                 WooResult(Unit)
             }
         }
