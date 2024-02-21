@@ -245,7 +245,7 @@ class OrderUpdateStore @Inject internal constructor(
                 ordersDao.insertOrUpdateOrder(model)
 
                 val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = site.localId().value)
-                ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier)
+                dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
 
                 // Emit a request to refresh the list of order summaries to make sure the added order is
                 // added to the list
@@ -274,7 +274,7 @@ class OrderUpdateStore @Inject internal constructor(
                 ordersDao.insertOrUpdateOrder(model)
 
                 val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = site.localId().value)
-                ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier)
+                dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
 
                 WooResult(model)
             }
@@ -295,7 +295,7 @@ class OrderUpdateStore @Inject internal constructor(
                 ordersDao.deleteOrder(site.localId(), orderId)
 
                 val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = site.localId().value)
-                ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier)
+                dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
 
                 WooResult(Unit)
             }
