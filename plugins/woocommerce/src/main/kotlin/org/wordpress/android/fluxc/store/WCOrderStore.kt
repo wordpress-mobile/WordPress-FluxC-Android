@@ -588,6 +588,14 @@ class WCOrderStore @Inject constructor(
                 OnOrderChanged(orderError = result.error)
             } else {
                 insertOrder(result.orderWithMeta)
+                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
+                    localSiteId = site.localId().value
+                )
+                mDispatcher.dispatch(
+                    ListActionBuilder.newListRequiresRefreshAction(
+                        listTypeIdentifier
+                    )
+                )
                 OnOrderChanged()
             }
         }
@@ -609,6 +617,14 @@ class WCOrderStore @Inject constructor(
                 )
 
                 emit(OptimisticUpdateResult(optimisticUpdateResult))
+                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
+                    localSiteId = site.localId().value
+                )
+                mDispatcher.dispatch(
+                    ListActionBuilder.newListRequiresRefreshAction(
+                        listTypeIdentifier
+                    )
+                )
 
                 val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus.statusKey)
                 val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
@@ -621,6 +637,11 @@ class WCOrderStore @Inject constructor(
                 emit(RemoteUpdateResult(remoteUpdateResult))
                 // Needs to remain here until all event bus observables are removed from the client code
                 emitChange(remoteUpdateResult)
+                mDispatcher.dispatch(
+                    ListActionBuilder.newListRequiresRefreshAction(
+                        listTypeIdentifier
+                    )
+                )
             } else {
                 emit(
                     OptimisticUpdateResult(
@@ -795,7 +816,14 @@ class WCOrderStore @Inject constructor(
                 }
 
                 insertOrder(*payload.ordersWithMeta.toTypedArray())
-
+                val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
+                    localSiteId = payload.site.localId().value
+                )
+                mDispatcher.dispatch(
+                    ListActionBuilder.newListDataInvalidatedAction(
+                        listTypeIdentifier
+                    )
+                )
                 OnOrderChanged(payload.statusFilter, canLoadMore = payload.canLoadMore)
             }.copy(causeOfChange = FETCH_ORDERS)
 
