@@ -84,7 +84,7 @@ class OrdersDaoDecorator @Inject constructor(
     }
 
     /**
-     * The ListStore component reloads the data from the DB on Data Invalidated event.
+     * Emit DataInvalidated event - the ListStore component reloads the data from the DB.
      */
     private fun emitInvalidateListEvent(localSiteId: LocalOrRemoteId.LocalId) {
         val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
