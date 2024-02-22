@@ -12,6 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class OrdersDaoDecorator @Inject constructor(
+    private val dispatcher: Dispatcher,
     private val ordersDao: OrdersDao,
 ) {
     suspend fun updateLocalOrder(
@@ -27,8 +28,13 @@ class OrdersDaoDecorator @Inject constructor(
     @Suppress("unused")
     suspend fun getAllOrders(): List<OrderEntity> = ordersDao.getAllOrders()
 
-    fun insertOrUpdateOrder(order: OrderEntity) {
+    /**
+     * @param suppressListRefresh Suppresses emit of ListRequiresRefresh event. Can be used
+     * when this method is invoked in a loop and the app needs to emit the event at the end.
+     */
+    fun insertOrUpdateOrder(order: OrderEntity, suppressListRefresh: Boolean = false) {
         ordersDao.insertOrUpdateOrder(order)
+        if (!suppressListRefresh) emitRefreshListEvent(order.localSiteId)
     }
 
     suspend fun getOrder(orderId: Long, localSiteId: LocalOrRemoteId.LocalId): OrderEntity? =
@@ -63,6 +69,7 @@ class OrdersDaoDecorator @Inject constructor(
 
     fun deleteOrdersForSite(localSiteId: LocalOrRemoteId.LocalId) {
         ordersDao.deleteOrdersForSite(localSiteId)
+        emitRefreshListEvent(localSiteId)
     }
 
     fun getOrderCountForSite(localSiteId: LocalOrRemoteId.LocalId): Int =
@@ -73,6 +80,14 @@ class OrdersDaoDecorator @Inject constructor(
 
     suspend fun deleteOrder(localSiteId: LocalOrRemoteId.LocalId, orderId: Long) {
         ordersDao.deleteOrder(localSiteId, orderId)
+        emitRefreshListEvent(localSiteId)
+    }
+
+    private fun emitRefreshListEvent(localSiteId: LocalOrRemoteId.LocalId) {
+        val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
+            localSiteId = localSiteId.value
+        )
+        dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
     }
 }
 
