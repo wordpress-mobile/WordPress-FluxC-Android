@@ -21,9 +21,10 @@ class InsertOrder @Inject internal constructor(
         localSiteId: LocalOrRemoteId.LocalId,
         vararg ordersPack: Pair<OrderEntity, List<OrderMetaDataEntity>>
     ) {
+        val listSize = ordersPack.size
         transactionExecutor.executeInTransaction {
-            ordersPack.forEach { (order, metaData) ->
-                ordersDaoDecorator.insertOrUpdateOrder(order, suppressListRefresh = true)
+            ordersPack.forEachIndexed { index, (order, metaData) ->
+                ordersDaoDecorator.insertOrUpdateOrder(order, suppressListRefresh = index != listSize - 1 )
                 ordersMetaDataDao.updateOrderMetaData(
                     order.orderId,
                     order.localSiteId,
@@ -31,9 +32,5 @@ class InsertOrder @Inject internal constructor(
                 )
             }
         }
-        val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
-            localSiteId = localSiteId.value
-        )
-        dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
     }
 }
