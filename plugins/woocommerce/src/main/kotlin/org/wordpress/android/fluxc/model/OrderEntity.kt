@@ -85,7 +85,7 @@ data class OrderEntity(
     @ColumnInfo(name = "giftCardAmount", defaultValue = "")
     val giftCardAmount: String = "",
     @ColumnInfo(name = "shippingTax", defaultValue = "")
-    val shippingTax: String = "", // The total shipping tax
+    val shippingTax: String = "",
 ) {
     companion object {
         private val gson by lazy { Gson() }
