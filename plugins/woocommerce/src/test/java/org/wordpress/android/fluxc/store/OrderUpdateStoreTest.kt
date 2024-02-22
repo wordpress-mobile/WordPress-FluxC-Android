@@ -102,7 +102,7 @@ class OrderUpdateStoreTest {
         )
         verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             customerNote == UPDATED_CUSTOMER_NOTE
-        })
+        }, any())
     }
 
     @Test
@@ -143,7 +143,7 @@ class OrderUpdateStoreTest {
 
         verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             customerNote == INITIAL_CUSTOMER_NOTE
-        })
+        }, any())
     }
 
     @Test
@@ -213,7 +213,7 @@ class OrderUpdateStoreTest {
         verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             shippingFirstName == UPDATED_SHIPPING_FIRST_NAME &&
                     billingFirstName == UPDATED_BILLING_FIRST_NAME
-        })
+        }, any())
     }
 
     @Test
@@ -249,7 +249,7 @@ class OrderUpdateStoreTest {
         )
         verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             shippingFirstName == UPDATED_SHIPPING_FIRST_NAME
-        })
+        }, any())
     }
 
     @Test
@@ -290,7 +290,7 @@ class OrderUpdateStoreTest {
 
         verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             shippingFirstName == INITIAL_SHIPPING_FIRST_NAME
-        })
+        }, any())
     }
 
     @Test
