@@ -14,7 +14,6 @@ class InsertOrder @Inject internal constructor(
     private val transactionExecutor: TransactionExecutor
 ) {
     suspend operator fun invoke(
-        localSiteId: LocalOrRemoteId.LocalId,
         vararg ordersPack: Pair<OrderEntity, List<OrderMetaDataEntity>>
     ) {
         val listSize = ordersPack.size
