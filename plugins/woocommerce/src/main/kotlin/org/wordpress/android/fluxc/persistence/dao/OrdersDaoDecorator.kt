@@ -34,7 +34,7 @@ class OrdersDaoDecorator @Inject constructor(
      */
     fun insertOrUpdateOrder(order: OrderEntity, suppressListRefresh: Boolean = false) {
         ordersDao.insertOrUpdateOrder(order)
-        if (!suppressListRefresh) emitRefreshListEvent(order.localSiteId)
+        if (!suppressListRefresh) emitInvalidateListEvent(order.localSiteId)
     }
 
     suspend fun getOrder(orderId: Long, localSiteId: LocalOrRemoteId.LocalId): OrderEntity? =
@@ -69,7 +69,7 @@ class OrdersDaoDecorator @Inject constructor(
 
     fun deleteOrdersForSite(localSiteId: LocalOrRemoteId.LocalId) {
         ordersDao.deleteOrdersForSite(localSiteId)
-        emitRefreshListEvent(localSiteId)
+        emitInvalidateListEvent(localSiteId)
     }
 
     fun getOrderCountForSite(localSiteId: LocalOrRemoteId.LocalId): Int =
@@ -80,10 +80,13 @@ class OrdersDaoDecorator @Inject constructor(
 
     suspend fun deleteOrder(localSiteId: LocalOrRemoteId.LocalId, orderId: Long) {
         ordersDao.deleteOrder(localSiteId, orderId)
-        emitRefreshListEvent(localSiteId)
+        emitInvalidateListEvent(localSiteId)
     }
 
-    private fun emitRefreshListEvent(localSiteId: LocalOrRemoteId.LocalId) {
+    /**
+     * The ListStore component reloads the data from the DB on Data Invalidated event.
+     */
+    private fun emitInvalidateListEvent(localSiteId: LocalOrRemoteId.LocalId) {
         val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
             localSiteId = localSiteId.value
         )
