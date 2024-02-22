@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
@@ -18,7 +19,7 @@ import org.wordpress.android.fluxc.store.InsertOrder
 @RunWith(RobolectricTestRunner::class)
 class OrdersMetaDataIntegrationTest {
     private lateinit var sut: OrderMetaDataDao
-    private lateinit var ordersDao: OrdersDao
+    private lateinit var ordersDaoDecorator: OrdersDaoDecorator
     private lateinit var database: WCAndroidDatabase
     private lateinit var insertOrder: InsertOrder
 
@@ -28,17 +29,18 @@ class OrdersMetaDataIntegrationTest {
         database = Room.inMemoryDatabaseBuilder(context, WCAndroidDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        ordersDao = database.ordersDao
+        ordersDaoDecorator = OrdersDaoDecorator(mock(), database.ordersDao)
         sut = database.orderMetaDataDao
 
-        insertOrder = InsertOrder(ordersDao, sut, FakeTransactionExecutor)
+        insertOrder = InsertOrder(mock(), ordersDaoDecorator, sut, FakeTransactionExecutor)
     }
 
     @Test
     fun `should remove orders metadata cascading`() {
         runBlocking {
             // given
-            val order = OrderEntity(localSiteId = LocalId(1), orderId = 123)
+            val siteId = LocalId(1)
+            val order = OrderEntity(localSiteId = siteId, orderId = 123)
             val metaDataOfTestOrder = EMPTY_ORDER_META_DATA.copy(
                 localSiteId = order.localSiteId,
                 orderId = order.orderId
@@ -46,6 +48,7 @@ class OrdersMetaDataIntegrationTest {
 
             // when
             insertOrder(
+                siteId,
                 order to listOf(
                     metaDataOfTestOrder.copy(id = 1),
                     metaDataOfTestOrder.copy(id = 2),
@@ -62,7 +65,7 @@ class OrdersMetaDataIntegrationTest {
             ).hasSize(3)
 
             // when
-            ordersDao.deleteOrder(order.localSiteId, order.orderId)
+            ordersDaoDecorator.deleteOrder(order.localSiteId, order.orderId)
 
             // then
             assertThat(

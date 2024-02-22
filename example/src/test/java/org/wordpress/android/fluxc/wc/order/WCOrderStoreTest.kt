@@ -42,7 +42,7 @@ import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
-import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.InsertOrder
 import org.wordpress.android.fluxc.store.WCOrderFetcher
 import org.wordpress.android.fluxc.store.WCOrderStore
@@ -65,7 +65,7 @@ import kotlin.test.assertTrue
 class WCOrderStoreTest {
     private val orderFetcher: WCOrderFetcher = mock()
     private val orderRestClient: OrderRestClient = mock()
-    lateinit var ordersDao: OrdersDao
+    lateinit var ordersDaoDecorator: OrdersDaoDecorator
     lateinit var orderNotesDao: OrderNotesDao
     lateinit var orderMetaDataDao: OrderMetaDataDao
     lateinit var orderStore: WCOrderStore
@@ -79,16 +79,17 @@ class WCOrderStoreTest {
                 .allowMainThreadQueries()
                 .build()
 
-        ordersDao = database.ordersDao
+        val dispatcher = Dispatcher()
+        ordersDaoDecorator = OrdersDaoDecorator(dispatcher, database.ordersDao)
         orderNotesDao = database.orderNotesDao
         orderMetaDataDao = database.orderMetaDataDao
 
         orderStore = WCOrderStore(
-                dispatcher = Dispatcher(),
+                dispatcher = dispatcher,
                 wcOrderRestClient = orderRestClient,
                 wcOrderFetcher = orderFetcher,
                 coroutineEngine = initCoroutineEngine(),
-                ordersDao = ordersDao,
+                ordersDaoDecorator = ordersDaoDecorator,
                 orderNotesDao = orderNotesDao,
                 orderMetaDataDao = orderMetaDataDao,
                 insertOrder = insertOrder
@@ -107,10 +108,10 @@ class WCOrderStoreTest {
     fun testSimpleInsertionAndRetrieval() {
         runBlocking {
             val orderModel = OrderTestUtils.generateSampleOrder(42)
-            ordersDao.insertOrUpdateOrder(orderModel)
+            ordersDaoDecorator.insertOrUpdateOrder(orderModel)
             val site = SiteModel().apply { id = orderModel.localSiteId.value }
 
-            val storedOrders = ordersDao.getOrdersForSite(site.localId())
+            val storedOrders = ordersDaoDecorator.getOrdersForSite(site.localId())
             assertEquals(1, storedOrders.size)
             assertEquals(42, storedOrders[0].orderId)
             assertEquals(orderModel, storedOrders[0])
@@ -139,7 +140,7 @@ class WCOrderStoreTest {
     }
 
     private fun OrderEntity.saveToDb(): OrderEntity {
-        ordersDao.insertOrUpdateOrder(this)
+        ordersDaoDecorator.insertOrUpdateOrder(this)
         return copy()
     }
 
@@ -147,7 +148,7 @@ class WCOrderStoreTest {
     fun testGetOrderByLocalId() {
         runBlocking {
             val sampleOrder = OrderTestUtils.generateSampleOrder(3)
-            ordersDao.insertOrUpdateOrder(sampleOrder)
+            ordersDaoDecorator.insertOrUpdateOrder(sampleOrder)
 
             val site = SiteModel().apply { this.id = sampleOrder.localSiteId.value }
 
@@ -164,7 +165,7 @@ class WCOrderStoreTest {
         runBlocking {
             val customStatus = "chronologically-incongruous"
             val customStatusOrder = OrderTestUtils.generateSampleOrder(3, customStatus)
-            ordersDao.insertOrUpdateOrder(customStatusOrder)
+            ordersDaoDecorator.insertOrUpdateOrder(customStatusOrder)
 
             val site = SiteModel().apply { id = customStatusOrder.localSiteId.value }
 
@@ -184,7 +185,7 @@ class WCOrderStoreTest {
     @Test
     fun testUpdateOrderStatus() = runBlocking {
         val orderModel = OrderTestUtils.generateSampleOrder(42)
-        ordersDao.insertOrUpdateOrder(orderModel)
+        ordersDaoDecorator.insertOrUpdateOrder(orderModel)
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
         val result = RemoteOrderPayload.Updating(orderModel.copy(status = CoreOrderStatus.REFUNDED.value), site)
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
@@ -284,15 +285,15 @@ class WCOrderStoreTest {
             val site = SiteModel().apply { id = 8 }
 
             val upToDate = setupUpToDateOrders(site)
-            upToDate.orders.filterNotNull().forEach(ordersDao::insertOrUpdateOrder)
-            assertThat(ordersDao.getOrdersForSite(site.localId())).hasSize(10)
+            upToDate.orders.filterNotNull().forEach(ordersDaoDecorator::insertOrUpdateOrder)
+            assertThat(ordersDaoDecorator.getOrdersForSite(site.localId())).hasSize(10)
 
             val outdated = setupOutdatedOrders(site)
-            outdated.orders.filterNotNull().forEach(ordersDao::insertOrUpdateOrder)
-            assertThat(ordersDao.getOrdersForSite(site.localId())).hasSize(20)
+            outdated.orders.filterNotNull().forEach(ordersDaoDecorator::insertOrUpdateOrder)
+            assertThat(ordersDaoDecorator.getOrdersForSite(site.localId())).hasSize(20)
 
             val missing = setupMissingOrders()
-            assertThat(ordersDao.getOrdersForSite(site.localId())).hasSize(20)
+            assertThat(ordersDaoDecorator.getOrdersForSite(site.localId())).hasSize(20)
 
             orderStore.onAction(
                 newFetchedOrderListAction(
@@ -321,7 +322,7 @@ class WCOrderStoreTest {
         whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.COMPLETED.value))
                 .thenReturn(result)
 
-        assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)
 
         orderStore.updateOrderStatus(
@@ -330,7 +331,7 @@ class WCOrderStoreTest {
                 WCOrderStatusModel(CoreOrderStatus.COMPLETED.value)
         ).toList()
 
-        assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.COMPLETED.value)
         Unit
     }
@@ -358,7 +359,7 @@ class WCOrderStoreTest {
         // Ensure the error is sent in the response
         assertThat(response.event.error).isEqualTo(error)
 
-        assertThat(ordersDao.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)
         Unit
     }
