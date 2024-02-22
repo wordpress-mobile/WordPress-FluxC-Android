@@ -4,7 +4,6 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
@@ -35,7 +34,6 @@ typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(O
 
 @Singleton
 class OrderUpdateStore @Inject internal constructor(
-    private val dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDaoDecorator: OrdersDaoDecorator,
