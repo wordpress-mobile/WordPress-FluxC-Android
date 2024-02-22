@@ -368,7 +368,8 @@ class WCOrderStore @Inject constructor(
         ordersDaoDecorator.getOrdersForSite(site.localId(), status = status.asList())
     }
 
-    suspend fun getPaidOrdersForSiteDesc(siteModel: SiteModel) = ordersDaoDecorator.getPaidOrdersForSiteDesc(siteModel.localId())
+    suspend fun getPaidOrdersForSiteDesc(siteModel: SiteModel) =
+        ordersDaoDecorator.getPaidOrdersForSiteDesc(siteModel.localId())
 
     /**
      * Observe the changes to orders for a given [SiteModel]
@@ -839,7 +840,8 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOutdatedOrMissingOrders(site: SiteModel, fetchedSummaries: List<WCOrderSummaryModel>) {
         val fetchedSummariesIds = fetchedSummaries.map { it.orderId }
-        val localOrdersForFetchedSummaries = ordersDaoDecorator.getOrdersForSiteByRemoteIds(site.localId(), fetchedSummariesIds)
+        val localOrdersForFetchedSummaries =
+            ordersDaoDecorator.getOrdersForSiteByRemoteIds(site.localId(), fetchedSummariesIds)
 
         val idsToFetch = outdatedOrdersIds(fetchedSummaries, localOrdersForFetchedSummaries)
             .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))

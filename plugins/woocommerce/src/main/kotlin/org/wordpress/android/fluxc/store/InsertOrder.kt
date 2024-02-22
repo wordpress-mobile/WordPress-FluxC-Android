@@ -17,7 +17,10 @@ class InsertOrder @Inject internal constructor(
     private val ordersMetaDataDao: OrderMetaDataDao,
     private val transactionExecutor: TransactionExecutor
 ) {
-    suspend operator fun invoke(localSiteId: LocalOrRemoteId.LocalId, vararg ordersPack: Pair<OrderEntity, List<OrderMetaDataEntity>>) {
+    suspend operator fun invoke(
+        localSiteId: LocalOrRemoteId.LocalId,
+        vararg ordersPack: Pair<OrderEntity, List<OrderMetaDataEntity>>
+    ) {
         transactionExecutor.executeInTransaction {
             ordersPack.forEach { (order, metaData) ->
                 ordersDaoDecorator.insertOrUpdateOrder(order, suppressListRefresh = true)
