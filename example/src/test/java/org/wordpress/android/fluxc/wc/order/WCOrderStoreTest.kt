@@ -139,9 +139,15 @@ class WCOrderStoreTest {
         }
     }
 
-    private fun OrderEntity.saveToDb(): OrderEntity {
+    private suspend fun OrderEntity.saveToDb(): OrderEntity {
         ordersDaoDecorator.insertOrUpdateOrder(this)
         return copy()
+    }
+
+    private fun insertOrUpdate(item: OrderEntity) {
+        runBlocking {
+            ordersDaoDecorator.insertOrUpdateOrder(item)
+        }
     }
 
     @Test
@@ -285,11 +291,11 @@ class WCOrderStoreTest {
             val site = SiteModel().apply { id = 8 }
 
             val upToDate = setupUpToDateOrders(site)
-            upToDate.orders.filterNotNull().forEach(ordersDaoDecorator::insertOrUpdateOrder)
+            upToDate.orders.filterNotNull().forEach(::insertOrUpdate)
             assertThat(ordersDaoDecorator.getOrdersForSite(site.localId())).hasSize(10)
 
             val outdated = setupOutdatedOrders(site)
-            outdated.orders.filterNotNull().forEach(ordersDaoDecorator::insertOrUpdateOrder)
+            outdated.orders.filterNotNull().forEach(::insertOrUpdate)
             assertThat(ordersDaoDecorator.getOrdersForSite(site.localId())).hasSize(20)
 
             val missing = setupMissingOrders()
