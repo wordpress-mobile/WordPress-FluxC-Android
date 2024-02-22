@@ -45,8 +45,6 @@ class OrderUpdateStoreTest {
     private val siteSqlUtils: SiteSqlUtils = mock {
         on { getSiteWithLocalId(any()) } doReturn site
     }
-    private val dispatcher: Dispatcher = mock()
-
     private val ordersDaoDecorator: OrdersDaoDecorator = mock {
         onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
@@ -54,7 +52,6 @@ class OrderUpdateStoreTest {
     fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
         sut = OrderUpdateStore(
-                dispatcher = dispatcher,
                 coroutineEngine = CoroutineEngine(
                         TestCoroutineScope().coroutineContext,
                         mock()
