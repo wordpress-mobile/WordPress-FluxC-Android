@@ -12,7 +12,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 
 /**
  * ⚠️AVOID USING THIS CLASS DIRECTLY -
- * Use [OrdersDaoDecorator] to ensure the [org.wordpress.android.fluxc.store.ListStore] component keeps receiving events.
+ * Use [OrdersDaoDecorator] to ensure the [org.wordpress.android.fluxc.store.ListStore] component
+ * keeps receiving events.
  */
 @Dao
 abstract class OrdersDao {
