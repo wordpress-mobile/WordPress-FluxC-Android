@@ -32,9 +32,23 @@ class OrdersDaoDecorator @Inject constructor(
      * @param suppressListRefresh Suppresses emit of ListRequiresRefresh event. Can be used
      * when this method is invoked in a loop and the app needs to emit the event at the end.
      */
-    fun insertOrUpdateOrder(order: OrderEntity, suppressListRefresh: Boolean = false) {
+    suspend fun insertOrUpdateOrder(order: OrderEntity, suppressListRefresh: Boolean = false) {
+        val orderBeforeUpdate = ordersDao.getOrder(order.orderId, order.localSiteId)
         ordersDao.insertOrUpdateOrder(order)
-        if (!suppressListRefresh) emitInvalidateListEvent(order.localSiteId)
+
+        if(!suppressListRefresh) {
+            // Draft orders are not returned from the API. We need to re-fetch order list from the API
+            // when the order is new or its status changed from draft to another status.
+            val orderIsNewOrMovingFromDraft = orderBeforeUpdate == null
+                    || (order.status != "auto-draft" && orderBeforeUpdate.status == "auto-draft")
+            if (orderIsNewOrMovingFromDraft) {
+                // Re-fetch order list
+                emitRefreshListEvent(order.localSiteId)
+            } else {
+                // Re-load order list from local db
+                emitInvalidateListEvent(order.localSiteId)
+            }
+        }
     }
 
     suspend fun getOrder(orderId: Long, localSiteId: LocalOrRemoteId.LocalId): OrderEntity? =
@@ -91,6 +105,16 @@ class OrdersDaoDecorator @Inject constructor(
             localSiteId = localSiteId.value
         )
         dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+    }
+
+    /**
+     * Emit RefreshList event - the ListStore component refetches the list of order ids from remote.
+     */
+    private fun emitRefreshListEvent(localSiteId: LocalOrRemoteId.LocalId) {
+        val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
+            localSiteId = localSiteId.value
+        )
+        dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
     }
 }
 

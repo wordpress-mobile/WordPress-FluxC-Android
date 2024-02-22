@@ -5,11 +5,9 @@ import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
@@ -22,7 +20,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Co
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
@@ -242,13 +239,6 @@ class OrderUpdateStore @Inject internal constructor(
             } else {
                 val model = result.result!!
                 ordersDaoDecorator.insertOrUpdateOrder(model)
-                // Emit a request to refresh the list of order summaries to make sure the added order is
-                // added to the list
-                dispatcher.dispatch(
-                    WCOrderActionBuilder.newFetchOrderListAction(
-                        FetchOrderListPayload(offset = 0, listDescriptor = WCOrderListDescriptor(site = site))
-                    )
-                )
                 WooResult(model)
             }
         }
