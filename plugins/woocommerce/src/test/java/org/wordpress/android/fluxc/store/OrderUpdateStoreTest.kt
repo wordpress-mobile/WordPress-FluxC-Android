@@ -13,7 +13,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
@@ -26,7 +25,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
-import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.EMPTY_BILLING_EMAIL
@@ -45,22 +44,19 @@ class OrderUpdateStoreTest {
     private val siteSqlUtils: SiteSqlUtils = mock {
         on { getSiteWithLocalId(any()) } doReturn site
     }
-    private val dispatcher: Dispatcher = mock()
-
-    private val ordersDao: OrdersDao = mock {
+    private val ordersDaoDecorator: OrdersDaoDecorator = mock {
         onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
 
     fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
         sut = OrderUpdateStore(
-                dispatcher = dispatcher,
                 coroutineEngine = CoroutineEngine(
                         TestCoroutineScope().coroutineContext,
                         mock()
                 ),
                 orderRestClient,
-                ordersDao,
+                ordersDaoDecorator,
                 siteSqlUtils
         )
     }
@@ -83,7 +79,7 @@ class OrderUpdateStoreTest {
                         )
                 )
             }
-            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
+            whenever(ordersDaoDecorator.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
                     initialOrder
             )
         }
@@ -100,9 +96,9 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(OnOrderChanged())
         )
-        verify(ordersDao).insertOrUpdateOrder(argThat {
+        verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             customerNote == UPDATED_CUSTOMER_NOTE
-        })
+        }, any())
     }
 
     @Test
@@ -119,7 +115,7 @@ class OrderUpdateStoreTest {
                         )
                 )
             }
-            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
+            whenever(ordersDaoDecorator.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
                     initialOrder
             )
         }
@@ -141,9 +137,9 @@ class OrderUpdateStoreTest {
                 )
         )
 
-        verify(ordersDao).insertOrUpdateOrder(argThat {
+        verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             customerNote == INITIAL_CUSTOMER_NOTE
-        })
+        }, any())
     }
 
     @Test
@@ -151,7 +147,7 @@ class OrderUpdateStoreTest {
         // given
         setUp {
             orderRestClient = mock()
-            whenever(ordersDao.getOrder(any(), any())).thenReturn(null)
+            whenever(ordersDaoDecorator.getOrder(any(), any())).thenReturn(null)
         }
 
         // when
@@ -210,10 +206,10 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(OnOrderChanged())
         )
-        verify(ordersDao).insertOrUpdateOrder(argThat {
+        verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             shippingFirstName == UPDATED_SHIPPING_FIRST_NAME &&
                     billingFirstName == UPDATED_BILLING_FIRST_NAME
-        })
+        }, any())
     }
 
     @Test
@@ -247,9 +243,9 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(OnOrderChanged())
         )
-        verify(ordersDao).insertOrUpdateOrder(argThat {
+        verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             shippingFirstName == UPDATED_SHIPPING_FIRST_NAME
-        })
+        }, any())
     }
 
     @Test
@@ -288,9 +284,9 @@ class OrderUpdateStoreTest {
                 )
         )
 
-        verify(ordersDao).insertOrUpdateOrder(argThat {
+        verify(ordersDaoDecorator).insertOrUpdateOrder(argThat {
             shippingFirstName == INITIAL_SHIPPING_FIRST_NAME
-        })
+        }, any())
     }
 
     @Test
@@ -298,7 +294,7 @@ class OrderUpdateStoreTest {
         // given
         setUp {
             orderRestClient = mock()
-            whenever(ordersDao.getOrder(any(), any())).thenReturn(null)
+            whenever(ordersDaoDecorator.getOrder(any(), any())).thenReturn(null)
         }
 
         // when
@@ -475,7 +471,7 @@ class OrderUpdateStoreTest {
                     WooPayload(updatedOrder)
                 )
             }
-            whenever(ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
+            whenever(ordersDaoDecorator.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)).thenReturn(
                     updatedOrder
             )
         }
@@ -495,7 +491,7 @@ class OrderUpdateStoreTest {
                 OptimisticUpdateResult(OnOrderChanged()),
                 RemoteUpdateResult(OnOrderChanged())
         )
-        ordersDao.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)?.let { order ->
+        ordersDaoDecorator.getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID)?.let { order ->
             assertThat(order.billingEmail).isEqualTo(SIMPLE_PAYMENT_BILLING_EMAIL)
             assertThat(order.customerNote).isEqualTo(SIMPLE_PAYMENT_CUSTOMER_NOTE)
             assertThat(order.getFeeLineList()).hasSize(1)
@@ -520,7 +516,7 @@ class OrderUpdateStoreTest {
             orderId = TEST_REMOTE_ORDER_ID
         )
 
-        verify(ordersDao).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID)
+        verify(ordersDaoDecorator).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID)
     }
 
     private companion object {

@@ -4,12 +4,9 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
-import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
@@ -21,8 +18,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
-import org.wordpress.android.fluxc.persistence.dao.OrdersDao
-import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
+import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
@@ -38,10 +34,9 @@ typealias UpdateOrderFlowPredicate = suspend FlowCollector<UpdateOrderResult>.(O
 
 @Singleton
 class OrderUpdateStore @Inject internal constructor(
-    private val dispatcher: Dispatcher,
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
-    private val ordersDao: OrdersDao,
+    private val ordersDaoDecorator: OrdersDaoDecorator,
     private val siteSqlUtils: SiteSqlUtils
 ) {
     suspend fun updateCustomerOrderNote(
@@ -50,12 +45,12 @@ class OrderUpdateStore @Inject internal constructor(
         newCustomerNote: String
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateCustomerOrderNote") {
-            val initialOrder = ordersDao.getOrder(orderId, site.localId())
+            val initialOrder = ordersDaoDecorator.getOrder(orderId, site.localId())
 
             if (initialOrder == null) {
                 emitNoEntityFound("Order with id $orderId not found")
             } else {
-                ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
+                ordersDaoDecorator.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
                     copy(customerNote = newCustomerNote)
                 }
                 emit(UpdateOrderResult.OptimisticUpdateResult(OnOrderChanged()))
@@ -66,10 +61,10 @@ class OrderUpdateStore @Inject internal constructor(
                     newCustomerNote
                 )
                 val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-                    ordersDao.insertOrUpdateOrder(initialOrder)
+                    ordersDaoDecorator.insertOrUpdateOrder(initialOrder)
                     OnOrderChanged(orderError = updateRemoteOrderPayload.error)
                 } else {
-                    ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
+                    ordersDaoDecorator.insertOrUpdateOrder(updateRemoteOrderPayload.order)
                     OnOrderChanged()
                 }
                 emit(RemoteUpdateResult(remoteUpdateResult))
@@ -155,7 +150,7 @@ class OrderUpdateStore @Inject internal constructor(
         status: WCOrderStatusModel? = null
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(T.API, this, "updateSimplePayment") {
-            val initialOrder = ordersDao.getOrder(orderId, site.localId())
+            val initialOrder = ordersDaoDecorator.getOrder(orderId, site.localId())
             if (initialOrder == null) {
                 emitNoEntityFound("Order with id $orderId not found")
             } else {
@@ -167,7 +162,7 @@ class OrderUpdateStore @Inject internal constructor(
                     null
                 }
 
-                ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
+                ordersDaoDecorator.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
                     copy(
                         customerNote = customerNote,
                         billingEmail = billingEmail,
@@ -202,7 +197,7 @@ class OrderUpdateStore @Inject internal constructor(
                 )
                 val result = updateOrder(site, orderId, updateRequest)
                 val remoteUpdateResult = if (result.isError) {
-                    ordersDao.insertOrUpdateOrder(initialOrder)
+                    ordersDaoDecorator.insertOrUpdateOrder(initialOrder)
                     OnOrderChanged(orderError = OrderError(message = result.error.message ?: ""))
                 } else {
                     OnOrderChanged()
@@ -241,14 +236,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 val model = result.result!!
-                ordersDao.insertOrUpdateOrder(model)
-                // Emit a request to refresh the list of order summaries to make sure the added order is
-                // added to the list
-                dispatcher.dispatch(
-                    WCOrderActionBuilder.newFetchOrderListAction(
-                        FetchOrderListPayload(offset = 0, listDescriptor = WCOrderListDescriptor(site = site))
-                    )
-                )
+                ordersDaoDecorator.insertOrUpdateOrder(model)
                 WooResult(model)
             }
         }
@@ -266,7 +254,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 val model = result.result!!
-                ordersDao.insertOrUpdateOrder(model)
+                ordersDaoDecorator.insertOrUpdateOrder(model)
                 WooResult(model)
             }
         }
@@ -283,7 +271,7 @@ class OrderUpdateStore @Inject internal constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                ordersDao.deleteOrder(site.localId(), orderId)
+                ordersDaoDecorator.deleteOrder(site.localId(), orderId)
                 WooResult(Unit)
             }
         }
@@ -294,7 +282,7 @@ class OrderUpdateStore @Inject internal constructor(
         localSiteId: LocalId,
         predicate: UpdateOrderFlowPredicate
     ) {
-        ordersDao.getOrder(orderId, localSiteId)?.let { initialOrder ->
+        ordersDaoDecorator.getOrder(orderId, localSiteId)?.let { initialOrder ->
             siteSqlUtils.getSiteWithLocalId(initialOrder.localSiteId)
                 ?.let { predicate(initialOrder, it) }
                 ?: emitNoEntityFound("Site with local id ${initialOrder.localSiteId} not found")
@@ -304,7 +292,7 @@ class OrderUpdateStore @Inject internal constructor(
     private suspend fun updateLocalOrderAddress(
         initialOrder: OrderEntity,
         newAddress: OrderAddress
-    ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
+    ) = ordersDaoDecorator.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         when (newAddress) {
             is Billing -> updateLocalBillingAddress(newAddress)
             is Shipping -> updateLocalShippingAddress(newAddress)
@@ -315,7 +303,7 @@ class OrderUpdateStore @Inject internal constructor(
         initialOrder: OrderEntity,
         shippingAddress: Shipping,
         billingAddress: Billing
-    ) = ordersDao.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
+    ) = ordersDaoDecorator.updateLocalOrder(initialOrder.orderId, initialOrder.localSiteId) {
         updateLocalShippingAddress(shippingAddress)
         updateLocalBillingAddress(billingAddress)
     }
@@ -386,10 +374,10 @@ class OrderUpdateStore @Inject internal constructor(
         }
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
-            ordersDao.insertOrUpdateOrder(initialOrder)
+            ordersDaoDecorator.insertOrUpdateOrder(initialOrder)
             OnOrderChanged(orderError = mapError(updateRemoteOrderPayload.error))
         } else {
-            ordersDao.insertOrUpdateOrder(updateRemoteOrderPayload.order)
+            ordersDaoDecorator.insertOrUpdateOrder(updateRemoteOrderPayload.order)
             OnOrderChanged()
         }
 
