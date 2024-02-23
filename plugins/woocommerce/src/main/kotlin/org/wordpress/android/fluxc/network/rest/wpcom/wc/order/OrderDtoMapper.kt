@@ -81,6 +81,7 @@ class OrderDtoMapper @Inject internal constructor(
                     isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES),
                     needsPayment = this.needs_payment,
                     needsProcessing = this.needs_processing,
+                    shippingTax = this.shipping_tax ?: ""
             )
         }
 

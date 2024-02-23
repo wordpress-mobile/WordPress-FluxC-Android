@@ -66,7 +66,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_8_9
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
 
 @Database(
-    version = 33,
+    version = 34,
     entities = [
         AddonEntity::class,
         AddonOptionEntity::class,
@@ -101,6 +101,7 @@ import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_9_10
         AutoMigration(from = 29, to = 30),
         AutoMigration(from = 31, to = 32),
         AutoMigration(from = 32, to = 33, spec = AutoMigration32to33::class),
+        AutoMigration(from = 33, to = 34),
     ]
 )
 @TypeConverters(
