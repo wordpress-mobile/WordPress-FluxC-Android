@@ -105,4 +105,24 @@ internal class OrderDtoMapperTest {
 
         assertThat(orderEntity.needsProcessing).isTrue()
     }
+
+    @Test
+    fun `given shipping_tax is absent in json when mapping then orderEntity shippingTax is empty string`() {
+        val json = JsonObject()
+        val orderDto = Gson().fromJson(json, OrderDto::class.java)
+        val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
+
+        assertThat(orderEntity.shippingTax).isEmpty()
+    }
+
+    @Test
+    fun `given shipping_tax is present in json when mapping then orderEntity shippingTax is parsed`() {
+        val json = JsonObject().apply {
+            addProperty("shipping_tax", "10.00")
+        }
+        val orderDto = Gson().fromJson(json, OrderDto::class.java)
+        val (orderEntity, _) = sut.toDatabaseEntity(orderDto, localSiteId)
+
+        assertThat(orderEntity.shippingTax).isEqualTo("10.00")
+    }
 }

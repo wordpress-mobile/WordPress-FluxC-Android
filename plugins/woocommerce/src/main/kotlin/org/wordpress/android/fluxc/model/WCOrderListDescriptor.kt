@@ -11,7 +11,9 @@ class WCOrderListDescriptor(
     val searchQuery: String? = null,
     val excludeFutureOrders: Boolean = false,
     val beforeFilter: String? = null,
-    val afterFilter: String? = null
+    val afterFilter: String? = null,
+    val productId: Long? = null,
+    val customerId: Long? = null
 ) : ListDescriptor {
     override val config: ListConfig = ListConfig.default
 

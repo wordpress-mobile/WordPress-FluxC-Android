@@ -149,7 +149,9 @@ class OrderRestClient @Inject constructor(
             ).putIfNotEmpty(
                 "search" to listDescriptor.searchQuery,
                 "before" to listDescriptor.beforeFilter,
-                "after" to listDescriptor.afterFilter
+                "after" to listDescriptor.afterFilter,
+                "customer" to listDescriptor.customerId?.toString(),
+                "product" to listDescriptor.productId?.toString()
             )
 
             val response = wooNetwork.executeGetGsonRequest(
@@ -1030,7 +1032,8 @@ class OrderRestClient @Inject constructor(
             "payment_url",
             "is_editable",
             "needs_payment",
-            "needs_processing"
+            "needs_processing",
+            "shipping_tax"
         ).joinToString(separator = ",")
 
         private val TRACKING_FIELDS = arrayOf(

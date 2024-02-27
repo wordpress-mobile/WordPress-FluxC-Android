@@ -24,7 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
-import org.wordpress.android.fluxc.persistence.dao.OrdersDao
+import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
@@ -50,7 +50,7 @@ class WCOrderStore @Inject constructor(
     private val wcOrderRestClient: OrderRestClient,
     private val wcOrderFetcher: WCOrderFetcher,
     private val coroutineEngine: CoroutineEngine,
-    private val ordersDao: OrdersDao,
+    private val ordersDaoDecorator: OrdersDaoDecorator,
     private val orderNotesDao: OrderNotesDao,
     private val orderMetaDataDao: OrderMetaDataDao,
     private val insertOrder: InsertOrder
@@ -365,12 +365,13 @@ class WCOrderStore @Inject constructor(
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
      */
     suspend fun getOrdersForSite(site: SiteModel, vararg status: String) = if (status.isEmpty()) {
-        ordersDao.getOrdersForSite(site.localId())
+        ordersDaoDecorator.getOrdersForSite(site.localId())
     } else {
-        ordersDao.getOrdersForSite(site.localId(), status = status.asList())
+        ordersDaoDecorator.getOrdersForSite(site.localId(), status = status.asList())
     }
 
-    suspend fun getPaidOrdersForSiteDesc(siteModel: SiteModel) = ordersDao.getPaidOrdersForSiteDesc(siteModel.localId())
+    suspend fun getPaidOrdersForSiteDesc(siteModel: SiteModel) =
+        ordersDaoDecorator.getPaidOrdersForSiteDesc(siteModel.localId())
 
     /**
      * Observe the changes to orders for a given [SiteModel]
@@ -381,9 +382,9 @@ class WCOrderStore @Inject constructor(
      */
     fun observeOrdersForSite(site: SiteModel, statuses: List<String> = emptyList()): Flow<List<OrderEntity>> {
         return if (statuses.isEmpty()) {
-        ordersDao.observeOrdersForSite(site.localId())
+            ordersDaoDecorator.observeOrdersForSite(site.localId())
         } else {
-            ordersDao.observeOrdersForSite(site.localId(), statuses)
+            ordersDaoDecorator.observeOrdersForSite(site.localId(), statuses)
         }
     }
 
@@ -396,13 +397,13 @@ class WCOrderStore @Inject constructor(
     fun observeOrderCountForSite(
         site: SiteModel,
         statuses: List<String>
-    ): Flow<Int> = ordersDao.observeOrderCountForSite(site.localId(), statuses)
+    ): Flow<Int> = ordersDaoDecorator.observeOrderCountForSite(site.localId(), statuses)
 
     fun getOrdersForDescriptor(
         orderListDescriptor: WCOrderListDescriptor,
         orderIds: List<Long>
     ): Map<Long, OrderEntity> {
-        val orders = ordersDao.getOrdersForSiteByRemoteIds(orderListDescriptor.site.localId(), orderIds)
+        val orders = ordersDaoDecorator.getOrdersForSiteByRemoteIds(orderListDescriptor.site.localId(), orderIds)
         return orders.associateBy { it.orderId }
     }
 
@@ -419,7 +420,7 @@ class WCOrderStore @Inject constructor(
      * returns the corresponding order from the database as a [OrderEntity].
      */
     suspend fun getOrderByIdAndSite(orderId: Long, site: SiteModel): OrderEntity? {
-        return ordersDao.getOrder(orderId, site.localId())
+        return ordersDaoDecorator.getOrder(orderId, site.localId())
     }
 
     /**
@@ -519,7 +520,7 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOrders(payload: FetchOrdersPayload) {
         val offset = if (payload.loadMore) {
-            ordersDao.getOrderCountForSite(payload.site.localId())
+            ordersDaoDecorator.getOrderCountForSite(payload.site.localId())
         } else {
             0
         }
@@ -561,7 +562,7 @@ class WCOrderStore @Inject constructor(
 
     suspend fun hasOrders(site: SiteModel): HasOrdersResult {
         return coroutineEngine.withDefaultContext(API, this, "checkIfHasOrders") {
-            val ordersCount = ordersDao.getOrderCountForSite(site.localId())
+            val ordersCount = ordersDaoDecorator.getOrderCountForSite(site.localId())
             return@withDefaultContext if (ordersCount > 0) {
                 HasOrdersResult.Success(true)
             } else {
@@ -589,7 +590,7 @@ class WCOrderStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 OnOrderChanged(orderError = result.error)
             } else {
-                insertOrder(result.orderWithMeta)
+                insertOrder(site.localId(), result.orderWithMeta)
                 OnOrderChanged()
             }
         }
@@ -601,7 +602,7 @@ class WCOrderStore @Inject constructor(
         newStatus: WCOrderStatusModel
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(API, this, "updateOrderStatus") {
-            val orderModel = ordersDao.getOrder(orderId, site.localId())
+            val orderModel = ordersDaoDecorator.getOrder(orderId, site.localId())
 
             if (orderModel != null) {
                 updateOrderStatusLocally(orderId, site.localId(), newStatus.statusKey)
@@ -616,7 +617,7 @@ class WCOrderStore @Inject constructor(
                 val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
                     revertOrderStatus(remotePayload)
                 } else {
-                    ordersDao.insertOrUpdateOrder(remotePayload.order)
+                    ordersDaoDecorator.insertOrUpdateOrder(remotePayload.order)
                     OnOrderChanged()
                 }.copy(causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS)
 
@@ -652,9 +653,9 @@ class WCOrderStore @Inject constructor(
     )
 
     private suspend fun updateOrderStatusLocally(orderId: Long, localSiteId: LocalId, newStatus: String) {
-        val updatedOrder = ordersDao.getOrder(orderId, localSiteId)!!
+        val updatedOrder = ordersDaoDecorator.getOrder(orderId, localSiteId)!!
             .copy(status = newStatus)
-        ordersDao.insertOrUpdateOrder(updatedOrder)
+        ordersDaoDecorator.insertOrUpdateOrder(updatedOrder)
     }
 
     @Suppress("SpreadOperator")
@@ -791,13 +792,12 @@ class WCOrderStore @Inject constructor(
                 // This is the simplest way of keeping our local orders in sync with remote orders
                 // (in case of deletions, or if the user manual changed some order IDs).
                 if (!payload.loadedMore) {
-                    ordersDao.deleteOrdersForSite(payload.site.localId())
+                    ordersDaoDecorator.deleteOrdersForSite(payload.site.localId())
                     orderNotesDao.deleteOrderNotesForSite(payload.site.localId())
                     OrderSqlUtils.deleteOrderShipmentTrackingsForSite(payload.site)
                 }
 
-                insertOrder(*payload.ordersWithMeta.toTypedArray())
-
+                insertOrder(payload.site.localId(), *payload.ordersWithMeta.toTypedArray())
                 OnOrderChanged(payload.statusFilter, canLoadMore = payload.canLoadMore)
             }.copy(causeOfChange = FETCH_ORDERS)
 
@@ -843,7 +843,8 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOutdatedOrMissingOrders(site: SiteModel, fetchedSummaries: List<WCOrderSummaryModel>) {
         val fetchedSummariesIds = fetchedSummaries.map { it.orderId }
-        val localOrdersForFetchedSummaries = ordersDao.getOrdersForSiteByRemoteIds(site.localId(), fetchedSummariesIds)
+        val localOrdersForFetchedSummaries =
+            ordersDaoDecorator.getOrdersForSiteByRemoteIds(site.localId(), fetchedSummariesIds)
 
         val idsToFetch = outdatedOrdersIds(fetchedSummaries, localOrdersForFetchedSummaries)
             .plus(missingOrdersIds(fetchedSummariesIds, localOrdersForFetchedSummaries))
@@ -888,7 +889,7 @@ class WCOrderStore @Inject constructor(
             if (!payload.isError) {
                 // Save the list of orders to the database
 
-                insertOrder(*payload.fetchedOrders.toTypedArray())
+                insertOrder(payload.site.localId(), *payload.fetchedOrders.toTypedArray())
 
                 mDispatcher.dispatch(
                     ListActionBuilder.newListDataInvalidatedAction(
