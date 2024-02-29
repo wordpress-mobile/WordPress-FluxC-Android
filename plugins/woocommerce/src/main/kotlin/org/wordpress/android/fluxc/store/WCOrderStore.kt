@@ -33,6 +33,7 @@ import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.ListStore.OnListDataFailure
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.PARSE_ERROR
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.TIMEOUT_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -299,6 +300,7 @@ class WCOrderStore @Inject constructor(
         INVALID_RESPONSE,
         GENERIC_ERROR,
         PARSE_ERROR,
+        TIMEOUT_ERROR,
         EMPTY_BILLING_EMAIL;
 
         companion object {
@@ -830,6 +832,7 @@ class WCOrderStore @Inject constructor(
                 ListError(
                     type = when (fetchError.type) {
                         PARSE_ERROR -> ListErrorType.PARSE_ERROR
+                        TIMEOUT_ERROR -> ListErrorType.TIMEOUT_ERROR
                         else -> ListErrorType.GENERIC_ERROR
                     },
                     message = fetchError.message

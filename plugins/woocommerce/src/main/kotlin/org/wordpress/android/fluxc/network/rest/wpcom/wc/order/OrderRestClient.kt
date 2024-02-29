@@ -42,6 +42,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.TIMEOUT_ERROR
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -945,6 +946,7 @@ class OrderRestClient @Inject constructor(
             wpAPINetworkError.errorCode == "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
             wpAPINetworkError.errorCode == "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
             wpAPINetworkError.type == BaseRequest.GenericErrorType.PARSE_ERROR -> OrderErrorType.PARSE_ERROR
+            wpAPINetworkError.type == BaseRequest.GenericErrorType.TIMEOUT -> TIMEOUT_ERROR
             else -> OrderErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
         return OrderError(orderErrorType, wpAPINetworkError.combinedErrorMessage)
