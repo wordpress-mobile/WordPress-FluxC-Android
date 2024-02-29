@@ -166,5 +166,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Delete an order" />
+
+        <Button
+            android:id="@+id/fetch_order_attribution"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Order Attribution" />
     </LinearLayout>
 </ScrollView>
