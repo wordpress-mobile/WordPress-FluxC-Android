@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.A
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.showTwoButtonsDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.model.OrderAttributionInfo
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -596,6 +597,25 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                         else -> {
                             prependToLog("Order $orderId has been deleted succesfully")
                         }
+                    }
+                }
+            }
+        }
+
+        fetch_order_attribution.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(activity, "Enter the remoteOrderId of order to fetch:") { editText ->
+                    val enteredRemoteId = editText.text.toString().toLongOrNull()
+                    coroutineScope.launch {
+                        enteredRemoteId?.let { id ->
+                            prependToLog("Submitting request to fetch order by remoteOrderID: $enteredRemoteId")
+                            wcOrderStore.fetchSingleOrder(site, id).takeUnless { it.isError }?.let {
+                                val attributionInfo = OrderAttributionInfo(
+                                    metadata = wcOrderStore.getOrderMetadata(enteredRemoteId, site)
+                                )
+                                prependToLog("Order Attribution Information:\n$attributionInfo}")
+                            } ?: prependToLog("Fetching Order Failed")
+                        } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                     }
                 }
             }
