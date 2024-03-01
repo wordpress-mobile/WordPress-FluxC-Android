@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCMetaData.OrderAttributionInfoKeys
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -786,10 +787,22 @@ class OrderRestClient @Inject constructor(
 
     suspend fun createOrder(
         site: SiteModel,
-        request: UpdateOrderRequest
+        request: UpdateOrderRequest,
+        attributionSourceType: String?
     ): WooPayload<OrderEntity> {
         val url = WOOCOMMERCE.orders.pathV3
-        val body = request.toNetworkRequest()
+        val metaData = mapOf(
+            "meta_data" to listOfNotNull(
+                attributionSourceType?.let {
+                    mapOf(
+                        "key" to OrderAttributionInfoKeys.SOURCE_TYPE,
+                        "value" to attributionSourceType
+                    )
+                }
+            )
+        )
+
+        val body = request.toNetworkRequest() + metaData
 
         val response = wooNetwork.executePostGsonRequest(
             site = site,

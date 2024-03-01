@@ -424,7 +424,7 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock {
                 onBlocking {
-                    createOrder(any(), any())
+                    createOrder(any(), any(), any())
                 }.doReturn(
                     WooPayload(newOrder)
                 )
