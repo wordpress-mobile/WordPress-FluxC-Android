@@ -81,8 +81,8 @@ class WCStatsStore @Inject constructor(
     class FetchRevenueStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val startDate: String? = null,
-        val endDate: String? = null,
+        val startDate: String,
+        val endDate: String,
         val forced: Boolean = false,
         val revenueRangeId: String = ""
     ) : Payload<BaseNetworkError>()
@@ -361,10 +361,8 @@ class WCStatsStore @Inject constructor(
     }
 
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
-        val startDate = payload.startDate?.takeIf { it.isNotEmpty() }
-            ?: getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = payload.endDate?.takeIf { it.isNotEmpty() }
-            ?: getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
+        val startDate = payload.startDate
+        val endDate = payload.endDate
 
         return coroutineEngine.withDefaultContext(API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(

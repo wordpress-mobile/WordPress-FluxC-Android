@@ -294,7 +294,8 @@ class WCStatsStoreTest {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
-            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
+            val endDate = DateUtils.getEndDateForSite(it)
+            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
             wcStatsStore.fetchRevenueStats(payload)
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
@@ -314,7 +315,8 @@ class WCStatsStoreTest {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
-            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
+            val endDate = DateUtils.getEndDateForSite(it)
+            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
             wcStatsStore.fetchRevenueStats(payload)
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
@@ -363,7 +365,8 @@ class WCStatsStoreTest {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
             ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
-            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
+            val endDate = DateUtils.getEndDateForSite(it)
+            val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
             wcStatsStore.fetchRevenueStats(payload)
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
@@ -555,8 +558,10 @@ class WCStatsStoreTest {
                 .thenReturn(nonExistentPayload)
         wcStatsStore.fetchRevenueStats(
                 FetchRevenueStatsPayload(
-                        site,
-                        StatsGranularity.YEARS
+                    site = site,
+                    granularity = StatsGranularity.YEARS,
+                    startDate = "2019-01-01",
+                    endDate = "2019-01-07"
                 )
         )
 
