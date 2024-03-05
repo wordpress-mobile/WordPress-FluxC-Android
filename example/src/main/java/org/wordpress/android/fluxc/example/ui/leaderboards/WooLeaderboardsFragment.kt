@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.MONTHS
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.YEARS
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.utils.DateUtils
 import javax.inject.Inject
 
 class WooLeaderboardsFragment : StoreSelectingFragment() {
@@ -128,4 +129,24 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
                 action(it)
             }
         }
+
+    private fun StatsGranularity.startDateTime(site: SiteModel) = when (this) {
+        DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
+        WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
+        MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
+        YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
+    }
+
+    private fun StatsGranularity.endDateTime(site: SiteModel) = when (this) {
+        DAYS -> DateUtils.getEndDateForSite(site)
+        WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+        MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
+        YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
+    }
+
+    private fun StatsGranularity.datePeriod(site: SiteModel): String {
+        val startDate = startDateTime(site)
+        val endDate = endDateTime(site)
+        return DateUtils.getDatePeriod(startDate, endDate)
+    }
 }
