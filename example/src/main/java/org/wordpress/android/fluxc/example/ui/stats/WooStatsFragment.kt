@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_stats.*
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -24,15 +26,11 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
-import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
-
-private const val TOP_EARNERS_STATS_PAYLOAD_LIMIT = 10
 
 class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
@@ -136,30 +134,6 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
                 dialog.show(fm, "CustomStatsFragment")
             }
         }
-
-        fetch_top_earners_stats.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(
-                    it,
-                    StatsGranularity.DAYS,
-                    TOP_EARNERS_STATS_PAYLOAD_LIMIT,
-                    false
-                )
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-            }
-        }
-
-        fetch_top_earners_stats_forced.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(
-                    it,
-                    StatsGranularity.DAYS,
-                    TOP_EARNERS_STATS_PAYLOAD_LIMIT,
-                    true
-                )
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-            }
-        }
     }
 
     override fun onStart() {
@@ -228,20 +202,6 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
                 }
             }
         }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCTopEarnersChanged(event: OnWCTopEarnersChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        prependToLog(
-                "Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
-                        .toLowerCase()} from ${getFirstWCSite()?.name}"
-        )
     }
 
     override fun onSubmitted(
