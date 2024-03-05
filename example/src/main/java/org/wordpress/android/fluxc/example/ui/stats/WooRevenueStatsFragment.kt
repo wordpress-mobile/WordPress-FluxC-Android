@@ -211,28 +211,50 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
 
         fetch_current_day_visitor_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(site = it, granularity = StatsGranularity.DAYS)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.DAYS,
+                    startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
+                    endDate = DateUtils.getEndDateForSite(it)
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_week_visitor_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(it, StatsGranularity.WEEKS, forced = true)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.WEEKS,
+                    startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
+                    endDate = DateUtils.getLastDayOfCurrentWeekForSite(it),
+                    forced = true
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_month_visitor_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(site = it, granularity = StatsGranularity.MONTHS)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.MONTHS,
+                    startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
+                    endDate = DateUtils.getLastDayOfCurrentMonthForSite(it)
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_year_visitor_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(it, StatsGranularity.YEARS, forced = true)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.YEARS,
+                    startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
+                    endDate = DateUtils.getLastDayOfCurrentYearForSite(it),
+                    forced = true
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
