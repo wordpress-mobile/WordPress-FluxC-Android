@@ -34,7 +34,6 @@ import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
@@ -76,7 +75,11 @@ class WCLeaderboardsStoreTest {
         givenFetchLeaderBoardsReturns(emptyArray())
         setup()
 
-        val result = storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
+        val result = storeUnderTest.fetchTopPerformerProductsLegacy(
+            site = stubSite,
+            startDate = START_DATE,
+            endDate = END_DATE
+        )
 
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
@@ -88,13 +91,17 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
-        storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
+        storeUnderTest.fetchTopPerformerProductsLegacy(
+            site = stubSite,
+            startDate = START_DATE,
+            endDate = END_DATE
+        )
 
         verify(mapper).mapTopPerformerProductsEntity(
             response?.firstOrNull { it.type == PRODUCTS }!!,
             stubSite,
             productStore,
-            DAYS.datePeriod(stubSite)
+            DATE_PERIOD
         )
     }
 
@@ -104,7 +111,11 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleLeaderboardsApiResponse()
         givenFetchLeaderBoardsReturns(response)
 
-        storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
+        storeUnderTest.fetchTopPerformerProductsLegacy(
+            site = stubSite,
+            startDate = START_DATE,
+            endDate = END_DATE
+        )
 
         verify(mapper, times(1)).mapTopPerformerProductsEntity(
             any<LeaderboardsApiResponse>(),
@@ -125,7 +136,11 @@ class WCLeaderboardsStoreTest {
                 returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
             )
 
-            val result = storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
+            val result = storeUnderTest.fetchTopPerformerProductsLegacy(
+                site = stubSite,
+                startDate = START_DATE,
+                endDate = END_DATE
+            )
 
             assertThat(result.model).isNotNull
             assertThat(result.model).isEqualTo(TOP_PERFORMER_ENTITY_LIST)
@@ -139,7 +154,11 @@ class WCLeaderboardsStoreTest {
             val response = generateSampleTopPerformerApiResponse()
             givenFetchTopPerformerReturns(response)
 
-            val topPerformers = storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+            val topPerformers = storeUnderTest.fetchTopPerformerProducts(
+                site = stubSite,
+                startDate = START_DATE,
+                endDate = END_DATE
+            )
             val result = setMillisSinceLastUpdated(topPerformers, DEFAULT_MILLIS_SINCE_LAST_UPDATE)
 
             assertThat(result.model).isNotNull
@@ -154,11 +173,15 @@ class WCLeaderboardsStoreTest {
             val response = generateSampleTopPerformerApiResponse()
             givenFetchTopPerformerReturns(response)
 
-            storeUnderTest.fetchTopPerformerProducts(stubSite, DAYS)
+            storeUnderTest.fetchTopPerformerProducts(
+                site = stubSite,
+                startDate = START_DATE,
+                endDate = END_DATE
+            )
 
             verify(topPerformersDao).updateTopPerformerProductsFor(
                 eq(stubSite.localId()),
-                eq(DAYS.datePeriod(stubSite)),
+                eq(DATE_PERIOD),
                 any()
             )
         }
@@ -174,12 +197,16 @@ class WCLeaderboardsStoreTest {
                 returnedTopPerformersList = TOP_PERFORMER_ENTITY_LIST
             )
 
-            storeUnderTest.fetchTopPerformerProductsLegacy(stubSite, DAYS)
+            storeUnderTest.fetchTopPerformerProductsLegacy(
+                site = stubSite,
+                startDate = START_DATE,
+                endDate = END_DATE
+            )
 
             verify(topPerformersDao, times(1))
                 .updateTopPerformerProductsFor(
                     stubSite.localId(),
-                    DAYS.datePeriod(stubSite),
+                    DATE_PERIOD,
                     TOP_PERFORMER_ENTITY_LIST
                 )
         }
@@ -254,7 +281,7 @@ class WCLeaderboardsStoreTest {
                 givenResponse,
                 siteModel,
                 productStore,
-                DAYS.datePeriod(siteModel)
+                DATE_PERIOD
             )
         ).thenReturn(returnedTopPerformersList)
     }
@@ -271,11 +298,14 @@ class WCLeaderboardsStoreTest {
 
     companion object {
         const val DEFAULT_MILLIS_SINCE_LAST_UPDATE = 100L
+        const val START_DATE = "2024-01-01"
+        const val END_DATE = "2024-01-31"
+        const val DATE_PERIOD = "$START_DATE-$END_DATE"
         val TOP_PERFORMER_ENTITY_LIST =
             listOf(
                 TopPerformerProductEntity(
                     localSiteId = LocalId(1),
-                    datePeriod = DAYS.datePeriod(stubSite),
+                    datePeriod = DATE_PERIOD,
                     productId = RemoteId(123),
                     name = "product",
                     imageUrl = null,
@@ -289,7 +319,7 @@ class WCLeaderboardsStoreTest {
             listOf(
                 TopPerformerProductEntity(
                     localSiteId = LocalId(1),
-                    datePeriod = DAYS.datePeriod(stubSite),
+                    datePeriod = DATE_PERIOD,
                     productId = RemoteId(123),
                     name = "product",
                     imageUrl = null,
@@ -305,7 +335,7 @@ class WCLeaderboardsStoreTest {
             listOf(
                 TopPerformerProductEntity(
                     localSiteId = LocalId(321),
-                    datePeriod = DAYS.datePeriod(stubSite),
+                    datePeriod = DATE_PERIOD,
                     productId = RemoteId(14),
                     name = "Polo",
                     imageUrl = "https://superlativecentaur.wpcomstaging.com/wp-content/uploads/2023/01/polo-2-600x599.jpg",
@@ -316,7 +346,7 @@ class WCLeaderboardsStoreTest {
                 ),
                 TopPerformerProductEntity(
                     localSiteId = LocalId(321),
-                    datePeriod = DAYS.datePeriod(stubSite),
+                    datePeriod = DATE_PERIOD,
                     productId = RemoteId(22),
                     name = "Sunglasses Subscription",
                     imageUrl = "https://superlativecentaur.wpcomstaging.com/wp-content/uploads/2023/01/sunglasses-2-600x600.jpg",
@@ -327,7 +357,7 @@ class WCLeaderboardsStoreTest {
                 ),
                 TopPerformerProductEntity(
                     localSiteId = LocalId(321),
-                    datePeriod = DAYS.datePeriod(stubSite),
+                    datePeriod = DATE_PERIOD,
                     productId = RemoteId(15),
                     name = "Beanie",
                     imageUrl = "https://superlativecentaur.wpcomstaging.com/wp-content/uploads/2023/01/beanie-2-600x600.jpg",

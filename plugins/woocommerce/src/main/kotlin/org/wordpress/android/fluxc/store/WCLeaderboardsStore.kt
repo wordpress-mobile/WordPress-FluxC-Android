@@ -11,11 +11,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsRestClient
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.util.AppLog
@@ -48,28 +46,6 @@ class WCLeaderboardsStore @Inject constructor(
         datePeriod: String
     ): List<TopPerformerProductEntity> =
         topPerformersDao.getTopPerformerProductsFor(site.localId(), datePeriod)
-
-    suspend fun fetchTopPerformerProductsLegacy(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: Int? = null,
-        addProductsPath: Boolean = false,
-        forceRefresh: Boolean = false,
-    ): WooResult<List<TopPerformerProductEntity>> {
-        val startDate = granularity.startDateTime(site)
-        val endDate = granularity.endDateTime(site)
-        val interval = OrderStatsRestClient.OrderStatsApiUnit.fromStatsGranularity(granularity)
-            .toString()
-        return fetchTopPerformerProductsLegacy(
-            site = site,
-            startDate = startDate,
-            endDate = endDate,
-            quantity = quantity,
-            addProductsPath = addProductsPath,
-            forceRefresh = forceRefresh,
-            interval = interval
-        )
-    }
 
     @Suppress("LongParameterList")
     suspend fun fetchTopPerformerProductsLegacy(
@@ -111,21 +87,6 @@ class WCLeaderboardsStore @Inject constructor(
                     WooResult(it)
                 } ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
         }
-    }
-
-    suspend fun fetchTopPerformerProducts(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: Int = 5,
-    ): WooResult<List<TopPerformerProductEntity>> {
-        val startDate = granularity.startDateTime(site)
-        val endDate = granularity.endDateTime(site)
-        return fetchTopPerformerProducts(
-            site = site,
-            startDate = startDate,
-            endDate = endDate,
-            quantity = quantity
-        )
     }
 
     suspend fun fetchTopPerformerProducts(
