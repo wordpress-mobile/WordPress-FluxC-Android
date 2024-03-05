@@ -94,37 +94,6 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Describes the parameters for fetching order stats for [site], up to the current day, month, or year
-     * (depending on the given [granularity]).
-     *
-     * The amount of data fetched depends on the granularity:
-     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
-     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
-     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
-     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
-     *
-     * @param[granularity] the time units for the requested data
-     * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
-     */
-    class FetchOrderStatsPayload(
-        val site: SiteModel,
-        val granularity: StatsGranularity,
-        val startDate: String? = null,
-        val endDate: String? = null,
-        val forced: Boolean = false
-    ) : Payload<BaseNetworkError>()
-
-    class FetchOrderStatsResponsePayload(
-        val site: SiteModel,
-        val apiUnit: OrderStatsApiUnit,
-        val stats: WCOrderStatsModel? = null
-    ) : Payload<OrderStatsError>() {
-        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
-            this.error = error
-        }
-    }
-
-    /**
      * Describes the parameters for fetching new stats for [site], up to the current day, month, or year
      * (depending on the given [granularity], [startDate]).
      *
@@ -224,11 +193,8 @@ class WCStatsStore @Inject constructor(
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
-            WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
             WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY ->
                 fetchRevenueStatsAvailability(action.payload as FetchRevenueStatsAvailabilityPayload)
-            WCStatsAction.FETCHED_ORDER_STATS ->
-                handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
             WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY -> handleFetchRevenueStatsAvailabilityCompleted(
                     action.payload as FetchRevenueStatsAvailabilityResponsePayload
             )
@@ -439,19 +405,6 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(payload.granularity)
-        val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, payload.startDate, payload.endDate)
-        wcOrderStatsClient.fetchStats(
-                payload.site,
-                apiUnit,
-                getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, payload.endDate),
-                quantity,
-                payload.forced,
-                payload.startDate,
-                payload.endDate)
-    }
-
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
         val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
         val startDate = payload.startDate?.takeIf { it.isNotEmpty() } ?: getStartDate(payload.granularity)
@@ -503,21 +456,6 @@ class WCStatsStore @Inject constructor(
             StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
             StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
         }
-
-    private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
-        val onStatsChanged = with(payload) {
-            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
-            if (isError || stats == null) {
-                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
-            } else {
-                val rowsAffected = WCStatsSqlUtils.insertOrUpdateStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
-            }
-        }
-
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS
-        emitChange(onStatsChanged)
-    }
 
     /**
      * Given a {@param endDate} end date, formats the end date based on the site's timezone
