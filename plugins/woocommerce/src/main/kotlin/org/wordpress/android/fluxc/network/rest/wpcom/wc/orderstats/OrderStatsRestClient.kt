@@ -274,58 +274,6 @@ class OrderStatsRestClient @Inject constructor(
         }
     }
 
-    fun fetchVisitorStats(
-        site: SiteModel,
-        unit: OrderStatsApiUnit,
-        date: String,
-        quantity: Int,
-        force: Boolean = false,
-        startDate: String? = null,
-        endDate: String? = null
-    ) {
-        coroutineEngine.launch(AppLog.T.API, this, "fetchVisitorStats") {
-            val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
-            val params = mapOf(
-                "unit" to unit.toString(),
-                "date" to date,
-                "quantity" to quantity.toString(),
-                "stat_fields" to "visitors")
-
-            val response = wpComNetwork.executeGetGsonRequest(
-                url = url,
-                params = params,
-                clazz = VisitorStatsApiResponse::class.java,
-                enableCaching = true,
-                forced = force
-            )
-
-            when (response) {
-                is WPComGsonRequestBuilder.Response.Success -> {
-                    val model = WCVisitorStatsModel().apply {
-                        this.localSiteId = site.id
-                        this.unit = unit.toString()
-                        this.fields = response.data.fields.toString()
-                        this.data = response.data.data.toString()
-                        this.quantity = quantity.toString()
-                        this.date = date
-                        endDate?.let { this.endDate = it }
-                        startDate?.let {
-                            this.startDate = startDate
-                            this.isCustomField = true
-                        }
-                    }
-                    val payload = FetchVisitorStatsResponsePayload(site, unit, model)
-                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
-                }
-                is WPComGsonRequestBuilder.Response.Error -> {
-                    val orderError = response.error.toOrderError()
-                    val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
-                    dispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
-                }
-            }
-        }
-    }
-
     suspend fun fetchNewVisitorStats(
         site: SiteModel,
         unit: OrderStatsApiUnit,

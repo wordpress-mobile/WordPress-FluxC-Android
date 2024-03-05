@@ -34,29 +34,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Fetch Custom Revenue Stats (forced)" />
-
-        <Button
-            android:id="@+id/fetch_visitor_stats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Visitor Stats" />
-
-        <Button
-            android:id="@+id/fetch_visitor_stats_forced"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Visitor Stats (forced)" />
-
-        <Button
-            android:id="@+id/fetch_visitor_stats_custom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fetch Custom Visitor Stats" />
-
-        <Button
-            android:id="@+id/fetch_visitor_stats_custom_forced"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fetch Custom Visitor Stats (forced)" />
     </LinearLayout>
 </ScrollView>

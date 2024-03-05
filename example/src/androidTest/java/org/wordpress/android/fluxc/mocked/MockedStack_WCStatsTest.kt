@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.util.concurrent.CountDownLatch
@@ -199,50 +198,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testVisitorStatsSuccess() {
-        interceptor.respondWith("wc-visitor-stats-response-success.json")
-        orderStatsRestClient.fetchVisitorStats(siteModel, OrderStatsApiUnit.MONTH, "2018-04-20", 12, true)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
-        with(payload) {
-            assertNull(error)
-            assertEquals(siteModel, site)
-            assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
-            assertNotNull(stats)
-            assertNotNull(stats?.data)
-            assertEquals(stats?.dataList?.size, 12)
-        }
-    }
-
-    @Test
-    fun testVisitorStatsError() {
-        val errorJson = JsonObject().apply {
-            addProperty("error", "rest_invalid_param")
-            addProperty("message", "Invalid parameter(s): date")
-        }
-
-        interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchVisitorStats(siteModel, OrderStatsApiUnit.MONTH, "invalid", 1, true)
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
-        with(payload) {
-            assertNotNull(error)
-            assertEquals(siteModel, site)
-            assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
-            assertNull(stats)
-            assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
-        }
-    }
-
-    @Test
     fun testNewVisitorStatsSuccess() = runBlocking {
         interceptor.respondWith("wc-visitor-stats-response-success.json")
         val payload = orderStatsRestClient.fetchNewVisitorStats(
@@ -315,41 +270,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             val periodIndex = fieldsList.indexOf("period")
             assertEquals("2018-04-14", dataList.first()[periodIndex])
             assertEquals("2018-04-20", dataList.last()[periodIndex])
-        }
-    }
-
-    @Test
-    fun testCustomVisitorStatsFetchSuccess() {
-        interceptor.respondWith("wc-visitor-stats-response-success.json")
-        orderStatsRestClient.fetchVisitorStats(
-                siteModel, OrderStatsApiUnit.DAY, "2019-01-01", 12, true,
-                startDate = "2019-01-01",
-                endDate = "2019-01-12"
-        )
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
-        assertNull(payload.error)
-        assertEquals(siteModel, payload.site)
-        assertEquals(OrderStatsApiUnit.DAY, payload.apiUnit)
-        assertNotNull(payload.stats)
-        assertEquals(OrderStatsApiUnit.DAY.name.toLowerCase(), payload.stats?.unit)
-        assertEquals("2019-01-01", payload.stats?.startDate)
-        assertEquals("2019-01-12", payload.stats?.endDate)
-        assertEquals(true, payload.stats?.isCustomField)
-
-        with(payload.stats!!) {
-            assertEquals(siteModel.id, localSiteId)
-            assertEquals(OrderStatsApiUnit.DAY.toString(), unit)
-            assertEquals(2, fieldsList.size)
-            assertEquals(12, dataList.size)
-            assertEquals(1.0, dataList[0][1])
-
-            val visitorIndex = fieldsList.indexOf("visitors")
-            assertEquals(12, dataList.map { (it[visitorIndex] as Number).toInt() }.sum())
         }
     }
 
