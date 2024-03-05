@@ -7,6 +7,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -424,7 +425,7 @@ class OrderUpdateStoreTest {
         setUp {
             orderRestClient = mock {
                 onBlocking {
-                    createOrder(any(), any())
+                    createOrder(any(), any(), anyOrNull())
                 }.doReturn(
                     WooPayload(newOrder)
                 )

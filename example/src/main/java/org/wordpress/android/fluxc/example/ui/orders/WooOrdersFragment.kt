@@ -556,7 +556,8 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                     shippingAddress = shippingAddress,
                                     billingAddress = billingAddress,
                                     customerNote = customerNote
-                            )
+                            ),
+                            attributionSourceType = "fluxc-example-app"
                     )
                     if (result.isError) {
                         prependToLog("Order creation failed, error ${result.error.type} ${result.error.message}")

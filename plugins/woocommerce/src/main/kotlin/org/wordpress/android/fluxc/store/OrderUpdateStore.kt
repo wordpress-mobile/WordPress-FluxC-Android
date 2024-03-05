@@ -228,9 +228,13 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
-    suspend fun createOrder(site: SiteModel, createOrderRequest: UpdateOrderRequest): WooResult<OrderEntity> {
+    suspend fun createOrder(
+        site: SiteModel,
+        createOrderRequest: UpdateOrderRequest,
+        attributionSourceType: String? = null
+    ): WooResult<OrderEntity> {
         return coroutineEngine.withDefaultContext(T.API, this, "createOrder") {
-            val result = wcOrderRestClient.createOrder(site, createOrderRequest)
+            val result = wcOrderRestClient.createOrder(site, createOrderRequest, attributionSourceType)
 
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
