@@ -314,22 +314,6 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    private fun getStartDate(granularity: StatsGranularity) =
-        when (granularity) {
-            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-            StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek(Calendar.getInstance(Locale.getDefault()))
-            StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
-            StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
-        }
-
-    private fun getEndDate(granularity: StatsGranularity, site: SiteModel) =
-        when (granularity) {
-            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-            StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-            StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-            StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-        }
-
     /**
      * Given a {@param endDate} end date, formats the end date based on the site's timezone
      * If the start date or end date is empty, formats the current date
@@ -389,48 +373,6 @@ class WCStatsStore @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    /**
-     * Given a [startDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the start date is empty, fetches the date based on the [granularity]
-     */
-    private fun getStartDateForRevenueStatsGranularity(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        startDate: String?
-    ): String {
-        return if (startDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
-                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
-                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
-                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
-            }
-        } else {
-            DateUtils.getStartDateForSite(site, startDate)
-        }
-    }
-
-    /**
-     * Given a [endDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the end date is empty, fetches the date based on the [granularity]
-     */
-    private fun getEndDateForRevenueStatsGranularity(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        endDate: String?
-    ): String {
-        return if (endDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-                StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-                StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-            }
-        } else {
-            DateUtils.getEndDateForSite(site, endDate)
         }
     }
 
