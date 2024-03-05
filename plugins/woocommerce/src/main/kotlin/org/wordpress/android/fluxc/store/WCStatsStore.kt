@@ -9,10 +9,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.logging.FluxCCrashLoggerProvider.crashLogger
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
-import org.wordpress.android.fluxc.model.WCVisitorStatsModel.VisitorStatsField
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
@@ -21,7 +18,6 @@ import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
-import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -202,90 +198,6 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the revenue data by date for the given [site], in units of [granularity].
-     *
-     * The returned map has the format: "2018-05-01" -> 57.43
-     *
-     * The amount of data returned depends on the granularity:
-     *
-     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
-     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
-     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
-     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
-     *
-     * The start date is the current day/week/month/year, relative to the site's own timezone
-     * (not the current device's).
-     *
-     * The format of the date key in the returned map depends on the [granularity]:
-     * [StatsGranularity.DAYS]: "2018-05-01"
-     * [StatsGranularity.WEEKS]: "2018-W16"
-     * [StatsGranularity.MONTHS]: "2018-05"
-     * [StatsGranularity.YEARS]: "2018"
-     */
-    fun getRevenueStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, Double> {
-        return getStatsForField(site, OrderStatsField.GROSS_SALES, granularity, quantity, date, isCustomField)
-    }
-
-    /**
-     * Returns the order volume data by date for the given [site], in units of [granularity].
-     *
-     * The returned map has the format: "2018-05-01" -> 15
-     *
-     * See [getRevenueStats] for detail on the date formatting of the map keys.
-     */
-    fun getOrderStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, Int> {
-        return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date, isCustomField)
-    }
-
-    fun getCustomStatsForSite(
-        site: SiteModel
-    ): WCOrderStatsModel? {
-        return WCStatsSqlUtils.getCustomStatsForSite(site)
-    }
-
-    /**
-     * Returns the visitor data by date for the given [site], in units of [granularity].
-     * The returned map has the format: "2018-05-01" -> 15
-     */
-    fun getVisitorStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, Int> {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
-        val rawStats = WCVisitorStatsSqlUtils.getRawVisitorStatsForSiteUnitQuantityAndDate(
-            site, apiUnit, quantity, date, isCustomField
-        )
-        rawStats?.let { visitorStatsModel ->
-            val periodIndex = visitorStatsModel.getIndexForField(VisitorStatsField.PERIOD)
-            val fieldIndex = visitorStatsModel.getIndexForField(VisitorStatsField.VISITORS)
-            return if (periodIndex == -1 || fieldIndex == -1) {
-                mapOf()
-            } else {
-                getVisitorsMap(
-                    periodIndex = periodIndex,
-                    fieldIndex = fieldIndex,
-                    dataList = visitorStatsModel.dataList
-                )
-            }
-        } ?: return mapOf()
-    }
-
-    /**
      * Returns the visitor data by date for the given [site] and [granularity].
      * The returned map has the format: "2018-05-01" -> 15
      */
@@ -335,25 +247,6 @@ class WCStatsStore @Inject constructor(
 
             period to visits
         }
-    }
-
-    /**
-     * Returns the currency code associated with stored stats for the [site], as an ISO 4217 currency code (eg. USD).
-     */
-    fun getStatsCurrencyForSite(site: SiteModel): String? {
-        val rawStats = WCStatsSqlUtils.getFirstRawStatsForSite(site)
-        rawStats?.let { statsModel ->
-            statsModel.dataList.firstOrNull()?.let {
-                val currencyIndex = statsModel.getIndexForField(OrderStatsField.CURRENCY)
-                return if (currencyIndex == -1) {
-                    // The server didn't return the currency field
-                    reportMissingFieldError(statsModel, OrderStatsField.CURRENCY)
-                    null
-                } else {
-                    it[currencyIndex] as String
-                }
-            }
-        } ?: return null
     }
 
     /**
@@ -472,45 +365,6 @@ class WCStatsStore @Inject constructor(
             OrderStatsApiUnit.YEAR -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
             else -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
         }
-    }
-
-    // The type of the stats field relies on knowledge of the real value of the stored JSON for that field
-    // It's up to the function caller to be aware of the compatible types for any given field
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> getStatsForField(
-        site: SiteModel,
-        field: OrderStatsField,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, T> {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(
-            site, apiUnit, quantity, date, isCustomField
-        )
-        rawStats?.let {
-            val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
-            val fieldIndex = it.getIndexForField(field)
-            return if (periodIndex == -1 || fieldIndex == -1) {
-                // One of the fields we need wasn't returned by the server
-                reportMissingFieldError(it, field)
-                mapOf()
-            } else {
-                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-                it.dataList.map { it[periodIndex].toString().removeSuffix(".0") to it[fieldIndex] as T }.toMap()
-            }
-        } ?: return mapOf()
-    }
-
-    private fun reportMissingFieldError(orderStatsModel: WCOrderStatsModel, missingField: OrderStatsField) {
-        AppLog.e(T.API, "Missing field from stats endpoint - missing field: $missingField, " +
-                "returned fields: ${orderStatsModel.fields}")
-        val unexpectedError = OnUnexpectedError(
-                IllegalStateException("Missing field from stats endpoint"),
-                "Missing field: $missingField, returned fields: ${orderStatsModel.fields}"
-        )
-        mDispatcher.emitChange(unexpectedError)
     }
 
     /**
