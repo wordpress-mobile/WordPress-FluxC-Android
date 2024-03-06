@@ -32,16 +32,7 @@ class WCStatsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
-        const val WOO_COMMERCE_INITIAL_RELEASE = 2011
-
-        const val STATS_QUANTITY_DAYS = 30
-        const val STATS_QUANTITY_WEEKS = 17
-        const val STATS_QUANTITY_MONTHS = 12
-
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
-        private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
-        private const val DATE_FORMAT_MONTH = "yyyy-MM"
-        private const val DATE_FORMAT_YEAR = "yyyy"
 
         // Use WordPress's maximum per page quantity
         private const val ORDER_REVENUE_QUANTITY = 100
@@ -238,7 +229,7 @@ class WCStatsStore @Inject constructor(
             val result = wcOrderStatsClient.fetchNewVisitorStats(
                     site = payload.site,
                     granularity = payload.granularity,
-                    date = getFormattedDateByOrderStatsApiUnit(payload.site, payload.granularity, endDate),
+                    date = DateUtils.getDateTimeForSite(payload.site, DATE_FORMAT_DAY, endDate),
                     quantity = quantity,
                     force = payload.forced,
                     startDate = startDate,
@@ -286,23 +277,6 @@ class WCStatsStore @Inject constructor(
             StatsGranularity.YEARS -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
             else -> error("Visitor stats do not support hours granularity")
         }.toInt()
-    }
-
-    /**
-     * Given a {@param endDate} end date, formats the end date based on the site's timezone
-     * If the start date or end date is empty, formats the current date
-     */
-    private fun getFormattedDateByOrderStatsApiUnit(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        endDate: String?
-    ): String {
-        return when (granularity) {
-            StatsGranularity.WEEKS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_WEEK, endDate)
-            StatsGranularity.MONTHS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_MONTH, endDate)
-            StatsGranularity.YEARS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
-            else -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
-        }
     }
 
     /**
