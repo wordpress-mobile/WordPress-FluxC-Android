@@ -135,6 +135,7 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
         MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
         YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
+        else -> error("The sample code does not support the $this granularity.")
     }
 
     private fun StatsGranularity.endDateTime(site: SiteModel) = when (this) {
@@ -142,11 +143,6 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
         MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
         YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-    }
-
-    private fun StatsGranularity.datePeriod(site: SiteModel): String {
-        val startDate = startDateTime(site)
-        val endDate = endDateTime(site)
-        return DateUtils.getDatePeriod(startDate, endDate)
+        else -> error("The sample code does not support the $this granularity.")
     }
 }
