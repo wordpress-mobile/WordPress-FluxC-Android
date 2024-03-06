@@ -9,12 +9,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.logging.FluxCCrashLoggerProvider.crashLogger
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
-import org.wordpress.android.fluxc.model.WCTopEarnerModel
-import org.wordpress.android.fluxc.model.WCVisitorStatsModel
-import org.wordpress.android.fluxc.model.WCVisitorStatsModel.VisitorStatsField
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
@@ -23,12 +18,10 @@ import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
-import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
-import java.lang.NumberFormatException
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
@@ -97,37 +90,6 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Describes the parameters for fetching order stats for [site], up to the current day, month, or year
-     * (depending on the given [granularity]).
-     *
-     * The amount of data fetched depends on the granularity:
-     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
-     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
-     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
-     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
-     *
-     * @param[granularity] the time units for the requested data
-     * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
-     */
-    class FetchOrderStatsPayload(
-        val site: SiteModel,
-        val granularity: StatsGranularity,
-        val startDate: String? = null,
-        val endDate: String? = null,
-        val forced: Boolean = false
-    ) : Payload<BaseNetworkError>()
-
-    class FetchOrderStatsResponsePayload(
-        val site: SiteModel,
-        val apiUnit: OrderStatsApiUnit,
-        val stats: WCOrderStatsModel? = null
-    ) : Payload<OrderStatsError>() {
-        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
-            this.error = error
-        }
-    }
-
-    /**
      * Describes the parameters for fetching new stats for [site], up to the current day, month, or year
      * (depending on the given [granularity], [startDate]).
      *
@@ -173,31 +135,6 @@ class WCStatsStore @Inject constructor(
 
     /**
      * Describes the parameters for fetching visitor stats for [site], up to the current day, month, or year
-     * (depending on the given [granularity]).
-     *
-     * @param[granularity] the time units for the requested data
-     * @param[forced] if true, ignores any cached result and forces a refresh from the server
-     */
-    class FetchVisitorStatsPayload(
-        val site: SiteModel,
-        val granularity: StatsGranularity,
-        val forced: Boolean = false,
-        val startDate: String? = null,
-        val endDate: String? = null
-    ) : Payload<BaseNetworkError>()
-
-    class FetchVisitorStatsResponsePayload(
-        val site: SiteModel,
-        val apiUnit: OrderStatsApiUnit,
-        val stats: WCVisitorStatsModel? = null
-    ) : Payload<OrderStatsError>() {
-        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
-            this.error = error
-        }
-    }
-
-    /**
-     * Describes the parameters for fetching visitor stats for [site], up to the current day, month, or year
      * (depending on the given [granularity]). These classes are used exclusively for the new v4 stats API changes
      *
      * @param[granularity] the time units for the requested data
@@ -217,23 +154,6 @@ class WCStatsStore @Inject constructor(
         val stats: WCNewVisitorStatsModel? = null
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, granularity: StatsGranularity) : this(site, granularity) {
-            this.error = error
-        }
-    }
-
-    class FetchTopEarnersStatsPayload(
-        val site: SiteModel,
-        val granularity: StatsGranularity,
-        val limit: Int = 10,
-        val forced: Boolean = false
-    ) : Payload<BaseNetworkError>()
-
-    class FetchTopEarnersStatsResponsePayload(
-        val site: SiteModel,
-        val apiUnit: OrderStatsApiUnit,
-        val topEarners: List<WCTopEarnerModel> = emptyList()
-    ) : Payload<OrderStatsError>() {
-        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
             this.error = error
         }
     }
@@ -263,116 +183,18 @@ class WCStatsStore @Inject constructor(
         var causeOfChange: WCStatsAction? = null
     }
 
-    class OnWCTopEarnersChanged(val topEarners: List<WCTopEarnerModel>, val granularity: StatsGranularity) :
-            OnChanged<OrderStatsError>() {
-        var causeOfChange: WCStatsAction? = null
-    }
-
     override fun onRegister() = AppLog.d(T.API, "WCStatsStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
-            WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
             WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY ->
                 fetchRevenueStatsAvailability(action.payload as FetchRevenueStatsAvailabilityPayload)
-            WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
-            WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
-            WCStatsAction.FETCHED_ORDER_STATS ->
-                handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
             WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY -> handleFetchRevenueStatsAvailabilityCompleted(
                     action.payload as FetchRevenueStatsAvailabilityResponsePayload
             )
-            WCStatsAction.FETCHED_VISITOR_STATS ->
-                handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
-            WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
-                handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
-    }
-
-    /**
-     * Returns the revenue data by date for the given [site], in units of [granularity].
-     *
-     * The returned map has the format: "2018-05-01" -> 57.43
-     *
-     * The amount of data returned depends on the granularity:
-     *
-     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
-     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
-     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
-     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
-     *
-     * The start date is the current day/week/month/year, relative to the site's own timezone
-     * (not the current device's).
-     *
-     * The format of the date key in the returned map depends on the [granularity]:
-     * [StatsGranularity.DAYS]: "2018-05-01"
-     * [StatsGranularity.WEEKS]: "2018-W16"
-     * [StatsGranularity.MONTHS]: "2018-05"
-     * [StatsGranularity.YEARS]: "2018"
-     */
-    fun getRevenueStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, Double> {
-        return getStatsForField(site, OrderStatsField.GROSS_SALES, granularity, quantity, date, isCustomField)
-    }
-
-    /**
-     * Returns the order volume data by date for the given [site], in units of [granularity].
-     *
-     * The returned map has the format: "2018-05-01" -> 15
-     *
-     * See [getRevenueStats] for detail on the date formatting of the map keys.
-     */
-    fun getOrderStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, Int> {
-        return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date, isCustomField)
-    }
-
-    fun getCustomStatsForSite(
-        site: SiteModel
-    ): WCOrderStatsModel? {
-        return WCStatsSqlUtils.getCustomStatsForSite(site)
-    }
-
-    /**
-     * Returns the visitor data by date for the given [site], in units of [granularity].
-     * The returned map has the format: "2018-05-01" -> 15
-     */
-    fun getVisitorStats(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, Int> {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
-        val rawStats = WCVisitorStatsSqlUtils.getRawVisitorStatsForSiteUnitQuantityAndDate(
-            site, apiUnit, quantity, date, isCustomField
-        )
-        rawStats?.let { visitorStatsModel ->
-            val periodIndex = visitorStatsModel.getIndexForField(VisitorStatsField.PERIOD)
-            val fieldIndex = visitorStatsModel.getIndexForField(VisitorStatsField.VISITORS)
-            return if (periodIndex == -1 || fieldIndex == -1) {
-                mapOf()
-            } else {
-                getVisitorsMap(
-                    periodIndex = periodIndex,
-                    fieldIndex = fieldIndex,
-                    dataList = visitorStatsModel.dataList
-                )
-            }
-        } ?: return mapOf()
     }
 
     /**
@@ -428,25 +250,6 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the currency code associated with stored stats for the [site], as an ISO 4217 currency code (eg. USD).
-     */
-    fun getStatsCurrencyForSite(site: SiteModel): String? {
-        val rawStats = WCStatsSqlUtils.getFirstRawStatsForSite(site)
-        rawStats?.let { statsModel ->
-            statsModel.dataList.firstOrNull()?.let {
-                val currencyIndex = statsModel.getIndexForField(OrderStatsField.CURRENCY)
-                return if (currencyIndex == -1) {
-                    // The server didn't return the currency field
-                    reportMissingFieldError(statsModel, OrderStatsField.CURRENCY)
-                    null
-                } else {
-                    it[currencyIndex] as String
-                }
-            }
-        } ?: return null
-    }
-
-    /**
      * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
      * and the date range
      */
@@ -493,33 +296,6 @@ class WCStatsStore @Inject constructor(
             OrderStatsApiUnit.YEAR -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
             else -> DateUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
         }
-    }
-
-    private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(payload.granularity)
-        val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, payload.startDate, payload.endDate)
-        wcOrderStatsClient.fetchStats(
-                payload.site,
-                apiUnit,
-                getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, payload.endDate),
-                quantity,
-                payload.forced,
-                payload.startDate,
-                payload.endDate)
-    }
-
-    private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(payload.granularity)
-        val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, payload.startDate, payload.endDate)
-        wcOrderStatsClient.fetchVisitorStats(
-                payload.site,
-                apiUnit,
-                getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, payload.endDate),
-                quantity,
-                payload.forced,
-                payload.startDate,
-                payload.endDate
-        )
     }
 
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
@@ -574,65 +350,6 @@ class WCStatsStore @Inject constructor(
             StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
         }
 
-    private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
-        wcOrderStatsClient.fetchTopEarnersStats(
-                payload.site,
-                OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                getFormattedDate(payload.site, payload.granularity),
-                payload.limit,
-                payload.forced
-        )
-    }
-
-    private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
-        val onStatsChanged = with(payload) {
-            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
-            if (isError || stats == null) {
-                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
-            } else {
-                val rowsAffected = WCStatsSqlUtils.insertOrUpdateStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
-            }
-        }
-
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS
-        emitChange(onStatsChanged)
-    }
-
-    private fun handleFetchVisitorStatsCompleted(payload: FetchVisitorStatsResponsePayload) {
-        val onStatsChanged = with(payload) {
-            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
-            if (isError || stats == null) {
-                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
-            } else {
-                val rowsAffected = WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
-            }
-        }
-
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_VISITOR_STATS
-        emitChange(onStatsChanged)
-    }
-
-    private fun handleFetchTopEarnersStatsCompleted(payload: FetchTopEarnersStatsResponsePayload) {
-        val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
-        val onTopEarnersChanged = OnWCTopEarnersChanged(payload.topEarners, granularity)
-        if (payload.isError) {
-            onTopEarnersChanged.error = payload.error
-        }
-        onTopEarnersChanged.causeOfChange = WCStatsAction.FETCH_TOP_EARNERS_STATS
-        emitChange(onTopEarnersChanged)
-    }
-
-    private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
-        return when (granularity) {
-            StatsGranularity.DAYS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY)
-            StatsGranularity.WEEKS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_WEEK)
-            StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
-            StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
-        }
-    }
-
     /**
      * Given a {@param endDate} end date, formats the end date based on the site's timezone
      * If the start date or end date is empty, formats the current date
@@ -648,45 +365,6 @@ class WCStatsStore @Inject constructor(
             OrderStatsApiUnit.YEAR -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
             else -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
         }
-    }
-
-    // The type of the stats field relies on knowledge of the real value of the stored JSON for that field
-    // It's up to the function caller to be aware of the compatible types for any given field
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> getStatsForField(
-        site: SiteModel,
-        field: OrderStatsField,
-        granularity: StatsGranularity,
-        quantity: String? = null,
-        date: String? = null,
-        isCustomField: Boolean = false
-    ): Map<String, T> {
-        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(
-            site, apiUnit, quantity, date, isCustomField
-        )
-        rawStats?.let {
-            val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
-            val fieldIndex = it.getIndexForField(field)
-            return if (periodIndex == -1 || fieldIndex == -1) {
-                // One of the fields we need wasn't returned by the server
-                reportMissingFieldError(it, field)
-                mapOf()
-            } else {
-                // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
-                it.dataList.map { it[periodIndex].toString().removeSuffix(".0") to it[fieldIndex] as T }.toMap()
-            }
-        } ?: return mapOf()
-    }
-
-    private fun reportMissingFieldError(orderStatsModel: WCOrderStatsModel, missingField: OrderStatsField) {
-        AppLog.e(T.API, "Missing field from stats endpoint - missing field: $missingField, " +
-                "returned fields: ${orderStatsModel.fields}")
-        val unexpectedError = OnUnexpectedError(
-                IllegalStateException("Missing field from stats endpoint"),
-                "Missing field: $missingField, returned fields: ${orderStatsModel.fields}"
-        )
-        mDispatcher.emitChange(unexpectedError)
     }
 
     /**

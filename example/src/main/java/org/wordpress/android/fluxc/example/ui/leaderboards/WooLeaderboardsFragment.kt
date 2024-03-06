@@ -4,14 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_day
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_month
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_week
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.fetch_product_leaderboards_of_year
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_day
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_month
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_week
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.retrieve_cached_leaderboards_of_year
+import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +32,7 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woo_leaderboards, container, false)
+        inflater.inflate(R.layout.fragment_woo_leaderboards, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -82,11 +75,15 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
         coroutineScope.launch {
             try {
                 takeAsyncRequestWithValidSite {
-                    wcLeaderboardsStore.fetchTopPerformerProducts(it, unit)
+                    wcLeaderboardsStore.fetchTopPerformerProducts(
+                        site = it,
+                        startDate = unit.startDateTime(it),
+                        endDate = unit.endDateTime(it)
+                    )
                 }
-                        ?.model
-                        ?.let { logLeaderboardResponse(it, unit) }
-                        ?: prependToLog("Couldn't fetch Products Leaderboards.")
+                    ?.model
+                    ?.let { logLeaderboardResponse(it, unit) }
+                    ?: prependToLog("Couldn't fetch Products Leaderboards.")
             } catch (ex: Exception) {
                 prependToLog("Couldn't fetch Products Leaderboards. Error: ${ex.message}")
             }
@@ -97,10 +94,16 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
     private fun launchProductLeaderboardsCacheRetrieval(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchTopPerformerProducts(it, unit) }
-                        ?.model
-                        ?.let { logLeaderboardResponse(it, unit) }
-                        ?: prependToLog("Couldn't fetch Products Leaderboards.")
+                takeAsyncRequestWithValidSite {
+                    wcLeaderboardsStore.fetchTopPerformerProducts(
+                        site = it,
+                        startDate = unit.startDateTime(it),
+                        endDate = unit.endDateTime(it)
+                    )
+                }
+                    ?.model
+                    ?.let { logLeaderboardResponse(it, unit) }
+                    ?: prependToLog("Couldn't fetch Products Leaderboards.")
             } catch (ex: Exception) {
                 prependToLog("Couldn't fetch Products Leaderboards. Error: ${ex.message}")
             }
@@ -120,9 +123,9 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
     }
 
     private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
-            selectedSite?.let {
-                withContext(Dispatchers.Default) {
-                    action(it)
-                }
+        selectedSite?.let {
+            withContext(Dispatchers.Default) {
+                action(it)
             }
+        }
 }

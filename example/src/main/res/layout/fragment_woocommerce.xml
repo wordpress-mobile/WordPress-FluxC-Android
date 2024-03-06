@@ -64,12 +64,6 @@
             android:text="Products" />
 
         <Button
-            android:id="@+id/stats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Stats" />
-
-        <Button
             android:id="@+id/stats_revenue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
