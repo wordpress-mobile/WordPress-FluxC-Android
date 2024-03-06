@@ -40,13 +40,13 @@ class WCStatsStore @Inject constructor(
         const val STATS_QUANTITY_WEEKS = 17
         const val STATS_QUANTITY_MONTHS = 12
 
-        const val STATS_GRANULARITY_DAYS = 1
-        const val STATS_GRANULARITY_YEARS = 12
-
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
+
+        // Use WordPress's maximum per page quantity
+        private const val ORDER_REVENUE_QUANTITY = 100
     }
 
     enum class StatsGranularity {
@@ -354,7 +354,7 @@ class WCStatsStore @Inject constructor(
                 granularity = payload.granularity,
                 startDate = startDate,
                 endDate = endDate,
-                perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity),
+                perPage = ORDER_REVENUE_QUANTITY,
                 forceRefresh = payload.forced,
                 revenueRangeId = payload.revenueRangeId
             )
@@ -374,19 +374,6 @@ class WCStatsStore @Inject constructor(
                 }
             }
         }
-    }
-
-    /**
-     * Returns the page size in days depending on the provided [granularity],
-     * to use for fetching revenue stats.
-     */
-    private fun getPerPageQuantityForRevenueStatsGranularity(
-        granularity: StatsGranularity
-    ) = when (granularity) {
-        StatsGranularity.DAYS -> STATS_GRANULARITY_DAYS
-        StatsGranularity.WEEKS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_WEEK)
-        StatsGranularity.MONTHS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
-        StatsGranularity.YEARS -> STATS_GRANULARITY_YEARS
     }
 
     /**
