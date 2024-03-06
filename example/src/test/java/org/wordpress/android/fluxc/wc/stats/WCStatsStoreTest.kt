@@ -24,15 +24,12 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
@@ -66,233 +63,291 @@ class WCStatsStoreTest {
 
     @Test
     fun testGetQuantityForDays() {
-        val quantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-25", "2018-01-28",
-                OrderStatsApiUnit.DAY, 30)
+        val quantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.DAYS, "2018-01-25",
+            "2018-01-28"
+        )
         assertEquals(4, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2018-01-01",
-                OrderStatsApiUnit.DAY, 30)
+        val quantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.DAYS, "2018-01-01",
+            "2018-01-01"
+        )
         assertEquals(1, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2018-01-31",
-                OrderStatsApiUnit.DAY, 30)
+        val quantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.DAYS, "2018-01-01",
+            "2018-01-31"
+        )
         assertEquals(31, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-28", "2018-01-25",
-                OrderStatsApiUnit.DAY, 30)
+        val quantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.DAYS, "2018-01-28",
+            "2018-01-25"
+        )
         assertEquals(4, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2018-01-01",
-                OrderStatsApiUnit.DAY, 30)
+        val quantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.DAYS, "2018-01-01",
+            "2018-01-01"
+        )
         assertEquals(1, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-31", "2018-01-01",
-                OrderStatsApiUnit.DAY, 30)
+        val quantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.DAYS, "2018-01-31",
+            "2018-01-01"
+        )
         assertEquals(31, quantity6)
-
-        val defaultQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("", "",
-                OrderStatsApiUnit.DAY, 30)
-        assertEquals(30, defaultQuantity1)
-
-        val defaultQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit(null, null,
-                OrderStatsApiUnit.DAY, 30)
-        assertEquals(30, defaultQuantity2)
     }
 
     @Test
     fun testGetQuantityForWeeks() {
-        val quantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-10-22", "2018-10-23",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-10-22",
+            "2018-10-23"
+        )
         assertEquals(1, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-01-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2017-01-01",
+            "2018-01-01"
+        )
         assertEquals(53, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2019-01-20", "2019-01-13",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2019-01-20",
+            "2019-01-13"
+        )
         assertEquals(2, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-03-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2017-01-01",
+            "2018-03-01"
+        )
         assertEquals(61, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2018-01-31",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-01-01",
+            "2018-01-31"
+        )
         assertEquals(5, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-12-01", "2018-12-31",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-12-01",
+            "2018-12-31"
+        )
         assertEquals(6, quantity6)
 
-        val quantity7 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-11-01", "2018-11-30",
-                OrderStatsApiUnit.WEEK, 17)
+        val quantity7 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-11-01",
+            "2018-11-30"
+        )
         assertEquals(5, quantity7)
 
-        val inverseQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-10-23", "2018-10-22",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-10-23",
+            "2018-10-22"
+        )
         assertEquals(1, inverseQuantity1)
 
-        val inverseQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2017-01-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-01-01",
+            "2017-01-01"
+        )
         assertEquals(53, inverseQuantity2)
 
-        val inverseQuantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2019-01-13", "2019-01-20",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2019-01-13",
+            "2019-01-20"
+        )
         assertEquals(2, inverseQuantity3)
 
-        val inverseQuantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-03-01", "2017-01-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-03-01",
+            "2017-01-01"
+        )
         assertEquals(61, inverseQuantity4)
 
-        val inverseQuantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-31", "2018-01-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-01-31",
+            "2018-01-01"
+        )
         assertEquals(5, inverseQuantity5)
 
-        val inverseQuantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-12-31", "2018-12-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-12-31",
+            "2018-12-01"
+        )
         assertEquals(6, inverseQuantity6)
 
-        val inverseQuantity7 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-11-30", "2018-11-01",
-                OrderStatsApiUnit.WEEK, 17)
+        val inverseQuantity7 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.WEEKS, "2018-11-30",
+            "2018-11-01"
+        )
         assertEquals(5, inverseQuantity7)
-
-        val defaultQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("", "",
-                OrderStatsApiUnit.WEEK, 17)
-        assertEquals(17, defaultQuantity1)
-
-        val defaultQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit(null, null,
-                OrderStatsApiUnit.WEEK, 17)
-        assertEquals(17, defaultQuantity2)
     }
 
     @Test
     fun testGetQuantityForMonths() {
-        val quantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-10-22", "2018-10-23",
-                OrderStatsApiUnit.MONTH, 12)
+        val quantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-10-22",
+            "2018-10-23"
+        )
         assertEquals(1, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-01-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val quantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2017-01-01",
+            "2018-01-01"
+        )
         assertEquals(13, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2018-01-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val quantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-01-01",
+            "2018-01-01"
+        )
         assertEquals(1, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-03-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val quantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2017-01-01",
+            "2018-03-01"
+        )
         assertEquals(15, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-01-31",
-                OrderStatsApiUnit.MONTH, 12)
+        val quantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2017-01-01",
+            "2018-01-31"
+        )
         assertEquals(13, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-12-31", "2019-01-01",
-                OrderStatsApiUnit.MONTH, 1)
+        val quantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-12-31",
+            "2019-01-01"
+        )
         assertEquals(2, quantity6)
 
-        val inverseQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-10-23", "2018-10-22",
-                OrderStatsApiUnit.MONTH, 12)
+        val inverseQuantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-10-23",
+            "2018-10-22"
+        )
         assertEquals(1, inverseQuantity1)
 
-        val inverseQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2017-01-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val inverseQuantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-01-01",
+            "2017-01-01"
+        )
         assertEquals(13, inverseQuantity2)
 
-        val inverseQuantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2018-01-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val inverseQuantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-01-01",
+            "2018-01-01"
+        )
         assertEquals(1, inverseQuantity3)
 
-        val inverseQuantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-03-01", "2017-01-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val inverseQuantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-03-01",
+            "2017-01-01"
+        )
         assertEquals(15, inverseQuantity4)
 
-        val inverseQuantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-31", "2017-01-01",
-                OrderStatsApiUnit.MONTH, 12)
+        val inverseQuantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2018-01-31",
+            "2017-01-01"
+        )
         assertEquals(13, inverseQuantity5)
 
-        val inverseQuantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2019-01-01", "2018-12-31",
-                OrderStatsApiUnit.MONTH, 1)
+        val inverseQuantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.MONTHS, "2019-01-01",
+            "2018-12-31"
+        )
         assertEquals(2, inverseQuantity6)
-
-        val defaultQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("", "",
-                OrderStatsApiUnit.MONTH, 12)
-        assertEquals(12, defaultQuantity1)
-
-        val defaultQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit(null, null,
-                OrderStatsApiUnit.MONTH, 12)
-        assertEquals(12, defaultQuantity2)
     }
 
     @Test
     fun testGetQuantityForYears() {
-        val quantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2017-01-01",
+            "2018-01-01"
+        )
         assertEquals(2, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-03-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2017-01-01",
+            "2018-03-01"
+        )
         assertEquals(2, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2018-01-05",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2017-01-01",
+            "2018-01-05"
+        )
         assertEquals(2, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2019-03-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2017-01-01",
+            "2019-03-01"
+        )
         assertEquals(3, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2015-03-05", "2017-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2015-03-05",
+            "2017-01-01"
+        )
         assertEquals(3, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-12-31", "2019-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2018-12-31",
+            "2019-01-01"
+        )
         assertEquals(2, quantity6)
 
-        val quantity7 = wcStatsStore.getQuantityByOrderStatsApiUnit("2019-01-25", "2019-01-25",
-                OrderStatsApiUnit.YEAR, 1)
+        val quantity7 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2019-01-25",
+            "2019-01-25"
+        )
         assertEquals(1, quantity7)
 
-        val inverseQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-01", "2017-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val inverseQuantity1 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2018-01-01",
+            "2017-01-01"
+        )
         assertEquals(2, inverseQuantity1)
 
-        val inverseQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-03-01", "2017-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val inverseQuantity2 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2018-03-01",
+            "2017-01-01"
+        )
         assertEquals(2, inverseQuantity2)
 
-        val inverseQuantity3 = wcStatsStore.getQuantityByOrderStatsApiUnit("2018-01-05", "2017-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val inverseQuantity3 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2018-01-05",
+            "2017-01-01"
+        )
         assertEquals(2, inverseQuantity3)
 
-        val inverseQuantity4 = wcStatsStore.getQuantityByOrderStatsApiUnit("2019-03-01", "2017-01-01",
-                OrderStatsApiUnit.YEAR, 1)
+        val inverseQuantity4 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2019-03-01",
+            "2017-01-01"
+        )
         assertEquals(3, inverseQuantity4)
 
-        val inverseQuantity5 = wcStatsStore.getQuantityByOrderStatsApiUnit("2017-01-01", "2015-03-05",
-                OrderStatsApiUnit.YEAR, 1)
+        val inverseQuantity5 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2017-01-01",
+            "2015-03-05"
+        )
         assertEquals(3, inverseQuantity5)
 
-        val inverseQuantity6 = wcStatsStore.getQuantityByOrderStatsApiUnit("2019-01-01", "2018-12-31",
-                OrderStatsApiUnit.YEAR, 1)
+        val inverseQuantity6 = wcStatsStore.getVisitorStatsQuantity(
+            StatsGranularity.YEARS, "2019-01-01",
+            "2018-12-31"
+        )
         assertEquals(2, inverseQuantity6)
-
-        val defaultQuantity1 = wcStatsStore.getQuantityByOrderStatsApiUnit("", "",
-                OrderStatsApiUnit.YEAR, 1)
-        assertEquals(1, defaultQuantity1)
-
-        val defaultQuantity2 = wcStatsStore.getQuantityByOrderStatsApiUnit(null, null,
-                OrderStatsApiUnit.YEAR, 1)
-        assertEquals(1, defaultQuantity2)
     }
 
     @Test
     fun testFetchCurrentDayRevenueStatsDate() = runBlocking {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, StatsGranularity.DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val endDate = DateUtils.getEndDateForSite(it)
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
@@ -313,7 +368,7 @@ class WCStatsStoreTest {
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, StatsGranularity.DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val endDate = DateUtils.getEndDateForSite(it)
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
@@ -341,7 +396,7 @@ class WCStatsStoreTest {
     fun testFetchCurrentDayRevenueStatsDateSpecificEndDate() = runBlocking {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, StatsGranularity.DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val endDate = DateUtils.formatDate("yyyy-MM-dd", Date())
 
@@ -363,7 +418,7 @@ class WCStatsStoreTest {
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
             whenever(mockOrderStatsRestClient.fetchRevenueStats(any(), any(), any(), any(), any(), any(), any(), any())
-            ).thenReturn(FetchRevenueStatsResponsePayload(it, DAYS, WCRevenueStatsModel()))
+            ).thenReturn(FetchRevenueStatsResponsePayload(it, StatsGranularity.DAYS, WCRevenueStatsModel()))
             val startDate = DateUtils.getStartDateForSite(it, DateUtils.formatDate("yyyy-MM-dd'T'00:00:00", Date()))
             val endDate = DateUtils.getEndDateForSite(it)
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
@@ -793,13 +848,13 @@ class WCStatsStoreTest {
         // that getNewVisitorStats is resilient and can recover from unexpected data
         //
         val defaultWeekVisitorStatsModel = WCStatsTestUtils.generateSampleNewVisitorStatsModel(
-            granularity = WEEKS.toString(),
+            granularity = StatsGranularity.WEEKS.toString(),
             data = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/wrong-visitor-stats-data.json")
         )
         val site = SiteModel().apply { id = defaultWeekVisitorStatsModel.localSiteId }
         WCVisitorStatsSqlUtils.insertOrUpdateNewVisitorStats(defaultWeekVisitorStatsModel)
 
-        val defaultWeekVisitorStats = wcStatsStore.getNewVisitorStats(site, WEEKS)
+        val defaultWeekVisitorStats = wcStatsStore.getNewVisitorStats(site, StatsGranularity.WEEKS)
         assertTrue(defaultWeekVisitorStats.isNotEmpty())
         assertEquals(defaultWeekVisitorStats["2019-06-23"],10)
         assertEquals(defaultWeekVisitorStats["2019-06-22"],20)

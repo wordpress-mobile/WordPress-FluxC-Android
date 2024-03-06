@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
-import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
@@ -228,63 +227,13 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    /**
-     * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
-     * and the date range
-     */
-    private fun getQuantityForOrderStatsApiUnit(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        startDate: String?,
-        endDate: String?
-    ): Int {
-        val defaultValue = when (granularity) {
-            StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
-            StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
-            StatsGranularity.YEARS -> {
-                // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - WOO_COMMERCE_INITIAL_RELEASE + 1
-            }
-            else -> STATS_QUANTITY_DAYS
-        }
-        return getQuantityByOrderStatsApiUnit(startDate, endDate, granularity, defaultValue).toInt()
-    }
-
-    /**
-     * Given a {@param d1} start date, {@param d2} end date and the {@param unit} unit,
-     * returns a quantity value.
-     * If the start date or end date is empty, returns {@param defaultValue}
-     */
-    fun getQuantityByOrderStatsApiUnit(
-        startDateString: String?,
-        endDateString: String?,
-        granularity: StatsGranularity,
-        defaultValue: Int
-    ): Long {
-        if (startDateString.isNullOrEmpty() || endDateString.isNullOrEmpty()) return defaultValue.toLong()
-
-        val startDate = DateUtils.getDateFromString(startDateString)
-        val endDate = DateUtils.getDateFromString(endDateString)
-
-        val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
-        val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
-
-        return when (granularity) {
-            StatsGranularity.HOURS -> TODO()
-            StatsGranularity.DAYS -> DateUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
-            StatsGranularity.WEEKS -> DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
-            StatsGranularity.MONTHS -> DateUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
-            StatsGranularity.YEARS -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
-        }
-    }
-
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
         if (payload.granularity == StatsGranularity.HOURS) {
             error("Visitor stats do not support hours granularity")
         }
         val startDate = payload.startDate
         val endDate = payload.endDate
-        val quantity = getQuantityForOrderStatsApiUnit(payload.site, payload.granularity, startDate, endDate)
+        val quantity = getVisitorStatsQuantity(payload.granularity, startDate, endDate)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchNewVisitorStats") {
             val result = wcOrderStatsClient.fetchNewVisitorStats(
                     site = payload.site,
@@ -313,6 +262,30 @@ class WCStatsStore @Inject constructor(
                 }
             }
         }
+    }
+
+    /**
+     * returns the quantity (how far back to go) to use when requesting visitor stats for a specific granularity
+     * and the date range
+     */
+    fun getVisitorStatsQuantity(
+        granularity: StatsGranularity,
+        startDateString: String,
+        endDateString: String
+    ): Int {
+        val startDate = DateUtils.getDateFromString(startDateString)
+        val endDate = DateUtils.getDateFromString(endDateString)
+
+        val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
+        val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
+
+        return when (granularity) {
+            StatsGranularity.DAYS -> DateUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
+            StatsGranularity.WEEKS -> DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
+            StatsGranularity.MONTHS -> DateUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
+            StatsGranularity.YEARS -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
+            else -> error("Visitor stats do not support hours granularity")
+        }.toInt()
     }
 
     /**
