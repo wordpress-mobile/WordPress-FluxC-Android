@@ -100,6 +100,7 @@ class WCStatsStoreTest {
         assertEquals(31, quantity6)
     }
 
+    @Suppress("LongMethod")
     @Test
     fun testGetQuantityForWeeks() {
         val quantity1 = wcStatsStore.getVisitorStatsQuantity(
@@ -187,6 +188,7 @@ class WCStatsStoreTest {
         assertEquals(5, inverseQuantity7)
     }
 
+    @Suppress("LongMethod")
     @Test
     fun testGetQuantityForMonths() {
         val quantity1 = wcStatsStore.getVisitorStatsQuantity(
@@ -262,6 +264,7 @@ class WCStatsStoreTest {
         assertEquals(2, inverseQuantity6)
     }
 
+    @Suppress("LongMethod")
     @Test
     fun testGetQuantityForYears() {
         val quantity1 = wcStatsStore.getVisitorStatsQuantity(
