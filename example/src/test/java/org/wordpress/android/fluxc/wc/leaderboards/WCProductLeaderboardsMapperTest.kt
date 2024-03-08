@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMappe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
@@ -27,6 +26,10 @@ import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.st
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCProductLeaderboardsMapperTest {
+    companion object {
+        const val DATE_PERIOD = "2024-01-01-2024-01-31"
+    }
+
     private lateinit var mapperUnderTest: WCProductLeaderboardsMapper
     private lateinit var productStore: WCProductStore
 
@@ -56,7 +59,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS.datePeriod(stubSite)
+                DATE_PERIOD
         )
         assertThat(result).isNotNull
         assertThat(result.size).isEqualTo(3)
@@ -70,7 +73,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS.datePeriod(stubSite)
+                DATE_PERIOD
         )
         assertThat(result).isNotNull
         assertThat(result.size).isEqualTo(2)
@@ -83,7 +86,7 @@ class WCProductLeaderboardsMapperTest {
                 productApiResponse!!,
                 stubSite,
                 productStore,
-                DAYS.datePeriod(stubSite)
+                DATE_PERIOD
         )
         assertThat(result).isNotNull
         assertThat(result).isEmpty()

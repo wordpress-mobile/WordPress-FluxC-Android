@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCRevenueStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.utils.DateUtils
 import javax.inject.Inject
 
 class WooRevenueStatsFragment : StoreSelectingFragment() {
@@ -34,7 +35,7 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woo_revenue_stats, container, false)
+        inflater.inflate(R.layout.fragment_woo_revenue_stats, container, false)
 
     @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -50,7 +51,12 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_day_revenue_stats.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS)
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.DAYS,
+                        startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
+                        endDate = DateUtils.getEndDateForSite(it)
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
                         prependToLog("Revenue stats ${it.rowsAffected != 0}")
                         onFetchRevenueStatsLoaded(it)
@@ -62,10 +68,18 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_day_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, forced = true)
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.DAYS,
+                        forced = true,
+                        startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
+                        endDate = DateUtils.getEndDateForSite(it)
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.DAYS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats with granularity ${StatsGranularity.DAYS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -75,10 +89,17 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_week_revenue_stats.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(it, StatsGranularity.WEEKS)
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.WEEKS,
+                        startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
+                        endDate = DateUtils.getLastDayOfCurrentWeekForSite(it)
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.WEEKS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats with granularity ${StatsGranularity.WEEKS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -88,13 +109,18 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_week_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(site = it,
-                            granularity = StatsGranularity.WEEKS,
-                            forced = true
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.WEEKS,
+                        startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
+                        endDate = DateUtils.getLastDayOfCurrentWeekForSite(it),
+                        forced = true
                     )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.WEEKS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats forced with granularity ${StatsGranularity.WEEKS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -104,10 +130,17 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_month_revenue_stats.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(it, StatsGranularity.MONTHS)
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.MONTHS,
+                        startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
+                        endDate = DateUtils.getLastDayOfCurrentMonthForSite(it)
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.MONTHS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats with granularity ${StatsGranularity.MONTHS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -117,13 +150,18 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_month_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(site = it,
-                            granularity = StatsGranularity.MONTHS,
-                            forced = true
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.MONTHS,
+                        startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
+                        endDate = DateUtils.getLastDayOfCurrentMonthForSite(it),
+                        forced = true
                     )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.MONTHS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats forced with granularity ${StatsGranularity.MONTHS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -133,10 +171,17 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_year_revenue_stats.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(it, StatsGranularity.YEARS)
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.YEARS,
+                        startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
+                        endDate = DateUtils.getLastDayOfCurrentYearForSite(it)
+                    )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats with granularity ${StatsGranularity.YEARS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats with granularity ${StatsGranularity.YEARS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -146,13 +191,18 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         fetch_current_year_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
                 coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(site = it,
-                            granularity = StatsGranularity.YEARS,
-                            forced = true
+                    val payload = FetchRevenueStatsPayload(
+                        site = it,
+                        granularity = StatsGranularity.YEARS,
+                        startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
+                        endDate = DateUtils.getLastDayOfCurrentYearForSite(it),
+                        forced = true
                     )
                     wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats forced with granularity ${StatsGranularity.YEARS} " +
-                                ": ${it.rowsAffected != 0}")
+                        prependToLog(
+                            "Revenue stats forced with granularity ${StatsGranularity.YEARS} " +
+                                ": ${it.rowsAffected != 0}"
+                        )
                         onFetchRevenueStatsLoaded(it)
                     } ?: prependToLog("Fetching revenueStats failed.")
                 }
@@ -161,28 +211,50 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
 
         fetch_current_day_visitor_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(site = it, granularity = StatsGranularity.DAYS)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.DAYS,
+                    startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
+                    endDate = DateUtils.getEndDateForSite(it)
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_week_visitor_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(it, StatsGranularity.WEEKS, forced = true)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.WEEKS,
+                    startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
+                    endDate = DateUtils.getLastDayOfCurrentWeekForSite(it),
+                    forced = true
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_month_visitor_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(site = it, granularity = StatsGranularity.MONTHS)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.MONTHS,
+                    startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
+                    endDate = DateUtils.getLastDayOfCurrentMonthForSite(it)
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_year_visitor_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(it, StatsGranularity.YEARS, forced = true)
+                val payload = FetchNewVisitorStatsPayload(
+                    site = it,
+                    granularity = StatsGranularity.YEARS,
+                    startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
+                    endDate = DateUtils.getLastDayOfCurrentYearForSite(it),
+                    forced = true
+                )
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
@@ -206,15 +278,18 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
             }
 
             val wcRevenueStatsModel = wcStatsStore.getRawRevenueStats(
-                    site,
-                    event.granularity,
-                    event.startDate!!,
-                    event.endDate!!)
+                site,
+                event.granularity,
+                event.startDate!!,
+                event.endDate!!
+            )
             wcRevenueStatsModel?.let {
                 val revenueSum = it.parseTotal()?.totalSales
-                prependToLog("Fetched stats with total " + revenueSum + " for granularity " +
+                prependToLog(
+                    "Fetched stats with total " + revenueSum + " for granularity " +
                         event.granularity.toString().toLowerCase() + " from " + site.name +
-                        " between " + event.startDate + " and " + event.endDate)
+                        " between " + event.startDate + " and " + event.endDate
+                )
             } ?: prependToLog("No stats were stored for site " + site.name + " =(")
         } ?: prependToLog("No stats were stored for site " + selectedSite?.name + " =(")
     }
@@ -242,25 +317,25 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
         when (event.causeOfChange) {
             WCStatsAction.FETCH_NEW_VISITOR_STATS -> {
                 val visitorStatsMap = wcStatsStore.getNewVisitorStats(
-                        site!!,
-                        event.granularity,
-                        event.quantity,
-                        event.date,
-                        event.isCustomField
+                    site!!,
+                    event.granularity,
+                    event.quantity,
+                    event.date,
+                    event.isCustomField
                 )
                 if (visitorStatsMap.isEmpty()) {
                     prependToLog("No visitor stats were stored for site " + site.name + " =(")
                 } else {
                     if (event.isCustomField) {
                         prependToLog(
-                                "Fetched visitor stats for " + visitorStatsMap.size + " " +
-                                        event.granularity.toString().toLowerCase() + " from " + site.name +
-                                        " with quantity " + event.quantity + " and date " + event.date
+                            "Fetched visitor stats for " + visitorStatsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name +
+                                " with quantity " + event.quantity + " and date " + event.date
                         )
                     } else {
                         prependToLog(
-                                "Fetched visitor stats for " + visitorStatsMap.size + " " +
-                                        event.granularity.toString().toLowerCase() + " from " + site.name
+                            "Fetched visitor stats for " + visitorStatsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name
                         )
                     }
                 }

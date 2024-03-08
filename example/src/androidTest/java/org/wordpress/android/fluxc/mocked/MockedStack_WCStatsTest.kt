@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -61,13 +60,13 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     fun testNewVisitorStatsSuccess() = runBlocking {
         interceptor.respondWith("wc-visitor-stats-response-success.json")
         val payload = orderStatsRestClient.fetchNewVisitorStats(
-                siteModel, OrderStatsApiUnit.MONTH, StatsGranularity.YEARS, "2019-08-06", 8, true
+                siteModel, StatsGranularity.MONTHS, "2019-08-06", 8, true
         )
 
         with(payload) {
             assertNull(error)
             assertEquals(siteModel, site)
-            assertEquals(StatsGranularity.YEARS, granularity)
+            assertEquals(StatsGranularity.MONTHS, granularity)
             assertNotNull(stats)
             assertNotNull(stats?.data)
             assertEquals(stats?.dataList?.size, 12)
@@ -84,13 +83,13 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWithError(errorJson)
 
         val payload = orderStatsRestClient.fetchNewVisitorStats(
-                siteModel, OrderStatsApiUnit.MONTH, StatsGranularity.YEARS, "2019-08-06", 8, true
+                siteModel, StatsGranularity.MONTHS, "2019-08-06", 8, true
         )
 
         with(payload) {
             assertNotNull(error)
             assertEquals(siteModel, site)
-            assertEquals(StatsGranularity.YEARS, granularity)
+            assertEquals(StatsGranularity.MONTHS, granularity)
             assertNull(stats)
             assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
         }
