@@ -18,11 +18,9 @@ import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
-import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.AppLog.T.API
-import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,28 +32,19 @@ class WCStatsStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine
 ) : Store(dispatcher) {
     companion object {
-        const val WOO_COMMERCE_INITIAL_RELEASE = 2011
-
-        const val STATS_QUANTITY_DAYS = 30
-        const val STATS_QUANTITY_WEEKS = 17
-        const val STATS_QUANTITY_MONTHS = 12
-
-        const val STATS_GRANULARITY_DAYS = 1
-        const val STATS_GRANULARITY_YEARS = 12
-
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
-        private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
-        private const val DATE_FORMAT_MONTH = "yyyy-MM"
-        private const val DATE_FORMAT_YEAR = "yyyy"
+
+        // Use WordPress's maximum per page quantity
+        private const val ORDER_REVENUE_QUANTITY = 100
     }
 
     enum class StatsGranularity {
-        DAYS, WEEKS, MONTHS, YEARS;
+        HOURS, DAYS, WEEKS, MONTHS, YEARS;
 
         companion object {
             fun fromOrderStatsApiUnit(apiUnit: OrderStatsApiUnit): StatsGranularity {
                 return when (apiUnit) {
-                    OrderStatsApiUnit.HOUR -> StatsGranularity.DAYS
+                    OrderStatsApiUnit.HOUR -> StatsGranularity.HOURS
                     OrderStatsApiUnit.DAY -> StatsGranularity.DAYS
                     OrderStatsApiUnit.WEEK -> StatsGranularity.WEEKS
                     OrderStatsApiUnit.MONTH -> StatsGranularity.MONTHS
@@ -66,26 +55,6 @@ class WCStatsStore @Inject constructor(
             fun fromString(value: String): StatsGranularity {
                 return fromOrderStatsApiUnit(OrderStatsApiUnit.valueOf(value.toUpperCase()))
             }
-        }
-
-        fun startDateTime(site: SiteModel) = when (this) {
-            DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
-            WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
-            MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
-            YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
-        }
-
-        fun endDateTime(site: SiteModel) = when (this) {
-            DAYS -> DateUtils.getEndDateForSite(site)
-            WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-            MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-            YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-        }
-
-        fun datePeriod(site: SiteModel): String {
-            val startDate = startDateTime(site)
-            val endDate = endDateTime(site)
-            return DateUtils.getDatePeriod(startDate, endDate)
         }
     }
 
@@ -101,8 +70,8 @@ class WCStatsStore @Inject constructor(
     class FetchRevenueStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val startDate: String? = null,
-        val endDate: String? = null,
+        val startDate: String,
+        val endDate: String,
         val forced: Boolean = false,
         val revenueRangeId: String = ""
     ) : Payload<BaseNetworkError>()
@@ -143,9 +112,9 @@ class WCStatsStore @Inject constructor(
     class FetchNewVisitorStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val forced: Boolean = false,
-        val startDate: String? = null,
-        val endDate: String? = null
+        val startDate: String,
+        val endDate: String,
+        val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
     class FetchNewVisitorStatsResponsePayload(
@@ -249,66 +218,18 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    /**
-     * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
-     * and the date range
-     */
-    private fun getQuantityForOrderStatsApiUnit(
-        site: SiteModel,
-        unit: OrderStatsApiUnit,
-        startDate: String?,
-        endDate: String?
-    ): Int {
-        val defaultValue = when (unit) {
-            OrderStatsApiUnit.WEEK -> STATS_QUANTITY_WEEKS
-            OrderStatsApiUnit.MONTH -> STATS_QUANTITY_MONTHS
-            OrderStatsApiUnit.YEAR -> {
-                // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - WOO_COMMERCE_INITIAL_RELEASE + 1
-            }
-            else -> STATS_QUANTITY_DAYS
-        }
-        return getQuantityByOrderStatsApiUnit(startDate, endDate, unit, defaultValue).toInt()
-    }
-
-    /**
-     * Given a {@param d1} start date, {@param d2} end date and the {@param unit} unit,
-     * returns a quantity value.
-     * If the start date or end date is empty, returns {@param defaultValue}
-     */
-    fun getQuantityByOrderStatsApiUnit(
-        startDateString: String?,
-        endDateString: String?,
-        unit: OrderStatsApiUnit,
-        defaultValue: Int
-    ): Long {
-        if (startDateString.isNullOrEmpty() || endDateString.isNullOrEmpty()) return defaultValue.toLong()
-
-        val startDate = DateUtils.getDateFromString(startDateString)
-        val endDate = DateUtils.getDateFromString(endDateString)
-
-        val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
-        val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
-
-        return when (unit) {
-            OrderStatsApiUnit.WEEK -> DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
-            OrderStatsApiUnit.MONTH -> DateUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
-            OrderStatsApiUnit.YEAR -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
-            else -> DateUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
-        }
-    }
-
     suspend fun fetchNewVisitorStats(payload: FetchNewVisitorStatsPayload): OnWCStatsChanged {
-        val apiUnit = OrderStatsApiUnit.convertToVisitorsStatsApiUnit(payload.granularity)
-        val startDate = payload.startDate?.takeIf { it.isNotEmpty() } ?: getStartDate(payload.granularity)
-        val endDate = payload.endDate?.takeIf { it.isNotEmpty() } ?: getEndDate(payload.granularity, payload.site)
-        val quantity = getQuantityForOrderStatsApiUnit(payload.site, apiUnit, startDate, endDate)
+        if (payload.granularity == StatsGranularity.HOURS) {
+            error("Visitor stats do not support hours granularity")
+        }
+        val startDate = payload.startDate
+        val endDate = payload.endDate
+        val quantity = getVisitorStatsQuantity(payload.granularity, startDate, endDate)
         return coroutineEngine.withDefaultContext(T.API, this, "fetchNewVisitorStats") {
             val result = wcOrderStatsClient.fetchNewVisitorStats(
                     site = payload.site,
-                    unit = apiUnit,
                     granularity = payload.granularity,
-                    date = getFormattedDateByOrderStatsApiUnit(payload.site, apiUnit, endDate),
+                    date = DateUtils.getDateTimeForSite(payload.site, DATE_FORMAT_DAY, endDate),
                     quantity = quantity,
                     force = payload.forced,
                     startDate = startDate,
@@ -334,37 +255,28 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    private fun getStartDate(granularity: StatsGranularity) =
-        when (granularity) {
-            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-            StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek(Calendar.getInstance(Locale.getDefault()))
-            StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
-            StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
-        }
-
-    private fun getEndDate(granularity: StatsGranularity, site: SiteModel) =
-        when (granularity) {
-            StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-            StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-            StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-            StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-        }
-
     /**
-     * Given a {@param endDate} end date, formats the end date based on the site's timezone
-     * If the start date or end date is empty, formats the current date
+     * returns the quantity (how far back to go) to use when requesting visitor stats for a specific granularity
+     * and the date range
      */
-    private fun getFormattedDateByOrderStatsApiUnit(
-        site: SiteModel,
-        unit: OrderStatsApiUnit,
-        endDate: String?
-    ): String {
-        return when (unit) {
-            OrderStatsApiUnit.WEEK -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_WEEK, endDate)
-            OrderStatsApiUnit.MONTH -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_MONTH, endDate)
-            OrderStatsApiUnit.YEAR -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
-            else -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
-        }
+    fun getVisitorStatsQuantity(
+        granularity: StatsGranularity,
+        startDateString: String,
+        endDateString: String
+    ): Int {
+        val startDate = DateUtils.getDateFromString(startDateString)
+        val endDate = DateUtils.getDateFromString(endDateString)
+
+        val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
+        val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
+
+        return when (granularity) {
+            StatsGranularity.DAYS -> DateUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
+            StatsGranularity.WEEKS -> DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
+            StatsGranularity.MONTHS -> DateUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
+            StatsGranularity.YEARS -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
+            else -> error("Visitor stats do not support hours granularity")
+        }.toInt()
     }
 
     /**
@@ -381,10 +293,8 @@ class WCStatsStore @Inject constructor(
     }
 
     suspend fun fetchRevenueStats(payload: FetchRevenueStatsPayload): OnWCRevenueStatsChanged {
-        val startDate = payload.startDate?.takeIf { it.isNotEmpty() }
-            ?: getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = payload.endDate?.takeIf { it.isNotEmpty() }
-            ?: getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.endDate)
+        val startDate = payload.startDate
+        val endDate = payload.endDate
 
         return coroutineEngine.withDefaultContext(API, this, "fetchRevenueStats") {
             val result = wcOrderStatsClient.fetchRevenueStats(
@@ -392,7 +302,7 @@ class WCStatsStore @Inject constructor(
                 granularity = payload.granularity,
                 startDate = startDate,
                 endDate = endDate,
-                perPage = getPerPageQuantityForRevenueStatsGranularity(payload.granularity),
+                perPage = ORDER_REVENUE_QUANTITY,
                 forceRefresh = payload.forced,
                 revenueRangeId = payload.revenueRangeId
             )
@@ -412,61 +322,6 @@ class WCStatsStore @Inject constructor(
                 }
             }
         }
-    }
-
-    /**
-     * Given a [startDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the start date is empty, fetches the date based on the [granularity]
-     */
-    private fun getStartDateForRevenueStatsGranularity(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        startDate: String?
-    ): String {
-        return if (startDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
-                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
-                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
-                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
-            }
-        } else {
-            DateUtils.getStartDateForSite(site, startDate)
-        }
-    }
-
-    /**
-     * Given a [endDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the end date is empty, fetches the date based on the [granularity]
-     */
-    private fun getEndDateForRevenueStatsGranularity(
-        site: SiteModel,
-        granularity: StatsGranularity,
-        endDate: String?
-    ): String {
-        return if (endDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-                StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
-                StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
-            }
-        } else {
-            DateUtils.getEndDateForSite(site, endDate)
-        }
-    }
-
-    /**
-     * Returns the page size in days depending on the provided [granularity],
-     * to use for fetching revenue stats.
-     */
-    private fun getPerPageQuantityForRevenueStatsGranularity(
-        granularity: StatsGranularity
-    ) = when (granularity) {
-        StatsGranularity.DAYS -> STATS_GRANULARITY_DAYS
-        StatsGranularity.WEEKS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_WEEK)
-        StatsGranularity.MONTHS -> Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
-        StatsGranularity.YEARS -> STATS_GRANULARITY_YEARS
     }
 
     /**

@@ -35,42 +35,11 @@ class OrderStatsRestClient @Inject constructor(
         companion object {
             fun fromStatsGranularity(granularity: StatsGranularity): OrderStatsApiUnit {
                 return when (granularity) {
+                    StatsGranularity.HOURS -> HOUR
                     StatsGranularity.DAYS -> DAY
                     StatsGranularity.WEEKS -> WEEK
                     StatsGranularity.MONTHS -> MONTH
                     StatsGranularity.YEARS -> YEAR
-                }
-            }
-
-            /**
-             * Based on the design changes, when:
-             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the API should be [HOUR]
-             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
-             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
-             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the API should be [MONTH]
-             */
-            fun convertToRevenueStatsInterval(granularity: StatsGranularity): OrderStatsApiUnit {
-                return when (granularity) {
-                    StatsGranularity.DAYS -> HOUR
-                    StatsGranularity.WEEKS -> DAY
-                    StatsGranularity.MONTHS -> DAY
-                    StatsGranularity.YEARS -> MONTH
-                }
-            }
-
-            /**
-             * Based on the design changes, when:
-             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
-             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
-             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
-             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [MONTH]
-             */
-            fun convertToVisitorsStatsApiUnit(granularity: StatsGranularity): OrderStatsApiUnit {
-                return when (granularity) {
-                    StatsGranularity.DAYS -> DAY
-                    StatsGranularity.WEEKS -> DAY
-                    StatsGranularity.MONTHS -> DAY
-                    StatsGranularity.YEARS -> MONTH
                 }
             }
         }
@@ -110,7 +79,7 @@ class OrderStatsRestClient @Inject constructor(
     ): FetchRevenueStatsResponsePayload {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val params = mapOf(
-            "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
+            "interval" to OrderStatsApiUnit.fromStatsGranularity(granularity).toString(),
             "after" to startDate,
             "before" to endDate,
             "per_page" to perPage.toString(),
@@ -203,7 +172,6 @@ class OrderStatsRestClient @Inject constructor(
 
     suspend fun fetchNewVisitorStats(
         site: SiteModel,
-        unit: OrderStatsApiUnit,
         granularity: StatsGranularity,
         date: String,
         quantity: Int,
@@ -213,7 +181,7 @@ class OrderStatsRestClient @Inject constructor(
     ): FetchNewVisitorStatsResponsePayload {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
-            "unit" to unit.toString(),
+            "unit" to OrderStatsApiUnit.fromStatsGranularity(granularity).toString(),
             "date" to date,
             "quantity" to quantity.toString(),
             "stat_fields" to "visitors"
