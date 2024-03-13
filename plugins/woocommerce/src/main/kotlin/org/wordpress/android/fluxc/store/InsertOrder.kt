@@ -23,7 +23,7 @@ class InsertOrder @Inject internal constructor(
     ) {
         transactionExecutor.executeInTransaction {
             ordersPack.forEach { (order, metaData) ->
-                ordersDaoDecorator.insertOrUpdateOrder(order, suppressListRefresh = true)
+                ordersDaoDecorator.insertOrUpdateOrder(order, OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS)
                 ordersMetaDataDao.updateOrderMetaData(
                     order.orderId,
                     order.localSiteId,
