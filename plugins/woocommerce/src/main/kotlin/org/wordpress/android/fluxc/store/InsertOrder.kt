@@ -24,7 +24,10 @@ class InsertOrder @Inject internal constructor(
         var orderChanged = false
         transactionExecutor.executeInTransaction {
             ordersPack.forEach { (order, metaData) ->
-                val result = ordersDaoDecorator.insertOrUpdateOrder(order, OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS)
+                val result = ordersDaoDecorator.insertOrUpdateOrder(
+                    order,
+                    OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS
+                )
                 if (result != OrdersDaoDecorator.UpdateOrderResult.UNCHANGED) {
                     orderChanged = true
                 }
