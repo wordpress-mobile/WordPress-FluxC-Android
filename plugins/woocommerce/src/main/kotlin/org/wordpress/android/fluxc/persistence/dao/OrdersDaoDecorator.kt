@@ -15,16 +15,6 @@ class OrdersDaoDecorator @Inject constructor(
     private val dispatcher: Dispatcher,
     private val ordersDao: OrdersDao,
 ) {
-    enum class ListUpdateStrategy {
-        DEFAULT,
-        // Re-fetch the order list
-        REFRESH,
-        // Re-load the order list from the DB
-        INVALIDATE,
-        // Do not update the list
-        SUPPRESS
-    }
-
     suspend fun updateLocalOrder(
         orderId: Long,
         localSiteId: LocalOrRemoteId.LocalId,
@@ -41,7 +31,7 @@ class OrdersDaoDecorator @Inject constructor(
     suspend fun insertOrUpdateOrder(
         order: OrderEntity,
         listUpdateStrategy: ListUpdateStrategy = ListUpdateStrategy.DEFAULT
-    ) {
+    ): UpdateOrderResult {
         val orderBeforeUpdate = ordersDao.getOrder(order.orderId, order.localSiteId)
         ordersDao.insertOrUpdateOrder(order)
 
@@ -69,6 +59,11 @@ class OrdersDaoDecorator @Inject constructor(
             }
 
             ListUpdateStrategy.SUPPRESS -> {} // Don't update the list
+        }
+        return when {
+            orderBeforeUpdate == null -> UpdateOrderResult.INSERTED
+            order != orderBeforeUpdate -> UpdateOrderResult.UPDATED
+            else -> UpdateOrderResult.UNCHANGED
         }
     }
 
@@ -136,6 +131,20 @@ class OrdersDaoDecorator @Inject constructor(
             localSiteId = localSiteId.value
         )
         dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
+    }
+
+    enum class ListUpdateStrategy {
+        DEFAULT,
+        // Re-fetch the order list
+        REFRESH,
+        // Re-load the order list from the DB
+        INVALIDATE,
+        // Do not update the list
+        SUPPRESS
+    }
+
+    enum class UpdateOrderResult {
+        UPDATED, INSERTED, UNCHANGED
     }
 }
 

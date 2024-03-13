@@ -21,9 +21,13 @@ class InsertOrder @Inject internal constructor(
         localSiteId: LocalOrRemoteId.LocalId,
         vararg ordersPack: Pair<OrderEntity, List<OrderMetaDataEntity>>
     ) {
+        var orderChanged = false
         transactionExecutor.executeInTransaction {
             ordersPack.forEach { (order, metaData) ->
-                ordersDaoDecorator.insertOrUpdateOrder(order, OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS)
+                val result = ordersDaoDecorator.insertOrUpdateOrder(order, OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS)
+                if (result != OrdersDaoDecorator.UpdateOrderResult.UNCHANGED) {
+                    orderChanged = true
+                }
                 ordersMetaDataDao.updateOrderMetaData(
                     order.orderId,
                     order.localSiteId,
@@ -34,6 +38,9 @@ class InsertOrder @Inject internal constructor(
         val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
             localSiteId = localSiteId.value
         )
-        dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+        // Re-fetch the list only when at least one of the inserted orders has changed
+        if (orderChanged) {
+            dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
+        }
     }
 }
