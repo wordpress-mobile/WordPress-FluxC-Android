@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
@@ -276,6 +277,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 ordersDaoDecorator.deleteOrder(site.localId(), orderId)
+                OrderSqlUtils.deleteOrderSummaryById(site, orderId)
                 WooResult(Unit)
             }
         }

@@ -52,6 +52,15 @@ object OrderSqlUtils {
                 .execute()
     }
 
+    fun deleteOrderSummaryById(site: SiteModel, orderId: Long) {
+        WellSql.delete(WCOrderSummaryModel::class.java)
+                .where()
+                .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCOrderSummaryModelTable.REMOTE_ORDER_ID, orderId)
+                .endWhere()
+                .execute()
+    }
+
     fun insertOrUpdateOrderStatusOption(orderStatus: WCOrderStatusModel): Int {
         val result = WellSql.select(WCOrderStatusModel::class.java)
                 .where().beginGroup()
