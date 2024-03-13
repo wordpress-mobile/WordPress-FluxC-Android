@@ -1487,6 +1487,48 @@ class ProductRestClient @Inject constructor(
         }
     }
 
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooPayload<WCProductCategoryModel> {
+        val path = WOOCOMMERCE.products.categories.id(category.remoteCategoryId).pathV3
+
+        val body = mutableMapOf(
+            "name" to category.name,
+            "parent" to category.parent
+        )
+
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = path,
+            body = body,
+            clazz = ProductCategoryApiResponse::class.java
+        )
+
+        return when {
+            response is WPAPIResponse.Success && response.data == null -> WooPayload(
+                WooError(
+                    type = WooErrorType.EMPTY_RESPONSE,
+                    original = GenericErrorType.UNKNOWN,
+                    message = "Success response with empty data"
+                )
+            )
+
+            response is WPAPIResponse.Success -> {
+                val updatedCategory = response.data?.let {
+                    it.asProductCategoryModel().apply {
+                        localSiteId = site.id
+                    }
+                }
+                WooPayload(updatedCategory)
+            }
+
+            else -> return WooPayload(
+                error = (response as WPAPIResponse.Error).error.toWooError()
+            )
+        }
+    }
+
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/reviews` retrieving a list of product reviews
      * for a given WooCommerce [SiteModel].

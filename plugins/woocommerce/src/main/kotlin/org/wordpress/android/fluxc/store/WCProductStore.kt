@@ -1320,7 +1320,8 @@ class WCProductStore @Inject constructor(
                 AppLog.w(
                     API,
                     "addProductCategories: not all categories were added. " +
-                        "Expected: ${categories.size}, added: ${addedCategories.size}")
+                            "Expected: ${categories.size}, added: ${addedCategories.size}"
+                )
             }
 
             addedCategories.forEach { category ->
@@ -1328,6 +1329,21 @@ class WCProductStore @Inject constructor(
             }
         }
 
+        return@withDefaultContext result.asWooResult()
+    }
+
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooResult<WCProductCategoryModel> = coroutineEngine.withDefaultContext(API, this, "updateProductCategory") {
+        val result = wcProductRestClient.updateProductCategory(
+            site = site,
+            category = category
+        )
+        if (!result.isError) {
+            val updatedCategory = result.result!!
+            ProductSqlUtils.insertOrUpdateProductCategory(updatedCategory)
+        }
         return@withDefaultContext result.asWooResult()
     }
 
