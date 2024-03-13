@@ -665,7 +665,7 @@ class WCOrderStore @Inject constructor(
         orderId: Long,
         localSiteId: LocalId,
         newStatus: String,
-        listUpdateStrategy: OrdersDaoDecorator.ListUpdateStrategy
+        listUpdateStrategy: OrdersDaoDecorator.ListUpdateStrategy = OrdersDaoDecorator.ListUpdateStrategy.DEFAULT
     ) {
         val updatedOrder = ordersDaoDecorator.getOrder(orderId, localSiteId)!!
             .copy(status = newStatus)
