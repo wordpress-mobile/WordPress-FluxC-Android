@@ -62,7 +62,9 @@ class OrdersDaoDecorator @Inject constructor(
         }
         return when {
             orderBeforeUpdate == null -> UpdateOrderResult.INSERTED
-            order != orderBeforeUpdate -> UpdateOrderResult.UPDATED
+            // Ignore changes to the modifiedDate - it's updated even when there are no other changes
+            // and results in an infinite loop.
+            order.copy(dateModified = "") != orderBeforeUpdate.copy(dateModified = "") -> UpdateOrderResult.UPDATED
             else -> UpdateOrderResult.UNCHANGED
         }
     }
