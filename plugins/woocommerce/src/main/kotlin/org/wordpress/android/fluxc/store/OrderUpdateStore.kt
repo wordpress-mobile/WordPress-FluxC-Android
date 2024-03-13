@@ -38,7 +38,8 @@ class OrderUpdateStore @Inject internal constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDaoDecorator: OrdersDaoDecorator,
-    private val siteSqlUtils: SiteSqlUtils
+    private val siteSqlUtils: SiteSqlUtils,
+    private val orderSqlUtils: OrderSqlUtils
 ) {
     suspend fun updateCustomerOrderNote(
         orderId: Long,
@@ -277,7 +278,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 ordersDaoDecorator.deleteOrder(site.localId(), orderId)
-                OrderSqlUtils.deleteOrderSummaryById(site, orderId)
+                orderSqlUtils.deleteOrderSummaryById(site, orderId)
                 WooResult(Unit)
             }
         }
