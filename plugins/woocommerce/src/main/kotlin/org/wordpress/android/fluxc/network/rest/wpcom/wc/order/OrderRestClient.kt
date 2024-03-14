@@ -152,7 +152,8 @@ class OrderRestClient @Inject constructor(
                 "before" to listDescriptor.beforeFilter,
                 "after" to listDescriptor.afterFilter,
                 "customer" to listDescriptor.customerId?.toString(),
-                "product" to listDescriptor.productId?.toString()
+                "product" to listDescriptor.productId?.toString(),
+                "exclude" to listDescriptor.excludedIds?.joinToString()
             )
 
             val response = wooNetwork.executeGetGsonRequest(
