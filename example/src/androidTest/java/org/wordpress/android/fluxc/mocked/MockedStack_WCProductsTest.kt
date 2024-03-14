@@ -847,7 +847,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testAddProductCategorySuccess() {
+    fun testAddProductCategorySuccess() = runBlocking {
         interceptor.respondWith("wc-add-product-category-response-success.json")
 
         val productCategoryModel = WCProductCategoryModel().apply { name = "test12" }

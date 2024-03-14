@@ -918,9 +918,6 @@ class WCProductStore @Inject constructor(
             WCProductAction.FETCH_PRODUCT_CATEGORIES ->
                 fetchProductCategories(action.payload as FetchProductCategoriesPayload)
 
-            WCProductAction.ADD_PRODUCT_CATEGORY ->
-                addProductCategory(action.payload as AddProductCategoryPayload)
-
             WCProductAction.FETCH_PRODUCT_TAGS ->
                 fetchProductTags(action.payload as FetchProductTagsPayload)
 
@@ -1301,10 +1298,6 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun addProductCategory(payload: AddProductCategoryPayload) {
-        with(payload) { wcProductRestClient.addProductCategory(site, category) }
-    }
-
     suspend fun addProductCategories(
         site: SiteModel,
         categories: List<WCProductCategoryModel>
@@ -1329,6 +1322,21 @@ class WCProductStore @Inject constructor(
             }
         }
 
+        return@withDefaultContext result.asWooResult()
+    }
+
+    suspend fun addProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooResult<WCProductCategoryModel> = coroutineEngine.withDefaultContext(API, this, "addProductCategory") {
+        val result = wcProductRestClient.addProductCategory(
+            site = site,
+            category = category
+        )
+        if (!result.isError) {
+            val updatedCategory = result.result!!
+            ProductSqlUtils.insertOrUpdateProductCategory(updatedCategory)
+        }
         return@withDefaultContext result.asWooResult()
     }
 

@@ -34,7 +34,8 @@ enum class WooErrorType {
     INVALID_PARAM,
     PLUGIN_NOT_ACTIVE,
     EMPTY_RESPONSE,
-    INVALID_COUPON
+    INVALID_COUPON,
+    RESOURCE_ALREADY_EXISTS
 }
 
 fun WPComGsonNetworkError.toWooError(): WooError {
