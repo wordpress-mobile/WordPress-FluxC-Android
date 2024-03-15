@@ -4,9 +4,16 @@ import kotlinx.coroutines.delay
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.plugin.ImmutablePluginModel
 import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType.SITE
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpapi.plugin.PluginWPAPIRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginWPComCoroutineClient
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginWPComCoroutineClient.PluginsResponse
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgCoroutineClient
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgCoroutineClient.PluginResponse
+import org.wordpress.android.fluxc.persistence.PluginSqlUtils
+import org.wordpress.android.fluxc.persistence.PluginSqlUtils.getWPOrgPluginBySlug
 import org.wordpress.android.fluxc.persistence.PluginSqlUtilsWrapper
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginError
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginError
@@ -26,12 +33,13 @@ import javax.inject.Inject
 
 private const val PLUGIN_CONFIGURATION_DELAY = 1000L
 
-class PluginCoroutineStore
-@Inject constructor(
+class PluginCoroutineStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val dispatcher: Dispatcher,
     private val pluginWPAPIRestClient: PluginWPAPIRestClient,
-    private val pluginSqlUtils: PluginSqlUtilsWrapper
+    private val pluginSqlUtils: PluginSqlUtilsWrapper,
+    private val pluginWPOrgCoroutineClient: PluginWPOrgCoroutineClient,
+    private val pluginWPComCoroutineClient: PluginWPComCoroutineClient
 ) {
     fun fetchWPApiPlugins(siteModel: SiteModel) =
         coroutineEngine.launch(T.PLUGINS, this, "Fetching WPAPI plugins") {
@@ -75,6 +83,48 @@ class PluginCoroutineStore
                 FetchedSitePluginPayload(payload.data)
             )
         }
+    }
+
+    suspend fun fetchInstalledPlugins(
+        site: SiteModel
+    ): InstalledPluginResponse {
+        return if (site.isWpComStore) {
+            val wpComPluginsResponse = pluginWPComCoroutineClient.fetchSitePlugins(site)
+            when (wpComPluginsResponse) {
+                is PluginsResponse.Success -> InstalledPluginResponse.Success(getInstalledPlugins(site))
+                is PluginsResponse.Error -> InstalledPluginResponse.Error
+            }
+        } else if (site.isJetpackConnected) {
+            val response = syncFetchWPApiPlugins(site)
+            when {
+                response.error != null -> InstalledPluginResponse.Error
+                else -> InstalledPluginResponse.Success(getInstalledPlugins(site))
+            }
+        } else {
+            InstalledPluginResponse.Error
+        }
+    }
+
+    private suspend fun getInstalledPlugins(site: SiteModel): List<ImmutablePluginModel> {
+        val immutablePlugins: MutableList<ImmutablePluginModel?> = mutableListOf()
+        val sitePlugins = PluginSqlUtils.getSitePlugins(site)
+        sitePlugins.forEach { sitePluginModel ->
+            val slug = sitePluginModel.slug
+            var wpOrgPluginModel = getWPOrgPluginBySlug(slug)
+            if (wpOrgPluginModel == null) {
+                val response = pluginWPOrgCoroutineClient.fetchWpOrgPlugin(slug)
+                if (response is PluginResponse.Success) {
+                    wpOrgPluginModel = response.plugin
+                }
+            }
+            immutablePlugins.add(
+                ImmutablePluginModel.newInstance(
+                    sitePluginModel,
+                    wpOrgPluginModel
+                )
+            )
+        }
+        return immutablePlugins.filterNotNull()
     }
 
     fun deleteSitePlugin(site: SiteModel, pluginName: String, slug: String) =
@@ -162,5 +212,10 @@ class PluginCoroutineStore
         constructor(error: BaseNetworkError) : this(null, null) {
             this.error = error
         }
+    }
+
+    sealed interface InstalledPluginResponse {
+        data class Success(val plugins: List<ImmutablePluginModel>) : InstalledPluginResponse
+        object Error : InstalledPluginResponse
     }
 }
