@@ -106,7 +106,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                                 List<WPOrgPluginModel> wpOrgPlugins = new ArrayList<>();
                                 if (response != null) {
                                     for (WPOrgPluginResponse wpOrgPluginResponse : response) {
-                                        wpOrgPlugins.add(wpOrgPluginFromResponse(wpOrgPluginResponse));
+                                        wpOrgPlugins.add(WpOrgPluginResponseExtKt.toWPOrgPluginModel((wpOrgPluginResponse)));
                                     }
                                 }
                                 payload = new FetchedPluginDirectoryPayload(PluginDirectoryType.FEATURED, wpOrgPlugins,
@@ -153,7 +153,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                                             new FetchedWPOrgPluginPayload(pluginSlug, error)));
                                     return;
                                 }
-                                WPOrgPluginModel wpOrgPluginModel = wpOrgPluginFromResponse(response);
+                                WPOrgPluginModel wpOrgPluginModel = WpOrgPluginResponseExtKt.toWPOrgPluginModel(response);
                                 FetchedWPOrgPluginPayload payload =
                                         new FetchedWPOrgPluginPayload(pluginSlug, wpOrgPluginModel);
                                 mDispatcher.dispatch(PluginActionBuilder.newFetchedWporgPluginAction(payload));
@@ -225,35 +225,9 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         List<WPOrgPluginModel> pluginList = new ArrayList<>();
         if (response.plugins != null) {
             for (WPOrgPluginResponse wpOrgPluginResponse : response.plugins) {
-                pluginList.add(wpOrgPluginFromResponse(wpOrgPluginResponse));
+                pluginList.add(WpOrgPluginResponseExtKt.toWPOrgPluginModel((wpOrgPluginResponse)));
             }
         }
         return pluginList;
-    }
-
-    private WPOrgPluginModel wpOrgPluginFromResponse(WPOrgPluginResponse response) {
-        WPOrgPluginModel wpOrgPluginModel = new WPOrgPluginModel();
-        wpOrgPluginModel.setAuthorAsHtml(response.getAuthorAsHtml());
-        wpOrgPluginModel.setBanner(response.getBanner());
-        wpOrgPluginModel.setDescriptionAsHtml(response.getDescriptionAsHtml());
-        wpOrgPluginModel.setFaqAsHtml(response.getFaqAsHtml());
-        wpOrgPluginModel.setHomepageUrl(response.getHomepageUrl());
-        wpOrgPluginModel.setIcon(response.getIcon());
-        wpOrgPluginModel.setInstallationInstructionsAsHtml(response.getInstallationInstructionsAsHtml());
-        wpOrgPluginModel.setLastUpdated(response.getLastUpdated());
-        wpOrgPluginModel.setDisplayName(StringEscapeUtils.unescapeHtml4(response.getName()));
-        wpOrgPluginModel.setRating(response.getRating());
-        wpOrgPluginModel.setRequiredWordPressVersion(response.getRequiredWordPressVersion());
-        wpOrgPluginModel.setSlug(response.getSlug());
-        wpOrgPluginModel.setVersion(response.getVersion());
-        wpOrgPluginModel.setWhatsNewAsHtml(response.getWhatsNewAsHtml());
-        wpOrgPluginModel.setDownloadCount(response.getDownloadCount());
-        wpOrgPluginModel.setNumberOfRatings(response.getNumberOfRatings());
-        wpOrgPluginModel.setNumberOfRatingsOfOne(response.getNumberOfRatingsOfOne());
-        wpOrgPluginModel.setNumberOfRatingsOfTwo(response.getNumberOfRatingsOfTwo());
-        wpOrgPluginModel.setNumberOfRatingsOfThree(response.getNumberOfRatingsOfThree());
-        wpOrgPluginModel.setNumberOfRatingsOfFour(response.getNumberOfRatingsOfFour());
-        wpOrgPluginModel.setNumberOfRatingsOfFive(response.getNumberOfRatingsOfFive());
-        return wpOrgPluginModel;
     }
 }

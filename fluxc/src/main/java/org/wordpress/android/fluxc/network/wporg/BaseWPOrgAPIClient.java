@@ -30,7 +30,7 @@ public abstract class BaseWPOrgAPIClient {
         };
     }
 
-    protected Request add(WPOrgAPIGsonRequest request) {
+    public Request add(WPOrgAPIGsonRequest request) {
         return mRequestQueue.add(setRequestAuthParams(request));
     }
 

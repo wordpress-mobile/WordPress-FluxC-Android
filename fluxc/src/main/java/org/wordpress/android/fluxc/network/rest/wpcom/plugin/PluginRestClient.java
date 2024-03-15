@@ -198,7 +198,7 @@ public class PluginRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    private SitePluginModel pluginModelFromResponse(SiteModel siteModel, PluginWPComRestResponse response) {
+    static SitePluginModel pluginModelFromResponse(SiteModel siteModel, PluginWPComRestResponse response) {
         SitePluginModel sitePluginModel = new SitePluginModel();
         sitePluginModel.setLocalSiteId(siteModel.getId());
         sitePluginModel.setName(response.name);
