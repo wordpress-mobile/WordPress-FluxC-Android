@@ -23,6 +23,8 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
 import org.wordpress.android.fluxc.network.rest.wpapi.plugin.PluginWPAPIRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginWPComCoroutineClient
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgCoroutineClient
 import org.wordpress.android.fluxc.persistence.PluginSqlUtilsWrapper
 import org.wordpress.android.fluxc.store.PluginCoroutineStore.WPApiPluginsPayload
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginErrorType
@@ -40,6 +42,9 @@ class PluginCoroutineStoreTest {
     @Mock lateinit var dispatcher: Dispatcher
     @Mock lateinit var pluginWPAPIRestClient: PluginWPAPIRestClient
     @Mock lateinit var pluginSqlUtils: PluginSqlUtilsWrapper
+    @Mock lateinit var pluginWPOrgCoroutineClient: PluginWPOrgCoroutineClient
+    @Mock lateinit var pluginWPComCoroutineClient: PluginWPComCoroutineClient
+
     private lateinit var store: PluginCoroutineStore
     private val site: SiteModel = SiteModel().apply {
         url = "site.com"
@@ -55,7 +60,9 @@ class PluginCoroutineStoreTest {
             initCoroutineEngine(),
             dispatcher,
             pluginWPAPIRestClient,
-            pluginSqlUtils
+            pluginSqlUtils,
+            pluginWPOrgCoroutineClient,
+            pluginWPComCoroutineClient
         )
         onFetchedEventCaptor = argumentCaptor()
         onDeletedEventCaptor = argumentCaptor()
