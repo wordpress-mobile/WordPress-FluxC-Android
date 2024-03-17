@@ -88,13 +88,13 @@ class PluginCoroutineStore @Inject constructor(
     suspend fun fetchInstalledPlugins(
         site: SiteModel
     ): InstalledPluginResponse {
-        return if (site.isWpComStore) {
+        return if (site.isUsingWpComRestApi && site.isJetpackConnected) {
             val wpComPluginsResponse = pluginWPComCoroutineClient.fetchSitePlugins(site)
             when (wpComPluginsResponse) {
                 is PluginsResponse.Success -> InstalledPluginResponse.Success(getInstalledPlugins(site))
                 is PluginsResponse.Error -> InstalledPluginResponse.Error
             }
-        } else if (site.isJetpackConnected) {
+        } else if (!site.isUsingWpComRestApi) {
             val response = syncFetchWPApiPlugins(site)
             when {
                 response.error != null -> InstalledPluginResponse.Error
