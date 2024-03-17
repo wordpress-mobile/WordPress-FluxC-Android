@@ -14,7 +14,9 @@ import org.wordpress.android.fluxc.store.PluginStore.FetchWPOrgPluginErrorType.G
 import org.wordpress.android.fluxc.store.PluginStore.FetchWPOrgPluginErrorType.PLUGIN_DOES_NOT_EXIST
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Singleton
 
+@Singleton
 class PluginWPOrgCoroutineClient @Inject constructor(
     dispatcher: Dispatcher,
     @Named("regular") requestQueue: RequestQueue,
