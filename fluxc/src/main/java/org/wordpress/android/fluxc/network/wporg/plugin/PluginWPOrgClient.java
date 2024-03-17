@@ -9,7 +9,6 @@ import com.android.volley.Request.Method;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2;
@@ -106,7 +105,8 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                                 List<WPOrgPluginModel> wpOrgPlugins = new ArrayList<>();
                                 if (response != null) {
                                     for (WPOrgPluginResponse wpOrgPluginResponse : response) {
-                                        wpOrgPlugins.add(WpOrgPluginResponseExtKt.toWPOrgPluginModel((wpOrgPluginResponse)));
+                                        wpOrgPlugins.add(WpOrgPluginResponseExtKt
+                                                .toWPOrgPluginModel((wpOrgPluginResponse)));
                                     }
                                 }
                                 payload = new FetchedPluginDirectoryPayload(PluginDirectoryType.FEATURED, wpOrgPlugins,
@@ -153,7 +153,8 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                                             new FetchedWPOrgPluginPayload(pluginSlug, error)));
                                     return;
                                 }
-                                WPOrgPluginModel wpOrgPluginModel = WpOrgPluginResponseExtKt.toWPOrgPluginModel(response);
+                                WPOrgPluginModel wpOrgPluginModel = WpOrgPluginResponseExtKt
+                                        .toWPOrgPluginModel(response);
                                 FetchedWPOrgPluginPayload payload =
                                         new FetchedWPOrgPluginPayload(pluginSlug, wpOrgPluginModel);
                                 mDispatcher.dispatch(PluginActionBuilder.newFetchedWporgPluginAction(payload));

@@ -9,7 +9,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginWPComRestResp
 import org.wordpress.android.fluxc.persistence.PluginSqlUtilsWrapper
 import org.wordpress.android.fluxc.store.PluginStore.PluginDirectoryErrorType
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class PluginWPComCoroutineClient @Inject constructor(
     private val wpComNetwork: WPComNetwork,
     private val pluginsSqlUtilsWrapper: PluginSqlUtilsWrapper
