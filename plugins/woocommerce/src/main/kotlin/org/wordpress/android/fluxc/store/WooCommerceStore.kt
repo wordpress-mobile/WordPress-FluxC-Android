@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCApiVersionResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WCSystemPluginResponse.SystemPluginModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.WooSystemRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.system.toDomainModel
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils
@@ -213,7 +214,7 @@ open class WooCommerceStore @Inject constructor(
     }
 
     suspend fun fetchSitePlugins(site: SiteModel): WooResult<List<SitePluginModel>> {
-        return coroutineEngine.withDefaultContext(T.API, this, "fetchWooCommerceServicesPluginInfo") {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSitePlugins") {
             val response = systemRestClient.fetchInstalledPlugins(site)
             return@withDefaultContext when {
                 response.isError -> {
@@ -223,6 +224,24 @@ open class WooCommerceStore @Inject constructor(
                 response.result?.plugins != null -> {
                     val plugins = response.result.plugins.map { it.toDomainModel(site.id) }
                     PluginSqlUtils.insertOrReplaceSitePlugins(site, plugins)
+                    WooResult(plugins)
+                }
+
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun fetchSystemPlugins(site: SiteModel): WooResult<List<SystemPluginModel>> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchSystemPlugins") {
+            val response = systemRestClient.fetchInstalledPlugins(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+
+                response.result?.plugins != null -> {
+                    val plugins = response.result.plugins
                     WooResult(plugins)
                 }
 
