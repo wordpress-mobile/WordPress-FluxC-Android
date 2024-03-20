@@ -46,7 +46,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.TIMEOUT_ERR
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.tools.CoroutineEngine
-import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.toWooPayload
 import org.wordpress.android.util.AppLog
@@ -958,9 +957,6 @@ class OrderRestClient @Inject constructor(
             dateShipped = response.date_shipped ?: ""
         }
     }
-
-    private fun convertDateToUTCString(date: String?): String =
-        date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,
