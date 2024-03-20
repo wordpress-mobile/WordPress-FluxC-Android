@@ -16,7 +16,7 @@ data class WCSystemPluginResponse(
         val name: String,
         val version: String?,
         val url: String?,
-        val versionLatest: String? = null,
+        @SerializedName("version_latest") val versionLatest: String? = null,
         @SerializedName("author_name") val authorName: String? = null,
         @SerializedName("author_url") val authorUrl: String? = null,
         val isActive: Boolean = false
