@@ -156,42 +156,20 @@ class OrderRestClient @Inject constructor(
                 "exclude" to listDescriptor.excludedIds?.joinToString()
             )
 
-            val response = wooNetwork.executeGetGsonRequest(
+            wooNetwork.executeGetGsonRequest(
                 site = listDescriptor.site,
                 path = url,
                 clazz = Array<OrderSummaryApiResponse>::class.java,
                 params = params
             )
 
-            when (response) {
-                is WPAPIResponse.Success -> {
-                    val orderSummaries = response.data?.map {
-                        orderResponseToOrderSummaryModel(it).apply {
-                            localSiteId = listDescriptor.site.id
-                        }
-                    }.orEmpty()
-
-                    val canLoadMore = orderSummaries.size == networkPageSize
-
-                    val payload = FetchOrderListResponsePayload(
-                        listDescriptor = listDescriptor,
-                        orderSummaries = orderSummaries,
-                        loadedMore = offset > 0,
-                        canLoadMore = canLoadMore,
-                        requestStartTime = requestStartTime
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-                }
-                is WPAPIResponse.Error -> {
-                    val orderError = wpAPINetworkErrorToOrderError(response.error)
-                    val payload = FetchOrderListResponsePayload(
-                        error = orderError,
-                        listDescriptor = listDescriptor,
-                        requestStartTime = requestStartTime
-                    )
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
-                }
-            }
+            val orderError = OrderError(TIMEOUT_ERROR)
+            val payload = FetchOrderListResponsePayload(
+                error = orderError,
+                listDescriptor = listDescriptor,
+                requestStartTime = requestStartTime
+            )
+            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
         }
     }
 
