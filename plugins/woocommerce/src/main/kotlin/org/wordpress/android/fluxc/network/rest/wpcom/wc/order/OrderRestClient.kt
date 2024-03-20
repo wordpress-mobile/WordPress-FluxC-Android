@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
-import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
@@ -921,14 +920,6 @@ class OrderRestClient @Inject constructor(
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { mapOf("code" to it) }
                 ?.let { put("gift_cards", listOf(it)) }
-        }
-    }
-
-    private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
-        return WCOrderSummaryModel().apply {
-            orderId = response.id ?: 0
-            dateCreated = convertDateToUTCString(response.dateCreatedGmt)
-            dateModified = convertDateToUTCString(response.dateModifiedGmt)
         }
     }
 
