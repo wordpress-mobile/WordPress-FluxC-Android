@@ -28,26 +28,44 @@ class OrdersDaoDecorator @Inject constructor(
     @Suppress("unused")
     suspend fun getAllOrders(): List<OrderEntity> = ordersDao.getAllOrders()
 
-    /**
-     * @param suppressListRefresh Suppresses emit of ListRequiresRefresh event. Can be used
-     * when this method is invoked in a loop and the app needs to emit the event at the end.
-     */
-    suspend fun insertOrUpdateOrder(order: OrderEntity, suppressListRefresh: Boolean = false) {
+    suspend fun insertOrUpdateOrder(
+        order: OrderEntity,
+        listUpdateStrategy: ListUpdateStrategy = ListUpdateStrategy.DEFAULT
+    ): UpdateOrderResult {
         val orderBeforeUpdate = ordersDao.getOrder(order.orderId, order.localSiteId)
         ordersDao.insertOrUpdateOrder(order)
 
-        if(!suppressListRefresh) {
-            // Draft orders are not returned from the API. We need to re-fetch order list from the API
-            // when the order is new or its status changed from draft to another status.
-            val orderIsNewOrMovingFromDraft = orderBeforeUpdate == null
-                    || (order.status != "auto-draft" && orderBeforeUpdate.status == "auto-draft")
-            if (orderIsNewOrMovingFromDraft) {
-                // Re-fetch order list
+        when (listUpdateStrategy) {
+            ListUpdateStrategy.REFRESH -> {
                 emitRefreshListEvent(order.localSiteId)
-            } else {
-                // Re-load order list from local db
+            }
+
+            ListUpdateStrategy.INVALIDATE -> {
                 emitInvalidateListEvent(order.localSiteId)
             }
+
+            ListUpdateStrategy.DEFAULT -> {
+                // Draft orders are not returned from the API. We need to re-fetch order list from the API
+                // when the order is new or its status changed from draft to another status.
+                val orderIsNewOrMovingFromDraft = orderBeforeUpdate == null
+                        || (order.status != "auto-draft" && orderBeforeUpdate.status == "auto-draft")
+                if (orderIsNewOrMovingFromDraft) {
+                    // Re-fetch order list
+                    emitRefreshListEvent(order.localSiteId)
+                } else {
+                    // Re-load order list from local db
+                    emitInvalidateListEvent(order.localSiteId)
+                }
+            }
+
+            ListUpdateStrategy.SUPPRESS -> {} // Don't update the list
+        }
+        return when {
+            orderBeforeUpdate == null -> UpdateOrderResult.INSERTED
+            // Ignore changes to the modifiedDate - it's updated even when there are no other changes
+            // and results in an infinite loop.
+            order.copy(dateModified = "") != orderBeforeUpdate.copy(dateModified = "") -> UpdateOrderResult.UPDATED
+            else -> UpdateOrderResult.UNCHANGED
         }
     }
 
@@ -115,6 +133,20 @@ class OrdersDaoDecorator @Inject constructor(
             localSiteId = localSiteId.value
         )
         dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
+    }
+
+    enum class ListUpdateStrategy {
+        DEFAULT,
+        // Re-fetch the order list
+        REFRESH,
+        // Re-load the order list from the DB
+        INVALIDATE,
+        // Do not update the list
+        SUPPRESS
+    }
+
+    enum class UpdateOrderResult {
+        UPDATED, INSERTED, UNCHANGED
     }
 }
 

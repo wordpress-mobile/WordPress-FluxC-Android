@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.ListDescriptorTypeIdentifier
 import org.wordpress.android.fluxc.model.list.ListDescriptorUniqueIdentifier
 
-class WCOrderListDescriptor(
+data class WCOrderListDescriptor(
     val site: SiteModel,
     val statusFilter: String? = null,
     val searchQuery: String? = null,
@@ -13,7 +13,8 @@ class WCOrderListDescriptor(
     val beforeFilter: String? = null,
     val afterFilter: String? = null,
     val productId: Long? = null,
-    val customerId: Long? = null
+    val customerId: Long? = null,
+    val excludedIds: List<Long>? = null
 ) : ListDescriptor {
     override val config: ListConfig = ListConfig.default
 

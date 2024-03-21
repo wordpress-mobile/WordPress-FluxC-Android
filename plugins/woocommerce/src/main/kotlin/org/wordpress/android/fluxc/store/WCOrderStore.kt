@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.store
 
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -605,7 +607,12 @@ class WCOrderStore @Inject constructor(
             val orderModel = ordersDaoDecorator.getOrder(orderId, site.localId())
 
             if (orderModel != null) {
-                updateOrderStatusLocally(orderId, site.localId(), newStatus.statusKey)
+                updateOrderStatusLocally(
+                    orderId,
+                    site.localId(),
+                    newStatus.statusKey,
+                    OrdersDaoDecorator.ListUpdateStrategy.INVALIDATE
+                )
 
                 val optimisticUpdateResult = OnOrderChanged(
                     causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
@@ -613,13 +620,21 @@ class WCOrderStore @Inject constructor(
 
                 emit(OptimisticUpdateResult(optimisticUpdateResult))
 
-                val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus.statusKey)
-                val remoteUpdateResult: OnOrderChanged = if (remotePayload.isError) {
-                    revertOrderStatus(remotePayload)
-                } else {
-                    ordersDaoDecorator.insertOrUpdateOrder(remotePayload.order)
-                    OnOrderChanged()
-                }.copy(causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS)
+                // Ensure the code gets executed even when the VM dies - eg. when the client app marks an order as
+                // completed and navigates to a different screen.
+                val remoteUpdateResult: OnOrderChanged = withContext(NonCancellable) {
+                    val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus.statusKey)
+                    if (remotePayload.isError) {
+                        revertOrderStatus(remotePayload)
+                    } else {
+                        ordersDaoDecorator.insertOrUpdateOrder(
+                            remotePayload.order,
+                            // Re-fetch the list to ensure the order is correctly placed even when a filter is applied
+                            OrdersDaoDecorator.ListUpdateStrategy.REFRESH
+                        )
+                        OnOrderChanged()
+                    }.copy(causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS)
+                }
 
                 emit(RemoteUpdateResult(remoteUpdateResult))
                 // Needs to remain here until all event bus observables are removed from the client code
@@ -652,10 +667,15 @@ class WCOrderStore @Inject constructor(
         forceNew
     )
 
-    private suspend fun updateOrderStatusLocally(orderId: Long, localSiteId: LocalId, newStatus: String) {
+    private suspend fun updateOrderStatusLocally(
+        orderId: Long,
+        localSiteId: LocalId,
+        newStatus: String,
+        listUpdateStrategy: OrdersDaoDecorator.ListUpdateStrategy = OrdersDaoDecorator.ListUpdateStrategy.DEFAULT
+    ) {
         val updatedOrder = ordersDaoDecorator.getOrder(orderId, localSiteId)!!
             .copy(status = newStatus)
-        ordersDaoDecorator.insertOrUpdateOrder(updatedOrder)
+        ordersDaoDecorator.insertOrUpdateOrder(updatedOrder, listUpdateStrategy)
     }
 
     @Suppress("SpreadOperator")
