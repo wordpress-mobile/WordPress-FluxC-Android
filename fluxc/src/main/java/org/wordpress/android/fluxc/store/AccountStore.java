@@ -43,6 +43,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEma
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.OauthResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.TwoFactorResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest.XmlRpcErrorType;
 import org.wordpress.android.fluxc.persistence.AccountSqlUtils;
@@ -1418,10 +1419,10 @@ public class AccountStore extends Store {
 
     private void requestWebauthnChallenge(final StartWebauthnChallengePayload payload) {
         mAuthenticator.makeRequest(payload.mUserId, payload.mWebauthnNonce,
-                (Response.Listener<JSONObject>) response -> {
+                (Response.Listener<WebauthnChallengeResponse>) response -> {
                     WebauthnChallengeReceived event = new WebauthnChallengeReceived();
                     event.mUserId = payload.mUserId;
-                    event.mJsonResponse = response;
+                    event.mJsonResponse = response.getJson();
                     emitChange(event);
                 },
                 error -> {
