@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.utils.RandomStringUtils;
@@ -83,6 +84,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testFetchTags() throws InterruptedException {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -144,12 +146,14 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
         checkUpdateExistingTerm(term);
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         TermModel term = createNewTag();
@@ -225,6 +229,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();

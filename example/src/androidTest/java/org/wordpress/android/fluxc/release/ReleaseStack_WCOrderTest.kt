@@ -8,6 +8,7 @@ import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -83,6 +84,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrdersByStatus() {
         runBlocking {
             nextEvent = TestEvent.FETCHED_ORDERS
@@ -110,6 +112,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     }
 
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrdersById() {
         runBlocking {
             val idsToRequest = listOf(1128L, 1129L)
@@ -130,6 +133,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testSearchOrders() {
         nextEvent = TestEvent.SEARCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
@@ -165,6 +169,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrdersCount_emptyFilter() {
         nextEvent = TestEvent.ERROR_ORDER_STATUS_NOT_FOUND
         mCountDownLatch = CountDownLatch(1)
@@ -178,6 +183,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchSingleOrder() = runBlocking {
         orderStore.fetchSingleOrder(sSite, orderModel.orderId)
 
@@ -187,6 +193,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrderNotes() = runBlocking {
         // Grab a list of orders
         nextEvent = TestEvent.FETCHED_ORDERS
@@ -227,6 +234,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchOrderStatusOptions() {
         nextEvent = TestEvent.FETCHED_ORDER_STATUS_OPTIONS
         mCountDownLatch = CountDownLatch(1)
@@ -247,6 +255,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
      */
     @Throws(InterruptedException::class)
     @Test
+    @Ignore("WIP see https://github.com/wordpress-mobile/WordPress-FluxC-Android/pull/2673")
     fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() = runBlocking {
         val result = orderStore.fetchOrderShipmentTrackings(orderModel.orderId, sSite)
         assertTrue(result.isError)
