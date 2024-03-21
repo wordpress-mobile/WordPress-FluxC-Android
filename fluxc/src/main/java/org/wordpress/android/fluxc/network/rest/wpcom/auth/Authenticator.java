@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeRequest;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnData;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnTokenRequest;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailError;
@@ -128,15 +129,17 @@ public class Authenticator {
     }
 
     public void makeRequest(String userId, String webauthnNonce,
-                            Response.Listener<JSONObject> listener,
-                            ErrorListener errorListener) {
+                            Response.Listener<WebauthnData> listener,
+                            ErrorListener errorListener,
+                            boolean isFido) {
         WebauthnChallengeRequest request = new WebauthnChallengeRequest(
                 userId,
                 webauthnNonce,
                 mAppSecrets.getAppId(),
                 mAppSecrets.getAppSecret(),
                 listener,
-                errorListener
+                errorListener,
+                isFido
         );
         mRequestQueue.add(request);
     }

@@ -43,6 +43,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEma
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.OauthResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.TwoFactorResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeInfo;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnData;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest.XmlRpcErrorType;
 import org.wordpress.android.fluxc.persistence.AccountSqlUtils;
@@ -360,6 +362,9 @@ public class AccountStore extends Store {
         private static final String TWO_STEP_NONCE_KEY = "two_step_nonce";
 
         public JSONObject mJsonResponse;
+
+        @Nullable
+        public WebauthnChallengeInfo mChallengeInfo;
         public String mUserId;
 
         public String getWebauthnNonce() {
@@ -1076,7 +1081,9 @@ public class AccountStore extends Store {
                 handleSentAuthEmail((AuthEmailResponsePayload) payload);
                 break;
             case START_SECURITY_KEY_CHALLENGE:
-                requestWebauthnChallenge((StartWebauthnChallengePayload) payload);
+                // TODO: uncomment this and figure out later.
+//                requestWebauthnChallenge((StartWebauthnChallengePayload) payload);
+                requestWebauthnChallenge((StartWebauthnChallengePayload) payload, true);
                 break;
             case FINISH_SECURITY_KEY_CHALLENGE:
                 submitWebauthnChallengeResult((FinishWebauthnChallengePayload) payload);
@@ -1416,12 +1423,13 @@ public class AccountStore extends Store {
         }
     }
 
-    private void requestWebauthnChallenge(final StartWebauthnChallengePayload payload) {
+    private void requestWebauthnChallenge(final StartWebauthnChallengePayload payload, final boolean isFido) {
         mAuthenticator.makeRequest(payload.mUserId, payload.mWebauthnNonce,
-                (Response.Listener<JSONObject>) response -> {
+                (Response.Listener<WebauthnData>) response -> {
                     WebauthnChallengeReceived event = new WebauthnChallengeReceived();
                     event.mUserId = payload.mUserId;
-                    event.mJsonResponse = response;
+                    event.mJsonResponse = response.getPassKeyData();
+                    event.mChallengeInfo = response.getSecurityKeyChallengeInfo();
                     emitChange(event);
                 },
                 error -> {
@@ -1429,7 +1437,7 @@ public class AccountStore extends Store {
                     event.error = new AuthenticationError(AuthenticationErrorType.WEBAUTHN_FAILED,
                             "Webauthn failed");
                     emitChange(event);
-                });
+                }, isFido);
     }
 
     private void submitWebauthnChallengeResult(final FinishWebauthnChallengePayload payload) {

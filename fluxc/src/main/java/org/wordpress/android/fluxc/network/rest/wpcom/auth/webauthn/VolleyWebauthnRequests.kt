@@ -18,9 +18,10 @@ class WebauthnChallengeRequest(
     twoStepNonce: String,
     clientId: String,
     clientSecret: String,
-    listener: Response.Listener<JSONObject>,
-    errorListener: ErrorListener
-): BaseWebauthnRequest<JSONObject>(webauthnChallengeEndpointUrl, errorListener, listener) {
+    listener: Response.Listener<WebauthnData>,
+    errorListener: ErrorListener,
+    private val isFido: Boolean = false,
+): BaseWebauthnRequest<WebauthnData>(webauthnChallengeEndpointUrl, errorListener, listener) {
     override val parameters: Map<String, String> = mapOf(
         CLIENT_ID.value to clientId,
         CLIENT_SECRET.value to clientSecret,
@@ -29,7 +30,15 @@ class WebauthnChallengeRequest(
         TWO_STEP_NONCE.value to twoStepNonce
     )
 
-    override fun serializeResponse(response: String) = JSONObject(response)
+    override fun serializeResponse(response: String): WebauthnData {
+        val challenge: WebauthnChallengeInfo? = if (isFido) {
+            gson.fromJson(response, WebauthnChallengeInfo::class.java)
+        } else null
+        return WebauthnData(
+            passKeyData = JSONObject(response),
+            securityKeyChallengeInfo = challenge,
+        )
+    }
 }
 
 @SuppressWarnings("LongParameterList")
