@@ -43,6 +43,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEma
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.OauthResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.TwoFactorResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeData;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest.XmlRpcErrorType;
@@ -358,13 +359,12 @@ public class AccountStore extends Store {
     }
 
     public static class WebauthnChallengeReceived extends OnChanged<AuthenticationError> {
-        private static final String TWO_STEP_NONCE_KEY = "two_step_nonce";
-
-        public JSONObject mJsonResponse;
+        public WebauthnChallengeData mChallengeData;
+        public JSONObject mChallengeJson;
         public String mUserId;
 
         public String getWebauthnNonce() {
-            return mJsonResponse.optString(TWO_STEP_NONCE_KEY);
+            return mChallengeData.getTwoStepNonce();
         }
     }
 
@@ -1422,7 +1422,8 @@ public class AccountStore extends Store {
                 (Response.Listener<WebauthnChallengeResponse>) response -> {
                     WebauthnChallengeReceived event = new WebauthnChallengeReceived();
                     event.mUserId = payload.mUserId;
-                    event.mJsonResponse = response.getJson();
+                    event.mChallengeData = response.getData();
+                    event.mChallengeJson = response.getJson();
                     emitChange(event);
                 },
                 error -> {
