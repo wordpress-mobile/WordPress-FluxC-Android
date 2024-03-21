@@ -1,8 +1,14 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn
 
 import com.google.gson.annotations.SerializedName
+import org.json.JSONObject
 
-class WebauthnChallengeInfo(
+class WebauthnChallengeResponse(
+    val data: WebauthnChallengeData,
+    val json: JSONObject
+)
+
+class WebauthnChallengeData(
     val challenge: String,
     val rpId: String,
     val allowCredentials: List<WebauthnCredentialResponse>,
