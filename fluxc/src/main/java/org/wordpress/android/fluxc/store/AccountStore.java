@@ -351,10 +351,12 @@ public class AccountStore extends Store {
     public static class StartWebauthnChallengePayload extends Payload<BaseNetworkError> {
         public String mUserId;
         public String mWebauthnNonce;
+        public Boolean isPhysicalKeyChallenge;
 
-        public StartWebauthnChallengePayload(String mUserId, String mWebauthnNonce) {
+        public StartWebauthnChallengePayload(String mUserId, String mWebauthnNonce, Boolean isPhysicalKeyChallenge) {
             this.mUserId = mUserId;
             this.mWebauthnNonce = mWebauthnNonce;
+            this.isPhysicalKeyChallenge = isPhysicalKeyChallenge;
         }
     }
 
@@ -362,6 +364,7 @@ public class AccountStore extends Store {
         public WebauthnChallengeData mChallengeData;
         public JSONObject mChallengeJson;
         public String mUserId;
+        public Boolean isPhysicalKeyChallenge;
 
         public String getWebauthnNonce() {
             return mChallengeData.getTwoStepNonce();
@@ -1424,6 +1427,7 @@ public class AccountStore extends Store {
                     event.mUserId = payload.mUserId;
                     event.mChallengeData = response.getData();
                     event.mChallengeJson = response.getJson();
+                    event.isPhysicalKeyChallenge = payload.isPhysicalKeyChallenge;
                     emitChange(event);
                 },
                 error -> {
