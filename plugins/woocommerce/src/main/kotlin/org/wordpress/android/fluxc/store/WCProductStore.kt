@@ -1362,8 +1362,8 @@ class WCProductStore @Inject constructor(
                 remoteId = remoteId
             )
             if (!result.isError) {
-                val updatedCategory = result.result!!
-                ProductSqlUtils.insertOrUpdateProductCategory(updatedCategory)
+                val deletedCategory = result.result!!
+                ProductSqlUtils.deleteProductCategory(deletedCategory)
             }
             return@withDefaultContext result.asWooResult()
         }

@@ -754,6 +754,12 @@ object ProductSqlUtils {
         }
     }
 
+    fun deleteProductCategory(productCategory: WCProductCategoryModel) =
+            WellSql.delete(WCProductCategoryModel::class.java)
+                .where()
+                .equals(WCProductCategoryModelTable.REMOTE_CATEGORY_ID, productCategory.remoteCategoryId)
+                .endWhere().execute()
+
     fun deleteAllProductCategoriesForSite(site: SiteModel): Int {
         return WellSql.delete(WCProductCategoryModel::class.java)
                 .where()
