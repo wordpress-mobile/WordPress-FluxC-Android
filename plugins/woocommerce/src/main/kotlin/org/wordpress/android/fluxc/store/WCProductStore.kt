@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient.UpdateProductCategoryPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
@@ -1329,6 +1330,38 @@ class WCProductStore @Inject constructor(
         }
 
         return@withDefaultContext result.asWooResult()
+    }
+
+    suspend fun deleteProductCategory(
+        site: SiteModel,
+        categoryId: Long
+    ): WooResult<Unit> = coroutineEngine.withDefaultContext(API, this, "deleteProductCategory") {
+        val response = wcProductRestClient.deleteProductCategory(site, categoryId)
+
+        if (response.isError || response.result == null) {
+            WooResult(response.error)
+        } else {
+            WooResult(Unit)
+        }
+    }
+
+    /**
+     * Update product category on the backend.
+     * This does not update local data on success, so clients need to refresh data manually
+     * afterward, if needed.
+     */
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        id: Long,
+        payload: UpdateProductCategoryPayload
+    ): WooResult<WCProductCategoryModel> = coroutineEngine.withDefaultContext(API, this, "updateProductCategory") {
+        val response = wcProductRestClient.updateProductCategory(site, id, payload)
+
+        if (response.isError || response.result == null) {
+            WooResult(response.error)
+        } else {
+            WooResult(response.result.asProductCategoryModel())
+        }
     }
 
     private fun fetchProductTags(payload: FetchProductTagsPayload) {
