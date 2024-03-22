@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
@@ -317,7 +316,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testAddProductCategory() {
+    fun testAddProductCategory() = runBlocking {
         // Remove all product categories from the database
         ProductSqlUtils.deleteAllProductCategories()
         assertEquals(0, ProductSqlUtils.getProductCategoriesForSite(sSite).size)
@@ -329,12 +328,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             // duplicate category names fail in the API level so added a random number next to the "Test"
             name = "Test" + Random.nextInt(0, 10000)
         }
-        mDispatcher.dispatch(
-            WCProductActionBuilder.newAddProductCategoryAction(
-                AddProductCategoryPayload(sSite, productCategoryModel)
-            )
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        productStore.addProductCategory(sSite, productCategoryModel)
 
         // Verify results
         val fetchAllCategories = productStore.getProductCategoriesForSite(sSite)
