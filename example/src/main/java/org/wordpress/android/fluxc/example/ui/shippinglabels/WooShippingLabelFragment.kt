@@ -47,6 +47,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_SERVICES
+import org.wordpress.android.fluxc.store.WooCommerceStore.WooPlugin.WOO_SHIPPING
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -656,8 +657,15 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                     result.error?.let {
                         prependToLog("${it.type}: ${it.message}")
                     }
-                    val plugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
-                    plugin?.let {
+
+                    // Legacy Shipping Plugin
+                    val servicesPlugin = wooCommerceStore.getSitePlugin(site, WOO_SERVICES)
+                    servicesPlugin?.let {
+                        prependToLog("${it.displayName} ${it.version}")
+                    }
+
+                    val shippingPlugin = wooCommerceStore.getSitePlugin(site, WOO_SHIPPING)
+                    shippingPlugin?.let {
                         prependToLog("${it.displayName} ${it.version}")
                     }
                 }

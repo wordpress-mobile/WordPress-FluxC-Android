@@ -63,6 +63,7 @@ open class WooCommerceStore @Inject constructor(
     enum class WooPlugin(val pluginName: String) {
         WOO_CORE("woocommerce/woocommerce"),
         WOO_SERVICES("woocommerce-services/woocommerce-services"),
+        WOO_SHIPPING("woocommerce-shipping/woocommerce-shipping"),
         WOO_PAYMENTS("woocommerce-payments/woocommerce-payments"),
         WOO_STRIPE_GATEWAY("woocommerce-gateway-stripe/woocommerce-gateway-stripe"),
         WOO_SHIPMENT_TRACKING("woocommerce-shipment-tracking/woocommerce-shipment-tracking"),
