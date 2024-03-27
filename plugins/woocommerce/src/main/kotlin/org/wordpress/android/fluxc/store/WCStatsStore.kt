@@ -10,7 +10,12 @@ import org.wordpress.android.fluxc.logging.FluxCCrashLoggerProvider.crashLogger
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsSummary
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
@@ -320,6 +325,37 @@ class WCStatsStore @Inject constructor(
                         stats.endDate
                     )
                 }
+            }
+        }
+    }
+
+    suspend fun fetchVisitorStatsSummary(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        date: String,
+        forced: Boolean = false
+    ): WooResult<WCVisitorStatsSummary> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchVisitorStatsSummary") {
+            val response = wcOrderStatsClient.fetchVisitorStatsSummary(
+                site = site,
+                granularity = granularity,
+                date = date,
+                force = forced
+            )
+
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val summary = WCVisitorStatsSummary(
+                        granularity = granularity,
+                        date = date,
+                        views = response.result.views,
+                        visitors = response.result.visitors
+                    )
+                    WooResult(summary)
+                }
+
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
     }
