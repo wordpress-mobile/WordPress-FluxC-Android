@@ -13,6 +13,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
@@ -219,6 +221,32 @@ class OrderStatsRestClient @Inject constructor(
                 val orderError = response.error.toOrderError()
                 FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
             }
+        }
+    }
+
+    suspend fun fetchVisitorStatsSummary(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        date: String,
+        force: Boolean
+    ): WooPayload<VisitorStatsSummaryApiResponse> {
+        val url = WPCOMREST.sites.site(site.siteId).stats.summary.urlV1_1
+        val params = mapOf(
+            "period" to OrderStatsApiUnit.fromStatsGranularity(granularity).toString(),
+            "date" to date
+        )
+
+        val response = wpComNetwork.executeGetGsonRequest(
+            url = url,
+            params = params,
+            clazz = VisitorStatsSummaryApiResponse::class.java,
+            enableCaching = true,
+            forced = force
+        )
+
+        return when (response) {
+            is WPComGsonRequestBuilder.Response.Success -> WooPayload(response.data)
+            is WPComGsonRequestBuilder.Response.Error -> WooPayload(response.error.toWooError())
         }
     }
 

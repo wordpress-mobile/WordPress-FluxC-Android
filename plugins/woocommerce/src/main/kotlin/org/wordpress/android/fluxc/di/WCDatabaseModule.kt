@@ -56,6 +56,8 @@ interface WCDatabaseModule {
          * OrderSqlUtils is a Kotlin object, we can't use [Inject] to inject it.
          */
         @Provides fun provideOrderSqlUtils() = OrderSqlUtils
+
+        @Provides fun provideVisitorSummaryStatsDao(database: WCAndroidDatabase) = database.visitorSummaryStatsDao
     }
     @Binds fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
 }
