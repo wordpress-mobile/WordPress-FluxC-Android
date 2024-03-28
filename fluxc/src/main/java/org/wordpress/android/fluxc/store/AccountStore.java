@@ -43,6 +43,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEma
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.OauthResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.TwoFactorResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeData;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnChallengeResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.webauthn.WebauthnToken;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest.XmlRpcErrorType;
 import org.wordpress.android.fluxc.persistence.AccountSqlUtils;
@@ -349,21 +351,23 @@ public class AccountStore extends Store {
     public static class StartWebauthnChallengePayload extends Payload<BaseNetworkError> {
         public String mUserId;
         public String mWebauthnNonce;
+        public Boolean isPhysicalKeyChallenge;
 
-        public StartWebauthnChallengePayload(String mUserId, String mWebauthnNonce) {
+        public StartWebauthnChallengePayload(String mUserId, String mWebauthnNonce, Boolean isPhysicalKeyChallenge) {
             this.mUserId = mUserId;
             this.mWebauthnNonce = mWebauthnNonce;
+            this.isPhysicalKeyChallenge = isPhysicalKeyChallenge;
         }
     }
 
     public static class WebauthnChallengeReceived extends OnChanged<AuthenticationError> {
-        private static final String TWO_STEP_NONCE_KEY = "two_step_nonce";
-
-        public JSONObject mJsonResponse;
+        public WebauthnChallengeData mChallengeData;
+        public JSONObject mChallengeJson;
         public String mUserId;
+        public Boolean isPhysicalKeyChallenge;
 
         public String getWebauthnNonce() {
-            return mJsonResponse.optString(TWO_STEP_NONCE_KEY);
+            return mChallengeData.getTwoStepNonce();
         }
     }
 
@@ -1418,10 +1422,12 @@ public class AccountStore extends Store {
 
     private void requestWebauthnChallenge(final StartWebauthnChallengePayload payload) {
         mAuthenticator.makeRequest(payload.mUserId, payload.mWebauthnNonce,
-                (Response.Listener<JSONObject>) response -> {
+                (Response.Listener<WebauthnChallengeResponse>) response -> {
                     WebauthnChallengeReceived event = new WebauthnChallengeReceived();
                     event.mUserId = payload.mUserId;
-                    event.mJsonResponse = response;
+                    event.mChallengeData = response.getData();
+                    event.mChallengeJson = response.getJson();
+                    event.isPhysicalKeyChallenge = payload.isPhysicalKeyChallenge;
                     emitChange(event);
                 },
                 error -> {
