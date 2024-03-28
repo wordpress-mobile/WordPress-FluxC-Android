@@ -18,8 +18,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.VisitorStatsSummaryApiResponse
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.VisitorSummaryStatsDao
+import org.wordpress.android.fluxc.persistence.entity.VisitorSummaryStatsEntity
+import org.wordpress.android.fluxc.persistence.entity.toDomainModel
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -34,7 +38,8 @@ import javax.inject.Singleton
 class WCStatsStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderStatsClient: OrderStatsRestClient,
-    private val coroutineEngine: CoroutineEngine
+    private val coroutineEngine: CoroutineEngine,
+    private val visitorSummaryStatsDao: VisitorSummaryStatsDao
 ) : Store(dispatcher) {
     companion object {
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
@@ -335,6 +340,14 @@ class WCStatsStore @Inject constructor(
         date: String,
         forced: Boolean = false
     ): WooResult<WCVisitorStatsSummary> {
+        fun VisitorStatsSummaryApiResponse.toDataModel() = VisitorSummaryStatsEntity(
+            localSiteId = site.localId(),
+            date = date,
+            granularity = granularity.name,
+            views = views,
+            visitors = visitors
+        )
+
         return coroutineEngine.withDefaultContext(T.API, this, "fetchVisitorStatsSummary") {
             val response = wcOrderStatsClient.fetchVisitorStatsSummary(
                 site = site,
@@ -346,18 +359,23 @@ class WCStatsStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    val summary = WCVisitorStatsSummary(
-                        granularity = granularity,
-                        date = date,
-                        views = response.result.views,
-                        visitors = response.result.visitors
-                    )
-                    WooResult(summary)
+                    val entity = response.result.toDataModel()
+                    visitorSummaryStatsDao.insert(entity)
+
+                    WooResult(entity.toDomainModel())
                 }
 
                 else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
             }
         }
+    }
+
+    suspend fun getVisitorStatsSummary(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        date: String
+    ): WCVisitorStatsSummary? {
+        return visitorSummaryStatsDao.getVisitorSummaryStats(site.localId(), granularity.name, date)?.toDomainModel()
     }
 
     /**
