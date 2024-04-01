@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.bundlestats.BundleStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -44,8 +45,14 @@ import org.hamcrest.CoreMatchers.`is` as isEqual
 @RunWith(RobolectricTestRunner::class)
 class WCStatsStoreTest {
     private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
+    private val mockBundleStatsRestClient = mock<BundleStatsRestClient>()
     private val appContext = RuntimeEnvironment.application.applicationContext
-    private val wcStatsStore = WCStatsStore(Dispatcher(), mockOrderStatsRestClient, initCoroutineEngine())
+    private val wcStatsStore = WCStatsStore(
+        Dispatcher(),
+        mockOrderStatsRestClient,
+        mockBundleStatsRestClient,
+        initCoroutineEngine()
+    )
 
     @Before
     fun setUp() {
