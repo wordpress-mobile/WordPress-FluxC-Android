@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.wc.stats
 
 import androidx.room.Room
 import com.yarolegovich.wellsql.WellSql
+import junit.framework.TestCase.assertFalse
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.anyOf
 import org.hamcrest.CoreMatchers.not
@@ -25,10 +26,14 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsSummary
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.bundlestats.BundleStatsApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.bundlestats.BundleStatsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.bundlestats.BundleStatsTotals
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.VisitorStatsSummaryApiResponse
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
@@ -52,6 +57,7 @@ import org.hamcrest.CoreMatchers.`is` as isEqual
 @RunWith(RobolectricTestRunner::class)
 class WCStatsStoreTest {
     private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
+    private val mockBundleStatsRestClient = mock<BundleStatsRestClient>()
     private val appContext = RuntimeEnvironment.application.applicationContext
     private lateinit var wcStatsStore: WCStatsStore
 
@@ -75,6 +81,7 @@ class WCStatsStoreTest {
         wcStatsStore = WCStatsStore(
             dispatcher = Dispatcher(),
             wcOrderStatsClient = mockOrderStatsRestClient,
+            bundleStatsRestClient = mockBundleStatsRestClient,
             coroutineEngine = initCoroutineEngine(),
             visitorSummaryStatsDao = database.visitorSummaryStatsDao
         )
@@ -886,6 +893,74 @@ class WCStatsStoreTest {
     }
 
     @Test
+    fun testFetchBundlesErrorResponse() = runBlocking {
+        val error = WooError(
+            type = WooErrorType.INVALID_RESPONSE,
+            original = GenericErrorType.INVALID_RESPONSE,
+            message = "Invalid Response"
+        )
+        val response: WooPayload<BundleStatsApiResponse> = WooPayload(error)
+
+        whenever(mockBundleStatsRestClient.fetchBundleStats(any(), any(), any(), any()))
+            .thenReturn(response)
+
+        val result = wcStatsStore.fetchProductBundlesStats(
+            SiteModel(),
+            "2024-03-01",
+            endDate = "2024-04-01",
+            interval = "day"
+        )
+
+        assertTrue(result.isError)
+        assertTrue(result.model == null)
+        assertThat(result.error, isEqual(error))
+    }
+
+    @Test
+    fun testFetchBundlesNullResponse() = runBlocking {
+        val response: WooPayload<BundleStatsApiResponse> = WooPayload(null)
+
+        whenever(mockBundleStatsRestClient.fetchBundleStats(any(), any(), any(), any()))
+            .thenReturn(response)
+
+        val result = wcStatsStore.fetchProductBundlesStats(
+            SiteModel(),
+            "2024-03-01",
+            endDate = "2024-04-01",
+            interval = "day"
+        )
+
+        assertTrue(result.isError)
+        assertTrue(result.model == null)
+        assertThat(result.error.type, isEqual(WooErrorType.GENERIC_ERROR))
+    }
+
+    @Test
+    fun testFetchBundlesSuccessResponse() = runBlocking {
+        val totals = BundleStatsTotals(
+            itemsSold = 5,
+            netRevenue = 1000.00
+        )
+        val statsResponse = BundleStatsApiResponse(totals = totals)
+        val response: WooPayload<BundleStatsApiResponse> = WooPayload(statsResponse)
+
+        whenever(mockBundleStatsRestClient.fetchBundleStats(any(), any(), any(), any()))
+            .thenReturn(response)
+
+        val result = wcStatsStore.fetchProductBundlesStats(
+            SiteModel(),
+            "2024-03-01",
+            endDate = "2024-04-01",
+            interval = "day"
+        )
+
+        assertFalse(result.isError)
+        assertTrue(result.model != null)
+        assertEquals(result.model!!.itemsSold, totals.itemsSold)
+        assertEquals(result.model!!.netRevenue, totals.netRevenue)
+    }
+
+    @Test
     fun testSuccessfulFetchingVisitorSummaryStats() = runBlocking {
         val site = SiteModel().apply { id = 0 }
         val apiResponse = VisitorStatsSummaryApiResponse(
@@ -927,7 +1002,7 @@ class WCStatsStoreTest {
                 date = "2024-03-01",
                 force = false
             )
-        ).thenReturn(WooPayload(WooError(GENERIC_ERROR, UNKNOWN)))
+        ).thenReturn(WooPayload(WooError(GENERIC_ERROR, GenericErrorType.UNKNOWN)))
 
         val result = wcStatsStore.fetchVisitorStatsSummary(
             site = site,

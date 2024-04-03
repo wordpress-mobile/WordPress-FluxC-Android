@@ -8,14 +8,18 @@ import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.logging.FluxCCrashLoggerProvider.crashLogger
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCBundleStats
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
+import org.wordpress.android.fluxc.model.WCProductBundleItemReport
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsSummary
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.bundlestats.BundleStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.VisitorStatsSummaryApiResponse
@@ -38,6 +42,7 @@ import javax.inject.Singleton
 class WCStatsStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcOrderStatsClient: OrderStatsRestClient,
+    private val bundleStatsRestClient: BundleStatsRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val visitorSummaryStatsDao: VisitorSummaryStatsDao
 ) : Store(dispatcher) {
@@ -225,6 +230,74 @@ class WCStatsStore @Inject constructor(
             }
 
             period to visits
+        }
+    }
+
+    suspend fun fetchProductBundlesStats(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        interval: String,
+    ): WooResult<WCBundleStats> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchProductBundlesStats") {
+            val response = bundleStatsRestClient.fetchBundleStats(
+                site = site,
+                startDate = startDate,
+                endDate = endDate,
+                interval = interval
+            )
+
+            when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+
+                response.result != null -> {
+                    val bundleStats = WCBundleStats(
+                        itemsSold = response.result.totals.itemsSold ?: 0,
+                        netRevenue = response.result.totals.netRevenue ?: 0.0
+                    )
+                    WooResult(bundleStats)
+                }
+
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, BaseRequest.GenericErrorType.UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun fetchProductBundlesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        quantity: Int
+    ): WooResult<List<WCProductBundleItemReport>>{
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchProductBundlesReport") {
+            val response = bundleStatsRestClient.fetchBundleReport(
+                site = site,
+                startDate = startDate,
+                endDate = endDate,
+                quantity = quantity
+            )
+
+            when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+
+                response.result != null -> {
+                    val bundleStats = response.result.map { item ->
+                        WCProductBundleItemReport(
+                            name = item.extendedInfo.name ?: "",
+                            image = item.extendedInfo.image,
+                            itemsSold = item.itemsSold ?: 0,
+                            netRevenue = item.netRevenue ?: 0.0
+                        )
+                    }
+                    WooResult(bundleStats)
+                }
+
+                else -> WooResult(WooError(WooErrorType.GENERIC_ERROR, BaseRequest.GenericErrorType.UNKNOWN))
+            }
         }
     }
 
