@@ -47,13 +47,13 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.N
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.TERM_EXISTS
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
@@ -1387,57 +1387,6 @@ class ProductRestClient @Inject constructor(
         }
     }
 
-    /**
-     * Posts a new Add Category record to the API for a category.
-     *
-     * Makes a POST request to `/wp-json/wc/v3/products/categories/id` to save a Category record.
-     * Returns a [WCProductCategoryModel] on successful response.
-     *
-     * Dispatches [WCProductAction.ADDED_PRODUCT_CATEGORY] action with the results.
-     */
-    fun addProductCategory(
-        site: SiteModel,
-        category: WCProductCategoryModel
-    ) {
-        coroutineEngine.launch(AppLog.T.API, this, "addProductCategory") {
-            val url = WOOCOMMERCE.products.categories.pathV3
-
-            val body = mutableMapOf(
-                "name" to category.name,
-                "parent" to category.parent
-            )
-
-            val response = wooNetwork.executePostGsonRequest(
-                site = site,
-                path = url,
-                body = body,
-                clazz = ProductCategoryApiResponse::class.java
-            )
-
-            when (response) {
-                is WPAPIResponse.Success -> {
-                    val categoryResponse = response.data?.let {
-                        it.asProductCategoryModel().apply {
-                            localSiteId = site.id
-                        }
-                    }
-                    val payload = RemoteAddProductCategoryResponsePayload(site, categoryResponse)
-                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                }
-
-                is WPAPIResponse.Error -> {
-                    val productCategorySaveError = wpAPINetworkErrorToProductError(response.error)
-                    val payload = RemoteAddProductCategoryResponsePayload(
-                        productCategorySaveError,
-                        site,
-                        category
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                }
-            }
-        }
-    }
-
     suspend fun addProductCategories(
         site: SiteModel,
         categories: List<WCProductCategoryModel>
@@ -1479,6 +1428,140 @@ class ProductRestClient @Inject constructor(
                             }
                         }
                 )
+            }
+
+            else -> return WooPayload(
+                error = (response as WPAPIResponse.Error).error.toWooError()
+            )
+        }
+    }
+
+    /**
+     * Posts a new Add Category record to the API for a category.
+     *
+     * Makes a POST request to `/wp-json/wc/v3/products/categories/id` to save a Category record.
+     * Returns a [WCProductCategoryModel] on successful response.
+     */
+    suspend fun addProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooPayload<WCProductCategoryModel> {
+        val url = WOOCOMMERCE.products.categories.pathV3
+
+        val body = mutableMapOf(
+            "name" to category.name,
+            "parent" to category.parent
+        )
+
+        val response = wooNetwork.executePostGsonRequest(
+            site = site,
+            path = url,
+            body = body,
+            clazz = ProductCategoryApiResponse::class.java
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                val updatedCategory = response.data?.let {
+                    it.asProductCategoryModel().apply {
+                        localSiteId = site.id
+                    }
+                }
+                WooPayload(updatedCategory)
+            }
+
+            is WPAPIResponse.Error -> {
+                val productCategorySaveError = wpAPINetworkErrorToProductError(response.error)
+                when (productCategorySaveError.type) {
+                    TERM_EXISTS -> {
+                        WooPayload(
+                            error = WooError(
+                                type = WooErrorType.RESOURCE_ALREADY_EXISTS,
+                                original = GenericErrorType.UNKNOWN,
+                                message = "Product category already exists."
+                            )
+                        )
+                    }
+
+                    else -> {
+                        WooPayload(
+                            error = WooError(
+                                type = WooErrorType.GENERIC_ERROR,
+                                original = GenericErrorType.UNKNOWN,
+                                message = "Unknown server error while adding a new product category."
+                            )
+                        )
+                    }
+                }
+            }
+
+            else -> {
+                WooPayload(
+                    error = WooError(
+                        type = WooErrorType.EMPTY_RESPONSE,
+                        original = GenericErrorType.UNKNOWN,
+                        message = "Invalid response for adding a new product category."
+                    )
+                )
+            }
+        }
+    }
+
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooPayload<WCProductCategoryModel> {
+        val path = WOOCOMMERCE.products.categories.id(category.remoteCategoryId).pathV3
+
+        val body = mutableMapOf(
+            "name" to category.name,
+            "parent" to category.parent
+        )
+
+        val response = wooNetwork.executePutGsonRequest(
+            site = site,
+            path = path,
+            body = body,
+            clazz = ProductCategoryApiResponse::class.java
+        )
+
+        return when {
+            response is WPAPIResponse.Success -> {
+                val updatedCategory = response.data?.let {
+                    it.asProductCategoryModel().apply {
+                        localSiteId = site.id
+                    }
+                }
+                WooPayload(updatedCategory)
+            }
+
+            else -> return WooPayload(
+                error = (response as WPAPIResponse.Error).error.toWooError()
+            )
+        }
+    }
+
+    suspend fun deleteProductCategory(site: SiteModel, remoteId: Long): WooPayload<WCProductCategoryModel> {
+        val path = WOOCOMMERCE.products.categories.id(remoteId).pathV3
+
+        val params = mutableMapOf(
+            "force" to "true",
+        )
+        val response = wooNetwork.executeDeleteGsonRequest(
+            site = site,
+            path = path,
+            params = params,
+            clazz = ProductCategoryApiResponse::class.java
+        )
+
+        return when {
+            response is WPAPIResponse.Success -> {
+                val updatedCategory = response.data?.let {
+                    it.asProductCategoryModel().apply {
+                        localSiteId = site.id
+                    }
+                }
+                WooPayload(updatedCategory)
             }
 
             else -> return WooPayload(

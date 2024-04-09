@@ -918,9 +918,6 @@ class WCProductStore @Inject constructor(
             WCProductAction.FETCH_PRODUCT_CATEGORIES ->
                 fetchProductCategories(action.payload as FetchProductCategoriesPayload)
 
-            WCProductAction.ADD_PRODUCT_CATEGORY ->
-                addProductCategory(action.payload as AddProductCategoryPayload)
-
             WCProductAction.FETCH_PRODUCT_TAGS ->
                 fetchProductTags(action.payload as FetchProductTagsPayload)
 
@@ -1301,10 +1298,6 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun addProductCategory(payload: AddProductCategoryPayload) {
-        with(payload) { wcProductRestClient.addProductCategory(site, category) }
-    }
-
     suspend fun addProductCategories(
         site: SiteModel,
         categories: List<WCProductCategoryModel>
@@ -1320,7 +1313,8 @@ class WCProductStore @Inject constructor(
                 AppLog.w(
                     API,
                     "addProductCategories: not all categories were added. " +
-                        "Expected: ${categories.size}, added: ${addedCategories.size}")
+                            "Expected: ${categories.size}, added: ${addedCategories.size}"
+                )
             }
 
             addedCategories.forEach { category ->
@@ -1330,6 +1324,49 @@ class WCProductStore @Inject constructor(
 
         return@withDefaultContext result.asWooResult()
     }
+
+    suspend fun addProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooResult<WCProductCategoryModel> = coroutineEngine.withDefaultContext(API, this, "addProductCategory") {
+        val result = wcProductRestClient.addProductCategory(
+            site = site,
+            category = category
+        )
+        if (!result.isError) {
+            val updatedCategory = result.result!!
+            ProductSqlUtils.insertOrUpdateProductCategory(updatedCategory)
+        }
+        return@withDefaultContext result.asWooResult()
+    }
+
+    suspend fun updateProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ): WooResult<WCProductCategoryModel> = coroutineEngine.withDefaultContext(API, this, "updateProductCategory") {
+        val result = wcProductRestClient.updateProductCategory(
+            site = site,
+            category = category
+        )
+        if (!result.isError) {
+            val updatedCategory = result.result!!
+            ProductSqlUtils.insertOrUpdateProductCategory(updatedCategory)
+        }
+        return@withDefaultContext result.asWooResult()
+    }
+
+    suspend fun deleteProductCategory(site: SiteModel, remoteId: Long): WooResult<WCProductCategoryModel> =
+        coroutineEngine.withDefaultContext(API, this, "deleteProductCategory") {
+            val result = wcProductRestClient.deleteProductCategory(
+                site = site,
+                remoteId = remoteId
+            )
+            if (!result.isError) {
+                val deletedCategory = result.result!!
+                ProductSqlUtils.deleteProductCategory(deletedCategory)
+            }
+            return@withDefaultContext result.asWooResult()
+        }
 
     private fun fetchProductTags(payload: FetchProductTagsPayload) {
         with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset, searchQuery) }
