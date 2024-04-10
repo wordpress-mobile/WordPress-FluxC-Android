@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -719,21 +720,27 @@ public class PostStore extends Store {
                 fetchPost((RemotePostPayload) action.getPayload());
                 break;
             case FETCH_POST_STATUS:
+                Log.d("autosave-test","PostStore:onAction -> FETCH_POST_STATUS");
                 fetchPostStatus((RemotePostPayload) action.getPayload());
                 break;
             case FETCHED_POST:
                 handleFetchSinglePostCompleted((FetchPostResponsePayload) action.getPayload());
                 break;
             case FETCHED_POST_STATUS:
+                Log.d("autosave-test","PostStore:onAction -> FETCHED_POST_STATUS");
+
                 handleFetchPostStatusCompleted((FetchPostStatusResponsePayload) action.getPayload());
                 break;
             case PUSH_POST:
+                Log.d("autosave-test","PostStore:onAction -> PUSH_POST");
                 pushPost((RemotePostPayload) action.getPayload());
                 break;
             case PUSHED_POST:
+                Log.d("autosave-test","PostStore:onAction -> PUSHED_POST");
                 handlePushPostCompleted((RemotePostPayload) action.getPayload());
                 break;
             case UPDATE_POST:
+                Log.d("autosave-test","PostStore:onAction -> UPDATE_POST");
                 updatePost((PostModel) action.getPayload(), true);
                 break;
             case DELETE_POST:
@@ -755,9 +762,12 @@ public class PostStore extends Store {
                 removeAllPosts();
                 break;
             case REMOTE_AUTO_SAVE_POST:
+                Log.d("autosave-test","PostStore:onAction -> REMOTE_AUTO_SAVE_POST");
                 remoteAutoSavePost((RemotePostPayload) action.getPayload());
                 break;
             case REMOTE_AUTO_SAVED_POST:
+                Log.d("autosave-test","PostStore:onAction -> REMOTE_AUTO_SAVED_POST");
+
                 handleRemoteAutoSavedPost((RemoteAutoSavePostPayload) action.getPayload());
                 break;
             case FETCH_REVISIONS:
@@ -845,6 +855,8 @@ public class PostStore extends Store {
     }
 
     private void fetchPostStatus(RemotePostPayload payload) {
+        Log.d("autosave-test","PostStore:fetchPostStatus()");
+
         if (payload.post.isLocalDraft()) {
             // If the post is a local draft, it won't have a remote post status
             FetchPostStatusResponsePayload responsePayload =
@@ -1083,10 +1095,14 @@ public class PostStore extends Store {
     }
 
     private void handleFetchPostStatusCompleted(FetchPostStatusResponsePayload payload) {
+        Log.d("autosave-test","PostStore:handleFetchPostStatusCompleted");
+
         emitChange(new OnPostStatusFetched(payload.post, payload.remotePostStatus, payload.error));
     }
 
     private void handlePushPostCompleted(RemotePostPayload payload) {
+        Log.d("autosave-test","PostStore:handlePushPostCompleted()");
+
         if (payload.isError()) {
             OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post, payload.isFirstTimePublish);
             onPostUploaded.error = payload.error;
@@ -1128,6 +1144,8 @@ public class PostStore extends Store {
     }
 
     private void pushPost(RemotePostPayload payload) {
+        Log.d("autosave-test","PostStore:pushPost()");
+
         if (payload.site.isUsingWpComRestApi()) {
             mPostRestClient.pushPost(
                     payload.post,
@@ -1147,10 +1165,12 @@ public class PostStore extends Store {
     }
 
     private void updatePost(PostModel post, boolean isLocalUpdate) {
+        Log.d("autosave-test","PostStore:updatePost()");
         if (isLocalUpdate) {
             post.setDateLocallyChanged((DateTimeUtils.iso8601UTCFromDate(new Date())));
         }
         int rowsAffected = mPostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(post);
+        Log.d("autosave-test","PostStore:updatePost() -> rowsAffected = " + rowsAffected);
         CauseOfOnPostChanged causeOfChange = new CauseOfOnPostChanged.UpdatePost(
                 post.getId(),
                 post.getRemotePostId(),
@@ -1197,6 +1217,8 @@ public class PostStore extends Store {
     }
 
     private void remoteAutoSavePost(RemotePostPayload payload) {
+        Log.d("autosave-test","PostStore:remoteAutoSavePost()");
+
         if (payload.site.isUsingWpComRestApi()) {
             mPostRestClient.remoteAutoSavePost(payload.post, payload.site);
         } else {
@@ -1211,18 +1233,26 @@ public class PostStore extends Store {
     }
 
     private void handleRemoteAutoSavedPost(RemoteAutoSavePostPayload payload) {
+        Log.d("autosave-test","PostStore:handleRemoteAutoSavedPost()");
+
         CauseOfOnPostChanged causeOfChange =
                 new CauseOfOnPostChanged.RemoteAutoSavePost(payload.localPostId, payload.remotePostId);
         OnPostChanged onPostChanged;
 
         if (payload.isError()) {
+            Log.d("autosave-test","PostStore:handleRemoteAutoSavedPost(): payload.isError()");
+
             onPostChanged = new OnPostChanged(causeOfChange, 0);
             onPostChanged.error = payload.error;
         } else {
             int rowsAffected = mPostSqlUtils.updatePostsAutoSave(payload.site, payload.autoSaveModel);
+            Log.d("autosave-test","PostStore:handleRemoteAutoSavedPost(): rowsAffected = " + rowsAffected);
+
             if (rowsAffected != 1) {
                 String errorMsg = "Updating fields of a single post affected: " + rowsAffected + " rows";
                 AppLog.e(AppLog.T.API, errorMsg);
+                Log.d("autosave-test","PostStore:handleRemoteAutoSavedPost(): errorMsg = " + errorMsg);
+
                 if (BuildConfig.DEBUG) {
                     throw new RuntimeException(errorMsg);
                 }
@@ -1230,6 +1260,7 @@ public class PostStore extends Store {
             onPostChanged = new OnPostChanged(causeOfChange, rowsAffected);
         }
         emitChange(onPostChanged);
+        Log.d("autosave-test","PostStore:handleRemoteAutoSavedPost(): onPostChanged emmited");
     }
 
     public void setLocalRevision(RevisionModel model, SiteModel site, PostModel post) {

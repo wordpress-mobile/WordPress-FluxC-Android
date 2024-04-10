@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.persistence;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,6 +47,8 @@ public class PostSqlUtils {
     }
 
     public synchronized int insertOrUpdatePost(PostModel post, boolean overwriteLocalChanges) {
+        Log.d("autosave-test", "PostSqlUtils:insertOrUpdatePost()");
+
         if (post == null) {
             return 0;
         }
@@ -92,6 +95,8 @@ public class PostSqlUtils {
             }
             // Update only if local changes for this post don't exist
             if (overwriteLocalChanges || !postResult.get(0).isLocallyChanged()) {
+                Log.d("autosave-test", "PostSqlUtils:insertOrUpdatePost() -> ready to call WellSql.update()");
+
                 int oldId = postResult.get(0).getId();
                 post.setDbTimestamp(System.currentTimeMillis());
                 return WellSql.update(PostModel.class).whereId(oldId)

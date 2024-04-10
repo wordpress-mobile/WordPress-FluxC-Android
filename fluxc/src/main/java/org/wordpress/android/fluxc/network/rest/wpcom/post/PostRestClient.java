@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.post;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -188,6 +189,8 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     public void fetchPostStatus(final PostModel post, final SiteModel site) {
+        Log.d("autosave-test","PostRestClient:fetchPostStatus()");
+
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.post(post.getRemotePostId()).getUrlV1_1();
 
         Map<String, String> params = new HashMap<>();
@@ -197,6 +200,8 @@ public class PostRestClient extends BaseWPComRestClient {
                 new Listener<PostWPComRestResponse>() {
                     @Override
                     public void onResponse(PostWPComRestResponse response) {
+                        Log.d("autosave-test","PostRestClient:fetchPostStatus():onResponse");
+
                         FetchPostStatusResponsePayload payload = new FetchPostStatusResponsePayload(post, site);
                         payload.remotePostStatus = response.getStatus();
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostStatusAction(payload));
@@ -312,6 +317,8 @@ public class PostRestClient extends BaseWPComRestClient {
             final boolean isFirstTimePublish,
             final boolean shouldSkipConflictResolutionCheck
     ) {
+        Log.d("autosave-test","PostRestClient:pushPost()");
+
         String url;
 
         if (post.isLocalDraft()) {
@@ -327,6 +334,8 @@ public class PostRestClient extends BaseWPComRestClient {
                 new Listener<PostWPComRestResponse>() {
                     @Override
                     public void onResponse(PostWPComRestResponse response) {
+                        Log.d("autosave-test","PostRestClient:pushPost():onResponse()");
+
                         PostModel uploadedPost = postResponseToPostModel(response);
 
                         uploadedPost.setIsLocalDraft(false);
@@ -336,6 +345,9 @@ public class PostRestClient extends BaseWPComRestClient {
 
                         RemotePostPayload payload = new RemotePostPayload(uploadedPost, site);
                         payload.isFirstTimePublish = isFirstTimePublish;
+
+                        Log.d("autosave-test","PostRestClient:pushPost():onResponse():newPushedPostAction()");
+
                         mDispatcher.dispatch(UploadActionBuilder.newPushedPostAction(payload));
                     }
                 },
@@ -360,8 +372,13 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     public void remoteAutoSavePost(final @NonNull PostModel post, final @NonNull SiteModel site) {
+        Log.d("autosave-test","PostRestClient:remoteAutoSavePost()");
+
         String url =
                 WPCOMREST.sites.site(site.getSiteId()).posts.post(post.getRemotePostId()).autosave.getUrlV1_1();
+
+        Log.d("autosave-test","PostRestClient:remoteAutoSavePost() -> url = " + url);
+
 
         Map<String, Object> body = postModelToAutoSaveParams(post);
 
@@ -370,6 +387,8 @@ public class PostRestClient extends BaseWPComRestClient {
                 new Listener<PostRemoteAutoSaveModel>() {
                     @Override
                     public void onResponse(PostRemoteAutoSaveModel response) {
+                        Log.d("autosave-test","PostRestClient:remoteAutoSavePost():onResponse");
+
                         RemoteAutoSavePostPayload payload =
                                 new RemoteAutoSavePostPayload(post.getId(), post.getRemotePostId(), response, site);
                         mDispatcher.dispatch(UploadActionBuilder.newRemoteAutoSavedPostAction(payload));
@@ -378,6 +397,8 @@ public class PostRestClient extends BaseWPComRestClient {
                 new WPComErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
+                        Log.d("autosave-test","PostRestClient:remoteAutoSavePost():onErrorResponse");
+
                         // Possible non-generic errors: 404 unknown_post (invalid post ID)
                         PostError postError = new PostError(error.apiError, error.message);
                         RemoteAutoSavePostPayload payload =
@@ -488,6 +509,8 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     private PostModel postResponseToPostModel(PostWPComRestResponse from) {
+        Log.d("autosave-test","PostRestClient:postResponseToPostModel()");
+
         PostModel post = new PostModel();
         post.setRemotePostId(from.getRemotePostId());
         post.setRemoteSiteId(from.getRemoteSiteId());
@@ -593,10 +616,14 @@ public class PostRestClient extends BaseWPComRestClient {
             post.setAutoSaveRevisionId(autoSave.getRevisionId());
             post.setAutoSaveModified(autoSave.getModified());
             post.setRemoteAutoSaveModified(autoSave.getModified());
+            Log.d("autosave-test","PostRestClient:postResponseToPostModel():setRemoteAutoSaveModified");
+
             post.setAutoSavePreviewUrl(autoSave.getPreviewUrl());
             post.setAutoSaveTitle(autoSave.getTitle());
             post.setAutoSaveContent(autoSave.getContent());
             post.setAutoSaveExcerpt(autoSave.getExcerpt());
+        } else {
+            Log.d("autosave-test","PostRestClient:postResponseToPostModel():getPostAutoSave() == null");
         }
 
         if (from.getCapabilities() != null) {
