@@ -73,6 +73,7 @@ open class WooCommerceStore @Inject constructor(
         WOO_PRODUCT_BUNDLES("woocommerce-product-bundles/woocommerce-product-bundles"),
         WOO_COMPOSITE_PRODUCTS("woocommerce-composite-products/woocommerce-composite-products"),
         WOO_SQUARE("woocommerce-square/woocommerce-square"),
+        JETPACK("jetpack/jetpack"),
     }
 
     companion object {
