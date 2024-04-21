@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.post;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -59,15 +60,19 @@ import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.PostListItem;
 import org.wordpress.android.fluxc.store.PostStore.RemoteAutoSavePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.utils.DateTimeUtilsWrapper;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+import org.wordpress.android.util.DateTimeUtils;
 import org.wordpress.android.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -312,6 +317,7 @@ public class PostRestClient extends BaseWPComRestClient {
             final boolean isFirstTimePublish,
             final boolean shouldSkipConflictResolutionCheck
     ) {
+        Log.i("PostRestClient", "\uD83C\uDF44 pushPost with shouldSkipConflictResolutionCheck:" + shouldSkipConflictResolutionCheck + " and postStatus " + post.getStatus());
         String url;
 
         if (post.isLocalDraft()) {
@@ -614,6 +620,8 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     private Map<String, Object> postModelToParams(PostModel post, boolean shouldSkipConflictResolutionCheck) {
+        Log.i("PostRestClient", "\uD83C\uDF44 postModelToParams");
+
         Map<String, Object> params = new HashMap<>();
 
         params.put("status", StringUtils.notNullStr(post.getStatus()));
@@ -627,7 +635,21 @@ public class PostRestClient extends BaseWPComRestClient {
         // setting this field to true, would not add the modified date and won't trigger a check for latest version
         // on the remote host.
         if (!shouldSkipConflictResolutionCheck) {
-            params.put("if_not_modified_since", post.getLastModified());
+            Log.i("PostRestClient", "\uD83C\uDF44 Add the if_not_modified_since date");
+            // If the post is scheduled, the create date == the scheduled date, and there is already a
+            // remotePostId = then this is an update - we should set the correct if_not_modified_since date
+            // because the first time around, it is set to the actual scheduled (created date) which won't
+            // identify conflicts
+            if ((post.getStatus().equals(PostStatus.SCHEDULED.toString()))
+                 && post.getRemotePostId() > 0
+                 && post.getLastModified().equals(post.getDateCreated())) {
+                // todo: Annmarie if we decide to go this way, then this has to take into locale into consideration
+                String newLastModifiedDate = DateTimeUtils.iso8601FromTimestamp(System.currentTimeMillis());
+                Log.i("PostRestClient", "\uD83C\uDF44 Using the newLastModifiedDate " + newLastModifiedDate);
+                params.put("if_not_modified_since", newLastModifiedDate);
+            } else {
+                params.put("if_not_modified_since", post.getLastModified());
+            }
         }
 
         if (post.getAuthorId() > 0) {

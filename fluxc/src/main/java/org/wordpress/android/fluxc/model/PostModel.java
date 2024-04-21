@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -184,6 +185,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     }
 
     public void setLastModified(String lastModified) {
+        Log.i("PostModel", "\uD83C\uDF44 setLastModified:" + lastModified + " for PostId " + this.getRemotePostId());
         mLastModified = lastModified;
     }
 
