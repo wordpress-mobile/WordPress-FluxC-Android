@@ -107,8 +107,13 @@ class OrdersDaoDecorator @Inject constructor(
     fun getOrderCountForSite(localSiteId: LocalOrRemoteId.LocalId): Int =
         ordersDao.getOrderCountForSite(localSiteId)
 
-    fun observeOrderCountForSite(localSiteId: LocalOrRemoteId.LocalId, status: List<String>): Flow<Int> =
-        ordersDao.observeOrderCountForSite(localSiteId, status)
+    fun observeOrderCountForSite(localSiteId: LocalOrRemoteId.LocalId, status: List<String>?): Flow<Int> {
+        return if (status == null) {
+            ordersDao.observeOrderCountForSite(localSiteId)
+        } else {
+            ordersDao.observeOrderCountForSite(localSiteId, status)
+        }
+    }
 
     suspend fun deleteOrder(localSiteId: LocalOrRemoteId.LocalId, orderId: Long) {
         ordersDao.deleteOrder(localSiteId, orderId)
