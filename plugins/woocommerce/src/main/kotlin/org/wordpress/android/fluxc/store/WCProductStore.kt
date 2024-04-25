@@ -981,9 +981,10 @@ class WCProductStore @Inject constructor(
     fun observeProducts(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        limit: Int? = null
     ): Flow<List<WCProductModel>> =
-        ProductSqlUtils.observeProducts(site, sortType, filterOptions)
+        ProductSqlUtils.observeProducts(site, sortType, filterOptions, limit)
 
     fun observeProductsCount(
         site: SiteModel,

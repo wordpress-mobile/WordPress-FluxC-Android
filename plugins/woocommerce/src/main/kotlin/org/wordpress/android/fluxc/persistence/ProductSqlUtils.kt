@@ -69,14 +69,15 @@ object ProductSqlUtils {
     fun observeProducts(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        limit: Int? = null
     ): Flow<List<WCProductModel>> {
         return productsUpdatesTrigger
             .onStart { emit(Unit) }
             .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
                 if (filterOptions.isEmpty()) {
-                    getProductsForSite(site, sortType)
+                    getProductsForSite(site, sortType, limit)
                 } else {
                     getProducts(site, filterOptions, sortType)
                 }
@@ -241,7 +242,8 @@ object ProductSqlUtils {
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
+        limit: Int? = null
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -286,6 +288,7 @@ object ProductSqlUtils {
         val products = queryBuilder
                 .endGroup().endWhere()
                 .orderBy(sortField, sortOrder)
+                .apply { limit?.let { limit(it) } }
                 .asModel
 
         return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
@@ -326,7 +329,8 @@ object ProductSqlUtils {
 
     fun getProductsForSite(
         site: SiteModel,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        limit: Int? = null
     ): List<WCProductModel> {
         val sortOrder = getSortOrder(sortType)
         val sortField = getSortField(sortType)
@@ -335,6 +339,7 @@ object ProductSqlUtils {
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .orderBy(sortField, sortOrder)
+                .apply { limit?.let { limit(it) } }
                 .asModel
 
         return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
