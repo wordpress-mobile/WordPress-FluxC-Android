@@ -10,6 +10,7 @@ import com.wellsql.generated.WCProductReviewModelTable
 import com.wellsql.generated.WCProductShippingClassModelTable
 import com.wellsql.generated.WCProductTagModelTable
 import com.wellsql.generated.WCProductVariationModelTable
+import com.yarolegovich.wellsql.ConditionClauseBuilder
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +52,19 @@ object ProductSqlUtils {
     private val categoriesUpdatesTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     private val gson by lazy { Gson() }
+
+    fun observeProductsCount(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+    ): Flow<Long> {
+        return productsUpdatesTrigger
+            .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
+            .mapLatest {
+                getProductCountForSite(site, filterOptions)
+            }
+            .flowOn(Dispatchers.IO)
+    }
 
     fun observeProducts(
         site: SiteModel,
@@ -232,22 +246,8 @@ object ProductSqlUtils {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .applyProductFilterOptions(filterOptions)
 
-        if (filterOptions.containsKey(ProductFilterOption.STATUS)) {
-            queryBuilder.equals(WCProductModelTable.STATUS, filterOptions[ProductFilterOption.STATUS])
-        }
-        if (filterOptions.containsKey(ProductFilterOption.STOCK_STATUS)) {
-            queryBuilder.equals(WCProductModelTable.STOCK_STATUS, filterOptions[ProductFilterOption.STOCK_STATUS])
-        }
-        if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
-            queryBuilder.equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
-        }
-        if (filterOptions.containsKey(ProductFilterOption.CATEGORY)) {
-            // Building a custom filter, because in the table a product's categories are saved as JSON string, e.g:
-            // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
-            val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
-            queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
-        }
         if (searchQuery?.isNotEmpty() == true) {
             when(skuSearchOptions) {
                 SkuSearchOptions.Disabled -> {
@@ -426,12 +426,18 @@ object ProductSqlUtils {
                 .also(::triggerVariationsUpdateIfNeeded)
     }
 
-    fun getProductCountForSite(site: SiteModel): Long {
+    fun getProductCountForSite(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+    ): Long {
         return WellSql.select(WCProductModel::class.java)
-                .where()
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
-                .count()
+            .where()
+            .beginGroup()
+            .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+            .applyProductFilterOptions(filterOptions)
+            .endGroup()
+            .endWhere()
+            .count()
     }
 
     fun insertOrUpdateProductReviews(productReviews: List<WCProductReviewModel>): Int {
@@ -884,5 +890,26 @@ object ProductSqlUtils {
 
     private fun triggerCategoriesUpdateIfNeeded(affectedRows: Int) {
         if (affectedRows != 0) categoriesUpdatesTrigger.tryEmit(Unit)
+    }
+
+    private fun ConditionClauseBuilder<SelectQuery<WCProductModel>>.applyProductFilterOptions(
+        filterOptions: Map<ProductFilterOption, String>
+    ): ConditionClauseBuilder<SelectQuery<WCProductModel>> {
+        if (filterOptions.containsKey(ProductFilterOption.STATUS)) {
+            equals(WCProductModelTable.STATUS, filterOptions[ProductFilterOption.STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.STOCK_STATUS)) {
+            equals(WCProductModelTable.STOCK_STATUS, filterOptions[ProductFilterOption.STOCK_STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
+            equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.CATEGORY)) {
+            // Building a custom filter, because in the table a product's categories are saved as JSON string, e.g:
+            // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
+            val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
+            contains(WCProductModelTable.CATEGORIES, categoryFilter)
+        }
+        return this
     }
 }
