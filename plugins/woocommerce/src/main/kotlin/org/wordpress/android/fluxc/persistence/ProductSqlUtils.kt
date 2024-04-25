@@ -55,13 +55,14 @@ object ProductSqlUtils {
 
     fun observeProductsCount(
         site: SiteModel,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        excludeSampleProducts: Boolean = false
     ): Flow<Long> {
         return productsUpdatesTrigger
             .onStart { emit(Unit) }
             .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
-                getProductCountForSite(site, filterOptions)
+                getProductCountForSite(site, filterOptions, excludeSampleProducts)
             }
             .flowOn(Dispatchers.IO)
     }
@@ -70,6 +71,7 @@ object ProductSqlUtils {
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        excludeSampleProducts: Boolean = false,
         limit: Int? = null
     ): Flow<List<WCProductModel>> {
         return productsUpdatesTrigger
@@ -77,9 +79,20 @@ object ProductSqlUtils {
             .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
                 if (filterOptions.isEmpty()) {
-                    getProductsForSite(site, sortType, limit)
+                    getProductsForSite(
+                        site = site,
+                        sortType = sortType,
+                        excludeSampleProducts = excludeSampleProducts,
+                        limit = limit
+                    )
                 } else {
-                    getProducts(site, filterOptions, sortType)
+                    getProducts(
+                        site = site,
+                        filterOptions = filterOptions,
+                        sortType = sortType,
+                        excludeSampleProducts = excludeSampleProducts,
+                        limit = limit
+                    )
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -113,6 +126,7 @@ object ProductSqlUtils {
             gson.fromJson(it.compositeComponents, responseType) as? List<WCProductComponent>
         } ?: emptyList()
     }
+
     private fun getBundledProducts(site: SiteModel, remoteProductId: Long): List<WCBundledProduct> {
         val productModel = WellSql.select(WCProductModel::class.java)
             .where().beginGroup()
@@ -243,6 +257,7 @@ object ProductSqlUtils {
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
         skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
+        excludeSampleProducts: Boolean = false,
         limit: Int? = null
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
@@ -262,12 +277,14 @@ object ProductSqlUtils {
                         .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
                         .endGroup()
                 }
+
                 SkuSearchOptions.ExactSearch -> {
                     queryBuilder.beginGroup()
                         // The search is case sensitive
                         .equals(WCProductModelTable.SKU, searchQuery)
                         .endGroup()
                 }
+
                 SkuSearchOptions.PartialMatch -> {
                     queryBuilder.beginGroup()
                         .contains(WCProductModelTable.SKU, searchQuery)
@@ -280,6 +297,10 @@ object ProductSqlUtils {
             if (it.isNotEmpty()) {
                 queryBuilder.isNotIn(WCProductModelTable.REMOTE_PRODUCT_ID, it)
             }
+        }
+
+        if (excludeSampleProducts) {
+            queryBuilder.equals(WCProductModelTable.IS_SAMPLE_PRODUCT, false)
         }
 
         val sortOrder = getSortOrder(sortType)
@@ -330,14 +351,20 @@ object ProductSqlUtils {
     fun getProductsForSite(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludeSampleProducts: Boolean = false,
         limit: Int? = null
     ): List<WCProductModel> {
         val sortOrder = getSortOrder(sortType)
         val sortField = getSortField(sortType)
         val products = WellSql.select(WCProductModel::class.java)
-                .where()
+                .where().beginGroup()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
+                .apply {
+                    if (excludeSampleProducts) {
+                        equals(WCProductModelTable.IS_SAMPLE_PRODUCT, false)
+                    }
+                }
+                .endGroup().endWhere()
                 .orderBy(sortField, sortOrder)
                 .apply { limit?.let { limit(it) } }
                 .asModel
@@ -433,13 +460,19 @@ object ProductSqlUtils {
 
     fun getProductCountForSite(
         site: SiteModel,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        excludeSampleProducts: Boolean = false
     ): Long {
         return WellSql.select(WCProductModel::class.java)
             .where()
             .beginGroup()
             .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
             .applyProductFilterOptions(filterOptions)
+            .apply {
+                if (excludeSampleProducts) {
+                    equals(WCProductModelTable.IS_SAMPLE_PRODUCT, false)
+                }
+            }
             .endGroup()
             .endWhere()
             .count()
