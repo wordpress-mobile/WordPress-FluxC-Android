@@ -111,6 +111,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var bundledItems = ""
     @Column var compositeComponents = ""
     @Column var specialStockStatus = ""
+    @Column var isSampleProduct = false
+        @JvmName("setIsSampleProduct")
+        set
 
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
@@ -119,11 +122,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         get() = Gson().fromJson(metadata, Array<WCMetaData>::class.java)
             ?.find { it.key == ADDONS_METADATA_KEY }
             ?.addons
-
-    val isSampleProduct: Boolean
-        get() = Gson().fromJson(metadata, Array<WCMetaData>::class.java)
-            ?.any { it.key == OtherKeys.HEAD_START_POST && it.value == "_hs_extra" }
-            ?: false
 
     val isConfigurable: Boolean
         get() = when (type) {
@@ -616,9 +614,5 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             GROUP_OF_QUANTITY,
             ALLOW_COMBINATION
         )
-    }
-
-    object OtherKeys {
-        const val HEAD_START_POST = "_headstart_post"
     }
 }

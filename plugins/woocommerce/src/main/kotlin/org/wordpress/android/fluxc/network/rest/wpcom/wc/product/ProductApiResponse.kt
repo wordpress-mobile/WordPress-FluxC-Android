@@ -173,6 +173,13 @@ data class ProductApiResponse(
             bundledItems = response.bundled_items?.toString() ?: ""
             compositeComponents = response.composite_components?.toString() ?: ""
             metadata = response.metadata?.toString() ?: ""
+            isSampleProduct = response.metadata?.any {
+                val metaDataEntry = if (it.isJsonObject) it.asJsonObject else null
+                metaDataEntry?.let { json ->
+                    json.getString(WCMetaData.KEY) == "_headstart_post"
+                        && json.getString(WCMetaData.VALUE) == "_hs_extra"
+                } ?: false
+            } ?: false
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
