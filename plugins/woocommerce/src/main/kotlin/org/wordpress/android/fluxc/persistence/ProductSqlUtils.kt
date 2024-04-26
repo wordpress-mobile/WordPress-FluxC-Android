@@ -10,12 +10,14 @@ import com.wellsql.generated.WCProductReviewModelTable
 import com.wellsql.generated.WCProductShippingClassModelTable
 import com.wellsql.generated.WCProductTagModelTable
 import com.wellsql.generated.WCProductVariationModelTable
+import com.yarolegovich.wellsql.ConditionClauseBuilder
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
@@ -52,19 +54,47 @@ object ProductSqlUtils {
 
     private val gson by lazy { Gson() }
 
+    fun observeProductsCount(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        excludeSampleProducts: Boolean = false
+    ): Flow<Long> {
+        return productsUpdatesTrigger
+            .onStart { emit(Unit) }
+            .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
+            .mapLatest {
+                getProductCountForSite(site, filterOptions, excludeSampleProducts)
+            }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
+
     fun observeProducts(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        filterOptions: Map<ProductFilterOption, String> = emptyMap()
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        excludeSampleProducts: Boolean = false,
+        limit: Int? = null
     ): Flow<List<WCProductModel>> {
         return productsUpdatesTrigger
             .onStart { emit(Unit) }
             .debounce(DEBOUNCE_DELAY_FOR_OBSERVERS)
             .mapLatest {
                 if (filterOptions.isEmpty()) {
-                    getProductsForSite(site, sortType)
+                    getProductsForSite(
+                        site = site,
+                        sortType = sortType,
+                        excludeSampleProducts = excludeSampleProducts,
+                        limit = limit
+                    )
                 } else {
-                    getProducts(site, filterOptions, sortType)
+                    getProducts(
+                        site = site,
+                        filterOptions = filterOptions,
+                        sortType = sortType,
+                        excludeSampleProducts = excludeSampleProducts,
+                        limit = limit
+                    )
                 }
             }
             .flowOn(Dispatchers.IO)
@@ -98,6 +128,7 @@ object ProductSqlUtils {
             gson.fromJson(it.compositeComponents, responseType) as? List<WCProductComponent>
         } ?: emptyList()
     }
+
     private fun getBundledProducts(site: SiteModel, remoteProductId: Long): List<WCBundledProduct> {
         val productModel = WellSql.select(WCProductModel::class.java)
             .where().beginGroup()
@@ -227,27 +258,15 @@ object ProductSqlUtils {
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         excludedProductIds: List<Long>? = null,
         searchQuery: String? = null,
-        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled
+        skuSearchOptions: SkuSearchOptions = SkuSearchOptions.Disabled,
+        excludeSampleProducts: Boolean = false,
+        limit: Int? = null
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .applyProductFilterOptions(filterOptions)
 
-        if (filterOptions.containsKey(ProductFilterOption.STATUS)) {
-            queryBuilder.equals(WCProductModelTable.STATUS, filterOptions[ProductFilterOption.STATUS])
-        }
-        if (filterOptions.containsKey(ProductFilterOption.STOCK_STATUS)) {
-            queryBuilder.equals(WCProductModelTable.STOCK_STATUS, filterOptions[ProductFilterOption.STOCK_STATUS])
-        }
-        if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
-            queryBuilder.equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
-        }
-        if (filterOptions.containsKey(ProductFilterOption.CATEGORY)) {
-            // Building a custom filter, because in the table a product's categories are saved as JSON string, e.g:
-            // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
-            val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
-            queryBuilder.contains(WCProductModelTable.CATEGORIES, categoryFilter)
-        }
         if (searchQuery?.isNotEmpty() == true) {
             when(skuSearchOptions) {
                 SkuSearchOptions.Disabled -> {
@@ -260,12 +279,14 @@ object ProductSqlUtils {
                         .contains(WCProductModelTable.SHORT_DESCRIPTION, searchQuery)
                         .endGroup()
                 }
+
                 SkuSearchOptions.ExactSearch -> {
                     queryBuilder.beginGroup()
                         // The search is case sensitive
                         .equals(WCProductModelTable.SKU, searchQuery)
                         .endGroup()
                 }
+
                 SkuSearchOptions.PartialMatch -> {
                     queryBuilder.beginGroup()
                         .contains(WCProductModelTable.SKU, searchQuery)
@@ -280,12 +301,17 @@ object ProductSqlUtils {
             }
         }
 
+        if (excludeSampleProducts) {
+            queryBuilder.equals(WCProductModelTable.IS_SAMPLE_PRODUCT, false)
+        }
+
         val sortOrder = getSortOrder(sortType)
         val sortField = getSortField(sortType)
 
         val products = queryBuilder
                 .endGroup().endWhere()
                 .orderBy(sortField, sortOrder)
+                .apply { limit?.let { limit(it) } }
                 .asModel
 
         return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
@@ -326,15 +352,23 @@ object ProductSqlUtils {
 
     fun getProductsForSite(
         site: SiteModel,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludeSampleProducts: Boolean = false,
+        limit: Int? = null
     ): List<WCProductModel> {
         val sortOrder = getSortOrder(sortType)
         val sortField = getSortField(sortType)
         val products = WellSql.select(WCProductModel::class.java)
-                .where()
+                .where().beginGroup()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
+                .apply {
+                    if (excludeSampleProducts) {
+                        equals(WCProductModelTable.IS_SAMPLE_PRODUCT, false)
+                    }
+                }
+                .endGroup().endWhere()
                 .orderBy(sortField, sortOrder)
+                .apply { limit?.let { limit(it) } }
                 .asModel
 
         return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
@@ -426,12 +460,24 @@ object ProductSqlUtils {
                 .also(::triggerVariationsUpdateIfNeeded)
     }
 
-    fun getProductCountForSite(site: SiteModel): Long {
+    fun getProductCountForSite(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String> = emptyMap(),
+        excludeSampleProducts: Boolean = false
+    ): Long {
         return WellSql.select(WCProductModel::class.java)
-                .where()
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
-                .count()
+            .where()
+            .beginGroup()
+            .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+            .applyProductFilterOptions(filterOptions)
+            .apply {
+                if (excludeSampleProducts) {
+                    equals(WCProductModelTable.IS_SAMPLE_PRODUCT, false)
+                }
+            }
+            .endGroup()
+            .endWhere()
+            .count()
     }
 
     fun insertOrUpdateProductReviews(productReviews: List<WCProductReviewModel>): Int {
@@ -884,5 +930,26 @@ object ProductSqlUtils {
 
     private fun triggerCategoriesUpdateIfNeeded(affectedRows: Int) {
         if (affectedRows != 0) categoriesUpdatesTrigger.tryEmit(Unit)
+    }
+
+    private fun ConditionClauseBuilder<SelectQuery<WCProductModel>>.applyProductFilterOptions(
+        filterOptions: Map<ProductFilterOption, String>
+    ): ConditionClauseBuilder<SelectQuery<WCProductModel>> {
+        if (filterOptions.containsKey(ProductFilterOption.STATUS)) {
+            equals(WCProductModelTable.STATUS, filterOptions[ProductFilterOption.STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.STOCK_STATUS)) {
+            equals(WCProductModelTable.STOCK_STATUS, filterOptions[ProductFilterOption.STOCK_STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
+            equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.CATEGORY)) {
+            // Building a custom filter, because in the table a product's categories are saved as JSON string, e.g:
+            // [{"id":1377,"name":"Decor","slug":"decor"},{"id":1374,"name":"Hoodies","slug":"hoodies"}]
+            val categoryFilter = "\"id\":${filterOptions[ProductFilterOption.CATEGORY]},"
+            contains(WCProductModelTable.CATEGORIES, categoryFilter)
+        }
+        return this
     }
 }
