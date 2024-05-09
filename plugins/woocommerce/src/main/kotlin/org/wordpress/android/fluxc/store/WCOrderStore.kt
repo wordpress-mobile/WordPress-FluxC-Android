@@ -562,19 +562,20 @@ class WCOrderStore @Inject constructor(
         filterByStatus: String? = null
     ): OrdersForWearablesResult {
         return coroutineEngine.withDefaultContext(API, this, "fetchOrdersForWearables") {
-            wcOrderRestClient.fetchOrdersSync(site, offset, filterByStatus)
-                .let { result ->
-                    if (result.isError) {
-                        ordersDaoDecorator.getAllOrders()
-                            .takeIf { it.isNotEmpty() }
-                            ?.let { OrdersForWearablesResult.Success(result.orders) }
-                            ?: OrdersForWearablesResult.Failure(OrderError())
-                    } else {
-                        ordersDaoDecorator.deleteOrdersForSite(site.localId())
-                        insertOrder(site.localId(), *result.ordersWithMeta.toTypedArray())
-                        OrdersForWearablesResult.Success(result.orders)
-                    }
+            val result = wcOrderRestClient.fetchOrdersSync(site, offset, filterByStatus)
+            when {
+                result.isError -> {
+                    ordersDaoDecorator.getAllOrders()
+                        .takeIf { it.isNotEmpty() }
+                        ?.let { OrdersForWearablesResult.Success(result.orders) }
+                        ?: OrdersForWearablesResult.Failure(OrderError())
                 }
+                else -> {
+                    ordersDaoDecorator.deleteOrdersForSite(site.localId())
+                    insertOrder(site.localId(), *result.ordersWithMeta.toTypedArray())
+                    OrdersForWearablesResult.Success(result.orders)
+                }
+            }
         }
     }
 

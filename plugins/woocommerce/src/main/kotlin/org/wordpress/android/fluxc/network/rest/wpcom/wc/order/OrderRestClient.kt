@@ -74,49 +74,72 @@ class OrderRestClient @Inject constructor(
      * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
-        val responsePayload = fetchOrdersSync(site, offset, filterByStatus)
-        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(responsePayload))
-    }
-
-    fun fetchOrdersSync(site: SiteModel, offset: Int, filterByStatus: String? = null): FetchOrdersResponsePayload {
         coroutineEngine.launch(T.API, this, "fetchOrders") {
-            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-            val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() }
-                ?: WCOrderStore.DEFAULT_ORDER_STATUS
-
-            val url = WOOCOMMERCE.orders.pathV3
-            val params = mapOf(
-                "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
-                "offset" to offset.toString(),
-                "status" to statusFilter,
-                "_fields" to ORDER_FIELDS
-            )
-
-            val response = wooNetwork.executeGetGsonRequest(
-                site = site,
-                path = url,
-                params = params,
-                clazz = Array<OrderDto>::class.java
-            )
-
-            return@launch when (response) {
+            when (val response = executeOrdersRequest(filterByStatus, offset, site)) {
                 is WPAPIResponse.Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-                    FetchOrdersResponsePayload(
+                    val payload = FetchOrdersResponsePayload(
                         site, orderModels, filterByStatus, offset > 0, canLoadMore
                     )
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 }
 
                 is WPAPIResponse.Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
-                    FetchOrdersResponsePayload(orderError, site)
+                    val payload = FetchOrdersResponsePayload(orderError, site)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 }
             }
         }
+    }
+
+    suspend fun fetchOrdersSync(site: SiteModel, offset: Int, filterByStatus: String? = null): FetchOrdersResponsePayload {
+        return when (val response = executeOrdersRequest(filterByStatus, offset, site)) {
+            is WPAPIResponse.Success -> {
+                val orderModels = response.data?.map { orderDto ->
+                    orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
+                }.orEmpty()
+
+                val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                FetchOrdersResponsePayload(
+                    site, orderModels, filterByStatus, offset > 0, canLoadMore
+                )
+            }
+
+            is WPAPIResponse.Error -> FetchOrdersResponsePayload(
+                error = wpAPINetworkErrorToOrderError(response.error),
+                site = site
+            )
+        }
+    }
+
+    private suspend fun executeOrdersRequest(
+        filterByStatus: String?,
+        offset: Int,
+        site: SiteModel
+    ): WPAPIResponse<Array<OrderDto>> {
+        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+        val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() }
+            ?: WCOrderStore.DEFAULT_ORDER_STATUS
+
+        val url = WOOCOMMERCE.orders.pathV3
+        val params = mapOf(
+            "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+            "offset" to offset.toString(),
+            "status" to statusFilter,
+            "_fields" to ORDER_FIELDS
+        )
+
+        return wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<OrderDto>::class.java
+        )
     }
 
     /**
