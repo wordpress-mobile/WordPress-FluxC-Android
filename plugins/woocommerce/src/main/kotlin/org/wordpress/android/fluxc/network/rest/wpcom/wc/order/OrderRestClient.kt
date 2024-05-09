@@ -97,7 +97,11 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    suspend fun fetchOrdersSync(site: SiteModel, offset: Int, filterByStatus: String? = null): FetchOrdersResponsePayload {
+    suspend fun fetchOrdersSync(
+        site: SiteModel,
+        offset: Int,
+        filterByStatus: String? = null
+    ): FetchOrdersResponsePayload {
         return when (val response = executeOrdersRequest(filterByStatus, offset, site)) {
             is WPAPIResponse.Success -> {
                 val orderModels = response.data?.map { orderDto ->

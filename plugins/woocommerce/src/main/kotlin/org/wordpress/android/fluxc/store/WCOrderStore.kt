@@ -556,6 +556,7 @@ class WCOrderStore @Inject constructor(
         with(payload) { wcOrderRestClient.fetchOrderCountSync(site, statusFilter) }
     }
 
+    @Suppress("SpreadOperator")
     suspend fun fetchOrdersForWearables(
         site: SiteModel,
         offset: Int = 0,
