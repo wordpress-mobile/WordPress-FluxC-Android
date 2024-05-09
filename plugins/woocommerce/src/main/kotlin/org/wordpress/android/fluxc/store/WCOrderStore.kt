@@ -321,6 +321,11 @@ class WCOrderStore @Inject constructor(
         data class Failure(val error: OrderError) : OrdersCountResult()
     }
 
+    sealed class OrdersForWearablesResult {
+        data class Success(val orders: List<OrderEntity>) : OrdersForWearablesResult()
+        data class Failure(val error: OrderError) : OrdersForWearablesResult()
+    }
+
     // OnChanged events
     data class OnOrderChanged(
         val statusFilter: String? = null,
@@ -549,6 +554,28 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
         with(payload) { wcOrderRestClient.fetchOrderCountSync(site, statusFilter) }
+    }
+
+    suspend fun fetchOrdersForWearables(
+        site: SiteModel,
+        offset: Int = 0,
+        filterByStatus: String? = null
+    ): OrdersForWearablesResult {
+        return coroutineEngine.withDefaultContext(API, this, "fetchOrdersForWearables") {
+            wcOrderRestClient.fetchOrdersSync(site, offset, filterByStatus)
+                .let { result ->
+                    if (result.isError) {
+                        ordersDaoDecorator.getAllOrders()
+                            .takeIf { it.isNotEmpty() }
+                            ?.let { OrdersForWearablesResult.Success(result.orders) }
+                            ?: OrdersForWearablesResult.Failure(OrderError())
+                    } else {
+                        ordersDaoDecorator.deleteOrdersForSite(site.localId())
+                        insertOrder(site.localId(), *result.ordersWithMeta.toTypedArray())
+                        OrdersForWearablesResult.Success(result.orders)
+                    }
+                }
+        }
     }
 
     suspend fun fetchOrdersCount(site: SiteModel, filterByStatus: String? = null): OrdersCountResult {

@@ -74,6 +74,11 @@ class OrderRestClient @Inject constructor(
      * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
+        val responsePayload = fetchOrdersSync(site, offset, filterByStatus)
+        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(responsePayload))
+    }
+
+    fun fetchOrdersSync(site: SiteModel, offset: Int, filterByStatus: String? = null): FetchOrdersResponsePayload {
         coroutineEngine.launch(T.API, this, "fetchOrders") {
             // If null, set the filter to the api default value of "any", which will not apply any order status filters.
             val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() }
@@ -94,22 +99,21 @@ class OrderRestClient @Inject constructor(
                 clazz = Array<OrderDto>::class.java
             )
 
-            when (response) {
+            return@launch when (response) {
                 is WPAPIResponse.Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-                    val payload = FetchOrdersResponsePayload(
+                    FetchOrdersResponsePayload(
                         site, orderModels, filterByStatus, offset > 0, canLoadMore
                     )
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 }
+
                 is WPAPIResponse.Error -> {
                     val orderError = wpAPINetworkErrorToOrderError(response.error)
-                    val payload = FetchOrdersResponsePayload(orderError, site)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                    FetchOrdersResponsePayload(orderError, site)
                 }
             }
         }
