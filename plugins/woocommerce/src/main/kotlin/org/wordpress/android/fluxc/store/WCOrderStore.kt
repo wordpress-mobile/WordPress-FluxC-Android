@@ -610,7 +610,7 @@ class WCOrderStore @Inject constructor(
         orderBy: OrderBy = OrderBy.DATE,
         sortOrder: SortOrder = SortOrder.DESCENDING,
         statusFilter: String? = null,
-        deleteOldData: Boolean = false
+        deleteOldData: Boolean = page == 1
     ): WooResult<List<OrderEntity>> {
         return coroutineEngine.withDefaultContext(API, this, "fetchOrders") {
             val result = wcOrderRestClient.fetchOrders(site, count, page, orderBy, sortOrder, statusFilter)
