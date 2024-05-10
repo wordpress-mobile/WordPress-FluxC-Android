@@ -21,8 +21,13 @@ import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_ERROR
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.OrderBy
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.SortOrder
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
@@ -59,7 +64,6 @@ class WCOrderStore @Inject constructor(
 ) : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 15
-        const val DEFAULT_ORDER_STATUS = "any"
     }
 
     class FetchOrdersPayload(
@@ -626,6 +630,32 @@ class WCOrderStore @Inject constructor(
             } else {
                 insertOrder(site.localId(), result.orderWithMeta)
                 OnOrderChanged()
+            }
+        }
+    }
+
+    @Suppress("SpreadOperator")
+    suspend fun fetchOrders(
+        site: SiteModel,
+        count: Int = NUM_ORDERS_PER_FETCH,
+        page: Int = 1,
+        orderBy: OrderBy = OrderBy.DATE,
+        sortOrder: SortOrder = SortOrder.DESCENDING,
+        statusFilter: String? = null,
+        deleteOldData: Boolean = page == 1
+    ): WooResult<List<OrderEntity>> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchOrders") {
+            val result = wcOrderRestClient.fetchOrders(site, count, page, orderBy, sortOrder, statusFilter)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(WooError(API_ERROR, SERVER_ERROR, result.error.message))
+            } else {
+                if (deleteOldData) {
+                    ordersDaoDecorator.deleteOrdersForSite(site.localId())
+                }
+                insertOrder(site.localId(), *result.ordersWithMeta.toTypedArray())
+
+                WooResult(result.orders)
             }
         }
     }
