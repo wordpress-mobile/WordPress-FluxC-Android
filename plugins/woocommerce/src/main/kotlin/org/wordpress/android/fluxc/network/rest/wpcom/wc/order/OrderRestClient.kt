@@ -75,16 +75,13 @@ class OrderRestClient @Inject constructor(
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
         coroutineEngine.launch(T.API, this, "fetchOrders") {
-            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-            val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() }
-                ?: WCOrderStore.DEFAULT_ORDER_STATUS
-
             val url = WOOCOMMERCE.orders.pathV3
-            val params = mapOf(
+            val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter,
                 "_fields" to ORDER_FIELDS
+            ).putIfNotEmpty(
+                "status" to filterByStatus
             )
 
             val response = wooNetwork.executeGetGsonRequest(
@@ -116,6 +113,66 @@ class OrderRestClient @Inject constructor(
     }
 
     /**
+     * Fetches orders from the API.
+     *
+     * Makes a GET call to `/wp-json/wc/v3/orders` retrieving a list of orders for the given site and parameters.
+     *
+     * @param site The WooCommerce [SiteModel] the orders belong to
+     * @param count The number of orders to fetch
+     * @param page The page number to fetch
+     * @param orderBy The field to order the results by
+     * @param sortOrder The order to sort the results by
+     * @param statusFilter The status to filter the results by
+     */
+    @Suppress("LongParameterList")
+    suspend fun fetchOrders(
+        site: SiteModel,
+        count: Int,
+        page: Int,
+        orderBy: OrderBy,
+        sortOrder: SortOrder,
+        statusFilter: String?
+    ): FetchOrdersResponsePayload {
+        val url = WOOCOMMERCE.orders.pathV3
+        val params = mutableMapOf(
+            "per_page" to count.toString(),
+            "page" to page.toString(),
+            "orderby" to orderBy.value,
+            "order" to sortOrder.value,
+            "_fields" to ORDER_FIELDS
+        ).putIfNotEmpty(
+            "status" to statusFilter
+        )
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<OrderDto>::class.java
+        )
+
+        when (response) {
+            is WPAPIResponse.Success -> {
+                val orderModels = response.data?.map { orderDto ->
+                    orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
+                }.orEmpty()
+
+                val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                return FetchOrdersResponsePayload(
+                    site = site,
+                    ordersWithMeta = orderModels,
+                    loadedMore = page > 1,
+                    canLoadMore = canLoadMore
+                )
+            }
+            is WPAPIResponse.Error -> {
+                val orderError = wpAPINetworkErrorToOrderError(response.error)
+                return FetchOrdersResponsePayload(orderError, site)
+            }
+        }
+    }
+
+    /**
      * Fetches orders from the API, but only requests `id` and `date_created_gmt` fields be returned. This is
      * used to determine what orders should be fetched (either existing orders that have since changed or new
      * orders not yet downloaded).
@@ -135,16 +192,11 @@ class OrderRestClient @Inject constructor(
         requestStartTime: Calendar
     ) {
         coroutineEngine.launch(T.API, this, "fetchOrderListSummaries") {
-            // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-            val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
-                ?: WCOrderStore.DEFAULT_ORDER_STATUS
-
             val url = WOOCOMMERCE.orders.pathV3
             val networkPageSize = listDescriptor.config.networkPageSize
             val params = mutableMapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter,
                 "_fields" to "id,date_created_gmt,date_modified_gmt"
             ).putIfNotEmpty(
                 "search" to listDescriptor.searchQuery,
@@ -152,7 +204,8 @@ class OrderRestClient @Inject constructor(
                 "after" to listDescriptor.afterFilter,
                 "customer" to listDescriptor.customerId?.toString(),
                 "product" to listDescriptor.productId?.toString(),
-                "exclude" to listDescriptor.excludedIds?.joinToString()
+                "exclude" to listDescriptor.excludedIds?.joinToString(),
+                "status" to listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
             )
 
             val response = wooNetwork.executeGetGsonRequest(
@@ -299,7 +352,6 @@ class OrderRestClient @Inject constructor(
             val params = mutableMapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
                 "_fields" to ORDER_FIELDS
             ).putIfNotEmpty("search" to searchQuery)
 
@@ -1050,5 +1102,18 @@ class OrderRestClient @Inject constructor(
             "tracking_number",
             "tracking_provider"
         ).joinToString(separator = ",")
+    }
+
+    enum class SortOrder(val value: String) {
+        ASCENDING("asc"),
+        DESCENDING("desc");
+    }
+
+    enum class OrderBy(val value: String) {
+        DATE("date"),
+        ID("id"),
+        INCLUDE("include"),
+        TITLE("title"),
+        SLUG("slug");
     }
 }
