@@ -560,7 +560,8 @@ class WCOrderStore @Inject constructor(
     suspend fun fetchOrdersForWearables(
         site: SiteModel,
         offset: Int = 0,
-        filterByStatus: String? = null
+        filterByStatus: String? = null,
+        shouldStoreData: Boolean = false
     ): OrdersForWearablesResult {
         return coroutineEngine.withDefaultContext(API, this, "fetchOrdersForWearables") {
             val result = wcOrderRestClient.fetchOrdersSync(site, offset, filterByStatus)
@@ -572,8 +573,10 @@ class WCOrderStore @Inject constructor(
                         ?: OrdersForWearablesResult.Failure(OrderError())
                 }
                 else -> {
-                    ordersDaoDecorator.deleteOrdersForSite(site.localId())
-                    insertOrder(site.localId(), *result.ordersWithMeta.toTypedArray())
+                    if (shouldStoreData) {
+                        ordersDaoDecorator.deleteOrdersForSite(site.localId())
+                        insertOrder(site.localId(), *result.ordersWithMeta.toTypedArray())
+                    }
                     OrdersForWearablesResult.Success(result.orders)
                 }
             }
