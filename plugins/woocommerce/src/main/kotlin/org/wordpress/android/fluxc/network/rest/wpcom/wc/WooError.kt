@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
-import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.AUTHORIZATION_REQUIRED
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.CENSORED
@@ -33,7 +32,7 @@ enum class WooErrorType {
     INVALID_RESPONSE,
     AUTHORIZATION_REQUIRED,
     INVALID_PARAM,
-    PLUGIN_NOT_ACTIVE,
+    API_NOT_FOUND,
     EMPTY_RESPONSE,
     INVALID_COUPON,
     RESOURCE_ALREADY_EXISTS
@@ -68,7 +67,7 @@ private fun GenericErrorType?.getWooErrorType(apiError: String?) = when (this) {
 
     NOT_FOUND -> {
         when (apiError) {
-            "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
+            "rest_no_route" -> WooErrorType.API_NOT_FOUND
             else -> WooErrorType.INVALID_ID
         }
     }
@@ -76,7 +75,7 @@ private fun GenericErrorType?.getWooErrorType(apiError: String?) = when (this) {
     UNKNOWN, null -> {
         when (apiError) {
             "rest_invalid_param" -> WooErrorType.INVALID_PARAM
-            "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
+            "rest_no_route" -> WooErrorType.API_NOT_FOUND
             "woocommerce_rest_invalid_coupon" -> WooErrorType.INVALID_COUPON
             else -> WooErrorType.GENERIC_ERROR
         }
