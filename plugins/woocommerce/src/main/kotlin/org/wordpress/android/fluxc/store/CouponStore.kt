@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -152,9 +151,16 @@ class CouponStore @Inject constructor(
     suspend fun getCoupon(site: SiteModel, couponId: Long) =
         couponsDao.getCoupon(site.localId(), RemoteId(couponId))
 
-    @ExperimentalCoroutinesApi
-    fun observeCoupons(site: SiteModel): Flow<List<CouponWithEmails>> =
-        couponsDao.observeCoupons(site.localId()).distinctUntilChanged()
+    fun observeCoupons(
+        site: SiteModel,
+        couponIds: List<Long> = emptyList()
+    ): Flow<List<CouponWithEmails>> {
+        return if (couponIds.isEmpty()) {
+            couponsDao.observeCoupons(site.localId())
+        } else {
+            couponsDao.observeCoupons(site.localId(), couponIds)
+        }.distinctUntilChanged()
+    }
 
     suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
         coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {
