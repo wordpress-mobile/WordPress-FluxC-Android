@@ -43,10 +43,16 @@ class CouponStore @Inject constructor(
     suspend fun fetchCoupons(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
-        pageSize: Int = DEFAULT_PAGE_SIZE
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        couponIds: List<Long> = emptyList()
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
-            val response = restClient.fetchCoupons(site, page, pageSize)
+            val response = restClient.fetchCoupons(
+                site = site,
+                page = page,
+                pageSize = pageSize,
+                couponIds = couponIds
+            )
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {

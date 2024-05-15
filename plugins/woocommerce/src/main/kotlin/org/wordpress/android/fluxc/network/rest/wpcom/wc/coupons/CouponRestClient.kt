@@ -23,7 +23,8 @@ class CouponRestClient @Inject constructor(
         site: SiteModel,
         page: Int,
         pageSize: Int,
-        searchQuery: String? = null
+        searchQuery: String? = null,
+        couponIds: List<Long> = emptyList()
     ): WooPayload<Array<CouponDto>> {
         val url = WOOCOMMERCE.coupons.pathV3
 
@@ -35,6 +36,9 @@ class CouponRestClient @Inject constructor(
                 put("per_page", pageSize.toString())
                 searchQuery?.let {
                     put("search", searchQuery)
+                }
+                couponIds.takeIf { it.isNotEmpty() }?.let {
+                    put("include", it.joinToString(","))
                 }
             },
             clazz = Array<CouponDto>::class.java
