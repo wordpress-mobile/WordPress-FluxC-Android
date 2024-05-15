@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.AUTHORIZATION_REQUIRED
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.CENSORED
@@ -65,7 +66,12 @@ private fun GenericErrorType?.getWooErrorType(apiError: String?) = when (this) {
     AUTHORIZATION_REQUIRED,
     NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
 
-    NOT_FOUND -> WooErrorType.INVALID_ID
+    NOT_FOUND -> {
+        when (apiError) {
+            "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
+            else -> WooErrorType.INVALID_ID
+        }
+    }
 
     UNKNOWN, null -> {
         when (apiError) {
