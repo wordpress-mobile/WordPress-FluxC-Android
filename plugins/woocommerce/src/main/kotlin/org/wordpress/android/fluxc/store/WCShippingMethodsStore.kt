@@ -52,7 +52,9 @@ class WCShippingMethodsStore @Inject constructor(
     }
 
     suspend fun updateShippingMethods(site: SiteModel, shippingMethods:List<WCShippingMethod>){
-        val shippingMethodsEntity = shippingMethods.map { it.toEntity(site.localId()) }
+        val shippingMethodsEntity = shippingMethods
+            .filter { it.id.isNotEmpty()}
+            .map { it.toEntity(site.localId()) }
         shippingMethodDao.updateShippingMethods(shippingMethodsEntity)
     }
 
@@ -61,6 +63,7 @@ class WCShippingMethodsStore @Inject constructor(
     }
 
     suspend fun updateShippingMethod(site: SiteModel, shippingMethod: WCShippingMethod){
+        if(shippingMethod.id.isEmpty()) return
         shippingMethodDao.insertShippingMethods(listOf(shippingMethod.toEntity(site.localId())))
     }
 
