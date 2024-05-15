@@ -257,6 +257,10 @@ class CouponStore @Inject constructor(
         }
     }
 
+    suspend fun getCoupons(site: SiteModel, couponIds: List<Long>): List<CouponWithEmails> {
+        return couponsDao.getCoupons(site.localId(), couponIds.map { RemoteId(it) })
+    }
+
     data class CouponSearchResult(
         val coupons: List<CouponWithEmails>,
         val canLoadMore: Boolean
