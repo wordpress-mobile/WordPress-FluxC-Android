@@ -12,6 +12,12 @@ import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * This store serves specifically for the wearable app.
+ *
+ * It should not be used in the main Woo mobile app and relies on the scenario of
+ * the Watch receiving data from the Phone instead of the Woo Store API.
+ */
 @Singleton
 class WCWearableStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
