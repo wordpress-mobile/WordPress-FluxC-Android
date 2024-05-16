@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS
@@ -16,7 +17,10 @@ class WCWearableStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDaoDecorator: OrdersDaoDecorator,
+    private val accessToken: AccessToken
 ) {
+    fun updateToken(token: String) { accessToken.set(token) }
+
     @Suppress("SpreadOperator")
     suspend fun fetchOrders(
         site: SiteModel,
