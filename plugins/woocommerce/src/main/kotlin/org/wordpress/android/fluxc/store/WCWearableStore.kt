@@ -9,7 +9,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class WCWearableStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
