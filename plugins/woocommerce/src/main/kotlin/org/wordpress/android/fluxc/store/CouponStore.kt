@@ -44,7 +44,8 @@ class CouponStore @Inject constructor(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE,
-        couponIds: List<Long> = emptyList()
+        couponIds: List<Long> = emptyList(),
+        deleteOldData: Boolean = page == 1
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
             val response = restClient.fetchCoupons(
@@ -57,8 +58,7 @@ class CouponStore @Inject constructor(
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     database.executeInTransaction {
-                        // clear the table if the 1st page is requested
-                        if (page == 1) {
+                        if (deleteOldData) {
                             couponsDao.deleteAllCoupons(site.localId())
                         }
 
