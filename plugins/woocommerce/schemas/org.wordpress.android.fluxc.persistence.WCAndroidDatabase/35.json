@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 35,
-    "identityHash": "2b2e3799733db41ef697c524296acc82",
+    "identityHash": "a01f7f90e7751f29876dda9a73c49ccc",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1657,45 +1657,12 @@
         },
         "indices": [],
         "foreignKeys": []
-      },
-      {
-        "tableName": "ShippingMethod",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `localSiteId` INTEGER NOT NULL, `title` TEXT NOT NULL, PRIMARY KEY(`localSiteId`, `id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "localSiteId",
-            "columnName": "localSiteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "localSiteId",
-            "id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2b2e3799733db41ef697c524296acc82')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a01f7f90e7751f29876dda9a73c49ccc')"
     ]
   }
 }
