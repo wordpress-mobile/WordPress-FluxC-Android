@@ -14,6 +14,19 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         endDate: String,
         quantity: Int = 5
     ): WooPayload<Array<ReportsProductApiResponse>> {
+        fun createParameters(
+            startDate: String,
+            endDate: String,
+            quantity: Int
+        ) = mapOf(
+            "before" to endDate,
+            "after" to startDate,
+            "per_page" to quantity.toString(),
+            "extended_info" to "true",
+            "orderby" to "items_sold",
+            "order" to "desc"
+        ).filter { it.value.isNotEmpty() }
+
         val url = WOOCOMMERCE.reports.products.pathV4Analytics
         val parameters = createParameters(startDate, endDate, quantity)
 
@@ -27,16 +40,27 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         return response.toWooPayload()
     }
 
-    private fun createParameters(
-        startDate: String,
-        endDate: String,
-        quantity: Int
-    ) = mapOf(
-        "before" to endDate,
-        "after" to startDate,
-        "per_page" to quantity.toString(),
-        "extended_info" to "true",
-        "orderby" to "items_sold",
-        "order" to "desc"
-    ).filter { it.value.isNotEmpty() }
+    suspend fun fetchProductStockReport(
+        site: SiteModel,
+        stockStatus: String,
+        page: Int = 1,
+        quantity: Int = 3
+    ): WooPayload<Array<ReportsProductApiResponse>> {
+        val url = WOOCOMMERCE.reports.stock.pathV4Analytics
+        val parameters = mapOf(
+            "page" to page.toString(),
+            "per_page" to quantity.toString(),
+            "type" to stockStatus,
+            "order" to "desc"
+        )
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<ReportsProductApiResponse>::class.java,
+            params = parameters
+        )
+
+        return response.toWooPayload()
+    }
 }
