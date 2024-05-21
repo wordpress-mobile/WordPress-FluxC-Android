@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.API_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.utils.extensions.filterNotNull
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -22,7 +23,8 @@ class CouponRestClient @Inject constructor(
         site: SiteModel,
         page: Int,
         pageSize: Int,
-        searchQuery: String? = null
+        searchQuery: String? = null,
+        couponIds: List<Long> = emptyList()
     ): WooPayload<Array<CouponDto>> {
         val url = WOOCOMMERCE.coupons.pathV3
 
@@ -34,6 +36,9 @@ class CouponRestClient @Inject constructor(
                 put("per_page", pageSize.toString())
                 searchQuery?.let {
                     put("search", searchQuery)
+                }
+                couponIds.takeIf { it.isNotEmpty() }?.let {
+                    put("include", it.joinToString(","))
                 }
             },
             clazz = Array<CouponDto>::class.java
@@ -141,15 +146,25 @@ class CouponRestClient @Inject constructor(
     suspend fun fetchCouponsReports(
         site: SiteModel,
         couponsIds: LongArray = longArrayOf(),
-        after: Date
+        orderBy: CouponsReportOrderBy = CouponsReportOrderBy.CouponId,
+        orderDescending: Boolean = true,
+        page: Int = 1,
+        perPage: Int? = null,
+        before: Date? = null,
+        after: Date? = null
     ): WooPayload<List<CouponReportDto>> {
         val url = WOOCOMMERCE.reports.coupons.pathV4Analytics
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ROOT)
 
         val params = mapOf(
-            "after" to dateFormatter.format(after),
+            "orderby" to orderBy.value,
+            "order" to if (orderDescending) "desc" else "asc",
+            "page" to page.toString(),
+            "per_page" to perPage?.toString(),
+            "before" to before?.let { dateFormatter.format(it) },
+            "after" to after?.let { dateFormatter.format(it) },
             "coupons" to couponsIds.joinToString(",")
-        )
+        ).filterNotNull()
 
         val response = wooNetwork.executeGetGsonRequest(
             site = site,
@@ -182,6 +197,13 @@ class CouponRestClient @Inject constructor(
                 else -> WooPayload(it.result.first())
             }
         }
+    }
+
+    enum class CouponsReportOrderBy(val value: String) {
+        CouponId("coupon_id"),
+        Code("code"),
+        Amount("amount"),
+        OrdersCount("orders_count")
     }
 
     @Suppress("ComplexMethod")

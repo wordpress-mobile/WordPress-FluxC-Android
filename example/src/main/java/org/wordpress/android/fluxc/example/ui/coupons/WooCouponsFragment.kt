@@ -21,7 +21,9 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.CouponStore
 import org.wordpress.android.fluxc.store.CouponStore.Companion.DEFAULT_PAGE
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import java.util.Date
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.days
 
 class WooCouponsFragment : StoreSelectingFragment() {
     @Inject internal lateinit var store: CouponStore
@@ -30,8 +32,12 @@ class WooCouponsFragment : StoreSelectingFragment() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var couponPage = DEFAULT_PAGE
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woo_coupons, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
+        inflater.inflate(R.layout.fragment_woo_coupons, container, false)
 
     override fun onSiteSelected(site: SiteModel) {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -128,6 +134,7 @@ class WooCouponsFragment : StoreSelectingFragment() {
                 when {
                     reportResult.isError ->
                         prependToLog("Fetching report failed, ${reportResult.error.message}")
+
                     else -> {
                         val report = reportResult.model!!
                         val usageAmountFormatted = wooCommerceStore.formatCurrencyForDisplay(
@@ -140,6 +147,25 @@ class WooCouponsFragment : StoreSelectingFragment() {
                                 "resulted in $usageAmountFormatted savings"
                         )
                     }
+                }
+            }
+        }
+
+        btnFetchMostActiveCoupons.setOnClickListener {
+            val site = selectedSite ?: return@setOnClickListener
+            coroutineScope.launch {
+                val reportResult = store.fetchMostActiveCoupons(
+                    site = site,
+                    dateRange = Date().apply { time -= 30.days.inWholeMilliseconds }..Date(),
+                    limit = 3
+                )
+                if (reportResult.isError) {
+                    prependToLog("Fetching report failed, ${reportResult.error.message}")
+                } else {
+                    prependToLog(
+                        "Most active coupons in the last month:\n" +
+                            reportResult.model!!.joinToString(",\n")
+                    )
                 }
             }
         }

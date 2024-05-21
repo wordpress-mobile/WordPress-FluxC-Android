@@ -32,59 +32,52 @@ enum class WooErrorType {
     INVALID_RESPONSE,
     AUTHORIZATION_REQUIRED,
     INVALID_PARAM,
-    PLUGIN_NOT_ACTIVE,
+    API_NOT_FOUND,
     EMPTY_RESPONSE,
     INVALID_COUPON,
     RESOURCE_ALREADY_EXISTS
 }
 
-fun WPComGsonNetworkError.toWooError(): WooError {
-    val type = when (type) {
-        TIMEOUT -> WooErrorType.TIMEOUT
-        NO_CONNECTION,
-        SERVER_ERROR,
-        INVALID_SSL_CERTIFICATE,
-        NETWORK_ERROR -> WooErrorType.API_ERROR
-        PARSE_ERROR,
-        CENSORED,
-        INVALID_RESPONSE -> WooErrorType.INVALID_RESPONSE
-        HTTP_AUTH_ERROR,
-        AUTHORIZATION_REQUIRED,
-        NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
-        NOT_FOUND -> WooErrorType.INVALID_ID
-        UNKNOWN, null -> {
-            when (apiError) {
-                "rest_invalid_param" -> WooErrorType.INVALID_PARAM
-                "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
-                else -> WooErrorType.GENERIC_ERROR
-            }
-        }
-    }
-    return WooError(type, this.type, message)
-}
+fun WPComGsonNetworkError.toWooError() = WooError(
+    type = type.getWooErrorType(apiError),
+    original = type,
+    message = message
+)
 
-fun WPAPINetworkError.toWooError(): WooError {
-    val type = when (type) {
-        TIMEOUT -> WooErrorType.TIMEOUT
-        NO_CONNECTION,
-        SERVER_ERROR,
-        INVALID_SSL_CERTIFICATE,
-        NETWORK_ERROR -> WooErrorType.API_ERROR
-        PARSE_ERROR,
-        CENSORED,
-        INVALID_RESPONSE -> WooErrorType.INVALID_RESPONSE
-        HTTP_AUTH_ERROR,
-        AUTHORIZATION_REQUIRED,
-        NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
-        NOT_FOUND -> WooErrorType.INVALID_ID
-        UNKNOWN, null -> {
-            when (errorCode) {
-                "rest_invalid_param" -> WooErrorType.INVALID_PARAM
-                "rest_no_route" -> WooErrorType.PLUGIN_NOT_ACTIVE
-                "woocommerce_rest_invalid_coupon" -> WooErrorType.INVALID_COUPON
-                else -> WooErrorType.GENERIC_ERROR
-            }
+fun WPAPINetworkError.toWooError() = WooError(
+    type = type.getWooErrorType(errorCode),
+    original = type,
+    message = message
+)
+
+private fun GenericErrorType?.getWooErrorType(apiError: String?) = when (this) {
+    TIMEOUT -> WooErrorType.TIMEOUT
+    NO_CONNECTION,
+    SERVER_ERROR,
+    INVALID_SSL_CERTIFICATE,
+    NETWORK_ERROR -> WooErrorType.API_ERROR
+
+    PARSE_ERROR,
+    CENSORED,
+    INVALID_RESPONSE -> WooErrorType.INVALID_RESPONSE
+
+    HTTP_AUTH_ERROR,
+    AUTHORIZATION_REQUIRED,
+    NOT_AUTHENTICATED -> WooErrorType.AUTHORIZATION_REQUIRED
+
+    NOT_FOUND -> {
+        when (apiError) {
+            "rest_no_route" -> WooErrorType.API_NOT_FOUND
+            else -> WooErrorType.INVALID_ID
         }
     }
-    return WooError(type, this.type, message)
+
+    UNKNOWN, null -> {
+        when (apiError) {
+            "rest_invalid_param" -> WooErrorType.INVALID_PARAM
+            "rest_no_route" -> WooErrorType.API_NOT_FOUND
+            "woocommerce_rest_invalid_coupon" -> WooErrorType.INVALID_COUPON
+            else -> WooErrorType.GENERIC_ERROR
+        }
+    }
 }
