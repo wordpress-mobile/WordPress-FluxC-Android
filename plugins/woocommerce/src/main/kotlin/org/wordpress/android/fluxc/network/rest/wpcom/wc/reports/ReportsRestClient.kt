@@ -43,8 +43,8 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
     suspend fun fetchProductStockReport(
         site: SiteModel,
         stockStatus: String,
-        page: Int = 1,
-        quantity: Int = 3
+        page: Int,
+        quantity: Int
     ): WooPayload<Array<ProductStockItemApiResponse>> {
         val url = WOOCOMMERCE.reports.stock.pathV4Analytics
         val parameters = mapOf(
