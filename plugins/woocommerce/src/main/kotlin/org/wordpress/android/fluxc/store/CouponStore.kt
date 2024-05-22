@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -44,16 +43,22 @@ class CouponStore @Inject constructor(
     suspend fun fetchCoupons(
         site: SiteModel,
         page: Int = DEFAULT_PAGE,
-        pageSize: Int = DEFAULT_PAGE_SIZE
+        pageSize: Int = DEFAULT_PAGE_SIZE,
+        couponIds: List<Long> = emptyList(),
+        deleteOldData: Boolean = page == 1
     ): WooResult<Boolean> {
         return coroutineEngine.withDefaultContext(API, this, "fetchCoupons") {
-            val response = restClient.fetchCoupons(site, page, pageSize)
+            val response = restClient.fetchCoupons(
+                site = site,
+                page = page,
+                pageSize = pageSize,
+                couponIds = couponIds
+            )
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     database.executeInTransaction {
-                        // clear the table if the 1st page is requested
-                        if (page == 1) {
+                        if (deleteOldData) {
                             couponsDao.deleteAllCoupons(site.localId())
                         }
 
@@ -62,6 +67,7 @@ class CouponStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -87,6 +93,7 @@ class CouponStore @Inject constructor(
                     val canLoadMore = response.result.size == pageSize
                     WooResult(CouponSearchResult(coupons, canLoadMore))
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -101,6 +108,7 @@ class CouponStore @Inject constructor(
                     addCouponToDatabase(response.result, site)
                     WooResult(Unit)
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
@@ -149,9 +157,16 @@ class CouponStore @Inject constructor(
     suspend fun getCoupon(site: SiteModel, couponId: Long) =
         couponsDao.getCoupon(site.localId(), RemoteId(couponId))
 
-    @ExperimentalCoroutinesApi
-    fun observeCoupons(site: SiteModel): Flow<List<CouponWithEmails>> =
-        couponsDao.observeCoupons(site.localId()).distinctUntilChanged()
+    fun observeCoupons(
+        site: SiteModel,
+        couponIds: List<Long> = emptyList()
+    ): Flow<List<CouponWithEmails>> {
+        return if (couponIds.isEmpty()) {
+            couponsDao.observeCoupons(site.localId())
+        } else {
+            couponsDao.observeCoupons(site.localId(), couponIds)
+        }.distinctUntilChanged()
+    }
 
     suspend fun fetchCouponReport(site: SiteModel, couponId: Long): WooResult<CouponReport> =
         coroutineEngine.withDefaultContext(T.API, this, "fetchCouponReport") {
@@ -199,7 +214,11 @@ class CouponStore @Inject constructor(
             )
         } else {
             coroutineEngine.withDefaultContext(T.API, this, "createCoupon") {
-                return@withDefaultContext restClient.updateCoupon(site, couponId, updateCouponRequest)
+                return@withDefaultContext restClient.updateCoupon(
+                    site,
+                    couponId,
+                    updateCouponRequest
+                )
                     .let { response ->
                         if (response.isError || response.result == null) {
                             WooResult(response.error)
@@ -210,6 +229,36 @@ class CouponStore @Inject constructor(
                     }
             }
         }
+    }
+
+    suspend fun fetchMostActiveCoupons(
+        site: SiteModel,
+        dateRange: ClosedRange<Date>,
+        limit: Int
+    ): WooResult<List<CouponReport>> {
+        return coroutineEngine.withDefaultContext(T.API, this, "fetchMostRecentCoupons") {
+            val response = restClient.fetchCouponsReports(
+                site = site,
+                before = dateRange.endInclusive,
+                after = dateRange.start,
+                perPage = limit,
+                orderBy = CouponRestClient.CouponsReportOrderBy.OrdersCount,
+            )
+
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val reports = response.result.map { it.toDataModel() }
+                    WooResult(reports)
+                }
+
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun getCoupons(site: SiteModel, couponIds: List<Long>): List<CouponWithEmails> {
+        return couponsDao.getCoupons(site.localId(), couponIds.map { RemoteId(it) })
     }
 
     data class CouponSearchResult(

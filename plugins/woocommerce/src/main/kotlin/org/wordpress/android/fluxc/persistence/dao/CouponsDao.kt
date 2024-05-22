@@ -19,6 +19,10 @@ interface CouponsDao {
     fun observeCoupons(localSiteId: LocalId): Flow<List<CouponWithEmails>>
 
     @Transaction
+    @Query("SELECT * FROM Coupons WHERE localSiteId = :localSiteId AND id IN (:couponIds) ORDER BY dateCreated DESC")
+    fun observeCoupons(localSiteId: LocalId, couponIds: List<Long>): Flow<List<CouponWithEmails>>
+
+    @Transaction
     @Query("SELECT * FROM Coupons " +
         "WHERE localSiteId = :localSiteId AND id IN (:couponIds) ORDER BY dateCreated DESC"
     )
