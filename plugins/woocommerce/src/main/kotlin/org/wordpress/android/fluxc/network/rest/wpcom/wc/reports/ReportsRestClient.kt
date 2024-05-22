@@ -45,19 +45,19 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         stockStatus: String,
         page: Int = 1,
         quantity: Int = 3
-    ): WooPayload<Array<ReportsProductApiResponse>> {
+    ): WooPayload<Array<ProductStockItemApiResponse>> {
         val url = WOOCOMMERCE.reports.stock.pathV4Analytics
         val parameters = mapOf(
             "page" to page.toString(),
             "per_page" to quantity.toString(),
-            "type" to stockStatus,
-            "order" to "desc"
+            "order" to "asc",
+            "type" to stockStatus
         )
 
         val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = url,
-            clazz = Array<ReportsProductApiResponse>::class.java,
+            clazz = Array<ProductStockItemApiResponse>::class.java,
             params = parameters
         )
 
