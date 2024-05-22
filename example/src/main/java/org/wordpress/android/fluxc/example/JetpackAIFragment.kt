@@ -103,7 +103,7 @@ class JetpackAIFragment : StoreSelectingFragment() {
 
     private fun copyInputStreamToFile(inputStream: InputStream, outputFile: File) {
         FileOutputStream(outputFile).use { outputStream ->
-            val buffer = ByteArray(1024)
+            val buffer = ByteArray(KILO_BYTE)
             var length: Int
             while (inputStream.read(buffer).also { length = it } > 0) {
                 outputStream.write(buffer, 0, length)
@@ -111,5 +111,9 @@ class JetpackAIFragment : StoreSelectingFragment() {
             outputStream.flush()
         }
         inputStream.close()
+    }
+
+    companion object {
+        private const val KILO_BYTE = 1024
     }
 }
