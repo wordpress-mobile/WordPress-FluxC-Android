@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.example
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,11 +13,18 @@ import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Error
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Success
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAITranscriptionRestClient.JetpackAITranscriptionResponse
+import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.jetpackai.JetpackAIStore
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 import javax.inject.Inject
 
 class JetpackAIFragment : StoreSelectingFragment() {
     @Inject internal lateinit var store: JetpackAIStore
+
+    @Inject internal lateinit var siteStore: SiteStore
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -49,5 +57,60 @@ class JetpackAIFragment : StoreSelectingFragment() {
                 }
             }
         }
+
+        transcribe_audio.setOnClickListener {
+            siteStore.sites[0].let {
+                lifecycleScope.launch {
+                    getAudioFile()?.let { file ->
+                        val result = store.fetchJetpackAITranscription(
+                            site = it,
+                            feature = "fluxc-example",
+                            audioFile = file
+                        )
+
+                        when (result) {
+                            is JetpackAITranscriptionResponse.Success -> {
+                                prependToLog("Transcribed:\n${result.model}")
+                            }
+                            is JetpackAITranscriptionResponse.Error -> {
+                                prependToLog("Error transcribing audio: ${result.message}")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getAudioFile(): File? {
+        val result = runCatching {
+            getFileFromAssets(requireContext())
+        }
+
+        return result.getOrElse {
+            prependToLog("Error getting test audio file ${it.message}")
+            null
+        }
+    }
+
+    private fun getFileFromAssets(context: Context): File {
+        val fileName = "jetpack-ai-transcription-test-audio-file.m4a"
+        val file = File(context.filesDir, fileName)
+        context.assets.open(fileName).use { inputStream ->
+            copyInputStreamToFile(inputStream, file)
+        }
+        return file
+    }
+
+    private fun copyInputStreamToFile(inputStream: InputStream, outputFile: File) {
+        FileOutputStream(outputFile).use { outputStream ->
+            val buffer = ByteArray(1024)
+            var length: Int
+            while (inputStream.read(buffer).also { length = it } > 0) {
+                outputStream.write(buffer, 0, length)
+            }
+            outputStream.flush()
+        }
+        inputStream.close()
     }
 }
