@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ProductStockItemApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -24,14 +25,14 @@ class WCProductStockReportStore @Inject constructor(
 
     suspend fun fetchProductStockReport(
         site: SiteModel,
-        stockStatus: String,
+        stockStatus: CoreProductStockStatus,
         page: Int = DEFAULT_PAGE,
         quantity: Int = DEFAULT_PAGE_SIZE
     ): WooResult<ProductStockItems> {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductStockReport") {
             val response = reportsRestClient.fetchProductStockReport(
                 site = site,
-                stockStatus = stockStatus,
+                stockStatus = stockStatus.value,
                 page = page,
                 quantity = quantity
             )

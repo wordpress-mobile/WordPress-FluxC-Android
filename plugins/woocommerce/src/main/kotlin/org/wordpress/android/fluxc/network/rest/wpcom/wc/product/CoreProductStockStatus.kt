@@ -5,6 +5,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
  */
 enum class CoreProductStockStatus(val value: String) {
     IN_STOCK("instock"),
+    LOW_STOCK("lowstock"),
     OUT_OF_STOCK("outofstock"),
     ON_BACK_ORDER("onbackorder");
 
