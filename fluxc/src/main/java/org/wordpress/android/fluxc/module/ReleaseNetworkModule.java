@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.OkHttpStack;
 import org.wordpress.android.fluxc.network.OpenJdkCookieManager;
 import org.wordpress.android.fluxc.network.RetryOnRedirectBasicNetwork;
+import org.wordpress.android.fluxc.network.RetryOnRedirectKeepingAuthHeadersBasicNetwork;
 import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArray;
 import org.wordpress.android.fluxc.network.rest.JsonObjectOrEmptyArrayDeserializer;
 import org.wordpress.android.fluxc.network.rest.JsonObjectOrFalse;
@@ -40,6 +41,12 @@ public class ReleaseNetworkModule {
 
     private RequestQueue newRetryOnRedirectRequestQueue(OkHttpClient okHttpClient, Context appContext) {
         Network network = new RetryOnRedirectBasicNetwork(new OkHttpStack(okHttpClient));
+        return createRequestQueue(network, appContext);
+    }
+
+    private RequestQueue newRetryOnRedirectKeepingAuthHeadersBasicNetwork(OkHttpClient okHttpClient,
+                                                                          Context appContext) {
+        Network network = new RetryOnRedirectKeepingAuthHeadersBasicNetwork(new OkHttpStack(okHttpClient));
         return createRequestQueue(network, appContext);
     }
 
@@ -76,6 +83,14 @@ public class ReleaseNetworkModule {
     @Provides
     public RequestQueue provideRequestQueueCustomSSL(@Named("custom-ssl") OkHttpClient okHttpClient,
                                                      Context appContext) {
+        return newRequestQueue(okHttpClient, appContext);
+    }
+
+    @Singleton
+    @Named("custom-ssl-custom-redirects")
+    @Provides
+    public RequestQueue provideRequestQueueCustomSSLWithRedirects(@Named("custom-ssl-custom-redirects") OkHttpClient okHttpClient,
+                                                                  Context appContext) {
         return newRequestQueue(okHttpClient, appContext);
     }
 

@@ -23,6 +23,7 @@ import dagger.multibindings.Multibinds;
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.internal.tls.OkHostnameVerifier;
 
 @Module
@@ -44,6 +45,19 @@ public abstract class OkHttpClientModule {
         return okHttpRegularClient.newBuilder()
                                   .followRedirects(false)
                                   .build();
+    }
+
+    @Provides
+    @Named("custom-ssl-custom-redirects")
+    public static OkHttpClient provideCustomRedirectsOkHttpClientBuilder(
+            @Named("custom-ssl") final OkHttpClient okHttpRegularClient) {
+        OkHttpClient.Builder builder = okHttpRegularClient.newBuilder();
+        builder.addInterceptor(chain -> {
+            Request request = chain.request();
+            request.newBuilder().addHeader("Authorization", request.header("Authorization")).build();
+            return chain.proceed(request);
+        });
+        return builder.build();
     }
 
     @Singleton
