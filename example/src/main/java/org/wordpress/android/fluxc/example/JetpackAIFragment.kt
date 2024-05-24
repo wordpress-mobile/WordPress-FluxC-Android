@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Error
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Success
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAIQueryResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAITranscriptionRestClient.JetpackAITranscriptionResponse
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.jetpackai.JetpackAIStore
@@ -30,12 +31,22 @@ class JetpackAIFragment : StoreSelectingFragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.fragment_jetpackai, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setHaikuButton()
+        setTranscribeAudioButton()
+        setJetpackAIQueryButton()
+    }
+
+    private fun setHaikuButton() {
         generate_haiku.setOnClickListener {
             selectedSite?.let {
                 lifecycleScope.launch {
@@ -49,6 +60,7 @@ class JetpackAIFragment : StoreSelectingFragment() {
                         is Success -> {
                             prependToLog("Haiku:\n${result.completion}")
                         }
+
                         is Error -> {
                             prependToLog("Error fetching haiku: ${result.message}")
                         }
@@ -56,7 +68,9 @@ class JetpackAIFragment : StoreSelectingFragment() {
                 }
             }
         }
+    }
 
+    private fun setTranscribeAudioButton() {
         transcribe_audio.setOnClickListener {
             siteStore.sites[0].let {
                 lifecycleScope.launch {
@@ -71,9 +85,38 @@ class JetpackAIFragment : StoreSelectingFragment() {
                             is JetpackAITranscriptionResponse.Success -> {
                                 prependToLog("Transcribed:\n${result.model}")
                             }
+
                             is JetpackAITranscriptionResponse.Error -> {
                                 prependToLog("Error transcribing audio: ${result.message}")
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setJetpackAIQueryButton() {
+        jetpack_ai_query.setOnClickListener {
+            siteStore.sites[0].let {
+                lifecycleScope.launch {
+                    val result = store.fetchJetpackAIQuery(
+                        site = it,
+                        feature = "fluxc-example",
+                        stream = false,
+                        type = "voice-to-content-simple-draft",
+                        role = "jetpack-ai",
+                        message = "This is a test message"
+                    )
+
+                    when (result) {
+                        is JetpackAIQueryResponse.Success -> {
+                            val content = result.choices[0].message.content
+                            prependToLog("Jetpack AI Query Processed:\n$content}")
+                        }
+
+                        is JetpackAIQueryResponse.Error -> {
+                            prependToLog("Error post processing: ${result.message}")
                         }
                     }
                 }
