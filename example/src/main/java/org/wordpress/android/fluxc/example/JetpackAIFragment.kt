@@ -44,6 +44,7 @@ class JetpackAIFragment : StoreSelectingFragment() {
         setHaikuButton()
         setTranscribeAudioButton()
         setJetpackAIQueryButton()
+        setJetpackAIAssistantFeatureButton()
     }
 
     private fun setHaikuButton() {
@@ -119,6 +120,18 @@ class JetpackAIFragment : StoreSelectingFragment() {
                             prependToLog("Error post processing: ${result.message}")
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun setJetpackAIAssistantFeatureButton() {
+        jetpack_ai_assistant_feature.setOnClickListener {
+            siteStore.sites[0].let {
+                lifecycleScope.launch {
+                    val result = store.fetchJetpackAIAssistantFeature(site = it)
+
+                    prependToLog("Jetpack AI Assistant Feature:\n$result")
                 }
             }
         }

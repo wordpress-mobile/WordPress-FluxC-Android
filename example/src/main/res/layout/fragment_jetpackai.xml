@@ -30,5 +30,11 @@
             android:layout_height="wrap_content"
             android:text="Voice to Content - AI Query" />
 
+        <Button
+            android:id="@+id/jetpack_ai_assistant_feature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AI Assistant Feature" />
+
     </LinearLayout>
 </ScrollView>
