@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Error
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Success
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIQueryResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAITranscriptionRestClient.JetpackAITranscriptionResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAITranscriptionResponse
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.jetpackai.JetpackAIStore
 import java.io.File
