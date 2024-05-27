@@ -634,12 +634,12 @@ class WooProductsFragment : StoreSelectingFragment() {
             selectedSite?.let { site ->
                 prependToLog(
                     "Submitting request to fetch product stock for stock status:" +
-                        " ${CoreProductStockStatus.IN_STOCK}"
+                        " ${CoreProductStockStatus.LOW_STOCK}"
                 )
                 coroutineScope.launch {
                     val result = productStockReportStore.fetchProductStockReport(
                         site,
-                        CoreProductStockStatus.IN_STOCK
+                        CoreProductStockStatus.LOW_STOCK
                     )
                     if (result.isError) {
                         prependToLog("Fetching product stock failed: ${result.error.message}")
