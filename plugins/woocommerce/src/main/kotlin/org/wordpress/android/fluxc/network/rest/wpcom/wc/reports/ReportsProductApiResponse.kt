@@ -36,7 +36,7 @@ data class ProductStockItemApiResponse(
     @SerializedName("id")
     val productId: Long? = null,
     @SerializedName("parent_id")
-    val parentId: Int? = null, //When the product is a variation, this is the parent product ID
+    val parentId: Int? = null, // When the product is a variation, this is the parent product ID
     @SerializedName("name")
     val name: String? = null,
     @SerializedName("stock_status")
