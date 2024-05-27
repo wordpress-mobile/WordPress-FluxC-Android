@@ -18,5 +18,11 @@
             android:layout_height="wrap_content"
             android:text="Generate Haiku" />
 
+        <Button
+            android:id="@+id/transcribe_audio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Transcribe Audio" />
+
     </LinearLayout>
 </ScrollView>
