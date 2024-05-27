@@ -111,6 +111,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var bundledItems = ""
     @Column var compositeComponents = ""
     @Column var specialStockStatus = ""
+
+    @Column var minAllowedQuantity = -1
+    @Column var maxAllowedQuantity = -1
+    @Column var groupOfQuantity = -1
+
     @Column var isSampleProduct = false
         @JvmName("setIsSampleProduct")
         set
