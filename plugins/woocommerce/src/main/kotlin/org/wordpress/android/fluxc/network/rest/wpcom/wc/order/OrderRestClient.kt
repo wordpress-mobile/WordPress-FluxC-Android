@@ -75,7 +75,23 @@ class OrderRestClient @Inject constructor(
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
         coroutineEngine.launch(T.API, this, "fetchOrders") {
-            when (val response = executeOrdersRequest(filterByStatus, offset, site)) {
+            val url = WOOCOMMERCE.orders.pathV3
+            val params = mutableMapOf(
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+                "offset" to offset.toString(),
+                "_fields" to ORDER_FIELDS
+            ).putIfNotEmpty(
+                "status" to filterByStatus
+            )
+
+            val response = wooNetwork.executeGetGsonRequest(
+                site = site,
+                path = url,
+                params = params,
+                clazz = Array<OrderDto>::class.java
+            )
+
+            when (response) {
                 is WPAPIResponse.Success -> {
                     val orderModels = response.data?.map { orderDto ->
                         orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
@@ -102,7 +118,23 @@ class OrderRestClient @Inject constructor(
         offset: Int,
         filterByStatus: String? = null
     ): FetchOrdersResponsePayload {
-        return when (val response = executeOrdersRequest(filterByStatus, offset, site)) {
+        val url = WOOCOMMERCE.orders.pathV3
+        val params = mutableMapOf(
+            "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+            "offset" to offset.toString(),
+            "_fields" to ORDER_FIELDS
+        ).putIfNotEmpty(
+            "status" to filterByStatus
+        )
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<OrderDto>::class.java
+        )
+
+        return when (response) {
             is WPAPIResponse.Success -> {
                 val orderModels = response.data?.map { orderDto ->
                     orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
@@ -119,28 +151,6 @@ class OrderRestClient @Inject constructor(
                 site = site
             )
         }
-    }
-
-    private suspend fun executeOrdersRequest(
-        filterByStatus: String?,
-        offset: Int,
-        site: SiteModel
-    ): WPAPIResponse<Array<OrderDto>> {
-        val url = WOOCOMMERCE.orders.pathV3
-        val params = mutableMapOf(
-            "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
-            "offset" to offset.toString(),
-            "_fields" to ORDER_FIELDS
-        ).putIfNotEmpty(
-            "status" to filterByStatus
-        )
-
-        return wooNetwork.executeGetGsonRequest(
-            site = site,
-            path = url,
-            params = params,
-            clazz = Array<OrderDto>::class.java
-        )
     }
 
     /**
