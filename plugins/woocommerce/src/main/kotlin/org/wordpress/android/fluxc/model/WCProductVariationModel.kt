@@ -76,6 +76,10 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var width = ""
     @Column var height = ""
 
+    @Column var minAllowedQuantity = -1
+    @Column var maxAllowedQuantity = -1
+    @Column var groupOfQuantity = -1
+
     @Column var menuOrder = 0
 
     @Column var attributes = ""

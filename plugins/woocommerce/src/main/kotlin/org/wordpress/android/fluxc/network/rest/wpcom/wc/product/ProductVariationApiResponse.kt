@@ -52,6 +52,10 @@ class ProductVariationApiResponse : Response {
     var weight: String? = null
     val menu_order: Int = 0
 
+    val min_quantity: String? = null
+    val max_quantity: String? = null
+    val group_of_quantity: String? = null
+
     var dimensions: JsonElement? = null
     var attributes: JsonElement? = null
     var downloads: JsonElement? = null
@@ -117,6 +121,13 @@ class ProductVariationApiResponse : Response {
             }
 
             image = response.image?.toString() ?: ""
+
+            minAllowedQuantity = response.min_quantity?.toInt() ?: -1
+            maxAllowedQuantity = response.max_quantity?.let {
+                if (it.isEmpty()) "0" else it
+            }?.toInt() ?: -1
+            groupOfQuantity = response.group_of_quantity?.toInt() ?: -1
+
             metadata = response.meta_data?.toString()
         }
 }
