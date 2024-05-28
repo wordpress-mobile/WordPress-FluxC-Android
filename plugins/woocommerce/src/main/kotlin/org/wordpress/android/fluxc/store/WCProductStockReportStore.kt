@@ -1,9 +1,6 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ProductStockItemApiResponse
@@ -28,21 +25,15 @@ class WCProductStockReportStore @Inject constructor(
         stockStatus: CoreProductStockStatus,
         page: Int = DEFAULT_PAGE,
         quantity: Int = DEFAULT_PAGE_SIZE
-    ): WooResult<ProductStockItems> {
-        return coroutineEngine.withDefaultContext(API, this, "fetchProductStockReport") {
-            val response = reportsRestClient.fetchProductStockReport(
+    ): WooResult<ProductStockItems> =
+        coroutineEngine.withDefaultContext(API, this, "fetchProductStockReport") {
+            reportsRestClient.fetchProductStockReport(
                 site = site,
                 stockStatus = stockStatus.value,
                 page = page,
                 quantity = quantity
             )
-            when {
-                response.isError -> WooResult(response.error)
-                response.result != null -> WooResult(response.result)
-                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
-            }
-        }
-    }
+        }.asWooResult()
 }
 
 typealias ProductStockItems = Array<ProductStockItemApiResponse>
