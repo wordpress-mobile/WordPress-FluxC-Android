@@ -24,5 +24,11 @@
             android:layout_height="wrap_content"
             android:text="Transcribe Audio" />
 
+        <Button
+            android:id="@+id/jetpack_ai_query"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Voice to Content - AI Query" />
+
     </LinearLayout>
 </ScrollView>
