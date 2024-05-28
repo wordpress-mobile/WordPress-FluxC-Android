@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.reports
 
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.utils.toWooPayload
@@ -71,6 +72,28 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         productIds: List<Long>
     ): WooPayload<Array<ReportsProductApiResponse>> {
         val url = WOOCOMMERCE.reports.products.pathV4Analytics
+        val response = fetchSales(endDate, startDate, productIds, site, url)
+        return response.toWooPayload()
+    }
+
+    suspend fun fetchProductVariationsSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productIds: List<Long>
+    ): WooPayload<Array<ReportsProductApiResponse>> {
+        val url = WOOCOMMERCE.reports.variations.pathV4Analytics
+        val response = fetchSales(endDate, startDate, productIds, site, url)
+        return response.toWooPayload()
+    }
+
+    private suspend fun fetchSales(
+        endDate: String,
+        startDate: String,
+        productIds: List<Long>,
+        site: SiteModel,
+        url: String
+    ): WPAPIResponse<Array<ReportsProductApiResponse>> {
         val parameters = mapOf(
             "before" to endDate,
             "after" to startDate,
@@ -88,6 +111,6 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
             clazz = Array<ReportsProductApiResponse>::class.java,
             params = parameters
         )
-        return response.toWooPayload()
+        return response
     }
 }

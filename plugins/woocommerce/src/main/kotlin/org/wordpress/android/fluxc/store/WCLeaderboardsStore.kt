@@ -168,6 +168,21 @@ class WCLeaderboardsStore @Inject constructor(
             )
         }.asWooResult()
 
+    suspend fun fetchProductVariationsSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productVariationIds: List<Long>
+    ): WooResult<Array<ReportsProductApiResponse>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchProductVariationsSalesReport") {
+            reportsRestClient.fetchProductSalesReport(
+                site,
+                startDate,
+                endDate,
+                productVariationIds
+            )
+        }.asWooResult()
+
     fun invalidateTopPerformers(site: SiteModel) {
         coroutineEngine.launch(AppLog.T.DB, this, "Invalidating top performer products") {
             val invalidatedTopPerformers =
