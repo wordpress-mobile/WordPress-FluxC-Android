@@ -9,7 +9,6 @@ import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
 import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
-import org.wordpress.android.fluxc.model.WCProductModel.QuantityRulesMetadataKeys
 import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 
 class StripProductMetaDataTest {
@@ -76,12 +75,6 @@ class StripProductMetaDataTest {
     fun `assert no regression in subscription metadata`() {
         Assertions.assertThat(StripProductMetaData.SUPPORTED_KEYS)
             .containsAll(SubscriptionMetadataKeys.ALL_KEYS)
-    }
-
-    @Test
-    fun `assert no regression in quantity rules metadata`() {
-        Assertions.assertThat(StripProductMetaData.SUPPORTED_KEYS)
-            .containsAll(QuantityRulesMetadataKeys.ALL_KEYS)
     }
 
     @Test

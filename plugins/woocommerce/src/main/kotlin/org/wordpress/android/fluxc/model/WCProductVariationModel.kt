@@ -154,15 +154,4 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
         val responseType = object : TypeToken<List<ProductVariantOption>>() {}.type
         return gson.fromJson(attributes, responseType) as? List<ProductVariantOption> ?: emptyList()
     }
-
-    object QuantityRulesMetadataKeys {
-        const val MINIMUM_ALLOWED_QUANTITY = "variation_minimum_allowed_quantity"
-        const val MAXIMUM_ALLOWED_QUANTITY = "variation_maximum_allowed_quantity"
-        const val GROUP_OF_QUANTITY = "variation_group_of_quantity"
-        val ALL_KEYS = setOf(
-            MINIMUM_ALLOWED_QUANTITY,
-            MAXIMUM_ALLOWED_QUANTITY,
-            GROUP_OF_QUANTITY
-        )
-    }
 }
