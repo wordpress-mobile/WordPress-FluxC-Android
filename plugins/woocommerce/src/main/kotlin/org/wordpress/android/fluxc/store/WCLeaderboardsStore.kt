@@ -175,7 +175,7 @@ class WCLeaderboardsStore @Inject constructor(
         productVariationIds: List<Long>
     ): WooResult<Array<ReportsProductApiResponse>> =
         coroutineEngine.withDefaultContext(API, this, "fetchProductVariationsSalesReport") {
-            reportsRestClient.fetchProductSalesReport(
+            reportsRestClient.fetchProductVariationsSalesReport(
                 site,
                 startDate,
                 endDate,
