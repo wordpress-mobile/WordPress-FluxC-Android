@@ -11,12 +11,14 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsProductApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsRestClient
 import org.wordpress.android.fluxc.persistence.dao.TopPerformerProductsDao
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -151,12 +153,30 @@ class WCLeaderboardsStore @Inject constructor(
         }
     }
 
+    suspend fun fetchProductSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productIds: List<Long>
+    ): WooResult<Array<ReportsProductApiResponse>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchProductSalesReport") {
+            reportsRestClient.fetchProductSalesReport(
+                site,
+                startDate,
+                endDate,
+                productIds
+            )
+        }.asWooResult()
+
     fun invalidateTopPerformers(site: SiteModel) {
         coroutineEngine.launch(AppLog.T.DB, this, "Invalidating top performer products") {
             val invalidatedTopPerformers =
                 topPerformersDao.getTopPerformerProductsForSite(site.localId())
                     .map { it.copy(millisSinceLastUpdated = 0) }
-            topPerformersDao.updateTopPerformerProductsForSite(site.localId(), invalidatedTopPerformers)
+            topPerformersDao.updateTopPerformerProductsForSite(
+                site.localId(),
+                invalidatedTopPerformers
+            )
         }
     }
 }

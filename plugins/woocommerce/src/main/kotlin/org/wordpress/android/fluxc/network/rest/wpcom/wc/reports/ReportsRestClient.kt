@@ -63,4 +63,31 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
 
         return response.toWooPayload()
     }
+
+    suspend fun fetchProductSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productIds: List<Long>
+    ): WooPayload<Array<ReportsProductApiResponse>> {
+        val url = WOOCOMMERCE.reports.products.pathV4Analytics
+        val parameters = mapOf(
+            "before" to endDate,
+            "after" to startDate,
+            "productIds" to productIds.joinToString(","),
+            "extended_info" to "true",
+            "orderby" to "items_sold",
+            "order" to "desc",
+            "page" to "1",
+            "per_page" to productIds.size.toString()
+        )
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<ReportsProductApiResponse>::class.java,
+            params = parameters
+        )
+        return response.toWooPayload()
+    }
 }
