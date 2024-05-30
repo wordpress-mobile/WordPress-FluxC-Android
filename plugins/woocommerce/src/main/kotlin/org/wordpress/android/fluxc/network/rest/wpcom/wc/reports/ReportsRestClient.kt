@@ -72,7 +72,14 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         productIds: List<Long>
     ): WooPayload<Array<ReportsProductApiResponse>> {
         val url = WOOCOMMERCE.reports.products.pathV4Analytics
-        val response = fetchSales(endDate, startDate, productIds, site, url)
+        val response = fetchSales(
+            endDate = endDate,
+            startDate = startDate,
+            productIds = productIds,
+            site = site,
+            url = url,
+            quantity = productIds.size
+        )
         return response.toWooPayload()
     }
 
@@ -80,29 +87,39 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         site: SiteModel,
         startDate: String,
         endDate: String,
-        productIds: List<Long>
+        variationIds: List<Long>
     ): WooPayload<Array<ReportsProductApiResponse>> {
         val url = WOOCOMMERCE.reports.variations.pathV4Analytics
-        val response = fetchSales(endDate, startDate, productIds, site, url)
+        val response = fetchSales(
+            endDate = endDate,
+            startDate = startDate,
+            variationIds = variationIds,
+            site = site,
+            url = url,
+            quantity = variationIds.size
+        )
         return response.toWooPayload()
     }
 
     private suspend fun fetchSales(
         endDate: String,
         startDate: String,
-        productIds: List<Long>,
+        productIds: List<Long> = emptyList(),
+        variationIds: List<Long> = emptyList(),
         site: SiteModel,
-        url: String
+        url: String,
+        quantity: Int
     ): WPAPIResponse<Array<ReportsProductApiResponse>> {
         val parameters = mapOf(
             "before" to endDate,
             "after" to startDate,
-            "productIds" to productIds.joinToString(","),
+            "products" to productIds.joinToString(","),
+            "variations" to variationIds.joinToString(","),
             "extended_info" to "true",
             "orderby" to "items_sold",
             "order" to "desc",
             "page" to "1",
-            "per_page" to productIds.size.toString()
+            "per_page" to quantity.toString()
         )
 
         val response = wooNetwork.executeGetGsonRequest(

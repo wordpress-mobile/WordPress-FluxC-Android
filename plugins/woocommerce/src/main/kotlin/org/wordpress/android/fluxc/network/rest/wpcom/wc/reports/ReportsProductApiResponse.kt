@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class ReportsProductApiResponse(
     @SerializedName("product_id")
     val productId: Long? = null,
+    @SerializedName("variation_id")
+    val variationId: Long? = null,
     @SerializedName("items_sold")
     val itemsSold: Int? = null,
     @SerializedName("net_revenue")
