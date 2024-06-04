@@ -31,7 +31,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCAddonsStore
-import org.wordpress.android.fluxc.store.WCProductStockReportStore
+import org.wordpress.android.fluxc.store.WCProductReportsStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.DeleteProductPayload
@@ -64,7 +64,7 @@ class WooProductsFragment : StoreSelectingFragment() {
     @Inject lateinit var addonsStore: WCAddonsStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var mediaStore: MediaStore
-    @Inject internal lateinit var productStockReportStore: WCProductStockReportStore
+    @Inject internal lateinit var productStockReportStore: WCProductReportsStore
 
     private var pendingFetchSingleProductShippingClassRemoteId: Long? = null
 

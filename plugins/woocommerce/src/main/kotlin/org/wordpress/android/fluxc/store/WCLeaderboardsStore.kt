@@ -156,7 +156,10 @@ class WCLeaderboardsStore @Inject constructor(
             val invalidatedTopPerformers =
                 topPerformersDao.getTopPerformerProductsForSite(site.localId())
                     .map { it.copy(millisSinceLastUpdated = 0) }
-            topPerformersDao.updateTopPerformerProductsForSite(site.localId(), invalidatedTopPerformers)
+            topPerformersDao.updateTopPerformerProductsForSite(
+                site.localId(),
+                invalidatedTopPerformers
+            )
         }
     }
 }

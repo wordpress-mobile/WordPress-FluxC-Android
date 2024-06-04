@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ProductStockItemApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsProductApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.reports.ReportsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
@@ -11,7 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCProductStockReportStore @Inject constructor(
+class WCProductReportsStore @Inject constructor(
     private val reportsRestClient: ReportsRestClient,
     private val coroutineEngine: CoroutineEngine,
 ) {
@@ -32,6 +33,36 @@ class WCProductStockReportStore @Inject constructor(
                 stockStatus = stockStatus.value,
                 page = page,
                 quantity = quantity
+            )
+        }.asWooResult()
+
+    suspend fun fetchProductSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productIds: List<Long>
+    ): WooResult<Array<ReportsProductApiResponse>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchProductSalesReport") {
+            reportsRestClient.fetchProductSalesReport(
+                site,
+                startDate,
+                endDate,
+                productIds
+            )
+        }.asWooResult()
+
+    suspend fun fetchProductVariationsSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productVariationIds: List<Long>
+    ): WooResult<Array<ReportsProductApiResponse>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchProductVariationsSalesReport") {
+            reportsRestClient.fetchProductVariationsSalesReport(
+                site,
+                startDate,
+                endDate,
+                productVariationIds
             )
         }.asWooResult()
 }
