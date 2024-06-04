@@ -91,7 +91,7 @@ data class ProductApiResponse(
     val min_quantity: String? = null,
     val max_quantity: String? = null,
     val group_of_quantity: String? = null,
-    val combine_variation_quantities: String? = null,
+    val combine_variations: String? = null,
 ) {
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
@@ -182,7 +182,7 @@ data class ProductApiResponse(
             }?.toInt() ?: -1
             groupOfQuantity = response.group_of_quantity?.toInt() ?: -1
 
-            combineVariationQuantities = response.combine_variation_quantities?.let {
+            combineVariationQuantities = response.combine_variations?.let {
                 it == "yes"
             } ?: false
 
