@@ -174,7 +174,8 @@ public class MediaFragment extends Fragment {
             permissions.add(permission.READ_MEDIA_VIDEO);
             permissions.add(permission.READ_MEDIA_AUDIO);
         } else {
-            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos, Music and Audio permissions
+            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos,
+            // Music and Audio permissions
             permissions.add(permission.READ_EXTERNAL_STORAGE);
         }
 
