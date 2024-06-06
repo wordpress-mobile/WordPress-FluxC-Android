@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.reports
 
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.rest.wpapi.WPAPIResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.utils.toWooPayload
@@ -62,5 +63,71 @@ class ReportsRestClient @Inject constructor(private val wooNetwork: WooNetwork) 
         )
 
         return response.toWooPayload()
+    }
+
+    suspend fun fetchProductSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        productIds: List<Long>
+    ): WooPayload<Array<ReportsProductApiResponse>> {
+        val url = WOOCOMMERCE.reports.products.pathV4Analytics
+        val response = fetchSales(
+            endDate = endDate,
+            startDate = startDate,
+            productIds = productIds,
+            site = site,
+            url = url,
+            quantity = productIds.size
+        )
+        return response.toWooPayload()
+    }
+
+    suspend fun fetchProductVariationsSalesReport(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        variationIds: List<Long>
+    ): WooPayload<Array<ReportsProductApiResponse>> {
+        val url = WOOCOMMERCE.reports.variations.pathV4Analytics
+        val response = fetchSales(
+            endDate = endDate,
+            startDate = startDate,
+            variationIds = variationIds,
+            site = site,
+            url = url,
+            quantity = variationIds.size
+        )
+        return response.toWooPayload()
+    }
+
+    private suspend fun fetchSales(
+        endDate: String,
+        startDate: String,
+        productIds: List<Long> = emptyList(),
+        variationIds: List<Long> = emptyList(),
+        site: SiteModel,
+        url: String,
+        quantity: Int
+    ): WPAPIResponse<Array<ReportsProductApiResponse>> {
+        val parameters = mapOf(
+            "before" to endDate,
+            "after" to startDate,
+            "products" to productIds.joinToString(","),
+            "variations" to variationIds.joinToString(","),
+            "extended_info" to "true",
+            "orderby" to "items_sold",
+            "order" to "desc",
+            "page" to "1",
+            "per_page" to quantity.toString()
+        )
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            clazz = Array<ReportsProductApiResponse>::class.java,
+            params = parameters
+        )
+        return response
     }
 }
