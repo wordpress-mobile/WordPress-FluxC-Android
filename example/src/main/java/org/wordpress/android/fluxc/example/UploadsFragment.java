@@ -112,14 +112,22 @@ public class UploadsFragment extends Fragment {
     }
 
     private String[] getRequiredPermissions() {
-        String[] permissions;
+        List<String> permissions = new ArrayList<>();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions = new String[]{permission.READ_MEDIA_IMAGES};
+            permissions.add(permission.READ_MEDIA_IMAGES);
         } else {
             // For devices lower than API 33, storage permission is the equivalent of Photos and Videos permission
-            permissions = new String[]{permission.READ_EXTERNAL_STORAGE};
+            permissions.add(permission.READ_EXTERNAL_STORAGE);
         }
-        return permissions;
+
+        // Add ACCESS_MEDIA_LOCATION for API level 29 (Q) and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissions.add(permission.ACCESS_MEDIA_LOCATION);
+        }
+
+        // Convert the list to an array of the correct type (String[])
+        return permissions.toArray(new String[0]);
     }
 
     @Override
