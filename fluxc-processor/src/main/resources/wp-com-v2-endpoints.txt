@@ -76,3 +76,5 @@
 /iap/orders
 
 /jetpack-ai-transcription
+/jetpack-ai-query
+/sites/$site/jetpack-ai/ai-assistant-feature

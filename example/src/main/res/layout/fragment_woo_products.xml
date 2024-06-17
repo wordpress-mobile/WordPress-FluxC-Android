@@ -1,11 +1,10 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="@dimen/activity_start_end_margin"
-    tools:ignore="HardcodedText"
-    tools:context="org.wordpress.android.fluxc.example.ui.products.WooProductsFragment">
+    tools:context="org.wordpress.android.fluxc.example.ui.products.WooProductsFragment"
+    tools:ignore="HardcodedText">
 
     <LinearLayout
         android:id="@+id/buttonContainer"
@@ -18,91 +17,91 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Single Product"/>
+            android:text="Fetch Single Product" />
 
         <Button
             android:id="@+id/fetch_product_sku_availability"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch SKU Availability"/>
+            android:text="Fetch SKU Availability" />
 
         <Button
             android:id="@+id/fetch_products"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Products"/>
+            android:text="Fetch Products" />
 
         <Button
             android:id="@+id/fetch_products_with_filters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Products with Filters"/>
+            android:text="Fetch Products with Filters" />
 
         <Button
             android:id="@+id/search_products"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Search Products"/>
+            android:text="Search Products" />
 
         <Button
             android:id="@+id/search_products_sku"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Search Products by SKU"/>
+            android:text="Search Products by SKU" />
 
         <Button
             android:id="@+id/fetch_specific_products"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch specific products"/>
+            android:text="Fetch specific products" />
 
         <Button
             android:id="@+id/fetch_product_variations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Variations"/>
+            android:text="Fetch Product Variations" />
 
         <Button
             android:id="@+id/fetch_single_variation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Single Variation"/>
+            android:text="Fetch Single Variation" />
 
         <Button
             android:id="@+id/load_more_product_variations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="Load More Variations" />
+            android:text="Load More Variations"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/fetch_reviews_for_product"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Reviews For Product"/>
+            android:text="Fetch Product Reviews For Product" />
 
         <Button
             android:id="@+id/fetch_all_reviews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Reviews For Site"/>
+            android:text="Fetch Product Reviews For Site" />
 
         <Button
             android:id="@+id/fetch_review_by_id"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Review by ID"/>
+            android:text="Fetch Product Review by ID" />
 
         <Button
             android:id="@+id/update_review_status"
@@ -116,42 +115,42 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Shipping class by ID"/>
+            android:text="Fetch Product Shipping class by ID" />
 
         <Button
             android:id="@+id/fetch_product_shipping_classes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Shipping classes"/>
+            android:text="Fetch Product Shipping classes" />
 
         <Button
             android:id="@+id/load_more_product_shipping_classes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="Load More Shipping classes" />
+            android:text="Load More Shipping classes"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/fetch_product_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Categories"/>
+            android:text="Fetch Product Categories" />
 
         <Button
             android:id="@+id/observe_product_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Observe Product Categories"/>
+            android:text="Observe Product Categories" />
 
         <Button
             android:id="@+id/load_more_product_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="Load More Product Categories" />
+            android:text="Load More Product Categories"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/add_product_category"
@@ -165,21 +164,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Update Product Images"/>
+            android:text="Update Product Images" />
 
         <Button
             android:id="@+id/fetch_product_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Tags"/>
+            android:text="Fetch Product Tags" />
 
         <Button
             android:id="@+id/load_more_product_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="Load More Product Tags" />
+            android:text="Load More Product Tags"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/add_product_tags"
@@ -200,41 +199,48 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Update Product"/>
+            android:text="Update Product" />
 
         <Button
             android:id="@+id/update_variation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Update Variation"/>
+            android:text="Update Variation" />
 
         <Button
             android:id="@+id/add_new_product"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Add new product"/>
+            android:text="Add new product" />
 
         <Button
             android:id="@+id/delete_product"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Delete product"/>
+            android:text="Delete product" />
 
         <Button
             android:id="@+id/batch_update_variations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Batch update variations"/>
+            android:text="Batch update variations" />
 
         <Button
             android:id="@+id/batch_generate_variations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Batch generate variations"/>
+            android:text="Batch generate variations" />
+
+        <Button
+            android:id="@+id/fetch_product_stock_report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch product stock report" />
     </LinearLayout>
 </ScrollView>

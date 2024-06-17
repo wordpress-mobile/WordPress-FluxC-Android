@@ -167,16 +167,23 @@ public class MediaFragment extends Fragment {
     }
 
     private String[] getRequiredPermissions() {
-        String[] permissions;
+        List<String> permissions = new ArrayList<>();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions = new String[]{permission.READ_MEDIA_IMAGES, permission.READ_MEDIA_VIDEO,
-                    permission.READ_MEDIA_AUDIO};
+            permissions.add(permission.READ_MEDIA_IMAGES);
+            permissions.add(permission.READ_MEDIA_VIDEO);
+            permissions.add(permission.READ_MEDIA_AUDIO);
         } else {
-            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos, Music and Audio
-            // permissions
-            permissions = new String[]{permission.READ_EXTERNAL_STORAGE};
+            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos,
+            // Music and Audio permissions
+            permissions.add(permission.READ_EXTERNAL_STORAGE);
         }
-        return permissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissions.add(permission.ACCESS_MEDIA_LOCATION);
+        }
+
+        return permissions.toArray(new String[0]);
     }
 
     @Override

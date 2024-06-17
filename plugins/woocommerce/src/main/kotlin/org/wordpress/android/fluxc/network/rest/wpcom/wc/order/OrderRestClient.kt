@@ -112,6 +112,46 @@ class OrderRestClient @Inject constructor(
         }
     }
 
+    suspend fun fetchOrdersSync(
+        site: SiteModel,
+        offset: Int,
+        filterByStatus: String? = null
+    ): FetchOrdersResponsePayload {
+        val url = WOOCOMMERCE.orders.pathV3
+        val params = mutableMapOf(
+            "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+            "offset" to offset.toString(),
+            "_fields" to ORDER_FIELDS
+        ).putIfNotEmpty(
+            "status" to filterByStatus
+        )
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<OrderDto>::class.java
+        )
+
+        return when (response) {
+            is WPAPIResponse.Success -> {
+                val orderModels = response.data?.map { orderDto ->
+                    orderDtoMapper.toDatabaseEntity(orderDto, site.localId())
+                }.orEmpty()
+
+                val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                FetchOrdersResponsePayload(
+                    site, orderModels, filterByStatus, offset > 0, canLoadMore
+                )
+            }
+
+            is WPAPIResponse.Error -> FetchOrdersResponsePayload(
+                error = wpAPINetworkErrorToOrderError(response.error),
+                site = site
+            )
+        }
+    }
+
     /**
      * Fetches orders from the API.
      *
