@@ -88,6 +88,10 @@ data class ProductApiResponse(
     val composite_components: JsonArray? = null,
     val bundle_min_size: String? = null,
     val bundle_max_size: String? = null,
+    val min_quantity: String? = null,
+    val max_quantity: String? = null,
+    val group_of_quantity: String? = null,
+    val combine_variations: String? = null,
 ) {
     @Suppress("LongMethod", "ComplexMethod")
     fun asProductModel(): WCProductModel {
@@ -172,6 +176,16 @@ data class ProductApiResponse(
             groupedProductIds = response.grouped_products?.toString() ?: ""
             bundledItems = response.bundled_items?.toString() ?: ""
             compositeComponents = response.composite_components?.toString() ?: ""
+            minAllowedQuantity = response.min_quantity?.toInt() ?: -1
+            maxAllowedQuantity = response.max_quantity?.let {
+                if (it.isEmpty()) "0" else it
+            }?.toInt() ?: -1
+            groupOfQuantity = response.group_of_quantity?.toInt() ?: -1
+
+            combineVariationQuantities = response.combine_variations?.let {
+                it == "yes"
+            } ?: false
+
             metadata = response.metadata?.toString() ?: ""
             isSampleProduct = response.metadata?.any {
                 val metaDataEntry = if (it.isJsonObject) it.asJsonObject else null

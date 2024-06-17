@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
-import org.wordpress.android.fluxc.model.WCProductModel.QuantityRulesMetadataKeys
 import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
 import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 import org.wordpress.android.fluxc.utils.isElementNullOrEmpty
@@ -28,7 +27,6 @@ class StripProductMetaData @Inject internal constructor(private val gson: Gson) 
     companion object {
         val SUPPORTED_KEYS: Set<String> = buildSet {
             add(AddOnsMetadataKeys.ADDONS_METADATA_KEY)
-            addAll(QuantityRulesMetadataKeys.ALL_KEYS)
             addAll(SubscriptionMetadataKeys.ALL_KEYS)
             add(WCMetaData.BundleMetadataKeys.BUNDLE_MIN_SIZE)
             add(WCMetaData.BundleMetadataKeys.BUNDLE_MAX_SIZE)

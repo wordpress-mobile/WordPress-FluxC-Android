@@ -24,7 +24,6 @@ class StripProductVariationMetaData @Inject internal constructor(private val gso
     companion object {
         val SUPPORTED_KEYS: Set<String> = buildSet {
             addAll(WCProductModel.SubscriptionMetadataKeys.ALL_KEYS)
-            addAll(WCProductVariationModel.QuantityRulesMetadataKeys.ALL_KEYS)
         }
     }
 }
