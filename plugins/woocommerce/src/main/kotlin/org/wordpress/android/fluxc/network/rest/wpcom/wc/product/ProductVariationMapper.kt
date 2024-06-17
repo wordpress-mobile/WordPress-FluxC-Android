@@ -105,6 +105,19 @@ object ProductVariationMapper {
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
         }
+
+        if (storedVariationModel.minAllowedQuantity != updatedVariationModel.minAllowedQuantity) {
+            body["min_quantity"] = updatedVariationModel.minAllowedQuantity
+        }
+
+        if (storedVariationModel.maxAllowedQuantity != updatedVariationModel.maxAllowedQuantity) {
+            body["max_quantity"] = updatedVariationModel.maxAllowedQuantity
+        }
+
+        if (storedVariationModel.groupOfQuantity != updatedVariationModel.groupOfQuantity) {
+            body["group_of_quantity"] = updatedVariationModel.groupOfQuantity
+        }
+
         if (storedVariationModel.attributes != updatedVariationModel.attributes) {
             JsonParser().apply {
                 body["attributes"] = try {

@@ -1975,6 +1975,19 @@ class ProductRestClient @Inject constructor(
         if (storedWCProductModel.downloadExpiry != updatedProductModel.downloadExpiry) {
             body["download_expiry"] = updatedProductModel.downloadExpiry
         }
+
+        if (storedWCProductModel.minAllowedQuantity != updatedProductModel.minAllowedQuantity) {
+            body["min_quantity"] = updatedProductModel.minAllowedQuantity
+        }
+
+        if (storedWCProductModel.maxAllowedQuantity != updatedProductModel.maxAllowedQuantity) {
+            body["max_quantity"] = updatedProductModel.maxAllowedQuantity
+        }
+
+        if (storedWCProductModel.groupOfQuantity != updatedProductModel.groupOfQuantity) {
+            body["group_of_quantity"] = updatedProductModel.groupOfQuantity
+        }
+
         if (!storedWCProductModel.hasSameDownloadableFiles(updatedProductModel)) {
             val updatedFiles = updatedProductModel.getDownloadableFiles()
             body["downloads"] = JsonArray().apply {
