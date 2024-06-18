@@ -116,7 +116,6 @@ class JetpackAIFragment : StoreSelectingFragment() {
                             content?.let {
                                 prependToLog("Jetpack AI Query Processed:\n$content}")
                             }?:prependToLog("Error post processing - content is null")
-
                         }
 
                         is JetpackAIQueryResponse.Error -> {
