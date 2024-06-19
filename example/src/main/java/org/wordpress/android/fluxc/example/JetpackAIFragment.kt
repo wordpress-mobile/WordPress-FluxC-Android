@@ -112,8 +112,10 @@ class JetpackAIFragment : StoreSelectingFragment() {
 
                     when (result) {
                         is JetpackAIQueryResponse.Success -> {
-                            val content = result.choices[0].message.content
-                            prependToLog("Jetpack AI Query Processed:\n$content}")
+                            val content = result.choices[0].message?.content
+                            content?.let {
+                                prependToLog("Jetpack AI Query Processed:\n$content}")
+                            }?:prependToLog("Error post processing - content is null")
                         }
 
                         is JetpackAIQueryResponse.Error -> {
