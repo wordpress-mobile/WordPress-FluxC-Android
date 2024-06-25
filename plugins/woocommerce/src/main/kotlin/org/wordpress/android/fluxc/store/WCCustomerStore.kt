@@ -4,6 +4,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.customer.WCCustomerFromAnalytics
 import org.wordpress.android.fluxc.model.customer.WCCustomerMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.NAME_ASC
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.toAppModel
 import org.wordpress.android.fluxc.persistence.CustomerSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -208,9 +210,36 @@ class WCCustomerStore @Inject constructor(
                     AppLog.e(AppLog.T.API, "Error fetching customers from analytics: ${response.error.message}")
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
                     WooResult(response.result.map { mapper.mapToModel(site, it) })
                 }
+
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    /**
+     * returns a customer with provided remote id
+     */
+    suspend fun fetchSingleCustomerFromAnalytics(
+        site: SiteModel,
+        remoteCustomerId: Long
+    ): WooResult<WCCustomerFromAnalytics> {
+        return coroutineEngine.withDefaultContext(
+            AppLog.T.API,
+            this,
+            "fetchSingleCustomerFromAnalytics"
+        ) {
+            val response = restClient.fetchSingleCustomerFromAnalytics(site, remoteCustomerId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val customer = response.result.toAppModel()
+                    WooResult(customer)
+                }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
