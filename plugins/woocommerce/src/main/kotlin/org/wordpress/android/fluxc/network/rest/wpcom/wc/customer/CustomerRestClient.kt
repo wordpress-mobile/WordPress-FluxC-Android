@@ -164,4 +164,35 @@ class CustomerRestClient @Inject constructor(private val wooNetwork: WooNetwork)
 
         return response.toWooPayload()
     }
+
+    suspend fun fetchSingleCustomerFromAnalytics(
+        site: SiteModel,
+        remoteCustomerId: Long,
+        username: String? = null
+    ): WooPayload<CustomerFromAnalyticsDTO?> {
+        val url = WOOCOMMERCE.reports.customers.pathV4Analytics
+
+        val params = when {
+            remoteCustomerId != 0L -> {
+                mapOf(
+                    "filter" to "single_customer",
+                    "users" to remoteCustomerId.toString()
+                )
+            }
+            username != null -> {
+                mapOf("username_includes" to username)
+            }
+            else -> {
+                emptyMap()
+            }
+        }
+
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<CustomerFromAnalyticsDTO>::class.java
+        )
+        return response.toWooPayload { items -> items.firstOrNull() }
+    }
 }
