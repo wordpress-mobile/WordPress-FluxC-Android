@@ -238,7 +238,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
             selectedSite?.let { selectedSite ->
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
-                        wooGoogleStore.fetchGoogleAdsConnectionStatus(selectedSite)
+                        wooGoogleStore.isGoogleAdsAccountConnected(selectedSite)
                     }
                     result.error?.let {
                         prependToLog("Error in fetchGoogleAdsConnectionStatus: ${it.type} - ${it.message}")

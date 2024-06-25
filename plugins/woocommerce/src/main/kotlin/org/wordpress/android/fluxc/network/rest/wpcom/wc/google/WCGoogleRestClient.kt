@@ -33,6 +33,10 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
     }
 }
 
+/**
+ * Response model for the Google Ads connection status.
+ * The full response has more fields, but for now we only care about the status.
+ */
 data class GoogleAdsConnectionStatusResponse(
     @SerializedName("status")
     val status: String

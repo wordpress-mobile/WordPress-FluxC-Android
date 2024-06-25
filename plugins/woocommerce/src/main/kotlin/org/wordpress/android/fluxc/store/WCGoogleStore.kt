@@ -18,11 +18,12 @@ class WCGoogleStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine
 ) {
     /**
-     * Fetches the connection status of the Google Ads account.
+     * Checks the connection status of the Google Ads account used in the plugin.
      *
-     * @return `true` if the connection is successful, `false` otherwise.
+     * @return WooResult<Boolean> true if the account is connected, false otherwise. Optionally,
+     * passes error, too.
      */
-    suspend fun fetchGoogleAdsConnectionStatus(site: SiteModel): WooResult<Boolean> =
+    suspend fun isGoogleAdsAccountConnected(site: SiteModel): WooResult<Boolean> =
         coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsConnectionStatus") {
             val response = restClient.fetchGoogleAdsConnectionStatus(site)
             when {
