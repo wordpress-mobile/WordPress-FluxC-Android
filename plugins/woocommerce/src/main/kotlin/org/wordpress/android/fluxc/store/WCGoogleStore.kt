@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -21,9 +22,9 @@ class WCGoogleStore @Inject constructor(
      *
      * @return `true` if the connection is successful, `false` otherwise.
      */
-    suspend fun fetchGoogleAdsConnectionStatus(): WooResult<Boolean> =
+    suspend fun fetchGoogleAdsConnectionStatus(site: SiteModel): WooResult<Boolean> =
         coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsConnectionStatus") {
-            val response = restClient.fetchGoogleAdsConnectionStatus()
+            val response = restClient.fetchGoogleAdsConnectionStatus(site)
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> response.asWooResult()
