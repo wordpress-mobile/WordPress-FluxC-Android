@@ -322,6 +322,7 @@ class WCProductStore @Inject constructor(
         // from a variation. See this PR for more detail:
         // https://github.com/woocommerce/woocommerce/pull/27299
         INVALID_VARIATION_IMAGE_ID,
+        INVALID_MIN_MAX_QUANTITY,
 
         PARSE_ERROR,
         GENERIC_ERROR;
