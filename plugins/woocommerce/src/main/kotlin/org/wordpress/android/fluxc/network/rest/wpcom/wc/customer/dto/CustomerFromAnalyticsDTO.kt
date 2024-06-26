@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto
 
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.customer.WCCustomerFromAnalytics
 
 data class CustomerFromAnalyticsDTO(
     @SerializedName("avg_order_value")
