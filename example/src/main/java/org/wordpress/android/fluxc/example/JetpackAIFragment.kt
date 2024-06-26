@@ -10,9 +10,9 @@ import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_jetpackai.*
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIQueryResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Error
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Success
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIQueryResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAITranscriptionResponse
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.jetpackai.JetpackAIStore
@@ -43,8 +43,9 @@ class JetpackAIFragment : StoreSelectingFragment() {
 
         setHaikuButton()
         setTranscribeAudioButton()
-        setJetpackAIQueryButton()
+        setJetpackAIQueryVoiceToContentButton()
         setJetpackAIAssistantFeatureButton()
+        setJetpackAIQueryQuestionButton()
     }
 
     private fun setHaikuButton() {
@@ -97,8 +98,8 @@ class JetpackAIFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun setJetpackAIQueryButton() {
-        jetpack_ai_query.setOnClickListener {
+    private fun setJetpackAIQueryVoiceToContentButton() {
+        jetpack_ai_query_voice_to_content.setOnClickListener {
             siteStore.sites[0].let {
                 lifecycleScope.launch {
                     val result = store.fetchJetpackAIQuery(
@@ -115,7 +116,36 @@ class JetpackAIFragment : StoreSelectingFragment() {
                             val content = result.choices[0].message?.content
                             content?.let {
                                 prependToLog("Jetpack AI Query Processed:\n$content}")
-                            }?:prependToLog("Error post processing - content is null")
+                            } ?: prependToLog("Error post processing - content is null")
+                        }
+
+                        is JetpackAIQueryResponse.Error -> {
+                            prependToLog("Error post processing: ${result.message}")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setJetpackAIQueryQuestionButton() {
+        jetpack_ai_query_question.setOnClickListener {
+           selectedSite?.let {
+                lifecycleScope.launch {
+                    val question = "What is WooCommerce?"
+                    prependToLog("Loading Jetpack AI Query... $question")
+                    val result = store.fetchJetpackAIQuery(
+                        site = it,
+                        question = question,
+                        feature = "fluxc-example-question",
+                        stream = false,
+                    )
+                    when (result) {
+                        is JetpackAIQueryResponse.Success -> {
+                            val content = result.choices[0].message?.content
+                            content?.let {
+                                prependToLog("Jetpack AI Query Processed:\n$content}")
+                            } ?: prependToLog("Error post processing - content is null")
                         }
 
                         is JetpackAIQueryResponse.Error -> {

@@ -6,6 +6,7 @@
     android:layout_margin="@dimen/activity_start_end_margin"
     tools:context="org.wordpress.android.fluxc.example.DomainsFragment"
     tools:ignore="HardcodedText">
+
     <LinearLayout
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
@@ -25,7 +26,7 @@
             android:text="Transcribe Audio" />
 
         <Button
-            android:id="@+id/jetpack_ai_query"
+            android:id="@+id/jetpack_ai_query_voice_to_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Voice to Content - AI Query" />
@@ -35,6 +36,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="AI Assistant Feature" />
+
+        <Button
+            android:id="@+id/jetpack_ai_query_question"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Question - AI Query" />
 
     </LinearLayout>
 </ScrollView>
