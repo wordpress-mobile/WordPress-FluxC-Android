@@ -130,7 +130,7 @@ class JetpackAIFragment : StoreSelectingFragment() {
 
     private fun setJetpackAIQueryQuestionButton() {
         jetpack_ai_query_question.setOnClickListener {
-            siteStore.sites[0].let {
+           selectedSite?.let {
                 lifecycleScope.launch {
                     val question = "What is WooCommerce?"
                     prependToLog("Loading Jetpack AI Query... $question")
