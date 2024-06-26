@@ -49,6 +49,7 @@ data class WCCustomerModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var shippingLastName: String = ""
     @Column var shippingPostcode: String = ""
     @Column var shippingState: String = ""
+    var analyticsCustomerId: Long? = null
 
     override fun getId() = id
 
