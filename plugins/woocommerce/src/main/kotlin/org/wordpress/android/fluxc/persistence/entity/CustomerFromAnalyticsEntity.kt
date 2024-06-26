@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.persistence.entity
 import androidx.room.Entity
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 
-@Entity(tableName = "CustomerFromAnalytics", primaryKeys = ["localSiteId", "id", "userId", "username"])
+@Entity(tableName = "CustomerFromAnalytics", primaryKeys = ["localSiteId", "id"])
 data class CustomerFromAnalyticsEntity (
     val localSiteId: LocalOrRemoteId.LocalId,
     val id: Long,

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 37,
-    "identityHash": "d7beb12be7a5d91535e9fb6ed4b59899",
+    "identityHash": "1e9b3d8837dc807d54beb93aa1655b43",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -1693,7 +1693,7 @@
       },
       {
         "tableName": "CustomerFromAnalytics",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `userId` INTEGER NOT NULL, `avgOrderValue` REAL NOT NULL, `city` TEXT NOT NULL, `country` TEXT NOT NULL, `dateLastActive` TEXT NOT NULL, `dateLastActiveGmt` TEXT NOT NULL, `dateLastOrder` TEXT NOT NULL, `dateRegistered` TEXT NOT NULL, `dateRegisteredGmt` TEXT NOT NULL, `email` TEXT NOT NULL, `name` TEXT NOT NULL, `ordersCount` INTEGER NOT NULL, `postcode` TEXT NOT NULL, `state` TEXT NOT NULL, `totalSpend` REAL NOT NULL, `username` TEXT NOT NULL, PRIMARY KEY(`localSiteId`, `id`, `userId`, `username`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `userId` INTEGER NOT NULL, `avgOrderValue` REAL NOT NULL, `city` TEXT NOT NULL, `country` TEXT NOT NULL, `dateLastActive` TEXT NOT NULL, `dateLastActiveGmt` TEXT NOT NULL, `dateLastOrder` TEXT NOT NULL, `dateRegistered` TEXT NOT NULL, `dateRegisteredGmt` TEXT NOT NULL, `email` TEXT NOT NULL, `name` TEXT NOT NULL, `ordersCount` INTEGER NOT NULL, `postcode` TEXT NOT NULL, `state` TEXT NOT NULL, `totalSpend` REAL NOT NULL, `username` TEXT NOT NULL, PRIMARY KEY(`localSiteId`, `id`))",
         "fields": [
           {
             "fieldPath": "localSiteId",
@@ -1807,9 +1807,7 @@
         "primaryKey": {
           "columnNames": [
             "localSiteId",
-            "id",
-            "userId",
-            "username"
+            "id"
           ],
           "autoGenerate": false
         },
@@ -1820,7 +1818,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd7beb12be7a5d91535e9fb6ed4b59899')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1e9b3d8837dc807d54beb93aa1655b43')"
     ]
   }
 }
