@@ -2101,6 +2101,12 @@ class ProductRestClient @Inject constructor(
             wpAPINetworkError.errorCode == "woocommerce_variation_invalid_image_id" ->
                 ProductErrorType.INVALID_VARIATION_IMAGE_ID
 
+            wpAPINetworkError.errorCode == "woocommerce_rest_invalid_min_quantity" ||
+                wpAPINetworkError.errorCode == "woocommerce_rest_invalid_max_quantity" ||
+                wpAPINetworkError.errorCode == "woocommerce_rest_invalid_variation_min_quantity" ||
+                wpAPINetworkError.errorCode == "woocommerce_rest_invalid_variation_max_quantity" ->
+                ProductErrorType.INVALID_MIN_MAX_QUANTITY
+
             wpAPINetworkError.type == PARSE_ERROR -> ProductErrorType.PARSE_ERROR
             else -> ProductErrorType.fromString(wpAPINetworkError.errorCode.orEmpty())
         }
