@@ -39,25 +39,3 @@ data class CustomerFromAnalyticsDTO(
     @SerializedName("username")
     val username: String? = null
 )
-
-fun CustomerFromAnalyticsDTO.toAppModel(): WCCustomerFromAnalytics {
-    return WCCustomerFromAnalytics(
-        avgOrderValue = this.avgOrderValue ?: 0.0,
-        city = this.city.orEmpty(),
-        country = this.country.orEmpty(),
-        dateLastActive = this.dateLastActive.orEmpty(),
-        dateLastActiveGmt = this.dateLastActiveGmt.orEmpty(),
-        dateLastOrder = this.dateLastOrder.orEmpty(),
-        dateRegistered = this.dateRegistered.orEmpty(),
-        dateRegisteredGmt = this.dateRegisteredGmt.orEmpty(),
-        email = this.email.orEmpty(),
-        id = this.id ?: 0L,
-        name = this.name.orEmpty(),
-        ordersCount = this.ordersCount ?: 0,
-        postcode = this.postcode.orEmpty(),
-        state = this.state.orEmpty(),
-        totalSpend = this.totalSpend ?: 0.0,
-        userId = this.userId ?: 0L,
-        username = this.username.orEmpty()
-    )
-}
