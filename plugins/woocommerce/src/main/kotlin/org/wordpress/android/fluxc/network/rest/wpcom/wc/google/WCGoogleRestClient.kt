@@ -31,6 +31,10 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
             else -> WooPayload(false)
         }
     }
+
+    suspend fun fetchAllPrograms() {
+        val url = WOOCOMMERCE.gla.ads.reports.programs
+    }
 }
 
 /**
