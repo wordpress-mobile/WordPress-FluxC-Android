@@ -33,7 +33,10 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
     }
 
     suspend fun fetchAllPrograms(
-        site: SiteModel
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        fields: String,
     ): WooPayload<GoogleAdsProgramsResponse> {
         val url = WOOCOMMERCE.gla.ads.reports.programs.pathNoVersion
         val response = wooNetwork.executeGetGsonRequest(

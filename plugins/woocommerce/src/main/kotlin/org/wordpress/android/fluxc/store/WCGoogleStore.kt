@@ -34,12 +34,30 @@ class WCGoogleStore @Inject constructor(
             }
     }
 
-    suspend fun fetchAllPrograms(site: SiteModel): WooResult<GoogleAdsProgramsResponse> =
+    suspend fun fetchAllPrograms(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        metricType: MetricType
+    ): WooResult<GoogleAdsProgramsResponse> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
-            val response = restClient.fetchAllPrograms(site)
+            val response = restClient.fetchAllPrograms(
+                site = site,
+                startDate = startDate,
+                endDate = endDate,
+                fields = metricType.parameterName
+            )
             when {
                 response.isError -> WooResult(response.error)
                 else -> WooResult(response.result)
             }
         }
+
+    enum class MetricType(val parameterName: String) {
+        SALES("sales"),
+        SPEND("spend"),
+        CLICKS("clicks"),
+        IMPRESSIONS("impressions"),
+        CONVERSIONS("conversions")
+    }
 }
