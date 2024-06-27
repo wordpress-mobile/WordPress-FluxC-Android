@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsProgramsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
@@ -32,4 +33,13 @@ class WCGoogleStore @Inject constructor(
                 else -> WooResult(false)
             }
     }
+
+    suspend fun fetchAllPrograms(site: SiteModel): WooResult<GoogleAdsProgramsResponse> =
+        coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
+            val response = restClient.fetchAllPrograms(site)
+            when {
+                response.isError -> WooResult(response.error)
+                else -> WooResult(response.result)
+            }
+        }
 }
