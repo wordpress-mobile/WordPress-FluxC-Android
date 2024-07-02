@@ -36,22 +36,26 @@ class WCGoogleStore @Inject constructor(
             }
         }
 
-    /**
-     * Fetches the Google Ads campaigns.
-     *
-     * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
-     * passes error, too.
-     */
-    suspend fun fetchGoogleAdsCampaigns(site: SiteModel): WooResult<List<WCGoogleAdsCampaign>> =
-        coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
-            val response = restClient.fetchGoogleAdsCampaigns(site)
-            when {
-                response.isError -> WooResult(response.error)
-                response.result != null -> {
-                    val campaigns = response.result.map { mapper.mapToModel(it) }
-                    WooResult(campaigns)
-                }
-                else -> WooResult(emptyList())
+/**
+ * Fetches the Google Ads campaigns.
+ *
+ * @param excludeRemovedCampaigns Exclude removed (deleted) campaigns from being fetched.
+ * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
+ * passes error, too.
+ */
+suspend fun fetchGoogleAdsCampaigns(
+    site: SiteModel,
+    excludeRemovedCampaigns: Boolean = true
+): WooResult<List<WCGoogleAdsCampaign>> =
+    coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
+        val response = restClient.fetchGoogleAdsCampaigns(site, excludeRemovedCampaigns)
+        when {
+            response.isError -> WooResult(response.error)
+            response.result != null -> {
+                val campaigns = response.result.map { mapper.mapToModel(it) }
+                WooResult(campaigns)
             }
+            else -> WooResult(emptyList())
         }
+    }
 }
