@@ -23,8 +23,8 @@ class WCGoogleAdsCampaignMapper @Inject constructor() {
             },
             type = dto.rawType,
             amount = dto.amount,
-            country = dto.country,
-            targetedLocations = dto.targetedLocations
+            countryISOCode = dto.country,
+            targetedCountryISOCodes = dto.targetedLocations
         )
     }
 }

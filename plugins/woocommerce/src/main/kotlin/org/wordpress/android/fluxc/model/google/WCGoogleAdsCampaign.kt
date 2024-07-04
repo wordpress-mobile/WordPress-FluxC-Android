@@ -6,8 +6,8 @@ data class WCGoogleAdsCampaign(
     val status: Status?,
     val type: String?,
     val amount: Double?,
-    val country: String?,
-    val targetedLocations: List<String>?
+    val countryISOCode: String?,
+    val targetedCountryISOCodes: List<String>?
 ) {
     enum class Status {
         ENABLED,
