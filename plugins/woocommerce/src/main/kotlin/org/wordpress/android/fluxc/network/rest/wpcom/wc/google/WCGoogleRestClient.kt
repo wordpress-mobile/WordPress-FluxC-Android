@@ -31,6 +31,26 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
             else -> WooPayload(false)
         }
     }
+
+    suspend fun fetchGoogleAdsCampaigns(
+        site: SiteModel,
+        excludeRemovedCampaigns: Boolean = true
+    ): WooPayload<List<WCGoogleAdsCampaignDTO>> {
+        val url = WOOCOMMERCE.gla.ads.campaigns.pathNoVersion
+        val params = mapOf("exclude_removed" to excludeRemovedCampaigns.toString())
+        val result = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = params,
+            clazz = Array<WCGoogleAdsCampaignDTO>::class.java
+        ).toWooPayload()
+
+        return when {
+            result.isError -> WooPayload(result.error)
+            result.result != null -> WooPayload(result.result.toList())
+            else -> WooPayload(emptyList())
+        }
+    }
 }
 
 /**
