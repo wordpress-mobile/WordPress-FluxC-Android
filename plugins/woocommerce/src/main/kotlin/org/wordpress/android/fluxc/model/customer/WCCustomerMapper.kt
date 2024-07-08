@@ -113,6 +113,7 @@ class WCCustomerMapper @Inject constructor() {
             shippingLastName = dto.name?.lastNameFromName() ?: ""
             shippingPostcode = dto.postcode ?: ""
             shippingState = dto.state ?: ""
+            analyticsCustomerId = dto.id
         }
     }
 

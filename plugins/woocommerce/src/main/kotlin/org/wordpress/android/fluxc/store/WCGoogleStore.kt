@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaignMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsProgramsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
@@ -16,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class WCGoogleStore @Inject constructor(
     private val restClient: WCGoogleRestClient,
-    private val coroutineEngine: CoroutineEngine
+    private val coroutineEngine: CoroutineEngine,
+    private val mapper: WCGoogleAdsCampaignMapper
 ) {
     /**
      * Checks the connection status of the Google Ads account used in the plugin.
@@ -32,6 +35,29 @@ class WCGoogleStore @Inject constructor(
                 response.result != null -> response.asWooResult()
                 else -> WooResult(false)
             }
+        }
+
+/**
+ * Fetches the Google Ads campaigns.
+ *
+ * @param excludeRemovedCampaigns Exclude removed (deleted) campaigns from being fetched.
+ * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
+ * passes error, too.
+ */
+suspend fun fetchGoogleAdsCampaigns(
+    site: SiteModel,
+    excludeRemovedCampaigns: Boolean = true
+): WooResult<List<WCGoogleAdsCampaign>> =
+    coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
+        val response = restClient.fetchGoogleAdsCampaigns(site, excludeRemovedCampaigns)
+        when {
+            response.isError -> WooResult(response.error)
+            response.result != null -> {
+                val campaigns = response.result.map { mapper.mapToModel(it) }
+                WooResult(campaigns)
+            }
+            else -> WooResult(emptyList())
+        }
     }
 
     suspend fun fetchAllPrograms(

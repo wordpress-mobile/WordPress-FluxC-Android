@@ -234,8 +234,9 @@ class WooCommerceFragment : StoreSelectingFragment() {
             replaceFragment(WooAdminFragment())
         }
 
-        woo_gla_google_ads_status.setOnClickListener {
+        woo_google_ads_status.setOnClickListener {
             selectedSite?.let { selectedSite ->
+                prependToLog("Fetching Google Ads connection status...")
                 coroutineScope.launch {
                     val result = withContext(Dispatchers.Default) {
                         wooGoogleStore.isGoogleAdsAccountConnected(selectedSite)
@@ -246,6 +247,29 @@ class WooCommerceFragment : StoreSelectingFragment() {
                     result.model?.let {
                         prependToLog("Google Ads connection status: $it")
                     } ?: prependToLog("Couldn't fetch Google Ads connection status.")
+                }
+            } ?: showNoWCSitesToast()
+        }
+
+        woo_google_ads_campaigns.setOnClickListener {
+            selectedSite?.let { selectedSite ->
+                prependToLog("Fetching Google Ads campaigns...")
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooGoogleStore.fetchGoogleAdsCampaigns(selectedSite)
+                    }
+                    result.error?.let {
+                        prependToLog("Error in fetchGoogleAdsCampaigns: ${it.type} - ${it.message}")
+                    }
+                    result.model?.let { campaigns ->
+                        prependToLog("Fetched ${campaigns.size} Google Ads campaigns")
+                        campaigns.forEach { campaign ->
+                            prependToLog("Campaign ID: ${campaign.id}, " +
+                                "Name: ${campaign.name}, " +
+                                "Status: ${campaign.status}"
+                            )
+                        }
+                    } ?: prependToLog("Couldn't fetch Google Ads campaigns.")
                 }
             } ?: showNoWCSitesToast()
         }

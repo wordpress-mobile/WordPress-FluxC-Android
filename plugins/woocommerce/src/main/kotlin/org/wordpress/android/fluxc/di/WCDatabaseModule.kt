@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
+import org.wordpress.android.fluxc.persistence.dao.CustomerFromAnalyticsDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.ShippingMethodDao
 import javax.inject.Inject
@@ -62,6 +63,10 @@ interface WCDatabaseModule {
 
         @Provides internal fun provideShippingMethodsDao(database: WCAndroidDatabase): ShippingMethodDao {
             return database.shippingMethodDao
+        }
+
+        @Provides internal fun provideCustomerFromAnalyticsDao(database: WCAndroidDatabase): CustomerFromAnalyticsDao {
+            return database.customerFromAnalyticsDao
         }
     }
     @Binds fun bindTransactionExecutor(database: WCAndroidDatabase): TransactionExecutor
