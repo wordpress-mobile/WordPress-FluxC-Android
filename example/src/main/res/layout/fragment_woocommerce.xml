@@ -147,5 +147,18 @@
             android:layout_height="wrap_content"
             android:text="WooCommerce Admin" />
 
+        <Button
+            android:id="@+id/woo_google_ads_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Google for Woo: Check Google Ads Connection" />
+
+        <Button
+            android:id="@+id/woo_google_ads_campaigns"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Google for Woo: Fetch Campaigns List" />
+
+
     </LinearLayout>
 </ScrollView>

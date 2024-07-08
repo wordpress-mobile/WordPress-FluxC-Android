@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.example.ui.storecreation.WooStoreCreationFrag
 import org.wordpress.android.fluxc.example.ui.taxes.WooTaxFragment
 import org.wordpress.android.fluxc.example.ui.wooadmin.WooAdminFragment
 import org.wordpress.android.fluxc.store.WCDataStore
+import org.wordpress.android.fluxc.store.WCGoogleStore
 import org.wordpress.android.fluxc.store.WCUserStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
@@ -41,6 +42,7 @@ class WooCommerceFragment : StoreSelectingFragment() {
     @Inject lateinit var wooCommerceStore: WooCommerceStore
     @Inject lateinit var wooDataStore: WCDataStore
     @Inject lateinit var wooUserStore: WCUserStore
+    @Inject lateinit var wooGoogleStore: WCGoogleStore
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -230,6 +232,46 @@ class WooCommerceFragment : StoreSelectingFragment() {
 
         woo_admin.setOnClickListener {
             replaceFragment(WooAdminFragment())
+        }
+
+        woo_google_ads_status.setOnClickListener {
+            selectedSite?.let { selectedSite ->
+                prependToLog("Fetching Google Ads connection status...")
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooGoogleStore.isGoogleAdsAccountConnected(selectedSite)
+                    }
+                    result.error?.let {
+                        prependToLog("Error in fetchGoogleAdsConnectionStatus: ${it.type} - ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("Google Ads connection status: $it")
+                    } ?: prependToLog("Couldn't fetch Google Ads connection status.")
+                }
+            } ?: showNoWCSitesToast()
+        }
+
+        woo_google_ads_campaigns.setOnClickListener {
+            selectedSite?.let { selectedSite ->
+                prependToLog("Fetching Google Ads campaigns...")
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wooGoogleStore.fetchGoogleAdsCampaigns(selectedSite)
+                    }
+                    result.error?.let {
+                        prependToLog("Error in fetchGoogleAdsCampaigns: ${it.type} - ${it.message}")
+                    }
+                    result.model?.let { campaigns ->
+                        prependToLog("Fetched ${campaigns.size} Google Ads campaigns")
+                        campaigns.forEach { campaign ->
+                            prependToLog("Campaign ID: ${campaign.id}, " +
+                                "Name: ${campaign.name}, " +
+                                "Status: ${campaign.status}"
+                            )
+                        }
+                    } ?: prependToLog("Couldn't fetch Google Ads campaigns.")
+                }
+            } ?: showNoWCSitesToast()
         }
     }
 
