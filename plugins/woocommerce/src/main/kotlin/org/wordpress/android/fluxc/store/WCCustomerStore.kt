@@ -4,6 +4,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.customer.WCCustomerFromAnalytics
+import org.wordpress.android.fluxc.model.customer.WCCustomerFromAnalyticsMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -14,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestCl
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerSorting.NAME_ASC
 import org.wordpress.android.fluxc.persistence.CustomerSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.CustomerFromAnalyticsDao
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -23,7 +26,9 @@ import javax.inject.Singleton
 class WCCustomerStore @Inject constructor(
     private val restClient: CustomerRestClient,
     private val coroutineEngine: CoroutineEngine,
-    private val mapper: WCCustomerMapper
+    private val mapper: WCCustomerMapper,
+    private val customerFromAnalyticsDao: CustomerFromAnalyticsDao,
+    private val customerFromAnalyticsMapper: WCCustomerFromAnalyticsMapper
 ) {
     /**
      * returns cached customers for the given site
@@ -208,13 +213,89 @@ class WCCustomerStore @Inject constructor(
                     AppLog.e(AppLog.T.API, "Error fetching customers from analytics: ${response.error.message}")
                     WooResult(response.error)
                 }
+
                 response.result != null -> {
+                    // Save customer locally
+                    response.result.map {
+                        customerFromAnalyticsMapper.mapDTOToEntity(site, it)
+                    }.let { entities ->
+                        customerFromAnalyticsDao.insertCustomersFromAnalytics(entities)
+                    }
+
                     WooResult(response.result.map { mapper.mapToModel(site, it) })
                 }
+
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
+
+    /**
+     * returns analytics customer by user id
+     */
+    suspend fun fetchSingleCustomerFromAnalyticsByUserId(
+        site: SiteModel,
+        remoteCustomerId: Long
+    ): WooResult<WCCustomerFromAnalytics> {
+        return coroutineEngine.withDefaultContext(
+            AppLog.T.API,
+            this,
+            "fetchSingleCustomerFromAnalyticsByUserId"
+        ) {
+            val response = restClient.fetchSingleCustomerFromAnalyticsByUserId(site, remoteCustomerId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val entity = customerFromAnalyticsMapper.mapDTOToEntity(site, response.result)
+                    customerFromAnalyticsDao.insertCustomerFromAnalytics(entity)
+                    val customer = customerFromAnalyticsMapper.mapEntityToModel(entity)
+                    WooResult(customer)
+                }
+
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    /**
+     * returns analytics customer by analytic id
+     */
+    suspend fun fetchSingleCustomerFromAnalyticsByAnalyticsCustomerId(
+        site: SiteModel,
+        analyticsCustomerId: Long
+    ): WooResult<WCCustomerFromAnalytics> {
+        return coroutineEngine.withDefaultContext(
+            AppLog.T.API,
+            this,
+            "fetchSingleCustomerFromAnalyticsByAnalyticsCustomerId"
+        ) {
+            val response = restClient.fetchSingleCustomerFromAnalyticsByCustomerId(site, analyticsCustomerId)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val entity = customerFromAnalyticsMapper.mapDTOToEntity(site, response.result)
+                    customerFromAnalyticsDao.insertCustomerFromAnalytics(entity)
+                    val customer = customerFromAnalyticsMapper.mapEntityToModel(entity)
+                    WooResult(customer)
+                }
+
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun getCustomerFromAnalyticsByAnalyticsId(
+        site: SiteModel,
+        analyticCustomerId: Long
+    ): WCCustomerFromAnalytics? {
+        return customerFromAnalyticsDao.getCustomerByAnalyticCustomerId(
+            site.localId(),
+            analyticCustomerId
+        )?.let {
+            customerFromAnalyticsMapper.mapEntityToModel(it)
+        }
+    }
+
 
     companion object {
         private const val DEFAULT_CUSTOMER_PAGE_SIZE = 25

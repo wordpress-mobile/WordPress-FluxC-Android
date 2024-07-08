@@ -13,6 +13,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.customer.WCCustomerFromAnalyticsMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerMapper
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.CustomerRestCl
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.customer.dto.CustomerDTO
 import org.wordpress.android.fluxc.persistence.CustomerSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.persistence.dao.CustomerFromAnalyticsDao
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import kotlin.test.assertEquals
@@ -36,6 +38,8 @@ class WCCustomerStoreTest {
 
     private val restClient: CustomerRestClient = mock()
     private val mapper: WCCustomerMapper = mock()
+    private val analyticsMapper: WCCustomerFromAnalyticsMapper= mock()
+    private val customerFromAnalyticsDao: CustomerFromAnalyticsDao = mock()
 
     private lateinit var store: WCCustomerStore
 
@@ -53,7 +57,9 @@ class WCCustomerStoreTest {
         store = WCCustomerStore(
             restClient,
             initCoroutineEngine(),
-            mapper
+            mapper,
+            customerFromAnalyticsDao,
+            analyticsMapper
         )
     }
 
