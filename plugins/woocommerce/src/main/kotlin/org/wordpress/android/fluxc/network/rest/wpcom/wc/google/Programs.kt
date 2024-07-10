@@ -8,11 +8,14 @@ data class GoogleAdsProgramsResponse(
 
 data class GoogleAdsCampaign(
     val id: Long,
-    val name: String
+    val name: String,
+    val status: String,
+    val subtotals: GoogleAdsTotals
 )
 
 data class GoogleAdsInterval(
-    val interval: String
+    val interval: String,
+    val subtotals: GoogleAdsTotals
 )
 
 data class GoogleAdsTotals(
