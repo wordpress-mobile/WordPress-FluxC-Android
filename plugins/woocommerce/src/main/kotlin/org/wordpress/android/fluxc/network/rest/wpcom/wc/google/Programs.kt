@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.google
 
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign.Status
+
 data class GoogleAdsProgramsResponse(
     val campaigns: List<GoogleAdsCampaign>?,
     val intervals: List<GoogleAdsInterval>?,
@@ -9,7 +11,7 @@ data class GoogleAdsProgramsResponse(
 data class GoogleAdsCampaign(
     val id: Long,
     val name: String,
-    val status: String,
+    val status: Status,
     val subtotals: GoogleAdsTotals
 )
 
