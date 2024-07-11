@@ -3,6 +3,11 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaignMapper
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsPrograms
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramsMapper
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -18,7 +23,8 @@ import javax.inject.Singleton
 class WCGoogleStore @Inject constructor(
     private val restClient: WCGoogleRestClient,
     private val coroutineEngine: CoroutineEngine,
-    private val mapper: WCGoogleAdsCampaignMapper
+    private val campaignMapper: WCGoogleAdsCampaignMapper,
+    private val programsMapper: WCGoogleAdsProgramsMapper
 ) {
     /**
      * Checks the connection status of the Google Ads account used in the plugin.
@@ -52,10 +58,41 @@ suspend fun fetchGoogleAdsCampaigns(
         when {
             response.isError -> WooResult(response.error)
             response.result != null -> {
-                val campaigns = response.result.map { mapper.mapToModel(it) }
+                val campaigns = response.result.map { campaignMapper.mapToModel(it) }
                 WooResult(campaigns)
             }
             else -> WooResult(emptyList())
         }
+    }
+
+    suspend fun fetchAllPrograms(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+        metricType: MetricType
+    ): WooResult<WCGoogleAdsPrograms?> =
+        coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
+            val response = restClient.fetchAllPrograms(
+                site = site,
+                startDate = startDate,
+                endDate = endDate,
+                fields = metricType.parameterName
+            )
+
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> WooResult(programsMapper.mapToModel(response.result))
+                else -> WooResult(
+                    WooError(WooErrorType.INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE)
+                )
+            }
+        }
+
+    enum class MetricType(val parameterName: String) {
+        SALES("sales"),
+        SPEND("spend"),
+        CLICKS("clicks"),
+        IMPRESSIONS("impressions"),
+        CONVERSIONS("conversions")
     }
 }

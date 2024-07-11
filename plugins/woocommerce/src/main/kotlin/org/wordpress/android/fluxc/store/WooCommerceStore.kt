@@ -74,6 +74,7 @@ open class WooCommerceStore @Inject constructor(
         WOO_COMPOSITE_PRODUCTS("woocommerce-composite-products/woocommerce-composite-products"),
         WOO_SQUARE("woocommerce-square/woocommerce-square"),
         JETPACK("jetpack/jetpack"),
+        GOOGLE_ADS("google-listings-and-ads/google-listings-and-ads"),
     }
 
     companion object {

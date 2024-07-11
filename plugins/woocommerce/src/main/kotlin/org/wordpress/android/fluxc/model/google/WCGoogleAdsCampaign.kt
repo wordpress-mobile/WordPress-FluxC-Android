@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.model.google
 
+import org.wordpress.android.util.AppLog
+
 data class WCGoogleAdsCampaign(
     val id: Long?,
     val name: String?,
@@ -12,6 +14,21 @@ data class WCGoogleAdsCampaign(
     enum class Status {
         ENABLED,
         DISABLED,
-        REMOVED
+        REMOVED;
+
+        companion object {
+            fun fromString(value: String): Status {
+                return try {
+                    Status.valueOf(value.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    AppLog.w(
+                        AppLog.T.API,
+                        "Unknown campaign status returned: `$value`, defaulting to DISABLED " +
+                            e.message
+                    )
+                    DISABLED
+                }
+            }
+        }
     }
 }
