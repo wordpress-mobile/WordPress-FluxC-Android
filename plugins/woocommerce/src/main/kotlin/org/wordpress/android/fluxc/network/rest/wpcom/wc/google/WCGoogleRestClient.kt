@@ -57,7 +57,7 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
         startDate: String,
         endDate: String,
         fields: String,
-    ): WooPayload<GoogleAdsProgramsResponse> {
+    ): WooPayload<GoogleAdsProgramsDTO> {
         val url = WOOCOMMERCE.gla.ads.reports.programs.pathNoVersion
         val response = wooNetwork.executeGetGsonRequest(
             site = site,
@@ -68,7 +68,7 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
                 "fields" to fields,
                 "orderby" to "sales"
             ),
-            clazz = GoogleAdsProgramsResponse::class.java
+            clazz = GoogleAdsProgramsDTO::class.java
         ).toWooPayload()
 
         return when {
