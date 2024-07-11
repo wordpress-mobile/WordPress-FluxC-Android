@@ -2,25 +2,25 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.google
 
 import com.google.gson.annotations.SerializedName
 
-data class GoogleAdsProgramsDTO(
+data class WCGoogleAdsProgramsDTO(
     @SerializedName("campaigns") val campaigns: List<GoogleAdsCampaignDTO>?,
     @SerializedName("intervals") val intervals: List<GoogleAdsIntervalDTO>?,
     @SerializedName("totals") val totals: GoogleAdsTotalsDTO?
 )
 
 data class GoogleAdsCampaignDTO(
-    @SerializedName("id") val id: Long,
-    @SerializedName("name") val name: String,
-    @SerializedName("status") val status: String,
-    @SerializedName("subtotals") val subtotals: GoogleAdsTotalsDTO
+    @SerializedName("id") val id: Long?,
+    @SerializedName("name") val name: String?,
+    @SerializedName("status") val status: String?,
+    @SerializedName("subtotals") val subtotals: GoogleAdsTotalsDTO?
 )
 
 data class GoogleAdsIntervalDTO(
-    @SerializedName("interval") val interval: String,
-    @SerializedName("subtotals") val subtotals: GoogleAdsTotalsDTO
+    @SerializedName("interval") val interval: String?,
+    @SerializedName("subtotals") val subtotals: GoogleAdsTotalsDTO?
 )
 
 data class GoogleAdsTotalsDTO(
-    @SerializedName("sales") val sales: Double,
-    @SerializedName("spend") val spend: Double
+    @SerializedName("sales") val sales: Double?,
+    @SerializedName("spend") val spend: Double?
 )

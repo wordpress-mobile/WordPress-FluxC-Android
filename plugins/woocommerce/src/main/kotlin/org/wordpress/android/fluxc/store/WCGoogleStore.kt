@@ -4,7 +4,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaignMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsProgramsDTO
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleAdsProgramsDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
@@ -65,7 +65,7 @@ suspend fun fetchGoogleAdsCampaigns(
         startDate: String,
         endDate: String,
         metricType: MetricType
-    ): WooResult<GoogleAdsProgramsDTO> =
+    ): WooResult<WCGoogleAdsProgramsDTO> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
             val response = restClient.fetchAllPrograms(
                 site = site,
