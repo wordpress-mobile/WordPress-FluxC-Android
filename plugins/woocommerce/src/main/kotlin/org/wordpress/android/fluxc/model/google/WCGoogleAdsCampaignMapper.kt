@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.model.google
 
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign.Status
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleAdsCampaignDTO
-import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 
 class WCGoogleAdsCampaignMapper @Inject constructor() {
