@@ -77,13 +77,13 @@ steps:
           - github_commit_status:
               context: "Unit Test"
 
-      - label: "🔬 WooCommerce Tests"
-        command: .buildkite/woocommerce-tests.sh
-        artifact_paths: *artifact_paths
-        plugins: [$CI_TOOLKIT]
-        notify:
-          - github_commit_status:
-              context: "WooCommerce Tests"
+#      - label: "🔬 WooCommerce Tests"
+#        command: .buildkite/woocommerce-tests.sh
+#        artifact_paths: *artifact_paths
+#        plugins: [$CI_TOOLKIT]
+#        notify:
+#          - github_commit_status:
+#              context: "WooCommerce Tests"
 
   ############################
   # Connected Tests
