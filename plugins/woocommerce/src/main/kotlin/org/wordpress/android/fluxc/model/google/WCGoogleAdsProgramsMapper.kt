@@ -36,8 +36,4 @@ class WCGoogleAdsProgramsMapper @Inject constructor() {
             }
         )
     }
-
-    fun mapToImpressionsAndClicks(dto: WCGoogleAdsProgramsDTO): Pair<Double, Double> {
-        return dto.totals?.let { Pair(it.impressions ?: 0.0, it.clicks ?: 0.0) } ?: Pair(0.0, 0.0)
-    }
 }

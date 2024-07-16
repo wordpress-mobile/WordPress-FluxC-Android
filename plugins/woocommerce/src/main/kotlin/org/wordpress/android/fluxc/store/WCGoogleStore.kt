@@ -42,28 +42,29 @@ class WCGoogleStore @Inject constructor(
             }
         }
 
-/**
- * Fetches the Google Ads campaigns.
- *
- * @param excludeRemovedCampaigns Exclude removed (deleted) campaigns from being fetched.
- * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
- * passes error, too.
- */
-suspend fun fetchGoogleAdsCampaigns(
-    site: SiteModel,
-    excludeRemovedCampaigns: Boolean = true
-): WooResult<List<WCGoogleAdsCampaign>> =
-    coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
-        val response = restClient.fetchGoogleAdsCampaigns(site, excludeRemovedCampaigns)
-        when {
-            response.isError -> WooResult(response.error)
-            response.result != null -> {
-                val campaigns = response.result.map { campaignMapper.mapToModel(it) }
-                WooResult(campaigns)
+    /**
+     * Fetches the Google Ads campaigns.
+     *
+     * @param excludeRemovedCampaigns Exclude removed (deleted) campaigns from being fetched.
+     * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
+     * passes error, too.
+     */
+    suspend fun fetchGoogleAdsCampaigns(
+        site: SiteModel,
+        excludeRemovedCampaigns: Boolean = true
+    ): WooResult<List<WCGoogleAdsCampaign>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
+            val response = restClient.fetchGoogleAdsCampaigns(site, excludeRemovedCampaigns)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val campaigns = response.result.map { campaignMapper.mapToModel(it) }
+                    WooResult(campaigns)
+                }
+
+                else -> WooResult(emptyList())
             }
-            else -> WooResult(emptyList())
         }
-    }
 
     suspend fun fetchAllPrograms(
         site: SiteModel,
@@ -92,18 +93,22 @@ suspend fun fetchGoogleAdsCampaigns(
         site: SiteModel,
         startDate: String,
         endDate: String
-    ) : WooResult<Pair<Double, Double>> =
+    ): WooResult<Pair<Double, Double>> =
         coroutineEngine.withDefaultContext(API, this, "fetchImpressionsAndClicks") {
-            val response = restClient.fetchImpressionsAndClicks(
-                site = site,
-                startDate = startDate,
-                endDate = endDate
-            )
+            val response = restClient.fetchImpressionsAndClicks(site, startDate, endDate)
 
-            when {
-                response.isError -> WooResult(response.error)
-                response.result != null -> WooResult(programsMapper.mapToImpressionsAndClicks(response.result))
-                else -> WooResult(
+            if (response.isError) {
+                return@withDefaultContext WooResult(response.error)
+            }
+
+            val totals = response.result?.totals
+            val clicks = totals?.clicks
+            val impressions = totals?.impressions
+
+            if (clicks != null && impressions != null) {
+                WooResult(Pair(impressions, clicks))
+            } else {
+                WooResult(
                     WooError(WooErrorType.INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE)
                 )
             }
