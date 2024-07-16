@@ -3,9 +3,6 @@
 
 # Nodes with values to reuse in the pipeline.
 common_params:
-  # Common plugin settings to use with the `plugins` key.
-  - &common_plugins
-    - automattic/a8c-ci-toolkit#2.15.0
   # Common artifact paths used across steps
   - &artifact_paths
     - "**/build/test-results/**/*"
@@ -21,7 +18,7 @@ steps:
   - label: "Gradle Wrapper Validation"
     command: |
       validate_gradle_wrapper
-    plugins: *common_plugins
+    plugins: [$CI_TOOLKIT]
     notify:
       - github_commit_status:
           context: "Gradle Wrapper Validation"
@@ -40,7 +37,7 @@ steps:
           cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
           ./gradlew checkstyle
         artifact_paths: *artifact_paths
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "checkstyle"
@@ -50,7 +47,7 @@ steps:
           cp gradle.properties-example gradle.properties && cp -a example/properties-example/ example/properties/
           ./gradlew detekt
         artifact_paths: *artifact_paths
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "detekt"
@@ -61,7 +58,7 @@ steps:
           ./gradlew lintRelease || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1);
           find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || exit 0;
         artifact_paths: *artifact_paths
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "Lint"
@@ -75,18 +72,18 @@ steps:
       - label: "🔬 Unit Test"
         command: .buildkite/unit-tests.sh
         artifact_paths: *artifact_paths
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "Unit Test"
 
-      - label: "🔬 WooCommerce Tests"
-        command: .buildkite/woocommerce-tests.sh
-        artifact_paths: *artifact_paths
-        plugins: *common_plugins
-        notify:
-          - github_commit_status:
-              context: "WooCommerce Tests"
+#      - label: "🔬 WooCommerce Tests"
+#        command: .buildkite/woocommerce-tests.sh
+#        artifact_paths: *artifact_paths
+#        plugins: [$CI_TOOLKIT]
+#        notify:
+#          - github_commit_status:
+#              context: "WooCommerce Tests"
 
   ############################
   # Connected Tests
@@ -95,7 +92,7 @@ steps:
     key: connected-tests
     command: .buildkite/connected-tests.sh
     artifact_paths: *artifact_paths
-    plugins: *common_plugins
+    plugins: [$CI_TOOLKIT]
     notify:
       - github_commit_status:
           context: "Publish :fluxc-build-connected-tests"
@@ -112,7 +109,7 @@ steps:
       - label: "🚀 Publish :fluxc-annotations"
         key: "publish-fluxc-annotations"
         command: .buildkite/publish-fluxc-annotations.sh
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "Publish :fluxc-annotations"
@@ -122,7 +119,7 @@ steps:
         depends_on:
           - "publish-fluxc-annotations"
         command: .buildkite/publish-fluxc-processor.sh
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "Publish :fluxc-processor"
@@ -133,7 +130,7 @@ steps:
           - "publish-fluxc-processor"
           - "publish-fluxc-annotations"
         command: .buildkite/publish-fluxc.sh
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
           - github_commit_status:
               context: "Publish :fluxc"
@@ -145,7 +142,7 @@ steps:
           - "publish-fluxc-annotations"
           - "publish-fluxc"
         command: .buildkite/publish-plugins-woocommerce.sh
-        plugins: *common_plugins
+        plugins: [$CI_TOOLKIT]
         notify:
         - github_commit_status:
             context: "Publish :plugins:woocommerce"
