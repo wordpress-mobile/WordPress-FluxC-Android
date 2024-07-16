@@ -22,5 +22,7 @@ data class GoogleAdsIntervalDTO(
 
 data class GoogleAdsTotalsDTO(
     @SerializedName("sales") val sales: Double?,
-    @SerializedName("spend") val spend: Double?
+    @SerializedName("spend") val spend: Double?,
+    @SerializedName("impressions") val impressions: Double?,
+    @SerializedName("clicks") val clicks: Double?
 )

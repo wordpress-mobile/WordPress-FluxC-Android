@@ -76,6 +76,29 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
             else -> WooPayload(response.result)
         }
     }
+
+    suspend fun fetchImpressionsAndClicks(
+        site: SiteModel,
+        startDate: String,
+        endDate: String,
+    ): WooPayload<WCGoogleAdsProgramsDTO> {
+        val url = WOOCOMMERCE.gla.ads.reports.programs.pathNoVersion
+        val response = wooNetwork.executeGetGsonRequest(
+            site = site,
+            path = url,
+            params = mapOf(
+                "after" to startDate,
+                "before" to endDate,
+                "fields" to "impressions, clicks",
+            ),
+            clazz = WCGoogleAdsProgramsDTO::class.java
+        ).toWooPayload()
+
+        return when {
+            response.isError || response.result == null -> WooPayload(response.error)
+            else -> WooPayload(response.result)
+        }
+    }
 }
 
 /**

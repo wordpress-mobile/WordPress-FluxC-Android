@@ -88,6 +88,27 @@ suspend fun fetchGoogleAdsCampaigns(
             }
         }
 
+    suspend fun fetchImpressionsAndClicks(
+        site: SiteModel,
+        startDate: String,
+        endDate: String
+    ) : WooResult<Pair<Double, Double>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchImpressionsAndClicks") {
+            val response = restClient.fetchImpressionsAndClicks(
+                site = site,
+                startDate = startDate,
+                endDate = endDate
+            )
+
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> WooResult(programsMapper.mapToImpressionsAndClicks(response.result))
+                else -> WooResult(
+                    WooError(WooErrorType.INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE)
+                )
+            }
+        }
+
     enum class MetricType(val parameterName: String) {
         SALES("sales"),
         SPEND("spend"),
