@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import org.wordpress.android.fluxc.example.databinding.FragmentWooCustomersSearchBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.store.ListStore
