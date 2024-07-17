@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -18,6 +17,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.AccountAction
 import org.wordpress.android.fluxc.example.SigninDialog.SigningListener
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener
+import org.wordpress.android.fluxc.example.databinding.FragmentMainBinding
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
@@ -80,40 +80,40 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_main, container, false)
+    ): View = FragmentMainBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentMainBinding.bind(view)) {
+            signInFetchSitesButton.setOnClickListener { showSigninDialog() }
 
-        sign_in_fetch_sites_button.setOnClickListener { showSigninDialog() }
+            signout.setOnClickListener { signOut() }
 
-        signout.setOnClickListener { signOut() }
+            signedOutActions.setOnClickListener {
+                fragmentManager?.beginTransaction()
+                    ?.replace(R.id.fragment_container, SignedOutActionsFragment())
+                    ?.addToBackStack(null)
+                    ?.commit()
+            }
 
-        signed_out_actions.setOnClickListener {
-            fragmentManager?.beginTransaction()
-                ?.replace(R.id.fragment_container, SignedOutActionsFragment())
-                ?.addToBackStack(null)
-                ?.commit()
+            account.setOnClickListener(getOnClickListener(AccountFragment()))
+            sites.setOnClickListener(getOnClickListener(SitesFragment()))
+            posts.setOnClickListener(getOnClickListener(PostsFragment()))
+            comments.setOnClickListener(getOnClickListener(CommentsFragment()))
+            media.setOnClickListener(getOnClickListener(MediaFragment()))
+            taxonomies.setOnClickListener(getOnClickListener(TaxonomiesFragment()))
+            uploads.setOnClickListener(getOnClickListener(UploadsFragment()))
+            themes.setOnClickListener(getOnClickListener(ThemeFragment()))
+            woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
+            notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
+            reactnative.setOnClickListener(getOnClickListener(ReactNativeFragment()))
+            editortheme.setOnClickListener(getOnClickListener(EditorThemeFragment()))
+            experiments.setOnClickListener(getOnClickListener(ExperimentsFragment()))
+            plugins.setOnClickListener(getOnClickListener(PluginsFragment()))
+            plans.setOnClickListener(getOnClickListener(PlansFragment()))
+            domains.setOnClickListener(getOnClickListener(DomainsFragment()))
+            jetpackai.setOnClickListener(getOnClickListener(JetpackAIFragment()))
         }
-
-        account.setOnClickListener(getOnClickListener(AccountFragment()))
-        sites.setOnClickListener(getOnClickListener(SitesFragment()))
-        posts.setOnClickListener(getOnClickListener(PostsFragment()))
-        comments.setOnClickListener(getOnClickListener(CommentsFragment()))
-        media.setOnClickListener(getOnClickListener(MediaFragment()))
-        taxonomies.setOnClickListener(getOnClickListener(TaxonomiesFragment()))
-        uploads.setOnClickListener(getOnClickListener(UploadsFragment()))
-        themes.setOnClickListener(getOnClickListener(ThemeFragment()))
-        woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
-        notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
-        reactnative.setOnClickListener(getOnClickListener(ReactNativeFragment()))
-        editortheme.setOnClickListener(getOnClickListener(EditorThemeFragment()))
-        experiments.setOnClickListener(getOnClickListener(ExperimentsFragment()))
-        plugins.setOnClickListener(getOnClickListener(PluginsFragment()))
-        plans.setOnClickListener(getOnClickListener(PlansFragment()))
-        domains.setOnClickListener(getOnClickListener(DomainsFragment()))
-        jetpackai.setOnClickListener(getOnClickListener(JetpackAIFragment()))
     }
 
     // Private methods
