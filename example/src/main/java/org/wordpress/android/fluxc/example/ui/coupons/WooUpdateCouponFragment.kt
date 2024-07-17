@@ -13,11 +13,10 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_update_coupon.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooUpdateCouponBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
@@ -46,6 +45,8 @@ class WooUpdateCouponFragment : Fragment() {
     private var isAddNewCoupon: Boolean = false
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
+    private var binding: FragmentWooUpdateCouponBinding? = null
 
     companion object {
         const val ARG_SELECTED_SITE_ID = "ARG_SELECTED_SITE_ID"
@@ -81,8 +82,14 @@ class WooUpdateCouponFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_update_coupon, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentWooUpdateCouponBinding.inflate(inflater, container, false)
+        return binding!!.root
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -93,9 +100,8 @@ class WooUpdateCouponFragment : Fragment() {
     @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         if (!isAddNewCoupon) {
-            enter_coupon_id.setOnClickListener {
+            binding?.enterCouponId?.setOnClickListener {
                 showSingleLineDialog(
                     activity = activity,
                     message = "Enter the ID of coupon to fetch:",
@@ -103,66 +109,66 @@ class WooUpdateCouponFragment : Fragment() {
                 ) { editText ->
                     couponId = editText.text.toString().toLongOrNull()
                     couponId?.let { id ->
-                        updateSelectedCouponId(id)
+                        binding?.updateSelectedCouponId(id)
                     } ?: prependToLog("No valid coupon ID defined...doing nothing")
                 }
             }
         } else {
-            enableCouponDependentButtons()
+            binding?.enableCouponDependentButtons()
 
-            entered_coupon_id.visibility = View.GONE
-            enter_coupon_id.visibility = View.GONE
+            binding?.enteredCouponId?.visibility = View.GONE
+            binding?.enterCouponId?.visibility = View.GONE
         }
 
-        product_ids.isEnabled = false
-        excluded_product_ids.isEnabled = false
-        category_ids.isEnabled = false
-        excluded_category_ids.isEnabled = false
+        binding?.productIds?.isEnabled = false
+        binding?.excludedProductIds?.isEnabled = false
+        binding?.categoryIds?.isEnabled = false
+        binding?.excludedCategoryIds?.isEnabled = false
 
-        discount_type.setOnClickListener {
+        binding?.discountType?.setOnClickListener {
             showListSelectorDialog(
                 listOf(DiscountType.Percent, DiscountType.FixedCart, DiscountType.FixedProduct).map { it.value },
-                LIST_RESULT_CODE_DISCOUNT_TYPE, discount_type.text.toString()
+                LIST_RESULT_CODE_DISCOUNT_TYPE, binding?.discountType?.text.toString()
             )
         }
 
-        select_expiry_date.setOnClickListener {
+        binding?.selectExpiryDate?.setOnClickListener {
             showDatePickerDialog(
-                expiry_date.getText()
+                binding?.expiryDate?.getText()
             ) { _, year, month, dayOfMonth ->
-                expiry_date.setText(DateUtils.getFormattedDateString(year, month, dayOfMonth))
+                binding?.expiryDate?.setText(DateUtils.getFormattedDateString(year, month, dayOfMonth))
             }
         }
 
-        coupon_update.setOnClickListener {
+        binding?.couponUpdate?.setOnClickListener {
             getWCSite()?.let { site ->
                 // update categories only if new categories has been selected
-                val products = product_ids.getText().toIdsList()
-                val excludedProducts = excluded_product_ids.getText().toIdsList()
-                val excludedCategories = excluded_category_ids.getText().toIdsList()
-                val categories = category_ids.getText().toIdsList()
-                val emails = restricted_emails.getText()
-                    .replace(" ", "")
-                    .split(",")
+                val products = binding?.productIds?.getText()?.toIdsList()
+                val excludedProducts = binding?.excludedProductIds?.getText()?.toIdsList()
+                val excludedCategories = binding?.excludedCategoryIds?.getText()?.toIdsList()
+                val categories = binding?.categoryIds?.getText()?.toIdsList()
+                val emails = binding?.restrictedEmails?.getText()
+                    ?.replace(" ", "")
+                    ?.split(",")
 
                 val request = UpdateCouponRequest(
-                    code = coupon_code.getText(),
-                    amount = coupon_amount.getText(),
-                    discountType = discount_type.text.toString(),
-                    description = coupon_description.getText(),
-                    expiryDate = expiry_date.getText(),
-                    minimumAmount = minimum_amount.getText(),
-                    maximumAmount = maximum_amount.getText(),
+                    code = binding?.couponCode?.getText(),
+                    amount = binding?.couponAmount?.getText(),
+                    discountType = binding?.discountType?.text.toString(),
+                    description = binding?.couponDescription?.getText(),
+                    expiryDate = binding?.expiryDate?.getText(),
+                    minimumAmount = binding?.minimumAmount?.getText(),
+                    maximumAmount = binding?.maximumAmount?.getText(),
                     productIds = products,
                     excludedProductIds = excludedProducts,
                     productCategoryIds = categories,
                     excludedProductCategoryIds = excludedCategories,
-                    isShippingFree = shipping_free.isChecked,
-                    isForIndividualUse = individual_use.isChecked,
-                    areSaleItemsExcluded = sale_item_excluded.isChecked,
-                    usageLimit = usage_limit.getText().toIntOrNull(),
-                    usageLimitPerUser = usage_limit_per_user.getText().toIntOrNull(),
-                    limitUsageToXItems = limit_usage_to_x_items.getText().toIntOrNull(),
+                    isShippingFree = binding?.shippingFree?.isChecked,
+                    isForIndividualUse = binding?.individualUse?.isChecked,
+                    areSaleItemsExcluded = binding?.saleItemExcluded?.isChecked,
+                    usageLimit = binding?.usageLimit?.getText()?.toIntOrNull(),
+                    usageLimitPerUser = binding?.usageLimitPerUser?.getText()?.toIntOrNull(),
+                    limitUsageToXItems = binding?.limitUsageToXItems?.getText()?.toIntOrNull(),
                     restrictedEmails = emails
                 )
 
@@ -192,16 +198,16 @@ class WooUpdateCouponFragment : Fragment() {
             } ?: prependToLog("No site found...doing nothing")
         }
 
-        select_product_ids.setOnClickListener {
+        binding?.selectProductIds?.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
                     val products = productStore.getProductsForSite(it)
-                    val selectedIds = product_ids.getText().toIdsList()
+                    val selectedIds = binding?.productIds?.getText()?.toIdsList()
                     if (products.isNotEmpty()) {
                         showMultiSelectorDialog(
                             itemNames = products.map { it.name },
                             itemIds = products.map { it.remoteProductId },
-                            selectedIds = selectedIds,
+                            selectedIds = selectedIds ?: emptyList(),
                             resultCode = LIST_RESULT_CODE_PRODUCTS
                         )
                     } else {
@@ -211,16 +217,16 @@ class WooUpdateCouponFragment : Fragment() {
             }
         }
 
-        select_excluded_product_ids.setOnClickListener {
+        binding?.selectExcludedProductIds?.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
                     val products = productStore.getProductsForSite(it)
-                    val selectedIds = excluded_product_ids.getText().toIdsList()
+                    val selectedIds = binding?.excludedProductIds?.getText()?.toIdsList()
                     if (products.isNotEmpty()) {
                         showMultiSelectorDialog(
                             itemNames = products.map { it.name },
                             itemIds = products.map { it.remoteProductId },
-                            selectedIds = selectedIds,
+                            selectedIds = selectedIds ?: emptyList(),
                             resultCode = LIST_RESULT_CODE_EXCL_PRODUCTS
                         )
                     } else {
@@ -230,16 +236,16 @@ class WooUpdateCouponFragment : Fragment() {
             }
         }
 
-        select_category_ids.setOnClickListener {
+        binding?.selectCategoryIds?.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
                     val categories = productStore.getProductCategoriesForSite(it)
-                    val selectedIds = category_ids.getText().toIdsList()
+                    val selectedIds = binding?.categoryIds?.getText()?.toIdsList()
                     if (categories.isNotEmpty()) {
                         showMultiSelectorDialog(
                             itemNames = categories.map { it.name },
                             itemIds = categories.map { it.remoteCategoryId },
-                            selectedIds = selectedIds,
+                            selectedIds = selectedIds ?: emptyList(),
                             resultCode = LIST_RESULT_CODE_CATEGORIES
                         )
                     } else {
@@ -249,16 +255,16 @@ class WooUpdateCouponFragment : Fragment() {
             }
         }
 
-        select_excluded_category_ids.setOnClickListener {
+        binding?.selectExcludedCategoryIds?.setOnClickListener {
             getWCSite()?.let {
                 coroutineScope.launch {
                     val categories = productStore.getProductCategoriesForSite(it)
-                    val selectedIds = excluded_category_ids.getText().toIdsList()
+                    val selectedIds = binding?.excludedCategoryIds?.getText()?.toIdsList()
                     if (categories.isNotEmpty()) {
                         showMultiSelectorDialog(
                             itemNames = categories.map { it.name },
                             itemIds = categories.map { it.remoteCategoryId },
-                            selectedIds = selectedIds,
+                            selectedIds = selectedIds ?: emptyList(),
                             resultCode = LIST_RESULT_CODE_EXCL_CATEGORIES
                         )
                     } else {
@@ -272,7 +278,7 @@ class WooUpdateCouponFragment : Fragment() {
             couponId = bundle.getLong(ARG_SELECTED_COUPON_ID)
             siteId = bundle.getLong(ARG_SELECTED_SITE_ID)
         }
-        couponId?.let { updateSelectedCouponId(it) }
+        couponId?.let { binding?.updateSelectedCouponId(it) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -282,17 +288,17 @@ class WooUpdateCouponFragment : Fragment() {
             when (resultCode) {
                 LIST_RESULT_CODE_DISCOUNT_TYPE -> {
                     selectedItem?.let {
-                        discount_type.text = it
+                        binding?.discountType?.text = it
                     }
                 }
             }
         } else if (requestCode == LIST_MULTI_SELECTOR_REQUEST_CODE) {
             val selectedItems = data?.getLongArrayExtra(ARG_LIST_SELECTED_ITEMS)
             val view = when (resultCode) {
-                LIST_RESULT_CODE_PRODUCTS -> product_ids
-                LIST_RESULT_CODE_EXCL_PRODUCTS -> excluded_product_ids
-                LIST_RESULT_CODE_CATEGORIES -> category_ids
-                LIST_RESULT_CODE_EXCL_CATEGORIES -> excluded_category_ids
+                LIST_RESULT_CODE_PRODUCTS -> binding?.productIds
+                LIST_RESULT_CODE_EXCL_PRODUCTS -> binding?.excludedProductIds
+                LIST_RESULT_CODE_CATEGORIES -> binding?.categoryIds
+                LIST_RESULT_CODE_EXCL_CATEGORIES -> binding?.excludedCategoryIds
                 else -> null
             }
             view?.setText(selectedItems?.asIterable().toText())
@@ -300,10 +306,10 @@ class WooUpdateCouponFragment : Fragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateSelectedCouponId(couponId: Long) {
+    private fun FragmentWooUpdateCouponBinding.updateSelectedCouponId(couponId: Long) {
         getWCSite()?.let { siteModel ->
             enableCouponDependentButtons()
-            enter_coupon_id.text = couponId.toString()
+            enterCouponId.text = couponId.toString()
 
             coroutineScope.launch {
                 couponStore.fetchCoupon(siteModel, couponId)
@@ -320,25 +326,25 @@ class WooUpdateCouponFragment : Fragment() {
 
     private fun Iterable<Long>?.toText() = this?.joinToString { it.toString() } ?: ""
 
-    private fun updateCouponProperties(couponModel: CouponWithEmails) {
-        coupon_code.setText(couponModel.coupon.code ?: "")
-        coupon_amount.setText(couponModel.coupon.amount.toString())
-        discount_type.text = couponModel.coupon.discountType.toString()
-        coupon_description.setText(couponModel.coupon.description ?: "")
-        expiry_date.setText(couponModel.coupon.dateExpires?.split('T')?.get(0) ?: "")
-        minimum_amount.setText(couponModel.coupon.minimumAmount.toString())
-        maximum_amount.setText(couponModel.coupon.maximumAmount.toString())
-        product_ids.setText(couponModel.coupon.includedProductIds.toText())
-        excluded_product_ids.setText(couponModel.coupon.excludedProductIds.toText())
-        category_ids.setText(couponModel.coupon.includedCategoryIds.toText())
-        excluded_category_ids.setText(couponModel.coupon.excludedCategoryIds.toText())
-        shipping_free.isChecked = couponModel.coupon.isShippingFree ?: false
-        individual_use.isChecked = couponModel.coupon.isForIndividualUse ?: false
-        sale_item_excluded.isChecked = couponModel.coupon.areSaleItemsExcluded ?: false
-        usage_limit.setText(couponModel.coupon.usageLimit?.toString() ?: "")
-        usage_limit_per_user.setText(couponModel.coupon.usageLimitPerUser?.toString() ?: "")
-        limit_usage_to_x_items.setText(couponModel.coupon.limitUsageToXItems?.toString() ?: "")
-        restricted_emails.setText(couponModel.restrictedEmails.joinToString { it.email })
+    private fun FragmentWooUpdateCouponBinding.updateCouponProperties(couponModel: CouponWithEmails) {
+        couponCode.setText(couponModel.coupon.code ?: "")
+        couponAmount.setText(couponModel.coupon.amount.toString())
+        discountType.text = couponModel.coupon.discountType.toString()
+        couponDescription.setText(couponModel.coupon.description ?: "")
+        expiryDate.setText(couponModel.coupon.dateExpires?.split('T')?.get(0) ?: "")
+        minimumAmount.setText(couponModel.coupon.minimumAmount.toString())
+        maximumAmount.setText(couponModel.coupon.maximumAmount.toString())
+        productIds.setText(couponModel.coupon.includedProductIds.toText())
+        excludedProductIds.setText(couponModel.coupon.excludedProductIds.toText())
+        categoryIds.setText(couponModel.coupon.includedCategoryIds.toText())
+        excludedCategoryIds.setText(couponModel.coupon.excludedCategoryIds.toText())
+        shippingFree.isChecked = couponModel.coupon.isShippingFree ?: false
+        individualUse.isChecked = couponModel.coupon.isForIndividualUse ?: false
+        saleItemExcluded.isChecked = couponModel.coupon.areSaleItemsExcluded ?: false
+        usageLimit.setText(couponModel.coupon.usageLimit?.toString() ?: "")
+        usageLimitPerUser.setText(couponModel.coupon.usageLimitPerUser?.toString() ?: "")
+        limitUsageToXItems.setText(couponModel.coupon.limitUsageToXItems?.toString() ?: "")
+        restrictedEmails.setText(couponModel.restrictedEmails.joinToString { it.email })
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
@@ -380,12 +386,17 @@ class WooUpdateCouponFragment : Fragment() {
     private fun getWCSite() = wooCommerceStore.getWooCommerceSites()
         .firstOrNull { it.siteId == siteId }
 
-    private fun enableCouponDependentButtons() {
+    private fun FragmentWooUpdateCouponBinding.enableCouponDependentButtons() {
         for (i in 0 until couponContainer.childCount) {
             val child = couponContainer.getChildAt(i)
             if (child is Button || child is EditText) {
                 child.isEnabled = true
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }
