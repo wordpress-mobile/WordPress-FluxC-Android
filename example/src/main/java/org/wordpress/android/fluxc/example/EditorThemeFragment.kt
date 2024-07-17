@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_editor_theme.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.databinding.FragmentEditorThemeBinding
 import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
@@ -32,8 +32,11 @@ class EditorThemeFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_editor_theme, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentEditorThemeBinding.inflate(inflater, container, false).root
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -42,9 +45,11 @@ class EditorThemeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        fetch_theme.setOnClickListener(::onFetchThemeClick)
-        fetch_cached_theme.setOnClickListener(::onFetchCachedThemeClick)
-        clear_cache.setOnClickListener(::onDeleteCacheClick)
+        with(FragmentEditorThemeBinding.bind(view)) {
+            fetchTheme.setOnClickListener(::onFetchThemeClick)
+            fetchCachedTheme.setOnClickListener(::onFetchCachedThemeClick)
+            clearCache.setOnClickListener(::onDeleteCacheClick)
+        }
     }
 
     override fun onStart() {
