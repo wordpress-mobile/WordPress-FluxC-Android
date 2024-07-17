@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_jetpackai.*
 import kotlinx.coroutines.launch
+import org.wordpress.android.fluxc.example.databinding.FragmentJetpackaiBinding
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIQueryResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpackai.JetpackAIRestClient.JetpackAICompletionsResponse.Error
@@ -35,21 +35,21 @@ class JetpackAIFragment : StoreSelectingFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_jetpackai, container, false)
+    ): View = FragmentJetpackaiBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        setHaikuButton()
-        setTranscribeAudioButton()
-        setJetpackAIQueryVoiceToContentButton()
-        setJetpackAIAssistantFeatureButton()
-        setJetpackAIQueryQuestionButton()
+        with(FragmentJetpackaiBinding.bind(view)) {
+            setHaikuButton()
+            setTranscribeAudioButton()
+            setJetpackAIQueryVoiceToContentButton()
+            setJetpackAIAssistantFeatureButton()
+            setJetpackAIQueryQuestionButton()
+        }
     }
 
-    private fun setHaikuButton() {
-        generate_haiku.setOnClickListener {
+    private fun FragmentJetpackaiBinding.setHaikuButton() {
+        generateHaiku.setOnClickListener {
             selectedSite?.let {
                 lifecycleScope.launch {
                     val result = store.fetchJetpackAICompletions(
@@ -72,8 +72,8 @@ class JetpackAIFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun setTranscribeAudioButton() {
-        transcribe_audio.setOnClickListener {
+    private fun FragmentJetpackaiBinding.setTranscribeAudioButton() {
+        transcribeAudio.setOnClickListener {
             siteStore.sites[0].let {
                 lifecycleScope.launch {
                     getAudioFile()?.let { file ->
@@ -98,8 +98,8 @@ class JetpackAIFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun setJetpackAIQueryVoiceToContentButton() {
-        jetpack_ai_query_voice_to_content.setOnClickListener {
+    private fun FragmentJetpackaiBinding.setJetpackAIQueryVoiceToContentButton() {
+        jetpackAiQueryVoiceToContent.setOnClickListener {
             siteStore.sites[0].let {
                 lifecycleScope.launch {
                     val result = store.fetchJetpackAIQuery(
@@ -128,8 +128,8 @@ class JetpackAIFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun setJetpackAIQueryQuestionButton() {
-        jetpack_ai_query_question.setOnClickListener {
+    private fun FragmentJetpackaiBinding.setJetpackAIQueryQuestionButton() {
+        jetpackAiQueryQuestion.setOnClickListener {
            selectedSite?.let {
                 lifecycleScope.launch {
                     val question = "What is WooCommerce?"
@@ -157,8 +157,8 @@ class JetpackAIFragment : StoreSelectingFragment() {
         }
     }
 
-    private fun setJetpackAIAssistantFeatureButton() {
-        jetpack_ai_assistant_feature.setOnClickListener {
+    private fun FragmentJetpackaiBinding.setJetpackAIAssistantFeatureButton() {
+        jetpackAiAssistantFeature.setOnClickListener {
             siteStore.sites[0].let {
                 lifecycleScope.launch {
                     val result = store.fetchJetpackAIAssistantFeature(site = it)
