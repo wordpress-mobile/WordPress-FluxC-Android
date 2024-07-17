@@ -7,9 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_plans.*
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.databinding.FragmentPlansBinding
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.store.PlansStore
 import org.wordpress.android.fluxc.store.SiteStore
@@ -29,50 +29,50 @@ class PlansFragment : StoreSelectingFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_plans, container, false)
+    ): View = FragmentPlansBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        fetch_plans.setOnClickListener {
-            lifecycleScope.launch {
-                val plansResult = plansStore.fetchPlans()
-                when {
-                    plansResult.isError -> {
-                        prependToLog("Error fetching plans: ${plansResult.error}")
-                    }
-                    else -> {
-                        val plans = plansResult.plans
-                            ?.joinToString(separator = "\n") {
-                                "${it.productName} (${it.billPeriodLabel}): ${it.price}"
-                            }
-                        prependToLog("Plans:\n$plans")
+        with(FragmentPlansBinding.bind(view)) {
+            fetchPlans.setOnClickListener {
+                lifecycleScope.launch {
+                    val plansResult = plansStore.fetchPlans()
+                    when {
+                        plansResult.isError -> {
+                            prependToLog("Error fetching plans: ${plansResult.error}")
+                        }
+                        else -> {
+                            val plans = plansResult.plans
+                                ?.joinToString(separator = "\n") {
+                                    "${it.productName} (${it.billPeriodLabel}): ${it.price}"
+                                }
+                            prependToLog("Plans:\n$plans")
+                        }
                     }
                 }
             }
-        }
 
-        fetch_site_plan.setOnClickListener {
-            selectedSite?.let { site ->
-                lifecycleScope.launch {
-                    val plansResult = siteStore.fetchSitePlans(site)
-                    when {
-                        plansResult.isError -> {
-                            prependToLog("Error fetching site plan: ${plansResult.error.type}")
-                        }
-                        else -> {
-                            val plan = plansResult.plans?.firstOrNull { it.isCurrentPlan }
-                            if (plan != null) {
-                                prependToLog("Current site plan: ${plan.productName}" +
-                                    "; has domain credit: ${plan.hasDomainCredit}")
-                            } else {
-                               prependToLog("The site has no active plan")
+            fetchSitePlan.setOnClickListener {
+                selectedSite?.let { site ->
+                    lifecycleScope.launch {
+                        val plansResult = siteStore.fetchSitePlans(site)
+                        when {
+                            plansResult.isError -> {
+                                prependToLog("Error fetching site plan: ${plansResult.error.type}")
+                            }
+                            else -> {
+                                val plan = plansResult.plans?.firstOrNull { it.isCurrentPlan }
+                                if (plan != null) {
+                                    prependToLog("Current site plan: ${plan.productName}" +
+                                        "; has domain credit: ${plan.hasDomainCredit}")
+                                } else {
+                                   prependToLog("The site has no active plan")
+                                }
                             }
                         }
                     }
-                }
-            } ?: prependToLog("Select a site first")
+                } ?: prependToLog("Select a site first")
+            }
         }
     }
 }
