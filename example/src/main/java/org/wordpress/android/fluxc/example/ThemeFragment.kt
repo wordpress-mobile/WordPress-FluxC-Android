@@ -6,17 +6,16 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_themes.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.databinding.FragmentThemesBinding
 import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder
@@ -62,158 +61,158 @@ class ThemeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_themes, container, false)
+    ): View = FragmentThemesBinding.inflate(inflater, container, false).root
 
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentThemesBinding.bind(view)) {
+            themeSelectSite.setOnClickListener {
+                showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
+                    override fun onSiteSelected(site: SiteModel, pos: Int) {
+                        selectedSite = site
+                        selectedPos = pos
+                        val wpcomSite = if (site.isWPCom) "WP" else ""
+                        val jetpackSite = if (site.isJetpackConnected) "JP" else ""
+                        val siteName = site.name ?: site.displayName
+                        val selectedSite = "[$wpcomSite$jetpackSite] $siteName"
+                        themeSelectedSite.text = selectedSite
+                    }
+                })
+            }
 
-        theme_select_site.setOnClickListener {
-            showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
-                override fun onSiteSelected(site: SiteModel, pos: Int) {
-                    selectedSite = site
-                    selectedPos = pos
-                    val wpcomSite = if (site.isWPCom) "WP" else ""
-                    val jetpackSite = if (site.isJetpackConnected) "JP" else ""
-                    val siteName = site.name ?: site.displayName
-                    val selectedSite = "[$wpcomSite$jetpackSite] $siteName"
-                    theme_selected_site.text = selectedSite
+            activateThemeWpcom.setOnClickListener {
+                val id = themeId.text.toString()
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id")
+                } else {
+                    val site = getWpComSite()
+                    if (site == null) {
+                        prependToLog("No WP.com site found, unable to test.")
+                    } else {
+                        @Suppress("DEPRECATION") val theme = ThemeModel()
+                        theme.localSiteId = site.id
+                        theme.themeId = id
+                        val payload = ThemeStore.SiteThemePayload(site, theme)
+                        dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                    }
                 }
-            })
-        }
+            }
 
-        activate_theme_wpcom.setOnClickListener {
-            val id = getThemeIdFromInput(view)
-            if (TextUtils.isEmpty(id)) {
-                prependToLog("Please enter a theme id")
-            } else {
-                val site = getWpComSite()
-                if (site == null) {
+            activateThemeJp.setOnClickListener {
+                val id = themeId.text.toString()
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id")
+                } else {
+                    val site = getJetpackConnectedSite()
+                    if (site == null) {
+                        prependToLog("No Jetpack connected site found, unable to test.")
+                    } else {
+                        @Suppress("DEPRECATION") val theme = ThemeModel()
+                        theme.localSiteId = site.id
+                        theme.themeId = id
+                        val payload = ThemeStore.SiteThemePayload(site, theme)
+                        dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                    }
+                }
+            }
+
+            installThemeJp.setOnClickListener {
+                val id = themeId.text.toString()
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id")
+                } else {
+                    val site = getJetpackConnectedSite()
+                    if (site == null) {
+                        prependToLog("No Jetpack connected site found, unable to test.")
+                    } else {
+                        @Suppress("DEPRECATION") val theme = ThemeModel()
+                        theme.localSiteId = site.id
+                        theme.themeId = id
+                        val payload = ThemeStore.SiteThemePayload(site, theme)
+                        dispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload))
+                    }
+                }
+            }
+
+            deleteThemeJp.setOnClickListener {
+                val id = themeId.text.toString()
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id")
+                } else {
+                    val site = getJetpackConnectedSite()
+                    if (site == null) {
+                        prependToLog("No Jetpack connected site found, unable to test.")
+                    } else {
+                        @Suppress("DEPRECATION") val theme = ThemeModel()
+                        theme.localSiteId = site.id
+                        theme.themeId = id
+                        val payload = ThemeStore.SiteThemePayload(site, theme)
+                        dispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload))
+                    }
+                }
+            }
+
+            fetchWpcomThemes.setOnClickListener {
+                lifecycleScope.launch {
+                    val filter = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Enter filter (Optional)",
+                        isNumeric = false
+                    )
+                    val limit = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Limit results? (Optional, defaults to 500)",
+                        isNumeric = true
+                    )
+                    dispatcher.dispatch(
+                        ThemeActionBuilder.newFetchWpComThemesAction(
+                            limit?.let {
+                                FetchWPComThemesPayload(filter, it.toInt())
+                            } ?: FetchWPComThemesPayload(filter)
+                        )
+                    )
+                }
+            }
+
+            fetchInstalledThemes.setOnClickListener {
+                if (getJetpackConnectedSite() == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.")
+                } else {
+                    dispatcher.dispatch(
+                        ThemeActionBuilder.newFetchInstalledThemesAction(
+                            getJetpackConnectedSite()
+                        )
+                    )
+                }
+            }
+
+            fetchCurrentThemeJp.setOnClickListener {
+                if (getJetpackConnectedSite() == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.")
+                } else {
+                    dispatcher.dispatch(
+                        ThemeActionBuilder.newFetchCurrentThemeAction(
+                            getJetpackConnectedSite()
+                        )
+                    )
+                }
+            }
+
+            fetchCurrentThemeWpcom.setOnClickListener {
+                if (getWpComSite() == null) {
                     prependToLog("No WP.com site found, unable to test.")
                 } else {
-                    @Suppress("DEPRECATION") val theme = ThemeModel()
-                    theme.localSiteId = site.id
-                    theme.themeId = id
-                    val payload = ThemeStore.SiteThemePayload(site, theme)
-                    dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                    dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getWpComSite()))
                 }
             }
-        }
 
-        activate_theme_jp.setOnClickListener {
-            val id = getThemeIdFromInput(view)
-            if (TextUtils.isEmpty(id)) {
-                prependToLog("Please enter a theme id")
-            } else {
-                val site = getJetpackConnectedSite()
-                if (site == null) {
-                    prependToLog("No Jetpack connected site found, unable to test.")
-                } else {
-                    @Suppress("DEPRECATION") val theme = ThemeModel()
-                    theme.localSiteId = site.id
-                    theme.themeId = id
-                    val payload = ThemeStore.SiteThemePayload(site, theme)
-                    dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
-                }
-            }
-        }
-
-        install_theme_jp.setOnClickListener {
-            val id = getThemeIdFromInput(view)
-            if (TextUtils.isEmpty(id)) {
-                prependToLog("Please enter a theme id")
-            } else {
-                val site = getJetpackConnectedSite()
-                if (site == null) {
-                    prependToLog("No Jetpack connected site found, unable to test.")
-                } else {
-                    @Suppress("DEPRECATION") val theme = ThemeModel()
-                    theme.localSiteId = site.id
-                    theme.themeId = id
-                    val payload = ThemeStore.SiteThemePayload(site, theme)
-                    dispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload))
-                }
-            }
-        }
-
-        delete_theme_jp.setOnClickListener {
-            val id = getThemeIdFromInput(view)
-            if (TextUtils.isEmpty(id)) {
-                prependToLog("Please enter a theme id")
-            } else {
-                val site = getJetpackConnectedSite()
-                if (site == null) {
-                    prependToLog("No Jetpack connected site found, unable to test.")
-                } else {
-                    @Suppress("DEPRECATION") val theme = ThemeModel()
-                    theme.localSiteId = site.id
-                    theme.themeId = id
-                    val payload = ThemeStore.SiteThemePayload(site, theme)
-                    dispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload))
-                }
-            }
-        }
-
-        fetch_wpcom_themes.setOnClickListener {
-            lifecycleScope.launch {
-                val filter = showSingleLineDialog(
-                    activity = requireActivity(),
-                    message = "Enter filter (Optional)",
-                    isNumeric = false
-                )
-                val limit = showSingleLineDialog(
-                    activity = requireActivity(),
-                    message = "Limit results? (Optional, defaults to 500)",
-                    isNumeric = true
-                )
-                dispatcher.dispatch(
-                    ThemeActionBuilder.newFetchWpComThemesAction(
-                        limit?.let {
-                            FetchWPComThemesPayload(filter, it.toInt())
-                        } ?: FetchWPComThemesPayload(filter)
-                    )
-                )
-            }
-        }
-
-        fetch_installed_themes.setOnClickListener {
-            if (getJetpackConnectedSite() == null) {
-                prependToLog("No Jetpack connected site found, unable to test.")
-            } else {
-                dispatcher.dispatch(
-                    ThemeActionBuilder.newFetchInstalledThemesAction(
-                        getJetpackConnectedSite()
-                    )
-                )
-            }
-        }
-
-        fetch_current_theme_jp.setOnClickListener {
-            if (getJetpackConnectedSite() == null) {
-                prependToLog("No Jetpack connected site found, unable to test.")
-            } else {
-                dispatcher.dispatch(
-                    ThemeActionBuilder.newFetchCurrentThemeAction(
-                        getJetpackConnectedSite()
-                    )
-                )
-            }
-        }
-
-        fetch_current_theme_wpcom.setOnClickListener {
-            if (getWpComSite() == null) {
-                prependToLog("No WP.com site found, unable to test.")
-            } else {
-                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getWpComSite()))
-            }
-        }
-
-        fetch_demo_themes_pages.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                val response = themeCoroutineStore.fetchDemoThemePages("https://zainodemo.wpcomstaging.com")
-                withContext(Dispatchers.Main) {
-                    prependToLog("Demo themes pages fetched: $response")
+            fetchDemoThemesPages.setOnClickListener {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val response = themeCoroutineStore.fetchDemoThemePages("https://zainodemo.wpcomstaging.com")
+                    withContext(Dispatchers.Main) {
+                        prependToLog("Demo themes pages fetched: $response")
+                    }
                 }
             }
         }
@@ -302,11 +301,6 @@ class ThemeFragment : Fragment() {
     }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
-
-    private fun getThemeIdFromInput(root: View?): String {
-        val themeIdInput = if (root == null) null else root.findViewById(R.id.theme_id) as TextView
-        return themeIdInput?.text?.toString() ?: ""
-    }
 
     private fun getWpComSite(): SiteModel? {
         return if (selectedSite?.isWPCom == true) {
