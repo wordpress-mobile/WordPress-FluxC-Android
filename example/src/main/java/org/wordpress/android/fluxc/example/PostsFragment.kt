@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_posts.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.databinding.FragmentPostsBinding
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged
 import org.wordpress.android.fluxc.model.SiteModel
@@ -32,33 +32,37 @@ class PostsFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_posts, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentPostsBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentPostsBinding.bind(view)) {
+            fetchFirstSitePosts.setOnClickListener {
+                val payload = FetchPostsPayload(getFirstSite())
+                dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload))
+            }
 
-        fetch_first_site_posts.setOnClickListener {
-            val payload = FetchPostsPayload(getFirstSite())
-            dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload))
-        }
+            createNewPostFirstSite.setOnClickListener {
+                val examplePost = postStore.instantiatePostModel(getFirstSite(), false)
+                examplePost.setTitle("From example activity")
+                examplePost.setContent("Hi there, I'm a post from FluxC!")
+                examplePost.setFeaturedImageId(0)
+                val payload = RemotePostPayload(examplePost, getFirstSite())
+                dispatcher.dispatch(PostActionBuilder.newPushPostAction(payload))
+            }
 
-        create_new_post_first_site.setOnClickListener {
-            val examplePost = postStore.instantiatePostModel(getFirstSite(), false)
-            examplePost.setTitle("From example activity")
-            examplePost.setContent("Hi there, I'm a post from FluxC!")
-            examplePost.setFeaturedImageId(0)
-            val payload = RemotePostPayload(examplePost, getFirstSite())
-            dispatcher.dispatch(PostActionBuilder.newPushPostAction(payload))
-        }
-
-        delete_a_post_from_first_site.setOnClickListener {
-            val firstSite = getFirstSite()
-            val posts = postStore.getPostsForSite(firstSite)
-            posts.sortWith(Comparator { lhs, rhs -> (rhs.remotePostId - lhs.remotePostId).toInt() })
-            if (!posts.isEmpty()) {
-                val payload = RemotePostPayload(posts[0], firstSite)
-                dispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload))
+            deleteAPostFromFirstSite.setOnClickListener {
+                val firstSite = getFirstSite()
+                val posts = postStore.getPostsForSite(firstSite)
+                posts.sortWith(Comparator { lhs, rhs -> (rhs.remotePostId - lhs.remotePostId).toInt() })
+                if (!posts.isEmpty()) {
+                    val payload = RemotePostPayload(posts[0], firstSite)
+                    dispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload))
+                }
             }
         }
     }
