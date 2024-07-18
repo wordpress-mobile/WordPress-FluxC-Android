@@ -672,7 +672,7 @@ class WCOrderStore @Inject constructor(
                         newPaymentMethodTitle,
                     )
                     if (remotePayload.isError) {
-                        revertOptimisticUpdate(remotePayload)
+                        revertOptimisticOrderUpdate(remotePayload)
                     } else {
                         ordersDaoDecorator.insertOrUpdateOrder(
                             remotePayload.order,
@@ -1016,7 +1016,7 @@ class WCOrderStore @Inject constructor(
         emitChange(onOrderChanged)
     }
 
-    private suspend fun revertOptimisticUpdate(payload: RemoteOrderPayload.Updating): OnOrderChanged {
+    private suspend fun revertOptimisticOrderUpdate(payload: RemoteOrderPayload.Updating): OnOrderChanged {
         optimisticallyUpdateOrder(
             payload.order.orderId,
             payload.order.localSiteId,
