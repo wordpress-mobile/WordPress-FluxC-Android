@@ -24,3 +24,8 @@ data class WCGoogleAdsProgramTotals(
     val sales: Double?,
     val spend: Double?
 )
+
+data class WCGoogleAdsCardStats(
+    val impressions: Double,
+    val clicks: Double
+)

@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaignMapper
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsCardStats
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsPrograms
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
@@ -93,7 +94,7 @@ class WCGoogleStore @Inject constructor(
         site: SiteModel,
         startDate: String,
         endDate: String
-    ): WooResult<Pair<Double, Double>> =
+    ): WooResult<WCGoogleAdsCardStats> =
         coroutineEngine.withDefaultContext(API, this, "fetchImpressionsAndClicks") {
             val response = restClient.fetchImpressionsAndClicks(site, startDate, endDate)
 
@@ -106,7 +107,12 @@ class WCGoogleStore @Inject constructor(
             val impressions = totals?.impressions
 
             if (clicks != null && impressions != null) {
-                WooResult(Pair(impressions, clicks))
+                WooResult(
+                    WCGoogleAdsCardStats(
+                        clicks = clicks,
+                        impressions = impressions
+                    )
+                )
             } else {
                 WooResult(
                     WooError(WooErrorType.INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE)
