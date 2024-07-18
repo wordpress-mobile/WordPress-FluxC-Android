@@ -662,7 +662,13 @@ class WCOrderStore @Inject constructor(
                 // Ensure the code gets executed even when the VM dies - eg. when the client app marks an order as
                 // completed and navigates to a different screen.
                 val remoteUpdateResult: OnOrderChanged = withContext(NonCancellable) {
-                    val remotePayload = wcOrderRestClient.updateOrderStatus(orderModel, site, newStatus.statusKey)
+                    val remotePayload = wcOrderRestClient.updateOrderStatusAndPaymentMethod(
+                        orderModel,
+                        site,
+                        newStatus.statusKey,
+                        paymentMethodId,
+                        paymentMethodTitle
+                    )
                     if (remotePayload.isError) {
                         revertOrderStatus(remotePayload)
                     } else {
