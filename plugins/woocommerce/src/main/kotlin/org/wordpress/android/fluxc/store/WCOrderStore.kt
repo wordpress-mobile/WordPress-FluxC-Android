@@ -632,8 +632,17 @@ class WCOrderStore @Inject constructor(
         orderId: Long,
         site: SiteModel,
         newStatus: WCOrderStatusModel
+    ): Flow<UpdateOrderResult> =
+        updateOrderStatusAndPaymentMethod(orderId, site, newStatus, null, null)
+
+    suspend fun updateOrderStatusAndPaymentMethod(
+        orderId: Long,
+        site: SiteModel,
+        newStatus: WCOrderStatusModel,
+        paymentMethodId: String?,
+        paymentMethodTitle: String?,
     ): Flow<UpdateOrderResult> {
-        return coroutineEngine.flowWithDefaultContext(API, this, "updateOrderStatus") {
+        return coroutineEngine.flowWithDefaultContext(API, this, "updateOrderStatusAndPaymentMethod") {
             val orderModel = ordersDaoDecorator.getOrder(orderId, site.localId())
 
             if (orderModel != null) {
