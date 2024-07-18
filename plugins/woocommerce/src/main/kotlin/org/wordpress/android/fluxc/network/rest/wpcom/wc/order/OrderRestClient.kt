@@ -595,7 +595,7 @@ class OrderRestClient @Inject constructor(
         status: String,
         paymentMethodId: String? = null,
         paymentMethodTitle: String? = null,
-    ) {
+    ): RemoteOrderPayload.Updating {
         val updatePayload = mutableMapOf<String, Any>()
         updatePayload["status"] = status
         paymentMethodId?.let {
@@ -604,7 +604,7 @@ class OrderRestClient @Inject constructor(
         paymentMethodTitle?.let {
             updatePayload["payment_method_title"] = paymentMethodTitle
         }
-        updateOrder(orderToUpdate, site, updatePayload)
+        return updateOrder(orderToUpdate, site, updatePayload)
     }
 
     suspend fun updateCustomerOrderNote(
