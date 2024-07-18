@@ -639,17 +639,19 @@ class WCOrderStore @Inject constructor(
         orderId: Long,
         site: SiteModel,
         newStatus: WCOrderStatusModel,
-        paymentMethodId: String?,
-        paymentMethodTitle: String?,
+        newPaymentMethodId: String?,
+        newPaymentMethodTitle: String?,
     ): Flow<UpdateOrderResult> {
         return coroutineEngine.flowWithDefaultContext(API, this, "updateOrderStatusAndPaymentMethod") {
             val orderModel = ordersDaoDecorator.getOrder(orderId, site.localId())
 
             if (orderModel != null) {
-                updateOrderStatusLocally(
+                optimisticallyUpdateOrder(
                     orderId,
                     site.localId(),
                     newStatus.statusKey,
+                    newPaymentMethodId,
+                    newPaymentMethodTitle,
                     OrdersDaoDecorator.ListUpdateStrategy.INVALIDATE
                 )
 
@@ -666,11 +668,11 @@ class WCOrderStore @Inject constructor(
                         orderModel,
                         site,
                         newStatus.statusKey,
-                        paymentMethodId,
-                        paymentMethodTitle
+                        newPaymentMethodId,
+                        newPaymentMethodTitle,
                     )
                     if (remotePayload.isError) {
-                        revertOrderStatus(remotePayload)
+                        revertOptimisticUpdate(remotePayload)
                     } else {
                         ordersDaoDecorator.insertOrUpdateOrder(
                             remotePayload.order,
@@ -712,14 +714,21 @@ class WCOrderStore @Inject constructor(
         forceNew
     )
 
-    private suspend fun updateOrderStatusLocally(
+    private suspend fun optimisticallyUpdateOrder(
         orderId: Long,
         localSiteId: LocalId,
         newStatus: String,
+        newPaymentMethodId: String? = null,
+        newPaymentMethodTitle: String? = null,
         listUpdateStrategy: OrdersDaoDecorator.ListUpdateStrategy = OrdersDaoDecorator.ListUpdateStrategy.DEFAULT
     ) {
-        val updatedOrder = ordersDaoDecorator.getOrder(orderId, localSiteId)!!
-            .copy(status = newStatus)
+        val updatedOrder = ordersDaoDecorator.getOrder(orderId, localSiteId)!!.let {
+            it.copy(
+                status = newStatus,
+                paymentMethod = newPaymentMethodId ?: it.paymentMethod,
+                paymentMethodTitle = newPaymentMethodTitle ?: it.paymentMethodTitle
+            )
+        }
         ordersDaoDecorator.insertOrUpdateOrder(updatedOrder, listUpdateStrategy)
     }
 
@@ -1007,11 +1016,13 @@ class WCOrderStore @Inject constructor(
         emitChange(onOrderChanged)
     }
 
-    private suspend fun revertOrderStatus(payload: RemoteOrderPayload.Updating): OnOrderChanged {
-        updateOrderStatusLocally(
+    private suspend fun revertOptimisticUpdate(payload: RemoteOrderPayload.Updating): OnOrderChanged {
+        optimisticallyUpdateOrder(
             payload.order.orderId,
             payload.order.localSiteId,
-            payload.order.status
+            payload.order.status,
+            payload.order.paymentMethod,
+            payload.order.paymentMethodTitle
         )
         return OnOrderChanged(orderError = payload.error)
     }
