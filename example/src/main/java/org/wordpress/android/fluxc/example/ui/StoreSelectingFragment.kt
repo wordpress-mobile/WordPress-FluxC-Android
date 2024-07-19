@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import dagger.android.support.DaggerFragment
-import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.ui.common.showStoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
@@ -19,7 +18,8 @@ abstract class StoreSelectingFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<LinearLayout>(R.id.buttonContainer).addView(
+        val buttonContainer = view.findViewById<LinearLayout>(R.id.buttonContainer)
+        buttonContainer.addView(
                 Button(context).apply {
                     text = "Select Site"
                     setOnClickListener {
