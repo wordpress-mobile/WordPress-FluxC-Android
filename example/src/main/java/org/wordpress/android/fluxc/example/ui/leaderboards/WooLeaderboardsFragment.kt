@@ -4,13 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_leaderboards.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooLeaderboardsBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.model.SiteModel
@@ -32,41 +31,46 @@ class WooLeaderboardsFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_woo_leaderboards, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooLeaderboardsBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupFetchButtons()
-        bindCacheRetrievalButtons()
+        with(FragmentWooLeaderboardsBinding.bind(view)) {
+            setupFetchButtons()
+            bindCacheRetrievalButtons()
+        }
     }
 
-    private fun setupFetchButtons() {
-        fetch_product_leaderboards_of_day.setOnClickListener {
+    private fun FragmentWooLeaderboardsBinding.setupFetchButtons() {
+        fetchProductLeaderboardsOfDay.setOnClickListener {
             launchProductLeaderboardsRequest(DAYS)
         }
-        fetch_product_leaderboards_of_week.setOnClickListener {
+        fetchProductLeaderboardsOfWeek.setOnClickListener {
             launchProductLeaderboardsRequest(WEEKS)
         }
-        fetch_product_leaderboards_of_month.setOnClickListener {
+        fetchProductLeaderboardsOfMonth.setOnClickListener {
             launchProductLeaderboardsRequest(MONTHS)
         }
-        fetch_product_leaderboards_of_year.setOnClickListener {
+        fetchProductLeaderboardsOfYear.setOnClickListener {
             launchProductLeaderboardsRequest(YEARS)
         }
     }
 
-    private fun bindCacheRetrievalButtons() {
-        retrieve_cached_leaderboards_of_day.setOnClickListener {
+    private fun FragmentWooLeaderboardsBinding.bindCacheRetrievalButtons() {
+        retrieveCachedLeaderboardsOfDay.setOnClickListener {
             launchProductLeaderboardsCacheRetrieval(DAYS)
         }
-        retrieve_cached_leaderboards_of_week.setOnClickListener {
+        retrieveCachedLeaderboardsOfWeek.setOnClickListener {
             launchProductLeaderboardsCacheRetrieval(WEEKS)
         }
-        retrieve_cached_leaderboards_of_month.setOnClickListener {
+        retrieveCachedLeaderboardsOfMonth.setOnClickListener {
             launchProductLeaderboardsCacheRetrieval(MONTHS)
         }
-        retrieve_cached_leaderboards_of_year.setOnClickListener {
+        retrieveCachedLeaderboardsOfYear.setOnClickListener {
             launchProductLeaderboardsCacheRetrieval(YEARS)
         }
     }
