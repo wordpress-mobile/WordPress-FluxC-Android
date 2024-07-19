@@ -58,6 +58,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
 
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         update_product_info.setOnClickListener {
             val site = getWCSite()
             if (site == null) {
