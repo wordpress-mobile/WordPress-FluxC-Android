@@ -217,16 +217,18 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderStatusUpdateSuccess() = runBlocking {
+    fun testOrderStatusAndPaymentMethodUpdateSuccess() = runBlocking {
         val originalOrder = OrderEntity(
             localSiteId = siteModel.localId(),
             status = CoreOrderStatus.PROCESSING.value,
             orderId = 88,
-            total = "15.00"
+            total = "15.00",
+            paymentMethod = "cheque",
+            paymentMethodTitle = "Check payments"
         )
 
         interceptor.respondWith("wc-order-update-response-success.json")
-        val payload = orderRestClient.updateOrderStatus(
+        val payload = orderRestClient.updateOrderStatusAndPaymentMethod(
                 originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 
@@ -235,11 +237,13 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(siteModel.id, order.localSiteId.value)
             assertEquals(originalOrder.orderId, order.orderId)
             assertEquals(CoreOrderStatus.REFUNDED.value, order.status)
+            assertEquals(originalOrder.paymentMethod, order.paymentMethod)
+            assertEquals(originalOrder.paymentMethodTitle, order.paymentMethodTitle)
         }
     }
 
     @Test
-    fun testOrderStatusUpdateError() = runBlocking {
+    fun testOrderStatusAndPaymentMethodUpdateError() = runBlocking {
         val originalOrder = OrderEntity(
             localSiteId = siteModel.localId(),
             status = CoreOrderStatus.PROCESSING.value,
@@ -253,7 +257,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        val payload = orderRestClient.updateOrderStatus(
+        val payload = orderRestClient.updateOrderStatusAndPaymentMethod(
             originalOrder, siteModel, CoreOrderStatus.REFUNDED.value
         )
 

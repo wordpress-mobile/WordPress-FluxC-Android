@@ -589,8 +589,23 @@ class OrderRestClient @Inject constructor(
         }
     }
 
-    suspend fun updateOrderStatus(orderToUpdate: OrderEntity, site: SiteModel, status: String) =
-        updateOrder(orderToUpdate, site, mapOf("status" to status))
+    suspend fun updateOrderStatusAndPaymentMethod(
+        orderToUpdate: OrderEntity,
+        site: SiteModel,
+        status: String,
+        paymentMethodId: String? = null,
+        paymentMethodTitle: String? = null,
+    ): RemoteOrderPayload.Updating {
+        val updatePayload = mutableMapOf<String, Any>()
+        updatePayload["status"] = status
+        paymentMethodId?.let {
+            updatePayload["payment_method"] = paymentMethodId
+        }
+        paymentMethodTitle?.let {
+            updatePayload["payment_method_title"] = paymentMethodTitle
+        }
+        return updateOrder(orderToUpdate, site, updatePayload)
+    }
 
     suspend fun updateCustomerOrderNote(
         orderToUpdate: OrderEntity,
