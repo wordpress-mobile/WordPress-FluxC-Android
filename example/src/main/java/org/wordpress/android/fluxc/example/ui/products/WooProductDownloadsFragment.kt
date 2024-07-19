@@ -9,9 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_woo_product_categories.btn_done
-import kotlinx.android.synthetic.main.fragment_woo_product_downloads.*
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooProductDownloadsBinding
 import org.wordpress.android.fluxc.model.WCProductFileModel
 
 class WooProductDownloadsFragment : Fragment() {
@@ -30,37 +28,41 @@ class WooProductDownloadsFragment : Fragment() {
 
     private val productDownloadsAdapter: WooProductDownloadsAdapter by lazy { WooProductDownloadsAdapter() }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_product_downloads, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooProductDownloadsBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentWooProductDownloadsBinding.bind(view)) {
+            savedInstanceState?.let {
+                productDownloadsAdapter.filesList = it.getParcelableArrayList(ARG_PRODUCT_DOWNLOADS) ?: mutableListOf()
+            }
 
-        savedInstanceState?.let {
-            productDownloadsAdapter.filesList = it.getParcelableArrayList(ARG_PRODUCT_DOWNLOADS) ?: mutableListOf()
-        }
+            with(filesList) {
+                layoutManager = LinearLayoutManager(activity)
+                adapter = productDownloadsAdapter
+            }
 
-        with(files_list) {
-            layoutManager = LinearLayoutManager(activity)
-            adapter = productDownloadsAdapter
-        }
-
-        btn_add.setOnClickListener {
-            productDownloadsAdapter.filesList = productDownloadsAdapter.filesList +
+            btnAdd.setOnClickListener {
+                productDownloadsAdapter.filesList = productDownloadsAdapter.filesList +
                     ProductFile(null, "", "")
-        }
+            }
 
-        btn_done.setOnClickListener {
-            val intent = activity?.intent
-            intent?.putParcelableArrayListExtra(
+            btnDone.setOnClickListener {
+                val intent = activity?.intent
+                intent?.putParcelableArrayListExtra(
                     ARG_PRODUCT_DOWNLOADS, productDownloadsAdapter.filesList as ArrayList
-            )
-            targetFragment?.onActivityResult(
+                )
+                targetFragment?.onActivityResult(
                     PRODUCT_DOWNLOADS_REQUEST_CODE,
                     Activity.RESULT_OK,
                     intent
-            )
-            fragmentManager?.popBackStack()
+                )
+                fragmentManager?.popBackStack()
+            }
         }
     }
 
