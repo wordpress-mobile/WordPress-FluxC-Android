@@ -7,12 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_gateways.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooGatewaysBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
@@ -32,51 +31,55 @@ class WooGatewaysFragment : StoreSelectingFragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woo_gateways, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooGatewaysBinding.inflate(inflater, container, false).root
 
     @Suppress("TooGenericExceptionCaught")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        fetch_gateway.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the gateway ID:") { gatewayEditText ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            val response = gatewayStore.fetchGateway(site, gatewayEditText.text.toString())
-                            withContext(Dispatchers.Main) {
-                                printGateway(response)
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                prependToLog("Error: ${e.message}")
+        with(FragmentWooGatewaysBinding.bind(view)) {
+            fetchGateway.setOnClickListener {
+                selectedSite?.let { site ->
+                    showSingleLineDialog(activity, "Enter the gateway ID:") { gatewayEditText ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val response = gatewayStore.fetchGateway(site, gatewayEditText.text.toString())
+                                withContext(Dispatchers.Main) {
+                                    printGateway(response)
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    prependToLog("Error: ${e.message}")
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        fetch_all_gateways.setOnClickListener {
-            selectedSite?.let { site ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        val response = gatewayStore.fetchAllGateways(site)
-                        withContext(Dispatchers.Main) {
-                            response.error?.let {
-                                prependToLog("${it.type}: ${it.message}")
-                            }
-                            response.model?.let {
-                                prependToLog("Site has ${it.size} gateways")
-                                it.forEach { gateway ->
-                                    prependToLog("Gateway: $gateway")
+            fetchAllGateways.setOnClickListener {
+                selectedSite?.let { site ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            val response = gatewayStore.fetchAllGateways(site)
+                            withContext(Dispatchers.Main) {
+                                response.error?.let {
+                                    prependToLog("${it.type}: ${it.message}")
+                                }
+                                response.model?.let {
+                                    prependToLog("Site has ${it.size} gateways")
+                                    it.forEach { gateway ->
+                                        prependToLog("Gateway: $gateway")
+                                    }
                                 }
                             }
-                        }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            prependToLog("Error: ${e.message}")
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                prependToLog("Error: ${e.message}")
+                            }
                         }
                     }
                 }
