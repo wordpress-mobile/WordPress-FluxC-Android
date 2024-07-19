@@ -16,7 +16,6 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_woo_update_product.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,7 +24,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooUpdateProductBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
@@ -84,6 +83,8 @@ class WooUpdateProductFragment : Fragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private var binding: FragmentWooUpdateProductBinding? = null
+
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
@@ -124,8 +125,14 @@ class WooUpdateProductFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_update_product, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentWooUpdateProductBinding.inflate(inflater, container, false)
+        return binding!!.root
+    }
 
     override fun onStart() {
         super.onStart()
@@ -149,14 +156,13 @@ class WooUpdateProductFragment : Fragment() {
     @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         if (selectedProductModel == null) {
             if (!isAddNewProduct) {
-                product_enter_product_id.setOnClickListener {
+                binding?.productEnterProductId?.setOnClickListener {
                     showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
                         selectedRemoteProductId = editText.text.toString().toLongOrNull()
                         selectedRemoteProductId?.let { id ->
-                            updateSelectedProductId(id)
+                            binding?.updateSelectedProductId(id)
                         } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                     }
                 }
@@ -169,19 +175,19 @@ class WooUpdateProductFragment : Fragment() {
                     taxStatus = "taxable"
                     catalogVisibility = "visible"
                 }
-                enableProductDependentButtons()
-                updateProductProperties(product)
+                binding?.enableProductDependentButtons()
+                binding?.updateProductProperties(product)
                 selectedProductModel = product
 
-                product_enter_product_id.visibility = View.GONE
-                product_entered_product_id.visibility = View.GONE
+                binding?.productEnterProductId?.visibility = View.GONE
+                binding?.productEnteredProductId?.visibility = View.GONE
             }
         } else {
-            updateProductProperties(selectedProductModel!!)
+            binding?.updateProductProperties(selectedProductModel!!)
         }
 
-        grouped_product_ids.isEnabled = false
-        select_grouped_product_ids.setOnClickListener {
+        binding?.groupedProductIds?.isEnabled = false
+        binding?.selectGroupedProductIds?.setOnClickListener {
             showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
                 editText.text.toString().toLongOrNull()?.let { id ->
 
@@ -193,13 +199,13 @@ class WooUpdateProductFragment : Fragment() {
                             prefix = "[",
                             postfix = "]"
                     )
-                    selectedProductModel?.groupedProductIds?.let { updateGroupedProductIds(it) }
+                    selectedProductModel?.groupedProductIds?.let { binding?.updateGroupedProductIds(it) }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
-        cross_sell_product_ids.isEnabled = false
-        select_cross_sell_product_ids.setOnClickListener {
+        binding?.crossSellProductIds?.isEnabled = false
+        binding?.selectCrossSellProductIds?.setOnClickListener {
             showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
                 editText.text.toString().toLongOrNull()?.let { id ->
                     val storedCrossSellIds =
@@ -210,13 +216,13 @@ class WooUpdateProductFragment : Fragment() {
                             prefix = "[",
                             postfix = "]"
                     )
-                    selectedProductModel?.crossSellIds?.let { updateCrossSellProductIds(it) }
+                    selectedProductModel?.crossSellIds?.let { binding?.updateCrossSellProductIds(it) }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
-        upsell_product_ids.isEnabled = false
-        select_upsell_product_ids.setOnClickListener {
+        binding?.upsellProductIds?.isEnabled = false
+        binding?.selectUpsellProductIds?.setOnClickListener {
             showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
                 editText.text.toString().toLongOrNull()?.let { id ->
                     val storedUpsellIds =
@@ -227,84 +233,84 @@ class WooUpdateProductFragment : Fragment() {
                             prefix = "[",
                             postfix = "]"
                     )
-                    selectedProductModel?.upsellIds?.let { updateUpsellProductIds(it) }
+                    selectedProductModel?.upsellIds?.let { binding?.updateUpsellProductIds(it) }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
-        product_name.onTextChanged { selectedProductModel?.name = it }
-        product_description.onTextChanged { selectedProductModel?.description = it }
-        product_sku.onTextChanged { selectedProductModel?.sku = it }
-        product_short_desc.onTextChanged { selectedProductModel?.shortDescription = it }
-        product_regular_price.onTextChanged { selectedProductModel?.regularPrice = it }
-        product_sale_price.onTextChanged { selectedProductModel?.salePrice = it }
-        product_width.onTextChanged { selectedProductModel?.width = it }
-        product_height.onTextChanged { selectedProductModel?.height = it }
-        product_length.onTextChanged { selectedProductModel?.length = it }
-        product_weight.onTextChanged { selectedProductModel?.weight = it }
-        product_stock_quantity.onTextChanged { text ->
+        binding?.productName?.onTextChanged { selectedProductModel?.name = it }
+        binding?.productDescription?.onTextChanged { selectedProductModel?.description = it }
+        binding?.productSku?.onTextChanged { selectedProductModel?.sku = it }
+        binding?.productShortDesc?.onTextChanged { selectedProductModel?.shortDescription = it }
+        binding?.productRegularPrice?.onTextChanged { selectedProductModel?.regularPrice = it }
+        binding?.productSalePrice?.onTextChanged { selectedProductModel?.salePrice = it }
+        binding?.productWidth?.onTextChanged { selectedProductModel?.width = it }
+        binding?.productHeight?.onTextChanged { selectedProductModel?.height = it }
+        binding?.productLength?.onTextChanged { selectedProductModel?.length = it }
+        binding?.productWeight?.onTextChanged { selectedProductModel?.weight = it }
+        binding?.productStockQuantity?.onTextChanged { text ->
             text.toDoubleOrNull()?.let { selectedProductModel?.stockQuantity = it }
         }
 
-        product_sold_individually.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productSoldIndividually?.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.soldIndividually = isChecked
         }
 
-        product_manage_stock.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productManageStock?.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.manageStock = isChecked
-            for (i in 0 until manageStockContainer.childCount) {
-                val child = manageStockContainer.getChildAt(i)
+            for (i in 0 until binding?.manageStockContainer?.childCount!!) {
+                val child = binding?.manageStockContainer?.getChildAt(i)
                 if (child is Button || child is FloatingLabelEditText) {
                     child.isEnabled = isChecked
                 }
             }
         }
 
-        product_type.setOnClickListener {
+        binding?.productType?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductType.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_PRODUCT_TYPE, selectedProductModel?.type
             )
         }
 
-        product_tax_status.setOnClickListener {
+        binding?.productTaxStatus?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductTaxStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_TAX_STATUS, selectedProductModel?.taxStatus
             )
         }
 
-        product_stock_status.setOnClickListener {
+        binding?.productStockStatus?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductStockStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_STOCK_STATUS, selectedProductModel?.stockStatus
             )
         }
 
-        product_back_orders.setOnClickListener {
+        binding?.productBackOrders?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductBackOrders.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_BACK_ORDERS, selectedProductModel?.backorders
             )
         }
 
-        product_from_date.setOnClickListener {
+        binding?.productFromDate?.setOnClickListener {
             showDatePickerDialog(
-                    product_from_date.text.toString(),
+                    binding?.productFromDate?.text.toString(),
                     OnDateSetListener { _, year, month, dayOfMonth ->
-                        product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                        selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
+                        binding?.productFromDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                        selectedProductModel?.dateOnSaleFromGmt = binding?.productFromDate?.text.toString()
                     })
         }
 
-        product_to_date.setOnClickListener {
-            showDatePickerDialog(product_to_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
-                product_to_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleToGmt = product_to_date.text.toString()
+        binding?.productToDate?.setOnClickListener {
+            showDatePickerDialog(binding?.productToDate?.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
+                binding?.productToDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                selectedProductModel?.dateOnSaleToGmt = binding?.productToDate?.text.toString()
             })
         }
 
-        product_update.setOnClickListener {
+        binding?.productUpdate?.setOnClickListener {
             getWCSite()?.let { site ->
                 // update categories only if new categories has been selected
                 selectedCategories?.let {
@@ -328,7 +334,7 @@ class WooUpdateProductFragment : Fragment() {
                 } else if (selectedProductModel?.remoteProductId != null) {
                     val payload = UpdateProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
-                    val updatedPassword = product_password.getText()
+                    val updatedPassword = binding?.productPassword?.getText() ?: ""
                     if (updatedPassword != password) {
                         val passwordPayload = UpdateProductPasswordPayload(
                                 site,
@@ -343,21 +349,21 @@ class WooUpdateProductFragment : Fragment() {
             } ?: prependToLog("No site found...doing nothing")
         }
 
-        product_status.setOnClickListener {
+        binding?.productStatus?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_STATUS, selectedProductModel?.status
             )
         }
 
-        product_catalog_visibility.setOnClickListener {
+        binding?.productCatalogVisibility?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductVisibility.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_VISIBILITY, selectedProductModel?.catalogVisibility
             )
         }
 
-        select_product_categories.setOnClickListener {
+        binding?.selectProductCategories?.setOnClickListener {
             getWCSite()?.let {
                 val categories = wcProductStore.getProductCategoriesForSite(it)
                         .map { ProductCategory(it.remoteCategoryId, it.name, it.slug) }
@@ -377,7 +383,7 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
-        select_product_tags.setOnClickListener {
+        binding?.selectProductTags?.setOnClickListener {
             getWCSite()?.let {
                 val tags = wcProductStore.getTagsForSite(it)
                         .map { ProductTag(it.remoteTagId, it.name, it.slug) }
@@ -396,42 +402,42 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
-        product_is_featured.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productIsFeatured?.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.featured = isChecked
         }
 
-        product_reviews_allowed.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productReviewsAllowed?.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.reviewsAllowed = isChecked
         }
 
-        product_is_virtual.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productIsVirtual?.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.virtual = isChecked
         }
 
-        attach_attribute.setOnClickListener { onAttachAttributeToProductButtonClicked() }
-        detach_attribute.setOnClickListener { onDetachAttributeFromProductButtonClicked() }
-        generate_variation.setOnClickListener { onGenerateVariationButtonClicked() }
-        delete_variation.setOnClickListener { onDeleteVariationButtonClicked() }
+        binding?.attachAttribute?.setOnClickListener { onAttachAttributeToProductButtonClicked() }
+        binding?.detachAttribute?.setOnClickListener { onDetachAttributeFromProductButtonClicked() }
+        binding?.generateVariation?.setOnClickListener { onGenerateVariationButtonClicked() }
+        binding?.deleteVariation?.setOnClickListener { onDeleteVariationButtonClicked() }
 
-        product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
+        binding?.productPurchaseNote?.onTextChanged { selectedProductModel?.purchaseNote = it }
 
-        product_slug.onTextChanged { selectedProductModel?.slug = it }
+        binding?.productSlug?.onTextChanged { selectedProductModel?.slug = it }
 
-        product_external_url.onTextChanged { selectedProductModel?.externalUrl = it }
+        binding?.productExternalUrl?.onTextChanged { selectedProductModel?.externalUrl = it }
 
-        product_button_text.onTextChanged { selectedProductModel?.buttonText = it }
+        binding?.productButtonText?.onTextChanged { selectedProductModel?.buttonText = it }
 
-        product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
+        binding?.productMenuOrder?.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
 
-        product_downloadable_checkbox.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productDownloadableCheckbox?.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.downloadable = isChecked
-            product_update_downloads_button.isEnabled = isChecked
-            product_download_expiry.isEnabled = isChecked
-            product_download_limit.isEnabled = isChecked
+            binding?.productUpdateDownloadsButton?.isEnabled = isChecked
+            binding?.productDownloadExpiry?.isEnabled = isChecked
+            binding?.productDownloadLimit?.isEnabled = isChecked
         }
 
-        product_downloads.isEnabled = false
-        product_update_downloads_button.setOnClickListener {
+        binding?.productDownloads?.isEnabled = false
+        binding?.productUpdateDownloadsButton?.setOnClickListener {
             replaceFragment(
                     WooProductDownloadsFragment.newInstance(
                             fragment = this,
@@ -444,11 +450,11 @@ class WooUpdateProductFragment : Fragment() {
             )
         }
 
-        product_download_expiry.onTextChanged { text ->
+        binding?.productDownloadExpiry?.onTextChanged { text ->
             text.toIntOrNull()?.let { selectedProductModel?.downloadExpiry = it }
         }
 
-        product_download_limit.onTextChanged { text ->
+        binding?.productDownloadLimit?.onTextChanged { text ->
             text.toLongOrNull()?.let { selectedProductModel?.downloadLimit = it }
         }
 
@@ -459,7 +465,7 @@ class WooUpdateProductFragment : Fragment() {
             selectedTags = bundle.getParcelableArrayList(ARG_SELECTED_TAGS)
             selectedProductDownloads = bundle.getParcelableArrayList(ARG_SELECTED_DOWNLOADS) ?: emptyList()
         }
-        selectedRemoteProductId?.let { updateSelectedProductId(it) }
+        selectedRemoteProductId?.let { binding?.updateSelectedProductId(it) }
     }
 
     @Suppress("ComplexMethod")
@@ -470,37 +476,37 @@ class WooUpdateProductFragment : Fragment() {
             when (resultCode) {
                 LIST_RESULT_CODE_TAX_STATUS -> {
                     selectedItem?.let {
-                        product_tax_status.text = it
+                        binding?.productTaxStatus?.text = it
                         selectedProductModel?.taxStatus = it
                     }
                 }
                 LIST_RESULT_CODE_STOCK_STATUS -> {
                     selectedItem?.let {
-                        product_stock_status.text = it
+                        binding?.productStockStatus?.text = it
                         selectedProductModel?.stockStatus = it
                     }
                 }
                 LIST_RESULT_CODE_BACK_ORDERS -> {
                     selectedItem?.let {
-                        product_back_orders.text = it
+                        binding?.productBackOrders?.text = it
                         selectedProductModel?.backorders = it
                     }
                 }
                 LIST_RESULT_CODE_STATUS -> {
                     selectedItem?.let {
-                        product_status.text = it
+                        binding?.productStatus?.text = it
                         selectedProductModel?.status = it
                     }
                 }
                 LIST_RESULT_CODE_PRODUCT_TYPE -> {
                     selectedItem?.let {
-                        product_type.text = it
+                        binding?.productType?.text = it
                         selectedProductModel?.type = it
                     }
                 }
                 LIST_RESULT_CODE_VISIBILITY -> {
                     selectedItem?.let {
-                        product_catalog_visibility.text = it
+                        binding?.productCatalogVisibility?.text = it
                         selectedProductModel?.catalogVisibility = it
                     }
                 }
@@ -514,23 +520,23 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    private fun updateGroupedProductIds(storedGroupedProductIds: String) {
-        grouped_product_ids.setText(storedGroupedProductIds)
+    private fun FragmentWooUpdateProductBinding.updateGroupedProductIds(storedGroupedProductIds: String) {
+        groupedProductIds.setText(storedGroupedProductIds)
     }
 
-    private fun updateCrossSellProductIds(storedCrossSellProductIds: String) {
-        cross_sell_product_ids.setText(storedCrossSellProductIds)
+    private fun FragmentWooUpdateProductBinding.updateCrossSellProductIds(storedCrossSellProductIds: String) {
+        crossSellProductIds.setText(storedCrossSellProductIds)
     }
 
-    private fun updateUpsellProductIds(storedUpsellProductIds: String) {
-        upsell_product_ids.setText(storedUpsellProductIds)
+    private fun FragmentWooUpdateProductBinding.updateUpsellProductIds(storedUpsellProductIds: String) {
+        upsellProductIds.setText(storedUpsellProductIds)
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateSelectedProductId(remoteProductId: Long) {
+    private fun FragmentWooUpdateProductBinding.updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
-            product_entered_product_id.text = remoteProductId.toString()
+            productEnteredProductId.text = remoteProductId.toString()
 
             // fetch the password for this product
             val action = WCProductActionBuilder
@@ -677,63 +683,63 @@ class WooUpdateProductFragment : Fragment() {
                         ).let { dispatcher.dispatch(it) }
             } ?: withContext(Dispatchers.Main) { prependToLog("Looks like this isn't a valid Term name") }
 
-    private fun updateProductProperties(it: WCProductModel) {
-        product_name.setText(it.name)
-        product_description.setText(it.description)
-        product_sku.setText(it.sku)
-        product_short_desc.setText(it.shortDescription)
-        product_regular_price.setText(it.regularPrice)
-        product_sale_price.setText(it.salePrice)
-        product_width.setText(it.width)
-        product_height.setText(it.height)
-        product_length.setText(it.length)
-        product_weight.setText(it.weight)
-        product_tax_status.text = it.taxStatus
-        product_type.text = it.type
-        product_sold_individually.isChecked = it.soldIndividually
-        product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
-        product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
-        product_manage_stock.isChecked = it.manageStock
-        product_stock_status.text = it.stockStatus
-        product_back_orders.text = it.backorders
-        product_stock_quantity.setText(it.stockQuantity.toString())
-        product_stock_quantity.isEnabled = product_manage_stock.isChecked
-        product_catalog_visibility.text = it.catalogVisibility
-        product_status.text = it.status
-        product_slug.setText(it.slug)
-        product_is_featured.isChecked = it.featured
-        product_reviews_allowed.isChecked = it.reviewsAllowed
-        product_is_virtual.isChecked = it.virtual
-        product_purchase_note.setText(it.purchaseNote)
-        product_menu_order.setText(it.menuOrder.toString())
-        product_external_url.setText(it.externalUrl)
-        product_button_text.setText(it.buttonText)
+    private fun FragmentWooUpdateProductBinding.updateProductProperties(it: WCProductModel) {
+        productName.setText(it.name)
+        productDescription.setText(it.description)
+        productSku.setText(it.sku)
+        productShortDesc.setText(it.shortDescription)
+        productRegularPrice.setText(it.regularPrice)
+        productSalePrice.setText(it.salePrice)
+        productWidth.setText(it.width)
+        productHeight.setText(it.height)
+        productLength.setText(it.length)
+        productWeight.setText(it.weight)
+        productTaxStatus.text = it.taxStatus
+        productType.text = it.type
+        productSoldIndividually.isChecked = it.soldIndividually
+        productFromDate.text = it.dateOnSaleFromGmt.split('T')[0]
+        productToDate.text = it.dateOnSaleToGmt.split('T')[0]
+        productManageStock.isChecked = it.manageStock
+        productStockStatus.text = it.stockStatus
+        productBackOrders.text = it.backorders
+        productStockQuantity.setText(it.stockQuantity.toString())
+        productStockQuantity.isEnabled = productManageStock.isChecked
+        productCatalogVisibility.text = it.catalogVisibility
+        productStatus.text = it.status
+        productSlug.setText(it.slug)
+        productIsFeatured.isChecked = it.featured
+        productReviewsAllowed.isChecked = it.reviewsAllowed
+        productIsVirtual.isChecked = it.virtual
+        productPurchaseNote.setText(it.purchaseNote)
+        productMenuOrder.setText(it.menuOrder.toString())
+        productExternalUrl.setText(it.externalUrl)
+        productButtonText.setText(it.buttonText)
         updateGroupedProductIds(it.groupedProductIds)
         updateCrossSellProductIds(it.crossSellIds)
         updateUpsellProductIds(it.upsellIds)
-        product_categories.setText(
+        productCategories.setText(
                 selectedCategories?.joinToString(", ") { it.name }
                         ?: it.getCommaSeparatedCategoryNames()
         )
-        product_tags.setText(
+        productTags.setText(
                 selectedTags?.joinToString(", ") { it.name }
                         ?: it.getCommaSeparatedTagNames()
         )
-        product_downloadable_checkbox.isChecked = it.downloadable
-        product_downloads.setText(
+        productDownloadableCheckbox.isChecked = it.downloadable
+        productDownloads.setText(
                 "Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}"
         )
-        product_update_downloads_button.isEnabled = it.downloadable
-        product_download_limit.setText(it.downloadLimit.toString())
-        product_download_limit.isEnabled = it.downloadable
-        product_download_expiry.setText(it.downloadExpiry.toString())
-        product_download_expiry.isEnabled = it.downloadable
+        productUpdateDownloadsButton.isEnabled = it.downloadable
+        productDownloadLimit.setText(it.downloadLimit.toString())
+        productDownloadLimit.isEnabled = it.downloadable
+        productDownloadExpiry.setText(it.downloadExpiry.toString())
+        productDownloadExpiry.isEnabled = it.downloadable
 
         if (it.type == CoreProductType.VARIABLE.value) {
-            attach_attribute.isEnabled = true
-            detach_attribute.isEnabled = true
-            generate_variation.isEnabled = true
-            delete_variation.isEnabled = true
+            attachAttribute.isEnabled = true
+            detachAttribute.isEnabled = true
+            generateVariation.isEnabled = true
+            deleteVariation.isEnabled = true
         }
     }
 
@@ -760,7 +766,7 @@ class WooUpdateProductFragment : Fragment() {
 
     private fun getWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(selectedSitePosition)
 
-    private fun enableProductDependentButtons() {
+    private fun FragmentWooUpdateProductBinding.enableProductDependentButtons() {
         for (i in 0 until productContainer.childCount) {
             val child = productContainer.getChildAt(i)
             if (child is Button || child is EditText) {
@@ -782,7 +788,7 @@ class WooUpdateProductFragment : Fragment() {
             selectedCategories = null
             selectedTags = null
             selectedProductDownloads = null
-            updateSelectedProductId(it)
+            binding?.updateSelectedProductId(it)
         }
 
         takeIf { attributesChanged }?.getWCSite()?.let { site ->
@@ -804,12 +810,12 @@ class WooUpdateProductFragment : Fragment() {
             }
             event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD -> {
                 prependToLog("Password fetched: ${event.password}")
-                product_password.setText(event.password ?: "")
+                binding?.productPassword?.setText(event.password ?: "")
                 password = event.password
             }
             event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD -> {
                 prependToLog("Password updated: ${event.password}")
-                product_password.setText(event.password ?: "")
+                binding?.productPassword?.setText(event.password ?: "")
                 password = event.password
             }
         }
@@ -881,5 +887,10 @@ class WooUpdateProductFragment : Fragment() {
 
     private fun ProductTriplet.toProductTag(): ProductTag {
         return ProductTag(this.id, this.name, this.slug)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }
