@@ -77,6 +77,7 @@ class WooProductFiltersFragment : Fragment() {
             inflater.inflate(layout.fragment_woo_product_filters, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         savedInstanceState?.let { bundle -> selectedSiteId = bundle.getInt(ARG_SELECTED_SITE_ID) }
         filterOptions = savedInstanceState?.getSerializable(ARG_SELECTED_FILTER_OPTIONS)
                 as? MutableMap<ProductFilterOption, String> ?: mutableMapOf()
