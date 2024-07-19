@@ -12,7 +12,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*
+import org.wordpress.android.fluxc.example.databinding.DialogWcAddOrderShipmentTrackingBinding
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -62,9 +62,11 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
         dialog?.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.dialog_wc_add_order_shipment_tracking, container)
-    }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = DialogWcAddOrderShipmentTrackingBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -72,55 +74,57 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
         val allProviders = mutableListOf("Custom")
         allProviders.addAll(1, providers)
 
-        tracking_cboProvider.adapter = ArrayAdapter<String>(
+        with(DialogWcAddOrderShipmentTrackingBinding.bind(view)) {
+            trackingCboProvider.adapter = ArrayAdapter<String>(
                 requireActivity(), layout.simple_dropdown_item_1line, allProviders)
-        tracking_cboProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                tracking_cboProvider.setSelection(0)
-            }
+            trackingCboProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    trackingCboProvider.setSelection(0)
+                }
 
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                parent?.getItemAtPosition(position)?.let { provider ->
-                    if (provider == "Custom") {
-                        tracking_providerName.visibility = View.VISIBLE
-                        tracking_link.visibility = View.VISIBLE
-                        tracking_lblTrackingLink.visibility = View.VISIBLE
-                        tracking_lblProviderName.visibility = View.VISIBLE
-                    } else {
-                        tracking_providerName.visibility = View.GONE
-                        tracking_link.visibility = View.GONE
-                        tracking_lblTrackingLink.visibility = View.GONE
-                        tracking_lblProviderName.visibility = View.GONE
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    parent?.getItemAtPosition(position)?.let { provider ->
+                        if (provider == "Custom") {
+                            trackingProviderName.visibility = View.VISIBLE
+                            trackingLinkName.visibility = View.VISIBLE
+                            trackingLblTrackingLink.visibility = View.VISIBLE
+                            trackingLblProviderName.visibility = View.VISIBLE
+                        } else {
+                            trackingProviderName.visibility = View.GONE
+                            trackingLinkName.visibility = View.GONE
+                            trackingLblTrackingLink.visibility = View.GONE
+                            trackingLblProviderName.visibility = View.GONE
+                        }
                     }
                 }
             }
-        }
 
-        val startDate = DateUtils.getCurrentDateString()
-        tracking_dateShipped.text = startDate
-        tracking_dateShipped.setOnClickListener {
-            displayDialog(
-                    DateUtils.getCalendarInstance(tracking_dateShipped.text.toString()), tracking_dateShipped)
-        }
-
-        tracking_ok.setOnClickListener {
-            val isCustomSelected = tracking_cboProvider.selectedItem == "Custom"
-            val tracking = WCOrderShipmentTrackingModel().apply {
-                if (isCustomSelected) {
-                    this.trackingProvider = tracking_providerName.text.toString()
-                    this.trackingLink = tracking_link.text.toString()
-                } else {
-                    this.trackingProvider = tracking_cboProvider.selectedItem.toString()
-                }
-                this.dateShipped = tracking_dateShipped.text.toString()
-                this.trackingNumber = tracking_number.text.toString()
+            val startDate = DateUtils.getCurrentDateString()
+            trackingDateShipped.text = startDate
+            trackingDateShipped.setOnClickListener {
+                displayDialog(
+                    DateUtils.getCalendarInstance(trackingDateShipped.text.toString()), trackingDateShipped)
             }
-            listener.onTrackingSubmitted(site, order, tracking, isCustomProvider = isCustomSelected)
-            dismiss()
-        }
 
-        tracking_cancel.setOnClickListener {
-            dismiss()
+            trackingOk.setOnClickListener {
+                val isCustomSelected = trackingCboProvider.selectedItem == "Custom"
+                val tracking = WCOrderShipmentTrackingModel().apply {
+                    if (isCustomSelected) {
+                        this.trackingProvider = trackingProviderName.text.toString()
+                        this.trackingLink = trackingLinkName.text.toString()
+                    } else {
+                        this.trackingProvider = trackingCboProvider.selectedItem.toString()
+                    }
+                    this.dateShipped = trackingDateShipped.text.toString()
+                    this.trackingNumber = trackingNumberName.text.toString()
+                }
+                listener.onTrackingSubmitted(site, order, tracking, isCustomProvider = isCustomSelected)
+                dismiss()
+            }
+
+            trackingCancel.setOnClickListener {
+                dismiss()
+            }
         }
     }
 
