@@ -58,6 +58,7 @@ class WooBatchGenerateVariationsFragment : Fragment() {
 
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         enableVariationModificationInputs(false)
         update_product_info.setOnClickListener {
             val site = wooCommerceStore.getWooCommerceSites().getOrNull(selectedSitePosition)
