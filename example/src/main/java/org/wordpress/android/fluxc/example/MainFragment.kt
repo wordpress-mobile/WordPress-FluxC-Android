@@ -213,13 +213,19 @@ class MainFragment : Fragment() {
                 cookieNonceAuthenticator.authenticate(url, username, password).let {
                     when (it) {
                         is Error -> prependToLog("Authentication error: ${it.type} - ${it.message}")
-                        Success -> SiteActionBuilder.newFetchSiteWpApiAction(
+                        Success -> siteStore.fetchWPAPISite(
                             FetchWPAPISitePayload(
                                 url = url,
                                 username = username,
                                 password = password
                             )
-                        )
+                        ).let { fetchResult ->
+                            if (fetchResult.isError) {
+                                prependToLog("Error fetching site: ${fetchResult.error}")
+                            } else {
+                                prependToLog("Successfully signed in using WPAPI")
+                            }
+                        }
                     }
                 }
             }
