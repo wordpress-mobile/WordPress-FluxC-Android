@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.DaggerFragment
-import kotlinx.android.synthetic.main.fragment_address_edit_dialog.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -127,7 +126,7 @@ class AddressEditDialogFragment : DaggerFragment() {
             }
         }
 
-        sendUpdate.setOnClickListener {
+        binding.sendUpdate.setOnClickListener {
             val newAddress = when (currentAddressType.value) {
                 SHIPPING -> generateShippingAddressModel(binding)
                 BILLING -> generateBillingAddressModel(binding)
@@ -152,7 +151,7 @@ class AddressEditDialogFragment : DaggerFragment() {
             }
         }
 
-        sendBothAddressesUpdate.setOnClickListener {
+        binding.sendBothAddressesUpdate.setOnClickListener {
             lifecycleScope.launch {
                 orderUpdateStore.updateBothOrderAddresses(
                         orderId = selectedOrder.orderId,
