@@ -9,9 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_product_categories.*
 import kotlinx.coroutines.launch
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooProductCategoriesBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesAdapter.OnProductCategoryClickListener
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesAdapter.ProductCategoryViewHolderModel
@@ -60,40 +59,47 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_product_categories, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooProductCategoriesBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentWooProductCategoriesBinding.bind(view)) {
+            savedInstanceState?.let {
+                resultCode = it.getInt(ARG_RESULT_CODE)
+                productCategories = it.getParcelableArrayList(ARG_PRODUCT_CATEGORIES)
+                selectedProductCategories = it.getParcelableArrayList(ARG_SELECTED_PRODUCT_CATEGORIES)
+                selectedSitePosition = it.getInt(ARG_SELECTED_SITE_POSITION)
+            }
 
-        savedInstanceState?.let {
-            resultCode = it.getInt(ARG_RESULT_CODE)
-            productCategories = it.getParcelableArrayList(ARG_PRODUCT_CATEGORIES)
-            selectedProductCategories = it.getParcelableArrayList(ARG_SELECTED_PRODUCT_CATEGORIES)
-            selectedSitePosition = it.getInt(ARG_SELECTED_SITE_POSITION)
-        }
-
-        productCategoriesAdapter = WooProductCategoriesAdapter(requireContext(), this)
-        with(category_list) {
-            layoutManager = LinearLayoutManager(activity)
-            adapter = productCategoriesAdapter
-        }
-
-        val allCategories = productCategories?.toViewHolders() ?: emptyList()
-
-        productCategoriesAdapter.setProductCategories(allCategories.toList())
-
-        btn_add.setOnClickListener {
-            handleCreatingProductCategories()
-        }
-
-        btn_done.setOnClickListener {
-            val intent = activity?.intent
-            intent?.putParcelableArrayListExtra(
-                    ARG_SELECTED_PRODUCT_CATEGORIES, selectedProductCategories as? ArrayList
+            productCategoriesAdapter = WooProductCategoriesAdapter(
+                requireContext(),
+                this@WooProductCategoriesFragment
             )
-            targetFragment?.onActivityResult(PRODUCT_CATEGORIES_REQUEST_CODE, resultCode, intent)
-            fragmentManager?.popBackStack()
+            with(categoryList) {
+                layoutManager = LinearLayoutManager(activity)
+                adapter = productCategoriesAdapter
+            }
+
+            val allCategories = productCategories?.toViewHolders() ?: emptyList()
+
+            productCategoriesAdapter.setProductCategories(allCategories.toList())
+
+            btnAdd.setOnClickListener {
+                handleCreatingProductCategories()
+            }
+
+            btnDone.setOnClickListener {
+                val intent = activity?.intent
+                intent?.putParcelableArrayListExtra(
+                    ARG_SELECTED_PRODUCT_CATEGORIES, selectedProductCategories as? ArrayList
+                )
+                targetFragment?.onActivityResult(PRODUCT_CATEGORIES_REQUEST_CODE, resultCode, intent)
+                fragmentManager?.popBackStack()
+            }
         }
     }
 
