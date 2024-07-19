@@ -9,34 +9,36 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import kotlinx.android.synthetic.main.activity_example.*
+import org.wordpress.android.fluxc.example.databinding.ActivityExampleBinding
 import javax.inject.Inject
 
 class MainExampleActivity : AppCompatActivity(), OnBackStackChangedListener, HasAndroidInjector {
     @Inject lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+    private lateinit var binding: ActivityExampleBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_example)
-        setSupportActionBar(toolbar)
-        supportFragmentManager.addOnBackStackChangedListener(this)
+        binding = ActivityExampleBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        supportFragmentManager.addOnBackStackChangedListener(this@MainExampleActivity)
 
         if (savedInstanceState == null) {
             val mf = MainFragment()
             supportFragmentManager.beginTransaction().add(R.id.fragment_container, mf).commit()
         }
 
-        log.movementMethod = ScrollingMovementMethod()
+        binding.log.movementMethod = ScrollingMovementMethod()
         prependToLog("I'll log stuff here.")
 
         updateBackArrow()
     }
 
     fun prependToLog(s: String) {
-        val output = s + "\n" + log.text
-        log.text = output
+        val output = s + "\n" + binding.log.text
+        binding.log.text = output
     }
 
     override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
