@@ -5,12 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import kotlinx.android.synthetic.main.fragment_woo_onboarding.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooOnboardingBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.store.OnboardingStore
@@ -27,41 +26,42 @@ internal class WooOnboardingFragment : StoreSelectingFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_woo_onboarding, container, false)
+    ): View = FragmentWooOnboardingBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        btnFetchOnboardingTasks.setOnClickListener {
-            selectedSite?.let { site ->
-                coroutineScope.launch {
-                    val result = withContext(Dispatchers.Default) {
-                        onboardingStore.fetchOnboardingTasks(site)
-                    }
+        with(FragmentWooOnboardingBinding.bind(view)) {
+            btnFetchOnboardingTasks.setOnClickListener {
+                selectedSite?.let { site ->
+                    coroutineScope.launch {
+                        val result = withContext(Dispatchers.Default) {
+                            onboardingStore.fetchOnboardingTasks(site)
+                        }
 
-                    result.error?.let {
-                        prependToLog("${it.type}: ${it.message}")
-                        return@launch
-                    }
-                    result.model?.let {
-                        prependToLog("Fetched data: $it")
+                        result.error?.let {
+                            prependToLog("${it.type}: ${it.message}")
+                            return@launch
+                        }
+                        result.model?.let {
+                            prependToLog("Fetched data: $it")
+                        }
                     }
                 }
             }
-        }
 
-        btnLaunchSite.setOnClickListener {
-            selectedSite?.let { site ->
-                lifecycleScope.launch {
-                    val result = siteStore.launchSite(site)
-                    when {
-                        result.isError -> {
-                            prependToLog(
-                                "Error launching site. Type:${result.error.type} \n " +
-                                    "Message: ${result.error.message}"
-                            )
+            btnLaunchSite.setOnClickListener {
+                selectedSite?.let { site ->
+                    lifecycleScope.launch {
+                        val result = siteStore.launchSite(site)
+                        when {
+                            result.isError -> {
+                                prependToLog(
+                                    "Error launching site. Type:${result.error.type} \n " +
+                                        "Message: ${result.error.message}"
+                                )
+                            }
+                            else -> prependToLog("Site launched success")
                         }
-                        else -> prependToLog("Site launched success")
                     }
                 }
             }
