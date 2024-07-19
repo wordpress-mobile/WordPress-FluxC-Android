@@ -8,14 +8,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_batch_generate_variations.*
-import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.product_id
-import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.status
-import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.update_product_info
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooBatchGenerateVariationsBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
@@ -53,80 +49,81 @@ class WooBatchGenerateVariationsFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(layout.fragment_woo_batch_generate_variations, container, false)
+    ): View = FragmentWooBatchGenerateVariationsBinding.inflate(inflater, container, false).root
 
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        enableVariationModificationInputs(false)
-        update_product_info.setOnClickListener {
-            val site = wooCommerceStore.getWooCommerceSites().getOrNull(selectedSitePosition)
-            if (site == null) {
-                prependToLog("No valid site found...doing nothing")
-                return@setOnClickListener
+        with(FragmentWooBatchGenerateVariationsBinding.bind(view)) {
+            enableVariationModificationInputs(false)
+            updateProductInfo.setOnClickListener {
+                val site = wooCommerceStore.getWooCommerceSites().getOrNull(selectedSitePosition)
+                if (site == null) {
+                    prependToLog("No valid site found...doing nothing")
+                    return@setOnClickListener
+                }
+
+                val productId = productId.getText().toLongOrNull()
+                if (productId == null) {
+                    prependToLog("Product with id is empty or has wrong format...doing nothing")
+                    return@setOnClickListener
+                }
+                val product = wcProductStore.getProductByRemoteId(site, productId)
+                if (product == null) {
+                    prependToLog("Product with id: $productId not found in DB. Did you forget to fetch?...doing nothing")
+                    return@setOnClickListener
+                }
+
+                status.text = "Selected product: $productId"
+
+                payload = BatchGenerateVariationsPayload(
+                    site = site,
+                    remoteProductId = productId,
+                    variations = variations
+                )
+
+                enableVariationModificationInputs(true)
+            }
+            addAttribute.setOnClickListener {
+                val attrIdText = attrId.getText().toLongOrNull()
+                val attrNameText = attrName.getText()
+                val attrOptionText = attrOption.getText()
+
+                attrId.setText("")
+                attrName.setText("")
+                attrOption.setText("")
+
+                if (attrIdText == null || attrNameText.isEmpty()) {
+                    prependToLog("Invalid attribute params...doing nothing")
+                    return@setOnClickListener
+                }
+                val variationOption = ProductVariantOption(attrIdText, attrNameText, attrOptionText)
+                currentAttributes.add(variationOption)
+                displayAttributes()
+            }
+            addVariation.setOnClickListener {
+                variations.add(currentAttributes.toList())
+                currentAttributes.clear()
+                attrStatus.text = ""
+                displayVariations()
             }
 
-            val productId = product_id.getText().toLongOrNull()
-            if (productId == null) {
-                prependToLog("Product with id is empty or has wrong format...doing nothing")
-                return@setOnClickListener
-            }
-            val product = wcProductStore.getProductByRemoteId(site, productId)
-            if (product == null) {
-                prependToLog("Product with id: $productId not found in DB. Did you forget to fetch?...doing nothing")
-                return@setOnClickListener
-            }
-
-            status.text = "Selected product: $productId"
-
-            payload = BatchGenerateVariationsPayload(
-                site = site,
-                remoteProductId = productId,
-                variations = variations
-            )
-
-            enableVariationModificationInputs(true)
+            generateVariation.setOnClickListener { runBatchCreate(payload) }
         }
-        add_attribute.setOnClickListener {
-            val attrId = attr_id.getText().toLongOrNull()
-            val attrName = attr_name.getText()
-            val attrOption = attr_option.getText()
-
-            attr_id.setText("")
-            attr_name.setText("")
-            attr_option.setText("")
-
-            if (attrId == null || attrName.isEmpty()) {
-                prependToLog("Invalid attribute params...doing nothing")
-                return@setOnClickListener
-            }
-            val variationOption = ProductVariantOption(attrId, attrName, attrOption)
-            currentAttributes.add(variationOption)
-            displayAttributes()
-        }
-        add_variation.setOnClickListener {
-            variations.add(currentAttributes.toList())
-            currentAttributes.clear()
-            attr_status.text = ""
-            displayVariations()
-        }
-
-        generate_variation.setOnClickListener { runBatchCreate(payload) }
     }
 
-    private fun displayVariations() {
+    private fun FragmentWooBatchGenerateVariationsBinding.displayVariations() {
         val variationsString = variationsToString()
-        variation_status.text = if (variationsString.isNotEmpty()) {
+        variationStatus.text = if (variationsString.isNotEmpty()) {
             "Current variations: \n $variationsString"
         } else {
             ""
         }
     }
 
-    private fun displayAttributes() {
+    private fun FragmentWooBatchGenerateVariationsBinding.displayAttributes() {
         val currentAttributesString = attributesToString(currentAttributes, "\n")
-        attr_status.text = if (currentAttributesString.isNotEmpty()) {
+        attrStatus.text = if (currentAttributesString.isNotEmpty()) {
             "Current attribute: \n $currentAttributesString"
         } else {
             ""
@@ -155,7 +152,7 @@ class WooBatchGenerateVariationsFragment : Fragment() {
         return stringBuffer.toString()
     }
 
-    private fun runBatchCreate(payload: BatchGenerateVariationsPayload) {
+    private fun FragmentWooBatchGenerateVariationsBinding.runBatchCreate(payload: BatchGenerateVariationsPayload) {
         lifecycleScope.launch(Dispatchers.IO) {
             val result: WooResult<BatchProductVariationsApiResponse> =
                 wcProductStore.batchGenerateVariations(payload)
@@ -168,23 +165,23 @@ class WooBatchGenerateVariationsFragment : Fragment() {
                     prependToLog("Success: $count variations created")
                 }
                 // reset view
-                product_id.setText("")
+                productId.setText("")
                 status.text = ""
-                variation_status.text = ""
-                attr_status.text = ""
+                variationStatus.text = ""
+                attrStatus.text = ""
                 variations.clear()
                 enableVariationModificationInputs(false)
             }
         }
     }
 
-    private fun enableVariationModificationInputs(value: Boolean) {
-        attr_id.isEnabled = value
-        attr_name.isEnabled = value
-        attr_option.isEnabled = value
-        add_attribute.isEnabled = value
-        add_variation.isEnabled = value
-        generate_variation.isEnabled = value
+    private fun FragmentWooBatchGenerateVariationsBinding.enableVariationModificationInputs(value: Boolean) {
+        attrId.isEnabled = value
+        attrName.isEnabled = value
+        attrOption.isEnabled = value
+        addAttribute.isEnabled = value
+        addVariation.isEnabled = value
+        generateVariation.isEnabled = value
     }
 
     companion object {
