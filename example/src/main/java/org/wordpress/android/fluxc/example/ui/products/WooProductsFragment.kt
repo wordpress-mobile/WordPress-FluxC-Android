@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_products.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -19,7 +18,7 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooProductsBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
@@ -80,18 +79,21 @@ class WooProductsFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private var binding: FragmentWooProductsBinding? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(layout.fragment_woo_products, container, false)
+    ): View {
+        binding = FragmentWooProductsBinding.inflate(inflater, container, false)
+        return binding!!.root
+    }
 
     @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        fetch_single_product.setOnClickListener {
+        binding?.fetchSingleProduct?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -124,7 +126,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_single_variation.setOnClickListener {
+        binding?.fetchSingleVariation?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -168,7 +170,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_product_sku_availability.setOnClickListener {
+        binding?.fetchProductSkuAvailability?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -184,18 +186,18 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_products.setOnClickListener {
+        binding?.fetchProducts?.setOnClickListener {
             selectedSite?.let { site ->
                 val payload = FetchProductsPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
             }
         }
 
-        fetch_products_with_filters.setOnClickListener {
+        binding?.fetchProductsWithFilters?.setOnClickListener {
             replaceFragment(WooProductFiltersFragment.newInstance(selectedPos))
         }
 
-        fetch_specific_products.setOnClickListener {
+        binding?.fetchSpecificProducts?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -230,7 +232,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        search_products.setOnClickListener {
+        binding?.searchProducts?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -245,7 +247,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        search_products_sku.setOnClickListener {
+        binding?.searchProductsSku?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -261,7 +263,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_product_variations.setOnClickListener {
+        binding?.fetchProductVariations?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -283,11 +285,11 @@ class WooProductsFragment : StoreSelectingFragment() {
                             )
                             if (result.canLoadMore) {
                                 pendingFetchSingleProductVariationOffset += result.rowsAffected
-                                load_more_product_variations.visibility = View.VISIBLE
-                                load_more_product_variations.isEnabled = true
+                                binding?.loadMoreProductVariations?.visibility = View.VISIBLE
+                                binding?.loadMoreProductVariations?.isEnabled = true
                             } else {
                                 pendingFetchSingleProductVariationOffset = 0
-                                load_more_product_variations.isEnabled = false
+                                binding?.loadMoreProductVariations?.isEnabled = false
                             }
                         }
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
@@ -295,7 +297,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        load_more_product_variations.setOnClickListener {
+        binding?.loadMoreProductVariations?.setOnClickListener {
             selectedSite?.let { site ->
                 pendingFetchProductVariationsProductRemoteId?.let { id ->
                     coroutineScope.launch {
@@ -310,18 +312,18 @@ class WooProductsFragment : StoreSelectingFragment() {
                         )
                         if (result.canLoadMore) {
                             pendingFetchSingleProductVariationOffset += result.rowsAffected
-                            load_more_product_variations.visibility = View.VISIBLE
-                            load_more_product_variations.isEnabled = true
+                            binding?.loadMoreProductVariations?.visibility = View.VISIBLE
+                            binding?.loadMoreProductVariations?.isEnabled = true
                         } else {
                             pendingFetchSingleProductVariationOffset = 0
-                            load_more_product_variations.isEnabled = false
+                            binding?.loadMoreProductVariations?.isEnabled = false
                         }
                     }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
-        fetch_reviews_for_product.setOnClickListener {
+        binding?.fetchReviewsForProduct?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -345,7 +347,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_all_reviews.setOnClickListener {
+        binding?.fetchAllReviews?.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     prependToLog("Submitting request to fetch product reviews for site ${site.id}")
@@ -359,7 +361,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_review_by_id.setOnClickListener {
+        binding?.fetchReviewById?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -382,7 +384,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        update_review_status.setOnClickListener {
+        binding?.updateReviewStatus?.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     val id = showSingleLineDialog(
@@ -419,7 +421,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_product_shipping_class.setOnClickListener {
+        binding?.fetchProductShippingClass?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -440,7 +442,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_product_shipping_classes.setOnClickListener {
+        binding?.fetchProductShippingClasses?.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch product shipping classes for site ${site.id}")
                 val payload = FetchProductShippingClassListPayload(site)
@@ -452,7 +454,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        load_more_product_shipping_classes.setOnClickListener {
+        binding?.loadMoreProductShippingClasses?.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting offset request to fetch product shipping classes for site ${site.id}")
                 val payload = FetchProductShippingClassListPayload(
@@ -466,7 +468,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_product_categories.setOnClickListener {
+        binding?.fetchProductCategories?.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch product categories for site ${site.id}")
                 val payload = FetchProductCategoriesPayload(site)
@@ -474,7 +476,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        observe_product_categories.setOnClickListener {
+        binding?.observeProductCategories?.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
                     val categories = wcProductStore.observeCategories(site).first()
@@ -483,7 +485,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        load_more_product_categories.setOnClickListener {
+        binding?.loadMoreProductCategories?.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting offset request to fetch product categories for site ${site.id}")
                 val payload = FetchProductCategoriesPayload(
@@ -493,7 +495,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        add_product_category.setOnClickListener {
+        binding?.addProductCategory?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -515,7 +517,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        fetch_product_tags.setOnClickListener {
+        binding?.fetchProductTags?.setOnClickListener {
             showSingleLineDialog(
                 activity,
                 "Enter a search query, leave blank for none:"
@@ -529,7 +531,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        load_more_product_tags.setOnClickListener {
+        binding?.loadMoreProductTags?.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting offset request to fetch product tags for site ${site.id}")
                 val payload = FetchProductTagsPayload(site, offset = pendingFetchProductTagsOffset)
@@ -537,7 +539,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        add_product_tags.setOnClickListener {
+        binding?.addProductTags?.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                     activity,
@@ -567,13 +569,13 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        test_add_ons.setOnClickListener {
+        binding?.testAddOns?.setOnClickListener {
             selectedSite?.let { site ->
                 WooAddonsTestFragment.show(childFragmentManager, site.id)
             }
         }
 
-        update_product_images.setOnClickListener {
+        binding?.updateProductImages?.setOnClickListener {
             showSingleLineDialog(
                 activity,
                 "Enter the remoteProductId of the product to update images:"
@@ -591,15 +593,15 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        update_product.setOnClickListener {
+        binding?.updateProduct?.setOnClickListener {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
         }
 
-        update_variation.setOnClickListener {
+        binding?.updateVariation?.setOnClickListener {
             replaceFragment(WooUpdateVariationFragment.newInstance(selectedPos))
         }
 
-        add_new_product.setOnClickListener {
+        binding?.addNewProduct?.setOnClickListener {
             replaceFragment(
                 WooUpdateProductFragment.newInstance(
                     selectedPos,
@@ -608,7 +610,7 @@ class WooProductsFragment : StoreSelectingFragment() {
             )
         }
 
-        delete_product.setOnClickListener {
+        binding?.deleteProduct?.setOnClickListener {
             showSingleLineDialog(
                 activity,
                 "Enter the remoteProductId of the product to delete:"
@@ -622,15 +624,15 @@ class WooProductsFragment : StoreSelectingFragment() {
             }
         }
 
-        batch_update_variations.setOnClickListener {
+        binding?.batchUpdateVariations?.setOnClickListener {
             replaceFragment(WooBatchUpdateVariationsFragment.newInstance(selectedPos))
         }
 
-        batch_generate_variations.setOnClickListener {
+        binding?.batchGenerateVariations?.setOnClickListener {
             replaceFragment(WooBatchGenerateVariationsFragment.newInstance(selectedPos))
         }
 
-        fetch_product_stock_report.setOnClickListener {
+        binding?.fetchProductStockReport?.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog(
                     "Submitting request to fetch product stock for stock status:" +
@@ -754,11 +756,11 @@ class WooProductsFragment : StoreSelectingFragment() {
 
                     if (event.canLoadMore) {
                         pendingFetchProductCategoriesOffset += event.rowsAffected
-                        load_more_product_categories.visibility = View.VISIBLE
-                        load_more_product_categories.isEnabled = true
+                        binding?.loadMoreProductCategories?.visibility = View.VISIBLE
+                        binding?.loadMoreProductCategories?.isEnabled = true
                     } else {
                         pendingFetchProductCategoriesOffset = 0
-                        load_more_product_categories.isEnabled = false
+                        binding?.loadMoreProductCategories?.isEnabled = false
                     }
                 }
 
@@ -808,11 +810,11 @@ class WooProductsFragment : StoreSelectingFragment() {
 
         if (event.canLoadMore) {
             pendingFetchProductShippingClassListOffset += event.rowsAffected
-            load_more_product_shipping_classes.visibility = View.VISIBLE
-            load_more_product_shipping_classes.isEnabled = true
+            binding?.loadMoreProductShippingClasses?.visibility = View.VISIBLE
+            binding?.loadMoreProductShippingClasses?.isEnabled = true
         } else {
             pendingFetchProductShippingClassListOffset = 0
-            load_more_product_shipping_classes.isEnabled = false
+            binding?.loadMoreProductShippingClasses?.isEnabled = false
         }
     }
 
@@ -830,11 +832,11 @@ class WooProductsFragment : StoreSelectingFragment() {
                     prependToLog("Fetched ${event.rowsAffected} product tags. More tags available ${event.canLoadMore}")
                     if (event.canLoadMore) {
                         pendingFetchProductTagsOffset += event.rowsAffected
-                        load_more_product_tags.visibility = View.VISIBLE
-                        load_more_product_tags.isEnabled = true
+                        binding?.loadMoreProductTags?.visibility = View.VISIBLE
+                        binding?.loadMoreProductTags?.isEnabled = true
                     } else {
                         pendingFetchProductTagsOffset = 0
-                        load_more_product_tags.isEnabled = false
+                        binding?.loadMoreProductTags?.isEnabled = false
                     }
                 }
 
@@ -850,5 +852,10 @@ class WooProductsFragment : StoreSelectingFragment() {
                 else -> {}
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }
