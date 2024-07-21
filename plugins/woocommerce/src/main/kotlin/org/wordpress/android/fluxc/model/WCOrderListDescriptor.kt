@@ -20,13 +20,15 @@ data class WCOrderListDescriptor(
 
     override val uniqueIdentifier: ListDescriptorUniqueIdentifier by lazy {
         ListDescriptorUniqueIdentifier(
-                ("woo-site-order-list-${site.id}" +
-                        "-sf${statusFilter.orEmpty()}" +
-                        "-sq${searchQuery.orEmpty()}" +
-                        "-bf${beforeFilter.orEmpty()}" +
-                        "-af${afterFilter.orEmpty()}" +
-                        "-efo$excludeFutureOrders"
-                        ).hashCode()
+            ("woo-site-order-list-${site.id}" +
+                    "-sf${statusFilter.orEmpty()}" +
+                    "-sq${searchQuery.orEmpty()}" +
+                    "-bf${beforeFilter.orEmpty()}" +
+                    "-af${afterFilter.orEmpty()}" +
+                    "-p${productId ?: ""}" +
+                    "-c${customerId ?: ""}" +
+                    "-efo$excludeFutureOrders"
+                    ).hashCode()
         )
     }
 
