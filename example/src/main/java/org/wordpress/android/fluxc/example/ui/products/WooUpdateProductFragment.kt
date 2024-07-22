@@ -297,14 +297,14 @@ class WooUpdateProductFragment : Fragment() {
         binding?.productFromDate?.setOnClickListener {
             showDatePickerDialog(
                     binding?.productFromDate?.text.toString(),
-                    OnDateSetListener { _, year, month, dayOfMonth ->
-                        binding?.productFromDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                        selectedProductModel?.dateOnSaleFromGmt = binding?.productFromDate?.text.toString()
-                    })
+                { _, year, month, dayOfMonth ->
+                    binding?.productFromDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                    selectedProductModel?.dateOnSaleFromGmt = binding?.productFromDate?.text.toString()
+                })
         }
 
         binding?.productToDate?.setOnClickListener {
-            showDatePickerDialog(binding?.productToDate?.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
+            showDatePickerDialog(binding?.productToDate?.text.toString(), { _, year, month, dayOfMonth ->
                 binding?.productToDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
                 selectedProductModel?.dateOnSaleToGmt = binding?.productToDate?.text.toString()
             })
