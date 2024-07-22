@@ -9,7 +9,9 @@ import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleAdsProgramsDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.SALES
 import org.wordpress.android.fluxc.tools.CoroutineEngine
@@ -77,13 +79,22 @@ class WCGoogleStore @Inject constructor(
         nextPageToken: String? = null
     ): WooResult<WCGoogleAdsPrograms?> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
-            val response = restClient.fetchAllPrograms(
-                site = site,
-                startDate = startDate,
-                endDate = endDate,
-                fields = totals.joinToString(",") { it.parameterName },
-                orderBy = orderBy.parameterName
-            )
+            val pages: List<WCGoogleAdsProgramsDTO> = mutableListOf()
+            var hasMorePages = true
+
+            while (hasMorePages) {
+                val response = restClient.fetchAllPrograms(
+                    site = site,
+                    startDate = startDate,
+                    endDate = endDate,
+                    fields = totals.joinToString(",") { it.parameterName },
+                    orderBy = orderBy.parameterName
+                ).takeIf { !it.isError }?.result ?: break
+
+                hasMorePages = response.nextPageToken?.isNotEmpty() ?: false
+            }
+
+            val response = pages.reduce()
 
             when {
                 response.isError -> WooResult(response.error)
@@ -123,6 +134,10 @@ class WCGoogleStore @Inject constructor(
                 )
             }
         }
+
+    private fun List<WCGoogleAdsProgramsDTO>.reduce(): WooPayload<WCGoogleAdsProgramsDTO> {
+        return WooPayload(first())
+    }
 
     enum class TotalsType(val parameterName: String) {
         SALES("sales"),
