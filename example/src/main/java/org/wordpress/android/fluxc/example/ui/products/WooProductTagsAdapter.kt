@@ -2,14 +2,12 @@ package org.wordpress.android.fluxc.example.ui.products
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.product_category_list_item.view.*
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.ProductCategoryListItemBinding
 import org.wordpress.android.fluxc.example.ui.products.WooProductTagsAdapter.ProductTagViewHolder
 import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment.ProductTag
 
@@ -33,8 +31,12 @@ class WooProductTagsAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductTagViewHolder {
         return ProductTagViewHolder(
-                LayoutInflater.from(context)
-                        .inflate(R.layout.product_category_list_item, parent, false))
+            ProductCategoryListItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
     }
 
     override fun onBindViewHolder(holder: ProductTagViewHolder, position: Int) {
@@ -73,9 +75,11 @@ class WooProductTagsAdapter(
         }
     }
 
-    class ProductTagViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val txtTagName: TextView = view.categoryName
-        val checkBox: CheckBox = view.categorySelected
+    class ProductTagViewHolder(
+        binding: ProductCategoryListItemBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        val txtTagName: TextView = binding.categoryName
+        val checkBox: CheckBox = binding.categorySelected
     }
 
     private class ProductItemDiffUtil(
