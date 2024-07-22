@@ -44,7 +44,10 @@ class ExperimentsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(FragmentExperimentsBinding.bind(view)) {
-            platformSpinner.adapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item).apply {
+            platformSpinner.adapter = ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_spinner_item
+            ).apply {
                 addAll(Platform.values().map { it.value })
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }

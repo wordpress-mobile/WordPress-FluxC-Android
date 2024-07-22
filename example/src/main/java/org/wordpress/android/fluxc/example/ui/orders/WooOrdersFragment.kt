@@ -340,7 +340,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
                                         val trackings = wcOrderStore.getShipmentTrackingsForOrder(site, orderId)
                                         trackings.forEach { tracking ->
-                                            prependToLog("- shipped:${tracking.dateShipped}: ${tracking.trackingNumber}")
+                                            prependToLog(
+                                                "- shipped:${tracking.dateShipped}:" +
+                                                    tracking.trackingNumber
+                                            )
                                         }
                                         val trackingsCountAfterRequest =
                                             OrderSqlUtils.getShipmentTrackingsForOrder(site, orderId).size
@@ -592,7 +595,10 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
 
                         when {
                             result.isError -> {
-                                prependToLog("Deleting order failed, error ${result.error.type} ${result.error.message}")
+                                prependToLog(
+                                    "Deleting order failed, " +
+                                    "error ${result.error.type} ${result.error.message}"
+                                )
                             }
                             shouldTrash -> {
                                 prependToLog("Order $orderId has been moved to trash")

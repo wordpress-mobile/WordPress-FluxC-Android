@@ -101,7 +101,8 @@ class WooBatchUpdateVariationsFragment : Fragment() {
                 variationsIds
             )
 
-            binding?.status?.text = "Selected product: $productId. Variation ids: ${variationsIds.joinToString("|")}"
+            binding?.status?.text = "Selected product: $productId. Variation ids: " +
+                "${variationsIds.joinToString("|")}"
 
             binding?.enableVariationModificationInputs()
         }
@@ -152,7 +153,8 @@ class WooBatchUpdateVariationsFragment : Fragment() {
     }
 
     @Suppress("ComplexMethod")
-    private fun FragmentWooBatchUpdateVariationsBinding.buildPayload(): BatchUpdateVariationsPayload = with(variationsUpdatePayloadBuilder) {
+    private fun FragmentWooBatchUpdateVariationsBinding.buildPayload():
+        BatchUpdateVariationsPayload = with(variationsUpdatePayloadBuilder) {
         with(regularPrice.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.regularPrice(this)
         }
@@ -169,7 +171,11 @@ class WooBatchUpdateVariationsFragment : Fragment() {
         val width = width.getText()
         val height = height.getText()
         if (length.isNotEmpty() || width.isNotEmpty() || height.isNotEmpty()) {
-            variationsUpdatePayloadBuilder.dimensions(length = length, width = width, height = height)
+            variationsUpdatePayloadBuilder.dimensions(
+                length = length,
+                width = width,
+                height = height
+            )
         }
         with(shippingClassId.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassId(this)

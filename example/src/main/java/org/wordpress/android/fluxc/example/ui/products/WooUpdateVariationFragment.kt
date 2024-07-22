@@ -250,7 +250,10 @@ class WooUpdateVariationFragment : Fragment() {
         }
     }
 
-    private fun FragmentWooUpdateVariationBinding.updateSelectedProductId(remoteProductId: Long, remoteVariationId: Long) {
+    private fun FragmentWooUpdateVariationBinding.updateSelectedProductId(
+        remoteProductId: Long,
+        remoteVariationId: Long
+    ) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
             productEnteredProductId.text = "P: $remoteProductId, V: $remoteVariationId"

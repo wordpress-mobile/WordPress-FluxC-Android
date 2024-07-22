@@ -128,7 +128,10 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                             }
 
                             val remoteId = remoteIdEditText.text.toString().toLong()
-                            prependToLog("Submitting request to refund shipping label for order $orderId with id $remoteId")
+                            prependToLog(
+                                "Submitting request to refund shipping label for " +
+                                    "order $orderId with id $remoteId"
+                            )
 
                             coroutineScope.launch {
                                 try {
@@ -214,7 +217,8 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                             return@launch
                         }
 
-                        val label: WCShippingLabelModel? = wcShippingLabelStore.getShippingLabelById(site, orderId, labelId)
+                        val label: WCShippingLabelModel? =
+                            wcShippingLabelStore.getShippingLabelById(site, orderId, labelId)
                             ?: suspend {
                                 prependToLog("Fetching label")
                                 wcShippingLabelStore.fetchShippingLabelsForOrder(site, orderId)
@@ -604,7 +608,10 @@ class WooShippingLabelFragment : StoreSelectingFragment() {
                         if (ratesResult.model!!.packageRates.isEmpty() ||
                             ratesResult.model!!.packageRates.first().shippingOptions.isEmpty() ||
                             ratesResult.model!!.packageRates.first().shippingOptions.first().rates.isEmpty()) {
-                            prependToLog("Couldn't find rates for the given input, please try with different parameters")
+                            prependToLog(
+                                "Couldn't find rates for the given input, " +
+                                    "please try with different parameters"
+                            )
                             return@launch
                         }
                         val rate = ratesResult.model!!.packageRates.first().shippingOptions.first().rates.first()

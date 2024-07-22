@@ -80,7 +80,9 @@ class NotificationsFragment : Fragment() {
                         prependToLog("Fetching notifications matching $type or $subtype...\n")
                         val notifs = notificationStore.getNotifications(listOf(type), listOf(subtype))
                         val groups = notifs.groupingBy { notif ->
-                            notif.subtype?.name?.takeIf { subtype -> subtype != Subkind.UNKNOWN.name } ?: notif.type.name
+                            notif.subtype?.name?.takeIf { subtype ->
+                                subtype != Subkind.UNKNOWN.name
+                            } ?: notif.type.name
                         }.fold(0) { acc, _ -> acc + 1 }
                         prependToLog("SUCCESS! Total records matching filtered selections:" +
                                 "\n- $type: ${groups[type] ?: 0}\n- $subtype: ${groups[subtype] ?: 0}")
@@ -125,9 +127,14 @@ class NotificationsFragment : Fragment() {
             notifsMarkRead.setOnClickListener {
                 selectedSite?.let { site ->
                     notificationStore.getNotificationsForSite(site).firstOrNull()?.let { note ->
-                        prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
+                        prependToLog(
+                            "Setting notification with remoteNoteId of " +
+                            "${note.remoteNoteId} as read\n"
+                        )
                         coroutineScope.launch {
-                            val result = notificationStore.markNotificationsRead(MarkNotificationsReadPayload(listOf(note)))
+                            val result = notificationStore.markNotificationsRead(
+                                MarkNotificationsReadPayload(listOf(note))
+                            )
                             result.changedNotificationLocalIds.forEach {
                                 notificationStore.getNotificationByLocalId(it)?.let { notif ->
                                     prependToLog("SUCCESS! ${notif.toLogString()}")

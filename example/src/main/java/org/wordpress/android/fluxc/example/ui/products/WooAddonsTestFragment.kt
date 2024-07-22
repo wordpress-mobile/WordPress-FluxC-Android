@@ -73,8 +73,15 @@ class WooAddonsTestFragment : DialogFragment() {
             addonsProductRemoteIdApply.setOnClickListener {
                 val selectedProductRemoteId = addonsProductRemoteId.text.toString().toLong()
                 lifecycleScope.launch {
-                    selectedProduct = wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId) ?: run {
-                        wcProductStore.fetchSingleProduct(FetchSingleProductPayload(selectedSite, selectedProductRemoteId))
+                    selectedProduct = wcProductStore.getProductByRemoteId(
+                        selectedSite,
+                        selectedProductRemoteId
+                    ) ?: run {
+                        wcProductStore.fetchSingleProduct(
+                            FetchSingleProductPayload(selectedSite,
+                                selectedProductRemoteId
+                            )
+                        )
                         wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId)!!
                     }
 

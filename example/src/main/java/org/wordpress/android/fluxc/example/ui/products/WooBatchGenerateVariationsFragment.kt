@@ -70,7 +70,10 @@ class WooBatchGenerateVariationsFragment : Fragment() {
                 }
                 val product = wcProductStore.getProductByRemoteId(site, productId)
                 if (product == null) {
-                    prependToLog("Product with id: $productId not found in DB. Did you forget to fetch?...doing nothing")
+                    prependToLog(
+                        "Product with id: $productId not found in DB. " +
+                            "Did you forget to fetch?...doing nothing"
+                    )
                     return@setOnClickListener
                 }
 
