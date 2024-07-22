@@ -1,13 +1,10 @@
 package org.wordpress.android.fluxc.example.ui.products
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import kotlinx.android.synthetic.main.product_downloadable_file_list_item.view.*
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.ProductDownloadableFileListItemBinding
 import org.wordpress.android.fluxc.example.ui.products.WooProductDownloadsAdapter.ProductFileViewHolder
 import org.wordpress.android.fluxc.example.ui.products.WooProductDownloadsFragment.ProductFile
 import org.wordpress.android.fluxc.example.utils.onTextChanged
@@ -25,8 +22,11 @@ class WooProductDownloadsAdapter : RecyclerView.Adapter<ProductFileViewHolder>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductFileViewHolder {
         return ProductFileViewHolder(
-                LayoutInflater.from(parent.context)
-                        .inflate(R.layout.product_downloadable_file_list_item, parent, false)
+            ProductDownloadableFileListItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
         ) { deleteFile(it) }
     }
 
@@ -40,10 +40,13 @@ class WooProductDownloadsAdapter : RecyclerView.Adapter<ProductFileViewHolder>()
         holder.bind(_filesList[position])
     }
 
-    class ProductFileViewHolder(view: View, private val onDeleteClick: (ProductFile) -> Unit) : ViewHolder(view) {
-        private val fileName = view.file_name
-        private val fileUrl = view.file_url
-        private val deleteButton = view.delete_button
+    class ProductFileViewHolder(
+        binding: ProductDownloadableFileListItemBinding,
+        private val onDeleteClick: (ProductFile) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+        private val fileName = binding.fileName
+        private val fileUrl = binding.fileUrl
+        private val deleteButton = binding.deleteButton
 
         fun bind(file: ProductFile) {
             fileName.setText(file.name)
