@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaign
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaignMapper
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsCardStats
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsPrograms
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
@@ -42,28 +43,29 @@ class WCGoogleStore @Inject constructor(
             }
         }
 
-/**
- * Fetches the Google Ads campaigns.
- *
- * @param excludeRemovedCampaigns Exclude removed (deleted) campaigns from being fetched.
- * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
- * passes error, too.
- */
-suspend fun fetchGoogleAdsCampaigns(
-    site: SiteModel,
-    excludeRemovedCampaigns: Boolean = true
-): WooResult<List<WCGoogleAdsCampaign>> =
-    coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
-        val response = restClient.fetchGoogleAdsCampaigns(site, excludeRemovedCampaigns)
-        when {
-            response.isError -> WooResult(response.error)
-            response.result != null -> {
-                val campaigns = response.result.map { campaignMapper.mapToModel(it) }
-                WooResult(campaigns)
+    /**
+     * Fetches the Google Ads campaigns.
+     *
+     * @param excludeRemovedCampaigns Exclude removed (deleted) campaigns from being fetched.
+     * @return WooResult<List<WCGoogleAdsCampaign>> a list of Google Ads campaigns. Optionally,
+     * passes error, too.
+     */
+    suspend fun fetchGoogleAdsCampaigns(
+        site: SiteModel,
+        excludeRemovedCampaigns: Boolean = true
+    ): WooResult<List<WCGoogleAdsCampaign>> =
+        coroutineEngine.withDefaultContext(API, this, "fetchGoogleAdsCampaigns") {
+            val response = restClient.fetchGoogleAdsCampaigns(site, excludeRemovedCampaigns)
+            when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> {
+                    val campaigns = response.result.map { campaignMapper.mapToModel(it) }
+                    WooResult(campaigns)
+                }
+
+                else -> WooResult(emptyList())
             }
-            else -> WooResult(emptyList())
         }
-    }
 
     suspend fun fetchAllPrograms(
         site: SiteModel,
@@ -83,6 +85,36 @@ suspend fun fetchGoogleAdsCampaigns(
                 response.isError -> WooResult(response.error)
                 response.result != null -> WooResult(programsMapper.mapToModel(response.result))
                 else -> WooResult(
+                    WooError(WooErrorType.INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE)
+                )
+            }
+        }
+
+    suspend fun fetchImpressionsAndClicks(
+        site: SiteModel,
+        startDate: String,
+        endDate: String
+    ): WooResult<WCGoogleAdsCardStats> =
+        coroutineEngine.withDefaultContext(API, this, "fetchImpressionsAndClicks") {
+            val response = restClient.fetchImpressionsAndClicks(site, startDate, endDate)
+
+            if (response.isError) {
+                return@withDefaultContext WooResult(response.error)
+            }
+
+            val totals = response.result?.totals
+            val clicks = totals?.clicks
+            val impressions = totals?.impressions
+
+            if (clicks != null && impressions != null) {
+                WooResult(
+                    WCGoogleAdsCardStats(
+                        clicks = clicks,
+                        impressions = impressions
+                    )
+                )
+            } else {
+                WooResult(
                     WooError(WooErrorType.INVALID_RESPONSE, GenericErrorType.INVALID_RESPONSE)
                 )
             }
