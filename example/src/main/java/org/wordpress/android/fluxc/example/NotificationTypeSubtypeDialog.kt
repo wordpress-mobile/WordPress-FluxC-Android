@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
-import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*
+import org.wordpress.android.fluxc.example.databinding.DialogNotificationTypeSubtypeBinding
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Kind
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
 
@@ -29,28 +29,32 @@ class NotificationTypeSubtypeDialog : DialogFragment() {
         dialog?.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
-            inflater.inflate(R.layout.dialog_notification_type_subtype, container)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = DialogNotificationTypeSubtypeBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        notif_type.adapter =
+        with(DialogNotificationTypeSubtypeBinding.bind(view)) {
+            notifType.adapter =
                 ArrayAdapter<Kind>(requireActivity(), android.R.layout.simple_dropdown_item_1line, Kind.values())
-        notif_subtype.adapter =
+            notifSubtype.adapter =
                 ArrayAdapter<Subkind>(requireActivity(), android.R.layout.simple_dropdown_item_1line, Subkind.values())
 
-        notif_dialog_ok.setOnClickListener {
-            listener?.let {
-                val type = notif_type.selectedItem.toString()
-                val subtype = notif_subtype.selectedItem.toString()
-                it.onSubmitted(type, subtype)
+            notifDialogOk.setOnClickListener {
+                listener?.let {
+                    val type = notifType.selectedItem.toString()
+                    val subtype = notifSubtype.selectedItem.toString()
+                    it.onSubmitted(type, subtype)
+                }
+                dismiss()
             }
-            dismiss()
-        }
 
-        notif_dialog_cancel.setOnClickListener {
-            dismiss()
+            notifDialogCancel.setOnClickListener {
+                dismiss()
+            }
         }
     }
 }

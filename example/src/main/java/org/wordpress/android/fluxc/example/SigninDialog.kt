@@ -5,8 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import kotlinx.android.synthetic.main.signing_dialog.*
-import kotlinx.android.synthetic.main.signing_dialog.view.*
+import org.wordpress.android.fluxc.example.databinding.SigningDialogBinding
 import org.wordpress.android.fluxc.example.utils.onTextChanged
 
 class SigninDialog : DialogFragment() {
@@ -28,22 +27,22 @@ class SigninDialog : DialogFragment() {
     private var listener: SigningListener? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(requireActivity())
-        val inflater = requireActivity().layoutInflater
-        val view = inflater.inflate(R.layout.signing_dialog, null)
-        view.url.onTextChanged {
-            view.xmlrpc_check.visibility = if (it.isEmpty()) View.GONE else View.VISIBLE
-        }
-        builder.setView(view)
-            .setPositiveButton(android.R.string.ok) { dialog, id ->
-                listener?.onClick(
-                    username = view.username.text.toString(),
-                    password = view.password.text.toString(),
-                    url = view.url.text.toString(),
-                    isXmlrpc = view.xmlrpc_check.isChecked
-                )
+        with(SigningDialogBinding.inflate(requireActivity().layoutInflater)) {
+            val builder = AlertDialog.Builder(requireActivity())
+            url.onTextChanged {
+                xmlrpcCheck.visibility = if (it.isEmpty()) View.GONE else View.VISIBLE
             }
-            .setNegativeButton(android.R.string.cancel, null)
-        return builder.create()
+            builder.setView(root)
+                .setPositiveButton(android.R.string.ok) { dialog, id ->
+                    listener?.onClick(
+                        username = username.text.toString(),
+                        password = password.text.toString(),
+                        url = url.text.toString(),
+                        isXmlrpc = xmlrpcCheck.isChecked
+                    )
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+            return builder.create()
+        }
     }
 }

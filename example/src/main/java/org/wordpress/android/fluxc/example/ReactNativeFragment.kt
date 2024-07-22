@@ -9,10 +9,10 @@ import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_reactnative.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.wordpress.android.fluxc.example.databinding.FragmentReactnativeBinding
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
@@ -36,14 +36,17 @@ class ReactNativeFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_reactnative, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentReactnativeBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        top_text_view.text = site?.url?.let { url ->
-            """All calls are made to 
+        with(FragmentReactnativeBinding.bind(view)) {
+            topTextView.text = site?.url?.let { url ->
+                """All calls are made to 
                 |$url.
                 |Only enter the rest endpoint you are trying to hit.
                 |For example, with a self-hosted site instead of entering 
@@ -52,23 +55,24 @@ class ReactNativeFragment : Fragment() {
                 |For a WP.com site, instead of entering
                 |'https://public-api.wordpress.com/wp/v2/sites/12345689/media',
                 |just enter 'wp/v2/media' (site id is handled automatically)""".trimMargin()
-        } ?: "Site with url not loaded. All calls will fail."
+            } ?: "Site with url not loaded. All calls will fail."
 
-        path_field.setOnEditorActionListener { v, actionId, event ->
-            when (actionId) {
-                EditorInfo.IME_ACTION_SEND -> {
-                    onClick(v)
-                    true
+            pathField.setOnEditorActionListener { v, actionId, event ->
+                when (actionId) {
+                    EditorInfo.IME_ACTION_SEND -> {
+                        onClick(v)
+                        true
+                    }
+                    else -> false
                 }
-                else -> false
             }
-        }
 
-        request_button.setOnClickListener(::onClick)
+            requestButton.setOnClickListener { onClick(it) }
+        }
     }
 
-    private fun onClick(@Suppress("UNUSED_PARAMETER") view: View?) {
-        val path = path_field.text.toString()
+    private fun FragmentReactnativeBinding.onClick(@Suppress("UNUSED_PARAMETER") view: View?) {
+        val path = pathField.text.toString()
         prependToLog("Making request: $path")
         lifecycleScope.launch(Dispatchers.IO) {
             val response = site?.let { reactNativeStore.executeGetRequest(it, path) }

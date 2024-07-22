@@ -8,8 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_product_categories.*
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooProductCategoriesBinding
 import org.wordpress.android.fluxc.example.ui.products.WooProductTagsAdapter.OnProductTagClickListener
 import org.wordpress.android.fluxc.example.ui.products.WooProductTagsAdapter.ProductTagViewHolderModel
 import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment.ProductTag
@@ -45,8 +44,11 @@ class WooProductTagsFragment : Fragment(), OnProductTagClickListener {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_product_categories, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooProductCategoriesBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -57,28 +59,33 @@ class WooProductTagsFragment : Fragment(), OnProductTagClickListener {
             selectedProductTags = it.getParcelableArrayList(ARG_SELECTED_PRODUCT_TAGS)
         }
 
-        productTagsAdapter = WooProductTagsAdapter(requireContext(), this)
-        with(category_list) {
-            layoutManager = LinearLayoutManager(activity)
-            adapter = productTagsAdapter
-        }
+        with(FragmentWooProductCategoriesBinding.bind(view)) {
+            productTagsAdapter = WooProductTagsAdapter(
+                requireContext(),
+                this@WooProductTagsFragment
+            )
+            with(categoryList) {
+                layoutManager = LinearLayoutManager(activity)
+                adapter = productTagsAdapter
+            }
 
-        val allTags = productTags?.map { productTag ->
-            ProductTagViewHolderModel(
+            val allTags = productTags?.map { productTag ->
+                ProductTagViewHolderModel(
                     tag = productTag,
                     isSelected = selectedProductTags?.any { it.name == productTag.name } ?: false
-            )
-        } ?: emptyList()
+                )
+            } ?: emptyList()
 
-        productTagsAdapter.setProductTags(allTags.toList())
+            productTagsAdapter.setProductTags(allTags.toList())
 
-        btn_done.setOnClickListener {
-            val intent = activity?.intent
-            intent?.putParcelableArrayListExtra(
+            btnDone.setOnClickListener {
+                val intent = activity?.intent
+                intent?.putParcelableArrayListExtra(
                     ARG_SELECTED_PRODUCT_TAGS, selectedProductTags as? ArrayList
-            )
-            targetFragment?.onActivityResult(PRODUCT_TAGS_REQUEST_CODE, resultCode, intent)
-            fragmentManager?.popBackStack()
+                )
+                targetFragment?.onActivityResult(PRODUCT_TAGS_REQUEST_CODE, resultCode, intent)
+                fragmentManager?.popBackStack()
+            }
         }
     }
 

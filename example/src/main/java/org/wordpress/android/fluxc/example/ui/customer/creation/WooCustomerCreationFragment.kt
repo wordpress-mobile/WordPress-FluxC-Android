@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_customer_creation.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooCustomerCreationBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.customer.WCCustomerModel
 import org.wordpress.android.fluxc.store.WCCustomerStore
@@ -34,24 +34,25 @@ class WooCustomerCreationFragment : Fragment(R.layout.fragment_woo_customer_crea
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        btnCustomerCreate.setOnClickListener {
-            coroutineScope.launch {
-                val customerModel = buildModel()
-                prependToLog("Creating a customer $customerModel")
-                withContext(Dispatchers.Default) {
-                    wcCustomerStore.createCustomer(site, customerModel)
-                }.run {
-                    error?.let { prependToLog("${it.type}: ${it.message}") }
-                    if (model != null) {
-                        prependToLog("Created customer: $model")
+        with(FragmentWooCustomerCreationBinding.bind(view)) {
+            btnCustomerCreate.setOnClickListener {
+                coroutineScope.launch {
+                    val customerModel = buildModel()
+                    prependToLog("Creating a customer $customerModel")
+                    withContext(Dispatchers.Default) {
+                        wcCustomerStore.createCustomer(site, customerModel)
+                    }.run {
+                        error?.let { prependToLog("${it.type}: ${it.message}") }
+                        if (model != null) {
+                            prependToLog("Created customer: $model")
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun buildModel() = WCCustomerModel().apply {
+    private fun FragmentWooCustomerCreationBinding.buildModel() = WCCustomerModel().apply {
         firstName = etCustomerFirstName.text.toString()
         lastName = etCustomerLastName.text.toString()
         email = etCustomerEmail.text.toString()

@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_customer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooCustomerBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.customer.creation.WooCustomerCreationFragment
@@ -24,18 +23,22 @@ class WooCustomersFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woo_customer, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooCustomerBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        btnPrintCutomer.setOnClickListener { printCustomerById() }
-        btnFetchCustomerList.setOnClickListener {
-            replaceFragment(WooCustomersSearchBuilderFragment.newInstance(selectedSite!!.id))
-        }
-        btnCreateCustomer.setOnClickListener {
-            replaceFragment(WooCustomerCreationFragment.newInstance(selectedSite!!.id))
+        with(FragmentWooCustomerBinding.bind(view)) {
+            btnPrintCutomer.setOnClickListener { printCustomerById() }
+            btnFetchCustomerList.setOnClickListener {
+                replaceFragment(WooCustomersSearchBuilderFragment.newInstance(selectedSite!!.id))
+            }
+            btnCreateCustomer.setOnClickListener {
+                replaceFragment(WooCustomerCreationFragment.newInstance(selectedSite!!.id))
+            }
         }
     }
 

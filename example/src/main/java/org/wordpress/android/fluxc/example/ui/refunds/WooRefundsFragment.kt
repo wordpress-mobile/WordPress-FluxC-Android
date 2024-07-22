@@ -7,12 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_refunds.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooRefundsBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
@@ -34,25 +33,54 @@ class WooRefundsFragment : StoreSelectingFragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_refunds, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooRefundsBinding.inflate(inflater, container, false).root
 
     @Suppress("LongMethod", "TooGenericExceptionCaught")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentWooRefundsBinding.bind(view)) {
+            createFullRefund.setOnClickListener {
+                selectedSite?.let { site ->
+                    showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                        showSingleLineDialog(activity, "Enter the refund amount:") { amountEditText ->
+                            showSingleLineDialog(activity, "Enter refund reason:") { reasonEditText ->
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    try {
+                                        val response = refundsStore.createAmountRefund(
+                                            site,
+                                            orderEditText.text.toString().toLong(),
+                                            amountEditText.text.toString().toBigDecimal(),
+                                            reasonEditText.text.toString()
+                                        )
+                                        withContext(Dispatchers.Main) {
+                                            printRefund(response)
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            prependToLog("Error: ${e.message}")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-        create_full_refund.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
-                    showSingleLineDialog(activity, "Enter the refund amount:") { amountEditText ->
-                        showSingleLineDialog(activity, "Enter refund reason:") { reasonEditText ->
+            fetchRefund.setOnClickListener {
+                selectedSite?.let { site ->
+                    showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                        showSingleLineDialog(activity, "Enter the refund ID:") { refundEditText ->
                             lifecycleScope.launch(Dispatchers.IO) {
                                 try {
-                                    val response = refundsStore.createAmountRefund(
+                                    val response = refundsStore.fetchRefund(
                                         site,
                                         orderEditText.text.toString().toLong(),
-                                        amountEditText.text.toString().toBigDecimal(),
-                                        reasonEditText.text.toString()
+                                        refundEditText.text.toString().toLong()
                                     )
                                     withContext(Dispatchers.Main) {
                                         printRefund(response)
@@ -67,56 +95,31 @@ class WooRefundsFragment : StoreSelectingFragment() {
                     }
                 }
             }
-        }
 
-        fetch_refund.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
-                    showSingleLineDialog(activity, "Enter the refund ID:") { refundEditText ->
+            fetchAllRefunds.setOnClickListener {
+                selectedSite?.let { site ->
+                    showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
-                                val response = refundsStore.fetchRefund(
+                                val response = refundsStore.fetchAllRefunds(
                                     site,
-                                    orderEditText.text.toString().toLong(),
-                                    refundEditText.text.toString().toLong()
+                                    orderEditText.text.toString().toLong()
                                 )
                                 withContext(Dispatchers.Main) {
-                                    printRefund(response)
+                                    response.error?.let {
+                                        prependToLog("${it.type}: ${it.message}")
+                                    }
+                                    response.model?.let {
+                                        prependToLog("Order ${orderEditText.text} has ${it.size} refunds")
+                                        it.forEach { refund ->
+                                            prependToLog("Refund: $refund")
+                                        }
+                                    }
                                 }
                             } catch (e: Exception) {
                                 withContext(Dispatchers.Main) {
                                     prependToLog("Error: ${e.message}")
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        fetch_all_refunds.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            val response = refundsStore.fetchAllRefunds(
-                                site,
-                                orderEditText.text.toString().toLong()
-                            )
-                            withContext(Dispatchers.Main) {
-                                response.error?.let {
-                                    prependToLog("${it.type}: ${it.message}")
-                                }
-                                response.model?.let {
-                                    prependToLog("Order ${orderEditText.text} has ${it.size} refunds")
-                                    it.forEach { refund ->
-                                        prependToLog("Refund: $refund")
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                prependToLog("Error: ${e.message}")
                             }
                         }
                     }

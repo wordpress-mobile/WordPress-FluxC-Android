@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_revenue_stats.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,7 +11,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCStatsAction
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooRevenueStatsBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
@@ -34,229 +33,233 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_woo_revenue_stats, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooRevenueStatsBinding.inflate(inflater, container, false).root
 
     @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentWooRevenueStatsBinding.bind(view)) {
+            fetchRevenueStatsAvailability.setOnClickListener {
+                selectedSite?.let {
+                    val payload = FetchRevenueStatsAvailabilityPayload(it)
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAvailabilityAction(payload))
+                } ?: prependToLog("No site selected!")
+            }
 
-        fetch_revenue_stats_availability.setOnClickListener {
-            selectedSite?.let {
-                val payload = FetchRevenueStatsAvailabilityPayload(it)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAvailabilityAction(payload))
-            } ?: prependToLog("No site selected!")
-        }
+            fetchCurrentDayRevenueStats.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.DAYS,
+                            startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
+                            endDate = DateUtils.getEndDateForSite(it)
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog("Revenue stats ${it.rowsAffected != 0}")
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
 
-        fetch_current_day_revenue_stats.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
+            fetchCurrentDayRevenueStatsForced.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.DAYS,
+                            forced = true,
+                            startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
+                            endDate = DateUtils.getEndDateForSite(it)
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats with granularity ${StatsGranularity.DAYS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentWeekRevenueStats.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.WEEKS,
+                            startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
+                            endDate = DateUtils.getLastDayOfCurrentWeekForSite(it)
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats with granularity ${StatsGranularity.WEEKS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentWeekRevenueStatsForced.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.WEEKS,
+                            startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
+                            endDate = DateUtils.getLastDayOfCurrentWeekForSite(it),
+                            forced = true
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats forced with granularity ${StatsGranularity.WEEKS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentMonthRevenueStats.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.MONTHS,
+                            startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
+                            endDate = DateUtils.getLastDayOfCurrentMonthForSite(it)
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats with granularity ${StatsGranularity.MONTHS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentMonthRevenueStatsForced.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.MONTHS,
+                            startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
+                            endDate = DateUtils.getLastDayOfCurrentMonthForSite(it),
+                            forced = true
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats forced with granularity ${StatsGranularity.MONTHS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentYearRevenueStats.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.YEARS,
+                            startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
+                            endDate = DateUtils.getLastDayOfCurrentYearForSite(it)
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats with granularity ${StatsGranularity.YEARS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentYearRevenueStatsForced.setOnClickListener {
+                selectedSite?.let {
+                    coroutineScope.launch {
+                        val payload = FetchRevenueStatsPayload(
+                            site = it,
+                            granularity = StatsGranularity.YEARS,
+                            startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
+                            endDate = DateUtils.getLastDayOfCurrentYearForSite(it),
+                            forced = true
+                        )
+                        wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
+                            prependToLog(
+                                "Revenue stats forced with granularity ${StatsGranularity.YEARS} " +
+                                    ": ${it.rowsAffected != 0}"
+                            )
+                            onFetchRevenueStatsLoaded(it)
+                        } ?: prependToLog("Fetching revenueStats failed.")
+                    }
+                } ?: prependToLog("No site selected!")
+            }
+
+            fetchCurrentDayVisitorStats.setOnClickListener {
+                selectedSite?.let {
+                    val payload = FetchNewVisitorStatsPayload(
                         site = it,
                         granularity = StatsGranularity.DAYS,
                         startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
                         endDate = DateUtils.getEndDateForSite(it)
                     )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog("Revenue stats ${it.rowsAffected != 0}")
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
+                } ?: prependToLog("No site selected!")
+            }
 
-        fetch_current_day_revenue_stats_forced.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
-                        site = it,
-                        granularity = StatsGranularity.DAYS,
-                        forced = true,
-                        startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
-                        endDate = DateUtils.getEndDateForSite(it)
-                    )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats with granularity ${StatsGranularity.DAYS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_week_revenue_stats.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
-                        site = it,
-                        granularity = StatsGranularity.WEEKS,
-                        startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
-                        endDate = DateUtils.getLastDayOfCurrentWeekForSite(it)
-                    )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats with granularity ${StatsGranularity.WEEKS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_week_revenue_stats_forced.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
+            fetchCurrentWeekVisitorStatsForced.setOnClickListener {
+                selectedSite?.let {
+                    val payload = FetchNewVisitorStatsPayload(
                         site = it,
                         granularity = StatsGranularity.WEEKS,
                         startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
                         endDate = DateUtils.getLastDayOfCurrentWeekForSite(it),
                         forced = true
                     )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats forced with granularity ${StatsGranularity.WEEKS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
+                } ?: prependToLog("No site selected!")
+            }
 
-        fetch_current_month_revenue_stats.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
+            fetchCurrentMonthVisitorStats.setOnClickListener {
+                selectedSite?.let {
+                    val payload = FetchNewVisitorStatsPayload(
                         site = it,
                         granularity = StatsGranularity.MONTHS,
                         startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
                         endDate = DateUtils.getLastDayOfCurrentMonthForSite(it)
                     )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats with granularity ${StatsGranularity.MONTHS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
+                } ?: prependToLog("No site selected!")
+            }
 
-        fetch_current_month_revenue_stats_forced.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
-                        site = it,
-                        granularity = StatsGranularity.MONTHS,
-                        startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
-                        endDate = DateUtils.getLastDayOfCurrentMonthForSite(it),
-                        forced = true
-                    )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats forced with granularity ${StatsGranularity.MONTHS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_year_revenue_stats.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
-                        site = it,
-                        granularity = StatsGranularity.YEARS,
-                        startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
-                        endDate = DateUtils.getLastDayOfCurrentYearForSite(it)
-                    )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats with granularity ${StatsGranularity.YEARS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_year_revenue_stats_forced.setOnClickListener {
-            selectedSite?.let {
-                coroutineScope.launch {
-                    val payload = FetchRevenueStatsPayload(
+            fetchCurrentYearVisitorStatsForced.setOnClickListener {
+                selectedSite?.let {
+                    val payload = FetchNewVisitorStatsPayload(
                         site = it,
                         granularity = StatsGranularity.YEARS,
                         startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
                         endDate = DateUtils.getLastDayOfCurrentYearForSite(it),
                         forced = true
                     )
-                    wcStatsStore.fetchRevenueStats(payload).takeUnless { it.isError }?.let {
-                        prependToLog(
-                            "Revenue stats forced with granularity ${StatsGranularity.YEARS} " +
-                                ": ${it.rowsAffected != 0}"
-                        )
-                        onFetchRevenueStatsLoaded(it)
-                    } ?: prependToLog("Fetching revenueStats failed.")
-                }
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_day_visitor_stats.setOnClickListener {
-            selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(
-                    site = it,
-                    granularity = StatsGranularity.DAYS,
-                    startDate = DateUtils.getStartDateForSite(it, DateUtils.getStartOfCurrentDay()),
-                    endDate = DateUtils.getEndDateForSite(it)
-                )
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_week_visitor_stats_forced.setOnClickListener {
-            selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(
-                    site = it,
-                    granularity = StatsGranularity.WEEKS,
-                    startDate = DateUtils.getFirstDayOfCurrentWeekBySite(it),
-                    endDate = DateUtils.getLastDayOfCurrentWeekForSite(it),
-                    forced = true
-                )
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_month_visitor_stats.setOnClickListener {
-            selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(
-                    site = it,
-                    granularity = StatsGranularity.MONTHS,
-                    startDate = DateUtils.getFirstDayOfCurrentMonthBySite(it),
-                    endDate = DateUtils.getLastDayOfCurrentMonthForSite(it)
-                )
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
-            } ?: prependToLog("No site selected!")
-        }
-
-        fetch_current_year_visitor_stats_forced.setOnClickListener {
-            selectedSite?.let {
-                val payload = FetchNewVisitorStatsPayload(
-                    site = it,
-                    granularity = StatsGranularity.YEARS,
-                    startDate = DateUtils.getFirstDayOfCurrentYearBySite(it),
-                    endDate = DateUtils.getLastDayOfCurrentYearForSite(it),
-                    forced = true
-                )
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
-            } ?: prependToLog("No site selected!")
+                    dispatcher.dispatch(WCStatsActionBuilder.newFetchNewVisitorStatsAction(payload))
+                } ?: prependToLog("No site selected!")
+            }
         }
     }
 

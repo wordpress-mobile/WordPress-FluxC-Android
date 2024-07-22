@@ -10,9 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_woo_customers_search.*
-import org.wordpress.android.fluxc.example.R.layout
+import kotlinx.parcelize.Parcelize
+import org.wordpress.android.fluxc.example.databinding.FragmentWooCustomersSearchBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -49,16 +48,20 @@ class WooCustomersSearchFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_customers_search, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooCustomersSearchBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        rvCustomersSearch.apply {
-            adapter = customersAdapter
-            layoutManager = LinearLayoutManager(context)
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        with(FragmentWooCustomersSearchBinding.bind(view)) {
+            rvCustomersSearch.apply {
+                adapter = customersAdapter
+                layoutManager = LinearLayoutManager(context)
+                addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            }
         }
 
         loadList()

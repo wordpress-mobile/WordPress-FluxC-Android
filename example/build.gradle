@@ -1,7 +1,7 @@
 plugins {
     alias(sharedLibs.plugins.android.application)
     alias(sharedLibs.plugins.kotlin.android)
-    alias(sharedLibs.plugins.kotlin.android.extensions)
+    alias(sharedLibs.plugins.kotlin.parcelize)
     alias(sharedLibs.plugins.kotlin.kapt)
 }
 
@@ -96,10 +96,6 @@ android.buildTypes.all { buildType ->
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
     }
-}
-
-androidExtensions {
-    experimental = true
 }
 
 dependencies {

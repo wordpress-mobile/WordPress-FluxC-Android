@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.activity_wc_order_list.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.wordpress.android.fluxc.Dispatcher
@@ -27,6 +26,7 @@ import org.wordpress.android.fluxc.example.WCOrderListItemIdentifier.SectionHead
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.SectionHeader
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
+import org.wordpress.android.fluxc.example.databinding.ActivityWcOrderListBinding
 import org.wordpress.android.fluxc.example.utils.DateUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -57,10 +57,13 @@ class WCOrderListActivity : AppCompatActivity() {
     private var pagedListWrapper: PagedListWrapper<WCOrderListItemUIType>? = null
     private val orderListAdapter: OrderListAdapter = OrderListAdapter()
 
+    private lateinit var binding: ActivityWcOrderListBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_wc_order_list)
+        binding = ActivityWcOrderListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         swipeRefreshLayout = findViewById(R.id.ptr_layout)
         progressLoadMore = findViewById(R.id.progress)
@@ -96,24 +99,24 @@ class WCOrderListActivity : AppCompatActivity() {
             }
         }
 
-        order_search_submit.setOnClickListener {
+        binding.orderSearchSubmit.setOnClickListener {
             val descriptor = WCOrderListDescriptor(
                     site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
-                    statusFilter = order_filter.text.toString(),
-                    searchQuery = order_search_query.text.toString(),
-                    excludeFutureOrders = exclude_future_orders.isChecked
+                    statusFilter = binding.orderFilter.text.toString(),
+                    searchQuery = binding.orderSearchQuery.text.toString(),
+                    excludeFutureOrders = binding.excludeFutureOrders.isChecked
             )
             loadList(descriptor)
         }
 
-        order_search_clear.setOnClickListener {
-            order_search_query.text.clear()
-            order_filter.text.clear()
-            exclude_future_orders.isChecked = false
+        binding.orderSearchClear.setOnClickListener {
+            binding.orderSearchQuery.text.clear()
+            binding.orderFilter.text.clear()
+            binding.excludeFutureOrders.isChecked = false
 
             val descriptor = WCOrderListDescriptor(
                     site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
-                    excludeFutureOrders = exclude_future_orders.isChecked
+                    excludeFutureOrders = binding.excludeFutureOrders.isChecked
             )
             loadList(descriptor)
         }

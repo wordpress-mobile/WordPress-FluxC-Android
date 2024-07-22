@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_plugins.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.databinding.FragmentPluginsBinding
 import org.wordpress.android.fluxc.example.ui.common.showSiteSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.PluginActionBuilder
@@ -45,60 +45,64 @@ class PluginsFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_plugins, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentPluginsBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentPluginsBinding.bind(view)) {
+            pluginsSelectSite.setOnClickListener {
+                showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
+                    override fun onSiteSelected(site: SiteModel, pos: Int) {
+                        selectedSite = site
+                        selectedPos = pos
+                        pluginsSelectedSite.text = site.name ?: site.displayName
+                    }
+                })
+            }
 
-        plugins_select_site.setOnClickListener {
-            showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
-                override fun onSiteSelected(site: SiteModel, pos: Int) {
-                    selectedSite = site
-                    selectedPos = pos
-                    plugins_selected_site.text = site.name ?: site.displayName
-                }
-            })
-        }
-
-        install_activate_plugin.setOnClickListener {
-            selectedSite?.let { site ->
-                showSingleLineDialog(
+            installActivatePlugin.setOnClickListener {
+                selectedSite?.let { site ->
+                    showSingleLineDialog(
                         activity,
                         "Enter a plugin slug.\n(Hint: If testing Jetpack CP sites, don't use `jetpack`)"
-                ) { pluginSlugText ->
-                    if (pluginSlugText.text.isEmpty()) {
-                        prependToLog("Slug is null so doing nothing")
-                        return@showSingleLineDialog
+                    ) { pluginSlugText ->
+                        if (pluginSlugText.text.isEmpty()) {
+                            prependToLog("Slug is null so doing nothing")
+                            return@showSingleLineDialog
+                        }
+                        pluginSlugText.text.toString().apply {
+                            prependToLog("Installing plugin: $this")
+                            val payload = InstallSitePluginPayload(site, this)
+                            dispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(payload))
+                        }
                     }
-                    pluginSlugText.text.toString().apply {
-                        prependToLog("Installing plugin: $this")
-                        val payload = InstallSitePluginPayload(site, this)
-                        dispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(payload))
-                    }
-                }
-            } ?: prependToLog("Please select a site first.")
-        }
+                } ?: prependToLog("Please select a site first.")
+            }
 
-        fetch_plugin.setOnClickListener {
-            selectedSite?.let { site ->
+            fetchPlugin.setOnClickListener {
+                selectedSite?.let { site ->
 
-                showSingleLineDialog(activity, "Enter the plugin name.") { pluginNameText ->
-                    if (pluginNameText.text.isEmpty()) {
-                        prependToLog("Name is null so doing nothing")
-                        return@showSingleLineDialog
-                    }
-                    pluginNameText.text.toString().apply {
-                        prependToLog("Fetching plugin: $this")
+                    showSingleLineDialog(activity, "Enter the plugin name.") { pluginNameText ->
+                        if (pluginNameText.text.isEmpty()) {
+                            prependToLog("Name is null so doing nothing")
+                            return@showSingleLineDialog
+                        }
+                        pluginNameText.text.toString().apply {
+                            prependToLog("Fetching plugin: $this")
 
-                        val payload = FetchSitePluginPayload(
-                            site,
-                            this
-                        )
-                        dispatcher.dispatch(PluginActionBuilder.newFetchSitePluginAction(payload))
+                            val payload = FetchSitePluginPayload(
+                                site,
+                                this
+                            )
+                            dispatcher.dispatch(PluginActionBuilder.newFetchSitePluginAction(payload))
+                        }
                     }
-                }
-            } ?: prependToLog("Please select a site first.")
+                } ?: prependToLog("Please select a site first.")
+            }
         }
     }
 

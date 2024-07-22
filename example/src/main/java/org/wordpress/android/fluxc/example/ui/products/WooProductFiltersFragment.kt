@@ -8,12 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_product_filters.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooProductFiltersBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
@@ -73,49 +72,54 @@ class WooProductFiltersFragment : Fragment() {
         dispatcher.unregister(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_product_filters, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooProductFiltersBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         savedInstanceState?.let { bundle -> selectedSiteId = bundle.getInt(ARG_SELECTED_SITE_ID) }
         filterOptions = savedInstanceState?.getSerializable(ARG_SELECTED_FILTER_OPTIONS)
-                as? MutableMap<ProductFilterOption, String> ?: mutableMapOf()
-
-        filter_stock_status.setOnClickListener {
-            showListSelectorDialog(
+            as? MutableMap<ProductFilterOption, String> ?: mutableMapOf()
+        with(FragmentWooProductFiltersBinding.bind(view)) {
+            filterStockStatus.setOnClickListener {
+                showListSelectorDialog(
                     CoreProductStockStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_STOCK_STATUS, filterOptions?.get(STOCK_STATUS)
-            )
-        }
+                )
+            }
 
-        filter_by_status.setOnClickListener {
-            showListSelectorDialog(
+            filterByStatus.setOnClickListener {
+                showListSelectorDialog(
                     CoreProductStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_PRODUCT_STATUS, filterOptions?.get(STATUS)
-            )
-        }
+                )
+            }
 
-        filter_by_type.setOnClickListener {
-            showListSelectorDialog(
+            filterByType.setOnClickListener {
+                showListSelectorDialog(
                     CoreProductType.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_PRODUCT_TYPE, filterOptions?.get(TYPE)
-            )
-        }
-
-        filter_by_category.setOnClickListener {
-            getWCSite()?.let { site ->
-                val randomCategory = wcProductStore.getProductCategoriesForSite(site).random()
-                filterOptions?.clear()
-                filterOptions?.put(CATEGORY, randomCategory.remoteCategoryId.toString())
-                prependToLog("Selected category: ${randomCategory.name} id: ${randomCategory.remoteCategoryId}")
+                )
             }
-        }
 
-        filter_products.setOnClickListener {
-            getWCSite()?.let { site ->
-                val payload = FetchProductsPayload(site, filterOptions = filterOptions)
-                dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
-            } ?: prependToLog("No valid siteId defined...doing nothing")
+            filterByCategory.setOnClickListener {
+                getWCSite()?.let { site ->
+                    val randomCategory = wcProductStore.getProductCategoriesForSite(site).random()
+                    filterOptions?.clear()
+                    filterOptions?.put(CATEGORY, randomCategory.remoteCategoryId.toString())
+                    prependToLog("Selected category: ${randomCategory.name} id: ${randomCategory.remoteCategoryId}")
+                }
+            }
+
+            filterProducts.setOnClickListener {
+                getWCSite()?.let { site ->
+                    val payload = FetchProductsPayload(site, filterOptions = filterOptions)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
+                } ?: prependToLog("No valid siteId defined...doing nothing")
+            }
         }
     }
 

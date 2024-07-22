@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_woo_product_attribute.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.FragmentWooProductAttributeBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
@@ -24,20 +23,24 @@ class WooProductAttributeFragment : StoreSelectingFragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-            inflater.inflate(R.layout.fragment_woo_product_attribute, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentWooProductAttributeBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        fetch_product_attributes.setOnClickListener { onFetchAttributesListClicked() }
-        fetch_product_attributes_from_db.setOnClickListener { onFetchCachedAttributesListClicked() }
-        create_product_attributes.setOnClickListener { onCreateAttributeButtonClicked() }
-        delete_product_attributes.setOnClickListener { onDeleteAttributeButtonClicked() }
-        update_product_attributes.setOnClickListener { onUpdateAttributeButtonClicked() }
-        fetch_product_single_attribute.setOnClickListener { onFetchAttributeButtonClicked() }
-        fetch_term_for_attribute.setOnClickListener { onFetchAttributeTermsButtonClicked() }
-        create_term_for_attribute.setOnClickListener { onCreateAttributeTermButtonClicked() }
+        with(FragmentWooProductAttributeBinding.bind(view)) {
+            fetchProductAttributes.setOnClickListener { onFetchAttributesListClicked() }
+            fetchProductAttributesFromDb.setOnClickListener { onFetchCachedAttributesListClicked() }
+            createProductAttributes.setOnClickListener { onCreateAttributeButtonClicked() }
+            deleteProductAttributes.setOnClickListener { onDeleteAttributeButtonClicked() }
+            updateProductAttributes.setOnClickListener { onUpdateAttributeButtonClicked() }
+            fetchProductSingleAttribute.setOnClickListener { onFetchAttributeButtonClicked() }
+            fetchTermForAttribute.setOnClickListener { onFetchAttributeTermsButtonClicked() }
+            createTermForAttribute.setOnClickListener { onCreateAttributeTermButtonClicked() }
+        }
     }
 
     @Suppress("TooGenericExceptionCaught")

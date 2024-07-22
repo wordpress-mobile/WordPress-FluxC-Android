@@ -10,14 +10,13 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_addons.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooAddonsBinding
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.store.SiteStore
@@ -51,10 +50,14 @@ class WooAddonsTestFragment : DialogFragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val view = inflater.inflate(layout.fragment_woo_addons, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val view = FragmentWooAddonsBinding.inflate(inflater, container, false).root
 
-        addonsResult = view!!.findViewById(R.id.addons_result)
+        addonsResult = view.findViewById(R.id.addons_result)
         return view
     }
 
@@ -63,36 +66,44 @@ class WooAddonsTestFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         val selectedSiteRemoteId = requireArguments().getInt(SELECTED_SITE_LOCAL_ID)
         val selectedSite = siteStore.getSiteByLocalId(selectedSiteRemoteId)!!
 
-        addons_product_remote_id_apply.setOnClickListener {
-            val selectedProductRemoteId = addons_product_remote_id.text.toString().toLong()
-            lifecycleScope.launch {
-                selectedProduct = wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId) ?: run {
-                    wcProductStore.fetchSingleProduct(FetchSingleProductPayload(selectedSite, selectedProductRemoteId))
-                    wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId)!!
-                }
-
-                startObserving(selectedSite, selectedProduct)
-            }
-        }
-
-        addons_fetch_product.setOnClickListener {
-            coroutineScope.launch {
-                wcProductStore.fetchSingleProduct(
-                        FetchSingleProductPayload(
-                                selectedSite,
-                                selectedProduct.remoteProductId
+        with(FragmentWooAddonsBinding.bind(view)) {
+            addonsProductRemoteIdApply.setOnClickListener {
+                val selectedProductRemoteId = addonsProductRemoteId.text.toString().toLong()
+                lifecycleScope.launch {
+                    selectedProduct = wcProductStore.getProductByRemoteId(
+                        selectedSite,
+                        selectedProductRemoteId
+                    ) ?: run {
+                        wcProductStore.fetchSingleProduct(
+                            FetchSingleProductPayload(selectedSite,
+                                selectedProductRemoteId
+                            )
                         )
-                )
-            }
-        }
+                        wcProductStore.getProductByRemoteId(selectedSite, selectedProductRemoteId)!!
+                    }
 
-        addons_fetch_global.setOnClickListener {
-            coroutineScope.launch {
-                wcAddonsStore.fetchAllGlobalAddonsGroups(selectedSite)
+                    startObserving(selectedSite, selectedProduct)
+                }
+            }
+
+            addonsFetchProduct.setOnClickListener {
+                coroutineScope.launch {
+                    wcProductStore.fetchSingleProduct(
+                        FetchSingleProductPayload(
+                            selectedSite,
+                            selectedProduct.remoteProductId
+                        )
+                    )
+                }
+            }
+
+            addonsFetchGlobal.setOnClickListener {
+                coroutineScope.launch {
+                    wcAddonsStore.fetchAllGlobalAddonsGroups(selectedSite)
+                }
             }
         }
     }

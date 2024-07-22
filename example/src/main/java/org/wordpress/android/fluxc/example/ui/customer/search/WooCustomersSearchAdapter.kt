@@ -8,10 +8,9 @@ import androidx.annotation.LayoutRes
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import kotlinx.android.synthetic.main.list_item_woo_customer.view.*
 import org.wordpress.android.fluxc.example.MainExampleActivity
 import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.ListItemWooCustomerBinding
 import org.wordpress.android.fluxc.example.ui.customer.search.CustomerListItemType.CustomerItem
 import org.wordpress.android.fluxc.example.ui.customer.search.CustomerListItemType.LoadingItem
 import javax.inject.Inject
@@ -21,19 +20,27 @@ private const val VIEW_TYPE_LOADING = 1
 
 class WooCustomersSearchAdapter @Inject constructor(
     context: MainExampleActivity
-) : PagedListAdapter<CustomerListItemType, ViewHolder>(customerListDiffItemCallback) {
+) : PagedListAdapter<CustomerListItemType, RecyclerView.ViewHolder>(customerListDiffItemCallback) {
     private val layoutInflater = LayoutInflater.from(context)
 
     @Suppress("UseCheckOrError")
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            VIEW_TYPE_ITEM -> CustomerItemViewHolder(inflateView(R.layout.list_item_woo_customer, parent))
+            VIEW_TYPE_ITEM -> {
+                CustomerItemViewHolder(
+                    ListItemWooCustomerBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
+                )
+            }
             VIEW_TYPE_LOADING -> LoadingViewHolder(inflateView(R.layout.list_item_skeleton, parent))
             else -> throw IllegalStateException("View type $viewType is not supported")
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position)
         if (holder is CustomerItemViewHolder) {
             holder.onBind((item as CustomerItem))
@@ -54,10 +61,12 @@ class WooCustomersSearchAdapter @Inject constructor(
     }
 
     private class LoadingViewHolder(view: View) : RecyclerView.ViewHolder(view)
-    private class CustomerItemViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    private class CustomerItemViewHolder(
+        val binding: ListItemWooCustomerBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
         fun onBind(item: CustomerItem) {
-            with(view) {
+            with(binding) {
                 tvCustomerRemoteId.text = "ID: ${item.remoteCustomerId}"
                 tvCustomerName.text = "${item.firstName} ${item.lastName}"
                 tvCustomerEmail.text = item.email

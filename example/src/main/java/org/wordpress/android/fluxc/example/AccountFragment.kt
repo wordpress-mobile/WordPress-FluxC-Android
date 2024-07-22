@@ -9,11 +9,11 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_account.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.AccountAction
+import org.wordpress.android.fluxc.example.databinding.FragmentAccountBinding
 import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -29,21 +29,25 @@ class AccountFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_account, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentAccountBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        with(FragmentAccountBinding.bind(view)) {
+            accountSettings.setOnClickListener { changeAccountSettings() }
 
-        account_settings.setOnClickListener { changeAccountSettings() }
+            accountInfosButton.setOnClickListener {
+                dispatcher.dispatch(AccountActionBuilder.newFetchAccountAction())
+                dispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction())
+            }
 
-        account_infos_button.setOnClickListener {
-            dispatcher.dispatch(AccountActionBuilder.newFetchAccountAction())
-            dispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction())
-        }
-
-        account_email_verification.setOnClickListener {
-            dispatcher.dispatch(AccountActionBuilder.newSendVerificationEmailAction())
+            accountEmailVerification.setOnClickListener {
+                dispatcher.dispatch(AccountActionBuilder.newSendVerificationEmailAction())
+            }
         }
     }
 

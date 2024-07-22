@@ -2,24 +2,27 @@ package org.wordpress.android.fluxc.example.ui
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
+import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
-import kotlinx.android.synthetic.main.view_floating_edittext.view.*
 import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.databinding.ViewFloatingEdittextBinding
 import org.wordpress.android.fluxc.example.utils.onTextChanged
 
 class FloatingLabelEditText@JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = null) : ConstraintLayout(
         ctx,
         attrs
 ) {
+    private val binding: ViewFloatingEdittextBinding = ViewFloatingEdittextBinding.inflate(
+        LayoutInflater.from(context), this, true
+    )
+
     init {
-        View.inflate(context, R.layout.view_floating_edittext, this)
         attrs?.let {
             val attrArray = context.obtainStyledAttributes(it, R.styleable.FloatingLabelEditText)
             try {
                 val hintText = attrArray.getString(R.styleable.FloatingLabelEditText_textHint).orEmpty()
-                txt_hint.text = hintText
-                edit_text.hint = hintText
+                binding.txtHint.text = hintText
+                binding.editText.hint = hintText
             } finally {
                 attrArray.recycle()
             }
@@ -27,16 +30,16 @@ class FloatingLabelEditText@JvmOverloads constructor(ctx: Context, attrs: Attrib
     }
 
     fun onTextChanged(cb: (String) -> Unit) {
-        edit_text.onTextChanged(cb)
+        binding.editText.onTextChanged(cb)
     }
 
     fun setText(text: String) {
-        edit_text.post { edit_text.setText(text) }
+        binding.editText.post { binding.editText.setText(text) }
     }
 
-    fun getText() = edit_text.text.toString()
+    fun getText() = binding.editText.text.toString()
 
     override fun setEnabled(isEnabled: Boolean) {
-        edit_text.isEnabled = isEnabled
+        binding.editText.isEnabled = isEnabled
     }
 }

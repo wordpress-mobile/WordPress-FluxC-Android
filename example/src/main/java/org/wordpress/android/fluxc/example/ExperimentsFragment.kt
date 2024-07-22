@@ -11,10 +11,10 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_experiments.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.wordpress.android.fluxc.example.databinding.FragmentExperimentsBinding
 import org.wordpress.android.fluxc.model.experiments.Assignments
 import org.wordpress.android.fluxc.store.ExperimentStore
 import org.wordpress.android.fluxc.store.ExperimentStore.OnAssignmentsFetched
@@ -35,48 +35,56 @@ class ExperimentsFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_experiments, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = FragmentExperimentsBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        platform_spinner.adapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item).apply {
-            addAll(Platform.values().map { it.value })
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-        platform_spinner.onItemSelectedListener = object : OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
-                selectedPlatform = Platform.fromValue(parent.getItemAtPosition(pos) as String)
+        with(FragmentExperimentsBinding.bind(view)) {
+            platformSpinner.adapter = ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_spinner_item
+            ).apply {
+                addAll(Platform.values().map { it.value })
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
+            platformSpinner.onItemSelectedListener = object : OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+                    selectedPlatform = Platform.fromValue(parent.getItemAtPosition(pos) as String)
+                }
 
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit // Do nothing (ignore)
-        }
-        generate_anon_id_button.setOnClickListener { anon_id_edit_text.setText(UUID.randomUUID().toString()) }
-        fetch_assignments.setOnClickListener {
-            val platform = selectedPlatform ?: WORDPRESS_COM
-            val experimentNames = experiment_names_edit_text.text.split(',').map { it.trim() }
-            val anonymousId = anon_id_edit_text.text.toString()
-            prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, " +
-                    "anonymousId=$anonymousId")
-            lifecycleScope.launch(Dispatchers.IO) {
-                val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
-                withContext(Dispatchers.Main) {
-                    onAssignmentsFetched(result)
+                override fun onNothingSelected(parent: AdapterView<*>) = Unit // Do nothing (ignore)
+            }
+            generateAnonIdButton.setOnClickListener { anonIdEditText.setText(UUID.randomUUID().toString()) }
+            fetchAssignments.setOnClickListener {
+                val platform = selectedPlatform ?: WORDPRESS_COM
+                val experimentNames = experimentNamesEditText.text.split(',').map { it.trim() }
+                val anonymousId = anonIdEditText.text.toString()
+                prependToLog("Fetching assignments with: platform=$platform, experimentNames=$experimentNames, " +
+                        "anonymousId=$anonymousId")
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val result = experimentStore.fetchAssignments(platform, experimentNames, anonymousId)
+                    withContext(Dispatchers.Main) {
+                        onAssignmentsFetched(result)
+                    }
                 }
             }
-        }
-        get_cached_assignments.setOnClickListener {
-            val assignments = experimentStore.getCachedAssignments()
-            if (assignments == null) {
-                prependToLog("No cached assignments")
-            } else {
-                prependToLog("Got ${assignments.variations.size} cached assignments")
-                handleAssignments(assignments)
+            getCachedAssignments.setOnClickListener {
+                val assignments = experimentStore.getCachedAssignments()
+                if (assignments == null) {
+                    prependToLog("No cached assignments")
+                } else {
+                    prependToLog("Got ${assignments.variations.size} cached assignments")
+                    handleAssignments(assignments)
+                }
             }
-        }
-        clear_cached_assignments.setOnClickListener {
-            experimentStore.clearCachedAssignments()
-            prependToLog("Cleared cached assignments")
+            clearCachedAssignments.setOnClickListener {
+                experimentStore.clearCachedAssignments()
+                prependToLog("Cleared cached assignments")
+            }
         }
     }
 

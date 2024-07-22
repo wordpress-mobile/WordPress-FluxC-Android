@@ -12,14 +12,13 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_update_variation.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooUpdateVariationBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
@@ -51,6 +50,8 @@ class WooUpdateVariationFragment : Fragment() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private var binding: FragmentWooUpdateVariationBinding? = null
+
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
@@ -81,8 +82,14 @@ class WooUpdateVariationFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(layout.fragment_woo_update_variation, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentWooUpdateVariationBinding.inflate(inflater, container, false)
+        return binding!!.root
+    }
 
     override fun onStart() {
         super.onStart()
@@ -105,82 +112,82 @@ class WooUpdateVariationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        product_enter_product_id.setOnClickListener {
+        binding?.productEnterProductId?.setOnClickListener {
             showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
                 selectedRemoteProductId = editText.text.toString().toLongOrNull()
                 selectedRemoteProductId?.let { productId ->
                     showSingleLineDialog(activity, "Enter the remoteVariation of variation to fetch:") { editText ->
                         selectedRemoteVariationId = editText.text.toString().toLongOrNull()
                         selectedRemoteVariationId?.let { variationId ->
-                            updateSelectedProductId(productId, variationId)
+                            binding?.updateSelectedProductId(productId, variationId)
                         } ?: prependToLog("No valid remoteVariation defined...doing nothing")
                     }
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
-        product_description.onTextChanged { selectedVariationModel?.description = it }
-        product_sku.onTextChanged { selectedVariationModel?.sku = it }
-        product_regular_price.onTextChanged { selectedVariationModel?.regularPrice = it }
-        product_sale_price.onTextChanged { selectedVariationModel?.salePrice = it }
-        product_width.onTextChanged { selectedVariationModel?.width = it }
-        product_height.onTextChanged { selectedVariationModel?.height = it }
-        product_length.onTextChanged { selectedVariationModel?.length = it }
-        product_weight.onTextChanged { selectedVariationModel?.weight = it }
-        product_stock_quantity.onTextChanged {
+        binding?.productDescription?.onTextChanged { selectedVariationModel?.description = it }
+        binding?.productSku?.onTextChanged { selectedVariationModel?.sku = it }
+        binding?.productRegularPrice?.onTextChanged { selectedVariationModel?.regularPrice = it }
+        binding?.productSalePrice?.onTextChanged { selectedVariationModel?.salePrice = it }
+        binding?.productWidth?.onTextChanged { selectedVariationModel?.width = it }
+        binding?.productHeight?.onTextChanged { selectedVariationModel?.height = it }
+        binding?.productLength?.onTextChanged { selectedVariationModel?.length = it }
+        binding?.productWeight?.onTextChanged { selectedVariationModel?.weight = it }
+        binding?.productStockQuantity?.onTextChanged {
             if (it.isNotEmpty()) { selectedVariationModel?.stockQuantity = it.toDouble() }
         }
 
-        product_manage_stock.setOnCheckedChangeListener { _, isChecked ->
+        binding?.productManageStock?.setOnCheckedChangeListener { _, isChecked ->
             selectedVariationModel?.manageStock = isChecked
-            for (i in 0 until manageStockContainer.childCount) {
-                val child = manageStockContainer.getChildAt(i)
+            for (i in 0 until binding?.manageStockContainer?.childCount!!) {
+                val child = binding?.manageStockContainer?.getChildAt(i)
                 if (child is Button || child is FloatingLabelEditText) {
                     child.isEnabled = isChecked
                 }
             }
         }
 
-        variation_visibility.setOnCheckedChangeListener { _, isChecked ->
+        binding?.variationVisibility?.setOnCheckedChangeListener { _, isChecked ->
             selectedVariationModel?.status = if (isChecked) "publish" else "private"
         }
 
-        product_tax_status.setOnClickListener {
+        binding?.productTaxStatus?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductTaxStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_TAX_STATUS, selectedVariationModel?.taxStatus
             )
         }
 
-        product_stock_status.setOnClickListener {
+        binding?.productStockStatus?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductStockStatus.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_STOCK_STATUS, selectedVariationModel?.stockStatus
             )
         }
 
-        product_back_orders.setOnClickListener {
+        binding?.productBackOrders?.setOnClickListener {
             showListSelectorDialog(
                     CoreProductBackOrders.values().map { it.value }.toList(),
                     LIST_RESULT_CODE_BACK_ORDERS, selectedVariationModel?.backorders
             )
         }
 
-        product_from_date.setOnClickListener {
-            showDatePickerDialog(product_from_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
-                product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedVariationModel?.dateOnSaleFromGmt = product_from_date.text.toString()
+        binding?.productFromDate?.setOnClickListener {
+            showDatePickerDialog(binding?.productFromDate?.text.toString(), { _, year, month, dayOfMonth ->
+                binding?.productFromDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                selectedVariationModel?.dateOnSaleFromGmt = binding?.productFromDate?.text.toString()
             })
         }
 
-        product_to_date.setOnClickListener {
-            showDatePickerDialog(product_to_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
-                product_to_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedVariationModel?.dateOnSaleToGmt = product_to_date.text.toString()
+        binding?.productToDate?.setOnClickListener {
+            showDatePickerDialog(binding?.productToDate?.text.toString(), { _, year, month, dayOfMonth ->
+                binding?.productToDate?.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                selectedVariationModel?.dateOnSaleToGmt = binding?.productToDate?.text.toString()
             })
         }
 
-        product_update.setOnClickListener {
+        binding?.productUpdate?.setOnClickListener {
             getWCSite()?.let { site ->
                 if (selectedVariationModel?.remoteProductId != null &&
                     selectedVariationModel?.remoteVariationId != null) {
@@ -203,7 +210,7 @@ class WooUpdateVariationFragment : Fragment() {
             } ?: prependToLog("No site found...doing nothing")
         }
 
-        product_menu_order.onTextChanged { selectedVariationModel?.menuOrder = StringUtils.stringToInt(it) }
+        binding?.productMenuOrder?.onTextChanged { selectedVariationModel?.menuOrder = StringUtils.stringToInt(it) }
 
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
@@ -212,7 +219,7 @@ class WooUpdateVariationFragment : Fragment() {
         }
 
         if (selectedRemoteProductId != null && selectedRemoteVariationId != null) {
-            updateSelectedProductId(selectedRemoteProductId!!, selectedRemoteVariationId!!)
+            binding?.updateSelectedProductId(selectedRemoteProductId!!, selectedRemoteVariationId!!)
         }
     }
 
@@ -223,19 +230,19 @@ class WooUpdateVariationFragment : Fragment() {
             when (resultCode) {
                 LIST_RESULT_CODE_TAX_STATUS -> {
                     selectedItem?.let {
-                        product_tax_status.text = it
+                        binding?.productTaxStatus?.text = it
                         selectedVariationModel?.taxStatus = it
                     }
                 }
                 LIST_RESULT_CODE_STOCK_STATUS -> {
                     selectedItem?.let {
-                        product_stock_status.text = it
+                        binding?.productStockStatus?.text = it
                         selectedVariationModel?.stockStatus = it
                     }
                 }
                 LIST_RESULT_CODE_BACK_ORDERS -> {
                     selectedItem?.let {
-                        product_back_orders.text = it
+                        binding?.productBackOrders?.text = it
                         selectedVariationModel?.backorders = it
                     }
                 }
@@ -243,34 +250,37 @@ class WooUpdateVariationFragment : Fragment() {
         }
     }
 
-    private fun updateSelectedProductId(remoteProductId: Long, remoteVariationId: Long) {
+    private fun FragmentWooUpdateVariationBinding.updateSelectedProductId(
+        remoteProductId: Long,
+        remoteVariationId: Long
+    ) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
-            product_entered_product_id.text = "P: $remoteProductId, V: $remoteVariationId"
+            productEnteredProductId.text = "P: $remoteProductId, V: $remoteVariationId"
 
             selectedVariationModel = wcProductStore.getVariationByRemoteId(
                     siteModel,
                     remoteProductId,
                     remoteVariationId
             )?.also {
-                product_description.setText(it.description)
-                product_sku.setText(it.sku)
-                product_regular_price.setText(it.regularPrice)
-                product_sale_price.setText(it.salePrice)
-                product_width.setText(it.width)
-                product_height.setText(it.height)
-                product_length.setText(it.length)
-                product_weight.setText(it.weight)
-                product_tax_status.text = it.taxStatus
-                product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
-                product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
-                product_manage_stock.isChecked = it.manageStock
-                product_stock_status.text = it.stockStatus
-                product_back_orders.text = it.backorders
-                product_stock_quantity.setText(it.stockQuantity.toString())
-                product_stock_quantity.isEnabled = product_manage_stock.isChecked
-                product_menu_order.setText(it.menuOrder.toString())
-                variation_visibility.isChecked = it.status == "publish"
+                productDescription.setText(it.description)
+                productSku.setText(it.sku)
+                productRegularPrice.setText(it.regularPrice)
+                productSalePrice.setText(it.salePrice)
+                productWidth.setText(it.width)
+                productHeight.setText(it.height)
+                productLength.setText(it.length)
+                productWeight.setText(it.weight)
+                productTaxStatus.text = it.taxStatus
+                productFromDate.text = it.dateOnSaleFromGmt.split('T')[0]
+                productToDate.text = it.dateOnSaleToGmt.split('T')[0]
+                productManageStock.isChecked = it.manageStock
+                productStockStatus.text = it.stockStatus
+                productBackOrders.text = it.backorders
+                productStockQuantity.setText(it.stockQuantity.toString())
+                productStockQuantity.isEnabled = productManageStock.isChecked
+                productMenuOrder.setText(it.menuOrder.toString())
+                variationVisibility.isChecked = it.status == "publish"
             } ?: WCProductVariationModel().apply {
                 this.remoteProductId = remoteProductId
                 this.remoteVariationId = remoteVariationId
@@ -300,7 +310,7 @@ class WooUpdateVariationFragment : Fragment() {
 
     private fun getWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(selectedSitePosition)
 
-    private fun enableProductDependentButtons() {
+    private fun FragmentWooUpdateVariationBinding.enableProductDependentButtons() {
         for (i in 0 until productContainer.childCount) {
             val child = productContainer.getChildAt(i)
             if (child is Button || child is EditText) {
@@ -317,5 +327,10 @@ class WooUpdateVariationFragment : Fragment() {
             return
         }
         prependToLog("Variation updated ${event.rowsAffected}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }

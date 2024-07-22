@@ -11,11 +11,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_batch_update_variations.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.databinding.FragmentWooBatchUpdateVariationsBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
@@ -36,6 +35,8 @@ class WooBatchUpdateVariationsFragment : Fragment() {
 
     private lateinit var variationsUpdatePayloadBuilder: BatchUpdateVariationsPayload.Builder
 
+    private var binding: FragmentWooBatchUpdateVariationsBinding? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -53,19 +54,22 @@ class WooBatchUpdateVariationsFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(layout.fragment_woo_batch_update_variations, container, false)
+    ): View {
+        binding = FragmentWooBatchUpdateVariationsBinding.inflate(inflater, container, false)
+        return binding!!.root
+    }
 
     @Suppress("LongMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        update_product_info.setOnClickListener {
+        super.onViewCreated(view, savedInstanceState)
+        binding?.updateProductInfo?.setOnClickListener {
             val site = getWCSite()
             if (site == null) {
                 prependToLog("No valid site found...doing nothing")
                 return@setOnClickListener
             }
 
-            val productId = getProductIdInput()
+            val productId = binding?.getProductIdInput()
             if (productId == null) {
                 prependToLog("Product with id is empty or has wrong format...doing nothing")
                 return@setOnClickListener
@@ -76,7 +80,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val variationsIds: Collection<Long> = getVariationsIdsInput()
+            val variationsIds: Collection<Long> = binding?.getVariationsIdsInput() ?: emptyList()
             if (variationsIds.isEmpty()) {
                 prependToLog("Variations are empty or have wrong format...doing nothing")
                 return@setOnClickListener
@@ -97,60 +101,67 @@ class WooBatchUpdateVariationsFragment : Fragment() {
                 variationsIds
             )
 
-            status.text = "Selected product: $productId. Variation ids: ${variationsIds.joinToString("|")}"
+            binding?.status?.text = "Selected product: $productId. Variation ids: " +
+                "${variationsIds.joinToString("|")}"
 
-            enableVariationModificationInputs()
+            binding?.enableVariationModificationInputs()
         }
 
-        stock_status_button.setOnClickListener {
+        binding?.stockStatusButton?.setOnClickListener {
             activity?.supportFragmentManager?.let { fm ->
                 val items = CoreProductStockStatus.values().map { it.value }
-                val dialog = ListSelectorDialog.newInstance(this, items, LIST_RESULT_CODE_STOCK_STATUS, null)
+                val dialog = ListSelectorDialog.newInstance(
+                    this@WooBatchUpdateVariationsFragment,
+                    items,
+                    LIST_RESULT_CODE_STOCK_STATUS,
+                    null
+                )
                 dialog.show(fm, "StockStatusDialog")
             }
         }
 
-        date_on_sale_from.setOnClickListener {
-            showDatePickerDialog(date_on_sale_from.text.toString()) { _, y, m, d ->
-                date_on_sale_from.text = DateUtils.getFormattedDateString(y, m, d)
-                variationsUpdatePayloadBuilder.startOfSale(date_on_sale_from.text.toString())
+        binding?.dateOnSaleFrom?.setOnClickListener {
+            showDatePickerDialog(binding?.dateOnSaleFrom?.text.toString()) { _, y, m, d ->
+                binding?.dateOnSaleFrom?.text = DateUtils.getFormattedDateString(y, m, d)
+                variationsUpdatePayloadBuilder.startOfSale(binding?.dateOnSaleFrom?.text.toString())
             }
         }
 
-        date_on_sale_to.setOnClickListener {
-            showDatePickerDialog(date_on_sale_to.text.toString()) { _, y, m, d ->
-                date_on_sale_to.text = DateUtils.getFormattedDateString(y, m, d)
-                variationsUpdatePayloadBuilder.endOfSale(date_on_sale_to.text.toString())
+        binding?.dateOnSaleTo?.setOnClickListener {
+            showDatePickerDialog(binding?.dateOnSaleTo?.text.toString()) { _, y, m, d ->
+                binding?.dateOnSaleTo?.text = DateUtils.getFormattedDateString(y, m, d)
+                variationsUpdatePayloadBuilder.endOfSale(binding?.dateOnSaleTo?.text.toString())
             }
         }
 
-        invoke_button.setOnClickListener {
-            val payload = buildPayload()
-            runBatchUpdate(payload)
+        binding?.invokeButton?.setOnClickListener {
+            val payload = binding?.buildPayload()
+            payload?.let { runBatchUpdate(it) }
         }
     }
 
-    private fun getProductIdInput() = try {
-        product_id.getText().toLong()
+    private fun FragmentWooBatchUpdateVariationsBinding.getProductIdInput() = try {
+        productId.getText().toLong()
     } catch (e: NumberFormatException) {
         null
     }
 
-    private fun getVariationsIdsInput() = try {
-        variations_ids.getText().split(",").map(String::toLong)
+    private fun FragmentWooBatchUpdateVariationsBinding.getVariationsIdsInput() = try {
+        variationsIds.getText().split(",").map(String::toLong)
     } catch (e: NumberFormatException) {
         emptyList()
     }
 
     @Suppress("ComplexMethod")
-    private fun buildPayload(): BatchUpdateVariationsPayload = with(variationsUpdatePayloadBuilder) {
-        with(regular_price.getText()) {
+    private fun FragmentWooBatchUpdateVariationsBinding.buildPayload():
+        BatchUpdateVariationsPayload = with(variationsUpdatePayloadBuilder) {
+        with(regularPrice.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.regularPrice(this)
         }
-        with(sale_price.getText()) {
+        with(salePrice.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.salePrice(this)
         }
-        with(stock_quantity.getText()) {
+        with(stockQuantity.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.stockQuantity(this.toInt())
         }
         with(weight.getText()) {
@@ -160,12 +171,16 @@ class WooBatchUpdateVariationsFragment : Fragment() {
         val width = width.getText()
         val height = height.getText()
         if (length.isNotEmpty() || width.isNotEmpty() || height.isNotEmpty()) {
-            variationsUpdatePayloadBuilder.dimensions(length = length, width = width, height = height)
+            variationsUpdatePayloadBuilder.dimensions(
+                length = length,
+                width = width,
+                height = height
+            )
         }
-        with(shipping_class_id.getText()) {
+        with(shippingClassId.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassId(this)
         }
-        with(shipping_class.getText()) {
+        with(shippingClass.getText()) {
             if (isNotEmpty()) variationsUpdatePayloadBuilder.shippingClassSlug(this)
         }
         build()
@@ -187,18 +202,18 @@ class WooBatchUpdateVariationsFragment : Fragment() {
         }
     }
 
-    private fun enableVariationModificationInputs() {
+    private fun FragmentWooBatchUpdateVariationsBinding.enableVariationModificationInputs() {
         arrayOf(
-            regular_price,
-            sale_price,
-            date_on_sale_from,
-            date_on_sale_to,
-            stock_quantity,
-            stock_status_button,
+            regularPrice,
+            salePrice,
+            dateOnSaleFrom,
+            dateOnSaleTo,
+            stockQuantity,
+            stockStatusButton,
             weight,
-            shipping_class_id,
-            shipping_class,
-            invoke_button,
+            shippingClassId,
+            shippingClass,
+            invokeButton,
             width,
             height,
             length
@@ -211,7 +226,7 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             when (resultCode) {
                 LIST_RESULT_CODE_STOCK_STATUS -> {
                     selectedItem?.let { name ->
-                        stock_status_button.text = name
+                        binding?.stockStatusButton?.text = name
                         variationsUpdatePayloadBuilder.stockStatus(
                             CoreProductStockStatus.values().first { it.value == name }
                         )
@@ -245,5 +260,10 @@ class WooBatchUpdateVariationsFragment : Fragment() {
             fragment.arguments = args
             return fragment
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }
