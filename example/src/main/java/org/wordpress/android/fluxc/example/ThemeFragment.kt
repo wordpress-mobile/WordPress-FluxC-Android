@@ -63,7 +63,7 @@ class ThemeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View = FragmentThemesBinding.inflate(inflater, container, false).root
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "ComplexMethod")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(FragmentThemesBinding.bind(view)) {
