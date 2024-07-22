@@ -73,7 +73,8 @@ class WCGoogleStore @Inject constructor(
         startDate: String,
         endDate: String,
         totals: List<TotalsType>,
-        orderBy: TotalsType = SALES
+        orderBy: TotalsType = SALES,
+        nextPageToken: String? = null
     ): WooResult<WCGoogleAdsPrograms?> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
             val response = restClient.fetchAllPrograms(
