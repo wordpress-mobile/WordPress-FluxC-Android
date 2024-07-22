@@ -210,6 +210,32 @@ class WCStatsStore @Inject constructor(
         } ?: return mapOf()
     }
 
+    fun getNewVisitorStats(
+        granularity: StatsGranularity,
+        startDate: String,
+        endDate: String,
+        site: SiteModel
+    ): Map<String, Int> {
+        val quantity = getVisitorStatsQuantity(granularity, startDate, endDate)
+        val date = DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
+        val rawStats = WCVisitorStatsSqlUtils.getNewRawVisitorStatsForSiteGranularityQuantityAndDate(
+            site, granularity, quantity.toString(), date, true
+        )
+        rawStats?.let { visitorStatsModel ->
+            val periodIndex = visitorStatsModel.getIndexForField(WCNewVisitorStatsModel.VisitorStatsField.PERIOD)
+            val fieldIndex = visitorStatsModel.getIndexForField(WCNewVisitorStatsModel.VisitorStatsField.VISITORS)
+            return if (periodIndex == -1 || fieldIndex == -1) {
+                mapOf()
+            } else {
+                getVisitorsMap(
+                    periodIndex = periodIndex,
+                    fieldIndex = fieldIndex,
+                    dataList = visitorStatsModel.dataList
+                )
+            }
+        } ?: return mapOf()
+    }
+
     private fun getVisitorsMap(
         periodIndex: Int, fieldIndex: Int, dataList: List<List<Any>>
     ): Map<String, Int> {

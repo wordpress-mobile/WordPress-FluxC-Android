@@ -59,6 +59,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+private const val COD_PAYMENT_METHOD_ID = "cod"
+private const val CUSTOM_PAYMENT_METHOD_TITLE = "Pay in Person"
+
+
 @InternalCoroutinesApi
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -194,8 +198,9 @@ class WCOrderStoreTest {
         ordersDaoDecorator.insertOrUpdateOrder(orderModel)
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
         val result = RemoteOrderPayload.Updating(orderModel.copy(status = CoreOrderStatus.REFUNDED.value), site)
-        whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.REFUNDED.value))
-                .thenReturn(result)
+        whenever(orderRestClient
+            .updateOrderStatusAndPaymentMethod(orderModel, site, CoreOrderStatus.REFUNDED.value)
+        ).thenReturn(result)
 
         orderStore.updateOrderStatus(orderModel.orderId, site, WCOrderStatusModel(CoreOrderStatus.REFUNDED.value))
             .toList()
@@ -325,7 +330,7 @@ class WCOrderStoreTest {
                 .saveToDb()
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
         val result = RemoteOrderPayload.Updating(orderModel.copy(status = CoreOrderStatus.COMPLETED.value), site)
-        whenever(orderRestClient.updateOrderStatus(orderModel, site, CoreOrderStatus.COMPLETED.value))
+        whenever(orderRestClient.updateOrderStatusAndPaymentMethod(orderModel, site, CoreOrderStatus.COMPLETED.value))
                 .thenReturn(result)
 
         assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
@@ -348,7 +353,15 @@ class WCOrderStoreTest {
                 .saveToDb()
         val site = SiteModel().apply { id = orderModel.localSiteId.value }
         val error = OrderError()
-        whenever(orderRestClient.updateOrderStatus(any(), any(), any())).thenReturn(
+        whenever(
+            orderRestClient.updateOrderStatusAndPaymentMethod(
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                anyOrNull()
+            )
+        ).thenReturn(
                 RemoteOrderPayload.Updating(
                         error = error,
                         order = orderModel,
@@ -367,6 +380,106 @@ class WCOrderStoreTest {
 
         assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.status)
                 .isEqualTo(CoreOrderStatus.PROCESSING.value)
+        Unit
+    }
+
+
+    @Test
+    fun testUpdateOrderPaymentMethodRequestUpdatesLocalDatabase() = runBlocking {
+        val orderModel = OrderTestUtils.generateSampleOrder(
+            42,
+            orderStatus = CoreOrderStatus.PROCESSING.value,
+            paymentMethod = "",
+            paymentMethodTitle = "")
+            .saveToDb()
+        val site = SiteModel().apply { id = orderModel.localSiteId.value }
+        whenever(orderRestClient.updateOrderStatusAndPaymentMethod(
+            orderModel,
+            site,
+            CoreOrderStatus.COMPLETED.value,
+            COD_PAYMENT_METHOD_ID,
+            CUSTOM_PAYMENT_METHOD_TITLE
+        )).thenReturn(
+            RemoteOrderPayload.Updating(
+                orderModel.copy(
+                    status = CoreOrderStatus.COMPLETED.value,
+                    paymentMethod = COD_PAYMENT_METHOD_ID,
+                    paymentMethodTitle = CUSTOM_PAYMENT_METHOD_TITLE
+                ),
+                site
+            )
+        )
+
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethod)
+            .isEqualTo("")
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethodTitle)
+            .isEqualTo("")
+
+        orderStore.updateOrderStatusAndPaymentMethod(
+            orderModel.orderId,
+            site,
+            WCOrderStatusModel(CoreOrderStatus.COMPLETED.value),
+            newPaymentMethodId = COD_PAYMENT_METHOD_ID,
+            newPaymentMethodTitle = CUSTOM_PAYMENT_METHOD_TITLE
+        ).toList()
+
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethod)
+            .isEqualTo(COD_PAYMENT_METHOD_ID)
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethodTitle)
+            .isEqualTo(CUSTOM_PAYMENT_METHOD_TITLE)
+        Unit
+    }
+
+    @Test
+    fun testRevertLocalPaymentMethodIfRemoteUpdateFails() = runBlocking {
+        val orderModel = OrderTestUtils.generateSampleOrder(
+            42,
+            orderStatus = CoreOrderStatus.PROCESSING.value,
+            paymentMethod = "",
+            paymentMethodTitle = "")
+            .saveToDb()
+        val site = SiteModel().apply { id = orderModel.localSiteId.value }
+        val error = OrderError()
+        whenever(
+            orderRestClient.updateOrderStatusAndPaymentMethod(
+                orderModel,
+                site,
+                CoreOrderStatus.COMPLETED.value,
+                COD_PAYMENT_METHOD_ID,
+                CUSTOM_PAYMENT_METHOD_TITLE
+            )
+        ).thenReturn(
+            RemoteOrderPayload.Updating(
+                error = error,
+                order = orderModel,
+                site = site
+            )
+        )
+
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethod)
+            .isEqualTo("")
+        assertThat(ordersDaoDecorator.getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethodTitle)
+            .isEqualTo("")
+
+        val response = orderStore.updateOrderStatusAndPaymentMethod(
+            orderModel.orderId,
+            site,
+            WCOrderStatusModel(CoreOrderStatus.COMPLETED.value),
+            newPaymentMethodId = COD_PAYMENT_METHOD_ID,
+            newPaymentMethodTitle = CUSTOM_PAYMENT_METHOD_TITLE
+        ).toList().last()
+
+        // Ensure the error is sent in the response
+        assertThat(response.event.error).isEqualTo(error)
+
+        assertThat(
+            ordersDaoDecorator
+                .getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethod
+        ).isEqualTo("")
+        assertThat(
+            ordersDaoDecorator
+                .getOrder(orderModel.orderId, orderModel.localSiteId)?.paymentMethodTitle
+        ).isEqualTo("")
         Unit
     }
 

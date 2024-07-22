@@ -32,7 +32,9 @@ object OrderTestUtils {
         orderId: Long,
         orderStatus: String = CoreOrderStatus.PROCESSING.value,
         siteId: Int = 6,
-        modified: String = "1955-11-05T14:15:00Z"
+        modified: String = "1955-11-05T14:15:00Z",
+        paymentMethod: String = "",
+        paymentMethodTitle: String = ""
     ): OrderEntity {
         return OrderEntity(
             orderId = orderId,
@@ -42,7 +44,9 @@ object OrderTestUtils {
             dateCreated = "1955-11-05T14:15:00Z",
             datePaid = "1956-11-05T14:15:00Z",
             currency = "USD",
-            total = "10.0"
+            total = "10.0",
+            paymentMethod = paymentMethod,
+            paymentMethodTitle = paymentMethodTitle,
         )
     }
 
