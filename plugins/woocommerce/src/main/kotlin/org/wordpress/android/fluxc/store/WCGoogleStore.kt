@@ -11,7 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
-import org.wordpress.android.fluxc.store.WCGoogleStore.MetricType.SALES
+import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.SALES
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
@@ -72,15 +72,15 @@ class WCGoogleStore @Inject constructor(
         site: SiteModel,
         startDate: String,
         endDate: String,
-        metricType: MetricType,
-        orderBy: MetricType = SALES
+        totals: List<TotalsType>,
+        orderBy: TotalsType = SALES
     ): WooResult<WCGoogleAdsPrograms?> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
             val response = restClient.fetchAllPrograms(
                 site = site,
                 startDate = startDate,
                 endDate = endDate,
-                fields = metricType.parameterName,
+                fields = totals.joinToString(",") { it.parameterName },
                 orderBy = orderBy.parameterName
             )
 
@@ -123,7 +123,7 @@ class WCGoogleStore @Inject constructor(
             }
         }
 
-    enum class MetricType(val parameterName: String) {
+    enum class TotalsType(val parameterName: String) {
         SALES("sales"),
         SPEND("spend"),
         CLICKS("clicks"),
