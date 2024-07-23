@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.example.databinding.FragmentWooAdminBinding
 import org.wordpress.android.fluxc.example.prependToLog
@@ -16,7 +15,6 @@ import javax.inject.Inject
 
 class WooAdminFragment : StoreSelectingFragment() {
     @Inject internal lateinit var wooAdminStore: WooAdminStore
-    private val gson = Gson()
 
     override fun onCreateView(
         inflater: LayoutInflater,
