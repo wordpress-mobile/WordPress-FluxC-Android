@@ -25,7 +25,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      *
      * It uses a default [Lifecycle] instance which will NOT be destroyed throughout the test.
      */
-    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> getList(
+    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM : Any> getList(
         listDescriptor: LIST_DESCRIPTOR,
         dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle = SimpleTestLifecycle().lifecycle
