@@ -25,5 +25,6 @@ data class GoogleAdsTotalsDTO(
     @SerializedName("sales") val sales: Double?,
     @SerializedName("spend") val spend: Double?,
     @SerializedName("impressions") val impressions: Double?,
-    @SerializedName("clicks") val clicks: Double?
+    @SerializedName("clicks") val clicks: Double?,
+    @SerializedName("conversions") val conversions: Double?
 )

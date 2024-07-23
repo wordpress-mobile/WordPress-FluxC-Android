@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsTotalsDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleAdsProgramsDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.SALES
@@ -75,26 +76,33 @@ class WCGoogleStore @Inject constructor(
         startDate: String,
         endDate: String,
         totals: List<TotalsType>,
-        orderBy: TotalsType = SALES,
-        nextPageToken: String? = null
+        orderBy: TotalsType = SALES
     ): WooResult<WCGoogleAdsPrograms?> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
-            val pages: List<WCGoogleAdsProgramsDTO> = mutableListOf()
+            val pages: MutableList<WCGoogleAdsProgramsDTO> = mutableListOf()
+            var lastReceivedError: WooError? = null
             var hasMorePages = true
 
             while (hasMorePages) {
-                val response = restClient.fetchAllPrograms(
+                val page = restClient.fetchAllPrograms(
                     site = site,
                     startDate = startDate,
                     endDate = endDate,
                     fields = totals.joinToString(",") { it.parameterName },
                     orderBy = orderBy.parameterName
-                ).takeIf { !it.isError }?.result ?: break
+                )
 
-                hasMorePages = response.nextPageToken?.isNotEmpty() ?: false
+                page.takeIf { it.isError.not() }?.result?.let {
+                    pages.add(it)
+                    hasMorePages = it.nextPageToken?.isNotEmpty() ?: false
+                } ?: run {
+                    lastReceivedError = page.error
+                }
             }
 
-            val response = pages.reduce()
+            val response = lastReceivedError?.takeIf { pages.isEmpty() }?.let {
+                WooPayload(error = it)
+            } ?: pages.mergeData()
 
             when {
                 response.isError -> WooResult(response.error)
@@ -135,8 +143,19 @@ class WCGoogleStore @Inject constructor(
             }
         }
 
-    private fun List<WCGoogleAdsProgramsDTO>.reduce(): WooPayload<WCGoogleAdsProgramsDTO> {
-        return WooPayload(first())
+    private fun List<WCGoogleAdsProgramsDTO>.mergeData(): WooPayload<WCGoogleAdsProgramsDTO> {
+        return WCGoogleAdsProgramsDTO(
+            campaigns = this.flatMap { it.campaigns.orEmpty() },
+            intervals = this.flatMap { it.intervals.orEmpty() },
+            totals = GoogleAdsTotalsDTO(
+                sales = sumOf { it.totals?.sales ?: 0.0 },
+                spend = sumOf { it.totals?.spend ?: 0.0 },
+                clicks = sumOf { it.totals?.clicks ?: 0.0 },
+                impressions = sumOf { it.totals?.impressions ?: 0.0 },
+                conversions = sumOf { it.totals?.conversions ?: 0.0 }
+            ),
+            nextPageToken = null
+        ).let { WooPayload(it) }
     }
 
     enum class TotalsType(val parameterName: String) {
