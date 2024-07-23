@@ -1092,4 +1092,29 @@ class WCOrderStore @Inject constructor(
         }
         return deleteOptions
     }
+
+    suspend fun fetchOrdersListFirstPage(listDescriptor: WCOrderListDescriptor): WooResult<List<OrderEntity>> {
+        val response = wcOrderRestClient.fetchOrdersListFirstPage(listDescriptor)
+        return if (response.isError) {
+            WooResult(WooError(API_ERROR, SERVER_ERROR, response.error.message))
+        } else {
+            val result = response.result.orEmpty()
+            val orders = result.map { it.first }
+
+            orders.map { order ->
+                WCOrderSummaryModel().apply {
+                    localSiteId = listDescriptor.site.localId().value
+                    orderId = order.orderId
+                    dateCreated = order.dateCreated
+                    dateModified = order.dateModified
+                }
+            }.let { orderSummaries ->
+                OrderSqlUtils.insertOrUpdateOrderSummaries(orderSummaries)
+            }
+
+            ordersDaoDecorator.deleteOrdersForSite(listDescriptor.site.localId())
+            insertOrder(listDescriptor.site.localId(), *result.toTypedArray())
+            WooResult(orders)
+        }
+    }
 }
