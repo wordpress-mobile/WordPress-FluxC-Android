@@ -51,6 +51,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LargeClass", "LongParameterList", "TooManyFunctions")
 @Singleton
 class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
@@ -1113,6 +1114,7 @@ class WCOrderStore @Inject constructor(
             }
 
             ordersDaoDecorator.deleteOrdersForSite(listDescriptor.site.localId())
+            @Suppress("SpreadOperator")
             insertOrder(listDescriptor.site.localId(), *result.toTypedArray())
             WooResult(orders)
         }
