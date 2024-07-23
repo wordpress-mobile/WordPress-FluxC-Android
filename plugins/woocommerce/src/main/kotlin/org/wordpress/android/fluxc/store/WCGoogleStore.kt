@@ -81,6 +81,7 @@ class WCGoogleStore @Inject constructor(
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
             val pages: MutableList<WCGoogleAdsProgramsDTO> = mutableListOf()
             var lastReceivedError: WooError? = null
+            var nextPageToken: String? = null
             var hasMorePages = true
 
             while (hasMorePages) {
@@ -89,15 +90,15 @@ class WCGoogleStore @Inject constructor(
                     startDate = startDate,
                     endDate = endDate,
                     fields = totals.joinToString(",") { it.parameterName },
-                    orderBy = orderBy.parameterName
+                    orderBy = orderBy.parameterName,
+                    nextPageToken = nextPageToken
                 )
 
                 page.takeIf { it.isError.not() }?.result?.let {
                     pages.add(it)
+                    nextPageToken = it.nextPageToken
                     hasMorePages = it.nextPageToken?.isNotEmpty() ?: false
-                } ?: run {
-                    lastReceivedError = page.error
-                }
+                } ?: run { lastReceivedError = page.error }
             }
 
             val response = lastReceivedError?.takeIf { pages.isEmpty() }?.let {
