@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.model.shippinglabels
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.shippinglabels.WCContentType.Other
 import java.math.BigDecimal
 
 data class WCShippingPackageCustoms(
@@ -15,11 +16,11 @@ data class WCShippingPackageCustoms(
     @SerializedName("items") val customsItems: List<WCCustomsItem>?
 ) {
     init {
-        if (contentsType == WCContentType.Other && contentsExplanation.isNullOrEmpty()) {
-            throw IllegalArgumentException("you have to specify contentsExplanation when the contentsType is Other")
+        require(!(contentsType == Other && contentsExplanation.isNullOrEmpty())) {
+            "you have to specify contentsExplanation when the contentsType is Other"
         }
-        if (restrictionType == WCRestrictionType.Other && restrictionComments.isNullOrEmpty()) {
-            throw IllegalArgumentException("you have to specify restrictionComments when the restrictionType is Other")
+        require(!(restrictionType == WCRestrictionType.Other && restrictionComments.isNullOrEmpty())) {
+            "you have to specify restrictionComments when the restrictionType is Other"
         }
     }
 }
