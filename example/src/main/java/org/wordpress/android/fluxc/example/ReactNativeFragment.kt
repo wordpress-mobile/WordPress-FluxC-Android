@@ -83,6 +83,7 @@ class ReactNativeFragment : Fragment() {
                         AppLog.i(AppLog.T.API, "Request result: ${response.result}")
                     }
                     is Error -> prependToLog("Request to '$path' failed: ${response.error.message}")
+                    null -> Unit // Do nothing
                 }
             }
         }

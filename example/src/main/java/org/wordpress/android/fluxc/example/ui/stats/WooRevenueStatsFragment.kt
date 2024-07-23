@@ -305,6 +305,9 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
             WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY -> {
                 prependToLog("Revenue stats available for site ${site?.name}: ${event.availability}")
             }
+            WCStatsAction.FETCH_NEW_VISITOR_STATS -> Unit // Do nothing
+            WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY -> Unit // Do nothing
+            null -> Unit // Do nothing
         }
     }
 
@@ -343,6 +346,9 @@ class WooRevenueStatsFragment : StoreSelectingFragment() {
                     }
                 }
             }
+            WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY -> Unit // Do nothing
+            WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY -> Unit // Do nothing
+            null -> Unit // Do nothing
         }
     }
 }
