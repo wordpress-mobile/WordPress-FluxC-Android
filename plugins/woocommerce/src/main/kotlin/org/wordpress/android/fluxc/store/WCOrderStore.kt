@@ -51,6 +51,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LargeClass", "LongParameterList", "TooManyFunctions")
 @Singleton
 class WCOrderStore @Inject constructor(
     dispatcher: Dispatcher,
@@ -1091,5 +1092,31 @@ class WCOrderStore @Inject constructor(
             if (!exists) deleteOptions.add(existingOption)
         }
         return deleteOptions
+    }
+
+    suspend fun fetchOrdersListFirstPage(listDescriptor: WCOrderListDescriptor): WooResult<List<OrderEntity>> {
+        val response = wcOrderRestClient.fetchOrdersListFirstPage(listDescriptor)
+        return if (response.isError) {
+            WooResult(WooError(API_ERROR, SERVER_ERROR, response.error.message))
+        } else {
+            val result = response.result.orEmpty()
+            val orders = result.map { it.first }
+
+            orders.map { order ->
+                WCOrderSummaryModel().apply {
+                    localSiteId = listDescriptor.site.localId().value
+                    orderId = order.orderId
+                    dateCreated = order.dateCreated
+                    dateModified = order.dateModified
+                }
+            }.let { orderSummaries ->
+                OrderSqlUtils.insertOrUpdateOrderSummaries(orderSummaries)
+            }
+
+            ordersDaoDecorator.deleteOrdersForSite(listDescriptor.site.localId())
+            @Suppress("SpreadOperator")
+            insertOrder(listDescriptor.site.localId(), *result.toTypedArray())
+            WooResult(orders)
+        }
     }
 }
