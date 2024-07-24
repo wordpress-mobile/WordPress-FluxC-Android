@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.store
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.TestCoroutineScope
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -37,6 +36,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.OptimisticUpdateResult
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderResult.RemoteUpdateResult
 import org.wordpress.android.fluxc.tools.CoroutineEngine
+import kotlin.coroutines.EmptyCoroutineContext
 
 @ExperimentalCoroutinesApi
 class OrderUpdateStoreTest {
@@ -55,7 +55,7 @@ class OrderUpdateStoreTest {
         setMocks.invoke()
         sut = OrderUpdateStore(
                 coroutineEngine = CoroutineEngine(
-                        TestCoroutineScope().coroutineContext,
+                        EmptyCoroutineContext,
                         mock()
                 ),
                 wcOrderRestClient = orderRestClient,
