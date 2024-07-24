@@ -603,6 +603,19 @@ class WCOrderStore @Inject constructor(
         }
     }
 
+    suspend fun fetchSingleOrderSync(site: SiteModel, remoteOrderId: Long): WooResult<OrderEntity> {
+        return coroutineEngine.withDefaultContext(API, this, "fetchSingleOrderSync") {
+            val result = wcOrderRestClient.fetchSingleOrder(site, remoteOrderId)
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(WooError(API_ERROR, SERVER_ERROR, result.error.message))
+            } else {
+                insertOrder(site.localId(), result.orderWithMeta)
+                WooResult(result.order)
+            }
+        }
+    }
+
     @Suppress("SpreadOperator")
     suspend fun fetchOrders(
         site: SiteModel,
