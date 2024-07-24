@@ -178,6 +178,7 @@ class WCStatsStore @Inject constructor(
             WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY -> handleFetchRevenueStatsAvailabilityCompleted(
                     action.payload as FetchRevenueStatsAvailabilityResponsePayload
             )
+            WCStatsAction.FETCH_NEW_VISITOR_STATS -> Unit // Do nothing
         }
     }
 

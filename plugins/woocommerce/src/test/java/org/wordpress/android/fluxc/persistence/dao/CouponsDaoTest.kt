@@ -132,7 +132,7 @@ class CouponsDaoTest {
     }
 
     companion object {
-        fun generateCouponEntity(id: Long = 0) = CouponEntity(
+        fun generateCouponEntity() = CouponEntity(
             id = RemoteId(1),
             localSiteId = LocalId(1),
             amount = BigDecimal(5),
