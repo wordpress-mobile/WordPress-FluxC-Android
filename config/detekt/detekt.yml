@@ -15,10 +15,6 @@ coroutines:
   GlobalCoroutineUsage:
     active: true
 
-potential-bugs:
-  MissingWhenCase:
-    allowElseExpression: false
-
 style:
   DataClassShouldBeImmutable:
     active: true

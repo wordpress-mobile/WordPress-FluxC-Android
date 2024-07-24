@@ -518,8 +518,8 @@ class WCShippingLabelStore @Inject constructor(
         site: SiteModel,
         customPackages: List<CustomPackage> = emptyList(),
         predefinedPackages: List<PredefinedOption> = emptyList()): WooResult<Boolean> {
-        if (customPackages.isEmpty() && predefinedPackages.isEmpty()) {
-            throw IllegalArgumentException("customPackages and predefinedPackages can't both be an empty list.")
+        require(!(customPackages.isEmpty() && predefinedPackages.isEmpty())) {
+            "customPackages and predefinedPackages can't both be an empty list."
         }
 
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createPackages") {
