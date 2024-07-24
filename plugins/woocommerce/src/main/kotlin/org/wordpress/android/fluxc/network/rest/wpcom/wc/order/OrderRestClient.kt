@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
@@ -283,6 +284,37 @@ class OrderRestClient @Inject constructor(
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
                 }
+            }
+        }
+    }
+
+    suspend fun fetchOrdersListFirstPage(
+        listDescriptor: WCOrderListDescriptor
+    ): WooPayload<List<Pair<OrderEntity, List<OrderMetaDataEntity>>>> {
+        val url = WOOCOMMERCE.orders.pathV3
+        val networkPageSize = listDescriptor.config.networkPageSize
+        val params = mutableMapOf(
+            "per_page" to networkPageSize.toString(),
+            "offset" to "0",
+            "_fields" to ORDER_FIELDS
+        ).putIfNotEmpty(
+            "search" to listDescriptor.searchQuery,
+            "before" to listDescriptor.beforeFilter,
+            "after" to listDescriptor.afterFilter,
+            "customer" to listDescriptor.customerId?.toString(),
+            "product" to listDescriptor.productId?.toString(),
+            "exclude" to listDescriptor.excludedIds?.joinToString(),
+            "status" to listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
+        )
+
+        return wooNetwork.executeGetGsonRequest(
+            site = listDescriptor.site,
+            path = url,
+            clazz = Array<OrderDto>::class.java,
+            params = params
+        ).toWooPayload {
+            it.map { orderDto ->
+                orderDtoMapper.toDatabaseEntity(orderDto, listDescriptor.site.localId())
             }
         }
     }
