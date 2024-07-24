@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.utils.initCoroutineEngine
 
 @ExperimentalCoroutinesApi
 class WCGoogleStoreTest {
-
     @Mock
     lateinit var restClient: WCGoogleRestClient
 
