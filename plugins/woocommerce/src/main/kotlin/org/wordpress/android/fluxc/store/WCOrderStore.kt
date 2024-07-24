@@ -1107,7 +1107,10 @@ class WCOrderStore @Inject constructor(
         return deleteOptions
     }
 
-    suspend fun fetchOrdersListFirstPage(listDescriptor: WCOrderListDescriptor): WooResult<List<OrderEntity>> {
+    suspend fun fetchOrdersListFirstPage(
+        listDescriptor: WCOrderListDescriptor,
+        deleteOldData: Boolean = false
+    ): WooResult<List<OrderEntity>> {
         val response = wcOrderRestClient.fetchOrdersListFirstPage(listDescriptor)
         return if (response.isError) {
             WooResult(WooError(API_ERROR, SERVER_ERROR, response.error.message))
@@ -1126,7 +1129,10 @@ class WCOrderStore @Inject constructor(
                 OrderSqlUtils.insertOrUpdateOrderSummaries(orderSummaries)
             }
 
-            ordersDaoDecorator.deleteOrdersForSite(listDescriptor.site.localId())
+            if (deleteOldData) {
+                ordersDaoDecorator.deleteOrdersForSite(listDescriptor.site.localId())
+            }
+
             @Suppress("SpreadOperator")
             insertOrder(listDescriptor.site.localId(), *result.toTypedArray())
             WooResult(orders)
