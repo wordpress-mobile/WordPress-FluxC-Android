@@ -146,8 +146,8 @@ class WCGoogleStore @Inject constructor(
 
     private fun List<WCGoogleAdsProgramsDTO>.mergeData(): WooPayload<WCGoogleAdsProgramsDTO> {
         return WCGoogleAdsProgramsDTO(
-            campaigns = this.flatMap { it.campaigns.orEmpty() },
-            intervals = this.flatMap { it.intervals.orEmpty() },
+            campaigns = flatMap { it.campaigns.orEmpty() },
+            intervals = flatMap { it.intervals.orEmpty() },
             totals = GoogleAdsTotalsDTO(
                 sales = sumOf { it.totals?.sales ?: 0.0 },
                 spend = sumOf { it.totals?.spend ?: 0.0 },

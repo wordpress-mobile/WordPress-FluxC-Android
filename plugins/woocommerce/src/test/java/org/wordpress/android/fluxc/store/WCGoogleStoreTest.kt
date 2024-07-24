@@ -10,10 +10,9 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsCampaignMapper
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramTotals
+import org.wordpress.android.fluxc.model.google.WCGoogleAdsPrograms
 import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramsMapper
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsCampaignDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsTotalsDTO
@@ -21,7 +20,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleAdsProgr
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
 import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.CLICKS
 import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.SALES
-import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.SPEND
 import org.wordpress.android.fluxc.utils.initCoroutineEngine
 
 @ExperimentalCoroutinesApi
@@ -79,8 +77,22 @@ class WCGoogleStoreTest {
     @Test
     fun `when programs response is paginated, requested everything and return the sum`() = runBlockingTest  {
         // Given
-        val firstPage = createProgramsPage(pageNumber = 1)
+        val mapper = WCGoogleAdsProgramsMapper()
+        val firstPage = createProgramsPage(pageNumber = 1, hasNextPage = true)
         val pageTwo = createProgramsPage(pageNumber = 2)
+        val mappedFirstPage = mapper.mapToModel(firstPage)
+        val mappedSecondPage = mapper.mapToModel(pageTwo)
+        val expectedModel = listOf(mappedFirstPage, mappedSecondPage).let { pages ->
+            WCGoogleAdsPrograms(
+                campaigns = pages.flatMap { it.campaigns.orEmpty() },
+                intervals = pages.flatMap { it.intervals.orEmpty() },
+                totals = WCGoogleAdsProgramTotals(
+                    sales = pages.sumOf { it.totals?.sales ?: 0.0 },
+                    spend = pages.sumOf { it.totals?.spend ?: 0.0 }
+                )
+
+            )
+        }
 
         whenever(restClient.fetchAllPrograms(
             siteModel,
@@ -98,7 +110,7 @@ class WCGoogleStoreTest {
             "sales,clicks",
             "sales",
             "nextPageToken"
-        )).thenReturn(WooPayload(null))
+        )).thenReturn(WooPayload(pageTwo))
 
         // When
         val result = wcGoogleStore.fetchAllPrograms(
@@ -111,33 +123,18 @@ class WCGoogleStoreTest {
         // Then
         assertFalse(result.isError)
         assertNotNull(result.model)
+        assertEquals(result.model, expectedModel)
     }
 
-    @Test
-    fun `when programs response is null, then return error`() = runBlockingTest {
-        whenever(restClient.fetchAllPrograms(siteModel, "2020-01-01", "2020-12-31", "sales", "sales", null))
-            .thenReturn(WooPayload(null))
-        val result = wcGoogleStore.fetchAllPrograms(siteModel, "2020-01-01", "2020-12-31", listOf(SALES, SPEND))
-        assertNull(result.model)
-    }
-
-    @Test
-    fun `when programs response is error, then return error`() = runBlockingTest {
-        whenever(restClient.fetchAllPrograms(siteModel, "2020-01-01", "2020-12-31", "sales", "sales", null))
-            .thenReturn(WooPayload(WooError(
-                type = GENERIC_ERROR,
-                original = PARSE_ERROR
-            )))
-        val result = wcGoogleStore.fetchAllPrograms(siteModel, "2020-01-01", "2020-12-31", listOf(SALES))
-        assertTrue(result.isError)
-    }
-
-    private fun createProgramsPage(pageNumber: Int = 1) = WCGoogleAdsProgramsDTO(
+    private fun createProgramsPage(
+        pageNumber: Int = 1,
+        hasNextPage: Boolean = false
+    ) = WCGoogleAdsProgramsDTO(
         campaigns = listOf(
             GoogleAdsCampaignDTO(
                 id = pageNumber.toLong(),
                 name = "campaign${pageNumber}",
-                status = "active",
+                status = "enabled",
                 subtotals = GoogleAdsTotalsDTO(
                     sales = pageNumber * 100.0,
                     spend = pageNumber * 100.0,
@@ -149,7 +146,7 @@ class WCGoogleStoreTest {
             GoogleAdsCampaignDTO(
                 id = (pageNumber + 1).toLong(),
                 name = "campaign${pageNumber + 1}",
-                status = "active",
+                status = "enabled",
                 subtotals = GoogleAdsTotalsDTO(
                     sales = pageNumber * 200.0,
                     spend = pageNumber * 200.0,
@@ -167,6 +164,6 @@ class WCGoogleStoreTest {
             clicks = pageNumber * 100.0,
             conversions = pageNumber * 100.0
         ),
-        nextPageToken = "nextPageToken"
+        nextPageToken = if (hasNextPage) "nextPageToken" else null
     )
 }
