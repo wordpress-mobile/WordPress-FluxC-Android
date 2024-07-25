@@ -10,6 +10,7 @@ plugins {
     alias(sharedLibs.plugins.kotlin.detekt).apply(false)
     alias(sharedLibs.plugins.kotlin.jvm).apply(false)
     alias(sharedLibs.plugins.kotlin.kapt).apply(false)
+    alias(sharedLibs.plugins.dependency.analysis)
 
     alias(sharedLibs.plugins.automattic.configure)
 }
