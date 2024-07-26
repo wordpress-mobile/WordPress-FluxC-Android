@@ -11,5 +11,7 @@ fun ViewGroup.toggleSiteDependentButtons(enabled: Boolean = true) =
 
 fun ViewGroup.childViewsAsSequence(): Sequence<View> =
         mutableListOf<View>().apply {
-            (0 until childCount).forEach { add(getChildAt(it)) }
+                for (it in 0 until childCount) {
+                        add(getChildAt(it))
+                }
         }.asSequence()

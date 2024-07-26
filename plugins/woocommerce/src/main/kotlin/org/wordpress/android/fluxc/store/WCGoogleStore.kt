@@ -9,8 +9,12 @@ import org.wordpress.android.fluxc.model.google.WCGoogleAdsProgramsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.GoogleAdsTotalsDTO
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleAdsProgramsDTO
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.google.WCGoogleRestClient
+import org.wordpress.android.fluxc.store.WCGoogleStore.TotalsType.SALES
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog.T.API
 import javax.inject.Inject
@@ -71,15 +75,35 @@ class WCGoogleStore @Inject constructor(
         site: SiteModel,
         startDate: String,
         endDate: String,
-        metricType: MetricType
+        totals: List<TotalsType>,
+        orderBy: TotalsType = SALES
     ): WooResult<WCGoogleAdsPrograms?> =
         coroutineEngine.withDefaultContext(API, this, "fetchAllPrograms") {
-            val response = restClient.fetchAllPrograms(
-                site = site,
-                startDate = startDate,
-                endDate = endDate,
-                fields = metricType.parameterName
-            )
+            val pages: MutableList<WCGoogleAdsProgramsDTO> = mutableListOf()
+            var lastReceivedError: WooError? = null
+            var nextPageToken: String? = null
+            var hasMorePages = true
+
+            while (hasMorePages) {
+                val page = restClient.fetchAllPrograms(
+                    site = site,
+                    startDate = startDate,
+                    endDate = endDate,
+                    fields = totals.joinToString(",") { it.parameterName },
+                    orderBy = orderBy.parameterName,
+                    nextPageToken = nextPageToken
+                )
+
+                page.takeIf { it.isError.not() }?.result?.let {
+                    pages.add(it)
+                    nextPageToken = it.nextPageToken
+                    hasMorePages = it.nextPageToken?.isNotEmpty() ?: false
+                } ?: run { lastReceivedError = page.error }
+            }
+
+            val response = lastReceivedError?.takeIf { pages.isEmpty() }?.let {
+                WooPayload(error = it)
+            } ?: pages.mergeData()
 
             when {
                 response.isError -> WooResult(response.error)
@@ -120,7 +144,22 @@ class WCGoogleStore @Inject constructor(
             }
         }
 
-    enum class MetricType(val parameterName: String) {
+    private fun List<WCGoogleAdsProgramsDTO>.mergeData(): WooPayload<WCGoogleAdsProgramsDTO> {
+        return WCGoogleAdsProgramsDTO(
+            campaigns = flatMap { it.campaigns.orEmpty() },
+            intervals = flatMap { it.intervals.orEmpty() },
+            totals = GoogleAdsTotalsDTO(
+                sales = sumOf { it.totals?.sales ?: 0.0 },
+                spend = sumOf { it.totals?.spend ?: 0.0 },
+                clicks = sumOf { it.totals?.clicks ?: 0.0 },
+                impressions = sumOf { it.totals?.impressions ?: 0.0 },
+                conversions = sumOf { it.totals?.conversions ?: 0.0 }
+            ),
+            nextPageToken = null
+        ).let { WooPayload(it) }
+    }
+
+    enum class TotalsType(val parameterName: String) {
         SALES("sales"),
         SPEND("spend"),
         CLICKS("clicks"),

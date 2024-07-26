@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     // Those declarations are just a workaround for a false-positive Kotlin Gradle Plugin warning
     // https://youtrack.jetbrains.com/issue/KT-46200
@@ -8,6 +10,7 @@ plugins {
     alias(sharedLibs.plugins.kotlin.detekt).apply(false)
     alias(sharedLibs.plugins.kotlin.jvm).apply(false)
     alias(sharedLibs.plugins.kotlin.kapt).apply(false)
+    alias(sharedLibs.plugins.dependency.analysis)
 
     alias(sharedLibs.plugins.automattic.configure)
 }
@@ -56,6 +59,12 @@ allprojects {
         ignoreFailures = false
         parallel = true
         debug = false
+    }
+
+    tasks.withType(KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_1_8
+        }
     }
 }
 

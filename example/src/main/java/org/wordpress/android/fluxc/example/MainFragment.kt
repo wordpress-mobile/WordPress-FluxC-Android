@@ -305,6 +305,8 @@ class MainFragment : Fragment() {
                 AuthenticationErrorType.UNSUPPORTED_RESPONSE_TYPE,
                 AuthenticationErrorType.EMAIL_LOGIN_NOT_ALLOWED,
                 AuthenticationErrorType.GENERIC_ERROR,
+                AuthenticationErrorType.NEEDS_SECURITY_KEY -> Unit // Do nothing
+                AuthenticationErrorType.WEBAUTHN_FAILED -> Unit // Do nothing
                 null -> {
                     // Show Toast "Network Error"?
                 }

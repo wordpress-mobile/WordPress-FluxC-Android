@@ -22,7 +22,10 @@ data class WCGoogleAdsProgramInterval(
 
 data class WCGoogleAdsProgramTotals(
     val sales: Double?,
-    val spend: Double?
+    val spend: Double?,
+    val impressions: Double?,
+    val clicks: Double?,
+    val conversions: Double?
 )
 
 data class WCGoogleAdsCardStats(
