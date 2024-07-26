@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.utils.putIfNotNull
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -57,17 +58,21 @@ class WCGoogleRestClient  @Inject constructor(private val wooNetwork: WooNetwork
         startDate: String,
         endDate: String,
         fields: String,
+        orderBy: String,
+        nextPageToken: String? = null
     ): WooPayload<WCGoogleAdsProgramsDTO> {
         val url = WOOCOMMERCE.gla.ads.reports.programs.pathNoVersion
         val response = wooNetwork.executeGetGsonRequest(
             site = site,
             path = url,
-            params = mapOf(
+            params = mutableMapOf(
                 "after" to startDate,
                 "before" to endDate,
                 "fields" to fields,
-                "orderby" to "sales"
-            ),
+                "orderby" to orderBy
+            ).apply {
+                putIfNotNull("page_token" to nextPageToken)
+            },
             clazz = WCGoogleAdsProgramsDTO::class.java
         ).toWooPayload()
 

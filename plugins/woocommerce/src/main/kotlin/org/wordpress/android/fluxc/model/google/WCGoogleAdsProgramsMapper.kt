@@ -15,7 +15,10 @@ class WCGoogleAdsProgramsMapper @Inject constructor() {
                     },
                     subtotal = WCGoogleAdsProgramTotals(
                         sales = it.subtotals?.sales,
-                        spend = it.subtotals?.spend
+                        spend = it.subtotals?.spend,
+                        impressions = it.subtotals?.impressions,
+                        clicks = it.subtotals?.clicks,
+                        conversions = it.subtotals?.conversions
                     )
                 )
             },
@@ -24,14 +27,20 @@ class WCGoogleAdsProgramsMapper @Inject constructor() {
                     interval = it.interval,
                     subtotal = WCGoogleAdsProgramTotals(
                         sales = it.subtotals?.sales,
-                        spend = it.subtotals?.spend
+                        spend = it.subtotals?.spend,
+                        impressions = it.subtotals?.impressions,
+                        clicks = it.subtotals?.clicks,
+                        conversions = it.subtotals?.conversions
                     )
                 )
             },
             totals = dto.totals?.let {
                 WCGoogleAdsProgramTotals(
                     sales = it.sales,
-                    spend = it.spend
+                    spend = it.spend,
+                    impressions = it.impressions,
+                    clicks = it.clicks,
+                    conversions = it.conversions
                 )
             }
         )
