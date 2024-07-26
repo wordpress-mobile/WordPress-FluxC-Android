@@ -87,7 +87,10 @@ class WCGoogleStoreTest {
                 intervals = pages.flatMap { it.intervals.orEmpty() },
                 totals = WCGoogleAdsProgramTotals(
                     sales = pages.sumOf { it.totals?.sales ?: 0.0 },
-                    spend = pages.sumOf { it.totals?.spend ?: 0.0 }
+                    spend = pages.sumOf { it.totals?.spend ?: 0.0 },
+                    clicks = pages.sumOf { it.totals?.clicks ?: 0.0 },
+                    impressions = pages.sumOf { it.totals?.impressions ?: 0.0 },
+                    conversions = pages.sumOf { it.totals?.conversions ?: 0.0 }
                 )
 
             )
