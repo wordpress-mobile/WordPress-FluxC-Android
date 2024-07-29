@@ -9,42 +9,29 @@ import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundFeeLine
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundShippingLine
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
-import org.wordpress.android.fluxc.utils.sumBy
 import org.wordpress.android.fluxc.utils.toWooPayload
 import javax.inject.Inject
 
 class RefundRestClient @Inject constructor(private val wooNetwork: WooNetwork) {
-    suspend fun createRefundByAmount(
+    @Suppress("LongParameterList")
+    suspend fun createRefund(
         site: SiteModel,
         orderId: Long,
         amount: String,
         reason: String,
-        automaticRefund: Boolean
-    ): WooPayload<RefundResponse> {
-        val body = mapOf(
-                "amount" to amount,
-                "reason" to reason,
-                "api_refund" to automaticRefund.toString()
-        )
-        return createRefund(site, orderId, body)
-    }
-
-    @Suppress("LongParameterList")
-    suspend fun createRefundByItems(
-        site: SiteModel,
-        orderId: Long,
-        reason: String,
         automaticRefund: Boolean,
-        items: List<WCRefundModel.WCRefundItem>,
-        restockItems: Boolean
+        items: List<WCRefundModel.WCRefundItem>? = null,
+        restockItems: Boolean? = null
     ): WooPayload<RefundResponse> {
-        val body = mapOf(
-                "reason" to reason,
-                "amount" to items.sumBy { it.subtotal + it.totalTax }.toString(),
-                "api_refund" to automaticRefund.toString(),
-                "line_items" to items.associateBy { it.itemId },
-                "restock_items" to restockItems
+        val body = mutableMapOf<String, Any>(
+            "reason" to reason,
+            "amount" to amount,
+            "api_refund" to automaticRefund.toString()
         )
+        items?.let { lineItems ->
+            body["line_items"] = lineItems.associateBy { it.itemId }
+            restockItems?.let { restock -> body["restock_items"] = restock }
+        }
         return createRefund(site, orderId, body)
     }
 
