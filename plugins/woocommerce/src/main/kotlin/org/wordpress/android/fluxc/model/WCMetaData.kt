@@ -1,22 +1,47 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 
 data class WCMetaData(
     @SerializedName(ID) val id: Long,
-    @SerializedName(KEY) val key: String?,
-    @SerializedName(VALUE) val value: Any,
-    @SerializedName(DISPLAY_KEY) val displayKey: String?,
-    @SerializedName(DISPLAY_VALUE) val displayValue: Any?
+    @SerializedName(KEY) val key: String,
+    @SerializedName(VALUE) val value: JsonElement,
+    @SerializedName(DISPLAY_KEY) val displayKey: String? = null,
+    @SerializedName(DISPLAY_VALUE) val displayValue: JsonElement? = null
 ) {
+    /**
+     * Verify if the Metadata key is not null or a internal store attribute
+     * @return false if the `key` starts with the `_` character
+     * @return true otherwise
+     */
+    val isDisplayable
+        get() = key.startsWith('_').not()
+
+    val valueAsString: String
+        get() = value.toString().trim('"')
+
+    val valueStrippedHtml: String
+        get() = valueAsString.replace(htmlRegex, "")
+
+    val isHtml: Boolean
+        get() = valueAsString.contains(htmlRegex)
+
+    val isJson: Boolean
+        get() = value.isJsonObject || value.isJsonArray
+
     companion object {
         const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"
         const val DISPLAY_KEY = "display_key"
         const val DISPLAY_VALUE = "display_value"
+
+        private val htmlRegex by lazy {
+            Regex("<[^>]+>")
+        }
         val SUPPORTED_KEYS: Set<String> = buildSet {
             add(SubscriptionMetadataKeys.SUBSCRIPTION_RENEWAL)
             add(BundleMetadataKeys.BUNDLED_ITEM_ID)
