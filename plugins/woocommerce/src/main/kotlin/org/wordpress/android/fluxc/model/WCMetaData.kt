@@ -46,11 +46,11 @@ data class WCMetaData(
     }
 
     companion object {
-        const val ID = "id"
+        private const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"
-        const val DISPLAY_KEY = "display_key"
-        const val DISPLAY_VALUE = "display_value"
+        private const val DISPLAY_KEY = "display_key"
+        private const val DISPLAY_VALUE = "display_value"
 
         private val htmlRegex by lazy {
             Regex("<[^>]+>")
