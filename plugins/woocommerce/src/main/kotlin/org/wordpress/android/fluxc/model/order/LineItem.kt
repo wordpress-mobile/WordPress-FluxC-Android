@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model.order
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.get
 import org.wordpress.android.fluxc.utils.JsonElementToLongSerializerDeserializer
 
 data class LineItem(
@@ -41,7 +42,7 @@ data class LineItem(
 
     val configurationKey
         get() = bundledBy.takeIf { it.isNullOrBlank().not() }
-            ?.let { metaData }
-            ?.find { it.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID }
-            ?.value.toString().toLongOrNull()
+            ?.let { metaData?.get(WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID) }
+            ?.valueAsString
+            ?.toLongOrNull()
 }
