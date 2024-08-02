@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCMetaData.OrderAttributionInfoKeys
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
@@ -26,7 +27,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Billing
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
@@ -290,7 +290,7 @@ class OrderRestClient @Inject constructor(
 
     suspend fun fetchOrdersListFirstPage(
         listDescriptor: WCOrderListDescriptor
-    ): WooPayload<List<Pair<OrderEntity, List<OrderMetaDataEntity>>>> {
+    ): WooPayload<List<Pair<OrderEntity, List<WCMetaData>>>> {
         val url = WOOCOMMERCE.orders.pathV3
         val networkPageSize = listDescriptor.config.networkPageSize
         val params = mutableMapOf(

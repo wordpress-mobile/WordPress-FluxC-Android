@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.RECEIPT_URL_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isDisplayableAttribute
 import javax.inject.Inject
 
 internal class StripOrder @Inject constructor(private val gson: Gson) {
@@ -16,7 +15,7 @@ internal class StripOrder @Inject constructor(private val gson: Gson) {
                 lineItems = gson.toJson(fatModel.getLineItemList().map { lineItemDto: LineItem ->
                     lineItemDto.copy(
                         metaData = lineItemDto.metaData
-                            ?.filter { it.isDisplayableAttribute || it.key in WCMetaData.SUPPORTED_KEYS }
+                            ?.filter { it.isDisplayable || it.key in WCMetaData.SUPPORTED_KEYS }
                     )
                 }),
                 shippingLines = gson.toJson(fatModel.getShippingLineList()),

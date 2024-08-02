@@ -3,8 +3,8 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.order.OrderAddress
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -14,7 +14,7 @@ class OrderDtoMapper @Inject internal constructor(
     private val stripOrderMetaData: StripOrderMetaData
 ) {
     @Suppress("LongMethod", "ComplexMethod")
-    fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair<OrderEntity, List<OrderMetaDataEntity>> {
+    fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair<OrderEntity, List<WCMetaData>> {
         fun convertDateToUTCString(date: String?): String =
                 date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
@@ -85,7 +85,7 @@ class OrderDtoMapper @Inject internal constructor(
             )
         }
 
-        val strippedMetaData = stripOrderMetaData.invoke(orderDto, localSiteId)
+        val strippedMetaData = stripOrderMetaData.invoke(orderDto)
 
         return stripOrder(rawRemoteDataEntity) to strippedMetaData
     }
