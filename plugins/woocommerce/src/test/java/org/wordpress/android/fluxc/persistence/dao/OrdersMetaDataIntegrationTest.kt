@@ -12,8 +12,8 @@ import org.mockito.kotlin.mock
 import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.store.InsertOrder
 
 @RunWith(RobolectricTestRunner::class)
@@ -41,10 +41,7 @@ class OrdersMetaDataIntegrationTest {
             // given
             val siteId = LocalId(1)
             val order = OrderEntity(localSiteId = siteId, orderId = 123)
-            val metaDataOfTestOrder = EMPTY_ORDER_META_DATA.copy(
-                localSiteId = order.localSiteId,
-                orderId = order.orderId
-            )
+            val metaDataOfTestOrder = EMPTY_ORDER_META_DATA
 
             // when
             insertOrder(
@@ -78,10 +75,8 @@ class OrdersMetaDataIntegrationTest {
     }
 
     private companion object {
-        val EMPTY_ORDER_META_DATA = OrderMetaDataEntity(
-            localSiteId = LocalId(0),
+        val EMPTY_ORDER_META_DATA = WCMetaData(
             id = 0,
-            orderId = 0,
             key = "",
             value = ""
         )

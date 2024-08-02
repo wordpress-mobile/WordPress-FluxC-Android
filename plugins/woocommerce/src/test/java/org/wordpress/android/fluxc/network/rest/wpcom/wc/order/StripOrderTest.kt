@@ -7,6 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.RECEIPT_URL_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
@@ -25,11 +26,11 @@ internal class StripOrderTest {
         // given
         val lineItemsFromRemote = JsonArray().apply {
             add(
-                    json {
-                        "id" To 1234
-                        "name" To "iPhone"
-                        redundantMemberKey To "not needed parameter"
-                    }
+                json {
+                    "id" To 1234
+                    "name" To "iPhone"
+                    redundantMemberKey To "not needed parameter"
+                }
             )
         }.toString()
         val fatModel = emptyOrder.copy(lineItems = lineItemsFromRemote)
@@ -48,16 +49,16 @@ internal class StripOrderTest {
         val internalOnlyAttributeMemberKey = "_internal_attribute_key"
         val lineItemsFromRemote = JsonArray().apply {
             add(
-                    json {
-                        "id" To 1234
-                        "name" To "iPhone"
-                        "meta_data" To listOf(
-                                json {
-                                    "key" To internalOnlyAttributeMemberKey
-                                    "value" To "sample value"
-                                }
-                        )
-                    }
+                json {
+                    "id" To 1234
+                    "name" To "iPhone"
+                    "meta_data" To listOf(
+                        json {
+                            "key" To internalOnlyAttributeMemberKey
+                            "value" To "sample value"
+                        }
+                    )
+                }
             )
         }.toString()
         val fatModel = emptyOrder.copy(lineItems = lineItemsFromRemote)
@@ -75,11 +76,11 @@ internal class StripOrderTest {
         // given
         val shippingLineItemsFromRemote = JsonArray().apply {
             add(
-                    json {
-                        "id" To "1234"
-                        "method_id" To "3"
-                        redundantMemberKey To "not needed parameter"
-                    }
+                json {
+                    "id" To "1234"
+                    "method_id" To "3"
+                    redundantMemberKey To "not needed parameter"
+                }
             )
         }.toString()
         val fatModel = emptyOrder.copy(shippingLines = shippingLineItemsFromRemote)
@@ -97,11 +98,11 @@ internal class StripOrderTest {
         // given
         val feeLineItemsFromRemote = JsonArray().apply {
             add(
-                    json {
-                        "id" To "1234"
-                        "totalTax" To "123$"
-                        redundantMemberKey To "not needed parameter"
-                    }
+                json {
+                    "id" To "1234"
+                    "totalTax" To "123$"
+                    redundantMemberKey To "not needed parameter"
+                }
             )
         }.toString()
         val fatModel = emptyOrder.copy(feeLines = feeLineItemsFromRemote)
@@ -119,11 +120,11 @@ internal class StripOrderTest {
         // given
         val taxLineItemsFromRemote = JsonArray().apply {
             add(
-                    json {
-                        "id" To "1234"
-                        "rate_code" To "CODE"
-                        redundantMemberKey To "not needed parameter"
-                    }
+                json {
+                    "id" To "1234"
+                    "rate_code" To "CODE"
+                    redundantMemberKey To "not needed parameter"
+                }
             )
         }.toString()
         val fatModel = emptyOrder.copy(taxLines = taxLineItemsFromRemote)
@@ -139,36 +140,27 @@ internal class StripOrderTest {
     @Test
     fun `should drop any not needed meta data`() {
         // given
-        val metaDataFromRemote = JsonArray().apply {
-            add(json {
-                "id" To "1"
-                "key" To redundantMemberKey
-            })
-            add(json {
-                "id" To "2"
-                "key" To CHARGE_ID_KEY
-            })
-            add(json {
-                "id" To "3"
-                "key" To SHIPPING_PHONE_KEY
-            })
-        }.toString()
+        val metaDataFromRemote = listOf(
+            WCMetaData(1, redundantMemberKey, "sample value"),
+            WCMetaData(2, CHARGE_ID_KEY, "sample value"),
+            WCMetaData(3, SHIPPING_PHONE_KEY, "sample value")
+        )
         val fatModel = emptyOrder.copy(metaData = metaDataFromRemote)
 
         // when
         val strippedOrder = sut.invoke(fatModel)
 
         // then
-        assertThat(fatModel.metaData).contains(
-                redundantMemberKey,
+        assertThat(fatModel.metaData.map { it.key }).contains(
+            redundantMemberKey,
+            CHARGE_ID_KEY,
+            SHIPPING_PHONE_KEY
+        )
+        assertThat(strippedOrder.metaData.map { it.key }).doesNotContain(redundantMemberKey)
+            .contains(
                 CHARGE_ID_KEY,
                 SHIPPING_PHONE_KEY
-        )
-        assertThat(strippedOrder.metaData).doesNotContain(redundantMemberKey)
-                .contains(
-                        CHARGE_ID_KEY,
-                        SHIPPING_PHONE_KEY
-                )
+            )
     }
 
     @Test
@@ -202,37 +194,26 @@ internal class StripOrderTest {
     @Test
     fun `should filter meta data that contains "receipt_url" as key`() {
         // given
-        val metaDataFromRemote = JsonArray().apply {
-            add(json {
-                "id" To "1"
-                "key" To redundantMemberKey
-            })
-            add(json {
-                "id" To "2"
-                "key" To CHARGE_ID_KEY
-            })
-            add(json {
-                "id" To "3"
-                "key" To SHIPPING_PHONE_KEY
-            })
-            add(json {
-                "id" To "3"
-                "key" To RECEIPT_URL_KEY
-            })
-        }.toString()
+        val metaDataFromRemote = listOf(
+            WCMetaData(1, redundantMemberKey, "sample value"),
+            WCMetaData(2, CHARGE_ID_KEY, "sample value"),
+            WCMetaData(3, SHIPPING_PHONE_KEY, "sample value"),
+            WCMetaData(4, RECEIPT_URL_KEY, "sample value")
+        )
+
         val fatModel = emptyOrder.copy(metaData = metaDataFromRemote)
 
         // when
         val strippedOrder = sut.invoke(fatModel)
 
         // then
-        assertThat(fatModel.metaData).contains(
+        assertThat(fatModel.metaData.map { it.key }).contains(
             redundantMemberKey,
             CHARGE_ID_KEY,
             SHIPPING_PHONE_KEY,
             RECEIPT_URL_KEY
         )
-        assertThat(strippedOrder.metaData)
+        assertThat(strippedOrder.metaData.map { it.key })
             .contains(
                 CHARGE_ID_KEY,
                 SHIPPING_PHONE_KEY,
@@ -244,8 +225,8 @@ internal class StripOrderTest {
         const val redundantMemberKey = "not_needed_parameter"
 
         val emptyOrder = OrderEntity(
-                localSiteId = LocalOrRemoteId.LocalId(0),
-                orderId = 0
+            localSiteId = LocalOrRemoteId.LocalId(0),
+            orderId = 0
         )
     }
 }
