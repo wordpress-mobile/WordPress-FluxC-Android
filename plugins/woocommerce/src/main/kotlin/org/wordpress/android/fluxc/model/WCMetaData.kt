@@ -13,7 +13,6 @@ data class WCMetaData(
     @SerializedName(DISPLAY_KEY) val displayKey: String? = null,
     @SerializedName(DISPLAY_VALUE) val displayValue: JsonElement? = null
 ) {
-
     constructor(id: Long, key: String, value: String) : this(id, key, JsonPrimitive(value))
     /**
      * Verify if the Metadata key is not null or a internal store attribute

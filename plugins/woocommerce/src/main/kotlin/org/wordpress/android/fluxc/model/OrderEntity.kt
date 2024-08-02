@@ -74,7 +74,8 @@ data class OrderEntity(
     @ColumnInfo(name = "couponLines", defaultValue = "")
     val couponLines: String = "",
     // this is a small subset of the metadata, see OrderMetaDataEntity for full metadata
-    @field:TypeConverters(WCMetaDataConverter::class) val metaData: List<WCMetaData> = emptyList(),
+    @field:TypeConverters(WCMetaDataConverter::class)
+    val metaData: List<WCMetaData> = emptyList(),
     @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = "",
     @ColumnInfo(name = "isEditable", defaultValue = "1")
