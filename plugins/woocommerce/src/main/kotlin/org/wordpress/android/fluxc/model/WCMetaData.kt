@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import com.google.gson.annotations.SerializedName
 
 data class WCMetaData(
@@ -12,6 +13,8 @@ data class WCMetaData(
     @SerializedName(DISPLAY_KEY) val displayKey: String? = null,
     @SerializedName(DISPLAY_VALUE) val displayValue: JsonElement? = null
 ) {
+
+    constructor(id: Long, key: String, value: String) : this(id, key, JsonPrimitive(value))
     /**
      * Verify if the Metadata key is not null or a internal store attribute
      * @return false if the `key` starts with the `_` character
@@ -32,6 +35,16 @@ data class WCMetaData(
     val isJson: Boolean
         get() = value.isJsonObject || value.isJsonArray
 
+    fun toJson(): JsonObject {
+        return JsonObject().also {
+            it.addProperty(ID, id)
+            it.addProperty(KEY, key)
+            it.add(VALUE, value)
+            displayKey?.let { key -> it.addProperty(DISPLAY_KEY, key) }
+            displayValue?.let { value -> it.add(DISPLAY_VALUE, value) }
+        }
+    }
+
     companion object {
         const val ID = "id"
         const val KEY = "key"
@@ -42,10 +55,21 @@ data class WCMetaData(
         private val htmlRegex by lazy {
             Regex("<[^>]+>")
         }
+
         val SUPPORTED_KEYS: Set<String> = buildSet {
             add(SubscriptionMetadataKeys.SUBSCRIPTION_RENEWAL)
             add(BundleMetadataKeys.BUNDLED_ITEM_ID)
             addAll(OrderAttributionInfoKeys.ALL_KEYS)
+        }
+
+        fun fromJson(json: JsonObject): WCMetaData {
+            return WCMetaData(
+                id = json[ID].asLong,
+                key = json[KEY].asString,
+                value = json[VALUE],
+                displayKey = json[DISPLAY_KEY]?.asString,
+                displayValue = json[DISPLAY_VALUE]
+            )
         }
 
         fun addAsMetadata(metadata: JsonArray, key: String, value: String) {

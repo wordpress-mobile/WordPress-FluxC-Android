@@ -33,9 +33,9 @@ data class LineItem(
 
     fun getAttributeList(): List<Attribute> {
         return metaData?.filter {
-            it.displayKey is String && it.displayValue is String
+            it.displayKey is String && it.displayValue?.isJsonPrimitive == true
         }?.map {
-            Attribute(it.displayKey, it.displayValue as String)
+            Attribute(it.displayKey, it.displayValue?.asString)
         } ?: emptyList()
     }
 

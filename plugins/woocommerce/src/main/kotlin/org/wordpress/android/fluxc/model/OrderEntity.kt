@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
+import androidx.room.TypeConverters
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
@@ -12,6 +13,7 @@ import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.ShippingLine
 import org.wordpress.android.fluxc.model.order.TaxLine
+import org.wordpress.android.fluxc.persistence.converters.WCMetaDataConverter
 import java.math.BigDecimal
 
 @Entity(
@@ -71,7 +73,8 @@ data class OrderEntity(
     val taxLines: String = "",
     @ColumnInfo(name = "couponLines", defaultValue = "")
     val couponLines: String = "",
-    val metaData: String = "", // this is a small subset of the metadata, see OrderMetaDataEntity for full metadata
+    // this is a small subset of the metadata, see OrderMetaDataEntity for full metadata
+    @field:TypeConverters(WCMetaDataConverter::class) val metaData: List<WCMetaData> = emptyList(),
     @ColumnInfo(name = "paymentUrl", defaultValue = "")
     val paymentUrl: String = "",
     @ColumnInfo(name = "isEditable", defaultValue = "1")
@@ -155,14 +158,6 @@ data class OrderEntity(
     fun getTaxLineList(): List<TaxLine> {
         val responseType = object : TypeToken<List<TaxLine>>() {}.type
         return gson.fromJson(taxLines, responseType) as? List<TaxLine> ?: emptyList()
-    }
-
-    /**
-     * Deserializes the JSON contained in [metaData] into a list of [WCMetaData] objects.
-     */
-    fun getMetaDataList(): List<WCMetaData> {
-        val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-        return gson.fromJson(metaData, responseType) as? List<WCMetaData> ?: emptyList()
     }
 
     fun isMultiShippingLinesAvailable() = getShippingLineList().size > 1

@@ -21,14 +21,12 @@ internal class StripOrder @Inject constructor(private val gson: Gson) {
                 shippingLines = gson.toJson(fatModel.getShippingLineList()),
                 feeLines = gson.toJson(fatModel.getFeeLineList()),
                 taxLines = gson.toJson(fatModel.getTaxLineList()),
-                metaData = gson.toJson(
-                        fatModel.getMetaDataList()
-                                .filter {
-                                    it.key == CHARGE_ID_KEY ||
-                                            it.key == SHIPPING_PHONE_KEY ||
-                                            it.key == RECEIPT_URL_KEY
-                                }
+                metaData = fatModel.metaData
+                        .filter {
+                            it.key == CHARGE_ID_KEY ||
+                                    it.key == SHIPPING_PHONE_KEY ||
+                                    it.key == RECEIPT_URL_KEY
+                        }
                 )
-        )
     }
 }

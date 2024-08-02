@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCMetaData
@@ -76,7 +78,9 @@ class OrderDtoMapper @Inject internal constructor(
                     feeLines = this.fee_lines.toString(),
                     taxLines = this.tax_lines.toString(),
                     couponLines = Gson().toJson(this.coupon_lines),
-                    metaData = this.meta_data.toString(),
+                    metaData = (this.meta_data as? JsonArray)?.mapNotNull { element ->
+                        (element as? JsonObject)?.let { WCMetaData.fromJson(it) }
+                    } ?: emptyList(),
                     paymentUrl = this.payment_url ?: "",
                     isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES),
                     needsPayment = this.needs_payment,
