@@ -23,7 +23,7 @@ data class WCMetaData(
         get() = key.startsWith('_').not()
 
     val valueAsString: String
-        get() = value.toString().trim('"')
+        get() = if (value.isJsonPrimitive) value.asString else value.toString()
 
     val valueStrippedHtml: String
         get() = valueAsString.replace(htmlRegex, "")
