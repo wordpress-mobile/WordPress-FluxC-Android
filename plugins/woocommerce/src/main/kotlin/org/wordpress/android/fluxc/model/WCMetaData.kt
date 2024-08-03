@@ -21,7 +21,7 @@ data class WCMetaData(
     val displayValue: WCMetaDataValue? = null
 ) {
     constructor(id: Long, key: String, value: String) : this(id, key, WCMetaDataValue.StringValue(value))
-    constructor(id: Long, key: String, value: JsonElement) : this(id, key, WCMetaDataValue.fromJsonElement(value))
+    internal constructor(id: Long, key: String, value: JsonElement) : this(id, key, WCMetaDataValue.fromJsonElement(value))
 
     /**
      * Verify if the Metadata key is not null or a internal store attribute
@@ -43,7 +43,7 @@ data class WCMetaData(
     val isJson: Boolean
         get() = value is WCMetaDataValue.JsonObjectValue || value is WCMetaDataValue.JsonArrayValue
 
-    fun toJson(): JsonObject {
+    internal fun toJson(): JsonObject {
         return JsonObject().also {
             it.addProperty(ID, id)
             it.addProperty(KEY, key)
@@ -70,7 +70,7 @@ data class WCMetaData(
             addAll(OrderAttributionInfoKeys.ALL_KEYS)
         }
 
-        fun fromJson(json: JsonObject): WCMetaData {
+        internal fun fromJson(json: JsonObject): WCMetaData {
             return WCMetaData(
                 id = json[ID].asLong,
                 key = json[KEY].asString,

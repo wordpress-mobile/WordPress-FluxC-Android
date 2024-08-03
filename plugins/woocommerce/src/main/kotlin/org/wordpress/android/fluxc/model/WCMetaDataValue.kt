@@ -77,7 +77,7 @@ sealed class WCMetaDataValue {
     }
 
     companion object {
-        fun fromJsonElement(element: JsonElement): WCMetaDataValue {
+        internal fun fromJsonElement(element: JsonElement): WCMetaDataValue {
             return when {
                 element.isJsonPrimitive -> {
                     val primitive = element.asJsonPrimitive
