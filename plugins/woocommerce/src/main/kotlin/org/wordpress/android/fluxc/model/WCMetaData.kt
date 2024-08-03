@@ -3,17 +3,26 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 
 data class WCMetaData(
-    @SerializedName(ID) val id: Long,
-    @SerializedName(KEY) val key: String,
-    @SerializedName(VALUE) val value: JsonElement,
-    @SerializedName(DISPLAY_KEY) val displayKey: String? = null,
-    @SerializedName(DISPLAY_VALUE) val displayValue: JsonElement? = null
+    @SerializedName(ID)
+    val id: Long,
+    @SerializedName(KEY)
+    val key: String,
+    @JsonAdapter(WCMetaDataValue.WCMetaDataValueJsonAdapter::class)
+    @SerializedName(VALUE)
+    val value: WCMetaDataValue,
+    @SerializedName(DISPLAY_KEY)
+    val displayKey: String? = null,
+    @JsonAdapter(WCMetaDataValue.WCMetaDataValueJsonAdapter::class)
+    @SerializedName(DISPLAY_VALUE)
+    val displayValue: WCMetaDataValue? = null
 ) {
-    constructor(id: Long, key: String, value: String) : this(id, key, JsonPrimitive(value))
+    constructor(id: Long, key: String, value: String) : this(id, key, WCMetaDataValue.StringValue(value))
+    constructor(id: Long, key: String, value: JsonElement) : this(id, key, WCMetaDataValue.fromJsonElement(value))
+
     /**
      * Verify if the Metadata key is not null or a internal store attribute
      * @return false if the `key` starts with the `_` character
@@ -23,7 +32,7 @@ data class WCMetaData(
         get() = key.startsWith('_').not()
 
     val valueAsString: String
-        get() = if (value.isJsonPrimitive) value.asString else value.toString()
+        get() = value.stringValue.orEmpty()
 
     val valueStrippedHtml: String
         get() = valueAsString.replace(htmlRegex, "")
@@ -32,15 +41,15 @@ data class WCMetaData(
         get() = valueAsString.contains(htmlRegex)
 
     val isJson: Boolean
-        get() = value.isJsonObject || value.isJsonArray
+        get() = value is WCMetaDataValue.JsonObjectValue || value is WCMetaDataValue.JsonArrayValue
 
     fun toJson(): JsonObject {
         return JsonObject().also {
             it.addProperty(ID, id)
             it.addProperty(KEY, key)
-            it.add(VALUE, value)
+            it.add(VALUE, value.jsonValue)
             displayKey?.let { key -> it.addProperty(DISPLAY_KEY, key) }
-            displayValue?.let { value -> it.add(DISPLAY_VALUE, value) }
+            displayValue?.let { value -> it.add(DISPLAY_VALUE, value.jsonValue) }
         }
     }
 
@@ -65,9 +74,9 @@ data class WCMetaData(
             return WCMetaData(
                 id = json[ID].asLong,
                 key = json[KEY].asString,
-                value = json[VALUE],
+                value = WCMetaDataValue.fromJsonElement(json[VALUE]),
                 displayKey = json[DISPLAY_KEY]?.asString,
-                displayValue = json[DISPLAY_VALUE]
+                displayValue = json[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
             )
         }
 
@@ -112,3 +121,4 @@ data class WCMetaData(
 }
 
 operator fun List<WCMetaData>.get(key: String) = firstOrNull { it.key == key }
+
