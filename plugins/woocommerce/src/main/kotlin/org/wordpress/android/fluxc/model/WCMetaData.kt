@@ -21,7 +21,11 @@ data class WCMetaData(
     val displayValue: WCMetaDataValue? = null
 ) {
     constructor(id: Long, key: String, value: String) : this(id, key, WCMetaDataValue.StringValue(value))
-    internal constructor(id: Long, key: String, value: JsonElement) : this(id, key, WCMetaDataValue.fromJsonElement(value))
+    internal constructor(
+        id: Long,
+        key: String,
+        value: JsonElement
+    ) : this(id, key, WCMetaDataValue.fromJsonElement(value))
 
     /**
      * Verify if the Metadata key is not null or a internal store attribute
