@@ -73,6 +73,7 @@ data class WCMetaData(
 
         fun addAsMetadata(metadata: JsonArray, key: String, value: String) {
             val item = JsonObject().also {
+                it.addProperty(ID, 0)
                 it.addProperty(KEY, key)
                 it.addProperty(VALUE, value)
             }
