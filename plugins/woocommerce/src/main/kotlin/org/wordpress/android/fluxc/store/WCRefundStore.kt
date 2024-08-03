@@ -35,7 +35,7 @@ class WCRefundStore @Inject constructor(
         autoRefund: Boolean = false
     ): WooResult<WCRefundModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAmountRefund") {
-            val response = restClient.createRefundByAmount(
+            val response = restClient.createRefund(
                     site,
                     orderId,
                     amount.toString(),
@@ -53,19 +53,21 @@ class WCRefundStore @Inject constructor(
     suspend fun createItemsRefund(
         site: SiteModel,
         orderId: Long,
+        amount: BigDecimal,
         reason: String = "",
         restockItems: Boolean = true,
         autoRefund: Boolean = false,
         items: List<WCRefundModel.WCRefundItem>
     ): WooResult<WCRefundModel> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createItemsRefund") {
-            val response = restClient.createRefundByItems(
-                    site,
-                    orderId,
-                    reason,
-                    autoRefund,
-                    items,
-                    restockItems
+            val response = restClient.createRefund(
+                site,
+                orderId,
+                amount.toString(),
+                reason,
+                autoRefund,
+                items,
+                restockItems
             )
             return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
