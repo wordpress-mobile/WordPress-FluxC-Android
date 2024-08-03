@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import com.google.gson.JsonParser
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCMetaData
@@ -39,6 +38,6 @@ data class OrderMetaDataEntity(
     fun toDomainModel() = WCMetaData(
         id = id,
         key = key,
-        value = JsonParser().parse(value)
+        value = value
     )
 }

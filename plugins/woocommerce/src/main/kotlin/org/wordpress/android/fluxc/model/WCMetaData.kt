@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.JsonArray
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
@@ -20,12 +19,7 @@ data class WCMetaData(
     @SerializedName(DISPLAY_VALUE)
     val displayValue: WCMetaDataValue? = null
 ) {
-    constructor(id: Long, key: String, value: String) : this(id, key, WCMetaDataValue.StringValue(value))
-    internal constructor(
-        id: Long,
-        key: String,
-        value: JsonElement
-    ) : this(id, key, WCMetaDataValue.fromJsonElement(value))
+    constructor(id: Long, key: String, value: String) : this(id, key, WCMetaDataValue.fromRawString(value))
 
     /**
      * Verify if the Metadata key is not null or a internal store attribute
