@@ -6,7 +6,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.wordpress.android.fluxc.model.WCMetaData
 
-class WCMetaDataConverter {
+internal class WCMetaDataConverter {
     @TypeConverter
     @Suppress("ReturnCount")
     fun metaDataListToString(value: List<WCMetaData>?): String? {

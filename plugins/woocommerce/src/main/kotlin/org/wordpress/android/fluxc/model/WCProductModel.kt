@@ -126,7 +126,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
     val parsedMetaData: List<WCMetaData>
-        get() = kotlin.runCatching { JsonParser().parse(metadata).asJsonArray }
+        get() = runCatching { JsonParser().parse(metadata).asJsonArray }
             .getOrNull()
             ?.mapNotNull { element -> (element as? JsonObject)?.let { WCMetaData.fromJson(it) } }
             ?: emptyList()
@@ -151,7 +151,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         get() =
             try {
                 Gson().run {
-                    fromJson(value, Array<RemoteAddonDto>::class.java)
+                    fromJson(value.jsonValue, Array<RemoteAddonDto>::class.java)
                 }
             } catch (ex: Exception) {
                 null
