@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import com.google.gson.reflect.TypeToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -42,12 +41,12 @@ class StripOrderMetaDataTest {
             WCMetaData(
                 id = 1,
                 key = "_internal key",
-                value = JsonPrimitive("internal value")
+                value = "internal value"
             ),
             WCMetaData(
                 id = 2,
                 key = "valid key",
-                value = JsonPrimitive("valid value")
+                value = "valid value"
             )
         )
         gsonMock = mock {
@@ -67,7 +66,7 @@ class StripOrderMetaDataTest {
                 WCMetaData(
                     id = 2L,
                     key = "valid key",
-                    value = JsonPrimitive("valid value")
+                    value = "valid value"
                 )
             )
         )
@@ -112,12 +111,12 @@ class StripOrderMetaDataTest {
             WCMetaData(
                 id = 1L,
                 key = "key",
-                value = JsonObject()
+                value = "{\"key\":\"value\"}"
             ),
             WCMetaData(
                 id = 2,
                 key = "valid key",
-                value = JsonPrimitive("valid value")
+                value = "valid value"
             )
         )
         gsonMock = mock {
@@ -137,7 +136,7 @@ class StripOrderMetaDataTest {
                 WCMetaData(
                     id = 2L,
                     key = "valid key",
-                    value = JsonPrimitive("valid value")
+                    value = "valid value"
                 )
             )
         )
@@ -150,12 +149,12 @@ class StripOrderMetaDataTest {
             WCMetaData(
                 id = 2L,
                 key = "_internal key",
-                value = JsonPrimitive("valid value")
+                value = "valid value"
             ),
             WCMetaData(
                 id = 3L,
                 key = "valid key",
-                value = JsonPrimitive("valid value")
+                value = "valid value"
             )
         )
         gsonMock = mock {
@@ -175,7 +174,7 @@ class StripOrderMetaDataTest {
                 WCMetaData(
                     id = 3L,
                     key = "valid key",
-                    value = JsonPrimitive("valid value")
+                    value = "valid value"
                 )
             )
         )
