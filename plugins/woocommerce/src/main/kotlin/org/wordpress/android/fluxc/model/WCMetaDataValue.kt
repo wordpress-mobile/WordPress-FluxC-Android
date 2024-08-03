@@ -14,7 +14,7 @@ import java.lang.reflect.Type
 sealed class WCMetaDataValue {
     abstract val isPrimitive: Boolean
     abstract val stringValue: String?
-    abstract val jsonValue: JsonElement
+    internal abstract val jsonValue: JsonElement
 
     override fun toString(): String = stringValue.toString()
 
