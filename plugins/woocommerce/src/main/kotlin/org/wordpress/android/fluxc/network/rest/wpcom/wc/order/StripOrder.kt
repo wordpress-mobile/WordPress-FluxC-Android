@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.order.LineItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.PAYMENT_INTENT_ID_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.RECEIPT_URL_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.isDisplayableAttribute
@@ -26,8 +27,9 @@ internal class StripOrder @Inject constructor(private val gson: Gson) {
                         fatModel.getMetaDataList()
                                 .filter {
                                     it.key == CHARGE_ID_KEY ||
-                                            it.key == SHIPPING_PHONE_KEY ||
-                                            it.key == RECEIPT_URL_KEY
+                                        it.key == PAYMENT_INTENT_ID_KEY ||
+                                        it.key == SHIPPING_PHONE_KEY ||
+                                        it.key == RECEIPT_URL_KEY
                                 }
                 )
         )

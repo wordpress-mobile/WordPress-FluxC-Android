@@ -8,6 +8,7 @@ import org.junit.Test
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.CHARGE_ID_KEY
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.PAYMENT_INTENT_ID_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.RECEIPT_URL_KEY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderMappingConst.SHIPPING_PHONE_KEY
 import org.wordpress.android.fluxc.utils.json
@@ -145,6 +146,10 @@ internal class StripOrderTest {
                 "key" To redundantMemberKey
             })
             add(json {
+                "id" To "pm_123"
+                "key" To PAYMENT_INTENT_ID_KEY
+            })
+            add(json {
                 "id" To "2"
                 "key" To CHARGE_ID_KEY
             })
@@ -162,11 +167,13 @@ internal class StripOrderTest {
         assertThat(fatModel.metaData).contains(
                 redundantMemberKey,
                 CHARGE_ID_KEY,
+                PAYMENT_INTENT_ID_KEY,
                 SHIPPING_PHONE_KEY
         )
         assertThat(strippedOrder.metaData).doesNotContain(redundantMemberKey)
                 .contains(
                         CHARGE_ID_KEY,
+                        PAYMENT_INTENT_ID_KEY,
                         SHIPPING_PHONE_KEY
                 )
     }
@@ -212,6 +219,10 @@ internal class StripOrderTest {
                 "key" To CHARGE_ID_KEY
             })
             add(json {
+                "id" To "pm_123"
+                "key" To PAYMENT_INTENT_ID_KEY
+            })
+            add(json {
                 "id" To "3"
                 "key" To SHIPPING_PHONE_KEY
             })
@@ -229,12 +240,14 @@ internal class StripOrderTest {
         assertThat(fatModel.metaData).contains(
             redundantMemberKey,
             CHARGE_ID_KEY,
+            PAYMENT_INTENT_ID_KEY,
             SHIPPING_PHONE_KEY,
             RECEIPT_URL_KEY
         )
         assertThat(strippedOrder.metaData)
             .contains(
                 CHARGE_ID_KEY,
+                PAYMENT_INTENT_ID_KEY,
                 SHIPPING_PHONE_KEY,
                 RECEIPT_URL_KEY
             )
