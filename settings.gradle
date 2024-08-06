@@ -21,7 +21,7 @@ plugins {
     id 'com.gradle.enterprise' version '3.9'
 }
 
-def catalogVersion = "33-68610fbaf20dd506bbf7be6cf91fa79a39123a45"
+def catalogVersion = "1.20.0"
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
