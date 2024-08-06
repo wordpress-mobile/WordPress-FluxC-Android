@@ -5,7 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class WCGoogleAdsProgramsDTO(
     @SerializedName("campaigns") val campaigns: List<GoogleAdsCampaignDTO>?,
     @SerializedName("intervals") val intervals: List<GoogleAdsIntervalDTO>?,
-    @SerializedName("totals") val totals: GoogleAdsTotalsDTO?
+    @SerializedName("totals") val totals: GoogleAdsTotalsDTO?,
+    @SerializedName("next_page") val nextPageToken: String?
 )
 
 data class GoogleAdsCampaignDTO(
@@ -24,5 +25,6 @@ data class GoogleAdsTotalsDTO(
     @SerializedName("sales") val sales: Double?,
     @SerializedName("spend") val spend: Double?,
     @SerializedName("impressions") val impressions: Double?,
-    @SerializedName("clicks") val clicks: Double?
+    @SerializedName("clicks") val clicks: Double?,
+    @SerializedName("conversions") val conversions: Double?
 )

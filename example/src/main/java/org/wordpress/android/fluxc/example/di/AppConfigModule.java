@@ -15,6 +15,8 @@ import org.wordpress.android.util.AppLog.T;
 
 import java.lang.reflect.Field;
 
+import javax.inject.Singleton;
+
 import dagger.Module;
 import dagger.Provides;
 
@@ -41,6 +43,7 @@ public class AppConfigModule {
     }
 
     @Provides
+    @Singleton
     public UserAgent provideUserAgent(Context appContext) {
         return new UserAgent(appContext, "fluxc-example-android");
     }
