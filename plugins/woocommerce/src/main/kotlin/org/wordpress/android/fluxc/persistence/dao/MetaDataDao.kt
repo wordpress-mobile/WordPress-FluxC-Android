@@ -19,7 +19,7 @@ abstract class MetaDataDao {
         localSiteId: LocalId
     ): List<MetaDataEntity>
 
-    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId AND isDisplayable = 1")
+    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'")
     abstract suspend fun getDisplayableMetaData(
         parentId: Long,
         localSiteId: LocalId
@@ -31,7 +31,7 @@ abstract class MetaDataDao {
     @Query(
         """
         SELECT COUNT(*) FROM MetaData 
-        WHERE parentId = :parentId AND localSiteId = :localSiteId AND isDisplayable = 1
+        WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
         """
     )
     abstract suspend fun getDisplayableMetaDataCount(parentId: Long, localSiteId: LocalId): Int

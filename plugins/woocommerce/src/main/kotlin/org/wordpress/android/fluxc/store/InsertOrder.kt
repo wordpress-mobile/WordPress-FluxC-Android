@@ -41,8 +41,7 @@ class InsertOrder @Inject internal constructor(
                             id = it.id,
                             parentId = order.orderId,
                             key = it.key,
-                            value = it.valueAsString,
-                            isDisplayable = it.isDisplayable
+                            value = it.valueAsString
                         )
                     }
                 )

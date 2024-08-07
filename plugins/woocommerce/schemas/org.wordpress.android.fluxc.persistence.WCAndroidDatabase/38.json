@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 38,
-    "identityHash": "635a0cfb3773f874601baf57ef8c7581",
+    "identityHash": "1d03b80a1fc37e72e6a86c40527b8b32",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -881,7 +881,7 @@
       },
       {
         "tableName": "MetaData",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `parentId` INTEGER NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, `isDisplayable` INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(`localSiteId`, `parentId`, `id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `parentId` INTEGER NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`localSiteId`, `parentId`, `id`))",
         "fields": [
           {
             "fieldPath": "localSiteId",
@@ -912,13 +912,6 @@
             "columnName": "value",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "isDisplayable",
-            "columnName": "isDisplayable",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "1"
           }
         ],
         "primaryKey": {
@@ -1793,7 +1786,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '635a0cfb3773f874601baf57ef8c7581')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d03b80a1fc37e72e6a86c40527b8b32')"
     ]
   }
 }

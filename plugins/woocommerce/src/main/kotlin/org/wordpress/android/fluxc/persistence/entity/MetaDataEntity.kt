@@ -21,9 +21,7 @@ data class MetaDataEntity(
     val id: Long,
     val parentId: Long,
     val key: String,
-    val value: String,
-    @ColumnInfo(defaultValue = "1")
-    val isDisplayable: Boolean = true
+    val value: String
 ) {
     fun toDomainModel() = WCMetaData(
         id = id,
