@@ -35,10 +35,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.MappingRemoteException
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.addons.mappers.RemoteAddonMapper
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.BatchProductVariationsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -1032,14 +1030,11 @@ class WCProductStore @Inject constructor(
     ): WooResult<WCProductModel> =
         coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
             wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
-                .asWooResult()
-                .model?.asProductModel()
-                ?.apply {
-                    localSiteId = site.id
-                    ProductSqlUtils.insertOrUpdateProduct(this)
+                .also { payload ->
+                    payload.result?.let { ProductSqlUtils.insertOrUpdateProduct(it) }
                 }
-                ?.let { WooResult(it) }
-        } ?: WooResult(WooError(WooErrorType.GENERIC_ERROR, UNKNOWN))
+                .asWooResult()
+        }
 
     suspend fun submitVariationAttributeChanges(
         site: SiteModel,
@@ -1434,7 +1429,7 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    suspend fun batchUpdateProducts(payload: BatchUpdateProductsPayload): WooResult<BatchProductApiResponse> =
+    suspend fun batchUpdateProducts(payload: BatchUpdateProductsPayload): WooResult<List<WCProductModel>> =
         coroutineEngine.withDefaultContext(API, this, "batchUpdateProducts") {
             val existingProducts = ProductSqlUtils.getProductsByRemoteIds(
                 site = payload.site,
@@ -1454,9 +1449,9 @@ class WCProductStore @Inject constructor(
                 return@withDefaultContext if (result.isError) {
                     WooResult(result.error)
                 } else {
-                    ProductSqlUtils.insertOrUpdateProducts(
-                        result.result?.updatedProducts?.map(ProductDto::asProductModel).orEmpty()
-                    )
+                    result.result?.let {
+                        ProductSqlUtils.insertOrUpdateProducts(it)
+                    }
                     WooResult(result.result)
                 }
             }

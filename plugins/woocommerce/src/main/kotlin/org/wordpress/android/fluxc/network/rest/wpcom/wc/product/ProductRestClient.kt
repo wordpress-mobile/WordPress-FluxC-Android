@@ -88,7 +88,8 @@ class ProductRestClient @Inject constructor(
     private val wpComNetwork: WPComNetwork,
     private val coroutineEngine: CoroutineEngine,
     private val stripProductMetaData: StripProductMetaData,
-    private val stripProductVariationMetaData: StripProductVariationMetaData
+    private val stripProductVariationMetaData: StripProductVariationMetaData,
+    private val productDtoMapper: ProductDtoMapper
 ) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -322,10 +323,7 @@ class ProductRestClient @Inject constructor(
         return when (response) {
             is WPAPIResponse.Success -> {
                 response.data?.let {
-                    val newModel = it.asProductModel().apply {
-                        localSiteId = site.id
-                        metadata = stripProductMetaData(metadata)
-                    }
+                    val newModel = productDtoMapper.mapToModel(site.localId(), it).product
                     RemoteProductPayload(newModel, site)
                 } ?: RemoteProductPayload(
                     ProductError(GENERIC_ERROR, "Success response with empty data"),
@@ -446,10 +444,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     val productModels = response.data?.map {
-                        it.asProductModel().apply {
-                            localSiteId = site.id
-                            metadata = stripProductMetaData(metadata)
-                        }
+                        productDtoMapper.mapToModel(site.localId(), it).product
                     }.orEmpty()
 
                     val loadedMore = offset > 0
@@ -559,11 +554,7 @@ class ProductRestClient @Inject constructor(
 
         return response.toWooPayload { products ->
             products.map {
-                it.asProductModel()
-                    .apply {
-                        localSiteId = site.id
-                        metadata = stripProductMetaData(metadata)
-                    }
+                productDtoMapper.mapToModel(site.localId(), it).product
             }
         }
     }
@@ -966,10 +957,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     response.data?.let {
-                        val newModel = it.asProductModel().apply {
-                            localSiteId = site.id
-                            metadata = stripProductMetaData(metadata)
-                        }
+                        val newModel = productDtoMapper.mapToModel(site.localId(), it).product
                         val payload = RemoteUpdateProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
                     }
@@ -1051,7 +1039,7 @@ class ProductRestClient @Inject constructor(
     suspend fun batchUpdateProducts(
         site: SiteModel,
         existingToUpdatedProducts: Map<WCProductModel, WCProductModel>,
-    ): WooPayload<BatchProductApiResponse> = WOOCOMMERCE.products.batch.pathV3
+    ): WooPayload<List<WCProductModel>?> = WOOCOMMERCE.products.batch.pathV3
         .let { url ->
             val body = buildMap {
                 putIfNotNull("update" to existingToUpdatedProducts
@@ -1078,7 +1066,9 @@ class ProductRestClient @Inject constructor(
                 path = url,
                 clazz = BatchProductApiResponse::class.java,
                 body = body
-            ).toWooPayload()
+            ).toWooPayload { response ->
+                response.updatedProducts?.map { productDtoMapper.mapToModel(site.localId(), it).product }
+            }
         }
 
     suspend fun replyToReview(
@@ -1242,14 +1232,16 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         productId: Long,
         attributesJson: String
-    ) = WOOCOMMERCE.products.id(productId).pathV3
+    ): WooPayload<WCProductModel> = WOOCOMMERCE.products.id(productId).pathV3
         .let { url ->
             wooNetwork.executePutGsonRequest(
                 site = site,
                 path = url,
                 clazz = ProductApiResponse::class.java,
                 body = mapOf("attributes" to JsonParser().parse(attributesJson).asJsonArray)
-            ).toWooPayload()
+            ).toWooPayload { dto ->
+                productDtoMapper.mapToModel(site.localId(), dto).product
+            }
         }
 
     /**
@@ -1289,10 +1281,7 @@ class ProductRestClient @Inject constructor(
             when (response) {
                 is WPAPIResponse.Success -> {
                     response.data?.let {
-                        val newModel = it.asProductModel().apply {
-                            localSiteId = site.id
-                            metadata = stripProductMetaData(metadata)
-                        }
+                        val newModel = productDtoMapper.mapToModel(site.localId(), it).product
                         val payload = RemoteUpdateProductImagesPayload(site, newModel)
                         dispatcher.dispatch(
                             WCProductActionBuilder.newUpdatedProductImagesAction(
@@ -1740,12 +1729,8 @@ class ProductRestClient @Inject constructor(
 
             when (response) {
                 is WPAPIResponse.Success -> {
-                    response.data?.let { product ->
-                        val newModel = product.asProductModel().apply {
-                            id = product.id?.toInt() ?: 0
-                            localSiteId = site.id
-                            metadata = stripProductMetaData(metadata)
-                        }
+                    response.data?.let { dto ->
+                        val newModel = productDtoMapper.mapToModel(site.localId(), dto).product
                         val payload = RemoteAddProductPayload(site, newModel)
                         dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                     }
