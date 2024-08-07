@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.persistence.migrations
 
 import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
+import androidx.room.RenameColumn
+import androidx.room.RenameTable
 import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -1062,3 +1064,14 @@ internal val MIGRATION_31_32 = object : Migration(31, 32) {
     DeleteColumn(tableName = "WooPaymentsBalance", columnName = "depositsCount"),
 )
 internal class AutoMigration32to33 : AutoMigrationSpec
+
+@RenameColumn.Entries(
+    RenameColumn(tableName = "OrderMetaData", fromColumnName = "orderId", toColumnName = "parentId"),
+)
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "OrderMetaData", columnName = "isDisplayable")
+)
+@RenameTable.Entries(
+    RenameTable(fromTableName = "OrderMetaData", toTableName = "MetaData")
+)
+internal class AutoMigration37to38 : AutoMigrationSpec

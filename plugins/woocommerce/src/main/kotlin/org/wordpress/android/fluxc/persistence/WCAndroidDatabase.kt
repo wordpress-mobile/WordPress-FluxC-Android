@@ -53,6 +53,7 @@ import org.wordpress.android.fluxc.persistence.migrations.AutoMigration18to19
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration19to20
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration23to24
 import org.wordpress.android.fluxc.persistence.migrations.AutoMigration32to33
+import org.wordpress.android.fluxc.persistence.migrations.AutoMigration37to38
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_10_11
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_11_12
 import org.wordpress.android.fluxc.persistence.migrations.MIGRATION_15_16
@@ -115,7 +116,8 @@ const val WC_DATABASE_VERSION = 38
         AutoMigration(from = 33, to = 34),
         AutoMigration(from = 34, to = 35),
         AutoMigration(from = 35, to = 36),
-        AutoMigration(from = 36, to = 37)
+        AutoMigration(from = 36, to = 37),
+        AutoMigration(from = 37, to = 38, spec = AutoMigration37to38::class)
     ]
 )
 @TypeConverters(
