@@ -11,18 +11,21 @@ import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 @Dao
 abstract class MetaDataDao {
     @Insert(onConflict = REPLACE)
-    abstract fun insertOrUpdateMetaData(metaDataEntity: MetaDataEntity)
+    abstract fun insertOrUpdateMetaData(vararg metaDataEntity: MetaDataEntity)
 
     @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
     abstract suspend fun getMetaData(
-        parentId: Long,
-        localSiteId: LocalId
+        localSiteId: LocalId,
+        parentId: Long
     ): List<MetaDataEntity>
 
-    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'")
+    @Query("""
+        SELECT * FROM MetaData
+        WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
+        """)
     abstract suspend fun getDisplayableMetaData(
-        parentId: Long,
-        localSiteId: LocalId
+        localSiteId: LocalId,
+        parentId: Long
     ): List<MetaDataEntity>
 
     @Query("SELECT COUNT(*) FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
@@ -34,7 +37,10 @@ abstract class MetaDataDao {
         WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
         """
     )
-    abstract suspend fun getDisplayableMetaDataCount(parentId: Long, localSiteId: LocalId): Int
+    abstract suspend fun getDisplayableMetaDataCount(
+        localSiteId: LocalId,
+        parentId: Long
+    ): Int
 
     @Transaction
     @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND parentId = :parentId")
@@ -47,9 +53,7 @@ abstract class MetaDataDao {
         metaData: List<MetaDataEntity>
     ) {
         deleteMetaData(localSiteId, parentId)
-        metaData.forEach {
-            insertOrUpdateMetaData(it)
-        }
+        insertOrUpdateMetaData(*metaData.toTypedArray())
     }
 
     suspend fun hasMetaData(parentId: Long, localSiteId: LocalId): Boolean {

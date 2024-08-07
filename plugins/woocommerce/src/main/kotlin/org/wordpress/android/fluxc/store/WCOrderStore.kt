@@ -435,7 +435,7 @@ class WCOrderStore @Inject constructor(
      * returns the metadata from the database for an order
      */
     suspend fun getOrderMetadata(orderId: Long, site: SiteModel): List<WCMetaData> {
-        return metaDataDao.getMetaData(orderId, site.localId()).map { it.toDomainModel() }
+        return metaDataDao.getMetaData(site.localId(), orderId).map { it.toDomainModel() }
     }
 
     /**
@@ -443,7 +443,7 @@ class WCOrderStore @Inject constructor(
      * returns the displayable metadata from the database for an order
      */
     suspend fun getDisplayableOrderMetadata(orderId: Long, site: SiteModel): List<WCMetaData> {
-        return metaDataDao.getDisplayableMetaData(orderId, site.localId()).map { it.toDomainModel() }
+        return metaDataDao.getDisplayableMetaData(site.localId(), orderId).map { it.toDomainModel() }
     }
 
     /**
@@ -459,7 +459,7 @@ class WCOrderStore @Inject constructor(
      * returns whether there is displayable metadata in the database for an order
      */
     suspend fun hasDisplayableOrderMetadata(orderId: Long, site: SiteModel): Boolean {
-        return metaDataDao.getDisplayableMetaDataCount(orderId, site.localId()) > 0
+        return metaDataDao.getDisplayableMetaDataCount(site.localId(), orderId) > 0
     }
 
     /**
