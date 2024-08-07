@@ -67,6 +67,7 @@ abstract class MetaDataDao {
         metaData: List<MetaDataEntity>
     ) {
         deleteMetaData(localSiteId, parentItemId)
+        @Suppress("SpreadOperator")
         insertOrUpdateMetaData(*metaData.toTypedArray())
     }
 
