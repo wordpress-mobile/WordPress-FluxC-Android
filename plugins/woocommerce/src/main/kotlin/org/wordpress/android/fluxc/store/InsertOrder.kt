@@ -15,7 +15,7 @@ import javax.inject.Inject
 class InsertOrder @Inject internal constructor(
     private val dispatcher: Dispatcher,
     private val ordersDaoDecorator: OrdersDaoDecorator,
-    private val ordersMetaDataDao: MetaDataDao,
+    private val metaDataDao: MetaDataDao,
     private val transactionExecutor: TransactionExecutor
 ) {
     suspend operator fun invoke(
@@ -32,7 +32,7 @@ class InsertOrder @Inject internal constructor(
                 if (result != OrdersDaoDecorator.UpdateOrderResult.UNCHANGED) {
                     orderChanged = true
                 }
-                ordersMetaDataDao.updateMetaData(
+                metaDataDao.updateMetaData(
                     order.orderId,
                     order.localSiteId,
                     metaData.map {
