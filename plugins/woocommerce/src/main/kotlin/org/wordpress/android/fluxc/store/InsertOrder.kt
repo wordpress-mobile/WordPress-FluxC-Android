@@ -42,7 +42,7 @@ class InsertOrder @Inject internal constructor(
                             parentItemId = order.orderId,
                             key = it.key,
                             value = it.valueAsString,
-                            type = MetaDataEntity.MetaDataType.ORDER
+                            type = MetaDataEntity.ParentItemType.ORDER
                         )
                     }
                 )
