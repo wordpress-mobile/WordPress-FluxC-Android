@@ -38,10 +38,10 @@ abstract class MetaDataDao {
 
     @Transaction
     @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND parentId = :parentId")
-    abstract fun deleteMetaData(localSiteId: LocalId, parentId: Long)
+    abstract suspend fun deleteMetaData(localSiteId: LocalId, parentId: Long)
 
     @Transaction
-    open fun updateMetaData(
+    open suspend fun updateMetaData(
         parentId: Long,
         localSiteId: LocalId,
         metaData: List<MetaDataEntity>
