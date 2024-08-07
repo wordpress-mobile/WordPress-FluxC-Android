@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 38,
-    "identityHash": "935c58603e454d885280f7ac5089169f",
+    "identityHash": "07da421084ee1c2ed5aad680d284c02d",
     "entities": [
       {
         "tableName": "AddonEntity",
@@ -881,7 +881,7 @@
       },
       {
         "tableName": "MetaData",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `parentId` INTEGER NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, `type` TEXT NOT NULL DEFAULT 'ORDER', PRIMARY KEY(`localSiteId`, `parentId`, `id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localSiteId` INTEGER NOT NULL, `id` INTEGER NOT NULL, `parentItemId` INTEGER NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, `type` TEXT NOT NULL DEFAULT 'ORDER', PRIMARY KEY(`localSiteId`, `parentItemId`, `id`))",
         "fields": [
           {
             "fieldPath": "localSiteId",
@@ -896,8 +896,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "parentId",
-            "columnName": "parentId",
+            "fieldPath": "parentItemId",
+            "columnName": "parentItemId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -925,7 +925,7 @@
           "autoGenerate": false,
           "columnNames": [
             "localSiteId",
-            "parentId",
+            "parentItemId",
             "id"
           ]
         },
@@ -1793,7 +1793,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '935c58603e454d885280f7ac5089169f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07da421084ee1c2ed5aad680d284c02d')"
     ]
   }
 }

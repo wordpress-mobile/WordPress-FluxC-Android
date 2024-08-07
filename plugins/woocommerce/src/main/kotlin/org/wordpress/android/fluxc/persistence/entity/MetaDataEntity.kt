@@ -13,13 +13,13 @@ import org.wordpress.android.fluxc.model.WCMetaData
  */
 @Entity(
     tableName = "MetaData",
-    primaryKeys = ["localSiteId", "parentId", "id"]
+    primaryKeys = ["localSiteId", "parentItemId", "id"]
 )
 data class MetaDataEntity(
     @ColumnInfo(name = "localSiteId")
     val localSiteId: LocalId,
     val id: Long,
-    val parentId: Long,
+    val parentItemId: Long,
     val key: String,
     val value: String,
     @ColumnInfo(defaultValue = "ORDER") // We default to ORDER for backwards compatibility

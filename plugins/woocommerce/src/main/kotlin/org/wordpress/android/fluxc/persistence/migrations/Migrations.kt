@@ -1066,7 +1066,7 @@ internal val MIGRATION_31_32 = object : Migration(31, 32) {
 internal class AutoMigration32to33 : AutoMigrationSpec
 
 @RenameColumn.Entries(
-    RenameColumn(tableName = "OrderMetaData", fromColumnName = "orderId", toColumnName = "parentId"),
+    RenameColumn(tableName = "OrderMetaData", fromColumnName = "orderId", toColumnName = "parentItemId"),
 )
 @DeleteColumn.Entries(
     DeleteColumn(tableName = "OrderMetaData", columnName = "isDisplayable")

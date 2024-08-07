@@ -280,7 +280,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 ordersDaoDecorator.deleteOrder(site.localId(), orderId)
-                metaDataDao.deleteMetaData(localSiteId = site.localId(), parentId = orderId)
+                metaDataDao.deleteMetaData(localSiteId = site.localId(), parentItemId = orderId)
                 orderSqlUtils.deleteOrderSummaryById(site, orderId)
                 WooResult(Unit)
             }

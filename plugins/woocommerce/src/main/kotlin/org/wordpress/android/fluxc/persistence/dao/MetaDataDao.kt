@@ -14,63 +14,63 @@ abstract class MetaDataDao {
     @Insert(onConflict = REPLACE)
     abstract fun insertOrUpdateMetaData(vararg metaDataEntity: MetaDataEntity)
 
-    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
+    @Query("SELECT * FROM MetaData WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId")
     abstract suspend fun getMetaData(
         localSiteId: LocalId,
-        parentId: Long
+        parentItemId: Long
     ): List<MetaDataEntity>
 
-    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
+    @Query("SELECT * FROM MetaData WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId")
     abstract fun observeMetaData(
         localSiteId: LocalId,
-        parentId: Long
+        parentItemId: Long
     ): Flow<List<MetaDataEntity>>
 
-    @Query("SELECT * FROM MetaData WHERE id = :id AND parentId = :parentId AND localSiteId = :localSiteId")
+    @Query("SELECT * FROM MetaData WHERE id = :id AND parentItemId = :parentItemId AND localSiteId = :localSiteId")
     abstract suspend fun getMetaData(
         localSiteId: LocalId,
-        parentId: Long,
+        parentItemId: Long,
         id: Long
     ): MetaDataEntity?
 
     @Query("""
         SELECT * FROM MetaData
-        WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
+        WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
         """)
     abstract suspend fun getDisplayableMetaData(
         localSiteId: LocalId,
-        parentId: Long
+        parentItemId: Long
     ): List<MetaDataEntity>
 
-    @Query("SELECT COUNT(*) FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
-    abstract suspend fun getMetaDataCount(parentId: Long, localSiteId: LocalId): Int
+    @Query("SELECT COUNT(*) FROM MetaData WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId")
+    abstract suspend fun getMetaDataCount(parentItemId: Long, localSiteId: LocalId): Int
 
     @Query(
         """
         SELECT COUNT(*) FROM MetaData 
-        WHERE parentId = :parentId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
+        WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
         """
     )
     abstract suspend fun getDisplayableMetaDataCount(
         localSiteId: LocalId,
-        parentId: Long
+        parentItemId: Long
     ): Int
 
     @Transaction
-    @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND parentId = :parentId")
-    abstract suspend fun deleteMetaData(localSiteId: LocalId, parentId: Long)
+    @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND parentItemId = :parentItemId")
+    abstract suspend fun deleteMetaData(localSiteId: LocalId, parentItemId: Long)
 
     @Transaction
     open suspend fun updateMetaData(
-        parentId: Long,
+        parentItemId: Long,
         localSiteId: LocalId,
         metaData: List<MetaDataEntity>
     ) {
-        deleteMetaData(localSiteId, parentId)
+        deleteMetaData(localSiteId, parentItemId)
         insertOrUpdateMetaData(*metaData.toTypedArray())
     }
 
-    suspend fun hasMetaData(parentId: Long, localSiteId: LocalId): Boolean {
-        return getMetaDataCount(parentId, localSiteId) > 0
+    suspend fun hasMetaData(parentItemId: Long, localSiteId: LocalId): Boolean {
+        return getMetaDataCount(parentItemId, localSiteId) > 0
     }
 }

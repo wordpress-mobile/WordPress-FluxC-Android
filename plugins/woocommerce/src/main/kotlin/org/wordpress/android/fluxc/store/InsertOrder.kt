@@ -39,7 +39,7 @@ class InsertOrder @Inject internal constructor(
                         MetaDataEntity(
                             localSiteId = order.localSiteId,
                             id = it.id,
-                            parentId = order.orderId,
+                            parentItemId = order.orderId,
                             key = it.key,
                             value = it.valueAsString,
                             type = MetaDataEntity.MetaDataType.ORDER
