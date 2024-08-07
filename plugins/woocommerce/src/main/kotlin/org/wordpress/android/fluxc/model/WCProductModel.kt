@@ -5,6 +5,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
@@ -124,10 +125,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
+    val parsedMetaData: List<WCMetaData>
+        get() = runCatching { JsonParser().parse(metadata).asJsonArray }
+            .getOrNull()
+            ?.mapNotNull { element -> (element as? JsonObject)?.let { WCMetaData.fromJson(it) } }
+            ?: emptyList()
+
     val addons: Array<RemoteAddonDto>?
-        get() = Gson().fromJson(metadata, Array<WCMetaData>::class.java)
-            ?.find { it.key == ADDONS_METADATA_KEY }
-            ?.addons
+        get() = parsedMetaData.get(ADDONS_METADATA_KEY)?.addons
 
     val isConfigurable: Boolean
         get() = when (type) {
@@ -146,8 +151,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         get() =
             try {
                 Gson().run {
-                    val addonListJson = toJson(value)
-                    fromJson(addonListJson, Array<RemoteAddonDto>::class.java)
+                    fromJson(value.jsonValue, Array<RemoteAddonDto>::class.java)
                 }
             } catch (ex: Exception) {
                 null
