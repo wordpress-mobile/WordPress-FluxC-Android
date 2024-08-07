@@ -21,11 +21,18 @@ data class MetaDataEntity(
     val id: Long,
     val parentId: Long,
     val key: String,
-    val value: String
+    val value: String,
+    @ColumnInfo(defaultValue = "ORDER") // We default to ORDER for backwards compatibility
+    val type: MetaDataType
 ) {
     fun toDomainModel() = WCMetaData(
         id = id,
         key = key,
         value = value
     )
+
+    enum class MetaDataType {
+        ORDER,
+        PRODUCT
+    }
 }
