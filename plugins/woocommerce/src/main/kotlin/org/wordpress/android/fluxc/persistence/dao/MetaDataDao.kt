@@ -35,7 +35,10 @@ abstract class MetaDataDao {
 
     @Query("""
         SELECT * FROM MetaData
-        WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
+        WHERE parentItemId = :parentItemId 
+        AND localSiteId = :localSiteId 
+        AND `key` NOT LIKE '\_%'
+        ESCAPE '\'
         """)
     abstract suspend fun getDisplayableMetaData(
         localSiteId: LocalId,
@@ -48,7 +51,10 @@ abstract class MetaDataDao {
     @Query(
         """
         SELECT COUNT(*) FROM MetaData 
-        WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId AND key NOT LIKE '_%'
+        WHERE parentItemId = :parentItemId 
+        AND localSiteId = :localSiteId 
+        AND `key` NOT LIKE '\_%'
+        ESCAPE '\'
         """
     )
     abstract suspend fun getDisplayableMetaDataCount(
