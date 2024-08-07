@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 
@@ -18,6 +19,19 @@ abstract class MetaDataDao {
         localSiteId: LocalId,
         parentId: Long
     ): List<MetaDataEntity>
+
+    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
+    abstract fun observeMetaData(
+        localSiteId: LocalId,
+        parentId: Long
+    ): Flow<List<MetaDataEntity>>
+
+    @Query("SELECT * FROM MetaData WHERE id = :id AND parentId = :parentId AND localSiteId = :localSiteId")
+    abstract suspend fun getMetaData(
+        localSiteId: LocalId,
+        parentId: Long,
+        id: Long
+    ): MetaDataEntity?
 
     @Query("""
         SELECT * FROM MetaData
