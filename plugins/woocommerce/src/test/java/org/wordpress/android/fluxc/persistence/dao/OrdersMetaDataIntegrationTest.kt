@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.store.InsertOrder
 
 @RunWith(RobolectricTestRunner::class)
 class OrdersMetaDataIntegrationTest {
-    private lateinit var sut: OrderMetaDataDao
+    private lateinit var sut: MetaDataDao
     private lateinit var ordersDaoDecorator: OrdersDaoDecorator
     private lateinit var database: WCAndroidDatabase
     private lateinit var insertOrder: InsertOrder
@@ -30,7 +30,7 @@ class OrdersMetaDataIntegrationTest {
             .allowMainThreadQueries()
             .build()
         ordersDaoDecorator = OrdersDaoDecorator(mock(), database.ordersDao)
-        sut = database.orderMetaDataDao
+        sut = database.metaDataDao
 
         insertOrder = InsertOrder(mock(), ordersDaoDecorator, sut, FakeTransactionExecutor)
     }
@@ -55,7 +55,7 @@ class OrdersMetaDataIntegrationTest {
 
             // then
             assertThat(
-                sut.getOrderMetaData(
+                sut.getMetaData(
                     orderId = order.orderId,
                     localSiteId = order.localSiteId
                 )
@@ -66,7 +66,7 @@ class OrdersMetaDataIntegrationTest {
 
             // then
             assertThat(
-                sut.getOrderMetaData(
+                sut.getMetaData(
                     orderId = order.orderId,
                     localSiteId = order.localSiteId
                 )

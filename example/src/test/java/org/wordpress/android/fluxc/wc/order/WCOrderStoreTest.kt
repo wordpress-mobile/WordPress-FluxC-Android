@@ -40,7 +40,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.InsertOrder
@@ -71,7 +70,7 @@ class WCOrderStoreTest {
     private val orderRestClient: OrderRestClient = mock()
     lateinit var ordersDaoDecorator: OrdersDaoDecorator
     lateinit var orderNotesDao: OrderNotesDao
-    lateinit var orderMetaDataDao: OrderMetaDataDao
+    lateinit var metaDataDao: MetaDataDao
     lateinit var orderStore: WCOrderStore
     private val insertOrder: InsertOrder = mock()
 
@@ -86,7 +85,7 @@ class WCOrderStoreTest {
         val dispatcher = Dispatcher()
         ordersDaoDecorator = OrdersDaoDecorator(dispatcher, database.ordersDao)
         orderNotesDao = database.orderNotesDao
-        orderMetaDataDao = database.orderMetaDataDao
+        metaDataDao = database.metaDataDao
 
         orderStore = WCOrderStore(
                 dispatcher = dispatcher,
@@ -95,7 +94,7 @@ class WCOrderStoreTest {
                 coroutineEngine = initCoroutineEngine(),
                 ordersDaoDecorator = ordersDaoDecorator,
                 orderNotesDao = orderNotesDao,
-                orderMetaDataDao = orderMetaDataDao,
+                metaDataDao = metaDataDao,
                 insertOrder = insertOrder
         )
 

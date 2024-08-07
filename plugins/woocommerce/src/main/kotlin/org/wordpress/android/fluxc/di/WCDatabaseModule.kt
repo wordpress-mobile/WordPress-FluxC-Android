@@ -41,7 +41,7 @@ interface WCDatabaseModule {
 
         @Provides fun provideOrderNotesDao(database: WCAndroidDatabase) = database.orderNotesDao
 
-        @Provides fun provideOrderMetaDataDao(database: WCAndroidDatabase) = database.orderMetaDataDao
+        @Provides fun provideMetaDataDao(database: WCAndroidDatabase) = database.metaDataDao
 
         @Provides fun provideInboxNotesDao(database: WCAndroidDatabase) = database.inboxNotesDao
 

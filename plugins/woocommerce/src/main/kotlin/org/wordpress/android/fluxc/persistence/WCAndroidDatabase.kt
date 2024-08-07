@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.persistence.dao.CouponsDao
 import org.wordpress.android.fluxc.persistence.dao.CustomerFromAnalyticsDao
 import org.wordpress.android.fluxc.persistence.dao.InboxNotesDao
-import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
+import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDao
 import org.wordpress.android.fluxc.persistence.dao.ShippingMethodDao
@@ -36,7 +36,7 @@ import org.wordpress.android.fluxc.persistence.entity.CustomerFromAnalyticsEntit
 import org.wordpress.android.fluxc.persistence.entity.GlobalAddonGroupEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteActionEntity
 import org.wordpress.android.fluxc.persistence.entity.InboxNoteEntity
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
+import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.persistence.entity.ShippingMethodEntity
 import org.wordpress.android.fluxc.persistence.entity.TopPerformerProductEntity
@@ -83,7 +83,7 @@ const val WC_DATABASE_VERSION = 38
         GlobalAddonGroupEntity::class,
         OrderNoteEntity::class,
         OrderEntity::class,
-        OrderMetaDataEntity::class,
+        MetaDataEntity::class,
         InboxNoteEntity::class,
         InboxNoteActionEntity::class,
         TopPerformerProductEntity::class,
@@ -131,7 +131,7 @@ abstract class WCAndroidDatabase : RoomDatabase(), TransactionExecutor {
     abstract val addonsDao: AddonsDao
     abstract val ordersDao: OrdersDao
     abstract val orderNotesDao: OrderNotesDao
-    abstract val orderMetaDataDao: OrderMetaDataDao
+    abstract val metaDataDao: MetaDataDao
     abstract val couponsDao: CouponsDao
     abstract val inboxNotesDao: InboxNotesDao
     abstract val topPerformerProductsDao: TopPerformerProductsDao

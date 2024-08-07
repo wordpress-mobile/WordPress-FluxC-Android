@@ -6,53 +6,53 @@ import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import androidx.room.Transaction
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
+import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 
 @Dao
-abstract class OrderMetaDataDao {
+abstract class MetaDataDao {
     @Insert(onConflict = REPLACE)
-    abstract fun insertOrUpdateMetaData(metaDataEntity: OrderMetaDataEntity)
+    abstract fun insertOrUpdateMetaData(metaDataEntity: MetaDataEntity)
 
-    @Query("SELECT * FROM OrderMetaData WHERE orderId = :orderId AND localSiteId = :localSiteId")
-    abstract suspend fun getOrderMetaData(
-        orderId: Long,
+    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
+    abstract suspend fun getMetaData(
+        parentId: Long,
         localSiteId: LocalId
-    ): List<OrderMetaDataEntity>
+    ): List<MetaDataEntity>
 
-    @Query("SELECT * FROM OrderMetaData WHERE orderId = :orderId AND localSiteId = :localSiteId AND isDisplayable = 1")
-    abstract suspend fun getDisplayableOrderMetaData(
-        orderId: Long,
+    @Query("SELECT * FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId AND isDisplayable = 1")
+    abstract suspend fun getDisplayableMetaData(
+        parentId: Long,
         localSiteId: LocalId
-    ): List<OrderMetaDataEntity>
+    ): List<MetaDataEntity>
 
-    @Query("SELECT COUNT(*) FROM OrderMetaData WHERE orderId = :orderId AND localSiteId = :localSiteId")
-    abstract suspend fun getOrderMetaDataCount(orderId: Long, localSiteId: LocalId): Int
+    @Query("SELECT COUNT(*) FROM MetaData WHERE parentId = :parentId AND localSiteId = :localSiteId")
+    abstract suspend fun getMetaDataCount(parentId: Long, localSiteId: LocalId): Int
 
     @Query(
         """
-        SELECT COUNT(*) FROM OrderMetaData 
-        WHERE orderId = :orderId AND localSiteId = :localSiteId AND isDisplayable = 1
+        SELECT COUNT(*) FROM MetaData 
+        WHERE parentId = :parentId AND localSiteId = :localSiteId AND isDisplayable = 1
         """
     )
-    abstract suspend fun getDisplayableOrderMetaDataCount(orderId: Long, localSiteId: LocalId): Int
+    abstract suspend fun getDisplayableMetaDataCount(parentId: Long, localSiteId: LocalId): Int
 
     @Transaction
-    @Query("DELETE FROM OrderMetaData WHERE localSiteId = :localSiteId AND orderId = :orderId")
-    abstract fun deleteOrderMetaData(localSiteId: LocalId, orderId: Long)
+    @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND parentId = :parentId")
+    abstract fun deleteMetaData(localSiteId: LocalId, parentId: Long)
 
     @Transaction
-    open fun updateOrderMetaData(
-        orderId: Long,
+    open fun updateMetaData(
+        parentId: Long,
         localSiteId: LocalId,
-        metaData: List<OrderMetaDataEntity>
+        metaData: List<MetaDataEntity>
     ) {
-        deleteOrderMetaData(localSiteId, orderId)
+        deleteMetaData(localSiteId, parentId)
         metaData.forEach {
             insertOrUpdateMetaData(it)
         }
     }
 
-    suspend fun hasOrderMetaData(orderId: Long, localSiteId: LocalId): Boolean {
-        return getOrderMetaDataCount(orderId, localSiteId) > 0
+    suspend fun hasMetaData(parentId: Long, localSiteId: LocalId): Boolean {
+        return getMetaDataCount(parentId, localSiteId) > 0
     }
 }
