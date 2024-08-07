@@ -8,8 +8,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 internal val MIGRATION_3_4 = object : Migration(3, 4) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             // language=RoomSql
             execSQL(
                 """
@@ -74,15 +74,15 @@ internal val MIGRATION_3_4 = object : Migration(3, 4) {
 }
 
 internal val MIGRATION_4_5 = object : Migration(4, 5) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("DROP TABLE SSREntity")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE SSREntity")
     }
 }
 
 internal val MIGRATION_5_6 = object : Migration(5, 6) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             execSQL(
                 // language=RoomSql
@@ -146,14 +146,14 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
 }
 
 internal val MIGRATION_6_7 = object : Migration(6, 7) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL DEFAULT ''")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE OrderEntity ADD taxLines TEXT NOT NULL DEFAULT ''")
     }
 }
 
 internal val MIGRATION_7_8 = object : Migration(7, 8) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL(
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
             """
             CREATE TABLE IF NOT EXISTS OrderNotes (
                 siteId INTEGER NOT NULL,
@@ -172,8 +172,8 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
 
 internal val MIGRATION_8_9 = object : Migration(8, 9) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `Coupons` (`id` INTEGER NOT NULL,
@@ -357,8 +357,8 @@ internal val MIGRATION_8_9 = object : Migration(8, 9) {
 
 internal val MIGRATION_9_10 = object : Migration(9, 10) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             execSQL(
                 // language=RoomSql
@@ -425,8 +425,8 @@ internal val MIGRATION_9_10 = object : Migration(9, 10) {
 }
 
 internal val MIGRATION_10_11 = object : Migration(10, 11) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE Coupons")
             execSQL(
                 // language=RoomSql
@@ -466,8 +466,8 @@ internal val MIGRATION_10_11 = object : Migration(10, 11) {
 
 internal val MIGRATION_11_12 = object : Migration(11, 12) {
     @Suppress("MaxLineLength")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL(
                 // language=RoomSql
                 """CREATE TABLE IF NOT EXISTS `InboxNotes` (
@@ -523,8 +523,8 @@ internal class AutoMigration14to15 : AutoMigrationSpec
 
 internal val MIGRATION_15_16 = object : Migration(15, 16) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             // language=RoomSql
             execSQL(
@@ -605,8 +605,8 @@ internal class AutoMigration18to19 : AutoMigrationSpec
 internal class AutoMigration19to20 : AutoMigrationSpec
 
 internal val MIGRATION_20_21 = object : Migration(20, 21) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE TopPerformerProducts")
             execSQL(
                 // language=RoomSql
@@ -674,8 +674,8 @@ internal class AutoMigration23to24 : AutoMigrationSpec
  */
 internal val MIGRATION_22_23 = object : Migration(22, 23) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             // language=RoomSql
             execSQL(
@@ -750,8 +750,8 @@ internal val MIGRATION_22_23 = object : Migration(22, 23) {
  */
 internal val MIGRATION_24_25 = object : Migration(24, 25) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             // language=RoomSql
             execSQL(
@@ -826,8 +826,8 @@ internal val MIGRATION_24_25 = object : Migration(24, 25) {
  */
 internal val MIGRATION_27_28 = object : Migration(27, 28) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             // language=RoomSql
             execSQL(
@@ -904,8 +904,8 @@ internal val MIGRATION_27_28 = object : Migration(27, 28) {
  */
 internal val MIGRATION_30_31 = object : Migration(30, 31) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             // language=RoomSql
             execSQL(
@@ -982,8 +982,8 @@ internal val MIGRATION_30_31 = object : Migration(30, 31) {
  */
 internal val MIGRATION_31_32 = object : Migration(31, 32) {
     @Suppress("LongMethod")
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.apply {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.apply {
             execSQL("DROP TABLE OrderEntity")
             // language=RoomSql
             execSQL(
