@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Co
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
@@ -38,6 +39,7 @@ class OrderUpdateStore @Inject internal constructor(
     private val coroutineEngine: CoroutineEngine,
     private val wcOrderRestClient: OrderRestClient,
     private val ordersDaoDecorator: OrdersDaoDecorator,
+    private val metaDataDao: MetaDataDao,
     private val siteSqlUtils: SiteSqlUtils,
     private val orderSqlUtils: OrderSqlUtils
 ) {
@@ -278,6 +280,7 @@ class OrderUpdateStore @Inject internal constructor(
                 WooResult(result.error)
             } else {
                 ordersDaoDecorator.deleteOrder(site.localId(), orderId)
+                metaDataDao.deleteMetaData(localSiteId = site.localId(), parentId = orderId)
                 orderSqlUtils.deleteOrderSummaryById(site, orderId)
                 WooResult(Unit)
             }
