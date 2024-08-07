@@ -140,7 +140,6 @@ dependencies {
     testImplementation sharedLibs.assertj.core
     testImplementation sharedLibs.androidx.arch.core.testing
 
-    androidTestImplementation sharedLibs.mockito.android
     androidTestImplementation sharedLibs.assertj.core
     androidTestImplementation sharedLibs.androidx.arch.core.testing
     kaptAndroidTest sharedLibs.google.dagger.compiler
