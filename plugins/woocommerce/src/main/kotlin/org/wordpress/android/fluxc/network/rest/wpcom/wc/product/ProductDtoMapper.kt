@@ -11,6 +11,7 @@ import javax.inject.Inject
 class ProductDtoMapper @Inject constructor(
     private val stripProductMetaData: StripProductMetaData
 ) {
+    @Suppress("LongMethod", "ComplexMethod")
     fun mapToModel(localSiteId: LocalOrRemoteId.LocalId, dto: ProductDto): ProductWithMetaData {
         val model = WCProductModel().apply {
             this.localSiteId = localSiteId.value

@@ -74,7 +74,7 @@ data class RemoteAddonDto(
     )
 
     companion object {
-        @Suppress("SwallowedException")
+        @Suppress("SwallowedException", "TooGenericExceptionCaught")
         fun fromMetaDataValue(value: WCMetaDataValue): List<RemoteAddonDto>? {
             return try {
                 Gson().run {
