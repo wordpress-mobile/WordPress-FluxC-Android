@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.domain.Addon
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.VariationAttributes
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
@@ -40,6 +41,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStoc
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationMapper
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductStorageHelper
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
@@ -60,6 +62,7 @@ class WCProductStore @Inject constructor(
     private val wcProductRestClient: ProductRestClient,
     private val coroutineEngine: CoroutineEngine,
     private val addonsDao: AddonsDao,
+    private val productStorageHelper: ProductStorageHelper,
     private val logger: AppLogWrapper
 ) : Store(dispatcher) {
     companion object {
@@ -361,12 +364,12 @@ class WCProductStore @Inject constructor(
     }
 
     class RemoteProductPayload(
-        val product: WCProductModel,
+        val productWithMetaData: ProductWithMetaData,
         val site: SiteModel
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
-            product: WCProductModel,
+            product: ProductWithMetaData,
             site: SiteModel
         ) : this(product, site) {
             this.error = error
@@ -418,7 +421,7 @@ class WCProductStore @Inject constructor(
 
     class RemoteProductListPayload(
         val site: SiteModel,
-        val products: List<WCProductModel> = emptyList(),
+        val productsWithMetaData: List<ProductWithMetaData> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false,
@@ -437,7 +440,7 @@ class WCProductStore @Inject constructor(
         var site: SiteModel,
         var searchQuery: String?,
         var skuSearchOptions: SkuSearchOptions,
-        var products: List<WCProductModel> = emptyList(),
+        var productsWithMetaData: List<ProductWithMetaData> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false,
@@ -461,12 +464,12 @@ class WCProductStore @Inject constructor(
 
     class RemoteUpdateProductImagesPayload(
         var site: SiteModel,
-        val product: WCProductModel
+        val productWithMetaData: ProductWithMetaData
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
             site: SiteModel,
-            product: WCProductModel
+            product: ProductWithMetaData
         ) : this(site, product) {
             this.error = error
         }
@@ -474,12 +477,12 @@ class WCProductStore @Inject constructor(
 
     class RemoteUpdateProductPayload(
         var site: SiteModel,
-        val product: WCProductModel
+        val productWithMetaData: ProductWithMetaData
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
             site: SiteModel,
-            product: WCProductModel
+            product: ProductWithMetaData
         ) : this(site, product) {
             this.error = error
         }
@@ -633,12 +636,12 @@ class WCProductStore @Inject constructor(
 
     class RemoteAddProductPayload(
         var site: SiteModel,
-        val product: WCProductModel
+        val productWithMetaData: ProductWithMetaData
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
             site: SiteModel,
-            product: WCProductModel
+            product: ProductWithMetaData
         ) : this(site, product) {
             this.error = error
         }
@@ -1031,9 +1034,9 @@ class WCProductStore @Inject constructor(
         coroutineEngine.withDefaultContext(API, this, "submitProductAttributes") {
             wcProductRestClient.updateProductAttributes(site, productId, Gson().toJson(attributes))
                 .also { payload ->
-                    payload.result?.let { ProductSqlUtils.insertOrUpdateProduct(it) }
+                    payload.result?.let { productStorageHelper.upsertProduct(it) }
                 }
-                .asWooResult()
+                .asWooResult { it.product }
         }
 
     suspend fun submitVariationAttributeChanges(
@@ -1097,23 +1100,23 @@ class WCProductStore @Inject constructor(
             return@withDefaultContext if (result.isError) {
                 OnProductChanged(0).also {
                     it.error = result.error
-                    it.remoteProductId = result.product.remoteProductId
+                    it.remoteProductId = result.productWithMetaData.product.remoteProductId
                 }
             } else {
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(result.product)
+                val rowsAffected = productStorageHelper.upsertProduct(result.productWithMetaData)
 
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
-                    val domainAddons = mapProductAddonsToDomain(result.product.addons)
+                    val domainAddons = mapProductAddonsToDomain(result.productWithMetaData.product.addons)
                     addonsDao.cacheProductAddons(
-                        productRemoteId = result.product.remoteId,
+                        productRemoteId = result.productWithMetaData.product.remoteId,
                         localSiteId = result.site.localId(),
                         addons = domainAddons
                     )
                 }
 
                 OnProductChanged(rowsAffected).also {
-                    it.remoteProductId = result.product.remoteProductId
+                    it.remoteProductId = result.productWithMetaData.product.remoteProductId
                 }
             }
         }
@@ -1165,10 +1168,11 @@ class WCProductStore @Inject constructor(
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>): List<WCProductModel>? {
         return coroutineEngine.withDefaultContext(API, this, "fetchProductList") {
-            wcProductRestClient.fetchProductsWithSyncRequest(site = site, includedProductIds = productIds).result
+            wcProductRestClient.fetchProductsWithSyncRequest(site = site, includedProductIds = productIds)
+                .result
         }?.also {
-            ProductSqlUtils.insertOrUpdateProducts(it)
-        }
+            productStorageHelper.upsertProducts(it)
+        }?.map { it.product }
     }
 
     suspend fun fetchProductCategoryListSynced(
@@ -1450,9 +1454,9 @@ class WCProductStore @Inject constructor(
                     WooResult(result.error)
                 } else {
                     result.result?.let {
-                        ProductSqlUtils.insertOrUpdateProducts(it)
+                        productStorageHelper.upsertProducts(it)
                     }
-                    WooResult(result.result)
+                    WooResult(result.result?.map { it.product })
                 }
             }
         }
@@ -1596,10 +1600,10 @@ class WCProductStore @Inject constructor(
                         excludedProductIds.isEmpty() &&
                         filterOptions.isEmpty()
                     ) {
-                        ProductSqlUtils.deleteProductsForSite(site)
+                        productStorageHelper.deleteProductsForSite(site)
                     }
 
-                    ProductSqlUtils.insertOrUpdateProducts(response.result)
+                    productStorageHelper.upsertProducts(response.result)
                     val canLoadMore = response.result.size == pageSize
                     WooResult(canLoadMore)
                 }
@@ -1627,8 +1631,8 @@ class WCProductStore @Inject constructor(
             when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
-                    ProductSqlUtils.insertOrUpdateProducts(response.result)
-                    val productIds = response.result.map { it.remoteProductId }
+                    productStorageHelper.upsertProducts(response.result)
+                    val productIds = response.result.map { it.product.remoteProductId }
                     val products = if (productIds.isNotEmpty()) {
                         ProductSqlUtils.getProductsByRemoteIds(site, productIds)
                     } else {
@@ -1843,20 +1847,20 @@ class WCProductStore @Inject constructor(
                 // or if the remoteProductIds or excludedProductIds are null, otherwise
                 // products deleted outside of the app will persist
                 if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
-                    ProductSqlUtils.deleteProductsForSite(payload.site)
+                    productStorageHelper.deleteProductsForSite(payload.site)
                 }
 
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
+                val rowsAffected = productStorageHelper.upsertProducts(payload.productsWithMetaData)
                 onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
 
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductsAddons") {
-                    payload.products.forEach { product ->
+                    payload.productsWithMetaData.forEach { productWithMetaData ->
 
-                        val domainAddons = mapProductAddonsToDomain(product.addons)
+                        val domainAddons = mapProductAddonsToDomain(productWithMetaData.product.addons)
 
                         addonsDao.cacheProductAddons(
-                            productRemoteId = product.remoteId,
+                            productRemoteId = productWithMetaData.product.remoteId,
                             localSiteId = payload.site.localId(),
                             addons = domainAddons
                         )
@@ -1879,12 +1883,12 @@ class WCProductStore @Inject constructor(
             )
         } else {
             coroutineEngine.launch(T.DB, this, "handleSearchProductsCompleted") {
-                ProductSqlUtils.insertOrUpdateProducts(payload.products)
+                productStorageHelper.upsertProducts(payload.productsWithMetaData)
                 emitChange(
                     OnProductsSearched(
                         searchQuery = payload.searchQuery,
                         isSkuSearch = payload.skuSearchOptions,
-                        searchResults = payload.products,
+                        searchResults = payload.productsWithMetaData.map { it.product },
                         canLoadMore = payload.canLoadMore
                     )
                 )
@@ -1947,15 +1951,15 @@ class WCProductStore @Inject constructor(
             if (payload.isError) {
                 onProductImagesChanged = OnProductImagesChanged(
                     0,
-                    payload.product.remoteProductId
+                    payload.productWithMetaData.product.remoteProductId
                 ).also {
                     it.error = payload.error
                 }
             } else {
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
+                val rowsAffected = productStorageHelper.upsertProduct(payload.productWithMetaData)
                 onProductImagesChanged = OnProductImagesChanged(
                     rowsAffected,
-                    payload.product.remoteProductId
+                    payload.productWithMetaData.product.remoteProductId
                 )
             }
 
@@ -1969,11 +1973,11 @@ class WCProductStore @Inject constructor(
             val onProductUpdated: OnProductUpdated
 
             if (payload.isError) {
-                onProductUpdated = OnProductUpdated(0, payload.product.remoteProductId)
+                onProductUpdated = OnProductUpdated(0, payload.productWithMetaData.product.remoteProductId)
                     .also { it.error = payload.error }
             } else {
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-                onProductUpdated = OnProductUpdated(rowsAffected, payload.product.remoteProductId)
+                val rowsAffected = productStorageHelper.upsertProduct(payload.productWithMetaData)
+                onProductUpdated = OnProductUpdated(rowsAffected, payload.productWithMetaData.product.remoteProductId)
             }
 
             onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
@@ -2063,11 +2067,11 @@ class WCProductStore @Inject constructor(
             if (payload.isError) {
                 onProductCreated = OnProductCreated(
                     0,
-                    payload.product.remoteProductId
+                    payload.productWithMetaData.product.remoteProductId
                 ).also { it.error = payload.error }
             } else {
-                val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-                onProductCreated = OnProductCreated(rowsAffected, payload.product.remoteProductId)
+                val rowsAffected = productStorageHelper.upsertProduct(payload.productWithMetaData)
+                onProductCreated = OnProductCreated(rowsAffected, payload.productWithMetaData.product.remoteProductId)
             }
 
             onProductCreated.causeOfChange = WCProductAction.ADDED_PRODUCT
@@ -2082,7 +2086,7 @@ class WCProductStore @Inject constructor(
             if (payload.isError) {
                 onProductChanged = OnProductChanged(0).also { it.error = payload.error }
             } else {
-                val rowsAffected = ProductSqlUtils.deleteProduct(
+                val rowsAffected = productStorageHelper.deleteProduct(
                     payload.site,
                     payload.remoteProductId
                 )
