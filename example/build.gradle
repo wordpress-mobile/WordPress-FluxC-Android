@@ -142,7 +142,6 @@ dependencies {
 
     androidTestImplementation sharedLibs.assertj.core
     androidTestImplementation sharedLibs.androidx.arch.core.testing
-    kaptAndroidTest sharedLibs.google.dagger.compiler
     androidTestCompileOnly sharedLibs.glassfish.javax.annotation
     // Test orchestrator
     androidTestImplementation sharedLibs.androidx.test.runner
