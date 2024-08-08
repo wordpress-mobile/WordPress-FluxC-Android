@@ -7,7 +7,6 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
-import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemotePriceType.FlatFee
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteRestrictionsType.AnyText
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteType.Checkbox
@@ -98,12 +97,7 @@ class ProductDtoMapperTest {
             ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
             ?.product
 
-        assertThat(product?.metadata).isNotNull
-        val map = product?.parsedMetaData?.associateBy { it.key }!!
-
-        assertThat(map).containsKey(BundleMetadataKeys.BUNDLE_MAX_SIZE)
-        assertThat(map).doesNotContainKey(BundleMetadataKeys.BUNDLE_MIN_SIZE)
-        assertThat(map.getValue(BundleMetadataKeys.BUNDLE_MAX_SIZE).valueAsString).isEqualTo("5")
+        assertThat(product?.bundleMaxSize).isEqualTo(5f)
     }
 
     @Test
@@ -113,12 +107,7 @@ class ProductDtoMapperTest {
             ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
             ?.product
 
-        assertThat(product?.metadata).isNotNull
-        val map = product?.parsedMetaData?.associateBy { it.key }!!
-
-        assertThat(map).containsKey(BundleMetadataKeys.BUNDLE_MIN_SIZE)
-        assertThat(map).doesNotContainKey(BundleMetadataKeys.BUNDLE_MAX_SIZE)
-        assertThat(map.getValue(BundleMetadataKeys.BUNDLE_MIN_SIZE).valueAsString).isEqualTo("5")
+        assertThat(product?.bundleMinSize).isEqualTo(5f)
     }
 
     @Test
@@ -128,13 +117,8 @@ class ProductDtoMapperTest {
             ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
             ?.product
 
-        assertThat(product?.metadata).isNotNull
-        val map = product?.parsedMetaData?.associateBy { it.key }!!
-
-        assertThat(map).containsKey(BundleMetadataKeys.BUNDLE_MIN_SIZE)
-        assertThat(map).containsKey(BundleMetadataKeys.BUNDLE_MAX_SIZE)
-        assertThat(map.getValue(BundleMetadataKeys.BUNDLE_MAX_SIZE).valueAsString).isEqualTo("5")
-        assertThat(map.getValue(BundleMetadataKeys.BUNDLE_MIN_SIZE).valueAsString).isEqualTo("5")
+        assertThat(product?.bundleMinSize).isEqualTo(5f)
+        assertThat(product?.bundleMaxSize).isEqualTo(5f)
     }
 
     @Test
