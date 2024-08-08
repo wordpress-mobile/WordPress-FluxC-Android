@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.model
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
@@ -78,15 +77,6 @@ data class WCMetaData(
                     displayValue = json[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
                 )
             } else null
-        }
-
-        fun addAsMetadata(metadata: JsonArray, key: String, value: String) {
-            val item = JsonObject().also {
-                it.addProperty(ID, 0)
-                it.addProperty(KEY, key)
-                it.addProperty(VALUE, value)
-            }
-            metadata.add(item)
         }
     }
 
