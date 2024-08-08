@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.VariationAttributes
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductComponent
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -25,6 +26,7 @@ import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
+import org.wordpress.android.fluxc.model.get
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
@@ -1107,7 +1109,8 @@ class WCProductStore @Inject constructor(
 
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductAddons") {
-                    val domainAddons = mapProductAddonsToDomain(result.productWithMetaData.product.addons)
+                    val domainAddons = extractAddonsFromProductMetaData(result.productWithMetaData.metaData)
+
                     addonsDao.cacheProductAddons(
                         productRemoteId = result.productWithMetaData.product.remoteId,
                         localSiteId = result.site.localId(),
@@ -1813,7 +1816,10 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    private fun mapProductAddonsToDomain(remoteAddons: Array<RemoteAddonDto>?): List<Addon> {
+    private fun extractAddonsFromProductMetaData(metaData: List<WCMetaData>): List<Addon> {
+        val remoteAddons = metaData[WCMetaData.AddOnsMetadataKeys.ADDONS_METADATA_KEY]
+            ?.let { RemoteAddonDto.fromMetaDataValue(it.value) }
+
         return remoteAddons.orEmpty()
             .toList()
             .mapNotNull { remoteAddonDto ->
@@ -1856,8 +1862,7 @@ class WCProductStore @Inject constructor(
                 // TODO: 18/08/2021 @wzieba add tests
                 coroutineEngine.launch(T.DB, this, "cacheProductsAddons") {
                     payload.productsWithMetaData.forEach { productWithMetaData ->
-
-                        val domainAddons = mapProductAddonsToDomain(productWithMetaData.product.addons)
+                        val domainAddons = extractAddonsFromProductMetaData(productWithMetaData.metaData)
 
                         addonsDao.cacheProductAddons(
                             productRemoteId = productWithMetaData.product.remoteId,

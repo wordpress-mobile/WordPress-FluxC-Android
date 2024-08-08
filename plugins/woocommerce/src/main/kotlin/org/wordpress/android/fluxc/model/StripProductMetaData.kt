@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
+import org.wordpress.android.fluxc.model.WCMetaData.AddOnsMetadataKeys
 import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
 import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 import org.wordpress.android.fluxc.utils.isElementNullOrEmpty

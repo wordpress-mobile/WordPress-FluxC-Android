@@ -116,6 +116,10 @@ data class WCMetaData(
                 SESSION_PAGE_VIEWS
             )
     }
+
+    object AddOnsMetadataKeys {
+        const val ADDONS_METADATA_KEY = "_product_addons"
+    }
 }
 
 operator fun List<WCMetaData>.get(key: String) = firstOrNull { it.key == key }

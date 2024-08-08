@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.model.addons
 
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.WCMetaDataValue
 
 data class RemoteAddonDto(
     @SerializedName("title_format")
@@ -70,4 +72,17 @@ data class RemoteAddonDto(
         val price: String? = null,
         val image: String? = null
     )
+
+    companion object {
+        @Suppress("SwallowedException")
+        fun fromMetaDataValue(value: WCMetaDataValue): List<RemoteAddonDto>? {
+            return try {
+                Gson().run {
+                    fromJson(value.jsonValue, Array<RemoteAddonDto>::class.java)
+                }.toList()
+            } catch (ex: Exception) {
+                null
+            }
+        }
+    }
 }
