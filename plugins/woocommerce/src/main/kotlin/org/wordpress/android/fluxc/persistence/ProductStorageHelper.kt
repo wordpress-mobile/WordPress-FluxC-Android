@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.persistence
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 import javax.inject.Inject
@@ -11,6 +12,16 @@ class ProductStorageHelper @Inject constructor(
     private val productSqlUtils: ProductSqlUtils,
     private val metaDataDao: MetaDataDao
 ) {
+    suspend fun getProduct(site: SiteModel, remoteProductId: Long): ProductWithMetaData? {
+        val product = productSqlUtils.getProductByRemoteId(site, remoteProductId) ?: return null
+        val metadata = getProductMetadata(site, remoteProductId)
+        return ProductWithMetaData(product, metadata)
+    }
+
+    suspend fun getProductMetadata(site: SiteModel, remoteProductId: Long): List<WCMetaData> {
+        return metaDataDao.getMetaData(site.localId(), remoteProductId).map { it.toDomainModel() }
+    }
+
     suspend fun upsertProduct(productWithMetaData: ProductWithMetaData): Int {
         val (product, metadata) = productWithMetaData
         val rowsAffected = productSqlUtils.insertOrUpdateProduct(product)

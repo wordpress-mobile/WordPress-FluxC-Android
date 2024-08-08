@@ -2103,6 +2103,11 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    suspend fun getProductMetaData(
+        site: SiteModel,
+        remoteProductId: Long
+    ) = productStorageHelper.getProductMetadata(site = site, remoteProductId = remoteProductId)
+
     data class ProductSearchResult(
         val products: List<WCProductModel>,
         val canLoadMore: Boolean
