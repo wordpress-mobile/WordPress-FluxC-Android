@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
+import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.StripProductMetaData
@@ -9,10 +10,16 @@ import org.wordpress.android.fluxc.network.utils.getString
 import javax.inject.Inject
 
 class ProductDtoMapper @Inject constructor(
+    private val gson: Gson,
     private val stripProductMetaData: StripProductMetaData
 ) {
     @Suppress("LongMethod", "ComplexMethod")
     fun mapToModel(localSiteId: LocalOrRemoteId.LocalId, dto: ProductDto): ProductWithMetaData {
+        val fatMetaDataList = dto.metadata?.mapNotNull {
+            runCatching { WCMetaData.fromJson(it.asJsonObject) }.getOrNull()
+        } ?: emptyList()
+        val metaData = stripProductMetaData(fatMetaDataList)
+
         val model = WCProductModel().apply {
             this.localSiteId = localSiteId.value
             remoteProductId = dto.id ?: 0
@@ -102,7 +109,9 @@ class ProductDtoMapper @Inject constructor(
                 it == "yes"
             } ?: false
 
-            metadata = stripProductMetaData(dto.metadata?.toString() ?: "")
+            // Save only the subscription data, the rest of the metadata will be saved separately
+            metadata = metaData.filter { it.key in WCProductModel.SubscriptionMetadataKeys.ALL_KEYS }
+                .let { gson.toJson(it) }
             isSampleProduct = dto.metadata?.any {
                 val metaDataEntry = if (it.isJsonObject) it.asJsonObject else null
                 metaDataEntry?.let { json ->
@@ -120,9 +129,7 @@ class ProductDtoMapper @Inject constructor(
 
         return ProductWithMetaData(
             product = model.applyBundledProductChanges(dto),
-            metaData = dto.metadata?.mapNotNull {
-                runCatching { WCMetaData.fromJson(it.asJsonObject) }.getOrNull()
-            } ?: emptyList()
+            metaData = metaData
         )
     }
 

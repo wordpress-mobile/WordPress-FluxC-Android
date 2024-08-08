@@ -105,6 +105,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var length = ""
     @Column var width = ""
     @Column var height = ""
+
+    /**
+     * This holds just the subscription keys, for the rest of product's metadata please check [ProductWithMetaData]
+     */
     @Column var metadata = ""
 
     @Column var bundledItems = ""
