@@ -28,8 +28,6 @@ class StripProductMetaData @Inject internal constructor(private val gson: Gson) 
         val SUPPORTED_KEYS: Set<String> = buildSet {
             add(AddOnsMetadataKeys.ADDONS_METADATA_KEY)
             addAll(SubscriptionMetadataKeys.ALL_KEYS)
-            add(WCMetaData.BundleMetadataKeys.BUNDLE_MIN_SIZE)
-            add(WCMetaData.BundleMetadataKeys.BUNDLE_MAX_SIZE)
         }
     }
 }

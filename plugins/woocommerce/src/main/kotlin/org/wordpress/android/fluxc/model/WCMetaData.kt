@@ -96,8 +96,6 @@ data class WCMetaData(
 
     object BundleMetadataKeys {
         const val BUNDLED_ITEM_ID = "_bundled_item_id"
-        const val BUNDLE_MIN_SIZE = "_bundle_min_size"
-        const val BUNDLE_MAX_SIZE = "_bundle_max_size"
     }
 
     object OrderAttributionInfoKeys {

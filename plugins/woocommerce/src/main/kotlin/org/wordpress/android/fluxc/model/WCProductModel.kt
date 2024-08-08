@@ -109,10 +109,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
     @Column var metadata = ""
+
     @Column var bundledItems = ""
     @Column var compositeComponents = ""
     @Column var specialStockStatus = ""
-
+    @Column var bundleMinSize: Float? = null
+    @Column var bundleMaxSize: Float? = null
     @Column var minAllowedQuantity = -1
     @Column var maxAllowedQuantity = -1
     @Column var groupOfQuantity = -1

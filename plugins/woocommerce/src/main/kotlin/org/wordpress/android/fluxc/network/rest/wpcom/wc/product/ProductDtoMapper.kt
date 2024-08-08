@@ -1,12 +1,9 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
-import com.google.gson.JsonArray
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.WCMetaData
-import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys.BUNDLE_MAX_SIZE
-import org.wordpress.android.fluxc.model.WCMetaData.BundleMetadataKeys.BUNDLE_MIN_SIZE
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
 import javax.inject.Inject
@@ -97,9 +94,7 @@ class ProductDtoMapper @Inject constructor(
             bundledItems = dto.bundled_items?.toString() ?: ""
             compositeComponents = dto.composite_components?.toString() ?: ""
             minAllowedQuantity = dto.min_quantity?.toInt() ?: -1
-            maxAllowedQuantity = dto.max_quantity?.let {
-                if (it.isEmpty()) "0" else it
-            }?.toInt() ?: -1
+            maxAllowedQuantity = dto.max_quantity?.let { it.ifEmpty { "0" } }?.toInt() ?: -1
             groupOfQuantity = dto.group_of_quantity?.toInt() ?: -1
 
             combineVariationQuantities = dto.combine_variations?.let {
@@ -123,34 +118,21 @@ class ProductDtoMapper @Inject constructor(
         }
 
         return ProductWithMetaData(
-            product = dto.applyBundledProductChanges(model),
+            product = model.applyBundledProductChanges(dto),
             metaData = dto.metadata?.mapNotNull {
                 runCatching { WCMetaData.fromJson(it.asJsonObject) }.getOrNull()
             } ?: emptyList()
         )
     }
 
-    private fun ProductApiResponse.applyBundledProductChanges(model: WCProductModel): WCProductModel {
+    private fun WCProductModel.applyBundledProductChanges(dto: ProductApiResponse) = apply {
         if (this.type == CoreProductType.BUNDLE.value) {
-            val response = this
-            if ((response.bundle_stock_status in CoreProductStockStatus.ALL_VALUES).not()) {
-                model.specialStockStatus = response.bundle_stock_status ?: ""
+            if (dto.bundle_stock_status !in CoreProductStockStatus.ALL_VALUES) {
+                specialStockStatus = dto.bundle_stock_status ?: ""
             }
-            val hasBundleMinQuantityRule = response.bundle_min_size.isNullOrEmpty().not()
-            val hasBundleMaxQuantityRule = response.bundle_max_size.isNullOrEmpty().not()
-            val hasBundleQuantityRules = hasBundleMinQuantityRule || hasBundleMaxQuantityRule
 
-            if (hasBundleQuantityRules) {
-                val metadata = response.metadata ?: JsonArray()
-                response.bundle_max_size?.let { value ->
-                    WCMetaData.addAsMetadata(metadata, BUNDLE_MAX_SIZE, value)
-                }
-                response.bundle_min_size?.let { value ->
-                    WCMetaData.addAsMetadata(metadata, BUNDLE_MIN_SIZE, value)
-                }
-                model.metadata = metadata.toString()
-            }
+            bundleMaxSize = dto.bundle_max_size?.toFloatOrNull()
+            bundleMinSize = dto.bundle_min_size?.toFloatOrNull()
         }
-        return model
     }
 }
