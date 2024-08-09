@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse
+import org.wordpress.android.fluxc.store.AccountStore.OnTwoFactorAuthStarted
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.FetchWPAPISitePayload
@@ -375,7 +376,7 @@ class MainFragment : Fragment() {
 
     @Suppress("unused", "UNUSED_PARAMETER")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onTwoFactorAuthStarted(event: AccountStore.OnTwoFactorAuthStarted) {
+    fun onTwoFactorAuthStarted(event: OnTwoFactorAuthStarted) {
         show2faDialog()
     }
 
