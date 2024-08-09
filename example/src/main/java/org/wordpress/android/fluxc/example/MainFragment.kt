@@ -177,7 +177,13 @@ class MainFragment : Fragment() {
     }
 
     private fun signIn2fa(twoStepCode: String) {
-        authenticateTwoFactorPayload?.twoStepCode = twoStepCode
+        authenticateTwoFactorPayload = AuthenticateTwoFactorPayload(
+            authenticatePayload?.username.orEmpty(),
+            authenticatePayload?.password.orEmpty(),
+            twoStepCode,
+            true
+        )
+
         dispatcher.dispatch(AuthenticationActionBuilder
             .newAuthenticateTwoFactorAction(authenticateTwoFactorPayload))
     }
@@ -365,6 +371,12 @@ class MainFragment : Fragment() {
                     " - rowsAffected: " + event.rowsAffected
             )
         }
+    }
+
+    @Suppress("unused", "UNUSED_PARAMETER")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onTwoFactorAuthStarted(event: AccountStore.OnTwoFactorAuthStarted) {
+        show2faDialog()
     }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
