@@ -591,5 +591,4 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             SUBSCRIPTION_PAYMENT_SYNC_DATE
         )
     }
-
 }
