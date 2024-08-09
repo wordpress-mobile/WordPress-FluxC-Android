@@ -2103,6 +2103,11 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    suspend fun getProductWithMetaData(
+        site: SiteModel,
+        remoteProductId: Long
+    ) = productStorageHelper.getProduct(site, remoteProductId)
+
     suspend fun getProductMetaData(
         site: SiteModel,
         remoteProductId: Long
