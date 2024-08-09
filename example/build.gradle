@@ -119,9 +119,8 @@ dependencies {
 
     implementation sharedLibs.google.gson
 
-    implementation sharedLibs.androidx.room.runtime
-    kapt sharedLibs.androidx.room.compiler
-    implementation sharedLibs.androidx.room.ktx
+    testImplementation sharedLibs.androidx.room.runtime
+    androidTestImplementation sharedLibs.androidx.room.runtime
     androidTestImplementation sharedLibs.androidx.room.testing
 
     // Dagger
