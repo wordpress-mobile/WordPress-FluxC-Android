@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductFileModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -766,7 +767,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             WCProductActionBuilder.newAddedProductAction(
                 RemoteAddProductPayload(
                     sSite,
-                    productModel
+                    ProductWithMetaData(productModel)
                 )
             )
         )

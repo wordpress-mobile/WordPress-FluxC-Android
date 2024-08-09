@@ -7,9 +7,12 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
+import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemotePriceType.FlatFee
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteRestrictionsType.AnyText
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteType.Checkbox
+import org.wordpress.android.fluxc.model.get
 import kotlin.test.fail
 
 class ProductDtoMapperTest {
@@ -21,29 +24,34 @@ class ProductDtoMapperTest {
 
     @Test
     fun `Product addons should be serialized correctly`() {
-        val productModelUnderTest =
+        val productMetaData =
             "wc/product-with-addons.json"
                 .jsonFileAs(ProductApiResponse::class.java)
                 ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
-                ?.product
+                ?.metaData
 
-        assertThat(productModelUnderTest).isNotNull
-        assertThat(productModelUnderTest?.addons).isNotEmpty
-        assertThat(productModelUnderTest?.addons?.size).isEqualTo(3)
+        val addons = productMetaData?.get(WCMetaData.AddOnsMetadataKeys.ADDONS_METADATA_KEY)
+            ?.let { RemoteAddonDto.fromMetaDataValue(it.value) }
+
+        assertThat(addons).isNotNull
+        assertThat(addons).isNotEmpty
+        assertThat(addons?.size).isEqualTo(3)
     }
 
     @Test
     fun `Product addons should be serialized with enum values correctly`() {
-        val productModelUnderTest =
+        val productMetaData =
             "wc/product-with-addons.json"
                 .jsonFileAs(ProductApiResponse::class.java)
                 ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
-                ?.product
+                ?.metaData
 
-        assertThat(productModelUnderTest).isNotNull
-        assertThat(productModelUnderTest?.addons).isNotEmpty
+        val addons = productMetaData?.get(WCMetaData.AddOnsMetadataKeys.ADDONS_METADATA_KEY)
+            ?.let { RemoteAddonDto.fromMetaDataValue(it.value) }
 
-        productModelUnderTest?.addons?.first()?.let {
+        assertThat(addons).isNotEmpty
+
+        addons?.first()?.let {
             assertThat(it.priceType).isEqualTo(FlatFee)
             assertThat(it.restrictionsType).isEqualTo(AnyText)
             assertThat(it.type).isEqualTo(Checkbox)
@@ -55,8 +63,9 @@ class ProductDtoMapperTest {
         val addonOptions = "wc/product-with-addons.json"
             .jsonFileAs(ProductApiResponse::class.java)
             ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
-            ?.product
-            ?.addons
+            ?.metaData
+            ?.get(WCMetaData.AddOnsMetadataKeys.ADDONS_METADATA_KEY)
+            ?.let { RemoteAddonDto.fromMetaDataValue(it.value) }
             ?.takeIf { it.isNotEmpty() }
             ?.first()
             ?.options
@@ -75,19 +84,6 @@ class ProductDtoMapperTest {
 
         assertThat(productModelUnderTest).isNotNull
         assertThat(productModelUnderTest?.metadata).isNotNull
-    }
-
-    @Test
-    fun `Product addons with incorrect key should be null`() {
-        val productModelUnderTest =
-            "wc/product-with-incorrect-addons-key.json"
-                .jsonFileAs(ProductApiResponse::class.java)
-                ?.let { productDtoMapper.mapToModel(LocalOrRemoteId.LocalId(0), it) }
-                ?.product
-
-        assertThat(productModelUnderTest).isNotNull
-        assertThat(productModelUnderTest?.metadata).isNotNull
-        assertThat(productModelUnderTest?.addons).isNull()
     }
 
     @Test
