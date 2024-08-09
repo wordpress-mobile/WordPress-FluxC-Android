@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.persistence
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
@@ -13,7 +15,9 @@ class ProductStorageHelper @Inject constructor(
     private val metaDataDao: MetaDataDao
 ) {
     suspend fun getProduct(site: SiteModel, remoteProductId: Long): ProductWithMetaData? {
-        val product = productSqlUtils.getProductByRemoteId(site, remoteProductId) ?: return null
+        val product = withContext(Dispatchers.IO) {
+            productSqlUtils.getProductByRemoteId(site, remoteProductId)
+        } ?: return null
         val metadata = getProductMetadata(site, remoteProductId)
         return ProductWithMetaData(product, metadata)
     }
@@ -24,7 +28,9 @@ class ProductStorageHelper @Inject constructor(
 
     suspend fun upsertProduct(productWithMetaData: ProductWithMetaData): Int {
         val (product, metadata) = productWithMetaData
-        val rowsAffected = productSqlUtils.insertOrUpdateProduct(product)
+        val rowsAffected = withContext(Dispatchers.IO) {
+            productSqlUtils.insertOrUpdateProduct(product)
+        }
 
         metaDataDao.updateMetaData(
             parentItemId = product.remoteProductId,
@@ -45,7 +51,9 @@ class ProductStorageHelper @Inject constructor(
 
     suspend fun upsertProducts(productsWithMetaData: List<ProductWithMetaData>): Int {
         val products = productsWithMetaData.map { it.product }
-        val rowsAffected = productSqlUtils.insertOrUpdateProducts(products)
+        val rowsAffected = withContext(Dispatchers.IO) {
+            productSqlUtils.insertOrUpdateProducts(products)
+        }
 
         productsWithMetaData.forEach { productWithMetaData ->
             val (product, metadata) = productWithMetaData
@@ -69,13 +77,17 @@ class ProductStorageHelper @Inject constructor(
     }
 
     suspend fun deleteProduct(site: SiteModel, remoteProductId: Long): Int {
-        val rowsAffected = productSqlUtils.deleteProduct(site, remoteProductId)
+        val rowsAffected = withContext(Dispatchers.IO) {
+            productSqlUtils.deleteProduct(site, remoteProductId)
+        }
         metaDataDao.deleteMetaData(site.localId(), remoteProductId)
         return rowsAffected
     }
 
     suspend fun deleteProductsForSite(site: SiteModel) {
-        productSqlUtils.deleteProductsForSite(site)
+        withContext(Dispatchers.IO) {
+            productSqlUtils.deleteProductsForSite(site)
+        }
         metaDataDao.deleteMetaDataForSite(site.localId(), MetaDataEntity.ParentItemType.PRODUCT)
     }
 }
