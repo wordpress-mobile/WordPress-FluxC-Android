@@ -107,8 +107,6 @@ dependencies {
     implementation sharedLibs.androidx.recyclerview
     implementation sharedLibs.androidx.constraintlayout
     implementation sharedLibs.androidx.annotation
-    implementation sharedLibs.androidx.arch.core.common
-    implementation sharedLibs.androidx.arch.core.runtime
     implementation sharedLibs.androidx.lifecycle.runtime.ktx
 
     implementation(sharedLibs.wordpress.utils) {
