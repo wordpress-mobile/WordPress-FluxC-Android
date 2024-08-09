@@ -103,7 +103,7 @@ dependencies {
     implementation project(':plugins:woocommerce')
 
     implementation sharedLibs.androidx.appcompat
-    implementation sharedLibs.androidx.legacy.support.v4
+    implementation sharedLibs.androidx.swiperefreshlayout
     implementation sharedLibs.androidx.recyclerview
     implementation sharedLibs.androidx.constraintlayout
     implementation sharedLibs.androidx.annotation
