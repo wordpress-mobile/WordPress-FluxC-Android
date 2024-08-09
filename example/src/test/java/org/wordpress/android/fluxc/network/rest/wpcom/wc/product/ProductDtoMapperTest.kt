@@ -1,8 +1,9 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
+import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
@@ -17,8 +18,12 @@ import kotlin.test.fail
 
 class ProductDtoMapperTest {
     private val productDtoMapper = ProductDtoMapper(
+        gson = Gson(),
         stripProductMetaData = mock {
-            on { invoke(anyOrNull()) } doAnswer { it.arguments[0] as String }
+            on { invoke(any()) } doAnswer {
+                @Suppress("UNCHECKED_CAST")
+                it.arguments[0] as List<WCMetaData>
+            }
         }
     )
 

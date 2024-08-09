@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.wc.product
 
+import androidx.room.Room
 import com.google.gson.JsonObject
 import com.yarolegovich.wellsql.WellSql
 import kotlinx.coroutines.flow.first
@@ -24,7 +25,9 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.AccountModel
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -39,6 +42,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStoc
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductVariationApiResponse
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductStorageHelper
+import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.BatchGenerateVariationsPayload
@@ -62,15 +67,10 @@ import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
+@Suppress("LargeClass")
 class WCProductStoreTest {
     private val productRestClient: ProductRestClient = mock()
-    private val productStore = WCProductStore(
-            Dispatcher(),
-            productRestClient,
-            addonsDao = mock(),
-            logger = mock(),
-            coroutineEngine = initCoroutineEngine()
-    )
+    private lateinit var productStore: WCProductStore
 
     @Before
     fun setUp() {
@@ -89,6 +89,23 @@ class WCProductStoreTest {
         )
         WellSql.init(config)
         config.reset()
+
+        val roomDb = Room.inMemoryDatabaseBuilder(appContext, WCAndroidDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+
+        val productStorageHelper = ProductStorageHelper(
+            productSqlUtils = ProductSqlUtils,
+            metaDataDao = roomDb.metaDataDao
+        )
+        productStore = WCProductStore(
+            Dispatcher(),
+            productRestClient,
+            addonsDao = mock(),
+            logger = mock(),
+            productStorageHelper = productStorageHelper,
+            coroutineEngine = initCoroutineEngine()
+        )
     }
 
     @Test
@@ -150,9 +167,13 @@ class WCProductStoreTest {
         ProductSqlUtils.insertOrUpdateProduct(productModel)
 
         // Simulate incoming action with updated product model
-        val payload = RemoteUpdateProductPayload(site, productModel.apply {
-            description = "Updated description"
-        })
+        val payload = RemoteUpdateProductPayload(site,
+            ProductWithMetaData(
+                productModel.apply {
+                    description = "Updated description"
+                }
+            )
+        )
         productStore.onAction(WCProductActionBuilder.newUpdatedProductAction(payload))
 
         with(productStore.getProductByRemoteId(site, productModel.remoteProductId)) {
@@ -281,7 +302,7 @@ class WCProductStoreTest {
 
         // when
         ProductSqlUtils.insertOrUpdateProduct(productModel)
-        val payload = RemoteAddProductPayload(site, productModel)
+        val payload = RemoteAddProductPayload(site, ProductWithMetaData(productModel))
         productStore.onAction(WCProductActionBuilder.newAddedProductAction(payload))
 
         // then
@@ -786,4 +807,27 @@ class WCProductStoreTest {
                 it.remoteVariationId == 6L
             }
         }
+
+    @Test
+    fun `when fetching product with metadata, then save results to database`(): Unit = runBlocking {
+        // given
+        val site = SiteModel().apply { id = 1 }
+        val product = ProductTestUtils.generateSampleProduct(remoteId = 123, siteId = site.id)
+        val metadata = listOf(
+            WCMetaData(0, "key1", "value1"),
+            WCMetaData(1, "key2", "value2"),
+        )
+        whenever(productRestClient.fetchSingleProduct(site, product.remoteProductId)).thenReturn(
+            WCProductStore.RemoteProductPayload(ProductWithMetaData(product, metadata), site)
+        )
+
+        // when
+        productStore.fetchSingleProduct(WCProductStore.FetchSingleProductPayload(site, product.remoteProductId))
+
+        // then
+        val storedProduct = productStore.getProductWithMetaData(site, product.remoteProductId)
+        assertThat(storedProduct).isNotNull
+        assertThat(storedProduct?.product).isEqualTo(product)
+        assertThat(storedProduct?.metaData).isEqualTo(metadata)
+    }
 }

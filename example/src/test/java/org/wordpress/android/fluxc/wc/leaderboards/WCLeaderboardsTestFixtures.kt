@@ -1,12 +1,13 @@
 package org.wordpress.android.fluxc.wc.leaderboards
 
 import com.google.gson.Gson
-import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductDtoMapper
@@ -18,8 +19,12 @@ object WCLeaderboardsTestFixtures {
         origin = SiteModel.ORIGIN_XMLRPC
     }
     private val productDtoMapper = ProductDtoMapper(
+        gson = Gson(),
         stripProductMetaData = mock {
-            on { invoke(anyOrNull()) } doAnswer { it.arguments[0] as String }
+            on { invoke(any()) } doAnswer {
+                @Suppress("UNCHECKED_CAST")
+                it.arguments[0] as List<WCMetaData>
+            }
         }
     )
 
