@@ -52,7 +52,7 @@ data class WCMetaData(
     }
 
     companion object {
-        private const val ID = "id"
+        const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"
         private const val DISPLAY_KEY = "display_key"
