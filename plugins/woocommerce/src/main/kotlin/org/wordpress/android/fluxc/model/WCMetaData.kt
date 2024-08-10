@@ -68,14 +68,16 @@ data class WCMetaData(
             addAll(OrderAttributionInfoKeys.ALL_KEYS)
         }
 
-        internal fun fromJson(json: JsonObject): WCMetaData {
-            return WCMetaData(
-                id = json[ID].asLong,
-                key = json[KEY].asString,
-                value = WCMetaDataValue.fromJsonElement(json[VALUE]),
-                displayKey = json[DISPLAY_KEY]?.asString,
-                displayValue = json[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
-            )
+        internal fun fromJson(json: JsonObject): WCMetaData? {
+            return if (json.has(ID) && json.has(KEY) && json.has(VALUE)) {
+                WCMetaData(
+                    id = json[ID].asLong,
+                    key = json[KEY].asString,
+                    value = WCMetaDataValue.fromJsonElement(json[VALUE]),
+                    displayKey = json[DISPLAY_KEY]?.asString,
+                    displayValue = json[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
+                )
+            } else null
         }
 
         fun addAsMetadata(metadata: JsonArray, key: String, value: String) {
