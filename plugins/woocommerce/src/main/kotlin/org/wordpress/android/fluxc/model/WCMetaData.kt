@@ -1,8 +1,11 @@
 package org.wordpress.android.fluxc.model
 
+import androidx.annotation.VisibleForTesting
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.util.AppLog
 
 data class WCMetaData(
     @SerializedName(ID)
@@ -51,6 +54,7 @@ data class WCMetaData(
     }
 
     companion object {
+        @VisibleForTesting
         const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"
@@ -67,17 +71,18 @@ data class WCMetaData(
             addAll(OrderAttributionInfoKeys.ALL_KEYS)
         }
 
-        internal fun fromJson(json: JsonObject): WCMetaData? {
-            return if (json.has(ID) && json.has(KEY) && json.has(VALUE)) {
-                WCMetaData(
-                    id = json[ID].asLong,
-                    key = json[KEY].asString,
-                    value = WCMetaDataValue.fromJsonElement(json[VALUE]),
-                    displayKey = json[DISPLAY_KEY]?.asString,
-                    displayValue = json[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
-                )
-            } else null
-        }
+        internal fun fromJson(json: JsonElement): WCMetaData? = runCatching {
+            val jsonObject = json.asJsonObject
+            WCMetaData(
+                id = jsonObject[ID].asLong,
+                key = jsonObject[KEY].asString,
+                value = WCMetaDataValue.fromJsonElement(jsonObject[VALUE]),
+                displayKey = jsonObject[DISPLAY_KEY]?.asString,
+                displayValue = jsonObject[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
+            )
+        }.onFailure {
+            AppLog.w(AppLog.T.UTILS, "Error parsing WCMetaData from JSON $json, cause: ${it.stackTraceToString()}")
+        }.getOrNull()
     }
 
     object SubscriptionMetadataKeys {
