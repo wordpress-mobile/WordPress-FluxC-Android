@@ -29,12 +29,33 @@ abstract class MetaDataDao {
         parentItemId: Long
     ): Flow<List<MetaDataEntity>>
 
+    @Query(
+        """
+        SELECT * FROM MetaData 
+        WHERE parentItemId = :parentItemId 
+        AND localSiteId = :localSiteId 
+        AND `key` NOT LIKE '\_%'
+        ESCAPE '\'
+        """
+    )
+    abstract fun observeDisplayableMetaData(
+        localSiteId: LocalId,
+        parentItemId: Long
+    ): Flow<List<MetaDataEntity>>
+
     @Query("SELECT * FROM MetaData WHERE id = :id AND parentItemId = :parentItemId AND localSiteId = :localSiteId")
     abstract suspend fun getMetaData(
         localSiteId: LocalId,
         parentItemId: Long,
         id: Long
     ): MetaDataEntity?
+
+    @Query("SELECT * FROM MetaData WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId AND `key` = :key")
+    abstract suspend fun getMetaDataByKey(
+        localSiteId: LocalId,
+        parentItemId: Long,
+        key: String
+    ): List<MetaDataEntity>?
 
     @Query("""
         SELECT * FROM MetaData
