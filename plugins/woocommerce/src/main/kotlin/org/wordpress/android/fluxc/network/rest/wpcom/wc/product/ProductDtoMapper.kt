@@ -113,10 +113,9 @@ class ProductDtoMapper @Inject constructor(
             metadata = metaData.filter { it.key in WCProductModel.SubscriptionMetadataKeys.ALL_KEYS }
                 .let { gson.toJson(it) }
             isSampleProduct = dto.metadata?.any {
-                val metaDataEntry = if (it.isJsonObject) it.asJsonObject else null
+                val metaDataEntry = WCMetaData.fromJson(it.asJsonObject)
                 metaDataEntry?.let { json ->
-                    json.getString(WCMetaData.KEY) == "_headstart_post"
-                            && json.getString(WCMetaData.VALUE) == "_hs_extra"
+                    json.key == "_headstart_post" && json.valueAsString == "_hs_extra"
                 } ?: false
             } ?: false
 
