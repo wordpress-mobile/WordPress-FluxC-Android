@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
@@ -32,7 +33,6 @@ import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
@@ -86,7 +86,7 @@ class WCOrderStore @Inject constructor(
 
     data class FetchOrdersResponsePayload(
         val site: SiteModel,
-        val ordersWithMeta: List<Pair<OrderEntity, List<OrderMetaDataEntity>>> = emptyList(),
+        val ordersWithMeta: List<Pair<OrderEntity, List<WCMetaData>>> = emptyList(),
         val statusFilter: String? = null,
         val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
@@ -117,7 +117,7 @@ class WCOrderStore @Inject constructor(
     class FetchOrdersByIdsResponsePayload(
         val site: SiteModel,
         var orderIds: List<Long>,
-        var fetchedOrders: List<Pair<OrderEntity, List<OrderMetaDataEntity>>> = emptyList()
+        var fetchedOrders: List<Pair<OrderEntity, List<WCMetaData>>> = emptyList()
     ) : Payload<OrderError>() {
         constructor(
             error: OrderError,
@@ -182,14 +182,14 @@ class WCOrderStore @Inject constructor(
         abstract val order: OrderEntity
 
         data class Fetching(
-            val orderWithMeta: Pair<OrderEntity, List<OrderMetaDataEntity>>,
+            val orderWithMeta: Pair<OrderEntity, List<WCMetaData>>,
             override val site: SiteModel
         ) : RemoteOrderPayload() {
             override val order = orderWithMeta.first
 
             constructor(
                 error: OrderError,
-                order: Pair<OrderEntity, List<OrderMetaDataEntity>>,
+                order: Pair<OrderEntity, List<WCMetaData>>,
                 site: SiteModel
             ) : this(order, site) {
                 this.error = error
@@ -434,16 +434,16 @@ class WCOrderStore @Inject constructor(
      * Given an order id and [SiteModel],
      * returns the metadata from the database for an order
      */
-    suspend fun getOrderMetadata(orderId: Long, site: SiteModel): List<OrderMetaDataEntity> {
-        return orderMetaDataDao.getOrderMetaData(orderId, site.localId())
+    suspend fun getOrderMetadata(orderId: Long, site: SiteModel): List<WCMetaData> {
+        return orderMetaDataDao.getOrderMetaData(orderId, site.localId()).map { it.toDomainModel() }
     }
 
     /**
      * Given an order id and [SiteModel],
      * returns the displayable metadata from the database for an order
      */
-    suspend fun getDisplayableOrderMetadata(orderId: Long, site: SiteModel): List<OrderMetaDataEntity> {
-        return orderMetaDataDao.getDisplayableOrderMetaData(orderId, site.localId())
+    suspend fun getDisplayableOrderMetadata(orderId: Long, site: SiteModel): List<WCMetaData> {
+        return orderMetaDataDao.getDisplayableOrderMetaData(orderId, site.localId()).map { it.toDomainModel() }
     }
 
     /**

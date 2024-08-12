@@ -1,10 +1,12 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.order.OrderAddress
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -14,7 +16,7 @@ class OrderDtoMapper @Inject internal constructor(
     private val stripOrderMetaData: StripOrderMetaData
 ) {
     @Suppress("LongMethod", "ComplexMethod")
-    fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair<OrderEntity, List<OrderMetaDataEntity>> {
+    fun toDatabaseEntity(orderDto: OrderDto, localSiteId: LocalId): Pair<OrderEntity, List<WCMetaData>> {
         fun convertDateToUTCString(date: String?): String =
                 date?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
@@ -76,7 +78,9 @@ class OrderDtoMapper @Inject internal constructor(
                     feeLines = this.fee_lines.toString(),
                     taxLines = this.tax_lines.toString(),
                     couponLines = Gson().toJson(this.coupon_lines),
-                    metaData = this.meta_data.toString(),
+                    metaData = (this.meta_data as? JsonArray)?.mapNotNull { element ->
+                        (element as? JsonObject)?.let { WCMetaData.fromJson(it) }
+                    } ?: emptyList(),
                     paymentUrl = this.payment_url ?: "",
                     isEditable = this.is_editable ?: (this.status in EDITABLE_STATUSES),
                     needsPayment = this.needs_payment,
@@ -85,7 +89,7 @@ class OrderDtoMapper @Inject internal constructor(
             )
         }
 
-        val strippedMetaData = stripOrderMetaData.invoke(orderDto, localSiteId)
+        val strippedMetaData = stripOrderMetaData.invoke(orderDto)
 
         return stripOrder(rawRemoteDataEntity) to strippedMetaData
     }

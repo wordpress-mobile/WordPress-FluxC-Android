@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
@@ -19,7 +20,7 @@ class InsertOrder @Inject internal constructor(
 ) {
     suspend operator fun invoke(
         localSiteId: LocalOrRemoteId.LocalId,
-        vararg ordersPack: Pair<OrderEntity, List<OrderMetaDataEntity>>
+        vararg ordersPack: Pair<OrderEntity, List<WCMetaData>>
     ) {
         var orderChanged = false
         transactionExecutor.executeInTransaction {
@@ -34,7 +35,16 @@ class InsertOrder @Inject internal constructor(
                 ordersMetaDataDao.updateOrderMetaData(
                     order.orderId,
                     order.localSiteId,
-                    metaData
+                    metaData.map {
+                        OrderMetaDataEntity(
+                            localSiteId = order.localSiteId,
+                            id = it.id,
+                            orderId = order.orderId,
+                            key = it.key,
+                            value = it.valueAsString,
+                            isDisplayable = it.isDisplayable
+                        )
+                    }
                 )
             }
         }
