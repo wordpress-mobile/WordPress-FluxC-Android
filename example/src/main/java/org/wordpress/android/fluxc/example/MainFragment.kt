@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse
+import org.wordpress.android.fluxc.store.AccountStore.OnTwoFactorAuthStarted
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.FetchSitesPayload
 import org.wordpress.android.fluxc.store.SiteStore.FetchWPAPISitePayload
@@ -177,7 +178,13 @@ class MainFragment : Fragment() {
     }
 
     private fun signIn2fa(twoStepCode: String) {
-        authenticateTwoFactorPayload?.twoStepCode = twoStepCode
+        authenticateTwoFactorPayload = AuthenticateTwoFactorPayload(
+            authenticatePayload?.username.orEmpty(),
+            authenticatePayload?.password.orEmpty(),
+            twoStepCode,
+            true
+        )
+
         dispatcher.dispatch(AuthenticationActionBuilder
             .newAuthenticateTwoFactorAction(authenticateTwoFactorPayload))
     }
@@ -365,6 +372,12 @@ class MainFragment : Fragment() {
                     " - rowsAffected: " + event.rowsAffected
             )
         }
+    }
+
+    @Suppress("unused", "UNUSED_PARAMETER")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onTwoFactorAuthStarted(event: OnTwoFactorAuthStarted) {
+        show2faDialog()
     }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
