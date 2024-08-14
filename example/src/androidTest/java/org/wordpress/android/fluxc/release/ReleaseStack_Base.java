@@ -47,8 +47,6 @@ public class ReleaseStack_Base {
     }
 
     protected void setUp(boolean reset) throws Exception {
-        // Needed for Mockito
-        System.setProperty("dexmaker.dexcache", getInstrumentation().getTargetContext().getCacheDir().getPath());
         mAppContext = getInstrumentation().getTargetContext().getApplicationContext();
 
         mReleaseStackAppComponent = DaggerReleaseStack_AppComponent.builder()

@@ -103,12 +103,10 @@ dependencies {
     implementation project(':plugins:woocommerce')
 
     implementation sharedLibs.androidx.appcompat
-    implementation sharedLibs.androidx.legacy.support.v4
+    implementation sharedLibs.androidx.swiperefreshlayout
     implementation sharedLibs.androidx.recyclerview
     implementation sharedLibs.androidx.constraintlayout
     implementation sharedLibs.androidx.annotation
-    implementation sharedLibs.androidx.arch.core.common
-    implementation sharedLibs.androidx.arch.core.runtime
     implementation sharedLibs.androidx.lifecycle.runtime.ktx
 
     implementation(sharedLibs.wordpress.utils) {
@@ -119,9 +117,8 @@ dependencies {
 
     implementation sharedLibs.google.gson
 
-    implementation sharedLibs.androidx.room.runtime
-    kapt sharedLibs.androidx.room.compiler
-    implementation sharedLibs.androidx.room.ktx
+    testImplementation sharedLibs.androidx.room.runtime
+    androidTestImplementation sharedLibs.androidx.room.runtime
     androidTestImplementation sharedLibs.androidx.room.testing
 
     // Dagger
@@ -140,10 +137,8 @@ dependencies {
     testImplementation sharedLibs.assertj.core
     testImplementation sharedLibs.androidx.arch.core.testing
 
-    androidTestImplementation sharedLibs.mockito.android
     androidTestImplementation sharedLibs.assertj.core
     androidTestImplementation sharedLibs.androidx.arch.core.testing
-    kaptAndroidTest sharedLibs.google.dagger.compiler
     androidTestCompileOnly sharedLibs.glassfish.javax.annotation
     // Test orchestrator
     androidTestImplementation sharedLibs.androidx.test.runner

@@ -24,8 +24,6 @@ public class MockedStack_Base {
 
     @Before
     public void setUp() throws Exception {
-        // Needed for Mockito
-        System.setProperty("dexmaker.dexcache", getInstrumentation().getTargetContext().getCacheDir().getPath());
         mAppContext = getInstrumentation().getTargetContext().getApplicationContext();
 
         mMockedNetworkAppComponent = DaggerMockedNetworkAppComponent.builder()
