@@ -2,18 +2,48 @@ package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.flow.map
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.metadata.MetaDataRestClient
 import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
+import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class MetaDataStore @Inject internal constructor(
+    private val metaDataRestClient: MetaDataRestClient,
     private val metaDataDao: MetaDataDao
 ) {
+    suspend fun updateMetaData(
+        site: SiteModel,
+        request: UpdateMetadataRequest
+    ): WooResult<Unit> {
+        val result = metaDataRestClient.updateMetaData(site, request)
+
+        result.result?.let {
+            metaDataDao.updateMetaData(
+                localSiteId = site.localId(),
+                parentItemId = request.parentItemId,
+                metaData = it.map { metaData ->
+                    MetaDataEntity.fromDomainModel(
+                        metaData = metaData,
+                        localSiteId = site.localId(),
+                        parentItemId = request.parentItemId,
+                        parentItemType = request.parentItemType
+                    )
+                }
+            )
+        }
+
+        return result.asWooResult { Unit }
+    }
+
     fun observeMetaData(
         site: SiteModel,
         parentItemId: Long
-    ) = metaDataDao.observeMetaData(site.localId(), parentItemId).map { list -> list.map { it.toDomainModel() } }
+    ) = metaDataDao.observeMetaData(site.localId(), parentItemId)
+        .map { list -> list.map { it.toDomainModel() } }
 
     fun observeDisplayableMetaData(
         site: SiteModel,
@@ -35,7 +65,11 @@ class MetaDataStore @Inject internal constructor(
         site: SiteModel,
         parentItemId: Long,
         metaDataId: Long
-    ) = metaDataDao.getMetaData(localSiteId = site.localId(), parentItemId = parentItemId, id = metaDataId)
+    ) = metaDataDao.getMetaData(
+        localSiteId = site.localId(),
+        parentItemId = parentItemId,
+        id = metaDataId
+    )
         ?.toDomainModel()
 
     suspend fun getMetaDataByKey(

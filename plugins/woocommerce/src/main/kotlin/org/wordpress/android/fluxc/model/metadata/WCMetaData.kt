@@ -59,7 +59,6 @@ data class WCMetaData(
     }
 
     companion object {
-        @VisibleForTesting
         const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"
