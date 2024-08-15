@@ -5,15 +5,12 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
-import com.google.gson.JsonParser
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
-import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys.ADDONS_METADATA_KEY
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
-import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
@@ -108,11 +105,17 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var length = ""
     @Column var width = ""
     @Column var height = ""
+
+    /**
+     * This holds just the subscription keys, for the rest of product's metadata please check [ProductWithMetaData]
+     */
     @Column var metadata = ""
+
     @Column var bundledItems = ""
     @Column var compositeComponents = ""
     @Column var specialStockStatus = ""
-
+    @Column var bundleMinSize: Float? = null
+    @Column var bundleMaxSize: Float? = null
     @Column var minAllowedQuantity = -1
     @Column var maxAllowedQuantity = -1
     @Column var groupOfQuantity = -1
@@ -125,15 +128,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     val attributeList: Array<ProductAttribute>
         get() = Gson().fromJson(attributes, Array<ProductAttribute>::class.java) ?: emptyArray()
 
-    val parsedMetaData: List<WCMetaData>
-        get() = runCatching { JsonParser().parse(metadata).asJsonArray }
-            .getOrNull()
-            ?.mapNotNull { element -> (element as? JsonObject)?.let { WCMetaData.fromJson(it) } }
-            ?: emptyList()
-
-    val addons: Array<RemoteAddonDto>?
-        get() = parsedMetaData.get(ADDONS_METADATA_KEY)?.addons
-
     val isConfigurable: Boolean
         get() = when (type) {
             CoreProductType.BUNDLE.value -> {
@@ -145,17 +139,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             }
             else -> false
         }
-
-    @Suppress("SwallowedException", "TooGenericExceptionCaught")
-    private val WCMetaData.addons
-        get() =
-            try {
-                Gson().run {
-                    fromJson(value.jsonValue, Array<RemoteAddonDto>::class.java)
-                }
-            } catch (ex: Exception) {
-                null
-            }
 
     class ProductTriplet(val id: Long, val name: String, val slug: String) {
         fun toJson(): JsonObject {
@@ -607,9 +590,5 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             SUBSCRIPTION_ONE_TIME_SHIPPING,
             SUBSCRIPTION_PAYMENT_SYNC_DATE
         )
-    }
-
-    object AddOnsMetadataKeys {
-        const val ADDONS_METADATA_KEY = "_product_addons"
     }
 }

@@ -12,7 +12,10 @@ import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 @Dao
 abstract class MetaDataDao {
     @Insert(onConflict = REPLACE)
-    abstract fun insertOrUpdateMetaData(vararg metaDataEntity: MetaDataEntity)
+    abstract fun insertOrUpdateMetaData(metaDataEntity: MetaDataEntity)
+
+    @Insert(onConflict = REPLACE)
+    abstract fun insertOrUpdateMetaData(metaData: List<MetaDataEntity>)
 
     @Query("SELECT * FROM MetaData WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId")
     abstract suspend fun getMetaData(
@@ -62,9 +65,11 @@ abstract class MetaDataDao {
         parentItemId: Long
     ): Int
 
-    @Transaction
     @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND parentItemId = :parentItemId")
     abstract suspend fun deleteMetaData(localSiteId: LocalId, parentItemId: Long)
+
+    @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND type = :type")
+    abstract suspend fun deleteMetaDataForSite(localSiteId: LocalId, type: MetaDataEntity.ParentItemType)
 
     @Transaction
     open suspend fun updateMetaData(
@@ -73,8 +78,7 @@ abstract class MetaDataDao {
         metaData: List<MetaDataEntity>
     ) {
         deleteMetaData(localSiteId, parentItemId)
-        @Suppress("SpreadOperator")
-        insertOrUpdateMetaData(*metaData.toTypedArray())
+        insertOrUpdateMetaData(metaData)
     }
 
     suspend fun hasMetaData(parentItemId: Long, localSiteId: LocalId): Boolean {

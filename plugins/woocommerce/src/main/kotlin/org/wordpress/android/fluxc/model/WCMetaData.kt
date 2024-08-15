@@ -1,9 +1,11 @@
 package org.wordpress.android.fluxc.model
 
-import com.google.gson.JsonArray
+import androidx.annotation.VisibleForTesting
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.util.AppLog
 
 data class WCMetaData(
     @SerializedName(ID)
@@ -52,6 +54,7 @@ data class WCMetaData(
     }
 
     companion object {
+        @VisibleForTesting
         const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"
@@ -68,26 +71,18 @@ data class WCMetaData(
             addAll(OrderAttributionInfoKeys.ALL_KEYS)
         }
 
-        internal fun fromJson(json: JsonObject): WCMetaData? {
-            return if (json.has(ID) && json.has(KEY) && json.has(VALUE)) {
-                WCMetaData(
-                    id = json[ID].asLong,
-                    key = json[KEY].asString,
-                    value = WCMetaDataValue.fromJsonElement(json[VALUE]),
-                    displayKey = json[DISPLAY_KEY]?.asString,
-                    displayValue = json[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
-                )
-            } else null
-        }
-
-        fun addAsMetadata(metadata: JsonArray, key: String, value: String) {
-            val item = JsonObject().also {
-                it.addProperty(ID, 0)
-                it.addProperty(KEY, key)
-                it.addProperty(VALUE, value)
-            }
-            metadata.add(item)
-        }
+        internal fun fromJson(json: JsonElement): WCMetaData? = runCatching {
+            val jsonObject = json.asJsonObject
+            WCMetaData(
+                id = jsonObject[ID].asLong,
+                key = jsonObject[KEY].asString,
+                value = WCMetaDataValue.fromJsonElement(jsonObject[VALUE]),
+                displayKey = jsonObject[DISPLAY_KEY]?.asString,
+                displayValue = jsonObject[DISPLAY_VALUE]?.let { WCMetaDataValue.fromJsonElement(it) }
+            )
+        }.onFailure {
+            AppLog.w(AppLog.T.UTILS, "Error parsing WCMetaData from JSON $json, cause: ${it.stackTraceToString()}")
+        }.getOrNull()
     }
 
     object SubscriptionMetadataKeys {
@@ -96,8 +91,6 @@ data class WCMetaData(
 
     object BundleMetadataKeys {
         const val BUNDLED_ITEM_ID = "_bundled_item_id"
-        const val BUNDLE_MIN_SIZE = "_bundle_min_size"
-        const val BUNDLE_MAX_SIZE = "_bundle_max_size"
     }
 
     object OrderAttributionInfoKeys {
@@ -117,6 +110,10 @@ data class WCMetaData(
                 DEVICE_TYPE,
                 SESSION_PAGE_VIEWS
             )
+    }
+
+    object AddOnsMetadataKeys {
+        const val ADDONS_METADATA_KEY = "_product_addons"
     }
 }
 

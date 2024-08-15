@@ -1,53 +1,32 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.wordpress.android.fluxc.model.StripProductMetaData
 import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.WCMetaData.AddOnsMetadataKeys
+import org.wordpress.android.fluxc.model.WCMetaDataValue
 import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
-import org.wordpress.android.fluxc.model.WCProductModel.AddOnsMetadataKeys
-import org.wordpress.android.fluxc.utils.EMPTY_JSON_ARRAY
 
 class StripProductMetaDataTest {
     private val gson = Gson()
-    private val sut = StripProductMetaData(gson)
+    private val sut = StripProductMetaData()
 
+    private val notOnlySupportedMetadata = gson.fromJson(metaDataJson, Array<WCMetaData>::class.java).toList()
 
     @Test
-    fun `when metadata contains not supported keys, then NOT supported keys are stripped`() {
+    fun `when filtering metadata, then remove unsupported keys and values`() {
         val result = sut.invoke(notOnlySupportedMetadata)
-        val jsonResult = gson.fromJson(result, JsonArray::class.java)
 
-        jsonResult.map { it as? JsonObject }.forEach { jsonObject ->
-            Assertions.assertThat(jsonObject).isNotNull
-            Assertions.assertThat(jsonObject?.get(WCMetaData.KEY)?.asString)
-                .isIn(StripProductMetaData.SUPPORTED_KEYS)
+        result.forEach { metaData ->
+            Assertions.assertThat(metaData).isNotNull
+            Assertions.assertThat(
+                metaData.key in StripProductMetaData.SUPPORTED_KEYS ||
+                    !metaData.isJson
+            ).isTrue()
         }
-    }
-
-    @Test
-    fun `when metadata contains a supported key with a NULL value, then strip the supported key`() {
-        val supportedKey = StripProductMetaData.SUPPORTED_KEYS.first()
-        val value: String? = null
-
-        val metadata = getOneItemMetadata(supportedKey, value)
-        val result = sut.invoke(metadata)
-
-        Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
-    }
-
-    @Test
-    fun `when metadata contains a supported key with a EMPTY value, then strip the supported key`() {
-        val supportedKey = StripProductMetaData.SUPPORTED_KEYS.first()
-        val value = ""
-
-        val metadata = getOneItemMetadata(supportedKey, value)
-        val result = sut.invoke(metadata)
-
-        Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
     }
 
     @Test
@@ -56,19 +35,12 @@ class StripProductMetaDataTest {
         val value = "valid"
 
         val metadata = getOneItemMetadata(supportedKey, value)
-        val result = sut.invoke(metadata)
+        val result = sut.invoke(listOf(metadata))
 
-        val jsonResult = gson.fromJson(result, JsonArray::class.java)
-        val resultItem = jsonResult[0] as JsonObject
+        val resultItem = result.first()
         Assertions.assertThat(result).isNotNull
-        Assertions.assertThat(resultItem[WCMetaData.KEY].asString).isEqualTo(supportedKey)
-        Assertions.assertThat(resultItem[WCMetaData.VALUE].asString).isEqualTo(value)
-    }
-
-    @Test
-    fun `when metadata is null, then empty array is return`() {
-        val result = sut.invoke(null)
-        Assertions.assertThat(result).isEqualTo(EMPTY_JSON_ARRAY)
+        Assertions.assertThat(resultItem.key).isEqualTo(supportedKey)
+        Assertions.assertThat(resultItem.valueAsString).isEqualTo(value)
     }
 
     @Test
@@ -83,21 +55,14 @@ class StripProductMetaDataTest {
             .contains(AddOnsMetadataKeys.ADDONS_METADATA_KEY)
     }
 
-    private fun getOneItemMetadata(itemKey: String, itemValue: String?): String {
-        val item = JsonObject().apply {
-            addProperty(WCMetaData.KEY, itemKey)
-            itemValue?.let {
-                addProperty(WCMetaData.VALUE, it)
-            } ?: add(WCMetaData.VALUE, null)
-        }
-        val jsonArray = JsonArray().apply {
-            add(item)
-        }
+    private fun getOneItemMetadata(itemKey: String, itemValue: String?) = WCMetaData(
+        id = 0,
+        key = itemKey,
+        value = WCMetaDataValue.fromJsonElement(JsonPrimitive(itemValue))
+    )
 
-        return gson.toJson(jsonArray)
-    }
-
-    private val notOnlySupportedMetadata = """
+    companion object {
+        private val metaDataJson = """
         [
           {
             "id": 11749,
@@ -228,4 +193,5 @@ class StripProductMetaDataTest {
           }
         ]
     """.trimIndent()
+    }
 }
