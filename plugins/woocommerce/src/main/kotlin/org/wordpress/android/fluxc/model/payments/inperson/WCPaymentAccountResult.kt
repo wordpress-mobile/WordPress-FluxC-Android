@@ -115,7 +115,12 @@ data class WCPaymentAccountResult(
         /**
          * This state occurs when the self-hosted site responded in a way we don't recognize.
          */
-        UNKNOWN;
+        UNKNOWN,
+
+        /**
+         * This state occurs when the account is early in an account's lifetime.
+         */
+        PENDING_VERIFICATION;
 
         class Deserializer : JsonDeserializer<WCPaymentAccountStatus> {
             override fun deserialize(
@@ -133,6 +138,7 @@ data class WCPaymentAccountResult(
                         "rejected.listed" -> REJECTED_LISTED
                         "rejected.other" -> REJECTED_OTHER
                         "NOACCOUNT", "" -> NO_ACCOUNT
+                        "pending_verification" -> PENDING_VERIFICATION
                         else -> UNKNOWN
                     }
         }
