@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.flow.map
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
@@ -36,6 +37,33 @@ class MetaDataStore @Inject internal constructor(
             )
         }
 
+        @Suppress("RedundantUnitExpression")
+        return result.asWooResult { Unit }
+    }
+
+    suspend fun refreshMetaData(
+        site: SiteModel,
+        parentItemId: Long,
+        parentItemType: MetaDataParentItemType
+    ): WooResult<Unit> {
+        val result = metaDataRestClient.refreshMetaData(site, parentItemId, parentItemType)
+
+        result.result?.let {
+            metaDataDao.updateMetaData(
+                localSiteId = site.localId(),
+                parentItemId = parentItemId,
+                metaData = it.map { metaData ->
+                    MetaDataEntity.fromDomainModel(
+                        metaData = metaData,
+                        localSiteId = site.localId(),
+                        parentItemId = parentItemId,
+                        parentItemType = parentItemType
+                    )
+                }
+            )
+        }
+
+        @Suppress("RedundantUnitExpression")
         return result.asWooResult { Unit }
     }
 
