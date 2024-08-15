@@ -37,13 +37,11 @@ class InsertOrder @Inject internal constructor(
                     order.orderId,
                     order.localSiteId,
                     metaData.map {
-                        MetaDataEntity(
+                        MetaDataEntity.fromDomainModel(
+                            metaData = it,
                             localSiteId = order.localSiteId,
-                            id = it.id,
                             parentItemId = order.orderId,
-                            key = it.key,
-                            value = it.valueAsString,
-                            type = MetaDataParentItemType.ORDER
+                            parentItemType = MetaDataParentItemType.ORDER
                         )
                     }
                 )

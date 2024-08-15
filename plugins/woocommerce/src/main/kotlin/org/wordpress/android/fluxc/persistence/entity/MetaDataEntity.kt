@@ -31,4 +31,20 @@ data class MetaDataEntity(
         key = key,
         value = value
     )
+
+    companion object {
+        fun fromDomainModel(
+            metaData: WCMetaData,
+            localSiteId: LocalId,
+            parentItemId: Long,
+            parentItemType: MetaDataParentItemType
+        ) = MetaDataEntity(
+            localSiteId = localSiteId,
+            id = metaData.id,
+            parentItemId = parentItemId,
+            key = metaData.key,
+            value = metaData.valueAsString,
+            type = parentItemType
+        )
+    }
 }

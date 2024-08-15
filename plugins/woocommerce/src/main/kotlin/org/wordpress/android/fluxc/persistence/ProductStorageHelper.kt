@@ -37,13 +37,11 @@ class ProductStorageHelper @Inject constructor(
             parentItemId = product.remoteProductId,
             localSiteId = LocalId(product.localSiteId),
             metaData = metadata.map {
-                MetaDataEntity(
+                MetaDataEntity.fromDomainModel(
+                    metaData = it,
                     localSiteId = LocalId(product.localSiteId),
-                    id = it.id,
                     parentItemId = product.remoteProductId,
-                    key = it.key,
-                    value = it.valueAsString,
-                    type = MetaDataParentItemType.PRODUCT
+                    parentItemType = MetaDataParentItemType.PRODUCT
                 )
             }
         )
@@ -62,13 +60,11 @@ class ProductStorageHelper @Inject constructor(
                 parentItemId = product.remoteProductId,
                 localSiteId = LocalId(product.localSiteId),
                 metaData = metadata.map {
-                    MetaDataEntity(
+                    MetaDataEntity.fromDomainModel(
+                        metaData = it,
                         localSiteId = LocalId(product.localSiteId),
-                        id = it.id,
                         parentItemId = product.remoteProductId,
-                        key = it.key,
-                        value = it.valueAsString,
-                        type = MetaDataParentItemType.PRODUCT
+                        parentItemType = MetaDataParentItemType.PRODUCT
                     )
                 }
             )
