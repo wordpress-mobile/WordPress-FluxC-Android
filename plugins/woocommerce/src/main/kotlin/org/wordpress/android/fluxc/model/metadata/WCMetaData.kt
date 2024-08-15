@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.model.metadata
 
-import androidx.annotation.VisibleForTesting
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.JsonAdapter
