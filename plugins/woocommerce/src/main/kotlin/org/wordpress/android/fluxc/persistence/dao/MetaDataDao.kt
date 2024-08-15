@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 
 @Dao
@@ -90,7 +91,7 @@ abstract class MetaDataDao {
     abstract suspend fun deleteMetaData(localSiteId: LocalId, parentItemId: Long)
 
     @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND type = :type")
-    abstract suspend fun deleteMetaDataForSite(localSiteId: LocalId, type: MetaDataEntity.ParentItemType)
+    abstract suspend fun deleteMetaDataForSite(localSiteId: LocalId, type: MetaDataParentItemType)
 
     @Transaction
     open suspend fun updateMetaData(

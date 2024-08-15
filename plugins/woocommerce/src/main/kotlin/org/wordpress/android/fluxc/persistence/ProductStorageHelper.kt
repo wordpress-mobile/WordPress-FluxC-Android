@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.persistence
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
@@ -42,7 +43,7 @@ class ProductStorageHelper @Inject constructor(
                     parentItemId = product.remoteProductId,
                     key = it.key,
                     value = it.valueAsString,
-                    type = MetaDataEntity.ParentItemType.PRODUCT
+                    type = MetaDataParentItemType.PRODUCT
                 )
             }
         )
@@ -67,7 +68,7 @@ class ProductStorageHelper @Inject constructor(
                         parentItemId = product.remoteProductId,
                         key = it.key,
                         value = it.valueAsString,
-                        type = MetaDataEntity.ParentItemType.PRODUCT
+                        type = MetaDataParentItemType.PRODUCT
                     )
                 }
             )
@@ -88,6 +89,6 @@ class ProductStorageHelper @Inject constructor(
         withContext(Dispatchers.IO) {
             productSqlUtils.deleteProductsForSite(site)
         }
-        metaDataDao.deleteMetaDataForSite(site.localId(), MetaDataEntity.ParentItemType.PRODUCT)
+        metaDataDao.deleteMetaDataForSite(site.localId(), MetaDataParentItemType.PRODUCT)
     }
 }
