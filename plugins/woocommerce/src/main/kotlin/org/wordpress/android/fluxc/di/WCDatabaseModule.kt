@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import org.wordpress.android.fluxc.module.DatabaseModule
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.TransactionExecutor
 import org.wordpress.android.fluxc.persistence.WCAndroidDatabase
 import org.wordpress.android.fluxc.persistence.dao.AddonsDao
@@ -41,7 +42,7 @@ interface WCDatabaseModule {
 
         @Provides fun provideOrderNotesDao(database: WCAndroidDatabase) = database.orderNotesDao
 
-        @Provides fun provideOrderMetaDataDao(database: WCAndroidDatabase) = database.orderMetaDataDao
+        @Provides fun provideMetaDataDao(database: WCAndroidDatabase) = database.metaDataDao
 
         @Provides fun provideInboxNotesDao(database: WCAndroidDatabase) = database.inboxNotesDao
 
@@ -58,6 +59,11 @@ interface WCDatabaseModule {
          * OrderSqlUtils is a Kotlin object, we can't use [Inject] to inject it.
          */
         @Provides fun provideOrderSqlUtils() = OrderSqlUtils
+
+        /**
+         * ProductSqlUtils is a Kotlin object, we can't use [Inject] to inject it.
+         */
+        @Provides fun provideProductSqlUtils() = ProductSqlUtils
 
         @Provides fun provideVisitorSummaryStatsDao(database: WCAndroidDatabase) = database.visitorSummaryStatsDao
 

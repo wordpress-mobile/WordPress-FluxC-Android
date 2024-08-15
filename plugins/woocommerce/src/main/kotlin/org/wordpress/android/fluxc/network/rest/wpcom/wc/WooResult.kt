@@ -10,9 +10,11 @@ data class WooPayload<T>(val result: T? = null) : Payload<WooError>() {
         this.error = error
     }
 
-    fun asWooResult() = when {
+    fun asWooResult() = asWooResult { it }
+
+    fun <R> asWooResult(mapper: (T) -> R): WooResult<R> = when {
         isError -> WooResult(error)
-        result != null -> WooResult<T>(result)
+        result != null -> WooResult(mapper(result))
         else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
     }
 }

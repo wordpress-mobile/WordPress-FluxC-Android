@@ -3,10 +3,13 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.JsonObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.wordpress.android.fluxc.model.WCMetaData.Companion.ID
 import org.wordpress.android.fluxc.model.WCMetaData.Companion.KEY
 import org.wordpress.android.fluxc.model.WCMetaData.Companion.VALUE
 
+@RunWith(RobolectricTestRunner::class)
 class WCMetaDataTest {
     @Test
     fun `when all required fields are present, should return a WCMetaData`() {
@@ -70,6 +73,20 @@ class WCMetaDataTest {
 
         val metadata = WCMetaData.fromJson(metadataJson)
 
+        assertThat(metadata).isNull()
+    }
+
+    @Test
+    fun `when id is not a number, should return null`() {
+        val id = "some_id"
+
+        val metadataJson = JsonObject().apply {
+            addProperty(ID, id)
+            addProperty(KEY, "this_is_the_key")
+            addProperty(VALUE, "random value")
+        }
+
+        val metadata = WCMetaData.fromJson(metadataJson)
         assertThat(metadata).isNull()
     }
 }

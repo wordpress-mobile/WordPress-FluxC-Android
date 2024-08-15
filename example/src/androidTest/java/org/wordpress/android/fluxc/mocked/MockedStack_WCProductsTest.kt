@@ -85,22 +85,25 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         with(payload) {
             assertNull(error)
-            assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getCategoryList().size, 2)
-            assertEquals(product.getTagList().size, 2)
-            assertEquals(product.getImageListOrEmpty().size, 2)
-            assertNotNull(product.getFirstImageUrl())
-            assertEquals(product.getAttributeList().size, 2)
-            assertEquals(product.getAttributeList().get(0).options.size, 3)
-            assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
-            assertEquals(product.getVariationIdList().size, 2)
-            assertEquals(product.getDownloadableFiles().size, 1)
-            assertEquals(product.downloadExpiry, 10)
-            assertEquals(product.downloadLimit, 123123124124)
+            assertEquals(remoteProductId, productWithMetaData.product.remoteProductId)
+            assertEquals(productWithMetaData.product.getCategoryList().size, 2)
+            assertEquals(productWithMetaData.product.getTagList().size, 2)
+            assertEquals(productWithMetaData.product.getImageListOrEmpty().size, 2)
+            assertNotNull(productWithMetaData.product.getFirstImageUrl())
+            assertEquals(productWithMetaData.product.getAttributeList().size, 2)
+            assertEquals(productWithMetaData.product.getAttributeList().get(0).options.size, 3)
+            assertEquals(
+                productWithMetaData.product.getAttributeList().get(0).getCommaSeparatedOptions(),
+                "Small, Medium, Large"
+            )
+            assertEquals(productWithMetaData.product.getVariationIdList().size, 2)
+            assertEquals(productWithMetaData.product.getDownloadableFiles().size, 1)
+            assertEquals(productWithMetaData.product.downloadExpiry, 10)
+            assertEquals(productWithMetaData.product.downloadLimit, 123123124124)
         }
 
         // save the product to the db
-        assertEquals(ProductSqlUtils.insertOrUpdateProduct(payload.product), 1)
+        assertEquals(ProductSqlUtils.insertOrUpdateProduct(payload.productWithMetaData.product), 1)
 
         // now verify the db stored the product correctly
         val productFromDb = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
@@ -147,7 +150,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         interceptor.respondWith("wc-fetch-parent-product-id-exceeding-integer.json")
         val payload = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
-        assertEquals(5060147738939L, payload.product.parentId)
+        assertEquals(5060147738939L, payload.productWithMetaData.product.parentId)
     }
 
     @Test
@@ -155,19 +158,19 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // check that a product's manage stock field is correctly set to true
         interceptor.respondWith("wc-fetch-product-response-manage-stock-true.json")
         val payloadTrue = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
-        assertTrue(payloadTrue.product.manageStock)
+        assertTrue(payloadTrue.productWithMetaData.product.manageStock)
 
         // check that a product's manage stock field is correctly set to false
         interceptor.respondWith("wc-fetch-product-response-manage-stock-false.json")
         val payloadFalse = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
-        assertFalse(payloadFalse.product.manageStock)
+        assertFalse(payloadFalse.productWithMetaData.product.manageStock)
 
         // check that a product's manage stock field is correctly set to true when response contains
         // "parent" rather than true/false (this is for product variations who inherit the parent's
         // manage stock)
         interceptor.respondWith("wc-fetch-product-response-manage-stock-parent.json")
         val payloadParent = productRestClient.fetchSingleProduct(siteModel, remoteProductId)
-        assertTrue(payloadParent.product.manageStock)
+        assertTrue(payloadParent.productWithMetaData.product.manageStock)
     }
 
     @Test
@@ -182,38 +185,38 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteProductListPayload
         with(payload) {
             assertNull(error)
-            assertNotNull(products)
-            assertEquals(products.size, 4)
-            assertNull(products[0].getFirstImageUrl())
+            assertNotNull(productsWithMetaData)
+            assertEquals(productsWithMetaData.size, 4)
+            assertNull(productsWithMetaData[0].product.getFirstImageUrl())
 
             // verify that response as json array in product response is handled correctly
-            assertEquals("10,11,12", products[0].getGroupedProductIdList().joinToString(","))
-            assertEquals("10,11,12", products[0].getUpsellProductIdList().joinToString(","))
-            assertEquals("10,11,12", products[0].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[0].getVariationIdList().size)
+            assertEquals("10,11,12", productsWithMetaData[0].product.getGroupedProductIdList().joinToString(","))
+            assertEquals("10,11,12", productsWithMetaData[0].product.getUpsellProductIdList().joinToString(","))
+            assertEquals("10,11,12", productsWithMetaData[0].product.getCrossSellProductIdList().joinToString(","))
+            assertEquals(3, productsWithMetaData[0].product.getVariationIdList().size)
 
             // verify that response as json object in product response is handled correctly
-            assertEquals("10,11,12", products[1].getGroupedProductIdList().joinToString(","))
-            assertEquals("10,11,12", products[1].getUpsellProductIdList().joinToString(","))
-            assertEquals("10,11,12", products[1].getCrossSellProductIdList().joinToString(","))
-            assertEquals(3, products[1].getVariationIdList().size)
+            assertEquals("10,11,12", productsWithMetaData[1].product.getGroupedProductIdList().joinToString(","))
+            assertEquals("10,11,12", productsWithMetaData[1].product.getUpsellProductIdList().joinToString(","))
+            assertEquals("10,11,12", productsWithMetaData[1].product.getCrossSellProductIdList().joinToString(","))
+            assertEquals(3, productsWithMetaData[1].product.getVariationIdList().size)
 
             // verify that response as null in product response is handled correctly
-            assertEquals(0, products[2].getGroupedProductIdList().size)
-            assertEquals(0, products[2].getUpsellProductIdList().size)
-            assertEquals(0, products[2].getCrossSellProductIdList().size)
-            assertEquals(0, products[2].getVariationIdList().size)
-            assertEquals(0, products[2].getCategoryList().size)
+            assertEquals(0, productsWithMetaData[2].product.getGroupedProductIdList().size)
+            assertEquals(0, productsWithMetaData[2].product.getUpsellProductIdList().size)
+            assertEquals(0, productsWithMetaData[2].product.getCrossSellProductIdList().size)
+            assertEquals(0, productsWithMetaData[2].product.getVariationIdList().size)
+            assertEquals(0, productsWithMetaData[2].product.getCategoryList().size)
 
             // verify that variations are handled correctly when returned as array of objects
-            assertEquals(2, products[3].getVariationIdList().size)
-            assertEquals(16892, products[3].getVariationIdList()[0])
-            assertEquals(16893, products[3].getVariationIdList()[1])
+            assertEquals(2, productsWithMetaData[3].product.getVariationIdList().size)
+            assertEquals(16892, productsWithMetaData[3].product.getVariationIdList()[0])
+            assertEquals(16893, productsWithMetaData[3].product.getVariationIdList()[1])
         }
 
         // delete all products then insert these into the store
         ProductSqlUtils.deleteProductsForSite(siteModel)
-        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 4)
+        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.productsWithMetaData.map { it.product }), 4)
 
         // now verify the db stored the products correctly
         val productsFromDb = ProductSqlUtils.getProductsForSite(siteModel)
@@ -662,8 +665,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
         with(payload) {
             assertNull(error)
-            assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getImageListOrEmpty().size, 2)
+            assertEquals(remoteProductId, productWithMetaData.product.remoteProductId)
+            assertEquals(productWithMetaData.product.getImageListOrEmpty().size, 2)
         }
     }
 
@@ -744,16 +747,16 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteUpdateProductPayload
         with(payload) {
             assertNull(error)
-            assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(updatedProduct.description, product.description)
-            assertEquals(updatedProduct.name, product.name)
-            assertEquals(updatedProduct.sku, product.sku)
-            assertEquals(updatedProduct.virtual, product.virtual)
+            assertEquals(remoteProductId, productWithMetaData.product.remoteProductId)
+            assertEquals(updatedProduct.description, productWithMetaData.product.description)
+            assertEquals(updatedProduct.name, productWithMetaData.product.name)
+            assertEquals(updatedProduct.sku, productWithMetaData.product.sku)
+            assertEquals(updatedProduct.virtual, productWithMetaData.product.virtual)
             assertEquals(updatedProduct.getImageListOrEmpty().size, 2)
             assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
             assertEquals(updatedProduct.getCrossSellProductIdList().size, 3)
             assertEquals(updatedProduct.getUpsellProductIdList().size, 4)
-            assertEquals(updatedProduct.type, product.type)
+            assertEquals(updatedProduct.type, productWithMetaData.product.type)
             assertEquals(updatedProduct.getDownloadableFiles().size, 1)
             assertEquals(updatedProduct.downloadExpiry, 10)
             assertEquals(updatedProduct.downloadLimit, 123123124124)
@@ -1006,9 +1009,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteAddProductPayload
         with(payload) {
             assertNull(error)
-            assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals("simple", product.type)
-            assertEquals("Testing product description update", product.description)
+            assertEquals(remoteProductId, productWithMetaData.product.remoteProductId)
+            assertEquals("simple", productWithMetaData.product.type)
+            assertEquals("Testing product description update", productWithMetaData.product.description)
         }
     }
 

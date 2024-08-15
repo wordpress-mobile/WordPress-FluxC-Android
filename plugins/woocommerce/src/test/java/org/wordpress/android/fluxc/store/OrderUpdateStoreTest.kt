@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDto.Shipping
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
@@ -50,6 +51,7 @@ class OrderUpdateStoreTest {
     private val ordersDaoDecorator: OrdersDaoDecorator = mock {
         onBlocking { getOrder(TEST_REMOTE_ORDER_ID, TEST_LOCAL_SITE_ID) } doReturn initialOrder
     }
+    private val metaDataDao: MetaDataDao = mock()
 
     fun setUp(setMocks: suspend () -> Unit) = runBlocking {
         setMocks.invoke()
@@ -61,7 +63,8 @@ class OrderUpdateStoreTest {
                 wcOrderRestClient = orderRestClient,
                 ordersDaoDecorator = ordersDaoDecorator,
                 siteSqlUtils = siteSqlUtils,
-                orderSqlUtils = orderSqlUtils
+                orderSqlUtils = orderSqlUtils,
+                metaDataDao = metaDataDao
         )
     }
 
@@ -522,6 +525,7 @@ class OrderUpdateStoreTest {
 
         verify(ordersDaoDecorator).deleteOrder(site.localId(), TEST_REMOTE_ORDER_ID)
         verify(orderSqlUtils).deleteOrderSummaryById(site, TEST_REMOTE_ORDER_ID)
+        verify(metaDataDao).deleteMetaData(site.localId(), TEST_REMOTE_ORDER_ID)
     }
 
     private companion object {

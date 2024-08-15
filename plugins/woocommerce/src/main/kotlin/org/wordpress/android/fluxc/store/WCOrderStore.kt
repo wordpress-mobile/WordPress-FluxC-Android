@@ -30,7 +30,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.OrderBy
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient.SortOrder
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
-import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
+import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrderNotesDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
 import org.wordpress.android.fluxc.persistence.entity.OrderNoteEntity
@@ -60,7 +60,7 @@ class WCOrderStore @Inject constructor(
     private val coroutineEngine: CoroutineEngine,
     private val ordersDaoDecorator: OrdersDaoDecorator,
     private val orderNotesDao: OrderNotesDao,
-    private val orderMetaDataDao: OrderMetaDataDao,
+    private val metaDataDao: MetaDataDao,
     private val insertOrder: InsertOrder
 ) : Store(dispatcher) {
     companion object {
@@ -435,7 +435,7 @@ class WCOrderStore @Inject constructor(
      * returns the metadata from the database for an order
      */
     suspend fun getOrderMetadata(orderId: Long, site: SiteModel): List<WCMetaData> {
-        return orderMetaDataDao.getOrderMetaData(orderId, site.localId()).map { it.toDomainModel() }
+        return metaDataDao.getMetaData(site.localId(), orderId).map { it.toDomainModel() }
     }
 
     /**
@@ -443,7 +443,7 @@ class WCOrderStore @Inject constructor(
      * returns the displayable metadata from the database for an order
      */
     suspend fun getDisplayableOrderMetadata(orderId: Long, site: SiteModel): List<WCMetaData> {
-        return orderMetaDataDao.getDisplayableOrderMetaData(orderId, site.localId()).map { it.toDomainModel() }
+        return metaDataDao.getDisplayableMetaData(site.localId(), orderId).map { it.toDomainModel() }
     }
 
     /**
@@ -451,7 +451,7 @@ class WCOrderStore @Inject constructor(
      * returns whether there is metadata in the database for an order
      */
     suspend fun hasOrderMetadata(orderId: Long, site: SiteModel): Boolean {
-        return orderMetaDataDao.hasOrderMetaData(orderId, site.localId())
+        return metaDataDao.hasMetaData(orderId, site.localId())
     }
 
     /**
@@ -459,7 +459,7 @@ class WCOrderStore @Inject constructor(
      * returns whether there is displayable metadata in the database for an order
      */
     suspend fun hasDisplayableOrderMetadata(orderId: Long, site: SiteModel): Boolean {
-        return orderMetaDataDao.getDisplayableOrderMetaDataCount(orderId, site.localId()) > 0
+        return metaDataDao.getDisplayableMetaDataCount(site.localId(), orderId) > 0
     }
 
     /**

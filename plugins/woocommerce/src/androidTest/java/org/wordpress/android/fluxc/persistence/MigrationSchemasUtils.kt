@@ -63,6 +63,7 @@ object MigrationSchemasUtils {
         getDBHashKey(34) to "878b99bf2a221f0f462015ec1ff9f402",
         getDBHashKey(35) to "a01f7f90e7751f29876dda9a73c49ccc",
         getDBHashKey(36) to "2b2e3799733db41ef697c524296acc82",
-        getDBHashKey(37) to "1e9b3d8837dc807d54beb93aa1655b43"
+        getDBHashKey(37) to "1e9b3d8837dc807d54beb93aa1655b43",
+        getDBHashKey(38) to "07da421084ee1c2ed5aad680d284c02d"
     )
 }

@@ -7,15 +7,15 @@ import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.WCMetaData
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.persistence.TransactionExecutor
-import org.wordpress.android.fluxc.persistence.dao.OrderMetaDataDao
+import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.dao.OrdersDaoDecorator
-import org.wordpress.android.fluxc.persistence.entity.OrderMetaDataEntity
+import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 import javax.inject.Inject
 
 class InsertOrder @Inject internal constructor(
     private val dispatcher: Dispatcher,
     private val ordersDaoDecorator: OrdersDaoDecorator,
-    private val ordersMetaDataDao: OrderMetaDataDao,
+    private val metaDataDao: MetaDataDao,
     private val transactionExecutor: TransactionExecutor
 ) {
     suspend operator fun invoke(
@@ -32,17 +32,17 @@ class InsertOrder @Inject internal constructor(
                 if (result != OrdersDaoDecorator.UpdateOrderResult.UNCHANGED) {
                     orderChanged = true
                 }
-                ordersMetaDataDao.updateOrderMetaData(
+                metaDataDao.updateMetaData(
                     order.orderId,
                     order.localSiteId,
                     metaData.map {
-                        OrderMetaDataEntity(
+                        MetaDataEntity(
                             localSiteId = order.localSiteId,
                             id = it.id,
-                            orderId = order.orderId,
+                            parentItemId = order.orderId,
                             key = it.key,
                             value = it.valueAsString,
-                            isDisplayable = it.isDisplayable
+                            type = MetaDataEntity.ParentItemType.ORDER
                         )
                     }
                 )
