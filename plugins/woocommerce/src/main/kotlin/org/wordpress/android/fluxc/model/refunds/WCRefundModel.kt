@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.model.refunds
 
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import java.math.BigDecimal
 import java.util.Date
 

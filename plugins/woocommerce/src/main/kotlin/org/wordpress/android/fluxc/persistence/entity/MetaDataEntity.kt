@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.persistence.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 
 /**
  * The MetaDataEntity table is used to store viewable wordpress metadata. WordPress metadata

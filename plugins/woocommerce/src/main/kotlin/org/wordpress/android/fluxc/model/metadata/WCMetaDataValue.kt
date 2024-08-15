@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.model
+package org.wordpress.android.fluxc.model.metadata
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonDeserializationContext
