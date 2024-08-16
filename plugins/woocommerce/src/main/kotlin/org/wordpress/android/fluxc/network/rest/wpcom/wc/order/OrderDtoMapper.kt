@@ -89,7 +89,7 @@ class OrderDtoMapper @Inject internal constructor(
             )
         }
 
-        val strippedMetaData = stripOrderMetaData.invoke(orderDto)
+        val strippedMetaData = stripOrderMetaData.invoke(rawRemoteDataEntity.metaData)
 
         return stripOrder(rawRemoteDataEntity) to strippedMetaData
     }

@@ -1,11 +1,14 @@
 package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.flow.map
-import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.StripProductMetaData
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.metadata.MetaDataRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.StripOrderMetaData
 import org.wordpress.android.fluxc.persistence.dao.MetaDataDao
 import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 import javax.inject.Inject
@@ -14,7 +17,9 @@ import javax.inject.Singleton
 @Singleton
 class MetaDataStore @Inject internal constructor(
     private val metaDataRestClient: MetaDataRestClient,
-    private val metaDataDao: MetaDataDao
+    private val metaDataDao: MetaDataDao,
+    private val stripProductMetaData: StripProductMetaData,
+    private val stripOrderMetaData: StripOrderMetaData
 ) {
     suspend fun updateMetaData(
         site: SiteModel,
@@ -23,17 +28,11 @@ class MetaDataStore @Inject internal constructor(
         val result = metaDataRestClient.updateMetaData(site, request)
 
         result.result?.let {
-            metaDataDao.updateMetaData(
-                localSiteId = site.localId(),
+            persistMetaData(
+                site = site,
                 parentItemId = request.parentItemId,
-                metaData = it.map { metaData ->
-                    MetaDataEntity.fromDomainModel(
-                        metaData = metaData,
-                        localSiteId = site.localId(),
-                        parentItemId = request.parentItemId,
-                        parentItemType = request.parentItemType
-                    )
-                }
+                parentItemType = request.parentItemType,
+                metaDataList = it
             )
         }
 
@@ -49,22 +48,41 @@ class MetaDataStore @Inject internal constructor(
         val result = metaDataRestClient.refreshMetaData(site, parentItemId, parentItemType)
 
         result.result?.let {
-            metaDataDao.updateMetaData(
-                localSiteId = site.localId(),
+            persistMetaData(
+                site = site,
                 parentItemId = parentItemId,
-                metaData = it.map { metaData ->
-                    MetaDataEntity.fromDomainModel(
-                        metaData = metaData,
-                        localSiteId = site.localId(),
-                        parentItemId = parentItemId,
-                        parentItemType = parentItemType
-                    )
-                }
+                parentItemType = parentItemType,
+                metaDataList = it
             )
         }
 
         @Suppress("RedundantUnitExpression")
         return result.asWooResult { Unit }
+    }
+
+    private suspend fun persistMetaData(
+        site: SiteModel,
+        parentItemId: Long,
+        parentItemType: MetaDataParentItemType,
+        metaDataList: List<WCMetaData>
+    ) {
+        val filteredValues = when (parentItemType) {
+            MetaDataParentItemType.ORDER -> stripOrderMetaData(metaDataList)
+            MetaDataParentItemType.PRODUCT -> stripProductMetaData(metaDataList)
+        }
+
+        metaDataDao.updateMetaData(
+            localSiteId = site.localId(),
+            parentItemId = parentItemId,
+            metaData = filteredValues.map { metaData ->
+                MetaDataEntity.fromDomainModel(
+                    metaData = metaData,
+                    localSiteId = site.localId(),
+                    parentItemId = parentItemId,
+                    parentItemType = parentItemType
+                )
+            }
+        )
     }
 
     fun observeMetaData(
