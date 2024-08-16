@@ -13,6 +13,7 @@ enum class CoreProductStockStatus(val value: String) {
         private val valueMap = entries.associateBy(CoreProductStockStatus::value)
         val ALL_VALUES = valueMap.keys
 
+        val FILTERABLE_VALUES = setOf(IN_STOCK, OUT_OF_STOCK, ON_BACK_ORDER)
         /**
          * Convert the base value into the associated CoreProductStockStatus object
          */
