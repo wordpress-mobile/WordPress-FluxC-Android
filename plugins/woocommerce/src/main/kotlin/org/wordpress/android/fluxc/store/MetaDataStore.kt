@@ -107,7 +107,7 @@ class MetaDataStore @Inject internal constructor(
         parentItemId: Long
     ) = metaDataDao.getDisplayableMetaData(site.localId(), parentItemId).map { it.toDomainModel() }
 
-    suspend fun getMetaData(
+    suspend fun getMetaDataById(
         site: SiteModel,
         parentItemId: Long,
         metaDataId: Long
@@ -123,4 +123,9 @@ class MetaDataStore @Inject internal constructor(
         parentItemId: Long,
         key: String
     ) = metaDataDao.getMetaDataByKey(site.localId(), parentItemId, key)?.map { it.toDomainModel() }
+
+    suspend fun hasDisplayableMetaData(
+        site: SiteModel,
+        parentItemId: Long
+    ) = metaDataDao.getDisplayableMetaDataCount(site.localId(), parentItemId) > 0
 }
