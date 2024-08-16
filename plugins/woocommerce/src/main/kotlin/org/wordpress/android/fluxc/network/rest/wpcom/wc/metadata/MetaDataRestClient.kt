@@ -34,9 +34,7 @@ internal class MetaDataRestClient @Inject internal constructor(
         )
 
         return response.toWooPayload {
-            it.getAsJsonArray("meta_data").mapNotNull {
-                WCMetaData.fromJson(it)
-            }
+            it.extractMetaData()
         }
     }
 
@@ -81,9 +79,11 @@ internal class MetaDataRestClient @Inject internal constructor(
         )
 
         return response.toWooPayload {
-            it.getAsJsonArray("meta_data").mapNotNull {
-                WCMetaData.fromJson(it)
-            }
+            it.extractMetaData()
         }
+    }
+
+    private fun JsonObject.extractMetaData() = getAsJsonArray("meta_data").mapNotNull {
+        WCMetaData.fromJson(it)
     }
 }
