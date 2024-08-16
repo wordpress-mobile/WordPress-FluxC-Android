@@ -43,7 +43,7 @@ data class MetaDataEntity(
             id = metaData.id,
             parentItemId = parentItemId,
             key = metaData.key,
-            value = metaData.valueAsString,
+            value = metaData.value.jsonValue.toString(),
             type = parentItemType
         )
     }
