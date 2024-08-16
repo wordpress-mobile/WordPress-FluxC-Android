@@ -11,8 +11,9 @@ import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooNetwork
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.utils.toWooPayload
+import javax.inject.Inject
 
-internal class MetaDataRestClient internal constructor(
+internal class MetaDataRestClient @Inject internal constructor(
     private val wooNetwork: WooNetwork
 ) {
     suspend fun refreshMetaData(
@@ -73,7 +74,8 @@ internal class MetaDataRestClient internal constructor(
             site = site,
             path = path,
             body = mapOf(
-                "meta_data" to metaDataJson
+                "meta_data" to metaDataJson,
+                "_fields" to "meta_data"
             ),
             clazz = JsonObject::class.java
         )
