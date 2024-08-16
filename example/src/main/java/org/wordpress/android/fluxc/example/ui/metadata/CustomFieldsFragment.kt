@@ -67,11 +67,9 @@ class CustomFieldsFragment : DaggerFragment() {
         }
     }
 
-    @Inject
-    lateinit var metaDataStore: MetaDataStore
+    @Inject lateinit var metaDataStore: MetaDataStore
 
-    @Inject
-    lateinit var siteStore: SiteStore
+    @Inject lateinit var siteStore: SiteStore
 
     private val viewModel by lazy {
         CustomFieldsViewModel(
@@ -140,7 +138,6 @@ private fun ContentView(state: CustomFieldsState.Loaded) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(16.dp)
     ) {
-
         Row(
             modifier = Modifier.align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
