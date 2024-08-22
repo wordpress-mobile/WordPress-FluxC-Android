@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -36,13 +37,11 @@ class InsertOrder @Inject internal constructor(
                     order.orderId,
                     order.localSiteId,
                     metaData.map {
-                        MetaDataEntity(
+                        MetaDataEntity.fromDomainModel(
+                            metaData = it,
                             localSiteId = order.localSiteId,
-                            id = it.id,
                             parentItemId = order.orderId,
-                            key = it.key,
-                            value = it.valueAsString,
-                            type = MetaDataEntity.ParentItemType.ORDER
+                            parentItemType = MetaDataParentItemType.ORDER
                         )
                     }
                 )

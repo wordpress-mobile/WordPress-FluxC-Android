@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.persistence.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
 
 /**
@@ -23,7 +24,7 @@ data class MetaDataEntity(
     val key: String,
     val value: String,
     @ColumnInfo(defaultValue = "ORDER") // We default to ORDER for backwards compatibility
-    val type: ParentItemType
+    val type: MetaDataParentItemType
 ) {
     fun toDomainModel() = WCMetaData(
         id = id,
@@ -31,8 +32,19 @@ data class MetaDataEntity(
         value = value
     )
 
-    enum class ParentItemType {
-        ORDER,
-        PRODUCT
+    companion object {
+        fun fromDomainModel(
+            metaData: WCMetaData,
+            localSiteId: LocalId,
+            parentItemId: Long,
+            parentItemType: MetaDataParentItemType
+        ) = MetaDataEntity(
+            localSiteId = localSiteId,
+            id = metaData.id,
+            parentItemId = parentItemId,
+            key = metaData.key,
+            value = metaData.value.jsonValue.toString(),
+            type = parentItemType
+        )
     }
 }

@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.greenrobot.eventbus.Subscribe
@@ -22,6 +21,7 @@ import org.wordpress.android.fluxc.example.databinding.FragmentWooOrdersBinding
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.ui.metadata.CustomFieldsFragment
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.BILLING
 import org.wordpress.android.fluxc.example.ui.orders.AddressEditDialogFragment.AddressType.SHIPPING
@@ -29,10 +29,11 @@ import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.showTwoButtonsDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.OrderAttributionInfo
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.OrderEntity
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -626,6 +627,26 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                                 } ?: prependToLog("Fetching Order Failed")
                             } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                         }
+                    }
+                }
+            }
+
+            customFields.setOnClickListener {
+                selectedSite?.let { site ->
+                    lifecycleScope.launch {
+                        val orderId = showSingleLineDialog(
+                            activity = requireActivity(),
+                            message = "Please enter the order id",
+                            isNumeric = true
+                        )?.toLongOrNull() ?: return@launch
+
+                        replaceFragment(
+                            CustomFieldsFragment.newInstance(
+                                siteId = site.localId(),
+                                parentItemId = orderId,
+                                parentItemType = MetaDataParentItemType.ORDER
+                            )
+                        )
                     }
                 }
             }
