@@ -242,5 +242,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch product stock report" />
+
+        <Button
+            android:id="@+id/custom_fields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="View Product Custom Fields" />
     </LinearLayout>
 </ScrollView>

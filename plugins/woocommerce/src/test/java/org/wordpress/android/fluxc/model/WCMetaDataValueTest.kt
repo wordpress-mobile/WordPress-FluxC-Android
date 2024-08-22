@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model
 
 import org.junit.Test
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue
 
 class WCMetaDataValueTest {
     @Test

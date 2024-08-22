@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.persistence.entity.MetaDataEntity
 
 @Dao
@@ -29,12 +30,33 @@ abstract class MetaDataDao {
         parentItemId: Long
     ): Flow<List<MetaDataEntity>>
 
+    @Query(
+        """
+        SELECT * FROM MetaData 
+        WHERE parentItemId = :parentItemId 
+        AND localSiteId = :localSiteId 
+        AND `key` NOT LIKE '\_%'
+        ESCAPE '\'
+        """
+    )
+    abstract fun observeDisplayableMetaData(
+        localSiteId: LocalId,
+        parentItemId: Long
+    ): Flow<List<MetaDataEntity>>
+
     @Query("SELECT * FROM MetaData WHERE id = :id AND parentItemId = :parentItemId AND localSiteId = :localSiteId")
     abstract suspend fun getMetaData(
         localSiteId: LocalId,
         parentItemId: Long,
         id: Long
     ): MetaDataEntity?
+
+    @Query("SELECT * FROM MetaData WHERE parentItemId = :parentItemId AND localSiteId = :localSiteId AND `key` = :key")
+    abstract suspend fun getMetaDataByKey(
+        localSiteId: LocalId,
+        parentItemId: Long,
+        key: String
+    ): List<MetaDataEntity>?
 
     @Query("""
         SELECT * FROM MetaData
@@ -69,7 +91,7 @@ abstract class MetaDataDao {
     abstract suspend fun deleteMetaData(localSiteId: LocalId, parentItemId: Long)
 
     @Query("DELETE FROM MetaData WHERE localSiteId = :localSiteId AND type = :type")
-    abstract suspend fun deleteMetaDataForSite(localSiteId: LocalId, type: MetaDataEntity.ParentItemType)
+    abstract suspend fun deleteMetaDataForSite(localSiteId: LocalId, type: MetaDataParentItemType)
 
     @Transaction
     open suspend fun updateMetaData(

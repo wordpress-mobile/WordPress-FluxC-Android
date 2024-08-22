@@ -2,8 +2,8 @@ package org.wordpress.android.fluxc.model.order
 
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.WCMetaData
-import org.wordpress.android.fluxc.model.get
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.get
 import org.wordpress.android.fluxc.utils.JsonElementToLongSerializerDeserializer
 
 data class LineItem(

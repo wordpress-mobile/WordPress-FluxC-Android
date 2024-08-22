@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.model
 
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
+
 data class OrderAttributionInfo(
     val sourceType: String? = null,
     val campaign: String? = null,

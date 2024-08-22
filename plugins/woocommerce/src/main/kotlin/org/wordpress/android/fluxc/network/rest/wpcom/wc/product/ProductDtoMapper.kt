@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.StripProductMetaData
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.utils.getString
 import javax.inject.Inject

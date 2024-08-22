@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.model.addons
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import org.wordpress.android.fluxc.model.WCMetaDataValue
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue
 
 data class RemoteAddonDto(
     @SerializedName("title_format")

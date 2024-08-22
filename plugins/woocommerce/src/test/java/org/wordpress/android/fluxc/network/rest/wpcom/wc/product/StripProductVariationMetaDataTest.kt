@@ -6,7 +6,7 @@ import com.google.gson.JsonObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.wordpress.android.fluxc.model.StripProductVariationMetaData
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 
 class StripProductVariationMetaDataTest {
     private val gson = Gson()

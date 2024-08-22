@@ -1,7 +1,8 @@
 package org.wordpress.android.fluxc.model
 
-import org.wordpress.android.fluxc.model.WCMetaData.AddOnsMetadataKeys
+import org.wordpress.android.fluxc.model.metadata.WCMetaData.AddOnsMetadataKeys
 import org.wordpress.android.fluxc.model.WCProductModel.SubscriptionMetadataKeys
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import javax.inject.Inject
 
 class StripProductMetaData @Inject internal constructor() {

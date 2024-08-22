@@ -8,12 +8,12 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.wordpress.android.fluxc.JsonLoaderUtils.jsonFileAs
 import org.wordpress.android.fluxc.model.LocalOrRemoteId
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemotePriceType.FlatFee
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteRestrictionsType.AnyText
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto.RemoteType.Checkbox
-import org.wordpress.android.fluxc.model.get
+import org.wordpress.android.fluxc.model.metadata.get
 import kotlin.test.fail
 
 class ProductDtoMapperTest {

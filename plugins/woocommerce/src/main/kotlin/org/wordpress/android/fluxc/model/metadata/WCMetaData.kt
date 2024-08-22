@@ -1,10 +1,12 @@
-package org.wordpress.android.fluxc.model
+package org.wordpress.android.fluxc.model.metadata
 
-import androidx.annotation.VisibleForTesting
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue.JsonArrayValue
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue.JsonObjectValue
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue.WCMetaDataValueJsonAdapter
 import org.wordpress.android.util.AppLog
 
 data class WCMetaData(
@@ -12,16 +14,18 @@ data class WCMetaData(
     val id: Long,
     @SerializedName(KEY)
     val key: String,
-    @JsonAdapter(WCMetaDataValue.WCMetaDataValueJsonAdapter::class)
+    @JsonAdapter(WCMetaDataValueJsonAdapter::class)
     @SerializedName(VALUE)
     val value: WCMetaDataValue,
     @SerializedName(DISPLAY_KEY)
     val displayKey: String? = null,
-    @JsonAdapter(WCMetaDataValue.WCMetaDataValueJsonAdapter::class)
+    @JsonAdapter(WCMetaDataValueJsonAdapter::class)
     @SerializedName(DISPLAY_VALUE)
     val displayValue: WCMetaDataValue? = null
 ) {
-    constructor(id: Long, key: String, value: String) : this(id, key, WCMetaDataValue.fromRawString(value))
+    constructor(id: Long, key: String, value: String) : this(id, key,
+        WCMetaDataValue.fromRawString(value)
+    )
 
     /**
      * Verify if the Metadata key is not null or a internal store attribute
@@ -41,7 +45,7 @@ data class WCMetaData(
         get() = valueAsString.contains(htmlRegex)
 
     val isJson: Boolean
-        get() = value is WCMetaDataValue.JsonObjectValue || value is WCMetaDataValue.JsonArrayValue
+        get() = value is JsonObjectValue || value is JsonArrayValue
 
     internal fun toJson(): JsonObject {
         return JsonObject().also {
@@ -54,7 +58,6 @@ data class WCMetaData(
     }
 
     companion object {
-        @VisibleForTesting
         const val ID = "id"
         const val KEY = "key"
         const val VALUE = "value"

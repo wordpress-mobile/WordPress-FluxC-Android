@@ -5,9 +5,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.wordpress.android.fluxc.model.WCMetaData.Companion.ID
-import org.wordpress.android.fluxc.model.WCMetaData.Companion.KEY
-import org.wordpress.android.fluxc.model.WCMetaData.Companion.VALUE
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData.Companion.ID
+import org.wordpress.android.fluxc.model.metadata.WCMetaData.Companion.KEY
+import org.wordpress.android.fluxc.model.metadata.WCMetaData.Companion.VALUE
 
 @RunWith(RobolectricTestRunner::class)
 class WCMetaDataTest {

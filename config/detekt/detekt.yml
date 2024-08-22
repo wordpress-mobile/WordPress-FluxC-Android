@@ -7,9 +7,11 @@ config:
 complexity:
   LongParameterList:
     ignoreDefaultParameters: true
-    ignoreAnnotated: ['Inject']
+    ignoreAnnotated: ['Inject', 'Composable']
   TooManyFunctions:
     active: false
+  LongMethod:
+    ignoreAnnotated: ['Composable']
 
 coroutines:
   GlobalCoroutineUsage:
@@ -22,6 +24,7 @@ style:
   MagicNumber:
     ignoreEnums: true
     ignorePropertyDeclaration: true
+    ignoreAnnotated: ['Composable']
   SpacingBetweenPackageAndImports:
     active: true
   UnusedImports:
@@ -31,3 +34,7 @@ style:
   ForbiddenSuppress:
     active: true
     rules: ['MaximumLineLength']
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: [ 'Composable' ]
