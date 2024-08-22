@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -22,11 +23,13 @@ import org.wordpress.android.fluxc.example.databinding.FragmentWooProductsBindin
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectingFragment
+import org.wordpress.android.fluxc.example.ui.metadata.CustomFieldsFragment
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCAddonsStore
@@ -652,6 +655,26 @@ class WooProductsFragment : StoreSelectingFragment() {
                             prependToLog("${it.name} has ${it.stockQuantity} in stock")
                         }
                     }
+                }
+            }
+        }
+
+        binding?.customFields?.setOnClickListener {
+            selectedSite?.let { site ->
+                lifecycleScope.launch {
+                    val orderId = showSingleLineDialog(
+                        activity = requireActivity(),
+                        message = "Please enter the product id",
+                        isNumeric = true
+                    )?.toLongOrNull() ?: return@launch
+
+                    replaceFragment(
+                        CustomFieldsFragment.newInstance(
+                            siteId = site.localId(),
+                            parentItemId = orderId,
+                            parentItemType = MetaDataParentItemType.PRODUCT
+                        )
+                    )
                 }
             }
         }

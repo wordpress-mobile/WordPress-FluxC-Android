@@ -45,7 +45,7 @@ class MetaDataStore @Inject internal constructor(
         parentItemId: Long,
         parentItemType: MetaDataParentItemType
     ): WooResult<Unit> {
-        val result = metaDataRestClient.refreshMetaData(site, parentItemId, parentItemType)
+        val result = metaDataRestClient.fetchMetaData(site, parentItemId, parentItemType)
 
         result.result?.let {
             persistMetaData(

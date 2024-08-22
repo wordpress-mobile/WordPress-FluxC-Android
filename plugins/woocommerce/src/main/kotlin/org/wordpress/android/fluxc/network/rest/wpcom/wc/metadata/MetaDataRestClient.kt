@@ -16,7 +16,7 @@ import javax.inject.Inject
 internal class MetaDataRestClient @Inject internal constructor(
     private val wooNetwork: WooNetwork
 ) {
-    suspend fun refreshMetaData(
+    suspend fun fetchMetaData(
         site: SiteModel,
         parentItemId: Long,
         parentItemType: MetaDataParentItemType
