@@ -85,7 +85,7 @@ class MetaDataStoreTest {
                 WCMetaData(2, "_key", "value2") // should be stripped
             )
         )
-        whenever(metaDataRestClient.refreshMetaData(site, 1, parentItemType))
+        whenever(metaDataRestClient.fetchMetaData(site, 1, parentItemType))
             .thenReturn(payload)
 
         val result = metaDataStore.refreshMetaData(site, 1, parentItemType)
@@ -123,7 +123,7 @@ class MetaDataStoreTest {
     @Test
     fun `when refreshing metadata fails, then do not persist metadata`() = runTest {
         val error = WooError(type = WooErrorType.GENERIC_ERROR, original = GenericErrorType.UNKNOWN)
-        whenever(metaDataRestClient.refreshMetaData(site, 1, parentItemType))
+        whenever(metaDataRestClient.fetchMetaData(site, 1, parentItemType))
             .thenReturn(WooPayload(error))
 
         val result = metaDataStore.refreshMetaData(site, 1, parentItemType)
