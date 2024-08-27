@@ -71,7 +71,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
+        kotlinCompilerExtensionVersion = sharedLibs.versions.androidx.compose.compiler.get()
     }
 
     sourceSets {
@@ -142,6 +142,7 @@ dependencies {
     testImplementation sharedLibs.assertj.core
     testImplementation sharedLibs.androidx.arch.core.testing
 
+    implementation platform(sharedLibs.androidx.compose.bom)
     implementation sharedLibs.androidx.compose.material
     implementation sharedLibs.androidx.compose.ui.tooling
 
@@ -161,9 +162,6 @@ dependencies {
     debugImplementation sharedLibs.facebook.flipper.network.plugin
 
     // Coroutines
-    implementation platform("androidx.compose:compose-bom:2024.04.00")
-    implementation 'androidx.compose.material:material'
-
     implementation sharedLibs.kotlinx.coroutines.core
     implementation sharedLibs.kotlinx.coroutines.android
 
