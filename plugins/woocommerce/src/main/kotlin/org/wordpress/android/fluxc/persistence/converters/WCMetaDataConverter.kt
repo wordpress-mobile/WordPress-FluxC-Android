@@ -4,7 +4,7 @@ import androidx.room.TypeConverter
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 
 internal class WCMetaDataConverter {
     @TypeConverter

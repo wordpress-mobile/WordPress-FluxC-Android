@@ -173,5 +173,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch Order Attribution" />
+
+        <Button
+            android:id="@+id/custom_fields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="View Order Custom Fields" />
     </LinearLayout>
 </ScrollView>

@@ -1,37 +1,16 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.mock
-import org.wordpress.android.fluxc.model.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 
 class StripOrderMetaDataTest {
     private lateinit var sut: StripOrderMetaData
-    private lateinit var orderDtoMock: OrderDto
-    private lateinit var gsonMock: Gson
-    private val jsonObjectMock = mock<JsonObject>()
 
     @Before
     fun setUp() {
-        configureMocks()
-        sut = StripOrderMetaData(gsonMock)
-    }
-
-    private fun configureMocks() {
-        orderDtoMock = mock {
-            on { id }.thenReturn(1)
-            on { meta_data }.thenReturn(jsonObjectMock)
-        }
-        gsonMock = mock {
-            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
-                listOf()
-            )
-        }
+        sut = StripOrderMetaData()
     }
 
     @Test
@@ -49,16 +28,9 @@ class StripOrderMetaDataTest {
                 value = "valid value"
             )
         )
-        gsonMock = mock {
-            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
-                rawMetadata
-            )
-        }
-        sut = StripOrderMetaData(gsonMock)
 
         // When
-        val result: List<WCMetaData> = sut(orderDtoMock)
+        val result: List<WCMetaData> = sut(rawMetadata)
 
         // Then
         assertThat(result).isEqualTo(
@@ -70,38 +42,6 @@ class StripOrderMetaDataTest {
                 )
             )
         )
-    }
-
-    @Test
-    fun `when orderDto has no id, then cancel the operation`() {
-        // Given
-        orderDtoMock = mock {
-            on { id }.thenReturn(null)
-        }
-
-        // When
-        val result = sut(orderDtoMock)
-
-        // Then
-        assertThat(result).isEmpty()
-    }
-
-    @Test
-    fun `when JSON parsing fails, then set an empty metadata list`() {
-        // Given
-        gsonMock = mock {
-            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenThrow(
-                IllegalStateException()
-            )
-        }
-        sut = StripOrderMetaData(gsonMock)
-
-        // When
-        val result = sut(orderDtoMock)
-
-        // Then
-        assertThat(result).isEmpty()
     }
 
     @Test
@@ -119,16 +59,9 @@ class StripOrderMetaDataTest {
                 value = "valid value"
             )
         )
-        gsonMock = mock {
-            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
-                rawMetadata
-            )
-        }
-        sut = StripOrderMetaData(gsonMock)
 
         // When
-        val result = sut(orderDtoMock)
+        val result = sut(rawMetadata)
 
         // Then
         assertThat(result).isEqualTo(
@@ -157,16 +90,9 @@ class StripOrderMetaDataTest {
                 value = "valid value"
             )
         )
-        gsonMock = mock {
-            val responseType = object : TypeToken<List<WCMetaData>>() {}.type
-            on { fromJson<List<WCMetaData>?>(jsonObjectMock, responseType) }.thenReturn(
-                rawMetadata
-            )
-        }
-        sut = StripOrderMetaData(gsonMock)
 
         // When
-        val result = sut(orderDtoMock)
+        val result = sut(rawMetadata)
 
         // Then
         assertThat(result).isEqualTo(
