@@ -52,7 +52,7 @@ class InsertOrder @Inject internal constructor(
         )
         // Re-fetch the list only when at least one of the inserted orders has changed
         if (orderChanged) {
-            dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
+            dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
         }
     }
 }
