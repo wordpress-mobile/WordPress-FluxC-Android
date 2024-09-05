@@ -30,7 +30,7 @@ class InsertOrder @Inject internal constructor(
                     order,
                     OrdersDaoDecorator.ListUpdateStrategy.SUPPRESS
                 )
-                if (result != OrdersDaoDecorator.UpdateOrderResult.UNCHANGED) {
+                if (result == OrdersDaoDecorator.UpdateOrderResult.UPDATED) {
                     orderChanged = true
                 }
                 metaDataDao.updateMetaData(
@@ -52,7 +52,7 @@ class InsertOrder @Inject internal constructor(
         )
         // Re-fetch the list only when at least one of the inserted orders has changed
         if (orderChanged) {
-            dispatcher.dispatch(ListActionBuilder.newListRequiresRefreshAction(listTypeIdentifier))
+            dispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
         }
     }
 }
