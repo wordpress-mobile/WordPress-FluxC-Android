@@ -45,7 +45,7 @@ class StripOrderMetaDataTest {
     }
 
     @Test
-    fun `when Metadata value contains JSON, then remove it from the list`() {
+    fun `when Metadata value contains JSON and is displayable, then keep it in the list`() {
         // Given
         val rawMetadata = listOf(
             WCMetaData(
@@ -64,15 +64,7 @@ class StripOrderMetaDataTest {
         val result = sut(rawMetadata)
 
         // Then
-        assertThat(result).isEqualTo(
-            listOf(
-                WCMetaData(
-                    id = 2L,
-                    key = "valid key",
-                    value = "valid value"
-                )
-            )
-        )
+        assertThat(result.size).isEqualTo(2)
     }
 
     @Test
