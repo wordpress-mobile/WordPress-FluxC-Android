@@ -16,8 +16,7 @@ class StripOrderMetaData @Inject internal constructor() {
     operator fun invoke(metaData: List<WCMetaData>): List<WCMetaData> {
         return metaData
             .filter {
-                (it.isDisplayable || it.key in SUPPORTED_KEYS)
-                        && !it.isJson
+                it.isDisplayable || it.key in SUPPORTED_KEYS
             }
     }
 }

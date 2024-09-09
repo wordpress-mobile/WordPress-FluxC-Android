@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class StripProductMetaData @Inject internal constructor() {
     operator fun invoke(metaData: List<WCMetaData>): List<WCMetaData> {
-        return metaData.filter { !it.isJson || SUPPORTED_KEYS.contains(it.key) }
+        return metaData.filter { it.isDisplayable || SUPPORTED_KEYS.contains(it.key) }
     }
 
     companion object {
