@@ -65,12 +65,6 @@ data class WCMetaData(
         private const val DISPLAY_KEY = "display_key"
         private const val DISPLAY_VALUE = "display_value"
 
-        val SUPPORTED_KEYS: Set<String> = buildSet {
-            add(SubscriptionMetadataKeys.SUBSCRIPTION_RENEWAL)
-            add(BundleMetadataKeys.BUNDLED_ITEM_ID)
-            addAll(OrderAttributionInfoKeys.ALL_KEYS)
-        }
-
         internal fun fromJson(json: JsonElement): WCMetaData? = runCatching {
             val jsonObject = json.asJsonObject
             WCMetaData(
