@@ -59,10 +59,10 @@ internal class MetaDataRestClient @Inject internal constructor(
         request.updatedMetadata.forEach {
             metaDataJson.add(it.toJson())
         }
-        request.deletedMetadata.forEach {
+        request.deletedMetadataIds.forEach {
             metaDataJson.add(
                 JsonObject().apply {
-                    addProperty(WCMetaData.ID, it.id)
+                    addProperty(WCMetaData.ID, it)
                     add(WCMetaData.VALUE, JsonNull.INSTANCE)
                 }
             )
