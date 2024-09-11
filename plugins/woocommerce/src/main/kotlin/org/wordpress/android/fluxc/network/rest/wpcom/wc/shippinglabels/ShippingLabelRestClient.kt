@@ -368,6 +368,7 @@ class ShippingLabelRestClient @Inject constructor(private val wooNetwork: WooNet
                 val name: String,
                 @SerializedName("inner_dimensions") val innerDimensions: String?,
                 @SerializedName("outer_dimensions") val outerDimensions: String?,
+                @SerializedName("dimensions") val dimensions: String?,
                 @SerializedName("box_weight") val boxWeight: Float?,
                 @SerializedName("max_weight") val maxWeight: Float?,
                 @SerializedName("is_user_defined") val isUserDefined: Boolean?,
