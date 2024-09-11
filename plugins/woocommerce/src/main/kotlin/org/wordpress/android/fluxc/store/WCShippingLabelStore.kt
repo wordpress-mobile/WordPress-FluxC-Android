@@ -350,7 +350,7 @@ class WCShippingLabelStore @Inject constructor(
             CustomPackage(
                     title = it.name,
                     isLetter = it.isLetter,
-                    dimensions = it.outerDimensions ?: it.innerDimensions ?: "",
+                    dimensions = it.dimensions ?: it.outerDimensions ?: it.innerDimensions ?: "0 x 0 x 0",
                     boxWeight = it.boxWeight ?: 0f
             )
         }

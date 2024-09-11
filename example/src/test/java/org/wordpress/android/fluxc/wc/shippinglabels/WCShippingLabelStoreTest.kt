@@ -386,7 +386,9 @@ class WCShippingLabelStoreTest {
         val expectedResult = WCPackagesResult(
                 listOf(
                         CustomPackage("Krabica", false, "1 x 2 x 3", 1f),
-                        CustomPackage("Obalka", true, "2 x 3 x 4", 5f)
+                        CustomPackage("Obalka", true, "2 x 3 x 4", 5f),
+                        CustomPackage("Flat Box", true, "5 x 6 x 4", 1f),
+                        CustomPackage("Weird Box", false, "0 x 0 x 0", 0f)
                 ),
                 listOf(
                         PredefinedOption("USPS Priority Mail Flat Rate Boxes",
