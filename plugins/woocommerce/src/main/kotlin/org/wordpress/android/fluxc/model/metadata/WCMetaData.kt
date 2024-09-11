@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue.JsonArrayValue
 import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue.JsonObjectValue
 import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue.WCMetaDataValueJsonAdapter
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.HtmlUtils
 
 data class WCMetaData(
     @SerializedName(ID)
@@ -39,10 +40,10 @@ data class WCMetaData(
         get() = value.stringValue.orEmpty()
 
     val valueStrippedHtml: String
-        get() = valueAsString.replace(htmlRegex, "")
+        get() = HtmlUtils.fastStripHtml(valueAsString)
 
     val isHtml: Boolean
-        get() = valueAsString.contains(htmlRegex)
+        get() = valueAsString != valueStrippedHtml
 
     val isJson: Boolean
         get() = value is JsonObjectValue || value is JsonArrayValue
@@ -63,10 +64,6 @@ data class WCMetaData(
         const val VALUE = "value"
         private const val DISPLAY_KEY = "display_key"
         private const val DISPLAY_VALUE = "display_value"
-
-        private val htmlRegex by lazy {
-            Regex("<[^>]+>")
-        }
 
         val SUPPORTED_KEYS: Set<String> = buildSet {
             add(SubscriptionMetadataKeys.SUBSCRIPTION_RENEWAL)

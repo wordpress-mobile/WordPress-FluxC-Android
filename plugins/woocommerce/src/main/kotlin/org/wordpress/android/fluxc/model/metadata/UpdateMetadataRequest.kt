@@ -5,7 +5,7 @@ data class UpdateMetadataRequest(
     val parentItemType: MetaDataParentItemType,
     val insertedMetadata: List<WCMetaData> = emptyList(),
     val updatedMetadata: List<WCMetaData> = emptyList(),
-    val deletedMetadata: List<WCMetaData> = emptyList(),
+    val deletedMetadataIds: List<Long> = emptyList(),
 ) {
     init {
         // The ID of inserted metadata is ignored, so to ensure that there is no data loss here,

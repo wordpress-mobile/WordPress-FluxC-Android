@@ -34,7 +34,7 @@ class CustomFieldsViewModel(
             parentItemType = parentItemType,
             insertedMetadata = emptyList(),
             updatedMetadata = emptyList(),
-            deletedMetadata = emptyList()
+            deletedMetadataIds = emptyList()
         )
     )
 
@@ -51,7 +51,7 @@ class CustomFieldsViewModel(
             ),
             pendingUpdateRequest
         ) { customFields, pendingUpdateRequest ->
-            customFields.filterNot { it in pendingUpdateRequest.deletedMetadata }
+            customFields.filterNot { it.id in pendingUpdateRequest.deletedMetadataIds }
                 .map { field ->
                     pendingUpdateRequest.updatedMetadata.find { it.key == field.key }
                         ?: field
@@ -64,7 +64,7 @@ class CustomFieldsViewModel(
             pendingUpdateRequest.map {
                 it.insertedMetadata.isNotEmpty() ||
                     it.updatedMetadata.isNotEmpty() ||
-                    it.deletedMetadata.isNotEmpty()
+                    it.deletedMetadataIds.isNotEmpty()
             }
         ) { loadingState, metaData, hasChanges ->
             when (loadingState) {
@@ -74,7 +74,7 @@ class CustomFieldsViewModel(
                     onDelete = { field ->
                         pendingUpdateRequest.update {
                             it.copy(
-                                deletedMetadata = it.deletedMetadata + field
+                                deletedMetadataIds = it.deletedMetadataIds + field.id
                             )
                         }
                     },
@@ -136,7 +136,7 @@ class CustomFieldsViewModel(
                         it.copy(
                             insertedMetadata = emptyList(),
                             updatedMetadata = emptyList(),
-                            deletedMetadata = emptyList()
+                            deletedMetadataIds = emptyList()
                         )
                     }
                     loadingState.value = LoadingState.Loaded
