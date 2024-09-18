@@ -1999,6 +1999,9 @@ class ProductRestClient @Inject constructor(
                 }
             }
         }
+        if (storedWCProductModel.password != updatedProductModel.password) {
+            body["post_password"] = updatedProductModel.password.orEmpty()
+        }
 
         return body
     }
