@@ -112,6 +112,9 @@ class ProductDtoMapper @Inject constructor(
             // Save only the subscription data, the rest of the metadata will be saved separately
             metadata = metaData.filter { it.key in WCProductModel.SubscriptionMetadataKeys.ALL_KEYS }
                 .let { gson.toJson(it) }
+
+            password = dto.password
+
             isSampleProduct = dto.metadata?.any {
                 val metaDataEntry = WCMetaData.fromJson(it.asJsonObject)
                 metaDataEntry?.let { json ->
