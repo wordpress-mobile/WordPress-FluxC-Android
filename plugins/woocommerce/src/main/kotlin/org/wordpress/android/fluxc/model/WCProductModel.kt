@@ -120,6 +120,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var maxAllowedQuantity = -1
     @Column var groupOfQuantity = -1
     @Column var combineVariationQuantities = false
+    @Column var password: String? = null
 
     @Column var isSampleProduct = false
         @JvmName("setIsSampleProduct")
