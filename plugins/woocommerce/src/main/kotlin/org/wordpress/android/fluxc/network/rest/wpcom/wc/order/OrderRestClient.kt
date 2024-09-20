@@ -1077,6 +1077,9 @@ class OrderRestClient @Inject constructor(
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { mapOf("code" to it) }
                 ?.let { put("gift_cards", listOf(it)) }
+            metaDataUpdateRequest?.let {
+                put("meta_data", it.asJsonArray())
+            }
         }
     }
 
