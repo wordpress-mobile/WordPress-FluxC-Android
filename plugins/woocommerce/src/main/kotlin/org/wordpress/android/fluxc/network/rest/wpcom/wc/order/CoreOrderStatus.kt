@@ -10,10 +10,11 @@ enum class CoreOrderStatus(val value: String) {
     COMPLETED("completed"),
     CANCELLED("cancelled"),
     REFUNDED("refunded"),
-    FAILED("failed");
+    FAILED("failed"),
+    TRASH("trash");
 
     companion object {
-        private val valueMap = CoreOrderStatus.values().associateBy(CoreOrderStatus::value)
+        private val valueMap = CoreOrderStatus.entries.associateBy(CoreOrderStatus::value)
 
         /**
          * Convert the base value into the associated CoreOrderStatus object
