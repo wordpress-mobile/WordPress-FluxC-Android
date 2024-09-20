@@ -168,6 +168,13 @@
             android:text="Delete an order" />
 
         <Button
+            android:id="@+id/restore_order"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Restore a trashed order" />
+
+        <Button
             android:id="@+id/fetch_order_attribution"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
