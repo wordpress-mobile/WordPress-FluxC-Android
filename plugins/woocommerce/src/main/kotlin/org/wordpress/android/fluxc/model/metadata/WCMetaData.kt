@@ -88,6 +88,7 @@ data class WCMetaData(
 
     object GeneralKeys {
         const val TRASH_STATUS = "_wp_trash_meta_status"
+        const val TRASH_TIME = "_wp_trash_meta_time"
     }
 
     object SubscriptionMetadataKeys {

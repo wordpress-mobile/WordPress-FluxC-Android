@@ -8,6 +8,8 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
+import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.metadata.get
 import org.wordpress.android.fluxc.model.order.FeeLine
@@ -301,10 +303,10 @@ class OrderUpdateStore @Inject internal constructor(
             localSiteId = site.localId(),
             parentItemId = orderId,
             key = WCMetaData.GeneralKeys.TRASH_STATUS
-        )?.firstOrNull()?.value
+        )?.lastOrNull()?.toDomainModel()
 
         suspend fun fetchPreviousStatusFromApi() = wcOrderRestClient.fetchSingleOrder(site, orderId)
-            .orderWithMeta.second[WCMetaData.GeneralKeys.TRASH_STATUS]?.valueAsString
+            .orderWithMeta.second[WCMetaData.GeneralKeys.TRASH_STATUS]
 
         return coroutineEngine.withDefaultContext(T.API, this, "restoreDeletedOrder") {
             val previousStatus = getPreviousStatusFromDB()
@@ -322,8 +324,16 @@ class OrderUpdateStore @Inject internal constructor(
                 orderId = orderId,
                 request = UpdateOrderRequest(
                     status = WCOrderStatusModel().apply {
-                        statusKey = previousStatus
-                    }
+                        statusKey = previousStatus.valueAsString.substringAfter("wc-")
+                    },
+                    metaDataUpdateRequest = UpdateMetadataRequest(
+                        deletedMetaDataKeys = listOf(
+                            WCMetaData.GeneralKeys.TRASH_STATUS,
+                            WCMetaData.GeneralKeys.TRASH_TIME
+                        ),
+                        parentItemId = orderId,
+                        parentItemType = MetaDataParentItemType.ORDER
+                    )
                 )
             )
 
