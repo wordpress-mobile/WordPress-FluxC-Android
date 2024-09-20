@@ -8,12 +8,16 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.Billing
 import org.wordpress.android.fluxc.model.order.OrderAddress.Shipping
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
+import org.wordpress.android.fluxc.network.BaseRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderDtoMapper.Companion.toDto
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
@@ -91,6 +95,7 @@ class OrderUpdateStore @Inject internal constructor(
                         val payload = wcOrderRestClient.updateBillingAddress(initialOrder, site, newAddress.toDto())
                         emitRemoteUpdateContainingBillingAddress(payload, initialOrder, newAddress)
                     }
+
                     is Shipping -> {
                         val payload = wcOrderRestClient.updateShippingAddress(initialOrder, site, newAddress.toDto())
                         emitRemoteUpdateResultOrRevertOnError(payload, initialOrder)
@@ -287,6 +292,41 @@ class OrderUpdateStore @Inject internal constructor(
         }
     }
 
+    suspend fun restoreDeletedOrder(
+        site: SiteModel,
+        orderId: Long
+    ): WooResult<Unit> {
+        return coroutineEngine.withDefaultContext(T.API, this, "restoreDeletedOrder") {
+            val previousStatus = metaDataDao.getMetaDataByKey(
+                site.localId(),
+                orderId,
+                WCMetaData.GeneralKeys.TRASH_STATUS
+            )?.firstOrNull() ?: return@withDefaultContext WooResult(
+                WooError(
+                    type = WooErrorType.GENERIC_ERROR,
+                    original = BaseRequest.GenericErrorType.UNKNOWN,
+                    message = "Previous status not found"
+                )
+            )
+
+            val result = wcOrderRestClient.updateOrder(
+                site = site,
+                orderId = orderId,
+                request = UpdateOrderRequest(
+                    status = WCOrderStatusModel().apply {
+                        statusKey = previousStatus.value
+                    }
+                )
+            )
+
+            return@withDefaultContext if (result.isError) {
+                WooResult(result.error)
+            } else {
+                WooResult(Unit)
+            }
+        }
+    }
+
     private suspend fun FlowCollector<UpdateOrderResult>.takeWhenOrderDataAcquired(
         orderId: Long,
         localSiteId: LocalId,
@@ -363,7 +403,7 @@ class OrderUpdateStore @Inject internal constructor(
              */
             val isLikelyEmptyBillingEmailError =
                 updateRemoteOrderPayload.error.type == OrderErrorType.INVALID_PARAM &&
-                    billingAddress.email.isBlank()
+                        billingAddress.email.isBlank()
 
             if (isLikelyEmptyBillingEmailError) {
                 OrderError(
@@ -380,7 +420,7 @@ class OrderUpdateStore @Inject internal constructor(
         updateRemoteOrderPayload: RemoteOrderPayload,
         initialOrder: OrderEntity,
         mapError: (OrderError?) -> OrderError? = {
-        updateRemoteOrderPayload.error
+            updateRemoteOrderPayload.error
         }
     ) {
         val remoteUpdateResult = if (updateRemoteOrderPayload.isError) {
@@ -395,9 +435,11 @@ class OrderUpdateStore @Inject internal constructor(
     }
 
     private suspend fun FlowCollector<UpdateOrderResult>.emitNoEntityFound(message: String) {
-        emit(UpdateOrderResult.OptimisticUpdateResult(
-            OnOrderChanged(orderError = OrderError(message = message))
-        ))
+        emit(
+            UpdateOrderResult.OptimisticUpdateResult(
+                OnOrderChanged(orderError = OrderError(message = message))
+            )
+        )
     }
 
     companion object {
@@ -411,8 +453,8 @@ class OrderUpdateStore @Inject internal constructor(
                 json.addProperty("name", SIMPLE_PAYMENT_FEELINE_NAME)
                 json.addProperty("total", amount)
                 json.addProperty(
-                        "tax_status",
-                        if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
+                    "tax_status",
+                    if (isTaxable) FeeLineTaxStatus.Taxable.value else FeeLineTaxStatus.None.value
                 )
             }
             return JsonArray().also { it.add(jsonFee) }
