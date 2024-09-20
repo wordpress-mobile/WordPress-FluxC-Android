@@ -10,13 +10,13 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.metadata.WCMetaData
-import org.wordpress.android.fluxc.model.metadata.WCMetaData.OrderAttributionInfoKeys
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaData.OrderAttributionInfoKeys
 import org.wordpress.android.fluxc.model.order.UpdateOrderRequest
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
@@ -48,6 +48,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.fluxc.utils.extensions.filterNotNull
 import org.wordpress.android.fluxc.utils.putIfNotEmpty
 import org.wordpress.android.fluxc.utils.toWooPayload
 import org.wordpress.android.util.AppLog
@@ -328,14 +329,15 @@ class OrderRestClient @Inject constructor(
      * @param site The WooCommerce [SiteModel] the orders belong to
      * @param orderIds A list of remote order identifiers to fetch from the API
      */
-    fun fetchOrdersByIds(site: SiteModel, orderIds: List<Long>) {
+    fun fetchOrdersByIds(site: SiteModel, orderIds: List<Long>, statusFilter: String?) {
         coroutineEngine.launch(T.API, this, "fetchOrdersByIds") {
             val url = WOOCOMMERCE.orders.pathV3
             val params = mapOf(
                 "per_page" to orderIds.size.toString(),
                 "include" to orderIds.map { it }.joinToString(),
+                "status" to statusFilter,
                 "_fields" to ORDER_FIELDS
-            )
+            ).filterNotNull()
 
             val response = wooNetwork.executeGetGsonRequest(
                 site = site,
