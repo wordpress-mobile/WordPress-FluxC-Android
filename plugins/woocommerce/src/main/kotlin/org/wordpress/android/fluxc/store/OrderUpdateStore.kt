@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.get
 import org.wordpress.android.fluxc.model.order.FeeLine
 import org.wordpress.android.fluxc.model.order.FeeLineTaxStatus
 import org.wordpress.android.fluxc.model.order.OrderAddress
@@ -295,26 +296,33 @@ class OrderUpdateStore @Inject internal constructor(
     suspend fun restoreDeletedOrder(
         site: SiteModel,
         orderId: Long
-    ): WooResult<Unit> {
+    ): WooResult<OrderEntity> {
+        suspend fun getPreviousStatusFromDB() = metaDataDao.getMetaDataByKey(
+            localSiteId = site.localId(),
+            parentItemId = orderId,
+            key = WCMetaData.GeneralKeys.TRASH_STATUS
+        )?.firstOrNull()?.value
+
+        suspend fun fetchPreviousStatusFromApi() = wcOrderRestClient.fetchSingleOrder(site, orderId)
+            .orderWithMeta.second[WCMetaData.GeneralKeys.TRASH_STATUS]?.valueAsString
+
         return coroutineEngine.withDefaultContext(T.API, this, "restoreDeletedOrder") {
-            val previousStatus = metaDataDao.getMetaDataByKey(
-                site.localId(),
-                orderId,
-                WCMetaData.GeneralKeys.TRASH_STATUS
-            )?.firstOrNull() ?: return@withDefaultContext WooResult(
-                WooError(
-                    type = WooErrorType.GENERIC_ERROR,
-                    original = BaseRequest.GenericErrorType.UNKNOWN,
-                    message = "Previous status not found"
+            val previousStatus = getPreviousStatusFromDB()
+                ?: fetchPreviousStatusFromApi()
+                ?: return@withDefaultContext WooResult(
+                    WooError(
+                        type = WooErrorType.GENERIC_ERROR,
+                        original = BaseRequest.GenericErrorType.UNKNOWN,
+                        message = "Previous status not found"
+                    )
                 )
-            )
 
             val result = wcOrderRestClient.updateOrder(
                 site = site,
                 orderId = orderId,
                 request = UpdateOrderRequest(
                     status = WCOrderStatusModel().apply {
-                        statusKey = previousStatus.value
+                        statusKey = previousStatus
                     }
                 )
             )
@@ -322,7 +330,9 @@ class OrderUpdateStore @Inject internal constructor(
             return@withDefaultContext if (result.isError) {
                 WooResult(result.error)
             } else {
-                WooResult(Unit)
+                val order = requireNotNull(result.result)
+                ordersDaoDecorator.insertOrUpdateOrder(order)
+                WooResult(order)
             }
         }
     }
