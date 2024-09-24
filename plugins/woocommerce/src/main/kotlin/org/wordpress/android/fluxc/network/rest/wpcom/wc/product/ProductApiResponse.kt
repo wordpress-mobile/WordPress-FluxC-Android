@@ -87,4 +87,6 @@ data class ProductApiResponse(
     val max_quantity: String? = null,
     val group_of_quantity: String? = null,
     val combine_variations: String? = null,
+    @SerializedName("post_password")
+    val password: String? = null,
 )
