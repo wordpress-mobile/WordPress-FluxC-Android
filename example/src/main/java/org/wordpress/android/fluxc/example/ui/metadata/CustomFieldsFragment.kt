@@ -173,8 +173,10 @@ private fun ContentView(state: CustomFieldsState.Loaded) {
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton({ fieldBeingEdited = customField }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                if (!customField.isJson) {
+                    IconButton({ fieldBeingEdited = customField }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    }
                 }
                 IconButton({ state.onDelete(customField) }) {
                     Icon(Icons.Default.Delete, contentDescription = "Delete")
