@@ -612,6 +612,33 @@ class WooOrdersFragment : StoreSelectingFragment(), WCAddOrderShipmentTrackingDi
                 }
             }
 
+            restoreOrder.setOnClickListener {
+                selectedSite?.let { site ->
+                    lifecycleScope.launch {
+                        val orderId = showSingleLineDialog(
+                            activity = requireActivity(),
+                            message = "Please enter the order id",
+                            isNumeric = true
+                        )?.toLongOrNull()
+
+                        if (orderId == null) {
+                            prependToLog("Please enter a valid order id")
+                            return@launch
+                        }
+
+                        val result = orderUpdateStore.restoreDeletedOrder(site, orderId)
+                        if (result.isError) {
+                            prependToLog(
+                                "Restoring order failed, " +
+                                "error ${result.error.type} ${result.error.message}"
+                            )
+                        } else {
+                            prependToLog("Order $orderId has been restored succesfully")
+                        }
+                    }
+                }
+            }
+
             fetchOrderAttribution.setOnClickListener {
                 selectedSite?.let { site ->
                     showSingleLineDialog(activity, "Enter the remoteOrderId of order to fetch:") { editText ->

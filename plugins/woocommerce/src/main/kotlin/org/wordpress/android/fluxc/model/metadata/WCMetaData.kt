@@ -69,6 +69,7 @@ data class WCMetaData(
             add(SubscriptionMetadataKeys.SUBSCRIPTION_RENEWAL)
             add(BundleMetadataKeys.BUNDLED_ITEM_ID)
             addAll(OrderAttributionInfoKeys.ALL_KEYS)
+            add(GeneralKeys.TRASH_STATUS)
         }
 
         internal fun fromJson(json: JsonElement): WCMetaData? = runCatching {
@@ -83,6 +84,11 @@ data class WCMetaData(
         }.onFailure {
             AppLog.w(AppLog.T.UTILS, "Error parsing WCMetaData from JSON $json, cause: ${it.stackTraceToString()}")
         }.getOrNull()
+    }
+
+    object GeneralKeys {
+        const val TRASH_STATUS = "_wp_trash_meta_status"
+        const val TRASH_TIME = "_wp_trash_meta_time"
     }
 
     object SubscriptionMetadataKeys {

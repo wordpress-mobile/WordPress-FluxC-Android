@@ -15,12 +15,12 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.OrderEntity
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
@@ -81,7 +81,8 @@ class WCOrderStore @Inject constructor(
 
     class FetchOrdersByIdsPayload(
         val site: SiteModel,
-        val orderIds: List<Long>
+        val orderIds: List<Long>,
+        val statusFilter: String? = null,
     ) : Payload<BaseNetworkError>()
 
     data class FetchOrdersResponsePayload(
@@ -544,7 +545,7 @@ class WCOrderStore @Inject constructor(
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
         payload.orderIds.chunked(NUM_ORDERS_PER_FETCH).forEach { idsToFetch ->
-            wcOrderRestClient.fetchOrdersByIds(payload.site, idsToFetch)
+            wcOrderRestClient.fetchOrdersByIds(payload.site, idsToFetch, payload.statusFilter)
         }
     }
 

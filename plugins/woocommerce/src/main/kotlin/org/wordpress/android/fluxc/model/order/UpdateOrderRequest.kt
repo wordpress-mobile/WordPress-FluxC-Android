@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.model.order
 
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
 
 data class UpdateOrderRequest(
     val customerId: Long? = null,
@@ -12,5 +13,6 @@ data class UpdateOrderRequest(
     val couponLines: List<CouponLine>? = null,
     val shippingLines: List<ShippingLine>? = null,
     val customerNote: String? = null,
-    val giftCard: String? = null
+    val giftCard: String? = null,
+    val metaDataUpdateRequest: UpdateMetadataRequest? = null
 )
