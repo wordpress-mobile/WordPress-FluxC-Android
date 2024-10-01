@@ -15,7 +15,10 @@ internal class StripOrder @Inject constructor(private val gson: Gson) {
                 lineItems = gson.toJson(fatModel.getLineItemList().map { lineItemDto: LineItem ->
                     lineItemDto.copy(
                         metaData = lineItemDto.metaData
-                            ?.filter { it.isDisplayable || it.key in WCMetaData.SUPPORTED_KEYS }
+                            ?.filter {
+                                it.isDisplayable
+                                    || it.key == WCMetaData.BundleMetadataKeys.BUNDLED_ITEM_ID
+                            }
                     )
                 }),
                 shippingLines = gson.toJson(fatModel.getShippingLineList()),
