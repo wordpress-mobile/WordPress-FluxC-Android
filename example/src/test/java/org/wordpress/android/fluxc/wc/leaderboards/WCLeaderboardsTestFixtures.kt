@@ -19,7 +19,6 @@ object WCLeaderboardsTestFixtures {
         origin = SiteModel.ORIGIN_XMLRPC
     }
     private val productDtoMapper = ProductDtoMapper(
-        gson = Gson(),
         stripProductMetaData = mock {
             on { invoke(any()) } doAnswer {
                 @Suppress("UNCHECKED_CAST")
