@@ -938,12 +938,13 @@ class ProductRestClient @Inject constructor(
      * @param [site] The site to fetch product reviews for
      * @param [storedWCProductModel] the stored model to compare with the [updatedProductModel]
      * @param [updatedProductModel] the product model that contains the update
+     * @param [metadataChanges] the metadata changes to be updated
      */
     fun updateProduct(
         site: SiteModel,
         storedWCProductModel: WCProductModel?,
         updatedProductModel: WCProductModel,
-        metadataRequest: UpdateMetadataRequest?
+        metadataChanges: UpdateMetadataRequest? = null
     ) {
         coroutineEngine.launch(AppLog.T.API, this, "updateProduct") {
             val remoteProductId = updatedProductModel.remoteProductId
@@ -951,7 +952,7 @@ class ProductRestClient @Inject constructor(
             val body = productModelToProductJsonBody(
                 productModel = storedWCProductModel,
                 updatedProductModel = updatedProductModel,
-                metadata = metadataRequest?.toJsonArray()
+                metadata = metadataChanges?.toJsonArray()
             )
 
             val response = wooNetwork.executePutGsonRequest(
@@ -1718,11 +1719,12 @@ class ProductRestClient @Inject constructor(
      *
      * @param [site] The site to fetch product reviews for
      * @param [productModel] the new product model
+     * @param [metaData] the metadata to be added to the product
      */
     fun addProduct(
         site: SiteModel,
         productModel: WCProductModel,
-        metaData: Map<String, String>?
+        metaData: Map<String, String>? = null
     ) {
         coroutineEngine.launch(AppLog.T.API, this, "addProduct") {
             val url = WOOCOMMERCE.products.pathV3
