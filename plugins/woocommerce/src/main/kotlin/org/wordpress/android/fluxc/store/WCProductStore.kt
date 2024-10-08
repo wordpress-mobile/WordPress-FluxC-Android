@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.ProductWithMetaData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.VariationAttributes
-import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductComponent
 import org.wordpress.android.fluxc.model.WCProductImageModel
@@ -26,6 +25,8 @@ import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
+import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
+import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.metadata.get
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
@@ -179,7 +180,8 @@ class WCProductStore @Inject constructor(
 
     class UpdateProductPayload(
         var site: SiteModel,
-        val product: WCProductModel
+        val product: WCProductModel,
+        val metadataChanges: UpdateMetadataRequest? = null
     ) : Payload<BaseNetworkError>()
 
     class BatchUpdateProductsPayload(
@@ -302,7 +304,8 @@ class WCProductStore @Inject constructor(
 
     class AddProductPayload(
         var site: SiteModel,
-        val product: WCProductModel
+        val product: WCProductModel,
+        val metadata: Map<String, String>? = null
     ) : Payload<BaseNetworkError>()
 
     class DeleteProductPayload(
@@ -1399,7 +1402,7 @@ class WCProductStore @Inject constructor(
     private fun updateProduct(payload: UpdateProductPayload) {
         with(payload) {
             val storedProduct = getProductByRemoteId(site, product.remoteProductId)
-            wcProductRestClient.updateProduct(site, storedProduct, product)
+            wcProductRestClient.updateProduct(site, storedProduct, product, payload.metadataChanges)
         }
     }
 
@@ -1806,7 +1809,7 @@ class WCProductStore @Inject constructor(
 
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
-            wcProductRestClient.addProduct(site, product)
+            wcProductRestClient.addProduct(site, product, payload.metadata)
         }
     }
 
