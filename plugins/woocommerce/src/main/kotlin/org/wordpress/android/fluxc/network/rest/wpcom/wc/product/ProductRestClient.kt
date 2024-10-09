@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
-import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
+import org.wordpress.android.fluxc.model.metadata.MetadataChanges
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
@@ -944,7 +944,7 @@ class ProductRestClient @Inject constructor(
         site: SiteModel,
         storedWCProductModel: WCProductModel?,
         updatedProductModel: WCProductModel,
-        metadataChanges: UpdateMetadataRequest? = null
+        metadataChanges: MetadataChanges? = null
     ) {
         coroutineEngine.launch(AppLog.T.API, this, "updateProduct") {
             val remoteProductId = updatedProductModel.remoteProductId

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.metadata.MetaDataParentItemType
+import org.wordpress.android.fluxc.model.metadata.MetadataChanges
 import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.store.MetaDataStore
@@ -43,6 +44,7 @@ class CustomFieldsViewModel(
         loadCustomFields()
     }
 
+    @Suppress("LongMethod")
     private fun observeLoadingState() {
         val customFields = combine(
             metaDataStore.observeDisplayableMetaData(
@@ -63,8 +65,8 @@ class CustomFieldsViewModel(
             customFields,
             pendingUpdateRequest.map {
                 it.insertedMetadata.isNotEmpty() ||
-                    it.updatedMetadata.isNotEmpty() ||
-                    it.deletedMetadataIds.isNotEmpty()
+                        it.updatedMetadata.isNotEmpty() ||
+                        it.deletedMetadataIds.isNotEmpty()
             }
         ) { loadingState, metaData, hasChanges ->
             when (loadingState) {
@@ -74,21 +76,27 @@ class CustomFieldsViewModel(
                     onDelete = { field ->
                         pendingUpdateRequest.update {
                             it.copy(
-                                deletedMetadataIds = it.deletedMetadataIds + field.id
+                                metadataChanges = it.metadataChanges.copy(
+                                    deletedMetadataIds = it.deletedMetadataIds + field.id
+                                )
                             )
                         }
                     },
                     onEdit = { field ->
                         pendingUpdateRequest.update {
                             it.copy(
-                                updatedMetadata = it.updatedMetadata + field
+                                metadataChanges = it.metadataChanges.copy(
+                                    updatedMetadata = it.updatedMetadata + field
+                                )
                             )
                         }
                     },
                     onAdd = { field ->
                         pendingUpdateRequest.update {
                             it.copy(
-                                insertedMetadata = it.insertedMetadata + field
+                                metadataChanges = it.metadataChanges.copy(
+                                    insertedMetadata = it.insertedMetadata + field
+                                )
                             )
                         }
                     },
@@ -134,9 +142,7 @@ class CustomFieldsViewModel(
                 } else {
                     pendingUpdateRequest.update {
                         it.copy(
-                            insertedMetadata = emptyList(),
-                            updatedMetadata = emptyList(),
-                            deletedMetadataIds = emptyList()
+                            metadataChanges = MetadataChanges()
                         )
                     }
                     loadingState.value = LoadingState.Loaded

@@ -25,7 +25,7 @@ import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantOption
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
-import org.wordpress.android.fluxc.model.metadata.UpdateMetadataRequest
+import org.wordpress.android.fluxc.model.metadata.MetadataChanges
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
 import org.wordpress.android.fluxc.model.metadata.get
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
@@ -181,7 +181,7 @@ class WCProductStore @Inject constructor(
     class UpdateProductPayload(
         var site: SiteModel,
         val product: WCProductModel,
-        val metadataChanges: UpdateMetadataRequest? = null
+        val metadataChanges: MetadataChanges? = null
     ) : Payload<BaseNetworkError>()
 
     class BatchUpdateProductsPayload(

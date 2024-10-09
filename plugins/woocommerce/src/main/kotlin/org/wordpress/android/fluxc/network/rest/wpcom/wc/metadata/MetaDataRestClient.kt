@@ -49,7 +49,7 @@ internal class MetaDataRestClient @Inject internal constructor(
             site = site,
             path = path,
             body = mapOf(
-                "meta_data" to request.toJsonArray(),
+                "meta_data" to request.metadataChanges.toJsonArray(),
                 "_fields" to "meta_data"
             ),
             clazz = JsonObject::class.java
