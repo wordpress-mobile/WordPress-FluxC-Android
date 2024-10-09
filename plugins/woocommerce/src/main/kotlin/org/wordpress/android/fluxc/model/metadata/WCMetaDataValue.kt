@@ -78,6 +78,16 @@ sealed class WCMetaDataValue {
     }
 
     companion object {
+        operator fun invoke(value: String?): WCMetaDataValue {
+            if (value == null) return StringValue(null)
+
+            return runCatching { JsonParser().parse(value) }
+                .getOrElse { JsonPrimitive(value) }
+                .let { fromJsonElement(it) }
+        }
+        operator fun invoke(value: Number): WCMetaDataValue = NumberValue(value)
+        operator fun invoke(value: Boolean): WCMetaDataValue = BooleanValue(value)
+
         internal fun fromJsonElement(element: JsonElement): WCMetaDataValue {
             return when {
                 element.isJsonPrimitive -> {
@@ -95,10 +105,5 @@ sealed class WCMetaDataValue {
                 else -> StringValue(element.toString())
             }
         }
-
-        fun fromRawString(value: String): WCMetaDataValue =
-            runCatching { JsonParser().parse(value) }
-                .getOrElse { JsonPrimitive(value) }
-                .let { fromJsonElement(it) }
     }
 }

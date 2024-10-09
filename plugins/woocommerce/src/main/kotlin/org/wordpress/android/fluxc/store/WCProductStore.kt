@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel.ProductVariantO
 import org.wordpress.android.fluxc.model.addons.RemoteAddonDto
 import org.wordpress.android.fluxc.model.metadata.MetadataChanges
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue
 import org.wordpress.android.fluxc.model.metadata.get
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
@@ -305,7 +306,7 @@ class WCProductStore @Inject constructor(
     class AddProductPayload(
         var site: SiteModel,
         val product: WCProductModel,
-        val metadata: Map<String, String>? = null
+        val metadata: Map<String, WCMetaDataValue>? = null
     ) : Payload<BaseNetworkError>()
 
     class DeleteProductPayload(

@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.model.metadata.MetadataChanges
 import org.wordpress.android.fluxc.model.metadata.WCMetaData
+import org.wordpress.android.fluxc.model.metadata.WCMetaDataValue
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
 import org.wordpress.android.fluxc.network.rest.wpapi.WPAPINetworkError
@@ -1724,7 +1725,7 @@ class ProductRestClient @Inject constructor(
     fun addProduct(
         site: SiteModel,
         productModel: WCProductModel,
-        metaData: Map<String, String>? = null
+        metaData: Map<String, WCMetaDataValue>? = null
     ) {
         coroutineEngine.launch(AppLog.T.API, this, "addProduct") {
             val url = WOOCOMMERCE.products.pathV3
@@ -1736,7 +1737,7 @@ class ProductRestClient @Inject constructor(
                         it.forEach { (key, value) ->
                             add(JsonObject().apply {
                                 addProperty(WCMetaData.KEY, key)
-                                addProperty(WCMetaData.VALUE, value)
+                                add(WCMetaData.VALUE, value.jsonValue)
                             })
                         }
                     }

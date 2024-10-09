@@ -25,7 +25,7 @@ data class WCMetaData(
     val displayValue: WCMetaDataValue? = null
 ) {
     constructor(id: Long, key: String, value: String) : this(id, key,
-        WCMetaDataValue.fromRawString(value)
+        WCMetaDataValue(value)
     )
 
     /**
