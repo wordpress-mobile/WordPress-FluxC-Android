@@ -9,6 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.mockStatic
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.KArgumentCaptor
 import org.mockito.kotlin.any
@@ -34,12 +35,15 @@ import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.site.StatusType.ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.site.StatusType.SUCCESS
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsErrorType
+import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.SiteStore.SiteFilter.WPCOM
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility.COMING_SOON
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility.PUBLIC
 import org.wordpress.android.fluxc.test
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.util.DateTimeUtils
+import org.wordpress.android.util.UrlUtils
 import kotlin.test.assertNotNull
 
 @RunWith(MockitoJUnitRunner::class)
@@ -63,13 +67,14 @@ class SiteRestClientTest {
         paramsCaptor = argumentCaptor()
         bodyCaptor = argumentCaptor()
         restClient = SiteRestClient(
-                null,
-                dispatcher,
-                requestQueue,
-                appSecrets,
-                wpComGsonRequestBuilder,
-                accessToken,
-                userAgent
+            appContext = null,
+            dispatcher = dispatcher,
+            requestQueue = requestQueue,
+            appSecrets = appSecrets,
+            wpComGsonRequestBuilder = wpComGsonRequestBuilder,
+            coroutineEngine = initCoroutineEngine(),
+            accessToken = accessToken,
+            userAgent = userAgent
         )
         whenever(site.siteId).thenReturn(siteId)
     }
@@ -610,6 +615,22 @@ class SiteRestClientTest {
         }
     }
 
+    @Test
+    fun `given a suspended WPCom website, when fetching site info, then return correct error`() = test {
+        val urlUtilsMock = mockStatic(UrlUtils::class.java)
+        whenever(UrlUtils.addUrlSchemeIfNeeded(any(), any())).thenAnswer { it.arguments[0] as String }
+        val error = WPComGsonNetworkError(BaseNetworkError(GenericErrorType.INVALID_RESPONSE, "")).apply {
+            apiError = "connection_disabled"
+        }
+        initGetResponse(ConnectSiteInfoResponse::class.java, null, error)
+
+        val result = restClient.fetchConnectSiteInfoSync("test.com")
+
+        assertThat(result.error).isNotNull
+        assertThat(result.error!!.type).isEqualTo(SiteErrorType.WPCOM_SITE_SUSPENDED)
+        urlUtilsMock.close()
+    }
+
     private suspend fun initSiteResponse(
         data: SiteWPComRestResponse? = null,
         error: WPComGsonNetworkError? = null
@@ -654,10 +675,13 @@ class SiteRestClientTest {
 
     private suspend fun <T> initGetResponse(
         clazz: Class<T>,
-        data: T,
+        data: T?,
         error: WPComGsonNetworkError? = null
     ): Response<T> {
-        val response = if (error != null) Response.Error(error) else Success(data)
+        if (error == null && data == null) {
+            error("Either data or error must be provided")
+        }
+        val response = if (error != null) Response.Error(error) else Success<T>(data!!)
         whenever(
                 wpComGsonRequestBuilder.syncGetRequest(
                         eq(restClient),
