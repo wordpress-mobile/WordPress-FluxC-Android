@@ -720,8 +720,12 @@ class SiteRestClient @Inject constructor(
 
         return when (response) {
             is Error -> {
-                val siteError = SiteError(INVALID_SITE)
-                ConnectSiteInfoPayload(siteUrl, siteError)
+                val siteErrorType = when (response.error.apiError) {
+                    "connection_disabled" -> SiteErrorType.WPCOM_SITE_SUSPENDED
+                    else -> INVALID_SITE
+                }
+
+                ConnectSiteInfoPayload(siteUrl, SiteError(siteErrorType))
             }
             is Success -> {
                 response.data.toConnectSiteInfoPayload(siteUrl)

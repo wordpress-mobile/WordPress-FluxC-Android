@@ -896,7 +896,14 @@ open class SiteStore @Inject constructor(
     )
 
     enum class SiteErrorType {
-        INVALID_SITE, UNKNOWN_SITE, DUPLICATE_SITE, INVALID_RESPONSE, UNAUTHORIZED, NOT_AUTHENTICATED, GENERIC_ERROR
+        INVALID_SITE,
+        UNKNOWN_SITE,
+        DUPLICATE_SITE,
+        INVALID_RESPONSE,
+        UNAUTHORIZED,
+        NOT_AUTHENTICATED,
+        GENERIC_ERROR,
+        WPCOM_SITE_SUSPENDED
     }
 
     enum class AllDomainsErrorType {
