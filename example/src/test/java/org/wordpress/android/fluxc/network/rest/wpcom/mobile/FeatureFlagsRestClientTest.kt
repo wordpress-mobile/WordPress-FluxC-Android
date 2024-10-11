@@ -212,7 +212,8 @@ class FeatureFlagsRestClientTest {
                 eq(false),
                 any(),
                 eq(false),
-                customGsonBuilder = anyOrNull()
+                customGsonBuilder = anyOrNull(),
+                authenticatedRequest = any()
             )
         ).thenReturn(response)
     }

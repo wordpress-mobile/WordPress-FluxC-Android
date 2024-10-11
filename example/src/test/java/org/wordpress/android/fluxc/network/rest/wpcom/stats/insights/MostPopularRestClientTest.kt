@@ -103,7 +103,8 @@ class MostPopularRestClientTest {
                         eq(true),
                         any(),
                         eq(false),
-                        customGsonBuilder = anyOrNull()
+                        customGsonBuilder = anyOrNull(),
+                        authenticatedRequest = any()
                 )
         ).thenReturn(response)
         whenever(site.siteId).thenReturn(siteId)

@@ -87,7 +87,8 @@ class PlanOffersRestClientTest {
                         eq(false),
                         any(),
                         eq(true),
-                        customGsonBuilder = anyOrNull()
+                        customGsonBuilder = anyOrNull(),
+                        authenticatedRequest = any()
                 )
         ).thenReturn(response)
     }

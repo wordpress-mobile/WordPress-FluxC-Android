@@ -572,7 +572,8 @@ class CommentsRestClientTest {
                         any(),
                         any(),
                         any(),
-                        customGsonBuilder = anyOrNull()
+                        customGsonBuilder = anyOrNull(),
+                        authenticatedRequest = any()
                 )
         ).thenReturn(response)
         return response
